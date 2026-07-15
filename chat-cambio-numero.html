@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Cambié de número · Entrenamiento antiestafas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/chat-cambio-numero.css">
+</head>
+<body>
+  <main class="device">
+    <section class="phone" aria-label="Conversación de mensajería">
+
+      <div class="chatbar">
+        <div class="av">👤</div>
+        <div class="id">
+          <p class="name">Andrés (nuevo número)</p>
+          <p class="sub">+593 96 214 8830 · en línea</p>
+        </div>
+        <span class="flag">No guardado</span>
+      </div>
+
+      <div class="participant-banner" id="participantBanner">
+        En entrenamiento: Usuario de practica · Rol libre de practica
+      </div>
+
+      <div class="thread" id="thread">
+        <div class="daychip">Hoy · 21:14</div>
+      </div>
+
+      <div class="panelwrap">
+        <p class="prompt" id="prompt" hidden>¿Qué haces?</p>
+        <div class="choices" id="choices"></div>
+
+        <div class="result" id="result" hidden></div>
+
+        <div class="composer" id="composer">
+          <div class="field">Escribe un mensaje…</div>
+          <div class="mic">🎤</div>
+        </div>
+        <p class="naudio" id="nAudio"></p>
+      </div>
+
+    </section>
+  </main>
+
+<script src="js/shared-profile.js"></script>
+<script src="js/chat-cambio-numero.js"></script>
+</body>
+</html>

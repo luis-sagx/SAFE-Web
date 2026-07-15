@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Foto para el Boletín — Caso #0721</title>
+<link rel="stylesheet" href="css/foto.css">
+</head>
+<body>
+
+<div class="app">
+  <header class="dossier-header">
+    <div class="tab-group">
+      <span class="tab active">CASO #0721</span>
+      <span class="tab" id="levelTab">NIVEL 1/3</span>
+    </div>
+    <div class="risk-panel">
+      <span class="risk-label">TIEMPO</span>
+      <div class="gauge-track"><div class="gauge-fill" id="gaugeFill"></div></div>
+      <span class="risk-value" id="riskValue">20s</span>
+    </div>
+  </header>
+
+  <div class="participant-strip" id="participantStrip">
+    Participante: Usuario de practica · Rol libre de practica
+  </div>
+
+  <main id="mainArea">
+    <p class="intro-text">Induplast Andina S.A. · Área administrativa</p>
+    <p class="npc-line">Valeria, de Comunicaciones: "¡Hola! Estoy armando el boletín interno de este mes, ¿te tomo una foto rápida en tu puesto? Solo será un segundo."</p>
+
+    <div class="desk-wrap" id="deskWrap"></div>
+
+    <div class="action-row">
+      <button class="snap-btn" id="snapBtn">Listo, tomen la foto</button>
+    </div>
+    <p class="hint-text">Haz clic en los objetos del escritorio para acomodarlos antes de la foto. Tienes tiempo limitado.</p>
+
+    <div id="reportArea"></div>
+  </main>
+</div>
+
+<div class="flash-overlay" id="flashOverlay"></div>
+
+<script src="js/shared-profile.js"></script>
+<script src="js/foto.js"></script>
+</body>
+</html>

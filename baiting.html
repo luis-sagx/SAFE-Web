@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trampa USB — Caso #0472</title>
+<link rel="stylesheet" href="css/baiting.css">
+</head>
+<body>
+
+<div class="app">
+  <header class="dossier-header">
+    <div class="tab-group">
+      <span class="tab active">CASO #0472</span>
+      <span class="tab">TRAMPA USB</span>
+    </div>
+    <div class="risk-panel">
+      <span class="risk-label">NIVEL&nbsp;DE&nbsp;RIESGO</span>
+      <div class="gauge-track"><div class="gauge-fill" id="gaugeFill"></div></div>
+      <span class="risk-value" id="riskValue">0%</span>
+    </div>
+  </header>
+
+  <div class="participant-strip" id="participantStrip">
+    Participante: Usuario de practica · Rol libre de practica
+  </div>
+
+  <main id="mainArea">
+    <div id="mapView">
+      <p class="map-caption">Plano — Oficinas administrativas · Induplast Andina S.A. · entra a cada lugar</p>
+      <div class="map-wrap">
+        <svg id="officeMap" viewBox="0 0 800 560" xmlns="http://www.w3.org/2000/svg">
+          <rect class="room-zone" data-idx="0" x="10" y="70" width="160" height="440" tabindex="0" role="button" aria-label="Estacionamiento"/>
+          <rect class="room-zone" data-idx="3" x="180" y="70" width="290" height="220" tabindex="0" role="button" aria-label="Recepción"/>
+          <rect class="room-zone" data-idx="1" x="470" y="70" width="290" height="220" tabindex="0" role="button" aria-label="Sala de descanso"/>
+          <rect class="room-zone" data-idx="2" x="180" y="290" width="290" height="220" tabindex="0" role="button" aria-label="Área administrativa"/>
+
+          <rect x="10" y="70" width="160" height="440" class="lot"/>
+          <line x1="90" y1="90" x2="90" y2="490" class="lot-line"/>
+          <text x="20" y="55" class="room-label">Estacionamiento</text>
+          <rect x="55" y="300" width="70" height="34" rx="6" class="furniture-fill"/>
+          <circle cx="68" cy="336" r="6" class="furniture"/>
+          <circle cx="112" cy="336" r="6" class="furniture"/>
+
+          <rect x="180" y="70" width="580" height="440" class="wall" fill="none"/>
+          <line x1="470" y1="70" x2="470" y2="510" class="wall"/>
+          <line x1="180" y1="290" x2="760" y2="290" class="wall"/>
+          <line x1="180" y1="150" x2="180" y2="70" class="wall"/>
+          <line x1="180" y1="290" x2="180" y2="200" class="wall"/>
+
+          <text x="200" y="95" class="room-label">Recepción</text>
+          <rect x="205" y="200" width="110" height="38" rx="3" class="furniture-fill"/>
+          <rect x="235" y="185" width="30" height="16" class="furniture"/>
+          <circle cx="410" cy="245" r="14" class="furniture-fill"/>
+          <rect x="398" y="258" width="24" height="6" class="furniture"/>
+          <text x="386" y="278" class="desk-tag">Visitante</text>
+
+          <text x="490" y="95" class="room-label">Sala de descanso</text>
+          <circle cx="670" cy="150" r="34" class="furniture-fill"/>
+          <circle cx="670" cy="105" r="8" class="furniture"/>
+          <circle cx="670" cy="195" r="8" class="furniture"/>
+          <circle cx="628" cy="150" r="8" class="furniture"/>
+          <circle cx="712" cy="150" r="8" class="furniture"/>
+          <rect x="580" y="215" width="150" height="26" class="furniture-fill"/>
+          <rect x="600" y="203" width="24" height="14" class="furniture"/>
+          <line x1="645" y1="241" x2="645" y2="255" class="furniture"/>
+          <line x1="638" y1="255" x2="652" y2="255" class="furniture"/>
+          <text x="580" y="260" class="desk-tag">Tomacorriente</text>
+
+          <text x="200" y="315" class="room-label">Área administrativa</text>
+          <rect x="205" y="335" width="95" height="55" rx="3" class="furniture-fill"/>
+          <rect x="220" y="345" width="30" height="18" class="furniture"/>
+          <text x="210" y="405" class="desk-tag">Tu escritorio</text>
+          <rect x="330" y="335" width="90" height="55" rx="3" class="furniture-fill"/>
+          <rect x="345" y="345" width="30" height="18" class="furniture"/>
+          <rect x="205" y="420" width="95" height="55" rx="3" class="furniture-fill"/>
+          <rect x="220" y="430" width="30" height="18" class="furniture"/>
+          <rect x="330" y="420" width="90" height="55" rx="3" class="furniture-fill"/>
+          <rect x="345" y="430" width="30" height="18" class="furniture"/>
+
+          <text x="490" y="315" class="room-label">Pasillo / Archivo</text>
+          <rect x="560" y="340" width="150" height="120" class="furniture" fill="none" stroke-dasharray="4 4"/>
+          <text x="600" y="405" class="desk-tag">Estantes</text>
+
+          <g class="pinwrap" data-idx="0" transform="translate(95,300)"><circle class="pulse" r="14"/><g class="pin"><circle class="pin-base" r="12"/><text y="1">1</text></g></g>
+          <g class="pinwrap" data-idx="1" transform="translate(645,225)"><circle class="pulse" r="14"/><g class="pin"><circle class="pin-base" r="12"/><text y="1">2</text></g></g>
+          <g class="pinwrap" data-idx="2" transform="translate(252,362)"><circle class="pulse" r="14"/><g class="pin"><circle class="pin-base" r="12"/><text y="1">3</text></g></g>
+          <g class="pinwrap" data-idx="3" transform="translate(410,245)"><circle class="pulse" r="14"/><g class="pin"><circle class="pin-base" r="12"/><text y="1">4</text></g></g>
+        </svg>
+      </div>
+
+      <div class="legend">
+        <span><span class="dot pending"></span>Pendiente</span>
+        <span><span class="dot safe"></span>Segura</span>
+        <span><span class="dot warn"></span>Observación</span>
+        <span><span class="dot danger"></span>Riesgo</span>
+      </div>
+
+      <div class="progress-row">
+        <span class="progress-text" id="progressText">Casos revisados: 0/4</span>
+        <button class="report-btn" id="reportBtn" disabled>Ver informe final</button>
+      </div>
+
+      <div id="reportArea"></div>
+    </div>
+
+    <div id="sceneView" class="hidden"></div>
+  </main>
+</div>
+
+<div class="flash-overlay" id="flashOverlay"></div>
+<div class="stamp-overlay hidden" id="stampOverlay"><div class="stamp" id="stampText"></div></div>
+
+<script src="js/shared-profile.js"></script>
+<script src="js/baiting.js"></script>
+</body>
+</html>
