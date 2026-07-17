@@ -55,6 +55,12 @@ body{
 
 main{ background: var(--paper); color: var(--ink-on-paper); border-radius: 0 0 10px 10px; padding: 20px 20px 26px; box-shadow: 0 20px 40px -20px rgba(0,0,0,0.6); position: relative; overflow:hidden; }
 main::before{ content:""; position:absolute; top:0; left:0; right:0; height:4px; background: repeating-linear-gradient(90deg, var(--paper-edge) 0 14px, transparent 14px 20px); }
+.instructions-box{ background:#fff9ec; border:1px solid var(--paper-edge); border-radius:8px; padding:14px 16px; margin-bottom:14px; }
+.instructions-title{ font-family:var(--font-display); font-size:0.78rem; letter-spacing:0.08em; text-transform:uppercase; color:var(--ink-on-paper); margin:0 0 8px; }
+.instructions-list{ margin:0; padding-left:18px; font-size:0.85rem; line-height:1.5; color:#5f5238; }
+.instructions-list li{ margin-bottom:6px; }
+.instructions-list li:last-child{ margin-bottom:0; }
+
 .map-caption{ font-family: var(--font-mono); font-size:0.68rem; letter-spacing:0.08em; color:#6b5f47; text-align:center; margin: 2px 0 10px; text-transform:uppercase; }
 .map-wrap{ width:100%; border:1px solid var(--paper-edge); border-radius:8px; overflow:hidden; background:var(--room-fill); }
 #officeMap{ display:block; width:100%; height:auto; }
