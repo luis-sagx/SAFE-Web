@@ -1,13 +1,25 @@
+import {
+  Mail,
+  MessageSquareText,
+  Phone,
+  ShoppingBag,
+  StickyNote,
+  UserRoundX,
+  type LucideIcon,
+} from 'lucide-react'
 import { lazy, type ComponentType, type LazyExoticComponent } from 'react'
 
 export type Naturaleza = 'fraude' | 'legitimo'
-export type EstadoSeccion = 'disponible' | 'proximamente'
 
 export interface Seccion {
   id: string
   titulo: string
-  tag: string
-  estado: EstadoSeccion
+  /** Qué es la amenaza, en lenguaje de alguien que no es técnico. Basada en
+   *  los anzuelos reales del diseño pedagógico (ver docs/superpowers/specs). */
+  descripcion: string
+  /** Dónde ocurre; va en la insignia de la tarjeta. */
+  canal: string
+  Icono: LucideIcon
 }
 
 interface EscenarioBase {
@@ -33,45 +45,57 @@ export interface Escenario extends EscenarioBase {
 export const SECCIONES: Seccion[] = [
   {
     id: 'phishing',
-    titulo: 'Phishing bancario',
-    tag: 'Banca / Ingeniería social',
-    estado: 'disponible',
+    titulo: 'Phishing',
+    descripcion:
+      'Correos que copian a tu banco o al SRI: facturas falsas, códigos QR y alertas que buscan tu clave.',
+    canal: 'Correo y web',
+    Icono: Mail,
   },
   {
     id: 'smishing',
     titulo: 'Smishing',
-    tag: 'Mensajería / Suplantación',
-    estado: 'disponible',
+    descripcion:
+      'Bonos, multas de tránsito y paquetes retenidos que llegan junto a los SMS reales de tu banco.',
+    canal: 'SMS y WhatsApp',
+    Icono: MessageSquareText,
   },
   {
     id: 'vishing',
     titulo: 'Vishing',
-    tag: 'Vishing / Presión',
-    estado: 'disponible',
+    descripcion:
+      'Llamadas de un falso antifraude o soporte técnico que piden un código mientras te apuran.',
+    canal: 'Llamada telefónica',
+    Icono: Phone,
+  },
+  {
+    id: 'suplantacion',
+    titulo: 'Suplantación de identidad',
+    descripcion:
+      'Un contacto que "cambió de número", un perfil clonado o una voz idéntica pidiendo dinero.',
+    canal: 'Mensajería y redes',
+    Icono: UserRoundX,
+  },
+  {
+    id: 'estafa',
+    titulo: 'Estafa electrónica',
+    descripcion:
+      'Compras que nunca llegan, un vuelto pedido antes de tiempo o inversiones con ganancia garantizada.',
+    canal: 'Compra, venta y dinero',
+    Icono: ShoppingBag,
   },
   {
     id: 'fisico',
     titulo: 'Riesgo físico',
-    tag: 'Exposición física / Oficina',
-    estado: 'disponible',
-  },
-  {
-    id: 'quishing',
-    titulo: 'Quishing',
-    tag: 'Códigos QR maliciosos',
-    estado: 'proximamente',
-  },
-  {
-    id: 'deepfake',
-    titulo: 'Deepfake',
-    tag: 'Audio / video sintético',
-    estado: 'proximamente',
+    descripcion:
+      'Una nota con la clave pegada al monitor o una memoria USB que alguien dejó ahí a propósito.',
+    canal: 'Oficina y entorno',
+    Icono: StickyNote,
   },
 ]
 
 const BASE: EscenarioBase[] = [
   {
-    seccionId: 'phishing',
+    seccionId: 'estafa',
     escenarioId: 'saldo-contable',
     titulo: 'Saldo contable',
     descripcion:
@@ -80,10 +104,10 @@ const BASE: EscenarioBase[] = [
     naturaleza: 'fraude',
     dificultad: 2,
     espeja: null,
-    Component: lazy(() => import('../secciones/phishing/SaldoContable')),
+    Component: lazy(() => import('../secciones/estafa/SaldoContable')),
   },
   {
-    seccionId: 'smishing',
+    seccionId: 'suplantacion',
     escenarioId: 'cambio-numero',
     titulo: 'Cambio de número',
     descripcion:
@@ -92,7 +116,7 @@ const BASE: EscenarioBase[] = [
     naturaleza: 'fraude',
     dificultad: 1,
     espeja: null,
-    Component: lazy(() => import('../secciones/smishing/CambioNumero')),
+    Component: lazy(() => import('../secciones/suplantacion/CambioNumero')),
   },
   {
     seccionId: 'vishing',

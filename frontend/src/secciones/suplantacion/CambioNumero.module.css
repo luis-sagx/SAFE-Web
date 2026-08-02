@@ -19,8 +19,10 @@
   background: linear-gradient(180deg, var(--bg1), var(--bg2));
   min-height: 100vh;
   display: flex;
-  justify-content: center;
-  align-items: flex-start;
+  /* En columna: el enlace de volver va debajo del teléfono. En fila quedaba
+     como hermano suyo y el centrado desplazaba el teléfono a la izquierda. */
+  flex-direction: column;
+  align-items: center;
   padding: 26px 14px 50px;
 }
 

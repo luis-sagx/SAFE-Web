@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { Link, Navigate, useNavigate } from 'react-router-dom'
+import AuthLayout from '../components/AuthLayout'
 import Campo from '../components/Campo'
 import { useAuth } from '../context/AuthContext'
 
@@ -38,16 +39,26 @@ function Registro() {
   }
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-6 py-12">
-      <h1 className="text-2xl font-semibold tracking-tight text-ink">Crear cuenta</h1>
-
-      <form onSubmit={handleSubmit} className="mt-8 space-y-5" noValidate>
+    <AuthLayout
+      titulo="Crear cuenta"
+      subtitulo="Solo para darte acceso. Tus resultados se analizan de forma anónima."
+      pie={
+        <p className="mt-6 text-base text-body">
+          ¿Ya tienes cuenta?{' '}
+          <Link to="/" className="font-medium text-link hover:underline">
+            Entrar
+          </Link>
+        </p>
+      }
+    >
+      <form onSubmit={handleSubmit} className="mt-6 space-y-5" noValidate>
         <Campo
           id="nombre"
           label="Nombre"
           value={nombre}
           onChange={setNombre}
           autoComplete="name"
+          placeholder="Como quieres que te llamemos"
           maxLength={80}
         />
         <Campo
@@ -57,6 +68,7 @@ function Registro() {
           value={email}
           onChange={setEmail}
           autoComplete="email"
+          placeholder="tu@correo.com"
           maxLength={120}
         />
         <Campo
@@ -66,6 +78,7 @@ function Registro() {
           value={telefono}
           onChange={setTelefono}
           autoComplete="tel"
+          placeholder="09 1234 5678"
           maxLength={20}
         />
         <Campo
@@ -93,19 +106,7 @@ function Registro() {
           {submitting ? 'Creando…' : 'Crear cuenta'}
         </button>
       </form>
-
-      <p className="mt-6 text-base text-body">
-        ¿Ya tienes cuenta?{' '}
-        <Link to="/" className="font-medium text-link hover:underline">
-          Entrar
-        </Link>
-      </p>
-
-      <p className="mt-8 text-sm text-muted">
-        Tus datos se usan solo para darte acceso. Los resultados del
-        entrenamiento se analizan de forma anónima.
-      </p>
-    </main>
+    </AuthLayout>
   )
 }
 

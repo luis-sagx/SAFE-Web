@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { Link, Navigate, useNavigate } from 'react-router-dom'
+import AuthLayout from '../components/AuthLayout'
 import Campo from '../components/Campo'
 import { useAuth } from '../context/AuthContext'
 
@@ -36,10 +37,19 @@ function Login() {
   }
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-6 py-12">
-      <h1 className="text-2xl font-semibold tracking-tight text-ink">Entrar</h1>
-
-      <form onSubmit={handleSubmit} className="mt-8 space-y-5" noValidate>
+    <AuthLayout
+      titulo="Entrar"
+      subtitulo="Con el correo que usaste al registrarte."
+      pie={
+        <p className="mt-6 text-base text-body">
+          ¿Es tu primera vez?{' '}
+          <Link to="/registro" className="font-medium text-link hover:underline">
+            Crear una cuenta
+          </Link>
+        </p>
+      }
+    >
+      <form onSubmit={handleSubmit} className="mt-6 space-y-5" noValidate>
         <Campo
           id="email"
           label="Correo"
@@ -47,6 +57,7 @@ function Login() {
           value={email}
           onChange={setEmail}
           autoComplete="email"
+          placeholder="tu@correo.com"
           maxLength={120}
         />
         <Campo
@@ -73,14 +84,7 @@ function Login() {
           {submitting ? 'Entrando…' : 'Entrar'}
         </button>
       </form>
-
-      <p className="mt-6 text-base text-body">
-        ¿No tienes cuenta?{' '}
-        <Link to="/registro" className="font-medium text-link hover:underline">
-          Regístrate
-        </Link>
-      </p>
-    </main>
+    </AuthLayout>
   )
 }
 

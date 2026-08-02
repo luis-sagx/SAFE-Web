@@ -31,7 +31,7 @@ const OPTIONS: Option[] = [
 
 function SaldoContable() {
   const { displayName, roleLabel, initials } = useAuth()
-  const run = useScenarioRun('phishing/saldo-contable')
+  const run = useScenarioRun('estafa/saldo-contable')
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
 
   const answered = selectedIndex !== null
@@ -70,7 +70,7 @@ function SaldoContable() {
 
   return (
     <div className={styles.appWrapper}>
-      <Link to="/seccion/phishing" className={styles.backLink}>
+      <Link to="/seccion/estafa" className={styles.backLink}>
         ← Volver a la sección
       </Link>
 

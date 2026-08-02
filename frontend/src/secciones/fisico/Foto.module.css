@@ -8,9 +8,20 @@
   justify-content: flex-start;
   font-family: var(--font-body);
   color: var(--text-light);
-  background: radial-gradient(1200px 600px at 15% -10%, #1a2330 0%, transparent 60%), var(--ink);
   padding: 28px 16px 60px;
 }
+
+/* El fondo cubre toda la ventana aunque el contenido tenga ancho máximo: sin
+   esto, en pantallas anchas quedaba una columna oscura sobre el blanco del
+   body. */
+.app::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: radial-gradient(1200px 600px at 15% -10%, #1a2330 0%, transparent 60%), var(--ink);
+}
+
 
 .backLink {
   align-self: center;

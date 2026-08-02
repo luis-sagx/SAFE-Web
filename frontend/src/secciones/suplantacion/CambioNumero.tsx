@@ -114,7 +114,7 @@ function nowTime() {
 
 function CambioNumero() {
   const { displayName, roleLabel } = useAuth()
-  const engine = useStoryEngine(STORY, 'n1', 'smishing/cambio-numero')
+  const engine = useStoryEngine(STORY, 'n1', 'suplantacion/cambio-numero')
   const [threadItems, setThreadItems] = useState<ThreadItem[]>([])
   const [choicesVisible, setChoicesVisible] = useState(false)
   const [playingId, setPlayingId] = useState<string | null>(null)
@@ -350,7 +350,7 @@ function CambioNumero() {
         </section>
       </main>
 
-      <Link to="/seccion/smishing" className={styles.backLink}>
+      <Link to="/seccion/suplantacion" className={styles.backLink}>
         ← Volver a la sección
       </Link>
     </div>
