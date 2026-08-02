@@ -3,21 +3,26 @@ import type { StoryChoice } from '../../hooks/useStoryEngine'
 interface StoryChoicesProps {
   choices: StoryChoice[]
   onChoose: (goto: string, label: string) => void
-  // CSS module del escenario que lo usa: cada uno tiene su propia paleta.
-  styles: Record<string, string>
 }
 
-function StoryChoices({ choices, onChoose, styles }: StoryChoicesProps) {
+/**
+ * Decidir no es parte de la ficción: estas opciones viven fuera del marco del
+ * dispositivo y usan los tokens del sistema de diseño, no la paleta de la app
+ * simulada.
+ */
+function StoryChoices({ choices, onChoose }: StoryChoicesProps) {
   return (
-    <div className={styles.choices}>
+    <div className="grid gap-2">
       {choices.map((choice, index) => (
         <button
           key={choice.label}
           type="button"
-          className={styles.choice}
+          className="flex min-h-11 w-full items-start gap-3 rounded-lg border border-hairline-strong bg-surface px-4 py-3 text-left text-base leading-relaxed text-ink transition hover:border-link/50 hover:bg-canvas-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link"
           onClick={() => onChoose(choice.goto, choice.label)}
         >
-          <span className={styles.n}>{index + 1}</span>
+          <span className="mt-px flex size-6 shrink-0 items-center justify-center rounded-full bg-surface-strong text-sm font-semibold text-body">
+            {index + 1}
+          </span>
           <span>{choice.label}</span>
         </button>
       ))}

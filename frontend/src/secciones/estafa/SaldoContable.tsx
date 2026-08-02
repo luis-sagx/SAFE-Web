@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import EscenarioLayout from '../../components/EscenarioLayout'
 import { useAuth } from '../../context/AuthContext'
 import { useScenarioRun } from '../../hooks/useScenarioRun'
 import styles from './SaldoContable.module.css'
@@ -29,8 +29,38 @@ const OPTIONS: Option[] = [
   },
 ]
 
+const RESUMEN = 'Vendés una computadora por $1000 y el comprador dice que ya te pagó.'
+
+/** Los mensajes del comprador llegaron por otra app: son parte del contexto que
+ *  el participante lee antes de abrir su banca, no de la pantalla del banco. */
+const CONTEXTO = (
+  <>
+    <p>
+      Estás vendiendo una computadora por <strong>$1000</strong> en redes sociales. Una persona te
+      contacta, conversa contigo y te indica que realizará el pago.
+    </p>
+    <p>
+      Luego te pide que envíes la computadora a otra ciudad del país mediante un delivery o
+      courier. Después de unas horas te envía un supuesto recibo de pago.
+    </p>
+
+    <div className="rounded-lg border border-hairline-strong bg-canvas-soft p-4">
+      <p className="text-sm font-semibold text-ink">Lo que te escribió el comprador</p>
+      <ul className="mt-3 grid gap-2 text-base leading-relaxed text-body">
+        <li>“Ya le hice el pago. Revise su cuenta, ya debe aparecer.”</li>
+        <li>“Por favor envíeme la computadora hoy mismo. Ya tengo el delivery esperando.”</li>
+        <li className="text-danger">
+          “Me urge. Ya pagué. Si no envía ahora, voy a reportarlo.”
+        </li>
+      </ul>
+    </div>
+
+    <p>Abrís la aplicación de tu banco para ver si el dinero llegó.</p>
+  </>
+)
+
 function SaldoContable() {
-  const { displayName, roleLabel, initials } = useAuth()
+  const { displayName, initials } = useAuth()
   const run = useScenarioRun('estafa/saldo-contable')
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
 
@@ -56,30 +86,29 @@ function SaldoContable() {
   }
 
   function optionClassName(option: Option, index: number) {
+    const base =
+      'flex min-h-11 w-full items-start gap-3 rounded-lg border px-4 py-3 text-left text-base leading-relaxed transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link'
+
     if (!answered) {
-      return styles.option
-    }
-    if (index === selectedIndex) {
-      return `${styles.option} ${option.correct ? styles.correct : styles.incorrect}`
+      return `${base} border-hairline-strong bg-surface text-ink hover:border-link/50 hover:bg-canvas-soft`
     }
     if (option.correct) {
-      return `${styles.option} ${styles.correct}`
+      return `${base} border-success bg-success/10 font-medium text-ink`
     }
-    return styles.option
+    if (index === selectedIndex) {
+      return `${base} border-danger bg-danger/10 font-medium text-ink`
+    }
+    return `${base} border-hairline bg-surface text-muted`
   }
 
-  return (
-    <div className={styles.appWrapper}>
-      <Link to="/seccion/estafa" className={styles.backLink}>
-        ← Volver a la sección
-      </Link>
+  const pantalla = (
+    <section className={styles.phone} aria-label="Aplicación bancaria">
+      <header className={styles.statusBar}>
+        <span>09:41</span>
+        <span>●●● WiFi 🔋</span>
+      </header>
 
-      <section className={styles.phone}>
-        <header className={styles.statusBar}>
-          <span>09:41</span>
-          <span>●●● WiFi 🔋</span>
-        </header>
-
+      <div className={styles.scroll}>
         <section className={styles.bankHeader}>
           <div className={styles.bankTop}>
             <div className={styles.logo}>
@@ -93,14 +122,6 @@ function SaldoContable() {
         </section>
 
         <section className={styles.content}>
-          <section className={styles.participantCard}>
-            <div>
-              <span className={styles.participantLabel}>Participante en prueba</span>
-              <strong>{displayName}</strong>
-            </div>
-            <span className={styles.participantRole}>{roleLabel}</span>
-          </section>
-
           <section className={`${styles.card} ${styles.accountCard}`}>
             <div className={styles.accountRow}>
               <span>Cuenta principal</span>
@@ -108,7 +129,7 @@ function SaldoContable() {
             </div>
 
             <div className={styles.balanceMain}>
-              <small>Saldo actual</small>
+              <small>Saldo disponible</small>
               <div className={styles.availableBalance}>$1506.00</div>
             </div>
 
@@ -122,6 +143,16 @@ function SaldoContable() {
               <div className={styles.accountingBalance}>$1000.00</div>
             </div>
           </section>
+
+          <div className={styles.callBanner}>
+            <div className={styles.callIcon} aria-hidden>
+              📞
+            </div>
+            <div>
+              <strong>5 llamadas perdidas</strong>
+              <span>El comprador insiste en que envíes el equipo inmediatamente.</span>
+            </div>
+          </div>
 
           <section className={`${styles.card} ${styles.miniDetail}`}>
             <div className={styles.detailRow}>
@@ -159,117 +190,95 @@ function SaldoContable() {
               <div className={`${styles.txAmount} ${styles.successText}`}>$1506.00</div>
             </div>
           </section>
-
-          <section className={styles.scenarioCard}>
-            <h2>Contexto</h2>
-            <p>
-              Estás vendiendo una computadora por <strong>$1000</strong> en redes sociales. Una
-              persona te contacta, conversa contigo y te indica que realizará el pago.
-            </p>
-            <p>
-              Luego te pide que envíes la computadora a otra ciudad del país mediante un delivery
-              o courier. Después de unas horas te envía un supuesto recibo de pago.
-            </p>
-          </section>
-
-          <section className={styles.chatCard}>
-            <h2>Mensajes del comprador</h2>
-            <div className={`${styles.message} ${styles.buyer}`}>
-              Ya le hice el pago. Revise su cuenta, ya debe aparecer.
-            </div>
-            <div className={`${styles.message} ${styles.buyer}`}>
-              Por favor envíeme la computadora hoy mismo. Ya tengo el delivery esperando.
-            </div>
-            <div className={`${styles.message} ${styles.pressure}`}>
-              Me urge. Ya pagué. Si no envía ahora, voy a reportarlo.
-            </div>
-          </section>
-
-          <section className={styles.callAlert}>
-            <div className={styles.callIcon}>📞</div>
-            <div>
-              <strong>5 llamadas perdidas</strong>
-              <span>El comprador insiste en que envíes el equipo inmediatamente.</span>
-            </div>
-          </section>
-
-          <section className={`${styles.card} ${styles.quizCard}`}>
-            <h2>¿Qué harías en esta situación?</h2>
-            <p>
-              El comprador envió un comprobante, el valor aparece como saldo contable, pero
-              todavía no se refleja como dinero disponible confirmado.
-            </p>
-
-            {OPTIONS.map((option, index) => (
-              <button
-                key={option.label}
-                type="button"
-                className={optionClassName(option, index)}
-                disabled={answered}
-                onClick={() => handleSelect(index)}
-              >
-                {option.label}
-              </button>
-            ))}
-
-            {answered && isCorrect && (
-              <div className={`${styles.feedback} ${styles.feedbackOk}`}>
-                <strong>Correcto.</strong>
-                <p>
-                  No debes entregar el producto hasta confirmar que el dinero esté disponible. El
-                  saldo contable no significa que el pago ya sea definitivo.
-                </p>
-              </div>
-            )}
-
-            {answered && !isCorrect && (
-              <div className={`${styles.feedback} ${styles.feedbackBad}`}>
-                <strong>Riesgo alto de estafa.</strong>
-                <p>
-                  La presión, las llamadas constantes, el supuesto comprobante y el saldo
-                  contable pendiente son señales de alerta. El pago podría ser rechazado o
-                  reversado.
-                </p>
-              </div>
-            )}
-
-            {answered && (
-              <div className={styles.lesson}>
-                <h3>Lección de seguridad</h3>
-                <ul>
-                  <li>No entregues productos si el pago solo aparece como saldo contable.</li>
-                  <li>Confirma que el dinero esté como saldo disponible.</li>
-                  <li>No confíes únicamente en capturas o recibos enviados por terceros.</li>
-                  <li>La presión y la urgencia son señales frecuentes de ingeniería social.</li>
-                  <li>Verifica directamente en la banca oficial o comunícate con tu banco.</li>
-                </ul>
-              </div>
-            )}
-
-            {answered && (
-              <button type="button" className={styles.resetBtn} onClick={handleReset}>
-                Intentar nuevamente
-              </button>
-            )}
-          </section>
         </section>
+      </div>
 
-        <footer className={styles.footerNav}>
-          <div className={styles.navItem}>
-            <span>🏠</span>Inicio
+      <footer className={styles.footerNav}>
+        <div className={styles.navItem}>
+          <span aria-hidden>🏠</span>Inicio
+        </div>
+        <div className={styles.navItem}>
+          <span aria-hidden>💳</span>Cuentas
+        </div>
+        <div className={styles.navItem}>
+          <span aria-hidden>↔️</span>Transferir
+        </div>
+        <div className={styles.navItem}>
+          <span aria-hidden>🔔</span>Alertas
+        </div>
+      </footer>
+    </section>
+  )
+
+  const decision = (
+    <div className="grid gap-4">
+      <div>
+        <h2 className="text-lg font-semibold text-ink">¿Qué harías en esta situación?</h2>
+        <p className="mt-1 text-base leading-relaxed text-body">
+          El comprador envió un comprobante y el valor aparece como saldo contable, pero todavía no
+          se refleja como dinero disponible confirmado.
+        </p>
+      </div>
+
+      <div className="grid gap-2">
+        {OPTIONS.map((option, index) => (
+          <button
+            key={option.label}
+            type="button"
+            className={optionClassName(option, index)}
+            disabled={answered}
+            onClick={() => handleSelect(index)}
+          >
+            {option.label}
+          </button>
+        ))}
+      </div>
+
+      {answered && (
+        <div
+          className={`rounded-lg border bg-surface p-5 ${isCorrect ? 'border-success/40' : 'border-danger/40'}`}
+        >
+          <p className="text-base font-semibold text-ink">
+            {isCorrect ? 'Correcto.' : 'Riesgo alto de estafa.'}
+          </p>
+          <p className="mt-2 text-base leading-relaxed text-body">
+            {isCorrect
+              ? 'No debes entregar el producto hasta confirmar que el dinero esté disponible. El saldo contable no significa que el pago ya sea definitivo.'
+              : 'La presión, las llamadas constantes, el supuesto comprobante y el saldo contable pendiente son señales de alerta. El pago podría ser rechazado o reversado.'}
+          </p>
+
+          <div className="mt-5 rounded-md bg-canvas-soft p-4">
+            <h3 className="text-sm font-semibold text-ink">Lección de seguridad</h3>
+            <ul className="mt-3 grid gap-2 text-base leading-relaxed text-body">
+              <li>No entregues productos si el pago solo aparece como saldo contable.</li>
+              <li>Confirma que el dinero esté como saldo disponible.</li>
+              <li>No confíes únicamente en capturas o recibos enviados por terceros.</li>
+              <li>La presión y la urgencia son señales frecuentes de ingeniería social.</li>
+              <li>Verifica directamente en la banca oficial o comunícate con tu banco.</li>
+            </ul>
           </div>
-          <div className={styles.navItem}>
-            <span>💳</span>Cuentas
-          </div>
-          <div className={styles.navItem}>
-            <span>↔️</span>Transferir
-          </div>
-          <div className={styles.navItem}>
-            <span>🔔</span>Alertas
-          </div>
-        </footer>
-      </section>
+
+          <button
+            type="button"
+            className="mt-5 min-h-11 w-full rounded-md bg-primary px-4 py-3 text-base font-medium text-on-primary transition hover:bg-primary-active focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link"
+            onClick={handleReset}
+          >
+            ↻ Intentar nuevamente
+          </button>
+        </div>
+      )}
     </div>
+  )
+
+  return (
+    <EscenarioLayout
+      escenarioId="estafa/saldo-contable"
+      resumen={RESUMEN}
+      contexto={CONTEXTO}
+      pantalla={pantalla}
+      decision={decision}
+      onEmpezar={run.restart}
+    />
   )
 }
 

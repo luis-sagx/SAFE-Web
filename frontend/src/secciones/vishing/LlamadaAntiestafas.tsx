@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react'
-import { Link } from 'react-router-dom'
-import { useAuth } from '../../context/AuthContext'
+import EscenarioLayout from '../../components/EscenarioLayout'
 import { useStoryEngine, type Story, type StoryNode } from '../../hooks/useStoryEngine'
 import StoryChoices from '../../components/ui/StoryChoices'
 import StoryResultPanel from '../../components/ui/StoryResultPanel'
@@ -92,6 +91,25 @@ const SIGNALS = [
 const RULE =
   'Regla de oro: <b>nunca pagues para recibir un premio</b>. Cuelga y llama tú al número oficial del negocio.'
 
+const RESUMEN = 'Un número desconocido te llama diciendo que ganaste un sorteo.'
+
+const CONTEXTO = (
+  <>
+    <p>
+      Estás en tu casa, a media tarde. Suena el teléfono: un número que no tenés guardado y que
+      nunca viste antes.
+    </p>
+    <p>
+      No participaste en ningún sorteo ni dejaste tu número en ningún concurso, pero eso todavía no
+      lo sabés cuando el teléfono suena.
+    </p>
+    <p>
+      Vas a poder contestar o rechazar la llamada, y si contestás, escuchar y decidir qué respondés
+      en cada momento. Colgar es siempre una opción válida.
+    </p>
+  </>
+)
+
 function formatTime(totalSeconds: number) {
   const m = String(Math.floor(totalSeconds / 60)).padStart(2, '0')
   const s = String(totalSeconds % 60).padStart(2, '0')
@@ -99,7 +117,6 @@ function formatTime(totalSeconds: number) {
 }
 
 function LlamadaAntiestafas() {
-  const { displayName, roleLabel } = useAuth()
   const engine = useStoryEngine(STORY, 'n1', 'vishing/llamada-antiestafas')
   const { current, node, isEnding, choose, restart } = engine
 
@@ -255,45 +272,39 @@ function LlamadaAntiestafas() {
   const timeText = formatTime(seconds)
   const showChoices = node.kind === 'scene' && choicesVisible
 
-  return (
-    <div className={styles.page}>
-      <main className={styles.device}>
-        <section
-          className={`${styles.call} ${phase === 'ringing' ? styles.ringing : ''} ${phase === 'ended' ? styles.ended : ''}`}
-          aria-label="Llamada telefónica"
-        >
-          {phase === 'ringing' && (
-            <div className={styles.incoming}>
-              <p className={styles.tagline}>Llamada entrante · número no guardado</p>
-              <div className={styles.bigAv}>🏬</div>
-              <div>
-                <p className={styles.name}>Almacenes La Ganga</p>
-                <p className={styles.num}>+593 98 342 1177</p>
-              </div>
-              <div className={styles.actions}>
-                <div className={`${styles.rd} ${styles.reject}`}>
-                  <button type="button" aria-label="Rechazar llamada" onClick={handleReject}>
-                    ✕
-                  </button>
-                  Rechazar
-                </div>
-                <div className={`${styles.rd} ${styles.answer}`}>
-                  <button type="button" aria-label="Contestar llamada" onClick={handleAnswer}>
-                    📞
-                  </button>
-                  Contestar
-                </div>
-              </div>
-            </div>
-          )}
-
-          <div className={styles.participantBanner}>
-            <span>
-              En entrenamiento: {displayName} · {roleLabel}
-            </span>
+  const pantalla = (
+    <section
+      className={`${styles.call} ${phase === 'ringing' ? styles.ringing : ''} ${phase === 'ended' ? styles.ended : ''}`}
+      aria-label="Llamada telefónica"
+    >
+      {phase === 'ringing' && (
+        <div className={styles.incoming}>
+          <p className={styles.tagline}>Llamada entrante · número no guardado</p>
+          <div className={styles.bigAv} aria-hidden>
+            🏬
           </div>
+          <div>
+            <p className={styles.name}>Almacenes La Ganga</p>
+            <p className={styles.num}>+593 98 342 1177</p>
+          </div>
+          <div className={styles.actions}>
+            <div className={`${styles.rd} ${styles.reject}`}>
+              <button type="button" aria-label="Rechazar llamada" onClick={handleReject}>
+                ✕
+              </button>
+              Rechazar
+            </div>
+            <div className={`${styles.rd} ${styles.answer}`}>
+              <button type="button" aria-label="Contestar llamada" onClick={handleAnswer}>
+                📞
+              </button>
+              Contestar
+            </div>
+          </div>
+        </div>
+      )}
 
-          <div className={styles.callbar}>
+      <div className={styles.callbar}>
             <div className={styles.status}>
               <span className={styles.liveDot} />
               <span>{phase === 'ended' ? 'Llamada finalizada' : 'En llamada'}</span>
@@ -345,56 +356,80 @@ function LlamadaAntiestafas() {
             )}
           </div>
 
-          {showChoices && (
-            <>
-              <p className={styles.prompt}>¿Qué haces?</p>
-              <StoryChoices choices={node.choices ?? []} onChoose={choose} styles={styles} />
-            </>
-          )}
-
-          {isEnding && (
-            <StoryResultPanel
-              node={node}
-              signalsTitle="Las 4 señales de esta llamada"
-              signals={SIGNALS}
-              rule={RULE}
-              restartLabel="↻ Recibir la llamada otra vez"
-              onRestart={handleRestart}
-              styles={styles}
-            />
-          )}
-
-          {!isEnding && (
-            <div className={styles.phoneControls}>
-              <div className={`${styles.pc} ${styles.deco}`}>
-                <div className={styles.ic}>🔇</div>Silenciar
-              </div>
-              <div className={`${styles.pc} ${styles.deco}`}>
-                <div className={styles.ic}>🔢</div>Teclado
-              </div>
-              <div className={`${styles.pc} ${styles.deco}`}>
-                <div className={styles.ic}>🔊</div>Altavoz
-              </div>
-              <div
-                className={`${styles.pc} ${styles.hangup}`}
-                role="button"
-                tabIndex={0}
-                onClick={handleHangup}
-                onKeyDown={handleHangupKeyDown}
-              >
-                <div className={styles.ic}>📵</div>Colgar
-              </div>
+      {!isEnding && (
+        <div className={styles.phoneControls}>
+          <div className={`${styles.pc} ${styles.deco}`}>
+            <div className={styles.ic} aria-hidden>
+              🔇
             </div>
-          )}
+            Silenciar
+          </div>
+          <div className={`${styles.pc} ${styles.deco}`}>
+            <div className={styles.ic} aria-hidden>
+              🔢
+            </div>
+            Teclado
+          </div>
+          <div className={`${styles.pc} ${styles.deco}`}>
+            <div className={styles.ic} aria-hidden>
+              🔊
+            </div>
+            Altavoz
+          </div>
+          <div
+            className={`${styles.pc} ${styles.hangup}`}
+            role="button"
+            tabIndex={0}
+            onClick={handleHangup}
+            onKeyDown={handleHangupKeyDown}
+          >
+            <div className={styles.ic} aria-hidden>
+              📵
+            </div>
+            Colgar
+          </div>
+        </div>
+      )}
+    </section>
+  )
 
-          <p className={styles.naudio}>{audioNotice}</p>
-        </section>
-      </main>
-
-      <Link to="/seccion/vishing" className={styles.backLink}>
-        ← Volver a la sección
-      </Link>
+  const decision = (
+    <div className="grid gap-3">
+      {isEnding ? (
+        <StoryResultPanel
+          node={node}
+          signalsTitle="Las 4 señales de esta llamada"
+          signals={SIGNALS}
+          rule={RULE}
+          restartLabel="↻ Recibir la llamada otra vez"
+          onRestart={handleRestart}
+        />
+      ) : (
+        showChoices && (
+          <>
+            <p className="text-sm font-semibold text-ink">¿Qué haces?</p>
+            <StoryChoices choices={node.choices ?? []} onChoose={choose} />
+          </>
+        )
+      )}
+      {phase === 'ringing' && !isEnding && (
+        <p className="text-sm text-body">
+          El teléfono está sonando. Contestá o rechazá la llamada en la pantalla.
+        </p>
+      )}
+      {audioNotice && <p className="text-sm text-muted">{audioNotice}</p>}
     </div>
+  )
+
+  return (
+    <EscenarioLayout
+      escenarioId="vishing/llamada-antiestafas"
+      resumen={RESUMEN}
+      contexto={CONTEXTO}
+      pantalla={pantalla}
+      decision={decision}
+      onEmpezar={handleRestart}
+    />
   )
 }
 

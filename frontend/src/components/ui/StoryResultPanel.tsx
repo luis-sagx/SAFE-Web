@@ -8,7 +8,6 @@ interface StoryResultPanelProps {
   rule: string
   restartLabel: string
   onRestart: () => void
-  styles: Record<string, string>
 }
 
 function StoryResultPanel({
@@ -18,30 +17,53 @@ function StoryResultPanel({
   rule,
   restartLabel,
   onRestart,
-  styles,
 }: StoryResultPanelProps) {
-  const isGood = node.kind === 'good'
+  // 'partial' no es un fallo: una respuesta prudente pero incompleta no puede
+  // verse igual que haber entregado la clave.
+  const tono =
+    node.kind === 'good'
+      ? { borde: 'border-success/40', fondo: 'bg-success', icono: '✓' }
+      : node.kind === 'partial'
+        ? { borde: 'border-warning/40', fondo: 'bg-warning', icono: '!' }
+        : { borde: 'border-danger/40', fondo: 'bg-danger', icono: '✕' }
 
   return (
-    <div className={`${styles.result} ${isGood ? styles.good : styles.bad}`}>
-      <p className={styles.verdict}>
-        <span className={styles.badge}>{isGood ? '✓' : '✕'}</span>
+    <div className={`rounded-lg border bg-surface p-5 ${tono.borde}`}>
+      <p className="flex items-center gap-2 text-base font-semibold text-ink">
+        <span
+          className={`flex size-6 shrink-0 items-center justify-center rounded-full text-sm text-white ${tono.fondo}`}
+          aria-hidden
+        >
+          {tono.icono}
+        </span>
         {node.verdict}
       </p>
-      <p className={styles.outcome}>{node.outcome}</p>
-      <div className={styles.panel}>
-        <h4>{signalsTitle}</h4>
-        <ul className={styles.signals}>
+
+      <p className="mt-3 text-base leading-relaxed text-body">{node.outcome}</p>
+
+      <div className="mt-5 rounded-md bg-canvas-soft p-4">
+        <h4 className="text-sm font-semibold text-ink">{signalsTitle}</h4>
+        <ul className="mt-3 grid gap-2">
           {signals.map((signal) => (
-            <li key={signal}>
-              <span className={styles.b}>•</span>
+            <li key={signal} className="flex gap-2 text-base leading-relaxed text-body">
+              <span aria-hidden className="text-muted">
+                •
+              </span>
               <span dangerouslySetInnerHTML={{ __html: signal }} />
             </li>
           ))}
         </ul>
-        <div className={styles.rule} dangerouslySetInnerHTML={{ __html: rule }} />
+        <p
+          className="mt-4 border-t border-hairline-strong pt-3 text-base leading-relaxed text-ink"
+          dangerouslySetInnerHTML={{ __html: rule }}
+        />
       </div>
-      <button type="button" className={styles.again} onClick={onRestart}>
+
+      <button
+        type="button"
+        className="mt-5 min-h-11 w-full rounded-md bg-primary px-4 py-3 text-base font-medium text-on-primary transition hover:bg-primary-active focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link"
+        onClick={onRestart}
+      >
         {restartLabel}
       </button>
     </div>

@@ -1,4 +1,5 @@
 import { Link, Navigate, useParams } from 'react-router-dom'
+import AppHeader from '../components/AppHeader'
 import { escenariosDeSeccion, getSeccion } from '../data/catalogo'
 
 function Seccion() {
@@ -13,13 +14,11 @@ function Seccion() {
 
   return (
     <div className="min-h-screen bg-canvas">
-      <header className="border-b border-hairline">
-        <div className="mx-auto max-w-4xl px-6 py-4">
-          <Link to="/dashboard" className="text-sm font-medium text-link hover:underline">
-            ← Volver
-          </Link>
-        </div>
-      </header>
+      <AppHeader>
+        <Link to="/dashboard" className="text-sm font-medium text-link hover:underline">
+          ← Volver
+        </Link>
+      </AppHeader>
 
       <main className="mx-auto max-w-4xl px-6 py-12">
         <span className="flex size-10 items-center justify-center rounded-md bg-surface-strong text-link">

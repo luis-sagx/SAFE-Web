@@ -1,0 +1,132 @@
+import StoryEscenario, { type ScreenNode } from '../../components/StoryEscenario'
+import type { Story } from '../../hooks/useStoryEngine'
+import type { ScreenView } from '../../components/ui/DeviceScreen'
+
+const CORREO: ScreenView = {
+  kind: 'mail',
+  from: 'Talento Humano · Corporación Andes',
+  address: 'nomina@andes.com.ec',
+  to: 'mí',
+  subject: 'Tu rol de pagos de julio ya está disponible',
+  date: 'ayer 17:20',
+  body: `
+    <p>Hola Daniela:</p>
+    <p>
+      Tu rol de pagos del período <b>julio 2026</b> ya está publicado en el portal del
+      colaborador, junto con el detalle de horas extra y descuentos.
+    </p>
+    <p>
+      Puedes consultarlo en <b>portal.andes.com.ec</b>, con el mismo usuario de tu correo
+      institucional. Si algo no cuadra, responde a este correo o escribe a la extensión 214
+      antes del 8 de agosto.
+    </p>
+    <p class="fine">
+      Talento Humano · Corporación Andes<br />
+      Nunca te pediremos tu contraseña por correo ni por teléfono.
+    </p>
+  `,
+}
+
+const PORTAL: ScreenView = {
+  kind: 'web',
+  url: 'https://portal.andes.com.ec/rrhh/rol',
+  secure: true,
+  brand: 'Corporación Andes',
+  title: 'Portal del colaborador',
+  subtitle: 'Ingresa con tu usuario institucional para ver tu rol de pagos.',
+  fields: [
+    { label: 'Usuario', placeholder: 'daniela.mora' },
+    { label: 'Contraseña', placeholder: '••••••••' },
+  ],
+  button: 'Ingresar',
+  footer: 'portal.andes.com.ec · Talento Humano',
+}
+
+const STORY: Story<ScreenNode> = {
+  n1: {
+    kind: 'scene',
+    view: CORREO,
+    choices: [
+      { label: 'Abrir el portal escribiendo yo mismo portal.andes.com.ec.', goto: 'n2' },
+      {
+        label: 'Responder el correo con mi usuario y contraseña para que me envíen el rol.',
+        goto: 'e_credenciales',
+      },
+      { label: 'Borrarlo: todo correo con enlaces al portal es sospechoso.', goto: 'e_borra' },
+    ],
+  },
+  n2: {
+    kind: 'scene',
+    view: PORTAL,
+    choices: [
+      { label: 'El dominio es el de la empresa: ingreso y reviso mi rol.', goto: 'e_bien' },
+      { label: 'Cerrar igual, por si acaso, sin revisar nada.', goto: 'e_borra' },
+    ],
+  },
+  e_bien: {
+    kind: 'good',
+    view: PORTAL,
+    verdict: 'Acertaste · el correo era legítimo',
+    outcome:
+      'Era un aviso real de Talento Humano y entraste por el portal de la empresa. Revisaste tu rol y notaste que faltaban dos horas extra: las reclamaste a tiempo.',
+  },
+  e_credenciales: {
+    kind: 'bad',
+    view: CORREO,
+    verdict: 'Correo legítimo, reacción peligrosa',
+    outcome:
+      'El remitente era real, pero tu contraseña quedó escrita en un correo. Cualquiera que lea ese buzón —o que lo intercepte— la tiene, y el propio mensaje avisaba que Talento Humano nunca la pide.',
+    score: 0,
+  },
+  e_borra: {
+    kind: 'partial',
+    view: CORREO,
+    verdict: 'Prudente, pero de más',
+    outcome:
+      'El correo era auténtico y lo descartaste sin mirarlo. No pasó nada malo, pero te quedaste sin revisar tu rol y el plazo para reclamar diferencias venció.',
+    score: 50,
+  },
+}
+
+const SIGNALS = [
+  'El dominio del remitente es <b>exactamente</b> el de la empresa: andes.com.ec.',
+  'Te llama <b>por tu nombre</b> y menciona un período y un plazo concretos.',
+  '<b>No pide credenciales</b> ni datos: solo avisa dónde está la información.',
+  'Ofrece un <b>canal alterno verificable</b> (la extensión 214).',
+  'El portal está en el <b>dominio corporativo</b> y con conexión segura.',
+]
+const RULE =
+  'Regla de oro: no todo correo es una trampa. Lo que distingue a uno legítimo es que <b>no te pide tu clave y su dominio es el real</b>. Aun así, entra al portal escribiendo tú la dirección: es la costumbre que te protege siempre.'
+
+const RESUMEN = 'Talento Humano avisa que tu rol de pagos de julio ya está en el portal.'
+
+const CONTEXTO = (
+  <>
+    <p>
+      Trabajas en <strong>Corporación Andes</strong>. Todos los meses Talento Humano publica el rol
+      de pagos en el portal del colaborador y avisa por correo.
+    </p>
+    <p>
+      Este mes trabajaste horas extra y quieres confirmar que estén incluidas antes de que cierre
+      el plazo de reclamos.
+    </p>
+    <p>Vas a leer el correo y decidir qué haces.</p>
+  </>
+)
+
+function RolDePagos() {
+  return (
+    <StoryEscenario
+      escenarioId="phishing/rol-de-pagos"
+      resumen={RESUMEN}
+      contexto={CONTEXTO}
+      story={STORY}
+      signalsTitle="Por qué este correo sí era legítimo"
+      signals={SIGNALS}
+      rule={RULE}
+      restartLabel="↻ Repetir el escenario"
+    />
+  )
+}
+
+export default RolDePagos

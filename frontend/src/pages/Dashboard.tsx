@@ -1,5 +1,6 @@
 import { CheckCircle2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import AppHeader from '../components/AppHeader'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { escenariosDeSeccion, SECCIONES } from '../data/catalogo'
@@ -29,21 +30,19 @@ function Dashboard() {
 
   return (
     <div className="min-h-screen bg-canvas">
-      <header className="border-b border-hairline">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-          <span className="text-sm font-semibold text-ink">Trampa Digital</span>
-          <div className="flex items-center gap-4">
-            <span className="hidden text-sm text-body sm:inline">{displayName}</span>
-            <button
-              type="button"
-              onClick={logout}
-              className="h-9 rounded-md border border-hairline-strong bg-surface px-3 text-sm font-medium text-ink transition hover:bg-surface-strong"
-            >
-              Salir
-            </button>
-          </div>
+      <AppHeader>
+        <span className="text-sm font-semibold text-ink">Trampa Digital</span>
+        <div className="flex items-center gap-4">
+          <span className="hidden text-sm text-body sm:inline">{displayName}</span>
+          <button
+            type="button"
+            onClick={logout}
+            className="h-9 rounded-md border border-hairline-strong bg-surface px-3 text-sm font-medium text-ink transition hover:bg-surface-strong"
+          >
+            Salir
+          </button>
         </div>
-      </header>
+      </AppHeader>
 
       <main className="mx-auto max-w-6xl px-6 py-12">
         <p className="text-[11px] font-semibold uppercase tracking-[0.88px] text-muted">

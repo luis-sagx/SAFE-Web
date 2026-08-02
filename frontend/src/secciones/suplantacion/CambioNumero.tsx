@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
-import { useAuth } from '../../context/AuthContext'
+import EscenarioLayout from '../../components/EscenarioLayout'
 import { useStoryEngine, type Story, type StoryNode } from '../../hooks/useStoryEngine'
 import StoryChoices from '../../components/ui/StoryChoices'
 import StoryResultPanel from '../../components/ui/StoryResultPanel'
@@ -107,18 +106,36 @@ const RULE =
 
 const WAVE_BARS = Array.from({ length: 14 }, (_, i) => `bar-${i}`)
 
+const RESUMEN = 'Tu hijo Andrés te escribe desde un número que no tenías guardado.'
+
+const CONTEXTO = (
+  <>
+    <p>
+      Son las nueve de la noche. Suena una notificación: un número que no conocés te escribe por
+      mensajería y dice ser <strong>Andrés, tu hijo</strong>.
+    </p>
+    <p>
+      Andrés vive en otra ciudad. Hablás con él casi todos los días, siempre desde su número de
+      siempre, el que tenés guardado hace años.
+    </p>
+    <p>Vas a leer la conversación y decidir qué hacer en cada momento.</p>
+  </>
+)
+
 function nowTime() {
   const d = new Date()
   return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
 }
 
 function CambioNumero() {
-  const { displayName, roleLabel } = useAuth()
   const engine = useStoryEngine(STORY, 'n1', 'suplantacion/cambio-numero')
   const [threadItems, setThreadItems] = useState<ThreadItem[]>([])
   const [choicesVisible, setChoicesVisible] = useState(false)
   const [playingId, setPlayingId] = useState<string | null>(null)
   const [audioNotice, setAudioNotice] = useState('')
+  // Reiniciar deja el motor en el mismo nodo inicial: sin este token las deps
+  // del efecto no cambian y el hilo se quedaría vacío para siempre.
+  const [replayToken, setReplayToken] = useState(0)
   const threadRef = useRef<HTMLDivElement>(null)
   const esVoicesRef = useRef<SpeechSynthesisVoice[]>([])
   const speechOK = typeof window !== 'undefined' && 'speechSynthesis' in window
@@ -206,7 +223,7 @@ function CambioNumero() {
       cancelled = true
       timeouts.forEach(clearTimeout)
     }
-  }, [current, node])
+  }, [current, node, replayToken])
 
   useEffect(() => {
     if (threadRef.current) {
@@ -242,27 +259,24 @@ function CambioNumero() {
     setPlayingId(null)
     setThreadItems([])
     setChoicesVisible(false)
+    setReplayToken((t) => t + 1)
     engine.restart()
   }
 
-  return (
-    <div className={styles.page}>
-      <main className={styles.device}>
-        <section className={styles.phone} aria-label="Conversación de mensajería">
-          <div className={styles.chatbar}>
-            <div className={styles.av}>👤</div>
-            <div className={styles.id}>
-              <p className={styles.name}>Andrés (nuevo número)</p>
-              <p className={styles.sub}>+593 96 214 8830 · en línea</p>
-            </div>
-            <span className={styles.flag}>No guardado</span>
-          </div>
+  const pantalla = (
+    <section className={styles.phone} aria-label="Conversación de mensajería">
+      <div className={styles.chatbar}>
+        <div className={styles.av} aria-hidden>
+          👤
+        </div>
+        <div className={styles.id}>
+          <p className={styles.name}>Andrés (nuevo número)</p>
+          <p className={styles.sub}>+593 96 214 8830 · en línea</p>
+        </div>
+        <span className={styles.flag}>No guardado</span>
+      </div>
 
-          <div className={styles.participantBanner}>
-            En entrenamiento: {displayName} · {roleLabel}
-          </div>
-
-          <div className={styles.thread} ref={threadRef}>
+      <div className={styles.thread} ref={threadRef}>
             <div className={styles.daychip}>Hoy · 21:14</div>
 
             {threadItems.map((item) => {
@@ -314,46 +328,50 @@ function CambioNumero() {
                 </div>
               )
             })}
-          </div>
+      </div>
 
-          <div className={styles.panelwrap}>
-            {engine.isEnding ? (
-              <StoryResultPanel
-                node={engine.node}
-                signalsTitle="Las señales de esta conversación"
-                signals={SIGNALS}
-                rule={RULE}
-                restartLabel="↻ Repetir la conversación"
-                onRestart={handleRestart}
-                styles={styles}
-              />
-            ) : (
-              <>
-                {choicesVisible && engine.node.choices && (
-                  <>
-                    <p className={styles.prompt}>¿Qué haces?</p>
-                    <StoryChoices
-                      choices={engine.node.choices}
-                      onChoose={engine.choose}
-                      styles={styles}
-                    />
-                  </>
-                )}
-                <div className={styles.composer}>
-                  <div className={styles.field}>Escribe un mensaje…</div>
-                  <div className={styles.mic}>🎤</div>
-                </div>
-              </>
-            )}
-            <p className={styles.naudio}>{audioNotice}</p>
-          </div>
-        </section>
-      </main>
+      <div className={styles.composer}>
+        <div className={styles.field}>Escribe un mensaje…</div>
+        <div className={styles.mic} aria-hidden>
+          🎤
+        </div>
+      </div>
+    </section>
+  )
 
-      <Link to="/seccion/suplantacion" className={styles.backLink}>
-        ← Volver a la sección
-      </Link>
+  const decision = (
+    <div className="grid gap-3">
+      {engine.isEnding ? (
+        <StoryResultPanel
+          node={engine.node}
+          signalsTitle="Las señales de esta conversación"
+          signals={SIGNALS}
+          rule={RULE}
+          restartLabel="↻ Repetir la conversación"
+          onRestart={handleRestart}
+        />
+      ) : (
+        choicesVisible &&
+        engine.node.choices && (
+          <>
+            <p className="text-sm font-semibold text-ink">¿Qué haces?</p>
+            <StoryChoices choices={engine.node.choices} onChoose={engine.choose} />
+          </>
+        )
+      )}
+      {audioNotice && <p className="text-sm text-muted">{audioNotice}</p>}
     </div>
+  )
+
+  return (
+    <EscenarioLayout
+      escenarioId="suplantacion/cambio-numero"
+      resumen={RESUMEN}
+      contexto={CONTEXTO}
+      pantalla={pantalla}
+      decision={decision}
+      onEmpezar={handleRestart}
+    />
   )
 }
 

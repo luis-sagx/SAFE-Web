@@ -44,6 +44,13 @@
   box-sizing: border-box;
 }
 
+/* Reserva el ancho de la barra de desplazamiento siempre: sin esto la barra de
+   navegación se corre unos píxeles entre una página que hace scroll y otra que
+   no, y el enlace "Volver" parece cambiar de sitio al navegar. */
+html {
+  scrollbar-gutter: stable;
+}
+
 body {
   margin: 0;
   background-color: var(--color-canvas);
