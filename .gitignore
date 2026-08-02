@@ -22,3 +22,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Secretos de despliegue
+.env
+.env.local
+.env.*.local
