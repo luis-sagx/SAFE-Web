@@ -1,0 +1,22 @@
+/*
+  Paleta y tipografías compartidas por los escenarios "dossier de caso"
+  (Foto para el boletín y Trampa USB) — foto.css y baiting.css originales
+  definían exactamente los mismos valores en su :root, así que se
+  centralizan acá en una clase de scope en vez de duplicarlos.
+*/
+.dossierTheme {
+  --ink: #11161d;
+  --folder: #1c2530;
+  --folder-2: #232f3d;
+  --paper: #ece3cd;
+  --paper-edge: #d9cdae;
+  --ink-on-paper: #2b2318;
+  --amber: #d99b34;
+  --danger: #b6392f;
+  --safe: #3f8f74;
+  --muted: #8fa0b0;
+  --text-light: #e8e2d3;
+  --font-display: 'Oswald', 'Arial Narrow', sans-serif;
+  --font-body: 'IBM Plex Serif', Georgia, serif;
+  --font-mono: 'IBM Plex Mono', 'Courier New', monospace;
+}

@@ -1,0 +1,27 @@
+.flashOverlay {
+  position: fixed;
+  inset: 0;
+  background: #fffdf6;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 70;
+}
+.flashOverlay.active {
+  animation: flashPulse 0.5s ease;
+}
+@keyframes flashPulse {
+  0% {
+    opacity: 0;
+  }
+  45% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .flashOverlay.active {
+    animation: none;
+  }
+}

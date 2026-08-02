@@ -1,0 +1,32 @@
+.riskPanel {
+  padding: 14px 4px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.riskLabel {
+  font-family: var(--font-mono);
+  font-size: 0.61rem;
+  letter-spacing: 0.09em;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.gaugeTrack {
+  flex: 1;
+  height: 8px;
+  background: #0d1319;
+  border-radius: 5px;
+  overflow: hidden;
+  border: 1px solid #2b3745;
+}
+.gaugeFill {
+  height: 100%;
+  transition: width 0.15s linear, background 0.3s;
+}
+.riskValue {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--text-light);
+  min-width: 40px;
+  text-align: right;
+}

@@ -1,0 +1,566 @@
+.appWrapper {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 30px 15px;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background: linear-gradient(135deg, #07172f, #123b63);
+  color: #1f2937;
+}
+
+.backLink {
+  align-self: center;
+  color: #dbeafe;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+.backLink:hover {
+  text-decoration: underline;
+}
+
+.phone {
+  width: 390px;
+  max-width: 100%;
+  background: #f4f6fb;
+  border-radius: 34px;
+  overflow: hidden;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.45);
+  border: 10px solid #111827;
+}
+
+.statusBar {
+  height: 28px;
+  background: #0a2e5c;
+  color: #ffffff;
+  font-size: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 18px;
+}
+
+.bankHeader {
+  background: linear-gradient(135deg, #003b79, #0068c9);
+  color: white;
+  padding: 22px 20px 34px;
+}
+
+.bankTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  font-size: 18px;
+}
+
+.logoIcon {
+  width: 34px;
+  height: 34px;
+  background: white;
+  color: #0057b8;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+}
+
+.profile {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.22);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.welcome {
+  margin: 22px 0 0;
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+.accountTitle {
+  margin: 5px 0 0;
+  font-size: 21px;
+  font-weight: 700;
+}
+
+.content {
+  padding: 18px;
+}
+
+.participantCard {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-top: -20px;
+  margin-bottom: 16px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+}
+
+.participantLabel {
+  display: block;
+  color: #64748b;
+  font-size: 12px;
+  margin-bottom: 4px;
+}
+
+.participantCard strong {
+  color: #0f172a;
+  font-size: 15px;
+}
+
+.participantRole {
+  display: inline-flex;
+  align-items: center;
+  padding: 7px 10px;
+  border-radius: 999px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.card {
+  background: white;
+  border-radius: 20px;
+  padding: 18px;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+  margin-bottom: 16px;
+}
+
+.accountCard {
+  margin-top: -38px;
+  position: relative;
+  z-index: 2;
+}
+
+.accountRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.accountRow strong {
+  color: #334155;
+}
+
+.balanceMain {
+  margin-top: 14px;
+}
+
+.balanceMain small {
+  color: #64748b;
+  display: block;
+  margin-bottom: 6px;
+}
+
+.availableBalance {
+  font-size: 36px;
+  font-weight: 800;
+  color: #0f9d58;
+  letter-spacing: -1px;
+}
+
+.balanceDivider {
+  height: 1px;
+  background: #e5e7eb;
+  margin: 18px 0;
+}
+
+.balanceSecondary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.balanceSecondary .label {
+  display: block;
+  color: #64748b;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.accountingBalance {
+  font-size: 23px;
+  font-weight: 800;
+  color: #ef4444;
+}
+
+.pendingBadge {
+  display: inline-block;
+  background: #fff7ed;
+  color: #c2410c;
+  padding: 7px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.miniDetail {
+  padding: 14px 16px;
+}
+
+.detailRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid #edf2f7;
+  font-size: 13px;
+}
+
+.detailRow:last-child {
+  border-bottom: none;
+}
+
+.detailRow span {
+  color: #64748b;
+}
+
+.detailRow strong {
+  color: #334155;
+}
+
+.sectionTitle {
+  margin: 0 0 10px;
+  font-size: 16px;
+  color: #0f172a;
+}
+
+.transaction {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 13px 0;
+  border-bottom: 1px solid #edf2f7;
+}
+
+.transaction:last-child {
+  border-bottom: none;
+}
+
+.txIcon {
+  width: 38px;
+  height: 38px;
+  background: #e8f1ff;
+  color: #0057b8;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.txIcon.success {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.txInfo {
+  flex: 1;
+}
+
+.txInfo strong {
+  display: block;
+  font-size: 14px;
+  color: #111827;
+}
+
+.txInfo span {
+  display: block;
+  font-size: 12px;
+  color: #64748b;
+  margin-top: 3px;
+}
+
+.txAmount {
+  font-weight: 800;
+  font-size: 15px;
+}
+
+.txAmount.pending {
+  color: #ef4444;
+}
+
+.successText {
+  color: #16a34a;
+}
+
+.scenarioCard {
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 18px;
+  margin-bottom: 16px;
+  border-left: 5px solid #2563eb;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+}
+
+.scenarioCard h2 {
+  margin: 0 0 10px;
+  font-size: 17px;
+  color: #0f172a;
+}
+
+.scenarioCard p {
+  font-size: 13px;
+  color: #475569;
+  line-height: 1.5;
+}
+
+.chatCard {
+  background: #eef6ff;
+  border-radius: 20px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.chatCard h2 {
+  margin: 0 0 12px;
+  font-size: 16px;
+  color: #0f172a;
+}
+
+.message {
+  padding: 10px 12px;
+  border-radius: 14px;
+  font-size: 13px;
+  line-height: 1.4;
+  margin-bottom: 10px;
+  max-width: 92%;
+}
+
+.buyer {
+  background: white;
+  color: #111827;
+  border-top-left-radius: 4px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+}
+
+.pressure {
+  background: #fee2e2;
+  color: #991b1b;
+  border-top-left-radius: 4px;
+  font-weight: 600;
+}
+
+.callAlert {
+  background: #111827;
+  color: white;
+  border-radius: 18px;
+  padding: 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  animation: pulse 1.4s infinite;
+}
+
+.callIcon {
+  width: 42px;
+  height: 42px;
+  background: #ef4444;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+}
+
+.callAlert strong {
+  display: block;
+  font-size: 14px;
+}
+
+.callAlert span {
+  display: block;
+  font-size: 12px;
+  opacity: 0.82;
+  margin-top: 2px;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.6);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+  }
+}
+
+.quizCard h2 {
+  margin: 0 0 10px;
+  font-size: 18px;
+  color: #0f172a;
+}
+
+.quizCard p {
+  font-size: 14px;
+  color: #475569;
+  line-height: 1.5;
+}
+
+.option {
+  width: 100%;
+  border: 2px solid #e5e7eb;
+  background: #ffffff;
+  padding: 13px;
+  border-radius: 14px;
+  margin-top: 10px;
+  text-align: left;
+  cursor: pointer;
+  font-size: 14px;
+  transition: 0.2s;
+}
+
+.option:hover:not(:disabled) {
+  border-color: #2563eb;
+  background: #eff6ff;
+}
+
+.option:disabled {
+  cursor: not-allowed;
+}
+
+.option.correct {
+  border-color: #16a34a;
+  background: #dcfce7;
+  color: #14532d;
+  font-weight: 700;
+}
+
+.option.incorrect {
+  border-color: #dc2626;
+  background: #fee2e2;
+  color: #7f1d1d;
+  font-weight: 700;
+}
+
+.feedback {
+  margin-top: 15px;
+  border-radius: 15px;
+  padding: 14px;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.feedback p {
+  margin-bottom: 0;
+}
+
+.feedbackOk {
+  background: #dcfce7;
+  color: #14532d;
+  border: 1px solid #86efac;
+}
+
+.feedbackBad {
+  background: #fee2e2;
+  color: #7f1d1d;
+  border: 1px solid #fecaca;
+}
+
+.lesson {
+  background: #f8fafc;
+  border-radius: 18px;
+  padding: 16px;
+  margin-top: 16px;
+  border: 1px solid #e2e8f0;
+}
+
+.lesson h3 {
+  margin-top: 0;
+  color: #0f172a;
+}
+
+.lesson ul {
+  padding-left: 20px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #334155;
+}
+
+.resetBtn {
+  width: 100%;
+  margin-top: 14px;
+  border: none;
+  padding: 13px;
+  border-radius: 14px;
+  background: #0057b8;
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.resetBtn:hover {
+  background: #00448f;
+}
+
+.footerNav {
+  display: flex;
+  justify-content: space-around;
+  background: white;
+  padding: 12px 5px 16px;
+  border-top: 1px solid #e5e7eb;
+  color: #64748b;
+  font-size: 11px;
+}
+
+.navItem {
+  text-align: center;
+}
+
+.navItem span {
+  display: block;
+  font-size: 18px;
+  margin-bottom: 3px;
+}
+
+@media (max-width: 430px) {
+  .participantCard {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 420px) {
+  .appWrapper {
+    padding: 10px;
+  }
+
+  .phone {
+    width: 100%;
+    border-radius: 24px;
+    border-width: 6px;
+  }
+
+  .availableBalance {
+    font-size: 31px;
+  }
+
+  .accountingBalance {
+    font-size: 20px;
+  }
+}
