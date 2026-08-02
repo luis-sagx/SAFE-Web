@@ -1,8 +1,3 @@
-# Integración continua: cada push a main verifica que ambos proyectos
-# construyan y que las pruebas del backend pasen, antes de que nadie despliegue
-# nada al servidor propio. Los dos proyectos se verifican en paralelo porque no
-# dependen uno del otro en tiempo de build.
-
 name: CI
 
 on:
@@ -11,27 +6,41 @@ on:
   pull_request:
     branches: [main]
 
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  NODE_VERSION: 24
+
 jobs:
   frontend:
-    name: Frontend (build + lint)
+    name: Frontend (lint + pruebas + build)
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: frontend
     steps:
       - uses: actions/checkout@v4
+      # La acción corre en la raíz del repo, donde no hay package.json.
       - uses: pnpm/action-setup@v4
+        with:
+          package_json_file: frontend/package.json
       - uses: actions/setup-node@v4
         with:
-          node-version: 24
+          node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
           cache-dependency-path: frontend/pnpm-lock.yaml
       - run: pnpm install --frozen-lockfile
       - run: pnpm lint
+      - run: pnpm test
       - run: pnpm build
 
   backend:
-    name: Backend (build + tests)
+    name: Backend (lint + pruebas unitarias)
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -39,26 +48,166 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
+        with:
+          package_json_file: backend/package.json
       - uses: actions/setup-node@v4
         with:
-          node-version: 24
+          node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
           cache-dependency-path: backend/pnpm-lock.yaml
       - run: pnpm install --frozen-lockfile
+      # `lint:ci` no lleva --fix: en CI un error no se arregla, se reporta.
+      - run: pnpm lint:ci
       - run: pnpm build
       - run: pnpm test
 
-  docker:
-    name: Imágenes Docker
+  backend-e2e:
+    name: Backend (end-to-end con Postgres)
     runs-on: ubuntu-latest
-    needs: [frontend, backend]
-    steps:
-      - uses: actions/checkout@v4
-      # Construir las imágenes en CI detecta los fallos de empaquetado acá y no
-      # en el servidor propio durante una sesión de pruebas con usuarios.
-      - run: docker compose build
+    defaults:
+      run:
+        working-directory: backend
+    services:
+      postgres:
+        image: postgres:18-alpine
         env:
           POSTGRES_USER: ci
           POSTGRES_PASSWORD: ci
-          POSTGRES_DB: ci
-          JWT_SECRET: ci-secret-solo-para-build
+          POSTGRES_DB: ci_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U ci -d ci_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://ci:ci@localhost:5432/ci_test?schema=public
+      JWT_SECRET: secreto-solo-para-pruebas-de-ci
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          package_json_file: backend/package.json
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+          cache-dependency-path: backend/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm prisma:generate
+      - run: pnpm prisma:deploy
+      - run: pnpm test:e2e
+
+  auditoria:
+    name: Auditoría de dependencias (${{ matrix.proyecto }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        proyecto: [frontend, backend]
+    defaults:
+      run:
+        working-directory: ${{ matrix.proyecto }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          package_json_file: ${{ matrix.proyecto }}/package.json
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+          cache-dependency-path: ${{ matrix.proyecto }}/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      # Bloquea solo lo que llega al servidor; lo de desarrollo se reporta.
+      - run: pnpm audit --prod --audit-level high
+      - name: Dependencias de desarrollo (informativo)
+        if: always()
+        continue-on-error: true
+        run: pnpm audit --dev --audit-level high
+
+  dependencias-nuevas:
+    name: Revisión de dependencias del PR
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: high
+          comment-summary-in-pr: never
+
+  docker:
+    name: Imágenes Docker (build + arranque + escaneo)
+    runs-on: ubuntu-latest
+    needs: [frontend, backend, backend-e2e]
+    env:
+      POSTGRES_USER: ci
+      POSTGRES_PASSWORD: ci
+      POSTGRES_DB: ci
+      JWT_SECRET: ci-secret-solo-para-pruebas
+      WEB_PORT: 8080
+    steps:
+      - uses: actions/checkout@v4
+
+      - run: docker compose build
+
+      # --wait respeta los HEALTHCHECK: falla si el API no aplica las
+      # migraciones o si Nginx no levanta.
+      - run: docker compose up -d --wait --wait-timeout 180
+
+      - name: API a través de Nginx
+        run: curl -fsS http://localhost:8080/api/health | grep -q '"status":"ok"'
+
+      - name: Frontend servido
+        run: curl -fsS http://localhost:8080/ | grep -q '<div id="root">'
+
+      - name: Enrutado de la SPA
+        run: curl -fsS http://localhost:8080/dashboard > /dev/null
+
+      - name: Registro y corrida contra la pila real
+        run: |
+          token=$(curl -fsS -X POST http://localhost:8080/api/auth/register \
+            -H 'Content-Type: application/json' \
+            -d '{"nombre":"Prueba CI","email":"ci@ejemplo.com","telefono":"0991234567","password":"clave-larga-123"}' \
+            | python3 -c 'import json,sys; print(json.load(sys.stdin)["accessToken"])')
+          curl -fsS -X POST http://localhost:8080/api/runs \
+            -H "Authorization: Bearer $token" -H 'Content-Type: application/json' \
+            -d '{"scenarioId":"suplantacion/cambio-numero","version":1,"outcome":"CORRECTO","score":100,"endingId":"e_verifica","durationMs":1000,"startedAt":"2026-08-01T10:00:00.000Z","decisions":[]}' \
+            > /dev/null
+
+      - name: Registros de los contenedores si algo falló
+        if: failure()
+        run: docker compose logs --no-color --tail 200
+
+      # Informativo: casi todo lo que sale es de las imágenes base y no se
+      # arregla desde este repositorio. Lo propio lo bloquea `auditoria`.
+      - name: Vulnerabilidades de las imágenes (informativo)
+        continue-on-error: true
+        run: |
+          for imagen in trampa-digital-api trampa-digital-web; do
+            docker run --rm \
+              -v /var/run/docker.sock:/var/run/docker.sock \
+              -v "${HOME}/.cache/trivy:/root/.cache/trivy" \
+              aquasec/trivy:latest image \
+              --scanners vuln --ignore-unfixed \
+              --severity HIGH,CRITICAL --exit-code 0 \
+              "$imagen"
+          done
+
+      # Un secreto horneado en la imagen sí es un fallo de este repositorio.
+      - name: Secretos horneados en las imágenes
+        run: |
+          for imagen in trampa-digital-api trampa-digital-web; do
+            docker run --rm \
+              -v /var/run/docker.sock:/var/run/docker.sock \
+              -v "${HOME}/.cache/trivy:/root/.cache/trivy" \
+              aquasec/trivy:latest image \
+              --scanners secret --exit-code 1 \
+              --severity HIGH,CRITICAL \
+              "$imagen"
+          done
+
+      - if: always()
+        run: docker compose down -v

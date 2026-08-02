@@ -7,6 +7,10 @@
 # ningún contenedor privilegiado, sin escalada de privilegios y con límites de
 # recursos para que un fallo no tumbe el servidor entero.
 
+# Nombre fijo: sin esto las imágenes se llaman según el directorio y el escaneo
+# del pipeline no las encuentra.
+name: trampa-digital
+
 services:
   db:
     image: postgres:18-alpine
