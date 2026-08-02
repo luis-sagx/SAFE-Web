@@ -27,3 +27,7 @@ dist-ssr
 .env
 .env.local
 .env.*.local
+
+# Artefactos de sesiones de Playwright/MCP (capturas, snapshots)
+.playwright-mcp/
+shots/

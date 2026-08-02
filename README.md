@@ -40,6 +40,6 @@ privacidad no se negocian. Aplica igual a personas y a agentes de IA.
 
 Documentos de apoyo:
 
-- [`DESIGN.md`](DESIGN.md) — sistema de diseño (Tailwind, solo modo claro).
+- [`docs/DESIGN.md`](docs/DESIGN.md) — sistema de diseño (Tailwind, solo modo claro).
 - [`docs/justificacion-tecnologias.md`](docs/justificacion-tecnologias.md) — por qué cada tecnología, con fuentes.
 - [`docs/superpowers/specs/2026-07-25-escenarios-ciberamenazas-design.md`](docs/superpowers/specs/2026-07-25-escenarios-ciberamenazas-design.md) — diseño pedagógico de los 35 escenarios.

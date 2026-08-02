@@ -178,6 +178,9 @@ El catálogo deriva `id = "<seccionId>/<escenarioId>"`. Ese id:
 
 Reglas de contenido que vienen del diseño pedagógico:
 
+- **Las seis secciones son fijas:** phishing, smishing, vishing, suplantación
+  de identidad, estafa electrónica y físico. Un escenario nuevo entra en una de
+  ellas; no se crean secciones nuevas sin actualizar este documento.
 - **`titulo` describe la situación, jamás el veredicto.** «Un mensaje del
   colegio», nunca «Correo falso del colegio». El menú no puede delatar cuáles
   casos son fraude y cuáles son legítimos.
@@ -467,7 +470,8 @@ Antes de escribir código en este repositorio:
   el código ya lo dice, sobra. Si describe una trampa (un orden que importa, una
   decisión de seguridad, un comportamiento raro de una librería), se queda —
   corto.
-- Usar los tokens de `DESIGN.md` mediante clases de Tailwind. Solo modo claro.
+- Usar los tokens de `docs/DESIGN.md` mediante clases de Tailwind. Solo modo
+  claro, salvo el interior de un escenario que simula una app oscura.
 
 **No hacer**
 

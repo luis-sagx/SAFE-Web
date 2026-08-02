@@ -16,6 +16,13 @@ pantallas o escenarios aquí.
 
 1. **Solo modo claro.** No hay tema oscuro ni superficies oscuras. Nada de
    `dark:` en las clases, nada de `prefers-color-scheme`.
+
+   **Única excepción: el interior de un escenario.** Un escenario que simula
+   WhatsApp, una llamada o una app bancaria debe *parecerse a esa app*, y varias
+   son oscuras. Esa apariencia vive en el `.module.css` del escenario y no usa
+   los tokens de este documento. Todo lo que rodea al escenario —acceso,
+   dashboard, listado de secciones, encabezados y botones de navegación— sí es
+   modo claro y sí usa los tokens.
 2. **Tailwind primero.** Los tokens viven como variables de tema de Tailwind v4
    en `frontend/src/index.css`. En el JSX se usan clases de utilidad, nunca
    hex en línea ni estilos sueltos.
@@ -96,9 +103,14 @@ color no existe como token, agrégalo a `@theme` primero.
 | `primary` | `#000000` | Relleno del botón primario. Se usa con moderación. |
 | `primary-active` | `#1a1a1a` | Estado presionado. |
 | `on-primary` | `#ffffff` | Texto sobre el botón negro. |
-| `link` | `#0d74ce` | Enlaces dentro de texto corrido. **Nunca en un botón.** |
+| `link` | `#0d74ce` | Enlaces dentro de texto corrido. **Nunca como relleno de botón.** |
 
 Negro es el único relleno de acción. No se introduce un color de marca saturado.
+
+**Acento contenido con `link`:** además de los enlaces en texto, `link` puede
+colorear un ícono pequeño (los íconos de categoría del dashboard, un ícono de
+estado) o el borde de una tarjeta en `:hover`. Es el único lugar donde se
+permite fuera del texto — nunca como color de fondo ni de borde en reposo.
 
 ### Superficies
 
@@ -346,7 +358,9 @@ botones y 12px en tarjetas, y un solo nivel de sombra.
 
 ### No hacer
 
-- No usar `dark:` ni consultas de esquema de color. Solo modo claro.
+- No usar `dark:` ni consultas de esquema de color en la interfaz de la
+  plataforma. La apariencia de una app simulada vive en el `.module.css` del
+  escenario, nunca en tokens ni en utilidades de Tailwind.
 - No usar hex en línea ni `style={{}}`. Si falta un color, agregarlo a `@theme`.
 - No poner azul (`text-link`) en un botón. Solo enlaces en texto.
 - No usar `rounded-full` en un botón. Las pastillas son de las insignias.
