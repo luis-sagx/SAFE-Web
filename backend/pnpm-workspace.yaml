@@ -1,0 +1,11 @@
+allowBuilds:
+  unrs-resolver: true
+  prisma: true
+  '@prisma/engines': true
+
+# El Prisma Client se genera fuera de node_modules (en generated/prisma), así
+# que debe poder resolver @prisma/client-runtime-utils desde la raíz del
+# proyecto. Con el node_modules aislado de pnpm ese paquete queda dentro del
+# store y no se alcanza; hoistearlo es lo que hace funcionar al cliente.
+publicHoistPattern:
+  - '@prisma/*'
