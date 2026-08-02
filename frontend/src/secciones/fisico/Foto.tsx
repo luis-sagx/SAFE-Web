@@ -1,14 +1,55 @@
 import { useRef, useState } from 'react'
-import { Link, Navigate } from 'react-router-dom'
-import { useParticipant } from '../../context/ParticipantContext.jsx'
-import DossierHeader from '../../components/ui/DossierHeader.jsx'
-import FlashOverlay from '../../components/ui/FlashOverlay.jsx'
-import { useFlashTransition } from '../../hooks/useFlashTransition.js'
-import { useCountdown } from '../../hooks/useCountdown.js'
+import { Link } from 'react-router-dom'
+import { useAuth } from '../../context/AuthContext'
+import DossierHeader from '../../components/ui/DossierHeader'
+import FlashOverlay from '../../components/ui/FlashOverlay'
+import { useFlashTransition } from '../../hooks/useFlashTransition'
+import { useScenarioRun } from '../../hooks/useScenarioRun'
+import { useCountdown } from '../../hooks/useCountdown'
 import dossierTheme from '../../styles/dossier-theme.module.css'
 import styles from './Foto.module.css'
 
-const ITEMS = {
+type ItemKey =
+  | 'monitor'
+  | 'sticky'
+  | 'folder'
+  | 'badge'
+  | 'phone'
+  | 'notebook'
+  | 'mug'
+  | 'plant'
+
+interface Item {
+  isRisk: boolean
+  label: string
+  // Solo los objetos de riesgo llevan retroalimentación.
+  fixedFeedback?: string
+  riskFeedback?: string
+}
+
+interface Tooltip {
+  x: number
+  y: number
+  text: string
+}
+
+interface Level {
+  label: string
+  time: number
+  npc: string
+  slotA: ItemKey
+  slotB: ItemKey
+}
+
+interface SessionResult {
+  label: string
+  exposed: number
+  total: number
+}
+
+type FixedState = Partial<Record<ItemKey, boolean>>
+
+const ITEMS: Record<ItemKey, Item> = {
   monitor: {
     isRisk: true,
     label: 'Pantalla con el sistema de nómina abierto',
@@ -54,7 +95,7 @@ const ITEMS = {
   plant: { isRisk: false, label: 'Planta pequeña' },
 }
 
-const LEVELS = [
+const LEVELS: Level[] = [
   {
     label: 'Nivel 1 · Tu escritorio',
     time: 20,
@@ -78,14 +119,14 @@ const LEVELS = [
   },
 ]
 
-const CORE_KEYS = ['monitor', 'sticky', 'folder', 'badge']
+const CORE_KEYS: ItemKey[] = ['monitor', 'sticky', 'folder', 'badge']
 
-const TOOLTIP_POS = {
+const TOOLTIP_POS: Partial<Record<ItemKey, { x: number; y: number }>> = {
   mug: { x: 410 + 12, y: 150 },
   plant: { x: 60 + 18, y: 135 },
 }
 
-const POSITIONS = {
+const POSITIONS: Partial<Record<ItemKey, { x: string; y: string; w: string; h: string }>> = {
   monitor: { x: '30%', y: '20%', w: '26%', h: '27%' },
   sticky: { x: '51%', y: '20%', w: '10%', h: '12%' },
   folder: { x: '65%', y: '48%', w: '13%', h: '16%' },
@@ -94,20 +135,30 @@ const POSITIONS = {
   notebook: { x: '10%', y: '47%', w: '16%', h: '15%' },
 }
 
-function activeItemsFor(levelIdx) {
-  const level = LEVELS[levelIdx]
+function activeItemsFor(levelIdx: number): ItemKey[] {
+  const level = LEVELS[levelIdx]!
   return [...CORE_KEYS, level.slotA, level.slotB]
 }
 
-function initialFixedState(levelIdx) {
-  const state = {}
+function initialFixedState(levelIdx: number): FixedState {
+  const state: FixedState = {}
   activeItemsFor(levelIdx).forEach((key) => {
     if (ITEMS[key].isRisk) state[key] = false
   })
   return state
 }
 
-function SlotItem({ itemKey, fixedState, onToggle, onNonRiskClick }) {
+function SlotItem({
+  itemKey,
+  fixedState,
+  onToggle,
+  onNonRiskClick,
+}: {
+  itemKey: ItemKey
+  fixedState: FixedState
+  onToggle: (key: ItemKey) => void
+  onNonRiskClick: (key: ItemKey) => void
+}) {
   if (itemKey === 'mug') {
     return (
       <g className={styles.clickable} transform="translate(410,155)" onClick={() => onNonRiskClick('mug')}>
@@ -189,7 +240,19 @@ function SlotItem({ itemKey, fixedState, onToggle, onNonRiskClick }) {
   return null
 }
 
-function DeskSVG({ level, fixedState, onToggle, onNonRiskClick, tooltip }) {
+function DeskSVG({
+  level,
+  fixedState,
+  onToggle,
+  onNonRiskClick,
+  tooltip,
+}: {
+  level: Level
+  fixedState: FixedState
+  onToggle: (key: ItemKey) => void
+  onNonRiskClick: (key: ItemKey) => void
+  tooltip: Tooltip | null
+}) {
   return (
     <svg viewBox="0 0 500 300">
       <rect width="500" height="300" fill="#eef1f2" />
@@ -310,19 +373,20 @@ function DeskSVG({ level, fixedState, onToggle, onNonRiskClick, tooltip }) {
 }
 
 function Foto() {
-  const { profile, roleLabel } = useParticipant()
+  const { displayName, roleLabel } = useAuth()
+  const run = useScenarioRun('fisico/foto')
 
   const [levelIndex, setLevelIndex] = useState(0)
   const [fixedState, setFixedState] = useState(() => initialFixedState(0))
   const [finished, setFinished] = useState(false)
   const [showReport, setShowReport] = useState(false)
-  const [sessionResults, setSessionResults] = useState([])
-  const [tooltip, setTooltip] = useState(null)
+  const [sessionResults, setSessionResults] = useState<SessionResult[]>([])
+  const [tooltip, setTooltip] = useState<Tooltip | null>(null)
 
-  const tooltipTimeoutRef = useRef(null)
+  const tooltipTimeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined)
   const flash = useFlashTransition()
 
-  const level = LEVELS[levelIndex]
+  const level = LEVELS[levelIndex]!
   const isLastLevel = levelIndex === LEVELS.length - 1
 
   const timeLeft = useCountdown(level.time, {
@@ -331,9 +395,6 @@ function Foto() {
     onExpire: () => handleTakePhoto(),
   })
 
-  if (!profile) {
-    return <Navigate to="/" replace />
-  }
 
   const activeItems = activeItemsFor(levelIndex)
   const riskKeysThisLevel = activeItems.filter((k) => ITEMS[k].isRisk)
@@ -342,13 +403,14 @@ function Foto() {
 
   const gaugeColor = timeLeft > level.time / 2 ? 'var(--safe)' : timeLeft > level.time / 4 ? 'var(--amber)' : 'var(--danger)'
 
-  function handleToggle(key) {
+  function handleToggle(key: ItemKey) {
     if (finished) return
     setFixedState((prev) => ({ ...prev, [key]: !prev[key] }))
   }
 
-  function handleNonRiskClick(key) {
+  function handleNonRiskClick(key: ItemKey) {
     const pos = TOOLTIP_POS[key]
+    if (!pos) return
     setTooltip({ x: pos.x, y: pos.y, text: 'No hace falta ocultar esto' })
     clearTimeout(tooltipTimeoutRef.current)
     tooltipTimeoutRef.current = setTimeout(() => setTooltip(null), 1400)
@@ -357,12 +419,33 @@ function Foto() {
   function handleTakePhoto() {
     if (finished) return
     setFinished(true)
+    run.recordDecision({
+      nivel: level.label,
+      expuestos: exposedRisks.length,
+      total: riskKeysThisLevel.length,
+    })
+
+    const resultado = {
+      label: level.label,
+      exposed: exposedRisks.length,
+      total: riskKeysThisLevel.length,
+    }
+
     flash.trigger(() => {
       setShowReport(true)
-      setSessionResults((prev) => [
-        ...prev,
-        { label: level.label, exposed: exposedRisks.length, total: riskKeysThisLevel.length },
-      ])
+      setSessionResults((prev) => {
+        const todos = [...prev, resultado]
+
+        if (isLastLevel) {
+          const expuestos = todos.reduce((suma, r) => suma + r.exposed, 0)
+          void run.finish({
+            endingId: `expuestos-${expuestos}`,
+            outcome: expuestos === 0 ? 'CORRECTO' : expuestos <= 2 ? 'PARCIAL' : 'INCORRECTO',
+          })
+        }
+
+        return todos
+      })
     }, 250)
   }
 
@@ -375,6 +458,7 @@ function Foto() {
   }
 
   function handleRestart() {
+    run.restart()
     setLevelIndex(0)
     setSessionResults([])
     setFixedState(initialFixedState(0))
@@ -409,7 +493,7 @@ function Foto() {
         gaugePercent={(timeLeft / level.time) * 100}
         gaugeValueText={`${Math.ceil(timeLeft)}s`}
         gaugeColor={gaugeColor}
-        participantName={profile.displayName}
+        participantName={displayName}
         participantRole={roleLabel}
       />
 
@@ -462,13 +546,13 @@ function Foto() {
               <span className={styles.resultBadge}>PUBLICADO EN EL BOLETÍN</span>
               {exposedRisks.map((k) => {
                 const p = POSITIONS[k]
-                return (
+                return p ? (
                   <div
                     key={k}
                     className={styles.callout}
                     style={{ left: p.x, top: p.y, width: p.w, height: p.h }}
                   />
-                )
+                ) : null
               })}
             </>
           )}

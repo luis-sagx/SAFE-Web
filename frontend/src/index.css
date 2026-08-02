@@ -1,4 +1,44 @@
-@import "tailwindcss";
+@import 'tailwindcss';
+
+/* Tokens del sistema de diseño. Ver DESIGN.md — solo modo claro. */
+@theme {
+  --color-primary: #000000;
+  --color-primary-active: #1a1a1a;
+  --color-on-primary: #ffffff;
+
+  --color-ink: #171717;
+  --color-body: #60646c;
+  --color-muted: #999999;
+  --color-muted-soft: #cccccc;
+  --color-link: #0d74ce;
+
+  --color-canvas: #ffffff;
+  --color-canvas-soft: #fafafa;
+  --color-surface: #ffffff;
+  --color-surface-strong: #f0f0f3;
+
+  --color-hairline: #f0f0f3;
+  --color-hairline-soft: #f5f5f7;
+  --color-hairline-strong: #dcdee0;
+
+  --color-sky-light: #cfe7ff;
+  --color-sky-mid: #a8c8e8;
+
+  --color-success: #16a34a;
+  --color-danger: #b4342f;
+  --color-warning: #ab6400;
+
+  --font-sans: 'Inter', -apple-system, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+
+  --shadow-card: 0 4px 12px rgba(0, 0, 0, 0.04);
+}
 
 * {
   box-sizing: border-box;
@@ -6,4 +46,7 @@
 
 body {
   margin: 0;
+  background-color: var(--color-canvas);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
 }

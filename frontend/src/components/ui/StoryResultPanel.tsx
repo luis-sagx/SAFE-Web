@@ -1,11 +1,25 @@
-/**
- * Panel de resultado final de un grafo STORY (veredicto + señales + regla
- * de oro + reiniciar). `styles` es el CSS module del escenario que lo usa.
- * Las señales y la regla traen negritas <b> en el texto original, por eso
- * se inyectan como HTML (contenido propio, fijo en el código — no viene de
- * ningún usuario).
- */
-function StoryResultPanel({ node, signalsTitle, signals, rule, restartLabel, onRestart, styles }) {
+import type { StoryNode } from '../../hooks/useStoryEngine'
+
+interface StoryResultPanelProps {
+  node: StoryNode
+  signalsTitle: string
+  /** Llevan negritas <b>; es contenido fijo del código, nunca de un usuario. */
+  signals: string[]
+  rule: string
+  restartLabel: string
+  onRestart: () => void
+  styles: Record<string, string>
+}
+
+function StoryResultPanel({
+  node,
+  signalsTitle,
+  signals,
+  rule,
+  restartLabel,
+  onRestart,
+  styles,
+}: StoryResultPanelProps) {
   const isGood = node.kind === 'good'
 
   return (

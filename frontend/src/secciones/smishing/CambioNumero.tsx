@@ -1,12 +1,26 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link, Navigate } from 'react-router-dom'
-import { useParticipant } from '../../context/ParticipantContext.jsx'
-import { useStoryEngine } from '../../hooks/useStoryEngine.js'
-import StoryChoices from '../../components/ui/StoryChoices.jsx'
-import StoryResultPanel from '../../components/ui/StoryResultPanel.jsx'
+import { Link } from 'react-router-dom'
+import { useAuth } from '../../context/AuthContext'
+import { useStoryEngine, type Story, type StoryNode } from '../../hooks/useStoryEngine'
+import StoryChoices from '../../components/ui/StoryChoices'
+import StoryResultPanel from '../../components/ui/StoryResultPanel'
 import styles from './CambioNumero.module.css'
 
-const STORY = {
+type Msg =
+  | { type: 'typing' }
+  | { type: 'text'; text: string }
+  | { type: 'voice'; dur: string; text: string }
+
+interface ChatNode extends StoryNode {
+  msgs?: Msg[]
+}
+
+type ThreadItem =
+  | { id: string; type: 'typing' }
+  | { id: string; type: 'text'; text: string; time: string }
+  | { id: string; type: 'voice'; text: string; dur: string }
+
+const STORY: Story<ChatNode> = {
   n1: {
     kind: 'scene',
     msgs: [
@@ -99,14 +113,14 @@ function nowTime() {
 }
 
 function CambioNumero() {
-  const { profile, roleLabel } = useParticipant()
-  const engine = useStoryEngine(STORY, 'n1')
-  const [threadItems, setThreadItems] = useState([])
+  const { displayName, roleLabel } = useAuth()
+  const engine = useStoryEngine(STORY, 'n1', 'smishing/cambio-numero')
+  const [threadItems, setThreadItems] = useState<ThreadItem[]>([])
   const [choicesVisible, setChoicesVisible] = useState(false)
-  const [playingId, setPlayingId] = useState(null)
+  const [playingId, setPlayingId] = useState<string | null>(null)
   const [audioNotice, setAudioNotice] = useState('')
-  const threadRef = useRef(null)
-  const esVoicesRef = useRef([])
+  const threadRef = useRef<HTMLDivElement>(null)
+  const esVoicesRef = useRef<SpeechSynthesisVoice[]>([])
   const speechOK = typeof window !== 'undefined' && 'speechSynthesis' in window
 
   useEffect(() => {
@@ -138,25 +152,25 @@ function CambioNumero() {
     }
 
     let cancelled = false
-    const timeouts = []
+    const timeouts: ReturnType<typeof setTimeout>[] = []
 
-    function append(item) {
+    function append(item: ThreadItem) {
       if (!cancelled) setThreadItems((prev) => [...prev, item])
     }
-    function remove(id) {
+    function remove(id: string) {
       if (!cancelled) setThreadItems((prev) => prev.filter((it) => it.id !== id))
     }
 
-    function playStep(index) {
+    function playStep(index: number) {
       if (cancelled) return
-      const msgs = node.msgs
+      const msgs = node.msgs ?? []
 
       if (index >= msgs.length) {
         setChoicesVisible(true)
         return
       }
 
-      const raw = msgs[index]
+      const raw = msgs[index]!
       const id = `${current}-${index}`
 
       if (raw.type === 'typing') {
@@ -200,11 +214,8 @@ function CambioNumero() {
     }
   }, [threadItems])
 
-  if (!profile) {
-    return <Navigate to="/" replace />
-  }
 
-  function toggleVoice(id, text) {
+  function toggleVoice(id: string, text: string) {
     if (!speechOK || !esVoicesRef.current.length) {
       setAudioNotice('Tu navegador no reproduce voz; puedes leer el mensaje en el texto de la conversación.')
       return
@@ -248,7 +259,7 @@ function CambioNumero() {
           </div>
 
           <div className={styles.participantBanner}>
-            En entrenamiento: {profile.displayName} · {roleLabel}
+            En entrenamiento: {displayName} · {roleLabel}
           </div>
 
           <div className={styles.thread} ref={threadRef}>
@@ -318,10 +329,14 @@ function CambioNumero() {
               />
             ) : (
               <>
-                {choicesVisible && (
+                {choicesVisible && engine.node.choices && (
                   <>
                     <p className={styles.prompt}>¿Qué haces?</p>
-                    <StoryChoices choices={engine.node.choices} onChoose={engine.choose} styles={styles} />
+                    <StoryChoices
+                      choices={engine.node.choices}
+                      onChoose={engine.choose}
+                      styles={styles}
+                    />
                   </>
                 )}
                 <div className={styles.composer}>

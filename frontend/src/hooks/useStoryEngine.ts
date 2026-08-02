@@ -1,26 +1,92 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
+import type { RunOutcome } from '../lib/api'
+import {
+  outcomeFromKind,
+  useScenarioRun,
+  type RunStatus,
+  type StoryKind,
+} from './useScenarioRun'
+
+export interface StoryChoice {
+  label: string
+  goto: string
+}
+
+export interface StoryNode {
+  kind: StoryKind
+  choices?: StoryChoice[]
+  /** Título del final: "Caíste en la estafa". */
+  verdict?: string
+  /** Prosa que narra lo que pasó. No confundir con `resultado`. */
+  outcome?: string
+  /** Sobrescribe el resultado que se envía al backend; por defecto sale de
+   *  `kind`. */
+  resultado?: RunOutcome
+  score?: number
+}
+
+/** Cada escenario extiende StoryNode con lo suyo (mensajes de chat,
+ *  subtítulos de llamada) y lo pasa como parámetro para conservar el tipado. */
+export type Story<N extends StoryNode = StoryNode> = Record<string, N>
+
+export interface StoryEngine<N extends StoryNode = StoryNode> {
+  current: string
+  node: N
+  isEnding: boolean
+  choose: (goto: string, label?: string) => void
+  restart: () => void
+  runStatus: RunStatus
+}
 
 /**
- * Motor del grafo STORY que usan chat-cambio-numero.js y
- * llamada-antiestafas.js: nodos "scene" con opciones que apuntan a otro
- * nodo (goto), y nodos finales "good"/"bad" con veredicto. Cada JS original
- * reimplementaba render(id)/restart() casi idénticos; acá queda una sola
- * vez. La secuencia de reproducción de cada nodo (mensajes de chat vs.
- * subtítulos hablados) es distinta en cada escenario, así que eso se
- * queda en cada componente.
+ * Recorre el grafo de un escenario y registra la corrida: cada elección entra
+ * en la traza y al llegar a un final el resultado se envía al backend.
+ *
+ * Los nodos finales declaran su resultado con `kind` ('good' | 'partial' |
+ * 'bad'); `outcome` y `score` solo hacen falta para sobrescribir el valor
+ * derivado.
  */
-export function useStoryEngine(story, startId) {
+export function useStoryEngine<N extends StoryNode>(
+  story: Story<N>,
+  startId: string,
+  scenarioId: string,
+): StoryEngine<N> {
   const [current, setCurrent] = useState(startId)
-  const node = story[current]
-  const isEnding = node.kind !== 'scene'
+  const run = useScenarioRun(scenarioId)
 
-  const choose = useCallback((goto) => {
-    setCurrent(goto)
-  }, [])
+  const node = story[current]
+
+  if (!node) {
+    throw new Error(`El nodo "${current}" no existe en el escenario ${scenarioId}.`)
+  }
+
+  const isEnding = node.kind !== 'scene'
+  const { recordDecision, finish, restart: restartRun } = run
+
+  const choose = useCallback(
+    (goto: string, label?: string) => {
+      recordDecision({ desde: current, hacia: goto, eleccion: label })
+      setCurrent(goto)
+    },
+    [current, recordDecision],
+  )
+
+  useEffect(() => {
+    if (!isEnding) {
+      return
+    }
+
+    void finish({
+      endingId: current,
+      outcome: node.resultado ?? outcomeFromKind(node.kind),
+      score: node.score,
+    })
+  }, [isEnding, current, node, finish])
 
   const restart = useCallback(() => {
+    restartRun()
     setCurrent(startId)
-  }, [startId])
+  }, [startId, restartRun])
 
-  return { current, node, isEnding, choose, restart }
+  return { current, node, isEnding, choose, restart, runStatus: run.status }
 }

@@ -1,13 +1,41 @@
-import { useState } from 'react'
-import { Link, Navigate } from 'react-router-dom'
-import { useParticipant } from '../../context/ParticipantContext.jsx'
-import DossierHeader from '../../components/ui/DossierHeader.jsx'
-import FlashOverlay from '../../components/ui/FlashOverlay.jsx'
-import { useFlashTransition } from '../../hooks/useFlashTransition.js'
+import { useState, type ReactElement } from 'react'
+import { Link } from 'react-router-dom'
+import { useAuth } from '../../context/AuthContext'
+import DossierHeader from '../../components/ui/DossierHeader'
+import FlashOverlay from '../../components/ui/FlashOverlay'
+import { useFlashTransition } from '../../hooks/useFlashTransition'
 import dossierTheme from '../../styles/dossier-theme.module.css'
+import { useScenarioRun } from '../../hooks/useScenarioRun'
 import styles from './Baiting.module.css'
 
-function FlashSpark({ x, y, onClick }) {
+type Level = 'safe' | 'warn' | 'danger'
+
+interface Choice {
+  label: string
+  level: Level
+  risk: number
+  feedback: string
+}
+
+interface Scenario {
+  location: string
+  time: string
+  object: string
+  narrative: string
+  choices: Choice[]
+}
+
+interface SceneArtProps {
+  flash: boolean
+  onFlashClick: () => void
+}
+
+interface Resolved {
+  level: Level
+  feedback: string
+}
+
+function FlashSpark({ x, y, onClick }: { x: number; y: number; onClick: () => void }) {
   return (
     <g className={styles.sceneFlash} transform={`translate(${x},${y})`} onClick={onClick}>
       <circle className={styles.flashPulseSpark} r="15" />
@@ -19,8 +47,8 @@ function FlashSpark({ x, y, onClick }) {
   )
 }
 
-const SCENE_ARTS = [
-  ({ flash, onFlashClick }) => (
+const SCENE_ARTS: ((props: SceneArtProps) => ReactElement)[] = [
+  ({ flash, onFlashClick }: SceneArtProps) => (
     <svg viewBox="0 0 400 220">
       <rect width="400" height="128" fill="#b7c8d6" />
       <rect y="128" width="400" height="92" fill="#6c7580" />
@@ -38,7 +66,7 @@ const SCENE_ARTS = [
       {flash && <FlashSpark x={118} y={192} onClick={onFlashClick} />}
     </svg>
   ),
-  ({ flash, onFlashClick }) => (
+  ({ flash, onFlashClick }: SceneArtProps) => (
     <svg viewBox="0 0 400 220">
       <rect width="400" height="220" fill="#ece0c4" />
       <rect y="160" width="400" height="60" fill="#cabb90" />
@@ -52,7 +80,7 @@ const SCENE_ARTS = [
       {flash && <FlashSpark x={236} y={158} onClick={onFlashClick} />}
     </svg>
   ),
-  ({ flash, onFlashClick }) => (
+  ({ flash, onFlashClick }: SceneArtProps) => (
     <svg viewBox="0 0 400 220">
       <rect width="400" height="220" fill="#eef1f2" />
       <rect y="55" width="400" height="10" fill="#d7dde1" />
@@ -68,7 +96,7 @@ const SCENE_ARTS = [
       {flash && <FlashSpark x={247} y={138} onClick={onFlashClick} />}
     </svg>
   ),
-  ({ flash, onFlashClick }) => (
+  ({ flash, onFlashClick }: SceneArtProps) => (
     <svg viewBox="0 0 400 220">
       <rect width="400" height="220" fill="#e3ded0" />
       <rect x="30" y="120" width="140" height="40" rx="4" fill="#cbb98c" stroke="#9c8a5e" strokeWidth="2" />
@@ -84,7 +112,7 @@ const SCENE_ARTS = [
   ),
 ]
 
-function ConsequenceArt({ level }) {
+function ConsequenceArt({ level }: { level: Level }) {
   if (level === 'danger') {
     return (
       <svg viewBox="0 0 400 220">
@@ -140,7 +168,7 @@ function ConsequenceArt({ level }) {
   )
 }
 
-const SCENARIOS = [
+const SCENARIOS: Scenario[] = [
   {
     location: 'Estacionamiento',
     time: '7:52 AM',
@@ -296,49 +324,47 @@ const ROOM_ZONES = [
   { idx: 2, x: 180, y: 290, width: 290, height: 220, ariaLabel: 'Área administrativa', pinPos: [252, 362] },
 ]
 
-function verdictLabel(level) {
+function verdictLabel(level: Level) {
   return level === 'safe' ? 'Decisión segura' : level === 'warn' ? 'Observación' : 'Riesgo detectado'
 }
-function stampWord(level) {
+function stampWord(level: Level) {
   return level === 'safe' ? 'APROBADO' : level === 'warn' ? 'OBSERVACIÓN' : 'RIESGO'
 }
-function pinSymbol(level) {
+function pinSymbol(level: Level) {
   return level === 'safe' ? '✓' : level === 'warn' ? '!' : '✕'
 }
 
-function shuffled(arr) {
+function shuffled<T>(arr: T[]): T[] {
   const a = arr.slice()
   for (let i = a.length - 1; i > 0; i -= 1) {
     const j = Math.floor(Math.random() * (i + 1))
-    ;[a[i], a[j]] = [a[j], a[i]]
+    ;[a[i], a[j]] = [a[j]!, a[i]!]
   }
   return a
 }
 
 function Baiting() {
-  const { profile, roleLabel } = useParticipant()
+  const { displayName, roleLabel } = useAuth()
+  const run = useScenarioRun('fisico/baiting')
 
-  const [view, setView] = useState('map') // 'map' | 'scene'
-  const [activeIdx, setActiveIdx] = useState(null)
-  const [resolved, setResolved] = useState({})
+  const [view, setView] = useState<'map' | 'scene'>('map')
+  const [activeIdx, setActiveIdx] = useState<number | null>(null)
+  const [resolved, setResolved] = useState<Record<number, Resolved>>({})
   const [totalRisk, setTotalRisk] = useState(0)
   const [choicesShown, setChoicesShown] = useState(false)
-  const [shuffledChoices, setShuffledChoices] = useState([])
+  const [shuffledChoices, setShuffledChoices] = useState<Choice[]>([])
   const [revealPending, setRevealPending] = useState(false)
   const [showReport, setShowReport] = useState(false)
 
   const mapFlash = useFlashTransition()
   const stampFlash = useFlashTransition()
 
-  if (!profile) {
-    return <Navigate to="/" replace />
-  }
 
   const pct = Math.min(totalRisk, 100)
   const gaugeColor = pct <= 20 ? 'var(--safe)' : pct <= 55 ? 'var(--amber)' : 'var(--danger)'
   const resolvedCount = Object.keys(resolved).length
 
-  function enterScene(idx) {
+  function enterScene(idx: number) {
     mapFlash.trigger(() => {
       setActiveIdx(idx)
       setChoicesShown(false)
@@ -355,14 +381,29 @@ function Baiting() {
   }
 
   function handleFlashClick() {
-    setShuffledChoices(shuffled(SCENARIOS[activeIdx].choices))
+    setShuffledChoices(shuffled(SCENARIOS[activeIdx!]!.choices))
     setChoicesShown(true)
   }
 
-  function handleChoice(choice) {
-    setResolved((prev) => ({ ...prev, [activeIdx]: { level: choice.level, feedback: choice.feedback } }))
+  function handleChoice(choice: Choice) {
+    const siguiente = { ...resolved, [activeIdx!]: { level: choice.level, feedback: choice.feedback } }
+
+    setResolved(siguiente)
     setTotalRisk((prev) => prev + choice.risk)
     setRevealPending(true)
+    run.recordDecision({ caso: activeIdx, nivel: choice.level, riesgo: choice.risk })
+
+    if (Object.keys(siguiente).length === SCENARIOS.length) {
+      const niveles = Object.values(siguiente).map((r) => r.level)
+      void run.finish({
+        endingId: niveles.join('-'),
+        outcome: niveles.includes('danger')
+          ? 'INCORRECTO'
+          : niveles.includes('warn')
+            ? 'PARCIAL'
+            : 'CORRECTO',
+      })
+    }
 
     stampFlash.trigger(() => {
       setRevealPending(false)
@@ -373,8 +414,8 @@ function Baiting() {
     window.location.reload()
   }
 
-  const activeScenario = activeIdx !== null ? SCENARIOS[activeIdx] : null
-  const activeResolved = activeIdx !== null ? resolved[activeIdx] : null
+  const activeScenario = activeIdx !== null ? (SCENARIOS[activeIdx] ?? null) : null
+  const activeResolved = activeIdx !== null ? (resolved[activeIdx] ?? null) : null
   const showFeedback = !!activeResolved && !revealPending
 
   return (
@@ -386,7 +427,7 @@ function Baiting() {
         gaugePercent={pct}
         gaugeValueText={`${pct}%`}
         gaugeColor={gaugeColor}
-        participantName={profile.displayName}
+        participantName={displayName}
         participantRole={roleLabel}
       />
 
@@ -580,7 +621,7 @@ function Baiting() {
                 <ConsequenceArt level={activeResolved.level} />
               ) : (
                 (() => {
-                  const SceneArt = SCENE_ARTS[activeIdx]
+                  const SceneArt = SCENE_ARTS[activeIdx!]!
                   return <SceneArt flash={!choicesShown && !revealPending} onFlashClick={handleFlashClick} />
                 })()
               )}
@@ -649,11 +690,19 @@ function Baiting() {
   )
 }
 
-function Report({ resolved, pct, onRestart }) {
+function Report({
+  resolved,
+  pct,
+  onRestart,
+}: {
+  resolved: Record<number, Resolved>
+  pct: number
+  onRestart: () => void
+}) {
   const anyDanger = Object.values(resolved).some((r) => r.level === 'danger')
-  let level
-  let title
-  let summary
+  let level: Level
+  let title: string
+  let summary: string
   if (anyDanger) {
     level = 'danger'
     title = 'Incidente de seguridad registrado'
@@ -682,7 +731,7 @@ function Report({ resolved, pct, onRestart }) {
         {SCENARIOS.map((s, i) => (
           <div key={s.location} className={styles.recapItem}>
             <span className={styles.recapLoc}>{s.location}</span>
-            <span className={`${styles.recapTag} ${styles[resolved[i].level]}`}>{stampWord(resolved[i].level)}</span>
+            <span className={`${styles.recapTag} ${styles[resolved[i]!.level]}`}>{stampWord(resolved[i]!.level)}</span>
           </div>
         ))}
       </div>

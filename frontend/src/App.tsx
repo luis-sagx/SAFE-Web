@@ -1,33 +1,37 @@
+import { Suspense } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
-import Home from './pages/Home.jsx'
-import Dashboard from './pages/Dashboard.jsx'
-import Seccion from './pages/Seccion.jsx'
-import SaldoContable from './secciones/phishing/SaldoContable.jsx'
-import CambioNumero from './secciones/smishing/CambioNumero.jsx'
-import LlamadaAntiestafas from './secciones/vishing/LlamadaAntiestafas.jsx'
-import Foto from './secciones/fisico/Foto.jsx'
-import Baiting from './secciones/fisico/Baiting.jsx'
-import Quishing from './secciones/quishing/Quishing.jsx'
-import Deepfake from './secciones/deepfake/Deepfake.jsx'
+import RequireAuth from './components/RequireAuth'
+import { ESCENARIOS } from './data/catalogo'
+import Dashboard from './pages/Dashboard'
+import Login from './pages/Login'
+import Registro from './pages/Registro'
+import Seccion from './pages/Seccion'
 
 function App() {
   return (
-    <Routes>
-      <Route path="/" element={<Home />} />
-      <Route path="/dashboard" element={<Dashboard />} />
+    <Suspense fallback={<p className="p-10 text-base text-muted">Cargando…</p>}>
+      <Routes>
+        <Route path="/" element={<Login />} />
+        <Route path="/registro" element={<Registro />} />
 
-      <Route path="/seccion/quishing" element={<Quishing />} />
-      <Route path="/seccion/deepfake" element={<Deepfake />} />
-      <Route path="/seccion/:seccionId" element={<Seccion />} />
+        <Route element={<RequireAuth />}>
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/seccion/:seccionId" element={<Seccion />} />
 
-      <Route path="/seccion/phishing/saldo-contable" element={<SaldoContable />} />
-      <Route path="/seccion/smishing/cambio-numero" element={<CambioNumero />} />
-      <Route path="/seccion/vishing/llamada-antiestafas" element={<LlamadaAntiestafas />} />
-      <Route path="/seccion/fisico/foto" element={<Foto />} />
-      <Route path="/seccion/fisico/baiting" element={<Baiting />} />
+          {/* Una ruta por entrada del catálogo: agregar un escenario no obliga
+              a tocar este archivo. */}
+          {ESCENARIOS.map(({ id, seccionId, escenarioId, Component }) => (
+            <Route
+              key={id}
+              path={`/seccion/${seccionId}/${escenarioId}`}
+              element={<Component />}
+            />
+          ))}
+        </Route>
 
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </Suspense>
   )
 }
 

@@ -1,5 +1,16 @@
-import RiskGauge from './RiskGauge.jsx'
+import RiskGauge from './RiskGauge'
 import styles from './DossierHeader.module.css'
+
+interface DossierHeaderProps {
+  caseLabel: string
+  secondTab: string
+  riskLabel: string
+  gaugePercent: number
+  gaugeValueText: string
+  gaugeColor: string
+  participantName: string
+  participantRole: string
+}
 
 function DossierHeader({
   caseLabel,
@@ -10,7 +21,7 @@ function DossierHeader({
   gaugeColor,
   participantName,
   participantRole,
-}) {
+}: DossierHeaderProps) {
   return (
     <>
       <header className={styles.dossierHeader}>

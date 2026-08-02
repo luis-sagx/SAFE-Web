@@ -1,6 +1,6 @@
 import styles from './FlashOverlay.module.css'
 
-function FlashOverlay({ active }) {
+function FlashOverlay({ active }: { active: boolean }) {
   return <div className={`${styles.flashOverlay} ${active ? styles.active : ''}`} />
 }
 

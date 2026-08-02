@@ -1,12 +1,16 @@
-import { useEffect, useRef, useState } from 'react'
-import { Link, Navigate } from 'react-router-dom'
-import { useParticipant } from '../../context/ParticipantContext.jsx'
-import { useStoryEngine } from '../../hooks/useStoryEngine.js'
-import StoryChoices from '../../components/ui/StoryChoices.jsx'
-import StoryResultPanel from '../../components/ui/StoryResultPanel.jsx'
+import { useEffect, useRef, useState, type KeyboardEvent } from 'react'
+import { Link } from 'react-router-dom'
+import { useAuth } from '../../context/AuthContext'
+import { useStoryEngine, type Story, type StoryNode } from '../../hooks/useStoryEngine'
+import StoryChoices from '../../components/ui/StoryChoices'
+import StoryResultPanel from '../../components/ui/StoryResultPanel'
 import styles from './LlamadaAntiestafas.module.css'
 
-const STORY = {
+interface CallNode extends StoryNode {
+  caller?: string[]
+}
+
+const STORY: Story<CallNode> = {
   n1: {
     kind: 'scene',
     caller: [
@@ -88,18 +92,18 @@ const SIGNALS = [
 const RULE =
   'Regla de oro: <b>nunca pagues para recibir un premio</b>. Cuelga y llama tú al número oficial del negocio.'
 
-function formatTime(totalSeconds) {
+function formatTime(totalSeconds: number) {
   const m = String(Math.floor(totalSeconds / 60)).padStart(2, '0')
   const s = String(totalSeconds % 60).padStart(2, '0')
   return `${m}:${s}`
 }
 
 function LlamadaAntiestafas() {
-  const { profile, roleLabel } = useParticipant()
-  const engine = useStoryEngine(STORY, 'n1')
+  const { displayName, roleLabel } = useAuth()
+  const engine = useStoryEngine(STORY, 'n1', 'vishing/llamada-antiestafas')
   const { current, node, isEnding, choose, restart } = engine
 
-  const [phase, setPhase] = useState('ringing') // 'ringing' | 'active' | 'ended'
+  const [phase, setPhase] = useState<'ringing' | 'active' | 'ended'>('ringing')
   const [seconds, setSeconds] = useState(0)
   const [speaking, setSpeaking] = useState(false)
   const [choicesVisible, setChoicesVisible] = useState(false)
@@ -108,7 +112,7 @@ function LlamadaAntiestafas() {
   const [audioNotice, setAudioNotice] = useState('')
 
   const speakingRef = useRef(false)
-  const esVoicesRef = useRef([])
+  const esVoicesRef = useRef<SpeechSynthesisVoice[]>([])
   const speechOK = typeof window !== 'undefined' && 'speechSynthesis' in window
 
   useEffect(() => {
@@ -170,13 +174,13 @@ function LlamadaAntiestafas() {
 
     function speakNext() {
       if (!speakingRef.current || cancelled) return
-      if (qi >= node.caller.length) {
+      if (qi >= (node.caller ?? []).length) {
         speakingRef.current = false
         setSpeaking(false)
         setChoicesVisible(true)
         return
       }
-      const utterance = new SpeechSynthesisUtterance(node.caller[qi])
+      const utterance = new SpeechSynthesisUtterance((node.caller ?? [])[qi])
       utterance.lang = 'es-ES'
       if (esVoicesRef.current[0]) utterance.voice = esVoicesRef.current[0]
       utterance.rate = 1.0
@@ -203,9 +207,6 @@ function LlamadaAntiestafas() {
     }
   }, [current, node, phase, replayToken, speechOK])
 
-  if (!profile) {
-    return <Navigate to="/" replace />
-  }
 
   function handleAnswer() {
     setPhase('active')
@@ -220,7 +221,7 @@ function LlamadaAntiestafas() {
     choose('e_colgar')
   }
 
-  function handleHangupKeyDown(event) {
+  function handleHangupKeyDown(event: KeyboardEvent<HTMLElement>) {
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault()
       handleHangup()
@@ -288,7 +289,7 @@ function LlamadaAntiestafas() {
 
           <div className={styles.participantBanner}>
             <span>
-              En entrenamiento: {profile.displayName} · {roleLabel}
+              En entrenamiento: {displayName} · {roleLabel}
             </span>
           </div>
 
@@ -319,7 +320,7 @@ function LlamadaAntiestafas() {
               <>
                 <span className={styles.capTag}>Quien llama</span>
                 {node.kind === 'scene' &&
-                  node.caller.map((line, i) => (
+                  (node.caller ?? []).map((line: string, i: number) => (
                     <div
                       key={line}
                       className={`${styles.capLine} ${choicesVisible || i === activeCaptionIndex ? styles.active : ''}`}
@@ -347,7 +348,7 @@ function LlamadaAntiestafas() {
           {showChoices && (
             <>
               <p className={styles.prompt}>¿Qué haces?</p>
-              <StoryChoices choices={node.choices} onChoose={choose} styles={styles} />
+              <StoryChoices choices={node.choices ?? []} onChoose={choose} styles={styles} />
             </>
           )}
 

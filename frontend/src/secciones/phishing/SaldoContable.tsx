@@ -1,9 +1,15 @@
 import { useState } from 'react'
-import { Link, Navigate } from 'react-router-dom'
-import { useParticipant } from '../../context/ParticipantContext.jsx'
+import { Link } from 'react-router-dom'
+import { useAuth } from '../../context/AuthContext'
+import { useScenarioRun } from '../../hooks/useScenarioRun'
 import styles from './SaldoContable.module.css'
 
-const OPTIONS = [
+interface Option {
+  label: string
+  correct: boolean
+}
+
+const OPTIONS: Option[] = [
   {
     label: 'Buscaría el courier más cercano y enviaría la computadora de inmediato.',
     correct: false,
@@ -24,28 +30,32 @@ const OPTIONS = [
 ]
 
 function SaldoContable() {
-  const { profile, roleLabel, initials } = useParticipant()
-  const [selectedIndex, setSelectedIndex] = useState(null)
-
-  if (!profile) {
-    return <Navigate to="/" replace />
-  }
+  const { displayName, roleLabel, initials } = useAuth()
+  const run = useScenarioRun('phishing/saldo-contable')
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
 
   const answered = selectedIndex !== null
-  const isCorrect = answered && OPTIONS[selectedIndex].correct
+  const isCorrect = answered && Boolean(OPTIONS[selectedIndex]?.correct)
 
-  function handleSelect(index) {
+  function handleSelect(index: number) {
     if (answered) {
       return
     }
+
     setSelectedIndex(index)
+    run.recordDecision({ opcion: index, label: OPTIONS[index]?.label })
+    void run.finish({
+      endingId: `opcion-${index}`,
+      outcome: OPTIONS[index]?.correct ? 'CORRECTO' : 'INCORRECTO',
+    })
   }
 
   function handleReset() {
     setSelectedIndex(null)
+    run.restart()
   }
 
-  function optionClassName(option, index) {
+  function optionClassName(option: Option, index: number) {
     if (!answered) {
       return styles.option
     }
@@ -78,7 +88,7 @@ function SaldoContable() {
             </div>
             <div className={styles.profile}>{initials}</div>
           </div>
-          <p className={styles.welcome}>Bienvenido/a, {profile.displayName}</p>
+          <p className={styles.welcome}>Bienvenido/a, {displayName}</p>
           <h1 className={styles.accountTitle}>Cuenta de Ahorros</h1>
         </section>
 
@@ -86,7 +96,7 @@ function SaldoContable() {
           <section className={styles.participantCard}>
             <div>
               <span className={styles.participantLabel}>Participante en prueba</span>
-              <strong>{profile.displayName}</strong>
+              <strong>{displayName}</strong>
             </div>
             <span className={styles.participantRole}>{roleLabel}</span>
           </section>

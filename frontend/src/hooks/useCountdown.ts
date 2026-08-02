@@ -1,11 +1,17 @@
 import { useEffect, useRef, useState } from 'react'
 
-/**
- * Cronómetro regresivo con tick configurable (foto.js lo usaba a 0.1s).
- * Se reinicia cada vez que cambia `duration` (equivalente a startLevel()
- * reasignando timeLeft) y llama a onExpire una sola vez al llegar a 0.
- */
-export function useCountdown(duration, { running = true, tickMs = 100, onExpire } = {}) {
+interface CountdownOptions {
+  running?: boolean
+  tickMs?: number
+  onExpire?: () => void
+}
+
+// Se reinicia cuando cambia `duration` y llama a onExpire una sola vez al
+// llegar a 0.
+export function useCountdown(
+  duration: number,
+  { running = true, tickMs = 100, onExpire }: CountdownOptions = {},
+): number {
   const [timeLeft, setTimeLeft] = useState(duration)
   const onExpireRef = useRef(onExpire)
   onExpireRef.current = onExpire
