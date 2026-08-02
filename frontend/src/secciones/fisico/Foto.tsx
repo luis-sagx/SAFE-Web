@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router'
 import { useAuth } from '../../context/AuthContext'
 import DossierHeader from '../../components/ui/DossierHeader'
 import FlashOverlay from '../../components/ui/FlashOverlay'

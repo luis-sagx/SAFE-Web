@@ -1,7 +1,7 @@
 import { CheckCircle2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import AppHeader from '../components/AppHeader'
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router'
 import { useAuth } from '../context/AuthContext'
 import { escenariosDeSeccion, SECCIONES } from '../data/catalogo'
 import { fetchMyRuns } from '../lib/api'

@@ -1,4 +1,4 @@
-import { Navigate, Outlet } from 'react-router-dom'
+import { Navigate, Outlet } from 'react-router'
 import { useAuth } from '../context/AuthContext'
 
 // Puerta única de la zona autenticada: si un escenario está montado, ya hay

@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { Link, Navigate, useNavigate } from 'react-router-dom'
+import { Link, Navigate, useNavigate } from 'react-router'
 import AuthLayout from '../components/AuthLayout'
 import Campo from '../components/Campo'
 import { useAuth } from '../context/AuthContext'

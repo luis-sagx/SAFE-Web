@@ -1,5 +1,5 @@
 import { Suspense } from 'react'
-import { Navigate, Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes } from 'react-router'
 import RequireAuth from './components/RequireAuth'
 import { ESCENARIOS } from './data/catalogo'
 import Dashboard from './pages/Dashboard'
