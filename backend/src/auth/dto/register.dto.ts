@@ -1,4 +1,3 @@
-import { Transform } from 'class-transformer';
 import {
   IsEmail,
   IsOptional,
@@ -7,19 +6,18 @@ import {
   MaxLength,
   MinLength,
 } from 'class-validator';
+import { NormalizarEmail, TransformarTexto } from '../../common/transform';
 
 export class RegisterDto {
   @IsString()
   @MinLength(2)
   @MaxLength(80)
-  @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
+  @TransformarTexto((valor) => valor.trim())
   nombre: string;
 
   @IsEmail({}, { message: 'El correo no tiene un formato válido.' })
   @MaxLength(120)
-  @Transform(({ value }) =>
-    typeof value === 'string' ? value.trim().toLowerCase() : value,
-  )
+  @NormalizarEmail()
   email: string;
 
   /// Se limpian espacios, guiones y paréntesis antes de validar.
@@ -27,9 +25,7 @@ export class RegisterDto {
   @Matches(/^[0-9]{7,15}$/, {
     message: 'El teléfono debe tener entre 7 y 15 dígitos.',
   })
-  @Transform(({ value }) =>
-    typeof value === 'string' ? value.replace(/[\s()+-]/g, '') : value,
-  )
+  @TransformarTexto((valor) => valor.replace(/[\s()+-]/g, ''))
   telefono: string;
 
   @IsString()

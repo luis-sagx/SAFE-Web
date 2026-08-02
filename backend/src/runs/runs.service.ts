@@ -31,7 +31,7 @@ export class RunsService {
         endingId: dto.endingId,
         durationMs: dto.durationMs,
         startedAt: new Date(dto.startedAt),
-        decisions: (dto.decisions ?? []) as object,
+        decisions: dto.decisions ?? [],
       },
       select: { id: true, scenarioId: true, outcome: true, score: true },
     });
@@ -81,7 +81,9 @@ export class RunsService {
       ]
         .map((cell) => {
           const value = String(cell);
-          return /[",\n]/.test(value) ? `"${value.replace(/"/g, '""')}"` : value;
+          return /[",\n]/.test(value)
+            ? `"${value.replace(/"/g, '""')}"`
+            : value;
         })
         .join(','),
     );

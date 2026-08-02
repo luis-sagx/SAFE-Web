@@ -54,7 +54,9 @@ export class AuthService {
     });
 
     if (yaExiste) {
-      throw new ConflictException('Ese correo ya está registrado. Inicia sesión.');
+      throw new ConflictException(
+        'Ese correo ya está registrado. Inicia sesión.',
+      );
     }
 
     const participant = await this.prisma.participant.create({

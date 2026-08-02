@@ -1,12 +1,10 @@
-import { Transform } from 'class-transformer';
 import { IsEmail, IsString, MaxLength } from 'class-validator';
+import { NormalizarEmail } from '../../common/transform';
 
 export class LoginDto {
   @IsEmail({}, { message: 'El correo no tiene un formato válido.' })
   @MaxLength(120)
-  @Transform(({ value }) =>
-    typeof value === 'string' ? value.trim().toLowerCase() : value,
-  )
+  @NormalizarEmail()
   email: string;
 
   // Sin MinLength: acá no se valida la política de contraseñas, solo se
