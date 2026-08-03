@@ -31,7 +31,7 @@ function Dashboard() {
   return (
     <div className="min-h-screen bg-canvas">
       <AppHeader>
-        <span className="text-sm font-semibold text-ink">Trampa Digital</span>
+        <span className="text-sm font-semibold text-ink">SAFE Web</span>
         <div className="flex items-center gap-4">
           <span className="hidden text-sm text-body sm:inline">{displayName}</span>
           <button

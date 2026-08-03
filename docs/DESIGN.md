@@ -1,6 +1,6 @@
 ---
 version: 1.0
-name: trampa-digital-design
+name: safe-web-design
 description: Sistema de diseño de la plataforma de entrenamiento anti-fraude. Lienzo blanco puro con tinta casi negra (#171717); el único voltaje de marca es negro puro (#000000) para las acciones primarias, discreto y editorial. Tipografía Inter en pesos moderados (display 600, cuerpo 400). Solo modo claro. Implementado con Tailwind CSS v4 mediante variables de tema en `@theme`. Adaptado de un análisis del sitio de Expo, despojado de sus superficies oscuras y de todo lo propio de una web de marketing.
 mode: light-only
 framework: tailwind-v4

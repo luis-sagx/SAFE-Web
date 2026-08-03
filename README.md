@@ -1,4 +1,4 @@
-# Trampa Digital
+# SAFE Web
 
 Ambientes interactivos de simulación para educar a usuarios no técnicos frente a
 ciberamenazas en el Ecuador. Trabajo de Integración Curricular — Carrera de

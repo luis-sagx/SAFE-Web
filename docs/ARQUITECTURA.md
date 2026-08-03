@@ -70,7 +70,7 @@ Decisiones estructurales que **no** se cambian sin actualizar este documento:
 ## 3. Estructura del repositorio
 
 ```
-trampa-digital/
+safe-web/
 ├── frontend/                 # SPA React + Vite + TypeScript (pnpm)
 │   ├── src/
 │   │   ├── components/       # UI compartida entre escenarios

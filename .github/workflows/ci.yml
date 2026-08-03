@@ -56,6 +56,10 @@ jobs:
           cache: pnpm
           cache-dependency-path: backend/pnpm-lock.yaml
       - run: pnpm install --frozen-lockfile
+      # El cliente de Prisma se genera en /generated (gitignored); sin esto
+      # el linter ve `PrismaClient` como tipo `error` y todo lo que toca
+      # revienta con no-unsafe-*.
+      - run: pnpm prisma:generate
       # `lint:ci` no lleva --fix: en CI un error no se arregla, se reporta.
       - run: pnpm lint:ci
       - run: pnpm build
@@ -186,7 +190,7 @@ jobs:
       - name: Vulnerabilidades de las imágenes (informativo)
         continue-on-error: true
         run: |
-          for imagen in trampa-digital-api trampa-digital-web; do
+          for imagen in safe-web-api safe-web-web; do
             docker run --rm \
               -v /var/run/docker.sock:/var/run/docker.sock \
               -v "${HOME}/.cache/trivy:/root/.cache/trivy" \
@@ -199,7 +203,7 @@ jobs:
       # Un secreto horneado en la imagen sí es un fallo de este repositorio.
       - name: Secretos horneados en las imágenes
         run: |
-          for imagen in trampa-digital-api trampa-digital-web; do
+          for imagen in safe-web-api safe-web-web; do
             docker run --rm \
               -v /var/run/docker.sock:/var/run/docker.sock \
               -v "${HOME}/.cache/trivy:/root/.cache/trivy" \
