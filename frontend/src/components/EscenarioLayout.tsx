@@ -60,7 +60,7 @@ function EscenarioLayout({
   const volver = (
     <Link
       to={`/seccion/${escenario.seccionId}`}
-      className="text-sm font-medium text-link hover:underline"
+      className="text-sm font-medium text-link underline"
     >
       ← Volver a la sección
     </Link>

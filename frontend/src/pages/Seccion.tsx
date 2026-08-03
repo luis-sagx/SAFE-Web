@@ -15,7 +15,7 @@ function Seccion() {
   return (
     <div className="min-h-screen bg-canvas">
       <AppHeader>
-        <Link to="/dashboard" className="text-sm font-medium text-link hover:underline">
+        <Link to="/dashboard" className="text-sm font-medium text-link underline">
           ← Volver
         </Link>
       </AppHeader>

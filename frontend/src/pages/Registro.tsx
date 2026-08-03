@@ -45,7 +45,7 @@ function Registro() {
       pie={
         <p className="mt-6 text-base text-body">
           ¿Ya tienes cuenta?{' '}
-          <Link to="/" className="font-medium text-link hover:underline">
+          <Link to="/" className="font-medium text-link underline">
             Entrar
           </Link>
         </p>

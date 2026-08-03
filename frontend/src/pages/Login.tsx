@@ -43,7 +43,7 @@ function Login() {
       pie={
         <p className="mt-6 text-base text-body">
           ¿Es tu primera vez?{' '}
-          <Link to="/registro" className="font-medium text-link hover:underline">
+          <Link to="/registro" className="font-medium text-link underline">
             Crear una cuenta
           </Link>
         </p>

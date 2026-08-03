@@ -1,7 +1,7 @@
 ---
 version: 1.0
 name: safe-web-design
-description: Sistema de diseño de la plataforma de entrenamiento anti-fraude. Lienzo blanco puro con tinta casi negra (#171717); el único voltaje de marca es negro puro (#000000) para las acciones primarias, discreto y editorial. Tipografía Inter en pesos moderados (display 600, cuerpo 400). Solo modo claro. Implementado con Tailwind CSS v4 mediante variables de tema en `@theme`. Adaptado de un análisis del sitio de Expo, despojado de sus superficies oscuras y de todo lo propio de una web de marketing.
+description: Sistema de diseño de la plataforma de entrenamiento anti-fraude. Lienzo blanco puro con tinta casi negra (#171717); el único voltaje de marca es verde profundo (#006837) para las acciones primarias, discreto y editorial. Tipografía Inter en pesos moderados (display 600, cuerpo 400). Solo modo claro. Implementado con Tailwind CSS v4 mediante variables de tema en `@theme`. Adaptado de un análisis del sitio de Expo, despojado de sus superficies oscuras y de todo lo propio de una web de marketing.
 mode: light-only
 framework: tailwind-v4
 ---
@@ -39,8 +39,8 @@ vive en el bloque `@theme` de `frontend/src/index.css`:
 
 @theme {
   /* Marca */
-  --color-primary: #000000;
-  --color-primary-active: #1a1a1a;
+  --color-primary: #006837;
+  --color-primary-active: #00522b;
   --color-on-primary: #ffffff;
 
   /* Texto */
@@ -48,7 +48,7 @@ vive en el bloque `@theme` de `frontend/src/index.css`:
   --color-body: #60646c;
   --color-muted: #999999;
   --color-muted-soft: #cccccc;
-  --color-link: #0d74ce;
+  --color-link: #006837;
 
   /* Superficies */
   --color-canvas: #ffffff;
@@ -62,8 +62,8 @@ vive en el bloque `@theme` de `frontend/src/index.css`:
   --color-hairline-strong: #dcdee0;
 
   /* Ambiente: solo detrás del hero de la portada */
-  --color-sky-light: #cfe7ff;
-  --color-sky-mid: #a8c8e8;
+  --color-mint-light: #d9ede2;
+  --color-mint-mid: #a9d1ba;
 
   /* Semántico */
   --color-success: #16a34a;
@@ -100,17 +100,26 @@ color no existe como token, agrégalo a `@theme` primero.
 
 | Token | Valor | Uso |
 |---|---|---|
-| `primary` | `#000000` | Relleno del botón primario. Se usa con moderación. |
-| `primary-active` | `#1a1a1a` | Estado presionado. |
-| `on-primary` | `#ffffff` | Texto sobre el botón negro. |
-| `link` | `#0d74ce` | Enlaces dentro de texto corrido. **Nunca como relleno de botón.** |
+| `primary` | `#006837` | Relleno del botón primario. Se usa con moderación. |
+| `primary-active` | `#00522b` | Estado presionado. |
+| `on-primary` | `#ffffff` | Texto sobre el botón verde. |
+| `link` | `#006837` | Enlaces dentro de texto corrido. **Siempre subrayados.** |
 
-Negro es el único relleno de acción. No se introduce un color de marca saturado.
+`primary` es el único relleno de acción, y va con moderación: una acción
+primaria por pantalla. No se introduce un segundo color de marca.
+
+**`link` es el mismo verde que `primary`.** Lo que distingue un enlace de un
+botón no es el color, es la forma: **los enlaces en texto van siempre
+subrayados; verde sin subrayar es un botón.**
 
 **Acento contenido con `link`:** además de los enlaces en texto, `link` puede
 colorear un ícono pequeño (los íconos de categoría del dashboard, un ícono de
 estado) o el borde de una tarjeta en `:hover`. Es el único lugar donde se
 permite fuera del texto — nunca como color de fondo ni de borde en reposo.
+
+`primary` sobre blanco da **6.8:1**: cumple AA para texto normal y AAA para
+texto grande. Blanco sobre `primary`, lo mismo. `primary-active` sobre blanco,
+9.4:1.
 
 ### Superficies
 
@@ -146,13 +155,18 @@ El rojo de error se oscureció respecto del original (`#eb8e90`): aquel no
 alcanzaba contraste AA sobre blanco, y los mensajes de error de un formulario
 tienen que leerse. Ver §7.
 
+**`success` es más claro y saturado que `primary` a propósito.** En una
+aplicación donde verde significa «acertaste», el verde del acierto no puede ser
+el mismo verde del cromo. Aun así, §7 sigue exigiendo que el color nunca sea la
+única señal: un resultado siempre lleva texto.
+
 ### Ambiente
 
-`sky-light` `#cfe7ff` + `sky-mid` `#a8c8e8`: el degradado suave detrás del hero
-de la portada, y **solo ahí**. No es un color de marca.
+`mint-light` `#d9ede2` + `mint-mid` `#a9d1ba`: el degradado suave detrás del
+hero de la portada, y **solo ahí**. No es un color de marca.
 
 ```html
-<div class="bg-gradient-to-b from-sky-light to-canvas">
+<div class="bg-gradient-to-b from-mint-light to-canvas">
 ```
 
 ---
@@ -232,6 +246,9 @@ mouse. Todo lo demás se separa con líneas de 1px.
 <button class="h-10 rounded-md bg-primary px-[18px] text-sm font-medium
                text-on-primary transition hover:bg-primary-active
                disabled:opacity-60">
+
+<!-- Enlace en texto: subrayado, para no confundirse con un botón -->
+<a class="font-medium text-link underline">
 
 <!-- Secundario -->
 <button class="h-10 rounded-md border border-hairline-strong bg-surface
@@ -338,10 +355,12 @@ que no aplica:
 | `footer-light` de 5 columnas | Una aplicación de entrenamiento no lleva pie de página de marketing. |
 | `semantic-error` #eb8e90 | No alcanzaba contraste AA sobre blanco. Reemplazado por `danger` #b4342f. |
 | Ritmo de sección de 96px | Bajado a 64px: aplicación, no sitio de marketing. |
+| Negro #000000 como acción y azul #0d74ce como enlace | Reemplazados por verde #006837, el color de marca de la plataforma. |
+| Tokens `sky-light` / `sky-mid` | Renombrados a `mint-light` / `mint-mid` con valores verdosos: «cielo» ya no describía el degradado. |
 
-Se conservó lo que sí sirve: lienzo blanco, tinta #171717, negro como única
-acción, azul solo para enlaces en texto, Inter 600/400, radios de 8px en
-botones y 12px en tarjetas, y un solo nivel de sombra.
+Se conservó lo que sí sirve: lienzo blanco, tinta #171717, un solo color de
+acción usado con moderación, Inter 600/400, radios de 8px en botones y 12px en
+tarjetas, y un solo nivel de sombra.
 
 ---
 
@@ -350,8 +369,9 @@ botones y 12px en tarjetas, y un solo nivel de sombra.
 ### Hacer
 
 - Usar tokens de `@theme` mediante clases de utilidad.
-- Reservar `bg-primary` (negro) para la acción principal de la pantalla — una
+- Reservar `bg-primary` (verde) para la acción principal de la pantalla — una
   sola por pantalla.
+- Subrayar todo enlace en texto: es lo único que lo distingue de un botón.
 - Botones y campos a `rounded-md` (8px); tarjetas a `rounded-lg` (12px).
 - Mantener el cuerpo en 16px dentro de los escenarios.
 - Etiquetar los campos con `<label htmlFor>`.
@@ -362,8 +382,11 @@ botones y 12px en tarjetas, y un solo nivel de sombra.
   plataforma. La apariencia de una app simulada vive en el `.module.css` del
   escenario, nunca en tokens ni en utilidades de Tailwind.
 - No usar hex en línea ni `style={{}}`. Si falta un color, agregarlo a `@theme`.
-- No poner azul (`text-link`) en un botón. Solo enlaces en texto.
+- No dejar un enlace en texto sin subrayar: en verde sin subrayado se lee como
+  botón.
 - No usar `rounded-full` en un botón. Las pastillas son de las insignias.
 - No usar `text-muted` para contenido: no alcanza contraste a tamaño normal.
-- No agregar un segundo nivel de sombra ni un color de marca saturado.
-- No repetir el degradado del cielo fuera del hero de la portada.
+- No agregar un segundo nivel de sombra ni un segundo color de marca.
+- No repetir el degradado de menta fuera del hero de la portada.
+- No usar `primary` para señalar un acierto: eso es `success`, que es otro
+  verde a propósito.

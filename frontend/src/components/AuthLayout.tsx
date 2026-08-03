@@ -11,7 +11,7 @@ interface AuthLayoutProps {
 /// plataforma; el formulario queda en una tarjeta a la derecha.
 function AuthLayout({ titulo, subtitulo, children, pie }: AuthLayoutProps) {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-sky-light to-canvas">
+    <div className="min-h-screen bg-gradient-to-b from-mint-light to-canvas">
       <div className="mx-auto flex min-h-screen max-w-5xl flex-col justify-center gap-12 px-6 py-12 lg:flex-row lg:items-center lg:gap-16">
         <div className="flex-1">
           <p className="text-[11px] font-semibold uppercase tracking-[0.88px] text-ink">

@@ -2,15 +2,17 @@
 
 /* Tokens del sistema de diseño. Ver DESIGN.md — solo modo claro. */
 @theme {
-  --color-primary: #000000;
-  --color-primary-active: #1a1a1a;
+  --color-primary: #006837;
+  --color-primary-active: #00522b;
   --color-on-primary: #ffffff;
 
   --color-ink: #171717;
   --color-body: #60646c;
   --color-muted: #999999;
   --color-muted-soft: #cccccc;
-  --color-link: #0d74ce;
+  /* Mismo verde que el relleno primario: lo que distingue un enlace de un
+     botón es el subrayado, no el color. Ver DESIGN.md §2. */
+  --color-link: #006837;
 
   --color-canvas: #ffffff;
   --color-canvas-soft: #fafafa;
@@ -21,9 +23,12 @@
   --color-hairline-soft: #f5f5f7;
   --color-hairline-strong: #dcdee0;
 
-  --color-sky-light: #cfe7ff;
-  --color-sky-mid: #a8c8e8;
+  --color-mint-light: #d9ede2;
+  --color-mint-mid: #a9d1ba;
 
+  /* Más claro y saturado que --color-primary a propósito: en una app donde
+     verde significa "acertaste", el verde del acierto no puede ser el mismo
+     verde del cromo. */
   --color-success: #16a34a;
   --color-danger: #b4342f;
   --color-warning: #ab6400;
