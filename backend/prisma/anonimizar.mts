@@ -5,13 +5,18 @@
  *   pnpm anonimizar -- --confirmar
  *
  * ES IRREVERSIBLE y deja a los participantes sin poder iniciar sesión.
+ *
+ * Solo toca el servicio de IDENTIDAD. Las corridas viven en otro schema, bajo
+ * otro rol de Postgres, y este script no tiene forma de alcanzarlas — que es
+ * exactamente lo que se quiere: la anonimización no puede tocar el dato del
+ * estudio ni por accidente.
  */
 import 'dotenv/config';
 import { PrismaPg } from '@prisma/adapter-pg';
-import { PrismaClient } from '../generated/prisma/client.js';
+import { PrismaClient } from '../generated/identidad/client.js';
 
 const prisma = new PrismaClient({
-  adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL }),
+  adapter: new PrismaPg({ connectionString: process.env.IDENTIDAD_DATABASE_URL }),
 });
 
 async function main() {
@@ -20,11 +25,11 @@ async function main() {
   const pendientes = await prisma.participant.count({
     where: { anonymizedAt: null, role: 'PARTICIPANT' },
   });
-  const corridas = await prisma.scenarioRun.count();
 
   if (!confirmado) {
     console.log(`
-Se anonimizarían ${pendientes} participantes (${corridas} corridas se conservan).
+Se anonimizarían ${pendientes} participantes. Las corridas no se tocan: viven
+en el servicio de entrenamiento y ya están identificadas solo por seudónimo.
 
 Esto borra nombre, correo y teléfono de forma IRREVERSIBLE. Nadie podrá
 volver a iniciar sesión. Hazlo solo cuando la recolección de datos haya
@@ -57,7 +62,7 @@ Para ejecutarlo de verdad:  pnpm anonimizar -- --confirmar
 
   console.log(
     `\nListo. ${participantes.length} participantes anonimizados. ` +
-      `${corridas} corridas conservadas.\n`,
+      `Las corridas quedaron intactas.\n`,
   );
 }
 

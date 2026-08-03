@@ -1,8 +1,41 @@
 {
   "$schema": "https://json.schemastore.org/nest-cli",
   "collection": "@nestjs/schematics",
-  "sourceRoot": "src",
+  "monorepo": true,
+  "root": "apps/identidad",
+  "sourceRoot": "apps/identidad/src",
   "compilerOptions": {
-    "deleteOutDir": true
+    "webpack": false,
+    "tsConfigPath": "apps/identidad/tsconfig.app.json",
+    "deleteOutDir": false
+  },
+  "projects": {
+    "identidad": {
+      "type": "application",
+      "root": "apps/identidad",
+      "entryFile": "main",
+      "sourceRoot": "apps/identidad/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/identidad/tsconfig.app.json"
+      }
+    },
+    "entrenamiento": {
+      "type": "application",
+      "root": "apps/entrenamiento",
+      "entryFile": "main",
+      "sourceRoot": "apps/entrenamiento/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/entrenamiento/tsconfig.app.json"
+      }
+    },
+    "comun": {
+      "type": "library",
+      "root": "libs/comun",
+      "entryFile": "index",
+      "sourceRoot": "libs/comun/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/comun/tsconfig.lib.json"
+      }
+    }
   }
 }

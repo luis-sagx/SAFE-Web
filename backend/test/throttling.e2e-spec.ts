@@ -2,10 +2,10 @@ import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import request from 'supertest';
 import type { App } from 'supertest/types';
-import { AppModule } from '../src/app.module';
-import { configurarApp } from '../src/app.setup';
-import { PrismaService } from '../src/prisma/prisma.service';
-import { limpiar } from './app.e2e';
+import { AppModule } from '../apps/identidad/src/app.module';
+import { configurarApp } from '@comun';
+import { PrismaService } from '../apps/identidad/src/prisma/prisma.service';
+import { limpiar } from './identidad.e2e';
 
 /// Única suite con el límite activo: es lo que protege el login contra fuerza
 /// bruta (OWASP Authentication).

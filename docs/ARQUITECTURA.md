@@ -35,35 +35,69 @@ De ahí salen las tres restricciones que gobiernan todo lo demás:
 
 ---
 
-## 2. Arquitectura general: tres capas
+## 2. Arquitectura general: dos microservicios tras un gateway
 
-Arquitectura de tres capas clásica (presentación / lógica de aplicación /
-datos), desplegada completa en un servidor propio mediante contenedores.
+La lógica de aplicación está partida en **dos servicios cortados por
+sensibilidad del dato**, no por capas ni por tamaño. Todo se despliega en un
+servidor propio mediante contenedores.
 
 ```
-                    ┌──────────────────────────────────────┐
-   Navegador ──────▶│  web  ·  Nginx + React SPA (:8080)   │
-                    │  sirve el bundle y delega /api/       │
-                    └───────────────┬──────────────────────┘
-                                    │  /api/*  (red interna de compose)
-                    ┌───────────────▼──────────────────────┐
-                    │  api  ·  NestJS (:3000)              │
-                    │  auth JWT, validación DTO, corridas  │
-                    └───────────────┬──────────────────────┘
-                                    │  Prisma + driver adapter
-                    ┌───────────────▼──────────────────────┐
-                    │  db  ·  PostgreSQL (sin puerto host) │
-                    └──────────────────────────────────────┘
+                          Navegador
+                              │  HTTPS
+                    ┌─────────▼──────────┐
+                    │  web · Nginx :8080 │   SPA + gateway
+                    └─────────┬──────────┘
+                    ┌─────────┴─────────┐
+              /api/auth/*          /api/runs/*
+                    │                   │
+             ┌──────▼──────┐    ┌───────▼────────┐
+             │  identidad  │    │  entrenamiento │
+             │    :3001    │    │     :3002      │
+             │ PII · JWT   │    │ corridas · CSV │
+             └──────┬──────┘    └───────┬────────┘
+                    │                   │
+             ┌──────▼───────────────────▼────────┐
+             │  db · PostgreSQL (sin puerto host)│
+             │   schema identidad     ← rol propio
+             │   schema entrenamiento ← rol propio
+             └───────────────────────────────────┘
 ```
 
 Decisiones estructurales que **no** se cambian sin actualizar este documento:
 
 | Decisión | Motivo |
 |---|---|
-| Frontend y API comparten origen; Nginx delega `/api/` | Elimina CORS en producción y evita exponer el API directamente. |
-| `db` y `api` no publican puertos al host | Solo `web` es alcanzable desde afuera. Reduce la superficie expuesta del servidor propio. |
+| Frontend y servicios comparten origen; Nginx enruta por prefijo | Elimina CORS en producción y evita exponer los servicios directamente. |
+| `db`, `identidad` y `entrenamiento` no publican puertos al host | Solo `web` es alcanzable desde afuera. Reduce la superficie expuesta del servidor propio. |
+| Los dos servicios **no se llaman entre sí** | El JWT lleva todo lo que ambos necesitan. Si `identidad` cae, las corridas en curso se siguen registrando. |
+| Un schema y un **rol de Postgres por servicio**, sin permisos cruzados | Es lo que convierte la regla de privacidad en una imposibilidad técnica (§2.1). |
 | El catálogo de escenarios vive en el frontend, no en la base | El contenido no es dato sensible ni cambia por usuario; meterlo en la base agregaría una capa sin beneficio. |
-| El API solo guarda resultados | Su única responsabilidad es la integridad de los datos del estudio. |
+
+### 2.1 El corte es por sensibilidad del dato
+
+- **`identidad`** es el único que conoce nombre, apellido, correo y contraseña.
+- **`entrenamiento`** conoce `participantId` (un uuid opaco), `participantSeq`
+  (el seudónimo del análisis) y `participantCohort` (el grupo de la muestra).
+  Los tres llegan **dentro del JWT**, no de una consulta.
+
+Consecuencia: `GET /api/runs/export.csv` **no puede** filtrar un dato personal.
+No hay tabla que consultar, no hay llave foránea que seguir, y el rol de
+Postgres del servicio recibe `permission denied for schema identidad` si lo
+intenta con SQL crudo. Antes esto lo sostenía un `select` bien escrito más una
+prueba unitaria; ahora lo sostiene la arquitectura, y hay un paso de CI que lo
+verifica contra la base real.
+
+### 2.2 Lo que este corte cuesta
+
+Se declara para que no aparezca como sorpresa:
+
+1. **No hay `ON DELETE CASCADE`** de `Participant` a `ScenarioRun`. Para el
+   estudio es lo correcto —borrar la identidad no debe borrar el dato que la
+   persona aportó— pero deja de haber integridad referencial entre servicios.
+2. **`pnpm anonimizar` solo toca `identidad`.** Ya no cuenta corridas ni podría
+   borrarlas: no las alcanza. Que es justamente lo que se quiere.
+3. **Dos servicios que operar**: dos health checks, dos imágenes, dos juegos de
+   migraciones.
 
 ---
 
@@ -97,21 +131,27 @@ safe-web/
 │   ├── nginx.conf
 │   └── Dockerfile
 │
-├── backend/                  # API NestJS (pnpm)
+├── backend/                  # Monorepo NestJS con los dos servicios (pnpm)
+│   ├── apps/
+│   │   ├── identidad/        # ← registro, login, JWT, datos personales
+│   │   │   ├── src/{auth,prisma}/
+│   │   │   └── tsconfig.app.json
+│   │   └── entrenamiento/    # ← corridas del estudio + exportación CSV
+│   │       ├── src/{runs,prisma}/
+│   │       └── tsconfig.app.json
+│   ├── libs/
+│   │   └── comun/            # ← JwtAuthGuard, @CurrentParticipant, ValidationPipe
 │   ├── prisma/
-│   │   ├── schema.prisma     # ← modelo de datos
-│   │   ├── migrations/
+│   │   ├── identidad/{schema.prisma,migrations/}
+│   │   ├── entrenamiento/{schema.prisma,migrations/}
 │   │   ├── seed.mts          # crea la cuenta de investigador
 │   │   └── anonimizar.mts    # ← cierra la recolección de datos
-│   ├── prisma.config.ts
-│   ├── src/
-│   │   ├── auth/             # login, JWT, guards
-│   │   ├── runs/             # corridas de escenario + exportación CSV
-│   │   ├── prisma/           # PrismaService
-│   │   ├── app.controller.ts # health check
-│   │   └── main.ts
-│   └── Dockerfile
+│   ├── prisma.identidad.config.ts
+│   ├── prisma.entrenamiento.config.ts
+│   ├── nest-cli.json         # modo monorepo
+│   └── Dockerfile            # una imagen, ARG APP decide cuál arranca
 │
+├── db-init/                  # ← un rol y un schema por servicio
 ├── docs/
 ├── .github/workflows/ci.yml
 ├── docker-compose.yml
@@ -127,8 +167,17 @@ safe-web/
   `lib/` y `context/`. **Nunca al revés.** Un componente compartido que sepa de
   un escenario concreto es un error de diseño.
 - Ningún componente llama a `fetch` directamente: todo pasa por `src/lib/api.ts`.
-- Dentro del backend: un módulo (`auth/`, `runs/`) no importa archivos internos
-  de otro; solo su módulo público (Nest resuelve el resto por inyección).
+- Dentro del backend: `apps/*` importa de `libs/comun` con el alias `@comun`.
+  **`libs/comun` nunca importa de `apps/*`, y un servicio nunca importa archivos
+  del otro.** Si algo tiene que viajar entre servicios, viaja en el JWT.
+- `libs/comun` guarda **solo** lo que ambos necesitan de verdad: la verificación
+  del token, el decorador que extrae al participante, la configuración del
+  `ValidationPipe` y los helpers de transformación. No es un cajón de sastre —
+  un archivo que solo usa un servicio vive en ese servicio.
+
+El alias `@comun` se declara en `tsconfig.json` **sin extensión**
+(`libs/comun/src/index`). Con `.ts` al final, tsc emite
+`require(".../index.ts")` literal y el servicio no arranca.
 
 ### Gestor de paquetes
 
@@ -281,17 +330,35 @@ como error**.
 
 ## 5. Contrato del API
 
-Prefijo global `/api`. Todas las respuestas son JSON salvo la exportación CSV.
+Prefijo global `/api` en ambos servicios. Todas las respuestas son JSON salvo
+la exportación CSV. Nginx enruta por prefijo: `/api/auth/*` a `identidad`,
+`/api/runs/*` a `entrenamiento`.
 
-| Método | Ruta | Auth | Qué hace |
-|---|---|---|---|
-| `GET` | `/api/health` | — | Health check (Docker y CI). |
-| `POST` | `/api/auth/register` | — | `{ nombre, email, telefono, password }` → `{ accessToken, participant }`. Máx. 5/min por IP. |
-| `POST` | `/api/auth/login` | — | `{ email, password }` → `{ accessToken, participant }`. Máx. 5 intentos/min por IP. |
-| `GET` | `/api/auth/me` | JWT | Devuelve el participante del token. |
-| `POST` | `/api/runs` | JWT | Registra una corrida. |
-| `GET` | `/api/runs/me` | JWT | Corridas del participante autenticado. |
-| `GET` | `/api/runs/export.csv` | JWT + rol `RESEARCHER` | Exporta todas las corridas para el análisis. |
+| Método | Ruta | Servicio | Auth | Qué hace |
+|---|---|---|---|---|
+| `GET` | `/api/health` | ambos | — | Health check (Docker y CI). Nginx expone el de `identidad`. |
+| `POST` | `/api/auth/register` | identidad | — | `{ nombre, email, telefono, password }` → `{ accessToken, participant }`. Máx. 5/min por IP. |
+| `POST` | `/api/auth/login` | identidad | — | `{ email, password }` → `{ accessToken, participant }`. Máx. 5 intentos/min por IP. |
+| `GET` | `/api/auth/me` | identidad | JWT | Devuelve el participante del token. |
+| `POST` | `/api/runs` | entrenamiento | JWT | Registra una corrida. |
+| `GET` | `/api/runs/me` | entrenamiento | JWT | Corridas del participante autenticado. |
+| `GET` | `/api/runs/export.csv` | entrenamiento | JWT + rol `RESEARCHER` | Exporta todas las corridas para el análisis. |
+
+### 5.1 Contrato del token
+
+```json
+{ "sub": "<uuid>", "seq": 42, "cohort": "comerciantes", "role": "PARTICIPANT" }
+```
+
+`seq` y `cohort` viajan en el token porque son los dos únicos campos del
+participante que el análisis necesita, y ninguno lo identifica. Es lo que
+permite a `entrenamiento` etiquetar cada corrida y exportar el CSV sin consultar
+jamás a `identidad`.
+
+Las cabeceras de proxy de Nginx (`X-Real-IP`, `X-Forwarded-For`) van en
+`frontend/proxy-comun.inc` y se incluyen en **cada** `location`: nginx no hereda
+`proxy_set_header`, y sin ellas el límite de 5 intentos de login por minuto
+contaría todas las peticiones como si vinieran del contenedor de nginx.
 
 Cuerpo de `POST /api/runs`:
 
@@ -323,23 +390,37 @@ Reglas del API que no se relajan:
 
 ## 6. Modelo de datos
 
-Definido en `backend/prisma/schema.prisma`. Dos tablas:
+Un schema de Prisma por servicio, y **una tabla en cada uno**:
 
-- **`Participant`** — `seq` (autoincremental, del que se deriva el seudónimo),
-  `nombre`, `email` (único, es el usuario de login), `telefono`, `passwordHash`,
-  `role`, `cohort`, `anonymizedAt`. Los tres campos personales son *nullable*
-  porque `pnpm anonimizar` los pone en null.
-- **`ScenarioRun`** — una fila por escenario terminado: `scenarioId`, `version`,
-  `outcome`, `score`, `endingId`, `durationMs`, `startedAt`, `finishedAt` y
-  `decisions` (JSONB).
+- `backend/prisma/identidad/schema.prisma` → **`Participant`**: `seq`
+  (autoincremental, del que se deriva el seudónimo), `nombre`, `email` (único,
+  es el usuario de login), `telefono`, `passwordHash`, `role`, `cohort`,
+  `anonymizedAt`. Los campos personales son *nullable* porque `pnpm anonimizar`
+  los pone en null.
+- `backend/prisma/entrenamiento/schema.prisma` → **`ScenarioRun`**: una fila por
+  escenario terminado, con `participantId`, `participantSeq`,
+  `participantCohort`, `scenarioId`, `version`, `outcome`, `score`, `endingId`,
+  `durationMs`, `startedAt`, `finishedAt` y `decisions` (JSONB).
+
+**No hay llave foránea entre ellas y no debe haberla.** `participantId` es un
+uuid opaco: el servicio que lo guarda no tiene la tabla que lo resolvería.
 
 `decisions` es JSONB a propósito: cada escenario produce una traza con forma
 distinta (secuencia de nodos, zonas tocadas, tiempos), y JSONB permite guardarlas
 sin una tabla por tipo de escenario.
 
 Cambios de esquema: siempre por migración (`pnpm prisma:migrate`), nunca
-editando la base a mano. Las migraciones se versionan en el repositorio y se
-aplican solas al arrancar el contenedor del API.
+editando la base a mano. Las migraciones se versionan en el repositorio y cada
+contenedor aplica **solo las suyas** al arrancar.
+
+Los schemas de Postgres los crea `db-init/01-roles-y-schemas.sh` la primera vez
+que se inicializa el volumen; las migraciones asumen que ya existen. Cambiar los
+roles después obliga a recrear el volumen (`docker compose down -v`).
+
+**El schema se pasa al driver adapter, no en la URL.** El CLI de Prisma honra
+`?schema=`, pero `PrismaPg` no: se queda en `public` y toda consulta falla con
+`permission denied for schema public`. Por eso `PrismaService` lo declara como
+segundo argumento.
 
 ---
 
@@ -359,9 +440,11 @@ teléfono                   nombre, email, telefono        scenarioId,outcome…
 
 Reglas que **no se negocian**:
 
-1. **La exportación nunca incluye datos personales.** `RunsService.exportCsv`
-   hace un `select` explícito de `seq` y `cohort`; agregar un campo personal al
-   modelo no puede filtrarlo. Hay una prueba que lo verifica.
+1. **La exportación nunca incluye datos personales.** Ya no es una regla de
+   disciplina: el servicio que exporta el CSV vive en otro schema, con otro rol
+   de Postgres, y no tiene ninguna tabla con datos personales ni permiso para
+   alcanzarlos. Hay una prueba unitaria, una e2e y un paso de CI que lo
+   verifican contra la base real.
 2. **El seudónimo se deriva de `seq`, no se guarda.** El participante nunca lo
    ve; es solo la llave con la que el investigador cruza estos resultados con
    las respuestas de Forms.
@@ -389,26 +472,33 @@ La plataforma no envía nada a Forms ni consume su API.
 
 ## 8. Despliegue
 
-Servidor propio, con Docker Compose. Tres servicios: `db`, `api`, `web`.
+Servidor propio, con Docker Compose. Cuatro servicios: `db`, `identidad`,
+`entrenamiento` y `web`.
 
 ```bash
-cp .env.example .env          # rellenar POSTGRES_PASSWORD y JWT_SECRET
+cp .env.example .env          # contraseñas de los dos roles y JWT_SECRET
 docker compose up -d --build
-docker compose exec api node prisma/seed.mts --email tu.correo@espe.edu.ec
+docker compose exec identidad node prisma/seed.mts --email tu.correo@espe.edu.ec
 ```
 
 El `seed` solo crea la cuenta de investigador e imprime su contraseña una vez.
 Los participantes se registran solos desde la plataforma.
 
+Los dos servicios de aplicación salen de **una sola imagen**: comparten
+dependencias y `libs/comun`, así que construirlas por separado duplicaría el
+`pnpm install` sin ganar nada. El `ARG APP` decide qué migraciones se aplican y
+qué `main.js` arranca.
+
 Configuración de seguridad de los contenedores (OWASP Docker Security Cheat
 Sheet), ya aplicada en `docker-compose.yml` y en los `Dockerfile`:
 
-- ningún contenedor privilegiado; `no-new-privileges` en los tres;
-- `cap_drop: ALL` en `api` y `web`;
-- el API corre como usuario `node`, el frontend sobre la imagen no privilegiada
-  de Nginx (puerto 8080);
+- ningún contenedor privilegiado; `no-new-privileges` en los cuatro;
+- `cap_drop: ALL` en `identidad`, `entrenamiento` y `web`;
+- los servicios corren como usuario `node`, el frontend sobre la imagen no
+  privilegiada de Nginx (puerto 8080);
 - límites de memoria por servicio;
-- `db` y `api` sin puertos publicados al host.
+- solo `web` publica puertos al host;
+- un rol de Postgres por servicio, sin permisos sobre el schema del otro.
 
 Pendiente al desplegar de verdad: **TLS delante de `web`** (reverse proxy con
 Let's Encrypt) y una rutina de respaldo del volumen `pgdata`.
@@ -420,6 +510,15 @@ frontend, build y pruebas del backend, y construcción de las imágenes Docker.
 Detectar un fallo de empaquetado en CI evita descubrirlo en el servidor durante
 una sesión de pruebas con usuarios.
 
+Dos pasos que existen por la arquitectura de microservicios y no deben quitarse:
+
+- **Los roles de Postgres se crean con `db-init/01-roles-y-schemas.sh`**, el
+  mismo script que corre en producción, no una copia. Si los permisos se
+  aflojan ahí, las pruebas dejan de reflejarlo.
+- **Un paso comprueba que el rol `entrenamiento` recibe `permission denied` al
+  leer `identidad."Participant"`.** Es la verificación directa de la regla de
+  privacidad del estudio contra una base real.
+
 ---
 
 ## 9. Comandos
@@ -429,11 +528,13 @@ una sesión de pruebas con usuarios.
 cd frontend && pnpm install && pnpm dev      # http://localhost:5173
 pnpm build && pnpm lint
 
-# Backend
+# Backend (los dos servicios comparten instalación)
 cd backend && pnpm install
-pnpm prisma:migrate                          # crea/aplica migraciones en dev
-pnpm start:dev                               # http://localhost:3000/api
-pnpm test
+pnpm prisma:migrate                          # migra los DOS schemas
+pnpm start:identidad                         # http://localhost:3001/api
+pnpm start:entrenamiento                     # http://localhost:3002/api
+pnpm build && pnpm lint:ci
+pnpm test && pnpm test:e2e
 pnpm seed -- --email tu.correo@espe.edu.ec   # cuenta de investigador
 pnpm anonimizar                              # al cerrar la recolección
 
@@ -446,9 +547,11 @@ no con ts-node: así funcionan dentro del contenedor de producción, donde las
 dependencias de desarrollo no están. La extensión `.mts` los marca como ESM (el
 resto del backend compila a CommonJS).
 
-En desarrollo, el frontend apunta al API con `VITE_API_URL`
-(por defecto `/api`; para `vite dev` conviene `http://localhost:3000/api`), y el
-backend debe declarar ese origen en `CORS_ORIGINS`.
+En desarrollo, `vite dev` hace de gateway igual que Nginx en producción: su
+`server.proxy` enruta `/api/auth` a `localhost:3001` y `/api/runs` a
+`localhost:3002`. Por eso `VITE_API_URL` se queda en su valor por defecto
+(`/api`) y **no hace falta CORS**: el frontend nunca sabe en qué puerto vive
+cada servicio, que es justo lo que el gateway existe para evitar.
 
 ---
 
@@ -498,6 +601,9 @@ Antes de escribir código en este repositorio:
 | Framework frontend | React + Vite + TypeScript `strict` | Los tipos atrapan errores de contrato entre el frontend y el API antes de ejecutar; en un instrumento de investigación un dato mal formado es un dato perdido. |
 | Acceso | Registro con nombre, correo y teléfono | Un código asignado confunde al público no técnico. La separación de §7 mantiene el anonimato del análisis. |
 | Estado global | Context API | Solo hay un estado compartido (la sesión). Redux sería sobreingeniería. |
+| Backend | Dos microservicios cortados por sensibilidad del dato | Hace que la regla de privacidad del estudio deje de depender de la disciplina al escribir consultas y pase a ser una imposibilidad técnica (§2.1). |
+| Comunicación entre servicios | Ninguna: todo lo que necesitan viaja en el JWT | Evita acoplamiento en tiempo de ejecución y una cadena de fallos donde un servicio caído tumba al otro. |
+| Base de datos | Un Postgres, un schema y un rol por servicio | Dos contenedores de base complicarían la operación de una sesión presencial sin añadir aislamiento que los roles no den ya. |
 | Contenido de escenarios | En el repositorio, no en la base | No es dato del estudio ni varía por usuario. |
 | Pre/post-test | Google Forms, fuera de la plataforma | Ya resuelto y validado; construirlo dentro no aportaría al objetivo. |
 | Analítica dentro de la app | Fuera de alcance | El análisis se hace sobre el CSV exportado. |
@@ -507,11 +613,17 @@ Antes de escribir código en este repositorio:
 
 ## 12. Estado actual
 
-Implementado: las tres capas en TypeScript, registro y login por correo,
-seudonimización, registro y exportación de corridas sin datos personales,
-comando de anonimización, catálogo con rutas generadas, sistema de diseño en
-Tailwind, contenerización y CI.
+Implementado: el corte en dos microservicios con un rol de Postgres por
+servicio, registro y login por correo, seudonimización, registro y exportación
+de corridas sin datos personales, comando de anonimización, catálogo con rutas
+generadas, sistema de diseño en Tailwind (marca verde `#006837`),
+contenerización y CI.
 
-Pendiente: los 35 escenarios del diseño pedagógico (hay 5 migrados al contrato
-nuevo y todos registran resultados), la terminación TLS en el servidor propio y
-el respaldo del volumen de la base.
+Pendiente, en el orden del spec
+`docs/superpowers/specs/2026-08-03-safe-web-mvp-phishing-design.md`:
+
+1. Registro con nombre, apellido, cédula (HMAC + pepper) y correo.
+2. MVP de solo phishing, gating de 6/8 y pantalla de bienvenida.
+3. Los 5 escenarios de phishing que faltan para llegar a 8.
+4. Certificado, verificación de correo y servicio `notificaciones`.
+5. Terminación TLS en el servidor propio y respaldo del volumen de la base.

@@ -13,23 +13,37 @@ pre-test y un post-test aplicados aparte.
 
 | Carpeta | Qué es |
 |---|---|
-| `frontend/` | SPA React + Vite + TypeScript. Los escenarios y el catálogo. |
-| `backend/` | API NestJS + Prisma. Autenticación y resultados. |
+| `frontend/` | SPA React + Vite + TypeScript. Los escenarios, el catálogo y el gateway Nginx. |
+| `backend/` | Dos microservicios NestJS + Prisma: `identidad` y `entrenamiento`. |
+| `db-init/` | Un rol y un schema de Postgres por servicio, sin permisos cruzados. |
 | `docs/` | Arquitectura, justificación de tecnologías y diseño de escenarios. |
+
+### Los dos servicios
+
+| Servicio | Puerto | Rutas | Qué sabe |
+|---|---|---|---|
+| `identidad` | 3001 | `/api/auth/*` | Nombre, correo, contraseña. Firma el JWT. |
+| `entrenamiento` | 3002 | `/api/runs/*` | Las corridas del estudio, identificadas solo por seudónimo. |
+
+No se llaman entre sí: el JWT lleva lo que ambos necesitan y cada uno lo verifica
+localmente. El servicio que exporta el CSV **no tiene forma de leer un dato
+personal** — ni tabla, ni permiso de Postgres.
 
 ## Empezar
 
 ```bash
-cp .env.example .env          # rellenar POSTGRES_PASSWORD y JWT_SECRET
+cp .env.example .env          # rellenar las contraseñas y JWT_SECRET
 docker compose up -d --build
-docker compose exec api node prisma/seed.mts --email tu.correo@espe.edu.ec
+docker compose exec identidad node prisma/seed.mts --email tu.correo@espe.edu.ec
 ```
 
 Desarrollo sin contenedores:
 
 ```bash
-cd frontend && pnpm install && pnpm dev     # http://localhost:5173
-cd backend  && pnpm install && pnpm start:dev
+cd frontend && pnpm install && pnpm dev             # http://localhost:5173
+cd backend  && pnpm install
+pnpm start:identidad                                # http://localhost:3001/api
+pnpm start:entrenamiento                            # http://localhost:3002/api
 ```
 
 ## Antes de escribir código

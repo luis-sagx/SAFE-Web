@@ -9,10 +9,10 @@ import { randomBytes } from 'node:crypto';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { hash } from 'bcryptjs';
 // Extensión .js: Node lo ejecuta como ESM y la resolución la exige.
-import { PrismaClient } from '../generated/prisma/client.js';
+import { PrismaClient } from '../generated/identidad/client.js';
 
 const prisma = new PrismaClient({
-  adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL }),
+  adapter: new PrismaPg({ connectionString: process.env.IDENTIDAD_DATABASE_URL }),
 });
 
 function arg(name: string, fallback: string): string {

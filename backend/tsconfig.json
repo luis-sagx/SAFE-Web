@@ -14,6 +14,16 @@
     "sourceMap": true,
     "outDir": "./dist",
     "baseUrl": "./",
+    // Los dos servicios comparten solo esto: guards del JWT, decoradores y la
+    // configuración del ValidationPipe. Nunca al revés — libs/comun no importa
+    // de apps/.
+    //
+    // Sin extensión a propósito: si el destino se escribe ".../index.ts", tsc
+    // emite `require(".../index.ts")` literal y el servicio no arranca.
+    "paths": {
+      "@comun": ["libs/comun/src/index"],
+      "@comun/*": ["libs/comun/src/*"]
+    },
     "incremental": true,
     "skipLibCheck": true,
     "strictNullChecks": true,

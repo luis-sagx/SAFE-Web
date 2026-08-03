@@ -1,10 +1,14 @@
 {
   "moduleFileExtensions": ["js", "json", "ts"],
-  "rootDir": ".",
+  "rootDir": "..",
   "testEnvironment": "node",
-  "testRegex": ".e2e-spec.ts$",
+  "testRegex": "test/.*\\.e2e-spec\\.ts$",
   "transform": {
     "^.+\\.(t|j)s$": "ts-jest"
+  },
+  "moduleNameMapper": {
+    "^@comun$": "<rootDir>/libs/comun/src/index.ts",
+    "^@comun/(.*)$": "<rootDir>/libs/comun/src/$1"
   },
   "testTimeout": 30000,
   "maxWorkers": 1

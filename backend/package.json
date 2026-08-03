@@ -5,21 +5,19 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "build": "prisma generate && nest build",
-    "format": "prettier --write \"src/**/*.ts\"",
-    "start": "nest start",
-    "start:dev": "nest start --watch",
-    "start:debug": "nest start --debug --watch",
-    "start:prod": "node dist/main",
-    "lint": "eslint \"{src,test}/**/*.ts\" --fix",
-    "lint:ci": "eslint \"{src,test}/**/*.ts\"",
+    "build": "pnpm prisma:generate && nest build identidad && nest build entrenamiento",
+    "format": "prettier --write \"{apps,libs}/**/*.ts\"",
+    "start:identidad": "nest start identidad --watch",
+    "start:entrenamiento": "nest start entrenamiento --watch",
+    "lint": "eslint \"{apps,libs,test}/**/*.ts\" --fix",
+    "lint:ci": "eslint \"{apps,libs,test}/**/*.ts\"",
     "test": "jest",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
-    "prisma:generate": "prisma generate",
-    "prisma:migrate": "prisma migrate dev",
-    "prisma:deploy": "prisma migrate deploy",
+    "prisma:generate": "prisma generate --config prisma.identidad.config.ts && prisma generate --config prisma.entrenamiento.config.ts",
+    "prisma:migrate": "prisma migrate dev --config prisma.identidad.config.ts && prisma migrate dev --config prisma.entrenamiento.config.ts",
+    "prisma:deploy": "prisma migrate deploy --config prisma.identidad.config.ts && prisma migrate deploy --config prisma.entrenamiento.config.ts",
     "seed": "node prisma/seed.mts",
     "anonimizar": "node prisma/anonimizar.mts"
   },
@@ -71,15 +69,23 @@
       "json",
       "ts"
     ],
-    "rootDir": "src",
+    "rootDir": ".",
+    "roots": [
+      "<rootDir>/apps",
+      "<rootDir>/libs"
+    ],
     "testRegex": ".*\\.spec\\.ts$",
     "transform": {
       "^.+\\.(t|j)s$": "ts-jest"
     },
+    "moduleNameMapper": {
+      "^@comun$": "<rootDir>/libs/comun/src/index.ts",
+      "^@comun/(.*)$": "<rootDir>/libs/comun/src/$1"
+    },
     "collectCoverageFrom": [
       "**/*.(t|j)s"
     ],
-    "coverageDirectory": "../coverage",
+    "coverageDirectory": "./coverage",
     "testEnvironment": "node"
   },
   "packageManager": "pnpm@11.9.0"

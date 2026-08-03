@@ -1,0 +1,55 @@
+// Servicio de IDENTIDAD: el único que conoce datos personales.
+//
+// Regla de privacidad (NIST SP 800-188): nombre, correo y teléfono sirven
+// ÚNICAMENTE para que el participante entre a la plataforma con algo familiar.
+// Nunca salen hacia el análisis — de hecho ya no pueden: las corridas viven en
+// otro schema, con otro rol de base de datos, en un servicio que no tiene
+// ningún modelo ni ningún permiso para leer esta tabla.
+//
+// Al cerrar la recolección se ejecuta `pnpm anonimizar`, que borra los datos
+// personales dejando intactas las corridas. Ahí la pseudonimización pasa a ser
+// anonimización real e irreversible.
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../../generated/identidad"
+}
+
+// En Prisma 7 la URL de conexión no vive aquí: para migraciones se declara en
+// prisma.identidad.config.ts y para el runtime se pasa al driver adapter.
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  PARTICIPANT
+  RESEARCHER
+}
+
+model Participant {
+  id String @id @default(uuid())
+
+  /// Número de orden de registro. De aquí se deriva el seudónimo del análisis
+  /// ("P001", "P002", …). Viaja en el JWT para que el servicio de
+  /// entrenamiento pueda etiquetar cada corrida sin consultar este servicio.
+  seq Int @unique @default(autoincrement())
+
+  // --- Datos personales: solo para el acceso. Nunca se exportan. ---
+  // Son nullables porque `pnpm anonimizar` los pone en null al cerrar la
+  // recolección de datos.
+  nombre   String?
+  email    String  @unique
+  telefono String?
+
+  passwordHash String
+  role         Role   @default(PARTICIPANT)
+
+  /// Grupo de la muestra (ej. "adultos-mayores", "comerciantes"). Opcional.
+  cohort String?
+
+  /// Marca de cuándo se borraron los datos personales. Deja constancia de que
+  /// la anonimización se aplicó, sin guardar qué se borró.
+  anonymizedAt DateTime?
+
+  createdAt DateTime @default(now())
+}

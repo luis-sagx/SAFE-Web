@@ -1,15 +1,16 @@
 {
   "extends": "./tsconfig.json",
-  // prisma.config.ts y prisma/seed.ts quedan fuera del build a propósito: si
-  // entran, el rootDir sube a la raíz del proyecto y la salida pasa a ser
-  // dist/src/main.js en vez de dist/main.js. El seed se ejecuta con ts-node.
+  // Los archivos de prisma/ quedan fuera del build a propósito: los scripts
+  // .mts corren con el soporte nativo de TypeScript de Node 24, y los
+  // prisma.*.config.ts solo los usa el CLI de Prisma.
   "exclude": [
     "node_modules",
     "test",
     "dist",
     "generated",
     "prisma",
-    "prisma.config.ts",
+    "prisma.identidad.config.ts",
+    "prisma.entrenamiento.config.ts",
     "**/*spec.ts"
   ]
 }

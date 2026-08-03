@@ -86,7 +86,8 @@ jobs:
           --health-timeout 5s
           --health-retries 10
     env:
-      DATABASE_URL: postgresql://ci:ci@localhost:5432/ci_test?schema=public
+      IDENTIDAD_DATABASE_URL: postgresql://identidad:ci@localhost:5432/ci_test?schema=identidad
+      ENTRENAMIENTO_DATABASE_URL: postgresql://entrenamiento:ci@localhost:5432/ci_test?schema=entrenamiento
       JWT_SECRET: secreto-solo-para-pruebas-de-ci
     steps:
       - uses: actions/checkout@v4
@@ -99,6 +100,17 @@ jobs:
           cache: pnpm
           cache-dependency-path: backend/pnpm-lock.yaml
       - run: pnpm install --frozen-lockfile
+      # El MISMO script que corre en producción, no una copia: si los permisos
+      # entre servicios se aflojan ahí, las pruebas dejan de reflejarlo.
+      - name: Un rol y un schema por servicio
+        env:
+          POSTGRES_USER: ci
+          POSTGRES_DB: ci_test
+          PGHOST: localhost
+          PGPASSWORD: ci
+          IDENTIDAD_DB_PASSWORD: ci
+          ENTRENAMIENTO_DB_PASSWORD: ci
+        run: ../db-init/01-roles-y-schemas.sh
       - run: pnpm prisma:generate
       - run: pnpm prisma:deploy
       - run: pnpm test:e2e
@@ -150,6 +162,8 @@ jobs:
       POSTGRES_USER: ci
       POSTGRES_PASSWORD: ci
       POSTGRES_DB: ci
+      IDENTIDAD_DB_PASSWORD: ci-identidad
+      ENTRENAMIENTO_DB_PASSWORD: ci-entrenamiento
       JWT_SECRET: ci-secret-solo-para-pruebas
       WEB_PORT: 8080
     steps:
@@ -170,6 +184,9 @@ jobs:
       - name: Enrutado de la SPA
         run: curl -fsS http://localhost:8080/dashboard > /dev/null
 
+      # Un token emitido por `identidad` tiene que servir en `entrenamiento`
+      # sin que se llamen entre sí: es el contrato de los dos microservicios,
+      # y la única forma de verificarlo es a través del gateway real.
       - name: Registro y corrida contra la pila real
         run: |
           token=$(curl -fsS -X POST http://localhost:8080/api/auth/register \
@@ -178,8 +195,22 @@ jobs:
             | python3 -c 'import json,sys; print(json.load(sys.stdin)["accessToken"])')
           curl -fsS -X POST http://localhost:8080/api/runs \
             -H "Authorization: Bearer $token" -H 'Content-Type: application/json' \
-            -d '{"scenarioId":"suplantacion/cambio-numero","version":1,"outcome":"CORRECTO","score":100,"endingId":"e_verifica","durationMs":1000,"startedAt":"2026-08-01T10:00:00.000Z","decisions":[]}' \
+            -d '{"scenarioId":"phishing/factura-sri","version":1,"outcome":"CORRECTO","score":100,"endingId":"e_verifica","durationMs":1000,"startedAt":"2026-08-01T10:00:00.000Z","decisions":[]}' \
             > /dev/null
+
+      # La garantía de privacidad del estudio, verificada contra la base real:
+      # el rol del servicio de entrenamiento no puede alcanzar los datos
+      # personales ni con SQL crudo. Si alguien afloja los permisos del
+      # db-init, esto falla.
+      - name: El servicio del estudio no alcanza los datos personales
+        run: |
+          if docker compose exec -T -e PGPASSWORD=ci-entrenamiento db \
+            psql -U entrenamiento -d ci -h 127.0.0.1 \
+            -c 'SELECT nombre FROM identidad."Participant";' 2>/dev/null; then
+            echo 'FALLO: el rol entrenamiento pudo leer identidad."Participant"'
+            exit 1
+          fi
+          echo 'OK: permiso denegado, como debe ser.'
 
       - name: Registros de los contenedores si algo falló
         if: failure()
@@ -190,7 +221,7 @@ jobs:
       - name: Vulnerabilidades de las imágenes (informativo)
         continue-on-error: true
         run: |
-          for imagen in safe-web-api safe-web-web; do
+          for imagen in safe-web-identidad safe-web-entrenamiento safe-web-web; do
             docker run --rm \
               -v /var/run/docker.sock:/var/run/docker.sock \
               -v "${HOME}/.cache/trivy:/root/.cache/trivy" \
@@ -203,7 +234,7 @@ jobs:
       # Un secreto horneado en la imagen sí es un fallo de este repositorio.
       - name: Secretos horneados en las imágenes
         run: |
-          for imagen in safe-web-api safe-web-web; do
+          for imagen in safe-web-identidad safe-web-entrenamiento safe-web-web; do
             docker run --rm \
               -v /var/run/docker.sock:/var/run/docker.sock \
               -v "${HOME}/.cache/trivy:/root/.cache/trivy" \

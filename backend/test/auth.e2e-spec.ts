@@ -1,7 +1,7 @@
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import type { App } from 'supertest/types';
-import { PrismaService } from '../src/prisma/prisma.service';
+import { PrismaService } from '../apps/identidad/src/prisma/prisma.service';
 import {
   crearApp,
   cuerpo,
@@ -10,7 +10,7 @@ import {
   type ErrorBody,
   type PerfilBody,
   type SesionBody,
-} from './app.e2e';
+} from './identidad.e2e';
 
 describe('Autenticación (e2e)', () => {
   let app: INestApplication;

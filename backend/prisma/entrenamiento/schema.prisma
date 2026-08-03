@@ -1,0 +1,68 @@
+// Servicio de ENTRENAMIENTO: los datos del estudio.
+//
+// Este schema NO tiene ninguna tabla con datos personales, ninguna llave
+// foránea hacia el servicio de identidad, y su rol de base de datos no tiene
+// permiso sobre el schema `identidad`. Por eso `GET /api/runs/export.csv` no
+// puede filtrar un nombre ni un correo aunque alguien escriba mal un `select`:
+// no es una regla de disciplina, es que no existe el camino.
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../../generated/entrenamiento"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+/// Resultado pedagógico de una corrida. Los tres valores corresponden a los
+/// tres finales que define el diseño de escenarios: lo evitó verificando /
+/// dudó pero cayó / cayó. En los escenarios legítimos el mapeo es el mismo,
+/// pero el final incorrecto es la desconfianza excesiva.
+enum RunOutcome {
+  CORRECTO
+  PARCIAL
+  INCORRECTO
+}
+
+model ScenarioRun {
+  id String @id @default(uuid())
+
+  /// uuid opaco tomado del JWT. Sin llave foránea a propósito: este servicio
+  /// no conoce la tabla Participant y no debe poder resolverla.
+  participantId String
+  /// Número de orden del que se deriva el seudónimo del análisis (P001).
+  /// También viene del JWT, para no tener que consultar a `identidad`.
+  participantSeq Int
+  /// Grupo de la muestra al momento de la corrida ("adultos-mayores"). Es
+  /// metadato de análisis, no un identificador. Se guarda por corrida porque
+  /// eso es justamente lo que el análisis necesita saber.
+  participantCohort String?
+
+  /// Identificador del escenario en el catálogo del frontend, con el formato
+  /// "<seccionId>/<escenarioId>" (ej. "phishing/factura-sri").
+  scenarioId String
+  /// Versión del contenido del escenario. Se sube al editar el guion para no
+  /// mezclar corridas de versiones distintas en el análisis estadístico.
+  version    Int    @default(1)
+
+  outcome    RunOutcome
+  /// Puntaje 0–100 calculado por el frontend según el final alcanzado.
+  score      Int
+  /// Id del nodo final alcanzado dentro del grafo del escenario (ej. "e_pago").
+  endingId   String
+  durationMs Int
+
+  /// Traza libre de la corrida (nodos visitados, señales descubiertas,
+  /// tiempos por decisión). Cada escenario define su propia forma; JSONB
+  /// permite guardarlas sin una tabla distinta por tipo de escenario.
+  decisions Json @default("[]")
+
+  startedAt  DateTime
+  finishedAt DateTime @default(now())
+
+  /// Ordenado por finishedAt descendente porque la consulta del gating es
+  /// "última corrida de cada escenario de este participante".
+  @@index([participantId, scenarioId, finishedAt(sort: Desc)])
+  @@index([scenarioId])
+}
