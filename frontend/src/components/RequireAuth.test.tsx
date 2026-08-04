@@ -12,6 +12,19 @@ vi.mock('../lib/api', async () => {
   return { ...actual, fetchMe: fetchMeMock }
 })
 
+function participante(overrides: Record<string, unknown> = {}) {
+  return {
+    id: 'p1',
+    nombre: 'María',
+    apellido: 'Pérez',
+    email: 'maria@ejemplo.com',
+    role: 'PARTICIPANT',
+    cohort: null,
+    onboardingVisto: true,
+    ...overrides,
+  }
+}
+
 function renderRuta(inicial: string) {
   return render(
     <MemoryRouter initialEntries={[inicial]}>
@@ -20,6 +33,7 @@ function renderRuta(inicial: string) {
           <Route path="/" element={<p>Pantalla de acceso</p>} />
           <Route element={<RequireAuth />}>
             <Route path="/dashboard" element={<p>Zona del participante</p>} />
+            <Route path="/bienvenida" element={<p>Pantalla de bienvenida</p>} />
           </Route>
         </Routes>
       </AuthProvider>
@@ -39,15 +53,9 @@ describe('RequireAuth', () => {
     expect(await screen.findByText('Pantalla de acceso')).toBeDefined()
   })
 
-  it('deja pasar cuando el token rehidrata una sesión válida', async () => {
+  it('deja pasar cuando el token rehidrata una sesión que ya vio la bienvenida', async () => {
     setToken('t0ken')
-    fetchMeMock.mockResolvedValue({
-      id: 'p1',
-      nombre: 'María Pérez',
-      email: 'maria@ejemplo.com',
-      role: 'PARTICIPANT',
-      cohort: null,
-    })
+    fetchMeMock.mockResolvedValue(participante())
 
     renderRuta('/dashboard')
 
@@ -72,5 +80,26 @@ describe('RequireAuth', () => {
     renderRuta('/dashboard')
 
     expect(screen.getByText('Cargando…')).toBeDefined()
+  })
+
+  // El primer ingreso, o volver a activar el aviso desde el ícono ⓘ.
+  it('manda a la bienvenida antes que al dashboard si onboardingVisto es false', async () => {
+    setToken('t0ken')
+    fetchMeMock.mockResolvedValue(participante({ onboardingVisto: false }))
+
+    renderRuta('/dashboard')
+
+    expect(await screen.findByText('Pantalla de bienvenida')).toBeDefined()
+  })
+
+  // Sin esto, cada render de /bienvenida con onboardingVisto en false
+  // rebotaría de vuelta a /bienvenida en un bucle.
+  it('no rebota si ya está en /bienvenida', async () => {
+    setToken('t0ken')
+    fetchMeMock.mockResolvedValue(participante({ onboardingVisto: false }))
+
+    renderRuta('/bienvenida')
+
+    expect(await screen.findByText('Pantalla de bienvenida')).toBeDefined()
   })
 })

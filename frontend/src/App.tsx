@@ -2,6 +2,7 @@ import { Suspense } from 'react'
 import { Navigate, Route, Routes } from 'react-router'
 import RequireAuth from './components/RequireAuth'
 import { ESCENARIOS } from './data/catalogo'
+import Bienvenida from './pages/Bienvenida'
 import Dashboard from './pages/Dashboard'
 import Login from './pages/Login'
 import Registro from './pages/Registro'
@@ -15,6 +16,7 @@ function App() {
         <Route path="/registro" element={<Registro />} />
 
         <Route element={<RequireAuth />}>
+          <Route path="/bienvenida" element={<Bienvenida />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/seccion/:seccionId" element={<Seccion />} />
 

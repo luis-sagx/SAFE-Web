@@ -9,6 +9,8 @@ export interface Participant {
   email: string | null
   role: 'PARTICIPANT' | 'RESEARCHER'
   cohort: string | null
+  /** Si ya vio la pantalla de bienvenida y no pidió que volviera a aparecer. */
+  onboardingVisto: boolean
 }
 
 export interface Session {
@@ -150,6 +152,10 @@ export function login(email: string, password: string): Promise<Session> {
 
 export function fetchMe(): Promise<Participant> {
   return request<Participant>('/auth/me')
+}
+
+export function patchMe(cambios: { onboardingVisto: boolean }): Promise<Participant> {
+  return request<Participant>('/auth/me', { method: 'PATCH', body: cambios })
 }
 
 export function createRun(run: RunPayload): Promise<RunSummary> {

@@ -658,12 +658,16 @@ servicio, registro y login por correo, seudonimización, registro y exportación
 de corridas sin datos personales, comando de anonimización, catálogo con rutas
 generadas, sistema de diseño en Tailwind (marca verde `#006837`),
 contenerización y CI. Registro con nombre, apellido, correo y cédula validada
-por módulo 10 y guardada solo como HMAC.
+por módulo 10 y guardada solo como HMAC. El MVP de solo phishing completo:
+catálogo recortado a 3 escenarios activos (las otras cinco secciones quedan
+"Pronto"), marco de escritorio para correo/web en vez de celular, gating 6/8
+(`GET /api/runs/progreso/:modulo`, último intento manda) reflejado en Dashboard
+y Seccion, y pantalla de bienvenida con el flag `onboardingVisto` persistido
+(`PATCH /api/auth/me`) y accesible siempre desde el ícono ⓘ.
 
 Pendiente, en el orden del spec
 `docs/superpowers/specs/2026-08-03-safe-web-mvp-phishing-design.md`:
 
-1. MVP de solo phishing, gating de 6/8 y pantalla de bienvenida.
-2. Los 5 escenarios de phishing que faltan para llegar a 8.
-3. Certificado, verificación de correo y servicio `notificaciones`.
-4. Terminación TLS en el servidor propio y respaldo del volumen de la base.
+1. Los 5 escenarios de phishing que faltan para llegar a 8 (F4).
+2. Certificado, verificación de correo y servicio `notificaciones`.
+3. Terminación TLS en el servidor propio y respaldo del volumen de la base.

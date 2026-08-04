@@ -18,6 +18,8 @@ interface AuthValue {
   login: (email: string, password: string) => Promise<Participant>
   register: (credentials: Credentials) => Promise<Participant>
   logout: () => void
+  /** true: la bienvenida no vuelve a aparecer sola. false: reactivarla. */
+  marcarOnboardingVisto: (visto: boolean) => Promise<void>
   displayName: string
   roleLabel: string
   initials: string
@@ -97,6 +99,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setParticipant(null)
   }, [])
 
+  const marcarOnboardingVisto = useCallback(async (visto: boolean) => {
+    const actualizado = await api.patchMe({ onboardingVisto: visto })
+    setParticipant(actualizado)
+  }, [])
+
   const value = useMemo<AuthValue>(
     () => ({
       participant,
@@ -105,11 +112,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       login,
       register,
       logout,
+      marcarOnboardingVisto,
       displayName: firstName(participant),
       roleLabel: participant?.cohort ?? 'Participante',
       initials: initialsOf(participant),
     }),
-    [participant, loading, login, register, logout],
+    [participant, loading, login, register, logout, marcarOnboardingVisto],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

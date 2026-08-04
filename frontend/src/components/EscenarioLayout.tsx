@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { Link } from 'react-router'
 import AppHeader from './AppHeader'
+import InfoLink from './InfoLink'
 import { useAuth } from '../context/AuthContext'
 import { getEscenario, getSeccion } from '../data/catalogo'
 
@@ -86,7 +87,10 @@ function EscenarioLayout({
   if (fase === 'briefing') {
     return (
       <div className="min-h-dvh bg-canvas">
-        <AppHeader>{volver}</AppHeader>
+        <AppHeader>
+          {volver}
+          <InfoLink />
+        </AppHeader>
 
         <main className="mx-auto max-w-2xl px-6 py-12">
           <p className="text-sm font-medium text-muted">{getSeccion(escenario.seccionId)?.canal}</p>
@@ -122,6 +126,9 @@ function EscenarioLayout({
         <p className="w-full text-sm leading-snug text-body lg:order-2 lg:w-auto lg:flex-1 lg:px-6">
           {resumen}
         </p>
+        <span className="lg:order-4">
+          <InfoLink />
+        </span>
       </AppHeader>
 
       {/* Apilado hasta 1024px; lado a lado arriba de eso. En una pantalla de

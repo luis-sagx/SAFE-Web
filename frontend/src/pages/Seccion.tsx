@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, Navigate, useParams } from 'react-router'
 import AppHeader from '../components/AppHeader'
+import InfoLink from '../components/InfoLink'
 import { escenariosDeSeccion, getSeccion } from '../data/catalogo'
 import { fetchProgreso, type Progreso } from '../lib/api'
 
@@ -43,6 +44,7 @@ function Seccion() {
         <Link to="/dashboard" className="text-sm font-medium text-link underline">
           ← Volver
         </Link>
+        <InfoLink />
       </AppHeader>
 
       <main className="mx-auto max-w-4xl px-6 py-12">
