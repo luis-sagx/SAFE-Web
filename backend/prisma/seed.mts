@@ -51,7 +51,14 @@ Para generar una nueva:  pnpm seed -- --email ${email} --reset
     await prisma.participant.update({ where: { email }, data: { passwordHash } });
   } else {
     await prisma.participant.create({
-      data: { email, nombre: 'Investigador', passwordHash, role: 'RESEARCHER' },
+      data: {
+        email,
+        nombre: 'Investigador',
+        apellido: 'del estudio',
+        // Sin cédula: no es participante, solo exporta resultados.
+        passwordHash,
+        role: 'RESEARCHER',
+      },
     });
   }
 

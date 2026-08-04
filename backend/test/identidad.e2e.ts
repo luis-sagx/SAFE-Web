@@ -42,11 +42,13 @@ export async function limpiar(prisma: PrismaService): Promise<void> {
 export interface PerfilBody {
   id: string;
   nombre: string | null;
+  apellido: string | null;
   email: string | null;
   role: string;
   cohort: string | null;
   passwordHash?: never;
   seq?: never;
+  cedulaHash?: never;
 }
 
 export interface SesionBody {
@@ -62,11 +64,37 @@ export function cuerpo<T>(res: { body: unknown }): T {
   return res.body as T;
 }
 
+let contadorCedulas = 0;
+
+/**
+ * Cédula válida según el módulo 10, construida para las pruebas: no es de
+ * ninguna persona real.
+ *
+ * Se genera en vez de tomarse de una lista porque la cédula es única en la
+ * base: una lista fija se agotaría al crecer la suite y las pruebas empezarían
+ * a chocar entre sí por un motivo que no tiene nada que ver con lo que miden.
+ *
+ * Prefijo "170": provincia 17 (Pichincha) y tercer dígito 0 (persona natural).
+ */
+export function cedulaDePrueba(): string {
+  contadorCedulas += 1;
+  const base = `170${String(contadorCedulas).padStart(6, '0')}`;
+
+  const coeficientes = [2, 1, 2, 1, 2, 1, 2, 1, 2];
+  const suma = coeficientes.reduce((total, coeficiente, i) => {
+    const producto = Number(base[i]) * coeficiente;
+    return total + (producto >= 10 ? producto - 9 : producto);
+  }, 0);
+
+  return base + String((10 - (suma % 10)) % 10);
+}
+
 export function registro(sufijo: string) {
   return {
-    nombre: 'María Pérez',
+    nombre: 'María',
+    apellido: 'Pérez',
     email: `maria.${sufijo}@ejemplo.com`,
-    telefono: '0991234567',
+    cedula: cedulaDePrueba(),
     password: 'clave-larga-123',
   };
 }

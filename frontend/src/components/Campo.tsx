@@ -8,6 +8,9 @@ interface CampoProps {
   placeholder?: string
   ayuda?: string
   maxLength?: number
+  inputMode?: 'text' | 'numeric' | 'tel' | 'email'
+  /** Mensaje de este campo. Se muestra debajo, nunca en un banner lejano. */
+  error?: string
 }
 
 function Campo({
@@ -20,7 +23,12 @@ function Campo({
   placeholder,
   ayuda,
   maxLength,
+  inputMode,
+  error,
 }: CampoProps) {
+  const ayudaId = ayuda ? `${id}-ayuda` : undefined
+  const errorId = error ? `${id}-error` : undefined
+
   return (
     <div>
       <label htmlFor={id} className="block text-sm font-medium text-ink">
@@ -35,10 +43,29 @@ function Campo({
         autoComplete={autoComplete}
         placeholder={placeholder}
         maxLength={maxLength}
+        inputMode={inputMode}
         required
-        className="mt-1.5 h-11 w-full rounded-md border border-hairline-strong bg-surface px-4 text-base text-ink placeholder:text-muted-soft focus:border-ink focus:outline-none focus:ring-1 focus:ring-ink"
+        aria-invalid={error ? true : undefined}
+        aria-describedby={[errorId, ayudaId].filter(Boolean).join(' ') || undefined}
+        className={`mt-1.5 h-11 w-full rounded-md border bg-surface px-4 text-base text-ink placeholder:text-muted-soft focus:outline-none focus:ring-1 ${
+          error
+            ? 'border-danger focus:border-danger focus:ring-danger'
+            : 'border-hairline-strong focus:border-ink focus:ring-ink'
+        }`}
       />
-      {ayuda && <p className="mt-1 text-sm text-muted">{ayuda}</p>}
+      {/* El error va debajo de su campo y no en un banner al inicio del
+          formulario: el usuario no técnico no relaciona un banner lejano con
+          el campo que falló. */}
+      {error && (
+        <p id={errorId} role="alert" className="mt-1 text-sm text-danger">
+          {error}
+        </p>
+      )}
+      {ayuda && !error && (
+        <p id={ayudaId} className="mt-1 text-sm text-muted">
+          {ayuda}
+        </p>
+      )}
     </div>
   )
 }

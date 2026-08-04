@@ -50,7 +50,10 @@ Para ejecutarlo de verdad:  pnpm anonimizar -- --confirmar
       where: { id },
       data: {
         nombre: null,
-        telefono: null,
+        apellido: null,
+        // La huella de la cédula se borra igual que el resto. Aunque el pepper
+        // ya no exista, un valor que no está no se puede atacar.
+        cedulaHash: null,
         // El correo es único, así que no puede quedar en null: se reemplaza
         // por un valor sin información. El hash se invalida.
         email: `anonimo-${seq}@invalido.local`,
@@ -60,10 +63,14 @@ Para ejecutarlo de verdad:  pnpm anonimizar -- --confirmar
     });
   }
 
-  console.log(
-    `\nListo. ${participantes.length} participantes anonimizados. ` +
-      `Las corridas quedaron intactas.\n`,
-  );
+  console.log(`
+Listo. ${participantes.length} participantes anonimizados. Las corridas
+quedaron intactas.
+
+FALTA UN PASO, Y ES MANUAL: borra CEDULA_PEPPER del .env del servidor y de
+cualquier respaldo. Mientras ese secreto exista, una huella de cédula que se
+hubiera copiado antes seguiría siendo reproducible. Sin él, no.
+`);
 }
 
 main()

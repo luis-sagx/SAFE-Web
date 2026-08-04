@@ -5,6 +5,7 @@ const TOKEN_KEY = 'mic-access-token'
 export interface Participant {
   id: string
   nombre: string | null
+  apellido: string | null
   email: string | null
   role: 'PARTICIPANT' | 'RESEARCHER'
   cohort: string | null
@@ -41,8 +42,11 @@ export interface RunSummary {
 
 export interface Credentials {
   nombre: string
+  apellido: string
   email: string
-  telefono: string
+  /// Solo viaja en el registro. El backend guarda su HMAC y descarta el valor:
+  /// la cédula en claro no existe en la base ni vuelve en ninguna respuesta.
+  cedula: string
   password: string
 }
 

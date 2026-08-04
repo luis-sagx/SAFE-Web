@@ -44,31 +44,52 @@ describe('Autenticación (e2e)', () => {
       const sesion = cuerpo<SesionBody>(res);
       expect(typeof sesion.accessToken).toBe('string');
       expect(sesion.participant).toMatchObject({
-        nombre: 'María Pérez',
+        nombre: 'María',
+        apellido: 'Pérez',
         email: 'maria.alta@ejemplo.com',
         role: 'PARTICIPANT',
       });
     });
 
-    it('no devuelve el hash de la contraseña ni el seudónimo', async () => {
+    it('no devuelve el hash de la contraseña, el seudónimo ni la cédula', async () => {
+      const datos = registro('privacidad');
       const res = await server()
         .post('/api/auth/register')
-        .send(registro('privacidad'))
+        .send(datos)
         .expect(201);
 
       const sesion = cuerpo<SesionBody>(res);
       expect(sesion.participant.passwordHash).toBeUndefined();
       expect(sesion.participant.seq).toBeUndefined();
+      expect(sesion.participant.cedulaHash).toBeUndefined();
       expect(JSON.stringify(sesion)).not.toContain('clave-larga-123');
+      expect(JSON.stringify(sesion)).not.toContain(datos.cedula);
     });
 
-    it('normaliza el correo y el teléfono antes de guardarlos', async () => {
+    // La regla que sostiene el diseño de privacidad: la cédula solo existe el
+    // tiempo de calcular su HMAC. Si alguien la guardara en claro "por si
+    // acaso", esto lo atrapa.
+    it('nunca guarda la cédula en claro, solo su huella', async () => {
+      const datos = registro('cedula');
+      await server().post('/api/auth/register').send(datos).expect(201);
+
+      const guardado = await prisma.participant.findUnique({
+        where: { email: datos.email },
+      });
+
+      expect(guardado?.cedulaHash).toEqual(expect.any(String));
+      expect(guardado?.cedulaHash).not.toContain(datos.cedula);
+      expect(JSON.stringify(guardado)).not.toContain(datos.cedula);
+    });
+
+    it('normaliza el correo y acepta la cédula con guiones', async () => {
+      const datos = registro('normaliza');
       await server()
         .post('/api/auth/register')
         .send({
-          ...registro('normaliza'),
+          ...datos,
           email: '  Maria.NORMALIZA@Ejemplo.com ',
-          telefono: '(099) 123-4567',
+          cedula: `${datos.cedula.slice(0, 9)}-${datos.cedula.slice(9)}`,
         })
         .expect(201);
 
@@ -76,30 +97,66 @@ describe('Autenticación (e2e)', () => {
         where: { email: 'maria.normaliza@ejemplo.com' },
       });
 
-      expect(guardado?.telefono).toBe('0991234567');
+      expect(guardado?.cedulaHash).toEqual(expect.any(String));
     });
 
     // Dos cuentas de la misma persona parten sus corridas en el análisis.
     it('rechaza un correo ya registrado aunque cambie la capitalización', async () => {
-      await server()
-        .post('/api/auth/register')
-        .send(registro('duplicado'))
-        .expect(201);
+      const datos = registro('duplicado');
+      await server().post('/api/auth/register').send(datos).expect(201);
 
       await server()
         .post('/api/auth/register')
         .send({
-          ...registro('duplicado'),
+          ...registro('duplicado-2'),
           email: 'MARIA.DUPLICADO@ejemplo.com',
         })
         .expect(409);
     });
 
+    // El motivo por el que se pide la cédula: una persona, una cuenta.
+    it('rechaza una cédula ya registrada aunque el correo sea otro', async () => {
+      const datos = registro('cedula-unica');
+      await server().post('/api/auth/register').send(datos).expect(201);
+
+      await server()
+        .post('/api/auth/register')
+        .send({
+          ...registro('cedula-unica-2'),
+          cedula: datos.cedula,
+        })
+        .expect(409);
+    });
+
+    // Distinguirlos diría si una persona concreta participó en el estudio.
+    it('da el mismo error para correo repetido que para cédula repetida', async () => {
+      const datos = registro('mismo-error');
+      await server().post('/api/auth/register').send(datos).expect(201);
+
+      const porCorreo = await server()
+        .post('/api/auth/register')
+        .send({ ...registro('mismo-error-a'), email: datos.email })
+        .expect(409);
+
+      const porCedula = await server()
+        .post('/api/auth/register')
+        .send({ ...registro('mismo-error-b'), cedula: datos.cedula })
+        .expect(409);
+
+      expect(cuerpo<ErrorBody>(porCorreo).message).toEqual(
+        cuerpo<ErrorBody>(porCedula).message,
+      );
+    });
+
     it.each([
       ['correo inválido', { email: 'no-es-correo' }],
       ['contraseña corta', { password: 'corta' }],
-      ['teléfono con letras', { telefono: 'cero-nueve-nueve' }],
       ['nombre de una letra', { nombre: 'M' }],
+      ['sin apellido', { apellido: '' }],
+      ['cédula con verificador incorrecto', { cedula: '1710034066' }],
+      ['cédula de nueve dígitos', { cedula: '171003406' }],
+      ['cédula con letras', { cedula: '17100340a5' }],
+      ['cédula de provincia inexistente', { cedula: '2510034065' }],
     ])('rechaza el registro con %s', async (_caso, override) => {
       await server()
         .post('/api/auth/register')
@@ -130,6 +187,21 @@ describe('Autenticación (e2e)', () => {
         .expect(200);
 
       expect(typeof cuerpo<SesionBody>(res).accessToken).toBe('string');
+    });
+
+    // El registro ya lo comprobaba; el login no, y ahí sí se llegó a filtrar
+    // el passwordHash por devolver el registro entero en vez de un `select`.
+    it('tampoco devuelve el hash de la contraseña ni la huella de la cédula', async () => {
+      const res = await server()
+        .post('/api/auth/login')
+        .send({ email: 'maria.login@ejemplo.com', password: 'clave-larga-123' })
+        .expect(200);
+
+      const sesion = cuerpo<SesionBody>(res);
+      expect(sesion.participant.passwordHash).toBeUndefined();
+      expect(sesion.participant.cedulaHash).toBeUndefined();
+      expect(sesion.participant.seq).toBeUndefined();
+      expect(JSON.stringify(sesion)).not.toContain('$2b$');
     });
 
     // Distinguirlos revelaría qué correos están registrados.

@@ -58,6 +58,8 @@ services:
     environment:
       IDENTIDAD_DATABASE_URL: postgresql://identidad:${IDENTIDAD_DB_PASSWORD}@db:5432/${POSTGRES_DB}?schema=identidad
       JWT_SECRET: "${JWT_SECRET:?falta JWT_SECRET en .env, generar con openssl rand -base64 48}"
+      # Solo este servicio lo recibe: es el único que ve una cédula.
+      CEDULA_PEPPER: "${CEDULA_PEPPER:?falta CEDULA_PEPPER en .env, generar con openssl rand -base64 48}"
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-2h}
       PORT: 3001
       NODE_ENV: production

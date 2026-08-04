@@ -3,17 +3,24 @@ import { Link, Navigate, useNavigate } from 'react-router'
 import AuthLayout from '../components/AuthLayout'
 import Campo from '../components/Campo'
 import { useAuth } from '../context/AuthContext'
+import { esCedulaEcuatoriana, normalizarCedula } from '../lib/cedula'
 
 function Registro() {
   const { isAuthenticated, loading, register } = useAuth()
   const navigate = useNavigate()
 
   const [nombre, setNombre] = useState('')
+  const [apellido, setApellido] = useState('')
   const [email, setEmail] = useState('')
-  const [telefono, setTelefono] = useState('')
+  const [cedula, setCedula] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
+
+  // Solo se avisa de la cédula cuando ya está completa: marcarla en rojo
+  // mientras la escribe convierte cada tecla en un reproche.
+  const cedulaLimpia = normalizarCedula(cedula)
+  const cedulaInvalida = cedulaLimpia.length === 10 && !esCedulaEcuatoriana(cedulaLimpia)
 
   if (loading) {
     return <p className="p-10 text-base text-muted">Cargando…</p>
@@ -26,10 +33,17 @@ function Registro() {
   async function handleSubmit(event: FormEvent) {
     event.preventDefault()
     setError('')
+
+    // El backend valida igual; esto solo evita un viaje al servidor.
+    if (!esCedulaEcuatoriana(cedulaLimpia)) {
+      setError('Revisa tu número de cédula: son 10 dígitos.')
+      return
+    }
+
     setSubmitting(true)
 
     try {
-      await register({ nombre, email, telefono, password })
+      await register({ nombre, apellido, email, cedula: cedulaLimpia, password })
       navigate('/dashboard')
     } catch (submitError) {
       setError((submitError as Error).message)
@@ -57,9 +71,30 @@ function Registro() {
           label="Nombre"
           value={nombre}
           onChange={setNombre}
-          autoComplete="name"
-          placeholder="Como quieres que te llamemos"
-          maxLength={80}
+          autoComplete="given-name"
+          placeholder="María"
+          maxLength={60}
+        />
+        <Campo
+          id="apellido"
+          label="Apellido"
+          value={apellido}
+          onChange={setApellido}
+          autoComplete="family-name"
+          placeholder="Pérez"
+          maxLength={60}
+        />
+        <Campo
+          id="cedula"
+          label="Cédula"
+          value={cedula}
+          onChange={setCedula}
+          inputMode="numeric"
+          autoComplete="off"
+          placeholder="1710034065"
+          maxLength={13}
+          ayuda="Sirve para que nadie se registre dos veces. No la guardamos."
+          error={cedulaInvalida ? 'Ese número de cédula no es válido.' : undefined}
         />
         <Campo
           id="email"
@@ -70,16 +105,6 @@ function Registro() {
           autoComplete="email"
           placeholder="tu@correo.com"
           maxLength={120}
-        />
-        <Campo
-          id="telefono"
-          label="Teléfono"
-          type="tel"
-          value={telefono}
-          onChange={setTelefono}
-          autoComplete="tel"
-          placeholder="09 1234 5678"
-          maxLength={20}
         />
         <Campo
           id="password"

@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Cache incremental de tsc: es artefacto de build, no fuente.
+*.tsbuildinfo

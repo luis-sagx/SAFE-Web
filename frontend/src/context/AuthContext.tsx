@@ -29,10 +29,17 @@ function firstName(participant: Participant | null): string {
   return participant?.nombre?.trim().split(/\s+/)[0] ?? ''
 }
 
+/// Inicial del nombre + inicial del apellido. Si falta el apellido —la cuenta
+/// de investigador, o una ya anonimizada— cae a las dos primeras palabras del
+/// nombre, que es lo que hacía antes de que el apellido existiera.
 function initialsOf(participant: Participant | null): string {
-  const parts = participant?.nombre?.trim().split(/\s+/).slice(0, 2) ?? []
-  const letters = parts.map((part) => part[0]?.toUpperCase() ?? '').join('')
-  return letters || 'TU'
+  const nombre = participant?.nombre?.trim().split(/\s+/) ?? []
+  const apellido = participant?.apellido?.trim().split(/\s+/) ?? []
+
+  const partes = apellido.length > 0 ? [nombre[0], apellido[0]] : nombre.slice(0, 2)
+  const letras = partes.map((parte) => parte?.[0]?.toUpperCase() ?? '').join('')
+
+  return letras || 'TU'
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {

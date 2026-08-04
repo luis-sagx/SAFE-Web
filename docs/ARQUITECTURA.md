@@ -16,8 +16,8 @@ Documentos relacionados:
 
 ## 1. Qué es esto, en una frase
 
-Una aplicación web donde un participante **se registra con su nombre, correo y
-teléfono**, juega **escenarios simulados de fraude** que registran cada
+Una aplicación web donde un participante **se registra con su nombre, apellido,
+correo y cédula**, juega **escenarios simulados de fraude** que registran cada
 decisión, y el investigador exporta esos resultados —**identificados solo por un
 seudónimo**— para compararlos con un pre-test y un post-test aplicados aparte en
 Google Forms.
@@ -28,8 +28,9 @@ De ahí salen las tres restricciones que gobiernan todo lo demás:
    un dato perdido del estudio. La validación y el registro de corridas no son
    negociables.
 2. **Los datos personales no llegan al análisis.** Sirven para dar acceso y
-   nada más: la exportación identifica cada fila con un seudónimo (`P001`), y al
-   cerrar la recolección un comando borra nombre, correo y teléfono.
+   nada más: la exportación identifica cada fila con un seudónimo (`P001`), la
+   cédula ni siquiera se almacena (§7.1), y al cerrar la recolección un comando
+   borra el resto.
 3. **La usan personas no técnicas.** La interfaz se mantiene simple y en
    lenguaje claro; los escenarios simulan, nunca conectan con sistemas reales.
 
@@ -337,7 +338,7 @@ la exportación CSV. Nginx enruta por prefijo: `/api/auth/*` a `identidad`,
 | Método | Ruta | Servicio | Auth | Qué hace |
 |---|---|---|---|---|
 | `GET` | `/api/health` | ambos | — | Health check (Docker y CI). Nginx expone el de `identidad`. |
-| `POST` | `/api/auth/register` | identidad | — | `{ nombre, email, telefono, password }` → `{ accessToken, participant }`. Máx. 5/min por IP. |
+| `POST` | `/api/auth/register` | identidad | — | `{ nombre, apellido, email, cedula, password }` → `{ accessToken, participant }`. Máx. 5/min por IP. |
 | `POST` | `/api/auth/login` | identidad | — | `{ email, password }` → `{ accessToken, participant }`. Máx. 5 intentos/min por IP. |
 | `GET` | `/api/auth/me` | identidad | JWT | Devuelve el participante del token. |
 | `POST` | `/api/runs` | entrenamiento | JWT | Registra una corrida. |
@@ -393,10 +394,10 @@ Reglas del API que no se relajan:
 Un schema de Prisma por servicio, y **una tabla en cada uno**:
 
 - `backend/prisma/identidad/schema.prisma` → **`Participant`**: `seq`
-  (autoincremental, del que se deriva el seudónimo), `nombre`, `email` (único,
-  es el usuario de login), `telefono`, `passwordHash`, `role`, `cohort`,
-  `anonymizedAt`. Los campos personales son *nullable* porque `pnpm anonimizar`
-  los pone en null.
+  (autoincremental, del que se deriva el seudónimo), `nombre`, `apellido`,
+  `email` (único, es el usuario de login), `cedulaHash` (único, §7.1),
+  `passwordHash`, `role`, `cohort`, `anonymizedAt`. Los campos personales son
+  *nullable* porque `pnpm anonimizar` los pone en null.
 - `backend/prisma/entrenamiento/schema.prisma` → **`ScenarioRun`**: una fila por
   escenario terminado, con `participantId`, `participantSeq`,
   `participantCohort`, `scenarioId`, `version`, `outcome`, `score`, `endingId`,
@@ -431,12 +432,38 @@ confunde a un público no técnico. Eso obliga a una separación estricta entre
 **los datos que dan acceso** y **los datos que se analizan**.
 
 ```
-REGISTRO                    BASE DE DATOS                 EXPORTACIÓN
-nombre, correo,   ───▶   Participant                ───▶  seudonimo,cohort,
-teléfono                   nombre, email, telefono        scenarioId,outcome…
-                           seq  ──────────────────▶       P001
-                         ScenarioRun                      (sin PII)
+REGISTRO                  identidad                    entrenamiento
+nombre, apellido,  ───▶   Participant                  ScenarioRun
+correo, cédula            nombre, apellido, email      participantSeq  ──▶ CSV
+                          cedulaHash (HMAC)            participantCohort   P001
+                          seq, cohort ──── JWT ──────▶ scenarioId, outcome…
+                                                       (sin PII, y sin acceso
+                                                        posible a ella)
 ```
+
+### 7.1 La cédula
+
+Se pide **para garantizar una cuenta por persona**, y por nada más. El correo ya
+era único, pero nada impide que alguien se registre dos veces con dos correos, y
+dos cuentas de la misma persona parten sus corridas en el análisis.
+
+Cómo se trata:
+
+1. **Se valida con el algoritmo módulo 10** del Registro Civil. Eso detecta
+   cédulas *inventadas*; **no prueba identidad** —una cédula ajena pero válida
+   pasa— y no pretende hacerlo. Es todo lo que se puede comprobar sin consultar
+   al Registro Civil, y alcanza para el objetivo declarado.
+2. **Nunca se guarda.** De ella solo queda `HMAC-SHA256(cédula,
+   CEDULA_PEPPER)`. El valor en claro vive lo que dura la petición.
+3. **HMAC y no un hash simple**, porque el espacio de cédulas son 10 dígitos y
+   un SHA-256 sin secreto se invierte por fuerza bruta en segundos. El pepper es
+   lo que lo hace irreversible.
+4. **HMAC y no bcrypt**, porque para servir de índice único tiene que ser
+   determinista: no es una contraseña que se verifica, es una llave que se
+   compara.
+5. **Cédula repetida y correo repetido dan el mismo error y el mismo tiempo de
+   respuesta.** Distinguirlos permitiría averiguar si una persona concreta
+   participó en el estudio.
 
 Reglas que **no se negocian**:
 
@@ -449,21 +476,32 @@ Reglas que **no se negocian**:
    ve; es solo la llave con la que el investigador cruza estos resultados con
    las respuestas de Forms.
 3. **Al cerrar la recolección se ejecuta `pnpm anonimizar -- --confirmar`.**
-   Borra nombre, correo y teléfono, invalida el acceso y conserva las corridas.
-   Ahí la pseudonimización pasa a ser anonimización real (NIST SP 800-188) y es
-   irreversible.
+   Borra nombre, apellido, correo y la huella de la cédula, invalida el acceso y
+   conserva las corridas. Ahí la pseudonimización pasa a ser anonimización real
+   (NIST SP 800-188) y es irreversible.
+
+   **Ese comando deja un paso manual, y hay que hacerlo:** borrar
+   `CEDULA_PEPPER` del `.env` del servidor y de cualquier respaldo. Mientras ese
+   secreto exista, una huella que se hubiera copiado antes seguiría siendo
+   reproducible. Sin él, no.
 4. **Contraseñas con bcrypt** (factor 12). Nunca en texto plano ni en logs.
 5. **Login y registro con límite de 5/min por IP.** El login responde el mismo
    error para correo inexistente y contraseña incorrecta, y compara siempre
    contra un hash señuelo, para no revelar quién está registrado.
 6. **JWT de expiración corta** (2 h) y sin datos personales en el payload: solo
-   lleva el id y el rol.
+   el id, el seudónimo, la cohorte y el rol.
 7. **HTTPS obligatorio en producción.** El servidor propio debe terminar TLS
    delante de Nginx (Let's Encrypt). Un registro sobre HTTP no es aceptable.
+8. **`CEDULA_PEPPER` solo lo recibe `identidad`.** `entrenamiento` no lo tiene y
+   no lo necesita: es el único servicio que llega a ver una cédula.
 
-El consentimiento informado debe decir explícitamente que se recogen nombre,
-correo y teléfono para dar acceso, que no se usan en el análisis, y que se
-borran al terminar el estudio.
+El consentimiento informado debe decir explícitamente:
+
+- que se recogen **nombre, apellido, correo y cédula** para dar acceso;
+- que **la cédula no se almacena**: se guarda solo un código derivado del que no
+  se puede reconstruir, y su único fin es evitar registros duplicados;
+- que ninguno de esos datos se usa en el análisis;
+- que todos se borran al terminar el estudio, de forma irreversible.
 
 Los pre-test y post-test se aplican **fuera** de la plataforma (Google Forms).
 La plataforma no envía nada a Forms ni consume su API.
@@ -580,8 +618,10 @@ Antes de escribir código en este repositorio:
 
 - No dejar que un dato personal llegue a la exportación de resultados. Es la
   regla que sostiene el diseño ético del estudio (§7).
-- No pedir datos personales que no sean nombre, correo y teléfono. Nada de
-  cédula, dirección ni fecha de nacimiento.
+- No pedir datos personales que no sean **nombre, apellido, correo y cédula**.
+  Nada de dirección, fecha de nacimiento ni teléfono.
+- No guardar la cédula en claro, nunca, en ningún sitio: base, log, respuesta o
+  archivo temporal. Solo existe su HMAC (§7.1).
 - No llamar a `fetch` fuera de `src/lib/api.ts`.
 - No leer el `participantId` del cuerpo de una petición.
 - No cambiar el `id` de un escenario ya publicado; para un cambio de guion, subir
@@ -599,7 +639,7 @@ Antes de escribir código en este repositorio:
 | Tema | Decisión | Por qué |
 |---|---|---|
 | Framework frontend | React + Vite + TypeScript `strict` | Los tipos atrapan errores de contrato entre el frontend y el API antes de ejecutar; en un instrumento de investigación un dato mal formado es un dato perdido. |
-| Acceso | Registro con nombre, correo y teléfono | Un código asignado confunde al público no técnico. La separación de §7 mantiene el anonimato del análisis. |
+| Acceso | Registro con nombre, apellido, correo y cédula | Un código asignado confunde al público no técnico. La cédula da una cuenta por persona sin almacenarse (§7.1), y la separación de §7 mantiene el anonimato del análisis. |
 | Estado global | Context API | Solo hay un estado compartido (la sesión). Redux sería sobreingeniería. |
 | Backend | Dos microservicios cortados por sensibilidad del dato | Hace que la regla de privacidad del estudio deje de depender de la disciplina al escribir consultas y pase a ser una imposibilidad técnica (§2.1). |
 | Comunicación entre servicios | Ninguna: todo lo que necesitan viaja en el JWT | Evita acoplamiento en tiempo de ejecución y una cadena de fallos donde un servicio caído tumba al otro. |
@@ -617,13 +657,13 @@ Implementado: el corte en dos microservicios con un rol de Postgres por
 servicio, registro y login por correo, seudonimización, registro y exportación
 de corridas sin datos personales, comando de anonimización, catálogo con rutas
 generadas, sistema de diseño en Tailwind (marca verde `#006837`),
-contenerización y CI.
+contenerización y CI. Registro con nombre, apellido, correo y cédula validada
+por módulo 10 y guardada solo como HMAC.
 
 Pendiente, en el orden del spec
 `docs/superpowers/specs/2026-08-03-safe-web-mvp-phishing-design.md`:
 
-1. Registro con nombre, apellido, cédula (HMAC + pepper) y correo.
-2. MVP de solo phishing, gating de 6/8 y pantalla de bienvenida.
-3. Los 5 escenarios de phishing que faltan para llegar a 8.
-4. Certificado, verificación de correo y servicio `notificaciones`.
-5. Terminación TLS en el servidor propio y respaldo del volumen de la base.
+1. MVP de solo phishing, gating de 6/8 y pantalla de bienvenida.
+2. Los 5 escenarios de phishing que faltan para llegar a 8.
+3. Certificado, verificación de correo y servicio `notificaciones`.
+4. Terminación TLS en el servidor propio y respaldo del volumen de la base.

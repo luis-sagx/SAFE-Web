@@ -89,6 +89,7 @@ jobs:
       IDENTIDAD_DATABASE_URL: postgresql://identidad:ci@localhost:5432/ci_test?schema=identidad
       ENTRENAMIENTO_DATABASE_URL: postgresql://entrenamiento:ci@localhost:5432/ci_test?schema=entrenamiento
       JWT_SECRET: secreto-solo-para-pruebas-de-ci
+      CEDULA_PEPPER: pepper-solo-para-pruebas-de-ci
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -165,6 +166,7 @@ jobs:
       IDENTIDAD_DB_PASSWORD: ci-identidad
       ENTRENAMIENTO_DB_PASSWORD: ci-entrenamiento
       JWT_SECRET: ci-secret-solo-para-pruebas
+      CEDULA_PEPPER: ci-pepper-solo-para-pruebas
       WEB_PORT: 8080
     steps:
       - uses: actions/checkout@v4
@@ -191,7 +193,7 @@ jobs:
         run: |
           token=$(curl -fsS -X POST http://localhost:8080/api/auth/register \
             -H 'Content-Type: application/json' \
-            -d '{"nombre":"Prueba CI","email":"ci@ejemplo.com","telefono":"0991234567","password":"clave-larga-123"}' \
+            -d '{"nombre":"Prueba","apellido":"CI","email":"ci@ejemplo.com","cedula":"1710034065","password":"clave-larga-123"}' \
             | python3 -c 'import json,sys; print(json.load(sys.stdin)["accessToken"])')
           curl -fsS -X POST http://localhost:8080/api/runs \
             -H "Authorization: Bearer $token" -H 'Content-Type: application/json' \

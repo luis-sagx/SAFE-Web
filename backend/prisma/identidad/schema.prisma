@@ -38,8 +38,21 @@ model Participant {
   // Son nullables porque `pnpm anonimizar` los pone en null al cerrar la
   // recolección de datos.
   nombre   String?
+  apellido String?
   email    String  @unique
-  telefono String?
+
+  /// HMAC-SHA256(cédula, CEDULA_PEPPER). La cédula EN CLARO NUNCA SE GUARDA:
+  /// no entra a la base, no sale en ninguna respuesta y no va a los logs.
+  ///
+  /// Su única función es garantizar una cuenta por persona. Se usa HMAC y no
+  /// un hash simple porque el espacio de cédulas son 10 dígitos y un SHA-256
+  /// sin secreto se invierte por fuerza bruta en segundos; el pepper es lo que
+  /// lo hace irreversible. Y no bcrypt, porque para servir de índice único
+  /// tiene que ser determinista.
+  ///
+  /// `pnpm anonimizar` destruye el pepper: sin él estos valores dejan de ser
+  /// reproducibles y la pseudonimización pasa a ser anonimización real.
+  cedulaHash String? @unique
 
   passwordHash String
   role         Role   @default(PARTICIPANT)
