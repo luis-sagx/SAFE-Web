@@ -4,18 +4,23 @@ import AppHeader from '../components/AppHeader'
 import { Link } from 'react-router'
 import { useAuth } from '../context/AuthContext'
 import { escenariosDeSeccion, SECCIONES } from '../data/catalogo'
-import { fetchMyRuns } from '../lib/api'
+import { fetchProgreso, type Progreso } from '../lib/api'
+
+/// Solo las secciones con escenarios tienen gating; las demás muestran
+/// "Pronto" y no hace falta pedir su progreso.
+const SECCIONES_ACTIVAS = SECCIONES.filter((s) => escenariosDeSeccion(s.id).length > 0)
 
 function Dashboard() {
   const { displayName, logout } = useAuth()
-  const [completados, setCompletados] = useState<Set<string>>(new Set())
+  const [progresos, setProgresos] = useState<Record<string, Progreso>>({})
 
   useEffect(() => {
     let cancelled = false
 
-    fetchMyRuns()
-      .then((runs) => {
-        if (!cancelled) setCompletados(new Set(runs.map((run) => run.scenarioId)))
+    Promise.all(SECCIONES_ACTIVAS.map((s) => fetchProgreso(s.id)))
+      .then((resultados) => {
+        if (cancelled) return
+        setProgresos(Object.fromEntries(resultados.map((p) => [p.modulo, p])))
       })
       .catch(() => {
         // El progreso es informativo: si no carga, el dashboard sigue usable.
@@ -25,8 +30,6 @@ function Dashboard() {
       cancelled = true
     }
   }, [])
-
-  const total = SECCIONES.reduce((suma, s) => suma + escenariosDeSeccion(s.id).length, 0)
 
   return (
     <div className="min-h-screen bg-canvas">
@@ -56,20 +59,13 @@ function Dashboard() {
           respuestas que te dejen mal: la idea es practicar.
         </p>
 
-        {total > 0 && (
-          <p className="mt-6 inline-flex items-center gap-1.5 rounded-full bg-surface-strong px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.88px] text-ink">
-            <CheckCircle2 aria-hidden className="size-3.5 text-link" strokeWidth={2.5} />
-            {completados.size} de {total} escenarios completados
-          </p>
-        )}
-
         {/* Tres columnas como máximo: las seis secciones se reparten en dos
             filas exactas. Con cuatro quedaba una fila coja. */}
         <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {SECCIONES.map((seccion) => {
             const escenarios = escenariosDeSeccion(seccion.id)
-            const listos = escenarios.filter((e) => completados.has(e.id)).length
             const disponible = escenarios.length > 0
+            const progreso = progresos[seccion.id]
 
             const Icono = seccion.Icono
 
@@ -86,9 +82,10 @@ function Dashboard() {
                       Pronto
                     </span>
                   )}
-                  {disponible && listos === escenarios.length && (
-                    <span className="text-[11px] font-semibold uppercase tracking-[0.88px] text-success">
-                      Completo
+                  {progreso?.aprobado && (
+                    <span className="inline-flex items-center gap-1 text-[11px] font-semibold uppercase tracking-[0.88px] text-success">
+                      <CheckCircle2 aria-hidden className="size-3.5" strokeWidth={2.5} />
+                      Aprobado
                     </span>
                   )}
                 </div>
@@ -100,9 +97,9 @@ function Dashboard() {
 
                 <div className="mt-5 flex items-center justify-between border-t border-hairline pt-3">
                   <span className="text-sm text-muted">{seccion.canal}</span>
-                  {disponible && (
+                  {progreso && (
                     <span className="text-sm font-medium text-ink">
-                      {listos}/{escenarios.length}
+                      {progreso.aprobados}/{escenarios.length} · necesitas {progreso.requeridos}
                     </span>
                   )}
                 </div>

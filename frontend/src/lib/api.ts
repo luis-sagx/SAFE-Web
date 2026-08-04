@@ -40,6 +40,22 @@ export interface RunSummary {
   finishedAt: string
 }
 
+export interface ProgresoEscenario {
+  id: string
+  /** Solo aparece si el participante ya lo intentó al menos una vez. */
+  ultimoOutcome: RunOutcome
+}
+
+export interface Progreso {
+  modulo: string
+  escenarios: ProgresoEscenario[]
+  aprobados: number
+  /** Umbral que exige el servidor. El total de escenarios no viaja aquí: lo
+   *  da el catálogo, que es el único lugar donde existen de verdad. */
+  requeridos: number
+  aprobado: boolean
+}
+
 export interface Credentials {
   nombre: string
   apellido: string
@@ -142,4 +158,9 @@ export function createRun(run: RunPayload): Promise<RunSummary> {
 
 export function fetchMyRuns(): Promise<RunSummary[]> {
   return request<RunSummary[]>('/runs/me')
+}
+
+/** 404 si `modulo` no tiene gating configurado en el backend. */
+export function fetchProgreso(modulo: string): Promise<Progreso> {
+  return request<Progreso>(`/runs/progreso/${modulo}`)
 }
