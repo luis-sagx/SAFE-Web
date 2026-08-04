@@ -41,10 +41,23 @@ describe('catálogo de escenarios', () => {
     }
   })
 
-  it('ninguna sección queda sin escenarios', () => {
-    for (const seccion of SECCIONES) {
-      expect(escenariosDeSeccion(seccion.id).length, seccion.id).toBeGreaterThan(0)
-    }
+  // El MVP es solo phishing (ver spec 2026-08-03): las otras cinco secciones
+  // se quedan declaradas pero sin escenarios, y Dashboard.tsx las marca
+  // "Pronto". Es un estado deliberado, no un olvido.
+  it('phishing es la única sección con escenarios activos en el MVP', () => {
+    const activas = SECCIONES.filter((seccion) => escenariosDeSeccion(seccion.id).length > 0)
+    expect(activas.map((seccion) => seccion.id)).toEqual(['phishing'])
+  })
+
+  // Sube a 8 (6 fraude + 2 legítimos) cuando la fase siguiente agregue los 5
+  // escenarios que faltan; hasta entonces este es el piso del MVP: al menos un
+  // caso legítimo por cada fraude, para que el criterio se entrene desde ya y
+  // no se convierta en una lista de estafas.
+  it('phishing tiene 3 escenarios: 2 de fraude y 1 legítimo', () => {
+    const phishing = escenariosDeSeccion('phishing')
+    expect(phishing).toHaveLength(3)
+    expect(phishing.filter((e) => e.naturaleza === 'fraude')).toHaveLength(2)
+    expect(phishing.filter((e) => e.naturaleza === 'legitimo')).toHaveLength(1)
   })
 
   it('resuelve secciones y escenarios por id, y devuelve undefined si no existen', () => {

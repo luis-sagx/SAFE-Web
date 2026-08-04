@@ -11,7 +11,9 @@ vi.mock('../lib/api', async () => {
   return { ...actual, createRun: createRunMock }
 })
 
-const ESCENARIO = 'suplantacion/cambio-numero'
+// Cualquier escenario activo del catálogo sirve como fixture: la prueba no
+// depende de su contenido, solo de que exista.
+const ESCENARIO = 'phishing/factura-sri'
 
 function payloadEnviado(): RunPayload {
   const [primeraLlamada] = createRunMock.mock.calls
