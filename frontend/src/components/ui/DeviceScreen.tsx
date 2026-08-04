@@ -41,53 +41,98 @@ export type ScreenView =
       msgs: { text: string; time: string; mine?: boolean }[]
     }
 
+/** Barra de título de ventana de escritorio: los tres puntos y el nombre de la
+ *  app o pestaña activa. Es lo primero que distingue esto de un celular. */
+function Titlebar({ texto }: { texto: string }) {
+  return (
+    <div className={styles.titlebar}>
+      <span className={styles.dots} aria-hidden>
+        <i />
+        <i />
+        <i />
+      </span>
+      <span className={styles.titlebarText}>{texto}</span>
+    </div>
+  )
+}
+
+/** Franja de tareas al pie de la ventana: la señal más reconocible de "esto es
+ *  un computador", ausente en cualquier app de celular. Puramente decorativa,
+ *  por eso va oculta a lectores de pantalla. */
+function Taskbar() {
+  return (
+    <div className={styles.taskbar} aria-hidden>
+      <span className={styles.taskbarStart}>▦</span>
+      <span className={styles.taskbarClock}>10:41</span>
+    </div>
+  )
+}
+
 function DeviceScreen({ view }: { view: ScreenView }) {
   if (view.kind === 'mail') {
     return (
-      <section className={`${styles.screen} ${styles.mail}`} aria-label="Bandeja de correo">
-        <div className={styles.mailbar}>
-          <span className={styles.mailapp}>Correo</span>
-          <span className={styles.mailbox}>Recibidos</span>
-        </div>
+      <section className={`${styles.screen} ${styles.desktop}`} aria-label="Bandeja de correo">
+        <Titlebar texto="Correo — Recibidos" />
 
-        <div className={styles.mailbody}>
-          <h1 className={styles.subject}>{view.subject}</h1>
+        <div className={styles.desktopBody}>
+          {/* Carpetas fijas, no interactivas: solo dan el aspecto de cliente
+              de escritorio. Un celular muestra esto en un menú, no siempre
+              visible al lado. */}
+          <nav className={styles.mailNav} aria-hidden>
+            <span className={`${styles.mailNavItem} ${styles.mailNavActive}`}>📥 Recibidos</span>
+            <span className={styles.mailNavItem}>📤 Enviados</span>
+            <span className={styles.mailNavItem}>🗑 Papelera</span>
+          </nav>
 
-          <div className={styles.senderRow}>
-            <div className={styles.avatar} aria-hidden>
-              {view.from.slice(0, 1).toUpperCase()}
+          <div className={styles.mailbody}>
+            <h1 className={styles.subject}>{view.subject}</h1>
+
+            <div className={styles.senderRow}>
+              <div className={styles.avatar} aria-hidden>
+                {view.from.slice(0, 1).toUpperCase()}
+              </div>
+              <div className={styles.senderId}>
+                <p className={styles.senderName}>
+                  {view.from}
+                  {view.label && <span className={styles.label}>{view.label}</span>}
+                </p>
+                <p className={styles.senderAddr}>{view.address}</p>
+                <p className={styles.senderTo}>para {view.to}</p>
+              </div>
+              <span className={styles.date}>{view.date}</span>
             </div>
-            <div className={styles.senderId}>
-              <p className={styles.senderName}>
-                {view.from}
-                {view.label && <span className={styles.label}>{view.label}</span>}
-              </p>
-              <p className={styles.senderAddr}>{view.address}</p>
-              <p className={styles.senderTo}>para {view.to}</p>
-            </div>
-            <span className={styles.date}>{view.date}</span>
+
+            <div
+              className={styles.prose}
+              // Contenido fijo del escenario: permite negritas y el enlace falso.
+              dangerouslySetInnerHTML={{ __html: view.body }}
+            />
+
+            {view.attachment && (
+              <div className={styles.attachment}>
+                <span aria-hidden>📎</span>
+                {view.attachment}
+              </div>
+            )}
           </div>
-
-          <div
-            className={styles.prose}
-            // Contenido fijo del escenario: permite negritas y el enlace falso.
-            dangerouslySetInnerHTML={{ __html: view.body }}
-          />
-
-          {view.attachment && (
-            <div className={styles.attachment}>
-              <span aria-hidden>📎</span>
-              {view.attachment}
-            </div>
-          )}
         </div>
+
+        <Taskbar />
       </section>
     )
   }
 
   if (view.kind === 'web') {
     return (
-      <section className={`${styles.screen} ${styles.web}`} aria-label="Página web simulada">
+      <section className={`${styles.screen} ${styles.desktop}`} aria-label="Página web simulada">
+        <Titlebar texto={view.title} />
+
+        {/* Pestaña de navegador: en el celular no hay pestañas visibles, y es
+            la segunda señal más fuerte de que esto es un computador. */}
+        <div className={styles.tabstrip} aria-hidden>
+          <span className={styles.tab}>{view.title}</span>
+        </div>
+
         <div className={styles.urlbar}>
           <span className={view.secure ? styles.lock : styles.warn}>
             {view.secure ? '🔒' : '⚠ No seguro'}
@@ -112,6 +157,8 @@ function DeviceScreen({ view }: { view: ScreenView }) {
 
           {view.footer && <p className={styles.pageFooter}>{view.footer}</p>}
         </div>
+
+        <Taskbar />
       </section>
     )
   }

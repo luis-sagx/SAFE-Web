@@ -23,6 +23,14 @@ pantallas o escenarios aquí.
    los tokens de este documento. Todo lo que rodea al escenario —acceso,
    dashboard, listado de secciones, encabezados y botones de navegación— sí es
    modo claro y sí usa los tokens.
+
+   **El marco exterior sí importa, y no es el mismo para todas las amenazas.**
+   `EscenarioLayout` acepta `dispositivo: 'telefono' | 'escritorio'`. Un correo
+   o una página web (phishing) se abren más en computador que en celular, así
+   que usan el marco de escritorio —ventana ancha con barra de título y franja
+   de tareas, en `DeviceScreen`—; SMS, llamadas y chats se quedan en el marco de
+   celular, angosto y con esquinas redondeadas. La elección la hace
+   `StoryEscenario` según `view.kind`, no cada escenario por separado.
 2. **Tailwind primero.** Los tokens viven como variables de tema de Tailwind v4
    en `frontend/src/index.css`. En el JSX se usan clases de utilidad, nunca
    hex en línea ni estilos sueltos.

@@ -68,6 +68,9 @@ function StoryEscenario({
       pantalla={<DeviceScreen view={engine.node.view} />}
       decision={decision}
       onEmpezar={engine.restart}
+      // El correo y la web se abren más en computador que en celular; el SMS
+      // se queda en celular, que es donde de verdad llegan los mensajes.
+      dispositivo={engine.node.view.kind === 'sms' ? 'telefono' : 'escritorio'}
     />
   )
 }

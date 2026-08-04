@@ -16,6 +16,11 @@ interface EscenarioLayoutProps {
   /** Va debajo del marco: pregunta, opciones, feedback, resultado. */
   decision: ReactNode
   onEmpezar: () => void
+  /** Forma del marco exterior. 'telefono' es el default: la mayoría de
+   *  escenarios (SMS, llamada, chat) se abren en el celular. 'escritorio' es
+   *  para correo y web: el phishing se abre más en computador, y así se
+   *  distingue de inmediato del resto de amenazas, que sí son de celular. */
+  dispositivo?: 'telefono' | 'escritorio'
 }
 
 /**
@@ -23,6 +28,17 @@ interface EscenarioLayoutProps {
  * mostraría va en `pantalla`, si no va en `decision`. Un participante no aparece
  * dentro de su propia app bancaria y un banco no tiene una sección "Contexto".
  */
+/** Alto y angosto, como se sostiene un celular. */
+const MARCO_TELEFONO =
+  'sm:max-h-[640px] sm:w-[420px] sm:rounded-[28px] sm:border sm:border-hairline-strong sm:shadow-[0_30px_70px_rgba(0,0,0,0.22)] lg:h-[640px] lg:max-h-full lg:flex-none lg:self-center'
+
+/** Ancho y bajo, como una ventana de escritorio. Los anchos con vw + min/max
+ *  se recalculan solos según el viewport en vez de un solo punto de quiebre
+ *  fijo: sin eso, la ventana se sale de pantalla en un portátil de 1024px, que
+ *  es justo donde el layout pasa de apilado a lado a lado. */
+const MARCO_ESCRITORIO =
+  'sm:max-h-[560px] sm:w-[94vw] sm:max-w-[760px] sm:rounded-xl sm:border sm:border-hairline-strong sm:shadow-[0_30px_70px_rgba(0,0,0,0.22)] lg:h-[560px] lg:max-h-full lg:w-[52vw] lg:min-w-[520px] lg:max-w-[820px] lg:flex-none lg:self-center'
+
 function EscenarioLayout({
   escenarioId,
   resumen,
@@ -30,6 +46,7 @@ function EscenarioLayout({
   pantalla,
   decision,
   onEmpezar,
+  dispositivo = 'telefono',
 }: EscenarioLayoutProps) {
   const escenario = getEscenario(escenarioId)
 
@@ -116,7 +133,9 @@ function EscenarioLayout({
           ref={escenaRef}
           tabIndex={-1}
           aria-label={`${escenario.titulo}: pantalla simulada`}
-          className="flex min-h-0 w-full flex-1 overflow-hidden focus:outline-none sm:max-h-[640px] sm:w-[420px] sm:rounded-[28px] sm:border sm:border-hairline-strong sm:shadow-[0_30px_70px_rgba(0,0,0,0.22)] lg:h-[640px] lg:max-h-full lg:flex-none lg:self-center"
+          className={`flex min-h-0 w-full flex-1 overflow-hidden focus:outline-none ${
+            dispositivo === 'escritorio' ? MARCO_ESCRITORIO : MARCO_TELEFONO
+          }`}
         >
           {pantalla}
         </div>
