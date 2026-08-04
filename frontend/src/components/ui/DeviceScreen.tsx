@@ -1,3 +1,4 @@
+import { Taskbar, Titlebar } from './DesktopChrome'
 import styles from './DeviceScreen.module.css'
 
 /**
@@ -40,31 +41,6 @@ export type ScreenView =
       sub: string
       msgs: { text: string; time: string; mine?: boolean }[]
     }
-
-/** Barra de título de ventana de escritorio: el nombre de la app o pestaña
- *  activa. Sin botones de ventana a propósito: unos puntos de colores se leen
- *  como macOS y una franja ─ □ ✕ se lee como Windows; sin ninguno de los dos,
- *  el marco sigue leyéndose como "una ventana" para cualquiera, sea cual sea
- *  el sistema que use. */
-function Titlebar({ texto }: { texto: string }) {
-  return (
-    <div className={styles.titlebar}>
-      <span className={styles.titlebarText}>{texto}</span>
-    </div>
-  )
-}
-
-/** Franja de tareas al pie de la ventana: la señal más reconocible de "esto es
- *  un computador", ausente en cualquier app de celular. Puramente decorativa,
- *  por eso va oculta a lectores de pantalla. */
-function Taskbar() {
-  return (
-    <div className={styles.taskbar} aria-hidden>
-      <span className={styles.taskbarStart}>▦</span>
-      <span className={styles.taskbarClock}>10:41</span>
-    </div>
-  )
-}
 
 function DeviceScreen({ view }: { view: ScreenView }) {
   if (view.kind === 'mail') {

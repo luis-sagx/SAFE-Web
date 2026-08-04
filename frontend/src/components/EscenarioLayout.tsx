@@ -138,6 +138,12 @@ function EscenarioLayout({
       <main className="flex min-h-0 flex-1 flex-col items-center sm:gap-4 sm:px-4 sm:py-4 lg:flex-row lg:items-stretch lg:justify-center lg:gap-8 lg:py-6">
         <div
           ref={escenaRef}
+          // Fijo a propósito: el recorrido de señales de un escenario
+          // interactivo ubica el elemento a resaltar con
+          // document.getElementById en vez de hilar una ref nueva a través de
+          // props. Solo hay un escenario montado a la vez, así que un id fijo
+          // no puede colisionar.
+          id="pantalla-escenario"
           tabIndex={-1}
           aria-label={`${escenario.titulo}: pantalla simulada`}
           className={`flex min-h-0 w-full flex-1 overflow-hidden focus:outline-none ${

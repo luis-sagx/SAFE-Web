@@ -1,104 +1,88 @@
-import StoryEscenario, { type ScreenNode } from '../../components/StoryEscenario'
-import type { Story } from '../../hooks/useStoryEngine'
-import type { ScreenView } from '../../components/ui/DeviceScreen'
+import { useState } from 'react'
+import EscenarioLayout from '../../components/EscenarioLayout'
+import { VentanaEscritorio } from '../../components/ui/DesktopChrome'
+import styles from '../../components/ui/DeviceScreen.module.css'
+import { BotonHotspot, EnlaceHotspot, manejarClicHotspot } from '../../components/ui/interactivo'
+import PanelVeredicto, { type Senal } from '../../components/ui/PanelVeredicto'
+import { useStoryEngine, type Story, type StoryNode } from '../../hooks/useStoryEngine'
 
-const CORREO: ScreenView = {
-  kind: 'mail',
-  from: 'SRI · Facturación Electrónica',
-  address: 'notificaciones@sri-facturacion-ec.com',
-  to: 'mí',
-  subject: 'Factura electrónica pendiente de validación',
-  date: 'hoy 08:42',
-  label: 'Externo',
-  body: `
-    <p>Estimado contribuyente:</p>
-    <p>
-      Nuestro sistema detectó una <b>factura electrónica no validada</b> asociada a su RUC.
-      Si no completa la validación en las próximas <b>24 horas</b>, su comprobante será
-      anulado y se aplicará una multa administrativa.
-    </p>
-    <p><a class="cta" href="#">Validar mi factura ahora</a></p>
-    <p class="fine">
-      Enlace directo: http://sri-facturacion-ec.com/validar-ruc<br />
-      Este mensaje es automático, por favor no responda.
-    </p>
-  `,
-  attachment: 'Factura_004521.html (34 KB)',
-}
+/**
+ * Primer escenario interactivo del proyecto: en vez de elegir de una lista de
+ * acciones descritas, el participante actúa directamente sobre el correo y la
+ * página falsa —el enlace, el adjunto, el formulario, un atajo al portal
+ * real— igual que lo haría frente a su bandeja de verdad. Ver
+ * docs/superpowers/specs/2026-08-04-escenario-interactivo-factura-sri-design.md.
+ *
+ * Por eso no usa StoryEscenario/DeviceScreen/StoryChoices/StoryResultPanel:
+ * esos siguen sirviendo tal cual a los escenarios que todavía eligen de una
+ * lista (ClaveCaducada, RolDePagos). Este es la plantilla para cuando se
+ * repliquen.
+ */
 
-const PAGINA: ScreenView = {
-  kind: 'web',
-  url: 'http://sri-facturacion-ec.com/validar-ruc',
-  secure: false,
-  brand: 'Servicio de Rentas',
-  title: 'Validación de comprobante',
-  subtitle: 'Ingresa tus datos del portal para liberar la factura pendiente.',
-  fields: [
-    { label: 'RUC o cédula', placeholder: '0000000000001' },
-    { label: 'Clave del portal SRI', placeholder: '••••••••' },
-  ],
-  button: 'Validar factura',
-  footer: 'Portal de validación · sri-facturacion-ec.com',
-}
-
-const STORY: Story<ScreenNode> = {
-  n1: {
-    kind: 'scene',
-    view: CORREO,
-    choices: [
-      { label: 'Abrir el enlace para validar la factura.', goto: 'n2' },
-      { label: 'Descargar el archivo adjunto para ver la factura.', goto: 'e_adjunto' },
-      {
-        label: 'Cerrar el correo y entrar al portal del SRI escribiendo yo la dirección.',
-        goto: 'e_portal',
-      },
-    ],
-  },
-  n2: {
-    kind: 'scene',
-    view: PAGINA,
-    choices: [
-      { label: 'Ingresar mi RUC y mi clave para liberar la factura.', goto: 'e_datos' },
-      { label: 'Mirar la barra de direcciones antes de escribir nada.', goto: 'e_dominio' },
-    ],
-  },
+/// El grafo no necesita `choices`: cada punto interactivo lleva su propio
+/// `goto`/`label` en la pantalla, no en una lista aparte que haya que
+/// mantener sincronizada.
+const STORY: Story<StoryNode> = {
+  n1: { kind: 'scene' },
+  n2: { kind: 'scene' },
   e_adjunto: {
     kind: 'bad',
-    view: CORREO,
     verdict: 'Caíste en la trampa',
     outcome:
       'El adjunto no era una factura: era una página falsa que se abrió en tu navegador y copió tu clave del SRI en cuanto la escribiste.',
   },
   e_datos: {
     kind: 'bad',
-    view: PAGINA,
     verdict: 'Caíste en la trampa',
     outcome:
       'Entregaste tu RUC y tu clave del portal en un sitio que no es del SRI. Con esos datos pueden emitir comprobantes a tu nombre y ver tu información tributaria.',
   },
   e_dominio: {
     kind: 'good',
-    view: PAGINA,
     verdict: 'No caíste · revisaste la dirección',
     outcome:
       'La dirección era sri-facturacion-ec.com y ni siquiera usaba conexión segura. El portal real del SRI está en sri.gob.ec. Cerraste la página sin escribir nada.',
   },
   e_portal: {
     kind: 'good',
-    view: CORREO,
     verdict: 'No caíste · entraste por tu cuenta',
     outcome:
       'Entraste al portal del SRI escribiendo tú la dirección. No había ninguna factura pendiente ni multa: el correo era falso.',
   },
 }
 
-const SIGNALS = [
-  'El remitente usa un <b>dominio parecido</b> pero ajeno: <b>sri-facturacion-ec.com</b>, no sri.gob.ec.',
-  'Impone un <b>plazo de 24 horas</b> y amenaza con una multa.',
-  'El enlace lleva a una página <b>sin conexión segura</b> (http).',
-  'Trae un <b>adjunto .html</b>: una factura real nunca llega así.',
-  'Pide tu <b>clave</b> del portal para "validar" algo.',
+/// Cada señal apunta, cuando puede, al elemento real marcado con
+/// data-signal en una de las dos pantallas. Si esa pantalla no es la que
+/// llevó a este final, el recorrido igual muestra el texto, sin resaltar.
+const SENALES: Senal[] = [
+  {
+    id: 'dominio',
+    targetId: 'remitente',
+    texto:
+      'El remitente usa un <b>dominio parecido</b> pero ajeno: <b>sri-facturacion-ec.com</b>, no sri.gob.ec.',
+  },
+  {
+    id: 'plazo',
+    targetId: 'plazo',
+    texto: 'Impone un <b>plazo de 24 horas</b> y amenaza con una multa.',
+  },
+  {
+    id: 'conexion',
+    targetId: 'url-insegura',
+    texto: 'El enlace lleva a una página <b>sin conexión segura</b> (http).',
+  },
+  {
+    id: 'adjunto',
+    targetId: 'adjunto',
+    texto: 'Trae un <b>adjunto .html</b>: una factura real nunca llega así.',
+  },
+  {
+    id: 'clave',
+    targetId: 'campo-clave',
+    texto: 'Pide tu <b>clave</b> del portal para "validar" algo.',
+  },
 ]
+
 const RULE =
   'Regla de oro: ninguna entidad pública te pide tu clave por correo. Si un mensaje dice que tienes algo pendiente, <b>entra al portal oficial escribiendo tú la dirección</b>, nunca por el enlace del correo.'
 
@@ -118,17 +102,209 @@ const CONTEXTO = (
   </>
 )
 
-function FacturaSri() {
+const ATAJO_PORTAL = {
+  texto: '🏦 Portal SRI',
+  goto: 'e_portal',
+  label: 'Cerró el correo y entró al portal del SRI escribiendo la dirección',
+}
+
+interface PantallaProps {
+  onHotspot: (event: React.MouseEvent) => void
+}
+
+function PantallaCorreo({ onHotspot }: PantallaProps) {
   return (
-    <StoryEscenario
+    <VentanaEscritorio
+      titulo="Correo — Recibidos"
+      ariaLabel="Bandeja de correo"
+      onClick={onHotspot}
+      atajo={ATAJO_PORTAL}
+    >
+      <div className={styles.desktopBody}>
+        {/* Carpetas fijas, no interactivas: solo dan el aspecto de cliente de
+            escritorio, igual que en la pantalla de correo no interactiva. */}
+        <nav className={styles.mailNav} aria-hidden>
+          <span className={`${styles.mailNavItem} ${styles.mailNavActive}`}>📥 Recibidos</span>
+          <span className={styles.mailNavItem}>📤 Enviados</span>
+          <span className={styles.mailNavItem}>🗑 Papelera</span>
+        </nav>
+
+        <div className={styles.mailbody}>
+          <h1 className={styles.subject}>Factura electrónica pendiente de validación</h1>
+
+          <div className={styles.senderRow}>
+            <div className={styles.avatar} aria-hidden>
+              S
+            </div>
+            <div className={styles.senderId}>
+              <p className={styles.senderName}>
+                SRI · Facturación Electrónica
+                <span className={styles.label}>Externo</span>
+              </p>
+              <p className={styles.senderAddr} data-signal="remitente">
+                notificaciones@sri-facturacion-ec.com
+              </p>
+              <p className={styles.senderTo}>para mí</p>
+            </div>
+            <span className={styles.date}>hoy 08:42</span>
+          </div>
+
+          <div className={styles.prose}>
+            <p>Estimado contribuyente:</p>
+            <p>
+              Nuestro sistema detectó una <b>factura electrónica no validada</b> asociada a su
+              RUC. Si no completa la validación en las próximas{' '}
+              <mark className={styles.marca} data-signal="plazo">
+                24 horas
+              </mark>
+              , su comprobante será anulado y se aplicará una multa administrativa.
+            </p>
+            <p>
+              <EnlaceHotspot
+                goto="n2"
+                label="Abrió el enlace para validar la factura"
+                href="http://sri-facturacion-ec.com/validar-ruc"
+                className="cta"
+              >
+                Validar mi factura ahora
+              </EnlaceHotspot>
+            </p>
+            <p className="fine">Este mensaje es automático, por favor no responda.</p>
+          </div>
+
+          <BotonHotspot
+            goto="e_adjunto"
+            label="Descargó el archivo adjunto"
+            signalId="adjunto"
+            className={styles.attachment}
+          >
+            <span aria-hidden>📎</span>
+            Factura_004521.html (34 KB)
+          </BotonHotspot>
+        </div>
+      </div>
+    </VentanaEscritorio>
+  )
+}
+
+function PantallaPortal({ onHotspot }: PantallaProps) {
+  return (
+    <VentanaEscritorio
+      titulo="Validación de comprobante"
+      ariaLabel="Página web simulada"
+      onClick={onHotspot}
+      atajo={{
+        ...ATAJO_PORTAL,
+        goto: 'e_dominio',
+        label: 'Salió sin ingresar datos y entró al portal por su cuenta',
+      }}
+    >
+      {/* Pestaña de navegador: en el celular no hay pestañas visibles. */}
+      <div className={styles.tabstrip} aria-hidden>
+        <span className={styles.tab}>Validación de comprobante</span>
+      </div>
+
+      <div className={styles.urlbar} data-signal="url-insegura">
+        <span className={styles.warn}>⚠ No seguro</span>
+        <span className={styles.url}>http://sri-facturacion-ec.com/validar-ruc</span>
+      </div>
+
+      <div className={styles.page}>
+        <p className={styles.brand}>Servicio de Rentas</p>
+        <h2 className={styles.pageTitle}>Validación de comprobante</h2>
+        <p className={styles.pageSub}>Ingresa tus datos del portal para liberar la factura pendiente.</p>
+
+        <div className={styles.form}>
+          <label className={styles.field}>
+            <span>RUC o cédula</span>
+            {/* No editable a propósito: el participante juzga la pantalla,
+                nunca escribe credenciales reales en ella. */}
+            <span className={styles.input}>0000000000001</span>
+          </label>
+          <label className={styles.field} data-signal="campo-clave">
+            <span>Clave del portal SRI</span>
+            <span className={styles.input}>••••••••</span>
+          </label>
+          <BotonHotspot
+            goto="e_datos"
+            label="Ingresó su RUC y su clave para liberar la factura"
+            className={styles.submit}
+          >
+            Validar factura
+          </BotonHotspot>
+        </div>
+
+        <p className={styles.pageFooter}>Portal de validación · sri-facturacion-ec.com</p>
+      </div>
+    </VentanaEscritorio>
+  )
+}
+
+const DECISION_EN_CURSO = (
+  <div className="grid gap-3">
+    <p className="text-sm font-semibold text-ink">¿Qué haces?</p>
+    <p className="text-base leading-relaxed text-body">
+      Investiga el correo como lo harías de verdad: pasa el mouse sobre los enlaces antes de
+      decidir. La dirección real aparece abajo, en la barra de tu navegador. Haz clic en lo que
+      harías a continuación.
+    </p>
+  </div>
+)
+
+function FacturaSri() {
+  const engine = useStoryEngine(STORY, 'n1', 'phishing/factura-sri')
+
+  // El nodo final (p. ej. "e_adjunto") no es una pantalla: es la consecuencia
+  // de una. Se recuerda cuál era la pantalla activa para que el recorrido de
+  // señales tenga sobre qué resaltar.
+  const [pantallaActual, setPantallaActual] = useState<'n1' | 'n2'>('n1')
+
+  function elegir(goto: string, label?: string) {
+    if (engine.isEnding) {
+      return
+    }
+    engine.choose(goto, label)
+    if (goto === 'n2') {
+      setPantallaActual('n2')
+    }
+  }
+
+  function reiniciar() {
+    engine.restart()
+    setPantallaActual('n1')
+  }
+
+  const onHotspot = (event: React.MouseEvent) => manejarClicHotspot(event, elegir)
+
+  const pantalla =
+    pantallaActual === 'n1' ? (
+      <PantallaCorreo onHotspot={onHotspot} />
+    ) : (
+      <PantallaPortal onHotspot={onHotspot} />
+    )
+
+  const decision = engine.isEnding ? (
+    <PanelVeredicto
+      node={engine.node}
+      senales={SENALES}
+      regla={RULE}
+      restartLabel="↻ Repetir el escenario"
+      onRestart={reiniciar}
+      contenedorId="pantalla-escenario"
+    />
+  ) : (
+    DECISION_EN_CURSO
+  )
+
+  return (
+    <EscenarioLayout
       escenarioId="phishing/factura-sri"
       resumen={RESUMEN}
       contexto={CONTEXTO}
-      story={STORY}
-      signalsTitle="Las señales de este correo"
-      signals={SIGNALS}
-      rule={RULE}
-      restartLabel="↻ Repetir el escenario"
+      pantalla={pantalla}
+      decision={decision}
+      onEmpezar={engine.restart}
+      dispositivo="escritorio"
     />
   )
 }

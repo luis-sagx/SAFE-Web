@@ -60,6 +60,67 @@
   font-size: 11.5px;
   color: #cbd2db;
 }
+.taskbarAtajo {
+  appearance: none;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.08);
+  color: #e8ecf1;
+  font: inherit;
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 999px;
+  cursor: pointer;
+}
+.taskbarAtajo:hover,
+.taskbarAtajo:focus-visible {
+  background: rgba(255, 255, 255, 0.16);
+  outline: 2px solid #16a34a;
+  outline-offset: 1px;
+}
+
+/* ---------- Puntos interactivos (escenarios con hotspots reales) ----------
+   Un solo reset compartido: los elementos siguen usando las clases visuales
+   de siempre (.attachment, .submit…), esto solo les quita el look de <button>
+   nativo y les suma foco/hover, sin duplicar estilos. */
+.hotspot {
+  appearance: none;
+  border: none;
+  font: inherit;
+  text-align: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+.hotspot:hover {
+  filter: brightness(0.97);
+}
+.hotspot:focus-visible {
+  outline: 3px solid #16a34a;
+  outline-offset: 2px;
+}
+
+/* Frase señalada dentro del cuerpo del correo (p. ej. el plazo). Sin el fondo
+   amarillo por defecto de <mark>: delataría la señal antes de que el
+   participante la investigue por su cuenta. */
+.marca {
+  background: none;
+  color: inherit;
+  font-weight: 700;
+}
+
+/* Global a propósito: el recorrido de señales la aplica con classList.add()
+   sobre cualquier elemento marcado con data-signal, sin importar de qué
+   pantalla venga ni si CSS Modules le reescribió el nombre a sus otras
+   clases. */
+:global(.senal-resaltada) {
+  outline: 3px solid #16a34a;
+  outline-offset: 3px;
+  border-radius: 4px;
+  background: rgba(22, 163, 74, 0.1);
+  transition:
+    outline-color 0.2s,
+    background 0.2s;
+}
 
 .desktopBody {
   flex: 1;
