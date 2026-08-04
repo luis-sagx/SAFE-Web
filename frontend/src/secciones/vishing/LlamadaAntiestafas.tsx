@@ -103,11 +103,15 @@ const CONTEXTO = (
       No participaste en ningún sorteo ni dejaste tu número en ningún concurso, pero eso todavía no
       lo sabés cuando el teléfono suena.
     </p>
-    <p>
-      Vas a poder contestar o rechazar la llamada, y si contestás, escuchar y decidir qué respondés
-      en cada momento. Colgar es siempre una opción válida.
-    </p>
   </>
+)
+
+/// Mecánica, no historia: solo se muestra en el briefing.
+const NOTA = (
+  <p>
+    Vas a poder contestar o rechazar la llamada, y si contestas, escuchar y decidir qué respondes en
+    cada momento. Colgar es siempre una opción válida.
+  </p>
 )
 
 function formatTime(totalSeconds: number) {
@@ -426,6 +430,7 @@ function LlamadaAntiestafas() {
       escenarioId="vishing/llamada-antiestafas"
       resumen={RESUMEN}
       contexto={CONTEXTO}
+      nota={NOTA}
       pantalla={pantalla}
       decision={decision}
       onEmpezar={handleRestart}

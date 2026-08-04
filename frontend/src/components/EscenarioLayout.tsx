@@ -1,3 +1,4 @@
+import { Info } from 'lucide-react'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { Link } from 'react-router'
 import AppHeader from './AppHeader'
@@ -10,8 +11,12 @@ interface EscenarioLayoutProps {
   escenarioId: string
   /** Una línea; queda visible durante todo el escenario. */
   resumen: string
-  /** Cuerpo del briefing: la narración que el participante lee antes de entrar. */
+  /** La situación: quién eres y qué te está pasando. Solo historia, nada de
+   *  mecánica — acompaña al participante también dentro del escenario, donde
+   *  una frase como "vas a ver tu correo" ya no tendría sentido. */
   contexto: ReactNode
+  /** Cómo se juega. Aparece únicamente en el briefing, antes de entrar. */
+  nota?: ReactNode
   /** Va dentro del marco del dispositivo. Solo lo que la app real mostraría. */
   pantalla: ReactNode
   /** Va debajo del marco: pregunta, opciones, feedback, resultado. */
@@ -36,14 +41,21 @@ const MARCO_TELEFONO =
 /** Ancho y bajo, como una ventana de escritorio. Los anchos con vw + min/max
  *  se recalculan solos según el viewport en vez de un solo punto de quiebre
  *  fijo: sin eso, la ventana se sale de pantalla en un portátil de 1024px, que
- *  es justo donde el layout pasa de apilado a lado a lado. */
+ *  es justo donde el layout pasa de apilado a lado a lado.
+ *
+ *  El alto es relativo por el mismo motivo. Con 560px fijos, en una pantalla de
+ *  1000px quedaban 250px de blanco arriba y otros tantos abajo: la ventana se
+ *  leía como una tarjetita flotando, no como "tu computador", y el correo iba
+ *  apretado dentro. El tope en 720px evita el efecto contrario en un monitor
+ *  grande, donde una ventana altísima tampoco se parece a nada real. */
 const MARCO_ESCRITORIO =
-  'sm:max-h-[560px] sm:w-[94vw] sm:max-w-[760px] sm:rounded-xl sm:border sm:border-hairline-strong sm:shadow-[0_30px_70px_rgba(0,0,0,0.22)] lg:h-[560px] lg:max-h-full lg:w-[52vw] lg:min-w-[520px] lg:max-w-[820px] lg:flex-none lg:self-center'
+  'sm:max-h-[min(78vh,720px)] sm:w-[94vw] sm:max-w-[820px] sm:rounded-xl sm:border sm:border-hairline-strong sm:shadow-[0_30px_70px_rgba(0,0,0,0.22)] lg:h-[min(76vh,720px)] lg:max-h-full lg:w-[56vw] lg:min-w-[520px] lg:max-w-[880px] lg:flex-none lg:self-center'
 
 function EscenarioLayout({
   escenarioId,
   resumen,
   contexto,
+  nota,
   pantalla,
   decision,
   onEmpezar,
@@ -59,6 +71,7 @@ function EscenarioLayout({
   const [fase, setFase] = useState<'briefing' | 'escenario'>('briefing')
   const empezarRef = useRef<HTMLButtonElement>(null)
   const escenaRef = useRef<HTMLDivElement>(null)
+  const dialogoRef = useRef<HTMLDialogElement>(null)
 
   useEffect(() => {
     if (fase === 'briefing') {
@@ -98,7 +111,21 @@ function EscenarioLayout({
             {escenario.titulo}
           </h1>
 
-          <div className="mt-6 space-y-4 text-base leading-relaxed text-body">{contexto}</div>
+          {/* El saludo con nombre vive aquí y no en cada escenario: la historia
+              que escribe el autor empieza siempre en la escena, y quién la
+              protagoniza lo sabe el layout, no el guion. */}
+          <p className="mt-6 text-base leading-relaxed text-ink">
+            Hola, <strong className="font-semibold">{displayName}</strong>. Esto es lo que te está
+            pasando:
+          </p>
+
+          <div className="mt-3 space-y-4 text-base leading-relaxed text-body">{contexto}</div>
+
+          {nota && (
+            <div className="mt-6 rounded-lg border border-hairline-strong bg-canvas-soft p-4 text-sm leading-relaxed text-body">
+              {nota}
+            </div>
+          )}
 
           <button
             ref={empezarRef}
@@ -157,8 +184,47 @@ function EscenarioLayout({
             desplaza él, no la página. Al costado puede usar todo el alto. */}
         <div className="max-h-[45%] w-full shrink-0 overflow-y-auto border-t border-hairline bg-canvas px-4 py-4 sm:w-[420px] sm:border-0 sm:bg-transparent sm:px-0 sm:py-0 lg:max-h-full lg:self-center">
           {decision}
+
+          {/* La historia queda a un clic, no ocupando espacio permanente. Vive
+              en un diálogo y no en un bloque fijo porque se consulta poco: casi
+              siempre se recuerda, y cuando no, se abre. Lo que sí necesita
+              estar siempre a la vista es la pantalla y la decisión. */}
+          <button
+            type="button"
+            onClick={() => dialogoRef.current?.showModal()}
+            className="mt-5 inline-flex min-h-9 items-center gap-1.5 rounded-md border border-hairline-strong bg-surface px-3 text-sm font-medium text-ink transition hover:bg-surface-strong focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link"
+          >
+            <Info aria-hidden className="size-4 text-muted" strokeWidth={2} />
+            Ver contexto
+          </button>
         </div>
       </main>
+
+      {/* <dialog> nativo: el navegador ya resuelve el foco atrapado, el cierre
+          con Escape y el fondo inerte. Una capa propia con divs tendría que
+          reimplementar las tres cosas y saldría peor. */}
+      <dialog
+        ref={dialogoRef}
+        aria-labelledby="titulo-contexto"
+        className="m-auto w-[min(92vw,32rem)] rounded-lg border border-hairline-strong bg-surface p-6 text-ink shadow-card backdrop:bg-ink/40"
+      >
+        <h2 id="titulo-contexto" className="text-[11px] font-semibold uppercase tracking-[0.88px] text-muted">
+          Tu situación
+        </h2>
+        <p className="mt-2 text-base leading-relaxed text-ink">
+          Hola, <strong className="font-semibold">{displayName}</strong>.
+        </p>
+        <div className="mt-2 space-y-3 text-base leading-relaxed text-body">{contexto}</div>
+
+        <form method="dialog" className="mt-6 flex justify-end">
+          <button
+            type="submit"
+            className="min-h-10 rounded-md bg-primary px-5 text-base font-medium text-on-primary transition hover:bg-primary-active focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link"
+          >
+            Seguir
+          </button>
+        </form>
+      </dialog>
     </div>
   )
 }

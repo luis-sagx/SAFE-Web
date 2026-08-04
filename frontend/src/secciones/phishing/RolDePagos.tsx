@@ -110,7 +110,6 @@ const CONTEXTO = (
       Este mes trabajaste horas extra y quieres confirmar que estén incluidas antes de que cierre
       el plazo de reclamos.
     </p>
-    <p>Vas a leer el correo y decidir qué haces.</p>
   </>
 )
 

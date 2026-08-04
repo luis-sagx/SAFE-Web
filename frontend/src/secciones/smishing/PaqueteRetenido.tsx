@@ -119,7 +119,6 @@ const CONTEXTO = (
       A media mañana te llega un mensaje de texto de un número que no tienes guardado, con el
       logo del courier en el texto y un número de guía.
     </p>
-    <p>Vas a leer el mensaje y decidir qué haces.</p>
   </>
 )
 

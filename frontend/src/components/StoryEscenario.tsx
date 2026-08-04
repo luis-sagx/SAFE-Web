@@ -15,6 +15,8 @@ interface StoryEscenarioProps {
   escenarioId: string
   resumen: string
   contexto: ReactNode
+  /** Cómo se juega. Solo se muestra en el briefing. */
+  nota?: ReactNode
   story: Story<ScreenNode>
   signalsTitle: string
   /** Llevan negritas <b>; contenido fijo del código. */
@@ -33,6 +35,7 @@ function StoryEscenario({
   escenarioId,
   resumen,
   contexto,
+  nota,
   story,
   signalsTitle,
   signals,
@@ -54,7 +57,7 @@ function StoryEscenario({
   ) : (
     engine.node.choices && (
       <div className="grid gap-3">
-        <p className="text-sm font-semibold text-ink">{pregunta}</p>
+        <p className="text-base font-semibold text-ink">{pregunta}</p>
         <StoryChoices choices={engine.node.choices} onChoose={engine.choose} />
       </div>
     )
@@ -65,6 +68,7 @@ function StoryEscenario({
       escenarioId={escenarioId}
       resumen={resumen}
       contexto={contexto}
+      nota={nota}
       pantalla={<DeviceScreen view={engine.node.view} />}
       decision={decision}
       onEmpezar={engine.restart}

@@ -110,7 +110,6 @@ const CONTEXTO = (
       Nunca postulaste a ningún bono, pero has escuchado que a varios conocidos les llegó algo
       parecido y el dinero haría falta este mes.
     </p>
-    <p>Vas a leer el mensaje y decidir qué haces.</p>
   </>
 )
 

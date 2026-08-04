@@ -116,7 +116,6 @@ const CONTEXTO = (
       Son las cuatro de la tarde, estás cerrando pendientes, y llega un mensaje con un plazo que
       vence en dos horas.
     </p>
-    <p>Vas a leer el correo y decidir qué haces.</p>
   </>
 )
 

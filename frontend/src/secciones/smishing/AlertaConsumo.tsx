@@ -102,7 +102,6 @@ const CONTEXTO = (
       Esta tarde saliste del supermercado y, al rato, tu teléfono vibra con un mensaje nuevo en el
       hilo de siempre del banco.
     </p>
-    <p>Vas a leer el mensaje y decidir qué haces.</p>
   </>
 )
 

@@ -118,7 +118,6 @@ const CONTEXTO = (
       Andrés vive en otra ciudad. Hablás con él casi todos los días, siempre desde su número de
       siempre, el que tenés guardado hace años.
     </p>
-    <p>Vas a leer la conversación y decidir qué hacer en cada momento.</p>
   </>
 )
 
