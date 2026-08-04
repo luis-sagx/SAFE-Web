@@ -2,6 +2,37 @@ import { useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router'
 import { useAuth } from '../context/AuthContext'
 
+/** Las seis amenazas del estudio con su finalidad, en una frase cada una: qué
+ *  busca quien la usa, no el canal por el que llega (eso ya lo dice el
+ *  título). Texto corrido, no tarjetas: es un aviso que se lee una vez, no
+ *  un catálogo. */
+const AMENAZAS = [
+  {
+    titulo: 'Phishing',
+    finalidad: 'un correo o una página falsa que buscan robarte la clave o instalar algo dañino.',
+  },
+  {
+    titulo: 'Smishing',
+    finalidad: 'lo mismo, pero por SMS o WhatsApp: un mensaje que imita a tu banco o una entidad real.',
+  },
+  {
+    titulo: 'Vishing',
+    finalidad: 'una llamada de alguien que se hace pasar por soporte o tu banco para sacarte un código.',
+  },
+  {
+    titulo: 'Suplantación de identidad',
+    finalidad: 'un contacto o perfil clonado que usa tu confianza en él para pedirte dinero o datos.',
+  },
+  {
+    titulo: 'Estafa electrónica',
+    finalidad: 'una compra, venta o inversión falsa donde el dinero nunca llega o se pide antes de tiempo.',
+  },
+  {
+    titulo: 'Riesgo físico',
+    finalidad: 'información sensible expuesta en tu entorno —una clave anotada, una memoria USB— sin que nadie toque una pantalla.',
+  },
+]
+
 /**
  * Aparece sola en el primer ingreso (RequireAuth la fuerza mientras
  * `onboardingVisto` sea false) y queda disponible siempre desde el ícono ⓘ.
@@ -34,7 +65,7 @@ function Bienvenida() {
 
   return (
     <div className="flex min-h-dvh items-center justify-center bg-ink/40 px-6 py-10">
-      <div className="w-full max-w-md rounded-xl border border-hairline-strong bg-surface p-7 shadow-card">
+      <div className="w-full max-w-2xl rounded-xl border border-hairline-strong bg-surface p-8 shadow-card">
         <p className="text-[11px] font-semibold uppercase tracking-[0.88px] text-muted">
           SAFE Web
         </p>
@@ -43,13 +74,24 @@ function Bienvenida() {
         </h1>
 
         <p className="mt-3 text-base leading-relaxed text-body">
-          Vas a enfrentar situaciones simuladas de fraude —correos, mensajes, llamadas— y al final
-          te decimos qué señales había. Por ahora está disponible{' '}
-          <strong className="font-semibold text-ink">Phishing</strong>; el resto llega pronto.
+          Vas a practicar a reconocer seis formas de fraude, una situación simulada a la vez. Al
+          final de cada una te mostramos qué señales había, las hayas visto o no — la idea es que
+          entrenes el criterio, no que memorices una lista.
         </p>
-        <p className="mt-3 text-sm leading-relaxed text-muted">
-          Tu cédula no se guarda, solo evita cuentas repetidas. El resto de tus datos se borra
-          cuando el estudio termina.
+
+        <div className="mt-6 grid gap-x-8 gap-y-4 sm:grid-cols-2">
+          {AMENAZAS.map((amenaza) => (
+            <p key={amenaza.titulo} className="text-sm leading-relaxed text-body">
+              <span className="font-semibold text-ink">{amenaza.titulo}: </span>
+              {amenaza.finalidad}
+            </p>
+          ))}
+        </div>
+
+        <p className="mt-6 border-t border-hairline pt-4 text-base leading-relaxed text-body">
+          Por ahora está disponible <strong className="font-semibold text-ink">Phishing</strong>;
+          el resto se habilita más adelante. Tu cédula no se guarda —solo evita cuentas
+          repetidas— y el resto de tus datos se borra cuando el estudio termina.
         </p>
 
         <form onSubmit={handleContinuar} className="mt-6">
