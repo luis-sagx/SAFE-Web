@@ -21,21 +21,9 @@ function AuthLayout({ titulo, subtitulo, children, pie }: AuthLayoutProps) {
             Aprende a reconocer un engaño antes de caer en uno.
           </h1>
           <p className="mt-5 max-w-md text-base leading-relaxed text-body">
-            Situaciones de fraude recreadas en un entorno seguro: nada de lo que hagas aquí toca tu
-            banco ni tus datos reales. Aprende con la práctica, no con el miedo.
+            Situaciones de fraude recreadas en un entorno seguro, sin tocar tu banco ni tus datos
+            reales.
           </p>
-
-          <ul className="mt-6 space-y-2">
-            {[
-              'Mensajes, llamadas y compras como las de todos los días.',
-              'Decides como en la vida real y al final vemos qué señales había.',
-            ].map((item) => (
-              <li key={item} className="flex gap-3 text-base text-body">
-                <span aria-hidden className="mt-2 size-1.5 shrink-0 rounded-full bg-ink" />
-                {item}
-              </li>
-            ))}
-          </ul>
         </div>
 
         <section className="w-full rounded-xl border border-hairline-strong bg-surface p-8 shadow-card lg:w-[400px] lg:shrink-0">

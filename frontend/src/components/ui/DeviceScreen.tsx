@@ -41,16 +41,14 @@ export type ScreenView =
       msgs: { text: string; time: string; mine?: boolean }[]
     }
 
-/** Barra de título de ventana de escritorio: los tres puntos y el nombre de la
- *  app o pestaña activa. Es lo primero que distingue esto de un celular. */
+/** Barra de título de ventana de escritorio: el nombre de la app o pestaña
+ *  activa. Sin botones de ventana a propósito: unos puntos de colores se leen
+ *  como macOS y una franja ─ □ ✕ se lee como Windows; sin ninguno de los dos,
+ *  el marco sigue leyéndose como "una ventana" para cualquiera, sea cual sea
+ *  el sistema que use. */
 function Titlebar({ texto }: { texto: string }) {
   return (
     <div className={styles.titlebar}>
-      <span className={styles.dots} aria-hidden>
-        <i />
-        <i />
-        <i />
-      </span>
       <span className={styles.titlebarText}>{texto}</span>
     </div>
   )

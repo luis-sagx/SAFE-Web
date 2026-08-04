@@ -65,25 +65,27 @@ function Registro() {
         </p>
       }
     >
-      <form onSubmit={handleSubmit} className="mt-6 space-y-5" noValidate>
-        <Campo
-          id="nombre"
-          label="Nombre"
-          value={nombre}
-          onChange={setNombre}
-          autoComplete="given-name"
-          placeholder="María"
-          maxLength={60}
-        />
-        <Campo
-          id="apellido"
-          label="Apellido"
-          value={apellido}
-          onChange={setApellido}
-          autoComplete="family-name"
-          placeholder="Pérez"
-          maxLength={60}
-        />
+      <form onSubmit={handleSubmit} className="mt-6 space-y-4" noValidate>
+        <div className="grid grid-cols-2 gap-3">
+          <Campo
+            id="nombre"
+            label="Nombre"
+            value={nombre}
+            onChange={setNombre}
+            autoComplete="given-name"
+            placeholder="María"
+            maxLength={60}
+          />
+          <Campo
+            id="apellido"
+            label="Apellido"
+            value={apellido}
+            onChange={setApellido}
+            autoComplete="family-name"
+            placeholder="Pérez"
+            maxLength={60}
+          />
+        </div>
         <Campo
           id="cedula"
           label="Cédula"
@@ -93,7 +95,7 @@ function Registro() {
           autoComplete="off"
           placeholder="1710034065"
           maxLength={13}
-          ayuda="Sirve para que nadie se registre dos veces. No la guardamos."
+          ayuda="No se guarda; solo evita cuentas repetidas."
           error={cedulaInvalida ? 'Ese número de cédula no es válido.' : undefined}
         />
         <Campo
