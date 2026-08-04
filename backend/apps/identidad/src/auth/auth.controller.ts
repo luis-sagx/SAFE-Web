@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   HttpCode,
+  Patch,
   Post,
   UseGuards,
 } from '@nestjs/common';
@@ -10,6 +11,7 @@ import { Throttle } from '@nestjs/throttler';
 import { CurrentParticipant, JwtAuthGuard, type JwtPayload } from '@comun';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
+import { PatchMeDto } from './dto/patch-me.dto';
 import { RegisterDto } from './dto/register.dto';
 
 @Controller('auth')
@@ -36,5 +38,14 @@ export class AuthController {
   @Get('me')
   me(@CurrentParticipant() participant: JwtPayload) {
     return this.auth.me(participant.sub);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch('me')
+  actualizarMe(
+    @CurrentParticipant() participant: JwtPayload,
+    @Body() dto: PatchMeDto,
+  ) {
+    return this.auth.actualizarMe(participant.sub, dto);
   }
 }

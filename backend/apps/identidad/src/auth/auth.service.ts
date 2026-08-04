@@ -10,6 +10,7 @@ import type { JwtPayload } from '@comun';
 import { huellaCedula } from '../cedula/cedula';
 import { PrismaService } from '../prisma/prisma.service';
 import { LoginDto } from './dto/login.dto';
+import { PatchMeDto } from './dto/patch-me.dto';
 import { RegisterDto } from './dto/register.dto';
 
 /// Factor de costo de bcrypt. OWASP Password Storage recomienda >= 10.
@@ -32,6 +33,17 @@ export interface Perfil {
   email: string | null;
   role: string;
   cohort: string | null;
+  onboardingVisto: boolean;
+}
+
+interface ParticipantConOnboarding {
+  id: string;
+  nombre: string | null;
+  apellido: string | null;
+  email: string | null;
+  role: string;
+  cohort: string | null;
+  onboardingVistoAt: Date | null;
 }
 
 /// Lo que la interfaz sabe del participante. No incluye el seudónimo —ese
@@ -44,10 +56,27 @@ const CAMPOS_PERFIL = {
   email: true,
   role: true,
   cohort: true,
+  onboardingVistoAt: true,
 } as const;
 
 /// `seq` se necesita para firmar el token pero no se devuelve al cliente.
 const CAMPOS_SESION = { ...CAMPOS_PERFIL, seq: true } as const;
+
+/// El perfil se construye campo por campo en vez de descartando los que
+/// sobran: así, agregar una columna al modelo nunca la filtra a la respuesta
+/// por olvidarse de excluirla. `onboardingVistoAt` se traduce a un booleano:
+/// el cliente solo necesita saber si ya la vio, no cuándo.
+function perfilPublico(participant: ParticipantConOnboarding): Perfil {
+  return {
+    id: participant.id,
+    nombre: participant.nombre,
+    apellido: participant.apellido,
+    email: participant.email,
+    role: participant.role,
+    cohort: participant.cohort,
+    onboardingVisto: participant.onboardingVistoAt !== null,
+  };
+}
 
 /// P2002 es el código de Prisma para violación de índice único.
 function esColisionDeUnicidad(error: unknown): boolean {
@@ -84,7 +113,7 @@ export class AuthService {
       throw new ConflictException(YA_REGISTRADO);
     }
 
-    let participant: Perfil & { seq: number };
+    let participant: ParticipantConOnboarding & { seq: number };
     try {
       participant = await this.prisma.participant.create({
         data: {
@@ -142,13 +171,25 @@ export class AuthService {
       throw new UnauthorizedException();
     }
 
-    return participant;
+    return perfilPublico(participant);
   }
 
-  /// El perfil se construye campo por campo en vez de descartando los que
-  /// sobran: así, agregar una columna al modelo nunca la filtra a la respuesta
-  /// por olvidarse de excluirla.
-  private async sesion(participant: Perfil & { seq: number }) {
+  /// `onboardingVisto: true` marca la fecha (no vuelve a aparecer sola);
+  /// `false` la borra (vuelve a aparecer en el siguiente inicio de sesión, y
+  /// es lo que permite reactivarla desde el ícono ⓘ).
+  async actualizarMe(participantId: string, dto: PatchMeDto) {
+    const participant = await this.prisma.participant.update({
+      where: { id: participantId },
+      data: { onboardingVistoAt: dto.onboardingVisto ? new Date() : null },
+      select: CAMPOS_PERFIL,
+    });
+
+    return perfilPublico(participant);
+  }
+
+  private async sesion(
+    participant: ParticipantConOnboarding & { seq: number },
+  ) {
     const payload: JwtPayload = {
       sub: participant.id,
       seq: participant.seq,
@@ -158,14 +199,7 @@ export class AuthService {
 
     return {
       accessToken: await this.jwt.signAsync(payload),
-      participant: {
-        id: participant.id,
-        nombre: participant.nombre,
-        apellido: participant.apellido,
-        email: participant.email,
-        role: participant.role,
-        cohort: participant.cohort,
-      },
+      participant: perfilPublico(participant),
     };
   }
 }

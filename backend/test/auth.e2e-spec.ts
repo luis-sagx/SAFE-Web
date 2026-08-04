@@ -243,6 +243,16 @@ describe('Autenticación (e2e)', () => {
       expect(perfil.passwordHash).toBeUndefined();
     });
 
+    // Nunca vio la bienvenida: recién se registró.
+    it('empieza con onboardingVisto en false', async () => {
+      const res = await server()
+        .get('/api/auth/me')
+        .set('Authorization', `Bearer ${token}`)
+        .expect(200);
+
+      expect(cuerpo<PerfilBody>(res).onboardingVisto).toBe(false);
+    });
+
     it.each([
       ['sin cabecera', undefined],
       [
@@ -254,6 +264,59 @@ describe('Autenticación (e2e)', () => {
       const req = server().get('/api/auth/me');
       if (header) req.set('Authorization', header);
       await req.expect(401);
+    });
+  });
+
+  describe('PATCH /api/auth/me', () => {
+    let token: string;
+
+    beforeAll(async () => {
+      const res = await server()
+        .post('/api/auth/register')
+        .send(registro('onboarding'));
+      token = cuerpo<SesionBody>(res).accessToken;
+    });
+
+    it('marca onboardingVisto y luego lo puede volver a desmarcar', async () => {
+      const visto = await server()
+        .patch('/api/auth/me')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ onboardingVisto: true })
+        .expect(200);
+      expect(cuerpo<PerfilBody>(visto).onboardingVisto).toBe(true);
+
+      // El ícono ⓘ reactiva el aviso: debe poder volver a false.
+      const otraVez = await server()
+        .patch('/api/auth/me')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ onboardingVisto: false })
+        .expect(200);
+      expect(cuerpo<PerfilBody>(otraVez).onboardingVisto).toBe(false);
+    });
+
+    it('exige token', async () => {
+      await server()
+        .patch('/api/auth/me')
+        .send({ onboardingVisto: true })
+        .expect(401);
+    });
+
+    // whitelist + forbidNonWhitelisted: es lo único que impide que esta ruta
+    // se convierta en una puerta trasera para tocar cualquier otro campo.
+    it.each([
+      ['un campo que no es onboardingVisto', { nombre: 'Otro Nombre' }],
+      [
+        'un campo de más junto al válido',
+        { onboardingVisto: true, role: 'RESEARCHER' },
+      ],
+      ['un valor que no es booleano', { onboardingVisto: 'si' }],
+      ['el cuerpo vacío', {}],
+    ])('rechaza %s', async (_caso, body) => {
+      await server()
+        .patch('/api/auth/me')
+        .set('Authorization', `Bearer ${token}`)
+        .send(body)
+        .expect(400);
     });
   });
 });

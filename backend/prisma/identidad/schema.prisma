@@ -60,6 +60,11 @@ model Participant {
   /// Grupo de la muestra (ej. "adultos-mayores", "comerciantes"). Opcional.
   cohort String?
 
+  /// Si ya vio la pantalla de bienvenida y no quiere que vuelva a aparecer.
+  /// Null = nunca la vio, o pidió verla de nuevo; con fecha = la vio y la
+  /// cerró marcando "no volver a mostrar".
+  onboardingVistoAt DateTime?
+
   /// Marca de cuándo se borraron los datos personales. Deja constancia de que
   /// la anonimización se aplicó, sin guardar qué se borró.
   anonymizedAt DateTime?

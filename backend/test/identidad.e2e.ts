@@ -46,9 +46,11 @@ export interface PerfilBody {
   email: string | null;
   role: string;
   cohort: string | null;
+  onboardingVisto: boolean;
   passwordHash?: never;
   seq?: never;
   cedulaHash?: never;
+  onboardingVistoAt?: never;
 }
 
 export interface SesionBody {
