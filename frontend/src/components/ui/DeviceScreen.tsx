@@ -1,4 +1,4 @@
-import { Taskbar, Titlebar } from './DesktopChrome'
+import { MailNav, Taskbar, Titlebar } from './DesktopChrome'
 import styles from './DeviceScreen.module.css'
 
 /**
@@ -49,14 +49,7 @@ function DeviceScreen({ view }: { view: ScreenView }) {
         <Titlebar texto="Correo (Recibidos)" />
 
         <div className={styles.desktopBody}>
-          {/* Carpetas fijas, no interactivas: solo dan el aspecto de cliente
-              de escritorio. Un celular muestra esto en un menú, no siempre
-              visible al lado. */}
-          <nav className={styles.mailNav} aria-hidden>
-            <span className={`${styles.mailNavItem} ${styles.mailNavActive}`}>📥 Recibidos</span>
-            <span className={styles.mailNavItem}>📤 Enviados</span>
-            <span className={styles.mailNavItem}>🗑 Papelera</span>
-          </nav>
+          <MailNav />
 
           <div className={styles.mailbody}>
             <h1 className={styles.subject}>{view.subject}</h1>

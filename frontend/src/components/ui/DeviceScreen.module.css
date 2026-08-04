@@ -46,37 +46,103 @@
   flex-shrink: 0;
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 7px 14px;
-  background: #1f2937;
+  gap: 6px;
+  padding: 0 10px;
+  height: 40px;
+  background: linear-gradient(180deg, #263243 0%, #1f2937 100%);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
+
+/* Botón de inicio: cuadrícula de cuatro, la forma que casi todo el mundo
+   reconoce como "el menú de inicio". Decorativo, pero con el mismo relieve que
+   los demás elementos para que la franja entera se lea como una barra viva y
+   no como una imagen pegada al pie de la ventana. */
 .taskbarStart {
-  color: #1a73e8;
-  font-size: 15px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 28px;
+  border-radius: 5px;
+  color: #cfd8e3;
+  font-size: 14px;
   line-height: 1;
 }
-.taskbarClock {
-  margin-left: auto;
-  font-size: 11.5px;
-  color: #cbd2db;
+.taskbarDivider {
+  width: 1px;
+  height: 20px;
+  background: rgba(255, 255, 255, 0.12);
+  margin: 0 2px;
 }
+
+/* Acceso directo anclado. Se ve como una app de la barra —icono, nombre y la
+   rayita inferior que marca lo anclado— porque eso es lo que es: la vía para
+   salir del correo y entrar al sitio por cuenta propia.
+
+   Deliberadamente NO lleva brillo, pulso ni ningún realce que lo destaque en
+   reposo. Los dos destinos de este atajo son finales buenos, así que llamar la
+   atención sobre él sería empujar hacia la respuesta correcta y contaminar lo
+   que el escenario mide. El objetivo es que se encuentre igual de fácil que en
+   un computador de verdad, no más. */
 .taskbarAtajo {
   appearance: none;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  background: rgba(255, 255, 255, 0.08);
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.09);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07);
   color: #e8ecf1;
   font: inherit;
   font-size: 11.5px;
   font-weight: 600;
-  padding: 4px 10px;
-  border-radius: 999px;
+  padding: 5px 11px;
+  border-radius: 6px;
   cursor: pointer;
 }
-.taskbarAtajo:hover,
-.taskbarAtajo:focus-visible {
-  background: rgba(255, 255, 255, 0.16);
-  outline: 2px solid #16a34a;
-  outline-offset: 1px;
+/* La rayita de "app anclada" al pie del icono. */
+.taskbarAtajo::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -1px;
+  transform: translateX(-50%);
+  width: 16px;
+  height: 2px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.35);
+}
+/* Especificidad extra a propósito: gana sobre el contorno verde genérico de
+   [data-hotspot-goto]:hover, que sobre la franja oscura se ve casi negro y
+   además delataría el atajo como "elemento del ejercicio". Aquí el aviso de
+   que se puede pulsar es el que da un sistema operativo real: el fondo del
+   icono se aclara. El contorno verde de foco por teclado sí se conserva. */
+.taskbar .taskbarAtajo:hover {
+  outline: none;
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.32);
+}
+.taskbar .taskbarAtajo:hover::after {
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.taskbarTray {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 11px;
+  color: #aab4c2;
+}
+.taskbarClock {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  line-height: 1.25;
+  font-size: 11px;
+  color: #cbd2db;
+  padding-left: 2px;
 }
 
 /* ---------- Puntos interactivos (escenarios con hotspots reales) ----------
@@ -91,10 +157,33 @@
   color: inherit;
   cursor: pointer;
 }
-.hotspot:hover {
+/* El realce al pasar por encima tiene que verse: con solo brightness(0.97) —un
+   3%— no había forma de descubrir que el adjunto o el atajo eran accionables, y
+   el participante se quedaba sin saber qué tocar.
+
+   Aparece únicamente en hover/foco, nunca en reposo: marcar los tres puntos de
+   forma permanente convertiría la pantalla en una lista de opciones disfrazada,
+   que es justo de lo que este escenario se alejó (spec §2.1). Explorar sigue
+   siendo parte del ejercicio; lo que se arregla es que explorar tenga respuesta. */
+.hotspot:hover,
+[data-hotspot-goto]:hover {
+  outline: 2px solid rgba(0, 104, 55, 0.45);
+  outline-offset: 2px;
+  border-radius: 3px;
   filter: brightness(0.97);
 }
-.hotspot:focus-visible {
+
+@media (prefers-reduced-motion: no-preference) {
+  .hotspot,
+  [data-hotspot-goto] {
+    transition: outline-color 120ms ease;
+  }
+}
+/* El foco cubre también el enlace del correo y el atajo de la barra de tareas,
+   que no llevan la clase .hotspot: quien navega con teclado tiene que poder
+   recorrer los tres puntos igual que quien usa el mouse. */
+.hotspot:focus-visible,
+[data-hotspot-goto]:focus-visible {
   outline: 3px solid #16a34a;
   outline-offset: 2px;
 }
@@ -141,15 +230,76 @@
   gap: 2px;
 }
 .mailNavItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-size: 12.5px;
   color: var(--dim);
   padding: 7px 8px;
   border-radius: 6px;
 }
+.mailNavIcon {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+}
 .mailNavActive {
   background: #e3ecfb;
   color: #14487f;
   font-weight: 700;
+}
+
+/* Columna derecha del cliente: la barra de acciones queda fija arriba y solo
+   se desplaza el mensaje, como en cualquier cliente real. */
+.mailPane {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.mailToolbar {
+  flex-shrink: 0;
+  display: flex;
+  align-items: stretch;
+  gap: 2px;
+  padding: 5px 10px;
+  border-bottom: 1px solid var(--line);
+  background: #fbfcfd;
+}
+/* Icono arriba y nombre debajo. En columna las cinco acciones caben en el
+   ancho de la ventana; en fila, con el nombre al lado del icono, no cabían. */
+.mailToolbarBtn {
+  appearance: none;
+  border: none;
+  background: none;
+  color: var(--dim);
+  font: inherit;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  min-width: 58px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.mailToolbarBtn:hover {
+  background: #e9eef4;
+  color: #16202c;
+}
+.mailToolbarIcon {
+  width: 17px;
+  height: 17px;
+}
+.mailToolbarTexto {
+  font-size: 10.5px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
 }
 
 .mailbody {
@@ -254,17 +404,80 @@
   color: var(--dim);
 }
 
+/* Zona de adjuntos: franja propia separada del cuerpo, con su rótulo y su
+   recuento, como en cualquier cliente real. Antes el adjunto quedaba flotando
+   suelto justo debajo de la línea de "mensaje automático", sin nada que lo
+   presentara, y se leía como un botón perdido en medio del texto. */
+.attachmentZone {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+.attachmentCount {
+  margin: 0 0 8px;
+  font-size: 11.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--dim);
+}
+
 .attachment {
-  margin-top: 8px;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   border: 1px solid var(--line);
-  border-radius: 6px;
-  padding: 9px 12px;
+  border-radius: 8px;
+  padding: 10px 14px 10px 10px;
   font-size: 13px;
   color: #16202c;
   background: #f6f8fa;
+}
+/* Cuadradito con la extensión, como la miniatura de tipo de archivo que
+   muestran los clientes cuando no pueden previsualizar el contenido. */
+.attachmentTipo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  border-radius: 5px;
+  background: #e2e8f0;
+  color: #475569;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+.attachmentNombre {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1.35;
+}
+.attachmentPeso {
+  font-size: 11.5px;
+  color: var(--dim);
+  font-weight: 400;
+}
+
+/* Pie institucional del mensaje. Un correo real no termina en seco después de
+   la llamada a la acción: cierra con dirección, aviso legal y letra chica. Sin
+   eso el mensaje se lee corto y "de examen", y además queda menos superficie
+   donde buscar señales. */
+.mailFooter {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+  font-size: 11.5px;
+  line-height: 1.55;
+  color: var(--dim);
+}
+.mailFooter p {
+  margin: 0 0 6px;
+}
+.mailFooter p:last-child {
+  margin-bottom: 0;
 }
 
 /* ---------- Navegador ---------- */
