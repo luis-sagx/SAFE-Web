@@ -31,3 +31,6 @@ dist-ssr
 # Artefactos de sesiones de Playwright/MCP (capturas, snapshots)
 .playwright-mcp/
 shots/
+
+# Respaldos del .env: mismos secretos, mismo trato.
+.env.bak-*
