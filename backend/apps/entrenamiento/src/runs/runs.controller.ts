@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Header, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Header,
+  Param,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import {
   CurrentParticipant,
   JwtAuthGuard,
@@ -26,6 +34,14 @@ export class RunsController {
   @Get('me')
   findMine(@CurrentParticipant() participant: JwtPayload) {
     return this.runs.findMine(participant.sub);
+  }
+
+  @Get('progreso/:modulo')
+  progreso(
+    @CurrentParticipant() participant: JwtPayload,
+    @Param('modulo') modulo: string,
+  ) {
+    return this.runs.progreso(participant.sub, modulo);
   }
 
   @UseGuards(ResearcherGuard)

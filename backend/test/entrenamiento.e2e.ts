@@ -63,6 +63,14 @@ export interface ErrorBody {
   message: string | string[];
 }
 
+export interface ProgresoBody {
+  modulo: string;
+  escenarios: { id: string; ultimoOutcome: string }[];
+  aprobados: number;
+  requeridos: number;
+  aprobado: boolean;
+}
+
 export function cuerpo<T>(res: { body: unknown }): T {
   return res.body as T;
 }

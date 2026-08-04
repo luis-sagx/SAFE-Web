@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import type { JwtPayload } from '@comun';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateRunDto } from './dto/create-run.dto';
+import { calcularProgreso, UMBRALES } from './progreso';
 import { seudonimo } from './seudonimo';
 
 const CSV_COLUMNS = [
@@ -55,6 +56,24 @@ export class RunsService {
         finishedAt: true,
       },
     });
+  }
+
+  /// Gating del módulo: el último resultado de cada escenario que el
+  /// participante intentó, contra el umbral que exige `modulo`. 404 si
+  /// `modulo` no está en UMBRALES en vez de devolver un progreso vacío: un
+  /// nombre de módulo mal escrito no debe leerse como "cero avance".
+  async progreso(participantId: string, modulo: string) {
+    const requeridos = UMBRALES[modulo];
+    if (requeridos === undefined) {
+      throw new NotFoundException(`No existe el módulo "${modulo}".`);
+    }
+
+    const corridas = await this.prisma.scenarioRun.findMany({
+      where: { participantId, scenarioId: { startsWith: `${modulo}/` } },
+      select: { scenarioId: true, outcome: true, finishedAt: true },
+    });
+
+    return calcularProgreso(modulo, requeridos, corridas);
   }
 
   /// Exporta todas las corridas en CSV para el análisis pre/post-test. Sale el

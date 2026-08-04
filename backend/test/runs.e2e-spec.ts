@@ -9,6 +9,7 @@ import {
   limpiar,
   type CorridaBody,
   type Entorno,
+  type ProgresoBody,
 } from './entrenamiento.e2e';
 
 describe('Corridas (e2e)', () => {
@@ -163,6 +164,90 @@ describe('Corridas (e2e)', () => {
       expect(res.text).not.toContain('María');
       expect(res.text).not.toContain('@ejemplo.com');
       expect(res.text).not.toContain('0991234567');
+    });
+  });
+
+  describe('GET /api/runs/progreso/:modulo', () => {
+    it('exige token', async () => {
+      await server().get('/api/runs/progreso/phishing').expect(401);
+    });
+
+    it('responde 404 para un módulo que no existe', async () => {
+      const propio = await token({ sub: 'progreso-1', seq: 50 });
+      await server()
+        .get('/api/runs/progreso/no-existe')
+        .set('Authorization', `Bearer ${propio}`)
+        .expect(404);
+    });
+
+    it('sin corridas, progreso vacío y no aprobado', async () => {
+      const propio = await token({ sub: 'progreso-2', seq: 51 });
+      const res = await server()
+        .get('/api/runs/progreso/phishing')
+        .set('Authorization', `Bearer ${propio}`)
+        .expect(200);
+
+      expect(cuerpo<ProgresoBody>(res)).toEqual({
+        modulo: 'phishing',
+        escenarios: [],
+        aprobados: 0,
+        requeridos: 6,
+        aprobado: false,
+      });
+    });
+
+    it('usa el último intento de cada escenario y no mezcla a otro participante', async () => {
+      const propio = await token({ sub: 'progreso-3', seq: 52 });
+      const otro = await token({ sub: 'progreso-3-otro', seq: 53 });
+
+      // Repite el mismo escenario: la corrida más reciente es la que cuenta.
+      await server()
+        .post('/api/runs')
+        .set('Authorization', `Bearer ${propio}`)
+        .send(
+          corrida({
+            scenarioId: 'phishing/factura-sri',
+            outcome: 'INCORRECTO',
+            score: 0,
+          }),
+        )
+        .expect(201);
+      await server()
+        .post('/api/runs')
+        .set('Authorization', `Bearer ${propio}`)
+        .send(
+          corrida({
+            scenarioId: 'phishing/factura-sri',
+            outcome: 'CORRECTO',
+            score: 100,
+          }),
+        )
+        .expect(201);
+
+      // De otro participante: no debe colarse en el progreso de "propio".
+      await server()
+        .post('/api/runs')
+        .set('Authorization', `Bearer ${otro}`)
+        .send(
+          corrida({
+            scenarioId: 'phishing/clave-caducada',
+            outcome: 'CORRECTO',
+            score: 100,
+          }),
+        )
+        .expect(201);
+
+      const res = await server()
+        .get('/api/runs/progreso/phishing')
+        .set('Authorization', `Bearer ${propio}`)
+        .expect(200);
+
+      const progreso = cuerpo<ProgresoBody>(res);
+      expect(progreso.escenarios).toEqual([
+        { id: 'phishing/factura-sri', ultimoOutcome: 'CORRECTO' },
+      ]);
+      expect(progreso.aprobados).toBe(1);
+      expect(progreso.aprobado).toBe(false);
     });
   });
 });
