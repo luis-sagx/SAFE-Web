@@ -102,7 +102,6 @@ const CONTEXTO = (
       Ya habías acordado transferir esta semana a la cuenta de siempre. Ahora llega una respuesta
       dentro del mismo hilo, desde la misma dirección de siempre.
     </p>
-    <p>Vas a leer el correo y decidir qué hacés.</p>
   </>
 )
 

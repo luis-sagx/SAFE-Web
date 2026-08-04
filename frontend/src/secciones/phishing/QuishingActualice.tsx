@@ -131,7 +131,6 @@ const CONTEXTO = (
       Ahora te llega un correo aparte, con un código QR grande y ningún enlace de texto que puedas
       revisar antes de escanear.
     </p>
-    <p>Vas a leer el correo y decidir qué hacés.</p>
   </>
 )
 

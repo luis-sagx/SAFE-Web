@@ -89,7 +89,6 @@ const CONTEXTO = (
       El correo que te llega trae tu nombre completo y parte de tu número de cédula — datos que
       vos nunca les diste a un courier.
     </p>
-    <p>Vas a leer el correo y decidir qué hacés.</p>
   </>
 )
 

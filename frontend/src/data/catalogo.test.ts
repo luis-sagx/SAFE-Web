@@ -5,6 +5,16 @@ import { ESCENARIOS, SECCIONES, escenariosDeSeccion, getEscenario, getSeccion } 
 // el POST /runs lo rechaza con 400, perdiendo la corrida en silencio.
 const SCENARIO_ID = /^[a-z0-9-]+\/[a-z0-9-]+$/
 
+// Copia deliberada de UMBRALES del backend (apps/entrenamiento/src/runs/
+// progreso.ts). El frontend no puede importarlo —son dos paquetes distintos— y
+// tampoco debe: el servidor no expone el total de escenarios justamente para
+// que un cliente modificado no pueda aprobarse falseando el denominador. Al
+// duplicarlo aquí, si alguien mueve el umbral sin mover el catálogo, este test
+// falla en vez de que el bug salga a producción.
+const UMBRALES_ESPERADOS: Record<string, number> = {
+  phishing: 6,
+}
+
 describe('catálogo de escenarios', () => {
   it('todos los ids cumplen el formato que exige el backend', () => {
     for (const escenario of ESCENARIOS) {
@@ -49,15 +59,35 @@ describe('catálogo de escenarios', () => {
     expect(activas.map((seccion) => seccion.id)).toEqual(['phishing'])
   })
 
-  // Sube a 8 (6 fraude + 2 legítimos) cuando la fase siguiente agregue los 5
-  // escenarios que faltan; hasta entonces este es el piso del MVP: al menos un
-  // caso legítimo por cada fraude, para que el criterio se entrene desde ya y
-  // no se convierta en una lista de estafas.
-  it('phishing tiene 3 escenarios: 2 de fraude y 1 legítimo', () => {
+  // La forma del módulo completo: 8 escenarios, 6 de fraude y 2 legítimos. Los
+  // legítimos no son relleno — sin ellos el módulo enseñaría "desconfía de
+  // todo" en vez de entrenar el criterio para distinguir.
+  //
+  // El 8 además es el denominador del gating: el backend exige 6 aprobados
+  // (UMBRALES.phishing en apps/entrenamiento/src/runs/progreso.ts). Si este
+  // total baja de 6, el módulo se vuelve imposible de aprobar y la barra de
+  // progreso nunca llega al final; el test de abajo es el que avisa.
+  it('phishing tiene 8 escenarios: 6 de fraude y 2 legítimos', () => {
     const phishing = escenariosDeSeccion('phishing')
-    expect(phishing).toHaveLength(3)
-    expect(phishing.filter((e) => e.naturaleza === 'fraude')).toHaveLength(2)
-    expect(phishing.filter((e) => e.naturaleza === 'legitimo')).toHaveLength(1)
+    expect(phishing).toHaveLength(8)
+    expect(phishing.filter((e) => e.naturaleza === 'fraude')).toHaveLength(6)
+    expect(phishing.filter((e) => e.naturaleza === 'legitimo')).toHaveLength(2)
+  })
+
+  // Guarda contra la regresión que tuvo la pantalla: el catálogo se redujo a 3
+  // escenarios y el umbral del backend se quedó en 6, así que la insignia
+  // mostraba "0/3 aprobados · necesitas 6" y aprobar era imposible.
+  it('cada sección activa tiene escenarios suficientes para alcanzar su umbral', () => {
+    for (const seccion of SECCIONES) {
+      const total = escenariosDeSeccion(seccion.id).length
+      if (total === 0) continue
+      const requeridos = UMBRALES_ESPERADOS[seccion.id]
+      expect(requeridos, `falta el umbral esperado de ${seccion.id}`).toBeDefined()
+      expect(
+        total,
+        `${seccion.id}: ${total} escenarios para un umbral de ${requeridos}`,
+      ).toBeGreaterThanOrEqual(requeridos ?? 0)
+    }
   })
 
   it('resuelve secciones y escenarios por id, y devuelve undefined si no existen', () => {

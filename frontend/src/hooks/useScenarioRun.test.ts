@@ -1,6 +1,7 @@
 import { act, renderHook } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { RunPayload } from '../lib/api'
+import { getEscenario } from '../data/catalogo'
 import { pendingCount } from '../lib/pendingRuns'
 import { outcomeFromKind, scoreFromOutcome, useScenarioRun } from './useScenarioRun'
 
@@ -14,6 +15,12 @@ vi.mock('../lib/api', async () => {
 // Cualquier escenario activo del catálogo sirve como fixture: la prueba no
 // depende de su contenido, solo de que exista.
 const ESCENARIO = 'phishing/factura-sri'
+
+// Se lee del catálogo en vez de fijarla a mano: lo que esta prueba verifica es
+// que la versión del catálogo viaje en el payload, no cuál es. Escrita a mano,
+// rompía cada vez que se editaba el guion de ese escenario, que es justo cuando
+// la versión debe subir.
+const VERSION_ESPERADA = getEscenario(ESCENARIO)!.version
 
 function payloadEnviado(): RunPayload {
   const [primeraLlamada] = createRunMock.mock.calls
@@ -60,7 +67,7 @@ describe('useScenarioRun', () => {
 
     const payload = payloadEnviado()
     expect(payload.scenarioId).toBe(ESCENARIO)
-    expect(payload.version).toBe(1)
+    expect(payload.version).toBe(VERSION_ESPERADA)
     expect(payload.endingId).toBe('e_verifica')
     expect(payload.score).toBe(100)
     expect(payload.decisions).toHaveLength(1)

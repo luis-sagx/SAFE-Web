@@ -100,7 +100,6 @@ const CONTEXTO = (
       No es un correo pidiendo nada raro: solo te cuenta qué pasó y te sugiere cambiar tu
       contraseña por tu cuenta.
     </p>
-    <p>Vas a leer el correo y decidir qué hacés.</p>
   </>
 )
 

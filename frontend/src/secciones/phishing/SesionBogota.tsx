@@ -121,7 +121,6 @@ const CONTEXTO = (
       ningún acceso reciente desde ahí.
     </p>
     <p>Son casi las diez de la noche cuando te llega la alerta.</p>
-    <p>Vas a leer el correo y decidir qué hacés.</p>
   </>
 )
 
