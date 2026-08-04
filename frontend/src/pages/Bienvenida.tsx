@@ -29,15 +29,16 @@ const AMENAZAS = [
   },
   {
     titulo: 'Riesgo físico',
-    finalidad: 'información sensible expuesta en tu entorno —una clave anotada, una memoria USB— sin que nadie toque una pantalla.',
+    finalidad:
+      'información sensible expuesta en tu entorno (una clave anotada, una memoria USB), sin que nadie toque una pantalla.',
   },
 ]
 
 /**
  * Aparece sola en el primer ingreso (RequireAuth la fuerza mientras
  * `onboardingVisto` sea false) y queda disponible siempre desde el ícono ⓘ.
- * Se muestra como un modal —una tarjeta centrada, sin el header ni la
- * navegación de la app— para que se lea como un aviso puntual y no como una
+ * Se muestra como un modal, una tarjeta centrada, sin el header ni la
+ * navegación de la app, para que se lea como un aviso puntual y no como una
  * pantalla más del curso.
  */
 function Bienvenida() {
@@ -75,7 +76,7 @@ function Bienvenida() {
 
         <p className="mt-3 text-base leading-relaxed text-body">
           Vas a practicar a reconocer seis formas de fraude, una situación simulada a la vez. Al
-          final de cada una te mostramos qué señales había, las hayas visto o no — la idea es que
+          final de cada una te mostramos qué señales había, las hayas visto o no: la idea es que
           entrenes el criterio, no que memorices una lista.
         </p>
 
@@ -90,8 +91,8 @@ function Bienvenida() {
 
         <p className="mt-6 border-t border-hairline pt-4 text-base leading-relaxed text-body">
           Por ahora está disponible <strong className="font-semibold text-ink">Phishing</strong>;
-          el resto se habilita más adelante. Tu cédula no se guarda —solo evita cuentas
-          repetidas— y el resto de tus datos se borra cuando el estudio termina.
+          el resto se habilita más adelante. Tu cédula no se guarda (solo evita cuentas
+          repetidas), y el resto de tus datos se borra cuando el estudio termina.
         </p>
 
         <form onSubmit={handleContinuar} className="mt-6">
@@ -102,7 +103,7 @@ function Bienvenida() {
               onChange={(event) => setNoVolverAMostrar(event.target.checked)}
               className="mt-0.5 size-4 shrink-0"
             />
-            No volver a mostrar esto al entrar. Lo reabres desde el ícono ⓘ.
+            No volver a mostrar esto al entrar (se reabre desde el ícono ⓘ).
           </label>
 
           <button

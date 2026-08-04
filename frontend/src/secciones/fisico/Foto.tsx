@@ -62,28 +62,28 @@ const ITEMS: Record<ItemKey, Item> = {
     label: 'Nota adhesiva con la contraseña del wifi escrita a mano',
     fixedFeedback: 'Bien hecho: quitaste la nota antes de la foto.',
     riskFeedback:
-      'La nota con la contraseña "Of2026*Net!" quedó visible y legible en la foto publicada — cualquiera que la vea puede usarla.',
+      'La nota con la contraseña "Of2026*Net!" quedó visible y legible en la foto publicada, cualquiera que la vea puede usarla.',
   },
   folder: {
     isRisk: true,
     label: 'Carpeta con documentos de un cliente sobre el escritorio',
     fixedFeedback: 'Bien hecho: guardaste la carpeta antes de la foto.',
     riskFeedback:
-      'La carpeta con datos de un cliente quedó visible en la foto — información que no debería circular fuera de la empresa.',
+      'La carpeta con datos de un cliente quedó visible en la foto, información que no debería circular fuera de la empresa.',
   },
   badge: {
     isRisk: true,
     label: 'Gafete de acceso con el código de empleado visible hacia la cámara',
     fixedFeedback: 'Bien hecho: volteaste el gafete antes de la foto.',
     riskFeedback:
-      'El código "ID 04521" de tu gafete de acceso quedó legible en la foto — en teoría, alguien podría intentar clonarlo o usarlo como referencia para un ataque físico.',
+      'El código "ID 04521" de tu gafete de acceso quedó legible en la foto (en teoría, alguien podría intentar clonarlo o usarlo como referencia para un ataque físico).',
   },
   phone: {
     isRisk: true,
     label: 'Teléfono con un código de verificación visible en la pantalla de bloqueo',
     fixedFeedback: 'Bien hecho: guardaste o bloqueaste el teléfono antes de la foto.',
     riskFeedback:
-      'El código de verificación "482913" de la notificación quedó legible en la foto — alguien podría usarlo para entrar a una cuenta tuya o de la empresa.',
+      'El código de verificación "482913" de la notificación quedó legible en la foto, alguien podría usarlo para entrar a una cuenta tuya o de la empresa.',
   },
   notebook: {
     isRisk: true,
@@ -113,7 +113,7 @@ const LEVELS: Level[] = [
   {
     label: 'Nivel 3 · Antes de la reunión',
     time: 12,
-    npc: 'Valeria: "Última foto, lo prometo — es para la portada del boletín trimestral. ¿Nos das un segundo?"',
+    npc: 'Valeria: "Última foto, lo prometo (es para la portada del boletín trimestral). ¿Nos das un segundo?"',
     slotA: 'phone',
     slotB: 'notebook',
   },
@@ -520,7 +520,7 @@ function Foto() {
             <li>Objetos como la taza o la planta no son un riesgo: no necesitas hacer nada con ellos.</li>
             <li>
               Puedes tomar la foto antes de tiempo con el botón "Listo, tomen la foto", o esperar a que el
-              cronómetro llegue a cero — en ese momento la foto se toma tal como esté el escritorio en ese instante.
+              cronómetro llegue a cero (en ese momento la foto se toma tal como esté el escritorio en ese instante).
             </li>
             <li>Al final de cada nivel verás qué quedó expuesto en la foto y por qué es un problema. Son 3 niveles, cada uno con menos tiempo y objetos distintos.</li>
           </ul>
@@ -572,7 +572,7 @@ function Foto() {
         {showReport && (
           <div className={styles.report} style={{ marginTop: 18 }}>
             <span className={`${styles.reportStamp} ${styles[resLevel]}`}>
-              FOTO PUBLICADA — {level.label.toUpperCase()}
+              FOTO PUBLICADA ({level.label.toUpperCase()})
             </span>
             <h2>{title}</h2>
             <p className={styles.summary}>{summary}</p>

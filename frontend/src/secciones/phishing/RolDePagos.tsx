@@ -75,7 +75,7 @@ const STORY: Story<ScreenNode> = {
     view: CORREO,
     verdict: 'Correo legítimo, reacción peligrosa',
     outcome:
-      'El remitente era real, pero tu contraseña quedó escrita en un correo. Cualquiera que lea ese buzón —o que lo intercepte— la tiene, y el propio mensaje avisaba que Talento Humano nunca la pide.',
+      'El remitente era real, pero tu contraseña quedó escrita en un correo. Cualquiera que lea ese buzón (o que lo intercepte) la tiene, y el propio mensaje avisaba que Talento Humano nunca la pide.',
     score: 0,
   },
   e_borra: {

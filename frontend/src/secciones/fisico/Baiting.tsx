@@ -174,7 +174,7 @@ const SCENARIOS: Scenario[] = [
     time: '7:52 AM',
     object: 'Objeto: USB negro con etiqueta manuscrita',
     narrative:
-      'Llegas temprano. Cerca de tu auto, en el suelo, hay un USB negro con una etiqueta escrita a mano: <em>"NÓMINA DICIEMBRE — CONFIDENCIAL"</em>. No hay nadie cerca para preguntar de quién es.',
+      'Llegas temprano. Cerca de tu auto, en el suelo, hay un USB negro con una etiqueta escrita a mano: <em>"NÓMINA DICIEMBRE, CONFIDENCIAL"</em>. No hay nadie cerca para preguntar de quién es.',
     choices: [
       {
         label: 'Conectarlo a tu laptop un momento, solo para ver de quién es',
@@ -188,7 +188,7 @@ const SCENARIOS: Scenario[] = [
         level: 'safe',
         risk: 0,
         feedback:
-          'Correcto. Ante cualquier dispositivo desconocido, el protocolo es entregarlo al área de Seguridad o IT para que lo analicen en un entorno controlado y aislado — nunca en tu propio equipo.',
+          'Correcto. Ante cualquier dispositivo desconocido, el protocolo es entregarlo al área de Seguridad o IT para que lo analicen en un entorno controlado y aislado, nunca en tu propio equipo.',
       },
       {
         label: 'Dejarlo ahí mismo, no es asunto tuyo',
@@ -275,7 +275,7 @@ const SCENARIOS: Scenario[] = [
         level: 'danger',
         risk: 26,
         feedback:
-          'Que algo lleve el logo de la feria o de una empresa conocida no garantiza nada: los atacantes imitan el material de marca — o incluso interceptan el material real — para que bajes la guardia. El origen aparente no reemplaza la verificación.',
+          'Que algo lleve el logo de la feria o de una empresa conocida no garantiza nada: los atacantes imitan el material de marca (o incluso interceptan el material real) para que bajes la guardia. El origen aparente no reemplaza la verificación.',
       },
     ],
   },
@@ -453,7 +453,7 @@ function Baiting() {
                   arriesgada sea.
                 </li>
                 <li>
-                  No hay forma de deshacer una decisión una vez tomada — luego de elegir, vuelve al plano con el
+                  No hay forma de deshacer una decisión una vez tomada, luego de elegir, vuelve al plano con el
                   botón "← Volver al mapa" y entra a la siguiente zona pendiente (el pin cambia de color: pendiente,
                   segura, observación o riesgo).
                 </li>
@@ -461,7 +461,7 @@ function Baiting() {
               </ul>
             </div>
 
-            <p className={styles.mapCaption}>Plano — Oficinas administrativas · Induplast Andina S.A. · entra a cada lugar</p>
+            <p className={styles.mapCaption}>Plano, Oficinas administrativas · Induplast Andina S.A. · entra a cada lugar</p>
 
             <div className={styles.mapWrap}>
               <svg className={styles.officeMap} viewBox="0 0 800 560">
@@ -707,7 +707,7 @@ function Report({
     level = 'danger'
     title = 'Incidente de seguridad registrado'
     summary =
-      'Al menos una decisión habría dado a un atacante acceso a tus sistemas. El común denominador del baiting es la curiosidad o la prisa — verificar antes de conectar es la única defensa real.'
+      'Al menos una decisión habría dado a un atacante acceso a tus sistemas. El común denominador del baiting es la curiosidad o la prisa, y verificar antes de conectar es la única defensa real.'
   } else if (pct <= 15) {
     level = 'safe'
     title = 'Protocolo ejemplar'

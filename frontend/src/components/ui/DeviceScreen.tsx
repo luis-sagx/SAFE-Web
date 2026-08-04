@@ -46,7 +46,7 @@ function DeviceScreen({ view }: { view: ScreenView }) {
   if (view.kind === 'mail') {
     return (
       <section className={`${styles.screen} ${styles.desktop}`} aria-label="Bandeja de correo">
-        <Titlebar texto="Correo — Recibidos" />
+        <Titlebar texto="Correo (Recibidos)" />
 
         <div className={styles.desktopBody}>
           {/* Carpetas fijas, no interactivas: solo dan el aspecto de cliente

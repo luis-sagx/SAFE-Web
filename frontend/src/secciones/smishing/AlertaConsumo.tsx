@@ -67,7 +67,7 @@ const STORY: Story<ScreenNode> = {
     view: SMS_RESPONDIDO,
     verdict: 'Aviso legítimo, reacción peligrosa',
     outcome:
-      'El aviso era real, pero enviaste el número completo de tu tarjeta por SMS. Ese canal no lo lee tu banco: quien controle ese número —o tu teléfono— ya tiene tus datos.',
+      'El aviso era real, pero enviaste el número completo de tu tarjeta por SMS. Ese canal no lo lee tu banco: quien controle ese número (o tu teléfono) ya tiene tus datos.',
     score: 0,
   },
   e_ignora: {

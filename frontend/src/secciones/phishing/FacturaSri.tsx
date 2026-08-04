@@ -115,7 +115,7 @@ interface PantallaProps {
 function PantallaCorreo({ onHotspot }: PantallaProps) {
   return (
     <VentanaEscritorio
-      titulo="Correo — Recibidos"
+      titulo="Correo (Recibidos)"
       ariaLabel="Bandeja de correo"
       onClick={onHotspot}
       atajo={ATAJO_PORTAL}
