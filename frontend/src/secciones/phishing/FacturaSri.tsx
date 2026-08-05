@@ -5,6 +5,7 @@ import {
   VentanaCorreo,
   VentanaEscritorio,
   type AccionCorreo,
+  type CarpetaCorreo,
 } from '../../components/ui/DesktopChrome'
 import styles from '../../components/ui/DeviceScreen.module.css'
 import { BotonHotspot, EnlaceHotspot, manejarClicHotspot } from '../../components/ui/interactivo'
@@ -131,6 +132,20 @@ const ACCIONES: AccionCorreo[] = [
   },
 ]
 
+/// Estas carpetas son navegación interna del cliente, no decisiones del
+/// escenario. Por eso no llevan data-hotspot-goto ni cierran la corrida: mirar
+/// otra bandeja no responde todavía a la amenaza.
+const CARPETAS: CarpetaCorreo[] = [
+  {
+    nombre: 'Enviados',
+    vacia: 'No hay correos enviados.',
+  },
+  {
+    nombre: 'Papelera',
+    vacia: 'La papelera está vacía.',
+  },
+]
+
 /// Cada señal apunta, cuando puede, al elemento real marcado con
 /// data-signal en una de las dos pantallas. Si esa pantalla no es la que
 /// llevó a este final, el recorrido igual muestra el texto, sin resaltar.
@@ -236,6 +251,7 @@ function PantallaCorreo({ onHotspot, recibido }: PantallaProps & { recibido: str
       atajo={ATAJO_PORTAL}
       reloj="vivo"
       acciones={ACCIONES}
+      carpetas={CARPETAS}
       asunto="Factura electrónica pendiente de validación"
       remitente={{
         nombre: 'SRI · Facturación Electrónica',

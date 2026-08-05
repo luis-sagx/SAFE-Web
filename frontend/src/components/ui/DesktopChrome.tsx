@@ -1,5 +1,5 @@
 import { Inbox, Send, Trash2, type LucideIcon } from 'lucide-react'
-import type { ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import {
   formatoFecha,
   formatoHora,
@@ -28,6 +28,11 @@ export interface AccionCorreo {
   titulo: string
   goto: string
   label: string
+}
+
+export interface CarpetaCorreo {
+  nombre: string
+  vacia: string
 }
 
 /**
@@ -70,8 +75,9 @@ export function MailToolbar({ acciones }: { acciones: AccionCorreo[] }) {
   )
 }
 
-/** Columna de carpetas del cliente de correo. Decorativa: solo aporta el
- *  aspecto de cliente de escritorio.
+/** Columna de carpetas del cliente de correo. Por defecto solo aporta el
+ *  aspecto de cliente de escritorio. Si el escenario pasa carpetas navegables,
+ *  esas entradas cambian la vista del cliente sin cerrar el escenario.
  *
  *  Vive aquí y no en cada pantalla porque estaba duplicada palabra por palabra
  *  en DeviceScreen y en el escenario interactivo, y las dos copias ya habían
@@ -80,21 +86,54 @@ export function MailToolbar({ acciones }: { acciones: AccionCorreo[] }) {
  *  Iconos de trazo en vez de emoji: 📥 y 🗑 se dibujan distinto en cada
  *  sistema operativo —a color y con estilo propio— y le daban al cliente un
  *  aire de juguete que ningún correo real tiene. */
-export function MailNav() {
+export function MailNav({
+  activa,
+  carpetas = [],
+  onSelect,
+}: {
+  activa: string
+  carpetas?: CarpetaCorreo[]
+  onSelect?: (nombre: string) => void
+}) {
+  const carpetaPorNombre = new Map(carpetas.map((carpeta) => [carpeta.nombre, carpeta]))
+  const navegable = Boolean(onSelect)
+
+  function renderCarpeta(nombre: string, Icono: LucideIcon) {
+    const carpeta = carpetaPorNombre.get(nombre)
+    const className = `${styles.mailNavItem} ${nombre === activa ? styles.mailNavActive : ''}`
+    const contenido = (
+      <>
+        <Icono aria-hidden className={styles.mailNavIcon} strokeWidth={1.75} />
+        {nombre}
+      </>
+    )
+
+    if (!navegable || (nombre !== 'Recibidos' && !carpeta)) {
+      return <span className={className}>{contenido}</span>
+    }
+
+    return (
+      <button
+        type="button"
+        className={className}
+        title={`Abrir ${nombre}`}
+        aria-label={`Abrir ${nombre}`}
+        aria-current={nombre === activa ? 'page' : undefined}
+        onClick={(event) => {
+          event.stopPropagation()
+          onSelect?.(nombre)
+        }}
+      >
+        {contenido}
+      </button>
+    )
+  }
+
   return (
-    <nav className={styles.mailNav} aria-hidden>
-      <span className={`${styles.mailNavItem} ${styles.mailNavActive}`}>
-        <Inbox className={styles.mailNavIcon} strokeWidth={1.75} />
-        Recibidos
-      </span>
-      <span className={styles.mailNavItem}>
-        <Send className={styles.mailNavIcon} strokeWidth={1.75} />
-        Enviados
-      </span>
-      <span className={styles.mailNavItem}>
-        <Trash2 className={styles.mailNavIcon} strokeWidth={1.75} />
-        Papelera
-      </span>
+    <nav className={styles.mailNav} aria-label="Carpetas del correo" aria-hidden={!navegable}>
+      {renderCarpeta('Recibidos', Inbox)}
+      {renderCarpeta('Enviados', Send)}
+      {renderCarpeta('Papelera', Trash2)}
     </nav>
   )
 }
@@ -221,6 +260,7 @@ interface VentanaCorreoProps {
   /** Barra de acciones. Sin ella no se pinta: un cliente sin barra se ve
    *  incompleto, pero una barra que no responde se ve rota, y eso es peor. */
   acciones?: AccionCorreo[]
+  carpetas?: CarpetaCorreo[]
   atajo?: AtajoTaskbar
   reloj?: Reloj
   /** Manejador delegado de puntos interactivos, si el escenario los usa. */
@@ -253,6 +293,7 @@ export function VentanaCorreo({
   remitente,
   recibido,
   acciones,
+  carpetas,
   atajo,
   reloj,
   onClick,
@@ -261,6 +302,8 @@ export function VentanaCorreo({
   children,
 }: VentanaCorreoProps) {
   const { correoSimulado } = useAuth()
+  const [carpetaActiva, setCarpetaActiva] = useState('Recibidos')
+  const carpetaSecundaria = carpetas?.find((carpeta) => carpeta.nombre === carpetaActiva)
 
   return (
     <section
@@ -271,46 +314,55 @@ export function VentanaCorreo({
       <Titlebar texto="Correo (Recibidos)" />
 
       <div className={styles.desktopBody}>
-        <MailNav />
+        <MailNav activa={carpetaActiva} carpetas={carpetas} onSelect={setCarpetaActiva} />
 
         <div className={styles.mailPane}>
-          {acciones && <MailToolbar acciones={acciones} />}
-
-          <div className={styles.mailbody}>
-            <h1 className={styles.subject}>{asunto}</h1>
-
-            <div className={styles.senderRow}>
-              <div className={styles.avatar} aria-hidden>
-                {remitente.nombre.slice(0, 1).toUpperCase()}
-              </div>
-              <div className={styles.senderId}>
-                <p className={styles.senderName}>
-                  {remitente.nombre}
-                  {remitente.etiqueta && (
-                    <span className={styles.label} data-signal={remitente.senalEtiqueta}>
-                      {remitente.etiqueta}
-                    </span>
-                  )}
-                </p>
-                <p className={styles.senderAddr} data-signal={remitente.senalDireccion}>
-                  {remitente.direccion}
-                </p>
-                <p className={styles.senderTo}>para {correoSimulado}</p>
-              </div>
-              <span className={styles.date}>{recibido}</span>
+          {carpetaSecundaria ? (
+            <div className={`${styles.mailbody} ${styles.mailFolderEmpty}`}>
+              <h1 className={styles.subject}>{carpetaSecundaria.nombre}</h1>
+              <p>{carpetaSecundaria.vacia}</p>
             </div>
+          ) : (
+            <>
+              {acciones && <MailToolbar acciones={acciones} />}
 
-            <div className={styles.prose}>{children}</div>
+              <div className={styles.mailbody}>
+                <h1 className={styles.subject}>{asunto}</h1>
 
-            {adjunto && (
-              <div className={styles.attachmentZone}>
-                <p className={styles.attachmentCount}>1 archivo adjunto</p>
-                {adjunto}
+                <div className={styles.senderRow}>
+                  <div className={styles.avatar} aria-hidden>
+                    {remitente.nombre.slice(0, 1).toUpperCase()}
+                  </div>
+                  <div className={styles.senderId}>
+                    <p className={styles.senderName}>
+                      {remitente.nombre}
+                      {remitente.etiqueta && (
+                        <span className={styles.label} data-signal={remitente.senalEtiqueta}>
+                          {remitente.etiqueta}
+                        </span>
+                      )}
+                    </p>
+                    <p className={styles.senderAddr} data-signal={remitente.senalDireccion}>
+                      {remitente.direccion}
+                    </p>
+                    <p className={styles.senderTo}>para {correoSimulado}</p>
+                  </div>
+                  <span className={styles.date}>{recibido}</span>
+                </div>
+
+                <div className={styles.prose}>{children}</div>
+
+                {adjunto && (
+                  <div className={styles.attachmentZone}>
+                    <p className={styles.attachmentCount}>1 archivo adjunto</p>
+                    {adjunto}
+                  </div>
+                )}
+
+                {pie && <div className={styles.mailFooter}>{pie}</div>}
               </div>
-            )}
-
-            {pie && <div className={styles.mailFooter}>{pie}</div>}
-          </div>
+            </>
+          )}
         </div>
       </div>
 

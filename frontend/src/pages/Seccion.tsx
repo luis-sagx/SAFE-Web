@@ -195,7 +195,7 @@ function Seccion() {
                         disponible ? 'text-link group-hover:translate-x-0.5' : 'text-muted'
                       }`}
                     >
-                      {disponible ? (ultimo !== undefined ? 'Repetir →' : 'Empezar →') : 'Candado'}
+                      {disponible ? (ultimo !== undefined ? 'Repetir →' : 'Empezar →') : ''}
                     </span>
                   </div>
                 </>
