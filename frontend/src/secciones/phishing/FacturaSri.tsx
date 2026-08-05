@@ -1,4 +1,4 @@
-import { Archive, Forward, Reply, ShieldAlert, Trash2 } from 'lucide-react'
+import { Archive, File, Forward, Reply, ShieldAlert, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import EscenarioLayout from '../../components/EscenarioLayout'
 import {
@@ -35,7 +35,7 @@ const STORY: Story<StoryNode> = {
     kind: 'bad',
     verdict: 'Caíste en la trampa',
     outcome:
-      'El adjunto no era una factura: era una página falsa que se abrió en tu navegador y copió tu clave del SRI en cuanto la escribiste.',
+      'No se abrió ninguna factura: el archivo era un programa y tu equipo lo ejecutó. En segundo plano descargó un ladrón de contraseñas que recogió las que tenías guardadas en el navegador, incluida la del portal del SRI. No apareció ninguna ventana ni ningún aviso.',
   },
   e_datos: {
     kind: 'bad',
@@ -165,7 +165,8 @@ const SENALES: Senal[] = [
     id: 'adjunto',
     pantalla: 'n1',
     targetId: 'adjunto',
-    texto: 'Trae un <b>adjunto .html</b>: una factura real nunca llega así.',
+    texto:
+      'El adjunto no es un documento, es un <b>programa</b>: termina en <b>.vbs</b>, un archivo que Windows <b>ejecuta</b> al abrirlo. Lleva además doble extensión —<b>.pdf.vbs</b>— porque Windows oculta la última cuando conoce el tipo, y en pantalla puede leerse como si fuera un PDF.',
   },
   {
     id: 'clave',
@@ -252,12 +253,19 @@ function PantallaCorreo({ onHotspot, recibido }: PantallaProps & { recibido: str
           signalId="adjunto"
           className={styles.attachment}
         >
+          {/* Icono genérico y no uno de código o de advertencia: los de
+              advertencia delatarían la trampa, y este escenario mide si la
+              persona lee la extensión. Un cliente real tampoco distingue: a un
+              tipo que no sabe previsualizar le pone el icono de siempre. */}
           <span className={styles.attachmentTipo} aria-hidden>
-            HTML
+            <File className={styles.attachmentIcono} strokeWidth={1.75} />
           </span>
           <span className={styles.attachmentNombre}>
-            Factura_004521.html
-            <span className={styles.attachmentPeso}>34 KB</span>
+            Factura_004521.pdf.vbs
+            {/* 12 KB y no los 34 de antes: un script de estas campañas pesa
+                unos pocos kilobytes, mientras que una factura en PDF pesa
+                bastante más. El tamaño es una señal más, aunque no se explique. */}
+            <span className={styles.attachmentPeso}>12 KB</span>
           </span>
         </BotonHotspot>
       }

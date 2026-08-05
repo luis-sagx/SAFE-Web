@@ -170,7 +170,7 @@ function Dashboard() {
                     {progreso && (
                       <span className="text-sm font-medium text-ink tabular-nums">
                         {progreso.aprobados}/{escenarios.length}
-                        <span className="font-normal text-muted"> · meta {progreso.requeridos}</span>
+                        <span className="font-normal text-muted"></span>
                       </span>
                     )}
                   </div>
