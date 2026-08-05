@@ -1,5 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import EscenarioLayout from './EscenarioLayout'
+import { carpetasCorreo } from './ui/carpetasCorreo'
 import DeviceScreen, { type ScreenView } from './ui/DeviceScreen'
 import { manejarClicHotspot } from './ui/interactivo'
 import {
@@ -118,6 +119,19 @@ function StoryEscenario({
     setPestanaMirada(undefined)
   }, [engine.current, engine.node.view, dominio])
 
+  // El mensaje que las carpetas muestran cuando una acción lo mueve. Sale de la
+  // primera pantalla de correo del guion, que es la del mensaje del escenario.
+  const correo = Object.values(story).find((nodo) => nodo.view.kind === 'mail')?.view
+  const carpetas =
+    correo?.kind === 'mail'
+      ? carpetasCorreo(
+          { nombre: correo.from, direccion: correo.address, asunto: correo.subject },
+          // Durante el repaso la bandeja vuelve a tener el mensaje: si no, las
+          // señales se explicarían sobre una pantalla donde ya no está.
+          engine.isEnding && !pantallaRepaso ? engine.current : undefined,
+        )
+      : undefined
+
   const urlVisible = pestanaDeVista(nodoVisible, vista, dominio)?.url
   const activa = pestanas.find((p) => p.url === urlVisible)?.id ?? pestanas[0]?.id ?? 'n1'
 
@@ -176,7 +190,12 @@ function StoryEscenario({
       dominioCorreo={dominioCorreo}
       pantalla={
         vista.kind === 'sms' ? (
-          <DeviceScreen view={vista} acciones={accionesCorreo} destinatario={destinatario} />
+          <DeviceScreen
+            view={vista}
+            acciones={accionesCorreo}
+            carpetas={carpetas}
+            destinatario={destinatario}
+          />
         ) : (
           <VentanaNavegador
             pestanas={pestanas}
@@ -185,7 +204,13 @@ function StoryEscenario({
             reloj={reloj}
             onClick={onHotspot}
           >
-            <DeviceScreen view={vista} acciones={accionesCorreo} destinatario={destinatario} />
+            <DeviceScreen
+              view={vista}
+              acciones={accionesCorreo}
+              carpetas={carpetas}
+              destinatario={destinatario}
+              carpetaForzada={pantallaRepaso ? 'Recibidos' : undefined}
+            />
           </VentanaNavegador>
         )
       }

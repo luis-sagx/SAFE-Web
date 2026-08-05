@@ -1,5 +1,5 @@
 import { Paperclip } from 'lucide-react'
-import { CuerpoCorreo, type AccionCorreo } from './DesktopChrome'
+import { CuerpoCorreo, type AccionCorreo, type CarpetaCorreo } from './DesktopChrome'
 import styles from './DeviceScreen.module.css'
 
 /**
@@ -68,19 +68,25 @@ export type ScreenView =
 function DeviceScreen({
   view,
   acciones,
+  carpetas,
   destinatario,
+  carpetaForzada,
 }: {
   view: ScreenView
   /** Barra de acciones del cliente. Solo se pinta si el escenario declara sus
    *  finales; sin ellos los botones no tendrían a dónde saltar. */
   acciones?: AccionCorreo[]
+  carpetas?: CarpetaCorreo[]
   destinatario?: string
+  carpetaForzada?: string
 }) {
   if (view.kind === 'mail') {
     return (
       <CuerpoCorreo
         acciones={acciones}
+        carpetas={carpetas}
         destinatario={destinatario}
+        carpetaForzada={carpetaForzada}
         asunto={view.subject}
         remitente={{
           nombre: view.from,

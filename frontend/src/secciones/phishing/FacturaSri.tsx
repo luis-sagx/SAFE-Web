@@ -20,6 +20,7 @@ import {
   type MarcadorNavegador,
   type PestanaNavegador,
 } from '../../components/ui/DesktopChrome'
+import { carpetasCorreo } from '../../components/ui/carpetasCorreo'
 import styles from '../../components/ui/DeviceScreen.module.css'
 import { BotonHotspot, EnlaceHotspot, manejarClicHotspot } from '../../components/ui/interactivo'
 import PanelVeredicto, { type Senal } from '../../components/ui/PanelVeredicto'
@@ -154,78 +155,6 @@ const ASUNTO = 'Factura electrónica pendiente de validación'
 const REMITENTE_NOMBRE = 'SRI · Facturación Electrónica'
 const DIRECCION = 'notificaciones@sri-facturacion-ec.com'
 
-/// A dónde va el correo según qué botón de la barra terminó el escenario, y
-/// si eso lo saca de Recibidos. Archivar no tiene carpeta propia en esta
-/// bandeja: solo desaparece de la vista, como dice su final ("sigue en tu
-/// buzón" pero ya no en Recibidos).
-const DESTINO_ACCION: Record<
-  string,
-  {
-    carpeta?: 'Enviados' | 'Spam' | 'Papelera'
-    prefijo?: string
-    vaciaRecibidos: boolean
-  }
-> = {
-  e_archivar: { vaciaRecibidos: true },
-  e_eliminar: { carpeta: 'Papelera', vaciaRecibidos: true },
-  e_spam: { carpeta: 'Spam', vaciaRecibidos: true },
-  e_responder: { carpeta: 'Enviados', prefijo: 'Re:', vaciaRecibidos: false },
-  e_reenviar: { carpeta: 'Enviados', prefijo: 'Fwd:', vaciaRecibidos: false },
-}
-
-/// Misma fila de remitente que la bandeja principal (avatar, nombre,
-/// dirección): la lista de una carpeta con un mensaje suelto no debería verse
-/// más pobre que el mensaje abierto.
-function ResumenMensaje({ prefijo }: { prefijo?: string }) {
-  return (
-    <div className={styles.senderRow}>
-      <div className={styles.avatar} aria-hidden>
-        {REMITENTE_NOMBRE.slice(0, 1).toUpperCase()}
-      </div>
-      <div className={styles.senderId}>
-        <p className={styles.senderName}>{REMITENTE_NOMBRE}</p>
-        <p className={styles.senderAddr}>{DIRECCION}</p>
-        <p className={styles.mailFolderAsunto}>{prefijo ? `${prefijo} ${ASUNTO}` : ASUNTO}</p>
-      </div>
-    </div>
-  )
-}
-
-/// Estas carpetas son navegación interna del cliente, no decisiones del
-/// escenario: mirar otra bandeja no responde todavía a la amenaza. Lo que sí
-/// cambia con la acción tomada es qué hay dentro de cada una, para que la
-/// barra de acciones y la barra lateral cuenten la misma historia.
-function carpetasCorreo(current: string, isEnding: boolean): CarpetaCorreo[] {
-  const destino = isEnding ? DESTINO_ACCION[current] : undefined
-  const carpetas: CarpetaCorreo[] = [
-    {
-      nombre: 'Enviados',
-      vacia: 'No hay correos enviados.',
-      contenido:
-        destino?.carpeta === 'Enviados' ? <ResumenMensaje prefijo={destino.prefijo} /> : undefined,
-    },
-    {
-      nombre: 'Spam',
-      vacia: 'No hay correos marcados como spam.',
-      contenido: destino?.carpeta === 'Spam' ? <ResumenMensaje /> : undefined,
-    },
-    {
-      nombre: 'Papelera',
-      vacia: 'La papelera está vacía.',
-      contenido: destino?.carpeta === 'Papelera' ? <ResumenMensaje /> : undefined,
-    },
-  ]
-
-  if (destino?.vaciaRecibidos) {
-    carpetas.push({
-      nombre: 'Recibidos',
-      vacia: 'No hay correos en la bandeja de entrada.',
-    })
-  }
-
-  return carpetas
-}
-
 /// Cada señal apunta, cuando puede, al elemento real marcado con
 /// data-signal en una de las dos pantallas. Si esa pantalla no es la que
 /// llevó a este final, el recorrido igual muestra el texto, sin resaltar.
@@ -357,9 +286,18 @@ const MARCADORES: MarcadorNavegador[] = [
   { Icono: Newspaper, texto: 'El Comercio' },
 ]
 
-function ContenidoCorreo({ recibido, carpetas }: { recibido: string; carpetas: CarpetaCorreo[] }) {
+function ContenidoCorreo({
+  recibido,
+  carpetas,
+  forzarRecibidos,
+}: {
+  recibido: string
+  carpetas: CarpetaCorreo[]
+  forzarRecibidos: boolean
+}) {
   return (
     <CuerpoCorreo
+      carpetaForzada={forzarRecibidos ? 'Recibidos' : undefined}
       acciones={ACCIONES}
       carpetas={carpetas}
       asunto={ASUNTO}
@@ -686,8 +624,12 @@ function FacturaSri() {
     >
       {pantallaActual === 'n1' ? (
         <ContenidoCorreo
+          forzarRecibidos={repasando}
           recibido={recibido}
-          carpetas={carpetasCorreo(engine.current, engine.isEnding && !repasando)}
+          carpetas={carpetasCorreo(
+            { nombre: REMITENTE_NOMBRE, direccion: DIRECCION, asunto: ASUNTO },
+            engine.isEnding && !repasando ? engine.current : undefined,
+          )}
         />
       ) : pantallaActual === 'n2' ? (
         <ContenidoPortalFalso />
