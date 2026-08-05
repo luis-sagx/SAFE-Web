@@ -1,9 +1,23 @@
-import { Archive, File, Forward, Reply, ShieldAlert, ShieldCheck, Trash2 } from 'lucide-react'
+import {
+  Archive,
+  Building2,
+  File,
+  Forward,
+  Globe,
+  Landmark,
+  Newspaper,
+  Reply,
+  ShieldAlert,
+  ShieldCheck,
+  Trash2,
+} from 'lucide-react'
+import type { ReactNode } from 'react'
 import { useState } from 'react'
 import EscenarioLayout from '../../components/EscenarioLayout'
 import {
-  VentanaCorreo,
-  VentanaEscritorio,
+  CuerpoCorreo,
+  Taskbar,
+  Titlebar,
   type AccionCorreo,
   type CarpetaCorreo,
 } from '../../components/ui/DesktopChrome'
@@ -236,12 +250,6 @@ const NOTA = (
   </>
 )
 
-const ATAJO_PORTAL = {
-  texto: '🏦 Portal SRI',
-  goto: 'n3',
-  label: 'Dejó el correo y abrió el portal del SRI por su cuenta',
-}
-
 /// Cinco minutos antes de abrir el escenario. La hora del correo se calcula a
 /// partir del ahora porque la barra de tareas muestra la hora real y avanza:
 /// con una hora fija el mensaje quedaría fechado en un momento que el reloj de
@@ -254,16 +262,154 @@ function horaDeLlegada(): string {
   return `hoy ${formatoHora(llegada)}`
 }
 
-interface PantallaProps {
-  onHotspot: (event: React.MouseEvent) => void
+/// Lo que muestra la barra de direcciones y la pestaña de cada pantalla. La
+/// dirección es la señal principal del escenario, así que vive junto al nodo y
+/// no dentro de cada componente.
+const PESTANAS: Record<
+  string,
+  { titulo: string; url: string; segura: boolean; cierra?: string; senalUrl?: string }
+> = {
+  n1: { titulo: 'Correo', url: 'https://correo.safeweb.com/u/0/#recibidos', segura: true },
+  n2: {
+    titulo: 'Validación de comprobante',
+    url: 'http://sri-facturacion-ec.com/validar-ruc',
+    segura: false,
+    // Cerrarla devuelve al correo sin decidir nada: irse de una página que da
+    // mala espina no es un veredicto todavía.
+    cierra: 'n1',
+    senalUrl: 'url-insegura',
+  },
+  n3: {
+    titulo: 'SRI en Línea',
+    url: 'https://srienlinea.sri.gob.ec/comprobantes',
+    segura: true,
+    cierra: 'e_portal',
+    senalUrl: 'url-real',
+  },
+  n3b: {
+    titulo: 'SRI en Línea',
+    url: 'https://srienlinea.sri.gob.ec/comprobantes',
+    segura: true,
+    cierra: 'e_dominio',
+    senalUrl: 'url-real',
+  },
 }
 
-function PantallaCorreo({ onHotspot, recibido }: PantallaProps & { recibido: string }) {
+const MARCADORES = [
+  { Icono: Landmark, texto: 'Banco del Litoral' },
+  { Icono: Building2, texto: 'SRI en Línea', portal: true },
+  { Icono: Newspaper, texto: 'El Comercio' },
+]
+
+/**
+ * El navegador: una ventana con pestañas, en vez de una ventana por pantalla.
+ *
+ * Es lo que hace que el escenario se juegue como se juega en la vida real. El
+ * correo es una pestaña más; el enlace del mensaje abre otra, como abriría
+ * cualquier enlace; y las dos direcciones quedan a un clic de distancia, que es
+ * exactamente la comparación que el escenario quiere que alguien haga.
+ *
+ * También cambia dónde está la salida segura: ya no es un atajo del escritorio
+ * sino un marcador del navegador, junto a los demás sitios de siempre. Entrar
+ * por ahí es literalmente "abrir el portal por mi cuenta".
+ */
+function Navegador({
+  pestanas,
+  activa,
+  gotoPortal,
+  onHotspot,
+  children,
+}: {
+  pestanas: string[]
+  activa: string
+  gotoPortal: string
+  onHotspot: (event: React.MouseEvent) => void
+  children: ReactNode
+}) {
+  const actual = PESTANAS[activa]
+
   return (
-    <VentanaCorreo
+    <section
+      className={`${styles.screen} ${styles.desktop}`}
+      aria-label="Navegador web"
       onClick={onHotspot}
-      atajo={ATAJO_PORTAL}
-      reloj="vivo"
+    >
+      <Titlebar texto="Navegador" />
+
+      <div className={styles.tabstrip} role="tablist">
+        {pestanas.map((id) => {
+          const meta = PESTANAS[id]
+          if (!meta) return null
+          const esActiva = id === activa
+
+          return (
+            <span
+              key={id}
+              className={`${styles.tab} ${esActiva ? '' : styles.tabInactiva}`}
+              role="tab"
+              aria-selected={esActiva}
+              data-hotspot-goto={esActiva ? undefined : id}
+              data-hotspot-label={`Cambió a la pestaña "${meta.titulo}"`}
+            >
+              <Globe aria-hidden className={styles.tabIcono} strokeWidth={1.75} />
+              <span className={styles.tabTexto}>{meta.titulo}</span>
+              {meta.cierra && (
+                <button
+                  type="button"
+                  className={styles.tabClose}
+                  title={`Cerrar ${meta.titulo}`}
+                  aria-label={`Cerrar la pestaña ${meta.titulo}`}
+                  data-cierra={id}
+                  data-hotspot-goto={meta.cierra}
+                  data-hotspot-label={`Cerró la pestaña "${meta.titulo}"`}
+                >
+                  ✕
+                </button>
+              )}
+            </span>
+          )
+        })}
+        <span className={styles.tabNueva} aria-hidden>
+          +
+        </span>
+      </div>
+
+      {/* La dirección de la pestaña activa. Es la señal principal del escenario:
+          con pestañas, comparar la falsa con la real es cambiar de una a otra. */}
+      <div className={styles.urlbar} data-signal={actual?.senalUrl}>
+        {actual?.segura ? (
+          <span className={styles.lock}>🔒</span>
+        ) : (
+          <span className={styles.warn}>⚠ No seguro</span>
+        )}
+        <span className={styles.url}>{actual?.url}</span>
+      </div>
+
+      <div className={styles.marcadores}>
+        {MARCADORES.map(({ Icono, texto, portal }) => (
+          <button
+            key={texto}
+            type="button"
+            className={styles.marcador}
+            data-hotspot-goto={portal ? gotoPortal : undefined}
+            data-hotspot-label={portal ? 'Abrió el portal del SRI desde sus marcadores' : undefined}
+          >
+            <Icono aria-hidden className={styles.marcadorIcono} strokeWidth={1.75} />
+            {texto}
+          </button>
+        ))}
+      </div>
+
+      {children}
+
+      <Taskbar app="🌐 Navegador" reloj="vivo" />
+    </section>
+  )
+}
+
+function ContenidoCorreo({ recibido }: { recibido: string }) {
+  return (
+    <CuerpoCorreo
       acciones={ACCIONES}
       carpetas={CARPETAS}
       asunto="Factura electrónica pendiente de validación"
@@ -329,47 +475,13 @@ function PantallaCorreo({ onHotspot, recibido }: PantallaProps & { recibido: str
         </EnlaceHotspot>
       </p>
       <p className="fine">Este mensaje es automático, por favor no responda.</p>
-    </VentanaCorreo>
+    </CuerpoCorreo>
   )
 }
 
-function PantallaPortal({ onHotspot }: PantallaProps) {
+function ContenidoPortalFalso() {
   return (
-    <VentanaEscritorio
-      titulo="Validación de comprobante"
-      ariaLabel="Página web simulada"
-      onClick={onHotspot}
-      reloj="vivo"
-      atajo={{
-        ...ATAJO_PORTAL,
-        goto: 'n3b',
-        label: 'Salió de la página sin escribir nada y abrió el portal por su cuenta',
-      }}
-    >
-      {/* Pestaña de navegador: en el celular no hay pestañas visibles. */}
-      <div className={styles.tabstrip} aria-hidden>
-        <span className={styles.tab}>Validación de comprobante</span>
-      </div>
-
-      <div className={styles.urlbar} data-signal="url-insegura">
-        {/* Vuelve al correo sin cerrar el escenario: n1 es una escena, no un
-            final, así que la corrida sigue abierta. El paso queda en la traza,
-            que es justo lo que interesa medir — volver a mirar el mensaje antes
-            de decidir es una conducta prudente, no una decisión final. */}
-        <button
-          type="button"
-          className={styles.navBack}
-          title="Atrás"
-          aria-label="Volver al correo"
-          data-hotspot-goto="n1"
-          data-hotspot-label="Volvió al correo desde la página, sin escribir nada"
-        >
-          ←
-        </button>
-        <span className={styles.warn}>⚠ No seguro</span>
-        <span className={styles.url}>http://sri-facturacion-ec.com/validar-ruc</span>
-      </div>
-
+    <>
       <div className={styles.page}>
         <p className={styles.brand}>Servicio de Rentas</p>
         <h2 className={styles.pageTitle}>Validación de comprobante</h2>
@@ -406,7 +518,7 @@ function PantallaPortal({ onHotspot }: PantallaProps) {
 
         <p className={styles.pageFooter}>Portal de validación · sri-facturacion-ec.com</p>
       </div>
-    </VentanaEscritorio>
+    </>
   )
 }
 
@@ -499,51 +611,13 @@ function DecisionEnCurso({
  * multa— y el contraste con la página falsa: dominio sri.gob.ec, conexión
  * segura y una sesión ya iniciada, sin ningún formulario pidiendo la clave.
  *
- * `salida` cambia según de dónde se llegó: cerrar la pestaña desde aquí acredita
- * por no haber tocado la página falsa, o por haberla dejado a tiempo.
+ * Cerrar su pestaña es lo que acredita, y el final depende de por dónde se
+ * llegó: `n3` para quien nunca abrió la página falsa y `n3b` para quien la
+ * abrió y se fue a tiempo (ver PESTANAS).
  */
-function PantallaPortalReal({ onHotspot, salida }: PantallaProps & { salida: string }) {
+function ContenidoPortalReal() {
   return (
-    <VentanaEscritorio
-      titulo="SRI en Línea"
-      ariaLabel="Portal del SRI"
-      onClick={onHotspot}
-      reloj="vivo"
-    >
-      <div className={styles.tabstrip}>
-        <span className={styles.tab}>
-          SRI en Línea
-          {/* Cerrar la pestaña es lo que hace de verdad quien ya comprobó lo
-              que venía a comprobar. La flecha de atrás sigue devolviendo a la
-              pantalla anterior sin cerrar el escenario. */}
-          <button
-            type="button"
-            className={styles.tabClose}
-            title="Cerrar pestaña"
-            aria-label="Cerrar la pestaña del portal"
-            data-hotspot-goto={salida}
-            data-hotspot-label="Comprobó en el portal real y cerró la pestaña"
-          >
-            ✕
-          </button>
-        </span>
-      </div>
-
-      <div className={styles.urlbar} data-signal="url-real">
-        <button
-          type="button"
-          className={styles.navBack}
-          title="Atrás"
-          aria-label="Volver a la pantalla anterior"
-          data-hotspot-goto={salida === 'e_portal' ? 'n1' : 'n2'}
-          data-hotspot-label="Volvió atrás desde el portal del SRI"
-        >
-          ←
-        </button>
-        <span className={styles.lock}>🔒</span>
-        <span className={styles.url}>https://srienlinea.sri.gob.ec/comprobantes</span>
-      </div>
-
+    <>
       <div className={styles.page}>
         <p className={styles.brand}>SRI · Servicio de Rentas Internas</p>
         <h2 className={styles.pageTitle}>Comprobantes electrónicos</h2>
@@ -578,7 +652,7 @@ function PantallaPortalReal({ onHotspot, salida }: PantallaProps & { salida: str
 
         <p className={styles.pageFooter}>srienlinea.sri.gob.ec · Servicio de Rentas Internas</p>
       </div>
-    </VentanaEscritorio>
+    </>
   )
 }
 
@@ -598,6 +672,9 @@ function FacturaSri() {
   /// Se calcula una vez al montar y no en cada render: si no, el correo se
   /// "rejuvenecería" solo cada quince segundos, al ritmo del reloj de la barra.
   const [recibido, setRecibido] = useState(horaDeLlegada)
+  /// Las pestañas abiertas, en su orden. Se abren al navegar, como en un
+  /// navegador de verdad: al principio solo está el correo.
+  const [pestanas, setPestanas] = useState(['n1'])
 
   function elegir(goto: string, label?: string) {
     if (engine.isEnding) {
@@ -608,12 +685,14 @@ function FacturaSri() {
     // la última para que el repaso de señales tenga sobre qué resaltar.
     if (STORY[goto]?.kind === 'scene') {
       setPantallaActual(goto)
+      setPestanas((abiertas) => (abiertas.includes(goto) ? abiertas : [...abiertas, goto]))
     }
   }
 
   function reiniciar() {
     engine.restart()
     setPantallaActual('n1')
+    setPestanas(['n1'])
     setTocoEnVacio(false)
     // Al repetir, el correo vuelve a acabar de llegar. Conservar la hora del
     // intento anterior dejaría un mensaje de hace media hora en una bandeja
@@ -622,22 +701,37 @@ function FacturaSri() {
   }
 
   const onHotspot = (event: React.MouseEvent) => {
+    // Cerrar una pestaña la quita de la barra además de llevar a donde diga su
+    // `goto`: para el correo, de vuelta a él; para el portal real, al final.
+    const cerrada = (event.target as HTMLElement).closest<HTMLElement>('[data-cierra]')?.dataset
+      .cierra
+    if (cerrada) {
+      setPestanas((abiertas) => abiertas.filter((id) => id !== cerrada))
+    }
+
     if (!manejarClicHotspot(event, elegir) && !engine.isEnding) {
       setTocoEnVacio(true)
     }
   }
 
-  const pantalla =
-    pantallaActual === 'n1' ? (
-      <PantallaCorreo onHotspot={onHotspot} recibido={recibido} />
-    ) : pantallaActual === 'n2' ? (
-      <PantallaPortal onHotspot={onHotspot} />
-    ) : (
-      <PantallaPortalReal
-        onHotspot={onHotspot}
-        salida={pantallaActual === 'n3' ? 'e_portal' : 'e_dominio'}
-      />
-    )
+  const pantalla = (
+    <Navegador
+      pestanas={pestanas}
+      activa={pantallaActual}
+      // Quien ya abrió la página falsa acredita por haberla dejado; quien no,
+      // por no haberla tocado nunca.
+      gotoPortal={pestanas.includes('n2') ? 'n3b' : 'n3'}
+      onHotspot={onHotspot}
+    >
+      {pantallaActual === 'n1' ? (
+        <ContenidoCorreo recibido={recibido} />
+      ) : pantallaActual === 'n2' ? (
+        <ContenidoPortalFalso />
+      ) : (
+        <ContenidoPortalReal />
+      )}
+    </Navegador>
+  )
 
   const decision = engine.isEnding ? (
     <PanelVeredicto

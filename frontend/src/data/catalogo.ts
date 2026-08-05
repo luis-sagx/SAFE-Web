@@ -104,9 +104,11 @@ const BASE: EscenarioBase[] = [
     // finales (responder, reenviar, archivar, eliminar, marcar como spam).
     // v3: el adjunto pasó de .html a un ejecutable .vbs con doble extensión.
     // v4: el atajo del portal abre el portal real en vez de saltar al final.
+    // v5: el escenario se juega en un navegador con pestañas; el enlace del
+    // correo abre una pestaña nueva y el portal se abre desde los marcadores.
     // Las corridas de versiones distintas no son comparables entre sí: el
     // estímulo que vio cada participante no fue el mismo.
-    version: 4,
+    version: 5,
     naturaleza: 'fraude',
     dificultad: 2,
     espeja: 'phishing/rol-de-pagos',

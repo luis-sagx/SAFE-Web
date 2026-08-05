@@ -133,6 +133,11 @@
   background: rgba(255, 255, 255, 0.6);
 }
 
+/* La app en la que ya estás: mismo relieve que un atajo, pero sin cursor de
+   mano ni realce al pasar — no hay nada que pulsar. */
+.taskbarApp {
+  cursor: default;
+}
 .taskbarTray {
   margin-left: auto;
   display: inline-flex;
@@ -507,6 +512,74 @@ button.mailNavItem {
   margin-bottom: 0;
 }
 
+/* ---------- Navegador con pestañas ----------
+   Reemplaza a "una ventana por pantalla" en el escenario interactivo: el correo
+   y las páginas conviven como pestañas, igual que en el equipo de cualquiera.
+   Es lo que permite comparar dos direcciones sin cerrar nada. */
+.tabInactiva {
+  background: #eceff3;
+  color: #5f6b7a;
+  font-weight: 500;
+}
+.tabInactiva:hover {
+  background: #f4f6f9;
+}
+.tabIcono {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+}
+.tabNueva {
+  appearance: none;
+  align-self: center;
+  margin-left: 6px;
+  width: 26px;
+  height: 26px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: #3b4553;
+  font-size: 17px;
+  line-height: 1;
+  cursor: default;
+}
+
+/* Barra de marcadores. Los sitios de siempre, y entre ellos el del SRI: entrar
+   por aquí es "abrir el portal por mi cuenta". Se parece a los demás a
+   propósito — destacarlo empujaría hacia la respuesta correcta. */
+.marcadores {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  background: #f2f4f7;
+  border-bottom: 1px solid #dfe3e9;
+}
+.marcador {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 10px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: #3b4553;
+  font: inherit;
+  font-size: 13.5px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.marcador:hover {
+  background: rgba(0, 0, 0, 0.07);
+}
+.marcadorIcono {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+}
+
 /* Cerrar la pestaña: es la forma en que alguien termina de verdad con una
    página que ya consultó. Va en la pestaña y no como un botón dentro del sitio,
    porque cerrar es del navegador, no de la web que se está viendo. */
@@ -751,10 +824,14 @@ button.mailNavItem {
   font-size: 14.5px;
   font-weight: 600;
   color: #3b4553;
-  max-width: 220px;
+  max-width: 260px;
+  white-space: nowrap;
+}
+/* El recorte va en el título y no en la pestaña: recortando la pestaña entera,
+   la ✕ de cerrar se quedaba fuera del borde y no había forma de pulsarla. */
+.tabTexto {
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 /* Flecha de atrás del navegador simulado. Sin ella, entrar a la página falsa

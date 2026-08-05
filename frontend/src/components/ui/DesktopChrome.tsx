@@ -1,10 +1,6 @@
 import { Inbox, Send, Trash2, type LucideIcon } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
-import {
-  formatoFecha,
-  formatoHora,
-  useRelojDelSistema,
-} from '../../hooks/useRelojDelSistema'
+import { formatoFecha, formatoHora, useRelojDelSistema } from '../../hooks/useRelojDelSistema'
 import { useAuth } from '../../context/AuthContext'
 import styles from './DeviceScreen.module.css'
 
@@ -161,9 +157,13 @@ export function Titlebar({ texto }: { texto: string }) {
  *  Sin ellas, el atajo quedaba como una etiqueta suelta sobre una franja oscura
  *  y nadie lo tomaba por algo que se puede usar. */
 export function Taskbar({
+  app,
   atajo,
   reloj = { hora: '10:41', fecha: '4/8/2026' },
 }: {
+  /** Programa en el que ya se está, anclado y sin acción: pulsar el icono de la
+   *  app que tienes delante no hace nada en ningún sistema. */
+  app?: string
   atajo?: AtajoTaskbar
   /** La hora del sistema.
    *
@@ -187,6 +187,10 @@ export function Taskbar({
         ⊞
       </span>
       <span className={styles.taskbarDivider} aria-hidden />
+
+      {app && (
+        <span className={`${styles.taskbarAtajo} ${styles.taskbarApp}`}>{app}</span>
+      )}
 
       {atajo && (
         <button
@@ -233,7 +237,11 @@ export function VentanaEscritorio({
   children: ReactNode
 }) {
   return (
-    <section className={`${styles.screen} ${styles.desktop}`} aria-label={ariaLabel} onClick={onClick}>
+    <section
+      className={`${styles.screen} ${styles.desktop}`}
+      aria-label={ariaLabel}
+      onClick={onClick}
+    >
       <Titlebar texto={titulo} />
       {children}
       <Taskbar atajo={atajo} reloj={reloj} />
@@ -288,15 +296,38 @@ interface VentanaCorreoProps {
  * trae adjunto— entra por props, y el cuerpo por `children`, que admite tanto
  * HTML fijo como puntos interactivos de verdad.
  */
-export function VentanaCorreo({
+export function VentanaCorreo(props: VentanaCorreoProps) {
+  const { atajo, reloj, onClick } = props
+
+  return (
+    <section
+      className={`${styles.screen} ${styles.desktop}`}
+      aria-label="Bandeja de correo"
+      onClick={onClick}
+    >
+      <Titlebar texto="Correo (Recibidos)" />
+      <CuerpoCorreo {...props} />
+      <Taskbar atajo={atajo} reloj={reloj} />
+    </section>
+  )
+}
+
+/**
+ * El correo sin la ventana que lo envuelve: carpetas, barra de acciones y
+ * mensaje.
+ *
+ * Se separa de `VentanaCorreo` porque el mismo contenido tiene que poder vivir
+ * dentro de una pestaña de navegador, donde no hay barra de título propia ni
+ * franja de tareas — el navegador ya las pone. Sin esta división habría que
+ * escribir el mensaje dos veces, que es justo lo que se arregló al unificar la
+ * ventana.
+ */
+export function CuerpoCorreo({
   asunto,
   remitente,
   recibido,
   acciones,
   carpetas,
-  atajo,
-  reloj,
-  onClick,
   adjunto,
   pie,
   children,
@@ -306,67 +337,57 @@ export function VentanaCorreo({
   const carpetaSecundaria = carpetas?.find((carpeta) => carpeta.nombre === carpetaActiva)
 
   return (
-    <section
-      className={`${styles.screen} ${styles.desktop}`}
-      aria-label="Bandeja de correo"
-      onClick={onClick}
-    >
-      <Titlebar texto="Correo (Recibidos)" />
+    <div className={styles.desktopBody}>
+      <MailNav activa={carpetaActiva} carpetas={carpetas} onSelect={setCarpetaActiva} />
 
-      <div className={styles.desktopBody}>
-        <MailNav activa={carpetaActiva} carpetas={carpetas} onSelect={setCarpetaActiva} />
+      <div className={styles.mailPane}>
+        {carpetaSecundaria ? (
+          <div className={`${styles.mailbody} ${styles.mailFolderEmpty}`}>
+            <h1 className={styles.subject}>{carpetaSecundaria.nombre}</h1>
+            <p>{carpetaSecundaria.vacia}</p>
+          </div>
+        ) : (
+          <>
+            {acciones && <MailToolbar acciones={acciones} />}
 
-        <div className={styles.mailPane}>
-          {carpetaSecundaria ? (
-            <div className={`${styles.mailbody} ${styles.mailFolderEmpty}`}>
-              <h1 className={styles.subject}>{carpetaSecundaria.nombre}</h1>
-              <p>{carpetaSecundaria.vacia}</p>
-            </div>
-          ) : (
-            <>
-              {acciones && <MailToolbar acciones={acciones} />}
+            <div className={styles.mailbody}>
+              <h1 className={styles.subject}>{asunto}</h1>
 
-              <div className={styles.mailbody}>
-                <h1 className={styles.subject}>{asunto}</h1>
-
-                <div className={styles.senderRow}>
-                  <div className={styles.avatar} aria-hidden>
-                    {remitente.nombre.slice(0, 1).toUpperCase()}
-                  </div>
-                  <div className={styles.senderId}>
-                    <p className={styles.senderName}>
-                      {remitente.nombre}
-                      {remitente.etiqueta && (
-                        <span className={styles.label} data-signal={remitente.senalEtiqueta}>
-                          {remitente.etiqueta}
-                        </span>
-                      )}
-                    </p>
-                    <p className={styles.senderAddr} data-signal={remitente.senalDireccion}>
-                      {remitente.direccion}
-                    </p>
-                    <p className={styles.senderTo}>para {correoSimulado}</p>
-                  </div>
-                  <span className={styles.date}>{recibido}</span>
+              <div className={styles.senderRow}>
+                <div className={styles.avatar} aria-hidden>
+                  {remitente.nombre.slice(0, 1).toUpperCase()}
                 </div>
-
-                <div className={styles.prose}>{children}</div>
-
-                {adjunto && (
-                  <div className={styles.attachmentZone}>
-                    <p className={styles.attachmentCount}>1 archivo adjunto</p>
-                    {adjunto}
-                  </div>
-                )}
-
-                {pie && <div className={styles.mailFooter}>{pie}</div>}
+                <div className={styles.senderId}>
+                  <p className={styles.senderName}>
+                    {remitente.nombre}
+                    {remitente.etiqueta && (
+                      <span className={styles.label} data-signal={remitente.senalEtiqueta}>
+                        {remitente.etiqueta}
+                      </span>
+                    )}
+                  </p>
+                  <p className={styles.senderAddr} data-signal={remitente.senalDireccion}>
+                    {remitente.direccion}
+                  </p>
+                  <p className={styles.senderTo}>para {correoSimulado}</p>
+                </div>
+                <span className={styles.date}>{recibido}</span>
               </div>
-            </>
-          )}
-        </div>
-      </div>
 
-      <Taskbar atajo={atajo} reloj={reloj} />
-    </section>
+              <div className={styles.prose}>{children}</div>
+
+              {adjunto && (
+                <div className={styles.attachmentZone}>
+                  <p className={styles.attachmentCount}>1 archivo adjunto</p>
+                  {adjunto}
+                </div>
+              )}
+
+              {pie && <div className={styles.mailFooter}>{pie}</div>}
+            </div>
+          </>
+        )}
+      </div>
+    </div>
   )
 }
