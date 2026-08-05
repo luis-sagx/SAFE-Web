@@ -2,9 +2,10 @@ import { useState, type ReactNode } from 'react'
 import EscenarioLayout from './EscenarioLayout'
 import DeviceScreen, { type ScreenView } from './ui/DeviceScreen'
 import { manejarClicHotspot } from './ui/interactivo'
-import type { AccionCorreo } from './ui/DesktopChrome'
+import type { AccionCorreo, Reloj } from './ui/DesktopChrome'
 import StoryChoices from './ui/StoryChoices'
 import PanelVeredicto, { type Senal } from './ui/PanelVeredicto'
+import { useAuth } from '../context/AuthContext'
 import { useStoryEngine, type Story, type StoryNode } from '../hooks/useStoryEngine'
 
 /** Cada nodo declara qué muestra la pantalla simulada, incluidos los finales:
@@ -29,6 +30,11 @@ interface StoryEscenarioProps {
   /** Acciones del cliente de correo. El escenario que las pasa tiene que
    *  declarar también sus finales en el grafo (ver finalesDeBarra). */
   accionesCorreo?: AccionCorreo[]
+  /** Dominio del participante en este escenario (ver EscenarioLayout). */
+  dominioCorreo?: string
+  /** Hora del sistema. Debe cuadrar con la que cuenta el guion y con la fecha
+   *  del mensaje: tres relojes distintos en la misma escena rompen la ilusión. */
+  reloj?: Reloj
 }
 
 /**
@@ -47,8 +53,12 @@ function StoryEscenario({
   restartLabel,
   pregunta = '¿Qué haces?',
   accionesCorreo,
+  dominioCorreo,
+  reloj,
 }: StoryEscenarioProps) {
   const engine = useStoryEngine(story, 'n1', escenarioId)
+  const { usuarioSimulado } = useAuth()
+  const destinatario = dominioCorreo ? `${usuarioSimulado}@${dominioCorreo}` : undefined
 
   // Durante el repaso la pantalla vuelve a la que contiene cada señal: un
   // escenario que termina en la página falsa no puede resaltar lo que estaba
@@ -90,8 +100,15 @@ function StoryEscenario({
       resumen={resumen}
       contexto={contexto}
       nota={nota}
+      dominioCorreo={dominioCorreo}
       pantalla={
-        <DeviceScreen view={vista} acciones={accionesCorreo} onHotspot={onHotspot} />
+        <DeviceScreen
+          view={vista}
+          acciones={accionesCorreo}
+          destinatario={destinatario}
+          reloj={reloj}
+          onHotspot={onHotspot}
+        />
       }
       decision={decision}
       onEmpezar={engine.restart}

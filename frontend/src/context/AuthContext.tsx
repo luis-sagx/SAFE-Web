@@ -28,6 +28,12 @@ interface AuthValue {
   initials: string
   /** Dirección de correo ficticia del participante dentro de los escenarios. */
   correoSimulado: string
+  /** Solo la parte de usuario, sin dominio. Un escenario ambientado en una
+   *  empresa necesita que el participante esté en el dominio de esa empresa:
+   *  si la historia dice que trabajas en Corporación Andes, recibir el correo
+   *  en otro dominio contradice al propio escenario, y en este módulo el
+   *  dominio es justo lo que hay que aprender a mirar. */
+  usuarioSimulado: string
 }
 
 const AuthContext = createContext<AuthValue | undefined>(undefined)
@@ -55,11 +61,11 @@ function normalizar(texto: string | null | undefined): string {
 /// nombreapellido@safeweb.com, con la primera palabra de cada uno. Si la cuenta
 /// no tiene nombre —la del investigador, o una ya anonimizada— cae a
 /// "participante", para que la dirección nunca quede vacía ni a medias.
-function correoSimuladoDe(participant: Participant | null): string {
+function usuarioSimuladoDe(participant: Participant | null): string {
   const nombre = normalizar(participant?.nombre?.trim().split(/\s+/)[0])
   const apellido = normalizar(participant?.apellido?.trim().split(/\s+/)[0])
 
-  return `${`${nombre}${apellido}` || 'participante'}@${DOMINIO_SIMULADO}`
+  return `${nombre}${apellido}` || 'participante'
 }
 
 /// Inicial del nombre + inicial del apellido. Si falta el apellido —la cuenta
@@ -156,7 +162,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       displayName: firstName(participant),
       roleLabel: participant?.cohort ?? 'Participante',
       initials: initialsOf(participant),
-      correoSimulado: correoSimuladoDe(participant),
+      correoSimulado: `${usuarioSimuladoDe(participant)}@${DOMINIO_SIMULADO}`,
+      usuarioSimulado: usuarioSimuladoDe(participant),
     }),
     [participant, loading, login, register, logout, marcarOnboardingVisto, onboardingDismissed],
   )

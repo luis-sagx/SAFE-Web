@@ -1,5 +1,5 @@
 import { Paperclip } from 'lucide-react'
-import { Taskbar, Titlebar, VentanaCorreo, type AccionCorreo } from './DesktopChrome'
+import { Taskbar, Titlebar, VentanaCorreo, type AccionCorreo, type Reloj } from './DesktopChrome'
 import styles from './DeviceScreen.module.css'
 
 /**
@@ -54,18 +54,24 @@ export type ScreenView =
 function DeviceScreen({
   view,
   acciones,
+  destinatario,
+  reloj,
   onHotspot,
 }: {
   view: ScreenView
   /** Barra de acciones del cliente. Solo se pinta si el escenario declara sus
    *  finales; sin ellos los botones no tendrían a dónde saltar. */
   acciones?: AccionCorreo[]
+  destinatario?: string
+  reloj?: Reloj
   onHotspot?: (event: React.MouseEvent) => void
 }) {
   if (view.kind === 'mail') {
     return (
       <VentanaCorreo
         acciones={acciones}
+        destinatario={destinatario}
+        reloj={reloj}
         onClick={onHotspot}
         asunto={view.subject}
         remitente={{
@@ -132,7 +138,7 @@ function DeviceScreen({
           {view.footer && <p className={styles.pageFooter}>{view.footer}</p>}
         </div>
 
-        <Taskbar />
+        <Taskbar reloj={reloj} />
       </section>
     )
   }

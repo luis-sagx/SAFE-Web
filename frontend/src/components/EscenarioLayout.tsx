@@ -17,6 +17,10 @@ interface EscenarioLayoutProps {
   contexto: ReactNode
   /** Cómo se juega. Aparece únicamente en el briefing, antes de entrar. */
   nota?: ReactNode
+  /** Dominio del correo del participante dentro de este escenario. Los
+   *  ambientados en una empresa lo fijan al de esa empresa; el resto usan el
+   *  del entrenamiento. */
+  dominioCorreo?: string
   /** Va dentro del marco del dispositivo. Solo lo que la app real mostraría. */
   pantalla: ReactNode
   /** Va debajo del marco: pregunta, opciones, feedback, resultado. */
@@ -82,6 +86,7 @@ function EscenarioLayout({
   resumen,
   contexto,
   nota,
+  dominioCorreo,
   pantalla,
   decision,
   onEmpezar,
@@ -93,7 +98,8 @@ function EscenarioLayout({
     throw new Error(`Escenario "${escenarioId}" no está en el catálogo.`)
   }
 
-  const { displayName, roleLabel, correoSimulado } = useAuth()
+  const { displayName, roleLabel, correoSimulado, usuarioSimulado } = useAuth()
+  const correoDelEscenario = dominioCorreo ? `${usuarioSimulado}@${dominioCorreo}` : correoSimulado
   const [fase, setFase] = useState<'briefing' | 'escenario'>('briefing')
   const empezarRef = useRef<HTMLButtonElement>(null)
   const escenaRef = useRef<HTMLDivElement>(null)
@@ -154,8 +160,8 @@ function EscenarioLayout({
               dominio no existe fuera de la simulación. */}
           <p className="mt-6 text-base leading-relaxed text-body">
             En los escenarios usas un correo ficticio,{' '}
-            <span className="font-medium text-ink">{correoSimulado}</span>. No existe fuera de este
-            entrenamiento: nada de lo que ocurra aquí sale ni entra a tu correo real.
+            <span className="font-medium text-ink">{correoDelEscenario}</span>. No existe fuera de
+            este entrenamiento: nada de lo que ocurra aquí sale ni entra a tu correo real.
           </p>
 
           {nota && (

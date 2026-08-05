@@ -280,6 +280,8 @@ interface VentanaCorreoProps {
   adjunto?: ReactNode
   /** Pie institucional del mensaje. */
   pie?: ReactNode
+  /** Destinatario del mensaje. Por defecto, la dirección de entrenamiento. */
+  destinatario?: string
   /** Cuerpo del correo. */
   children: ReactNode
 }
@@ -333,6 +335,7 @@ export function CuerpoCorreo({
   carpetas,
   adjunto,
   pie,
+  destinatario,
   children,
 }: VentanaCorreoProps) {
   const { correoSimulado } = useAuth()
@@ -374,7 +377,7 @@ export function CuerpoCorreo({
                   <p className={styles.senderAddr} data-signal={remitente.senalDireccion}>
                     {remitente.direccion}
                   </p>
-                  <p className={styles.senderTo}>para {correoSimulado}</p>
+                  <p className={styles.senderTo}>para {destinatario ?? correoSimulado}</p>
                 </div>
                 <span className={styles.date}>{recibido}</span>
               </div>
