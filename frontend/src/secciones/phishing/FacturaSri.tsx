@@ -1,17 +1,32 @@
-import { Archive, File, Forward, Reply, ShieldAlert, Trash2 } from 'lucide-react'
-import { useState } from 'react'
-import EscenarioLayout from '../../components/EscenarioLayout'
+import {
+  Archive,
+  File,
+  Forward,
+  Reply,
+  ShieldAlert,
+  Trash2,
+} from "lucide-react";
+import { useState } from "react";
+import EscenarioLayout from "../../components/EscenarioLayout";
 import {
   VentanaCorreo,
   VentanaEscritorio,
   type AccionCorreo,
   type CarpetaCorreo,
-} from '../../components/ui/DesktopChrome'
-import styles from '../../components/ui/DeviceScreen.module.css'
-import { BotonHotspot, EnlaceHotspot, manejarClicHotspot } from '../../components/ui/interactivo'
-import PanelVeredicto, { type Senal } from '../../components/ui/PanelVeredicto'
-import { formatoHora } from '../../hooks/useRelojDelSistema'
-import { useStoryEngine, type Story, type StoryNode } from '../../hooks/useStoryEngine'
+} from "../../components/ui/DesktopChrome";
+import styles from "../../components/ui/DeviceScreen.module.css";
+import {
+  BotonHotspot,
+  EnlaceHotspot,
+  manejarClicHotspot,
+} from "../../components/ui/interactivo";
+import PanelVeredicto, { type Senal } from "../../components/ui/PanelVeredicto";
+import { formatoHora } from "../../hooks/useRelojDelSistema";
+import {
+  useStoryEngine,
+  type Story,
+  type StoryNode,
+} from "../../hooks/useStoryEngine";
 
 /**
  * Primer escenario interactivo del proyecto: en vez de elegir de una lista de
@@ -30,236 +45,309 @@ import { useStoryEngine, type Story, type StoryNode } from '../../hooks/useStory
 /// `goto`/`label` en la pantalla, no en una lista aparte que haya que
 /// mantener sincronizada.
 const STORY: Story<StoryNode> = {
-  n1: { kind: 'scene' },
-  n2: { kind: 'scene' },
+  n1: { kind: "scene" },
+  n2: { kind: "scene" },
   e_adjunto: {
-    kind: 'bad',
-    verdict: 'Caíste en la trampa',
+    kind: "bad",
+    verdict: "Caíste en la trampa",
     outcome:
-      'No se abrió ninguna factura: el archivo era un programa y tu equipo lo ejecutó. En segundo plano descargó un ladrón de contraseñas que recogió las que tenías guardadas en el navegador, incluida la del portal del SRI. No apareció ninguna ventana ni ningún aviso.',
+      "No se abrió ninguna factura: el archivo era un programa y tu equipo lo ejecutó. En segundo plano descargó un ladrón de contraseñas que recogió las que tenías guardadas en el navegador, incluida la del portal del SRI. No apareció ninguna ventana ni ningún aviso.",
   },
   e_datos: {
-    kind: 'bad',
-    verdict: 'Caíste en la trampa',
+    kind: "bad",
+    verdict: "Caíste en la trampa",
     outcome:
-      'Entregaste tu RUC y tu clave del portal en un sitio que no es del SRI. Con esos datos pueden emitir comprobantes a tu nombre y ver tu información tributaria.',
+      "Entregaste tu RUC y tu clave del portal en un sitio que no es del SRI. Con esos datos pueden emitir comprobantes a tu nombre y ver tu información tributaria.",
   },
   e_dominio: {
-    kind: 'good',
-    verdict: 'No caíste · revisaste la dirección',
+    kind: "good",
+    verdict: "No caíste · revisaste la dirección",
     outcome:
-      'La dirección era sri-facturacion-ec.com y ni siquiera usaba conexión segura. El portal real del SRI está en sri.gob.ec. Cerraste la página sin escribir nada.',
+      "La dirección era sri-facturacion-ec.com y ni siquiera usaba conexión segura. El portal real del SRI está en sri.gob.ec. Cerraste la página sin escribir nada.",
   },
   e_portal: {
-    kind: 'good',
-    verdict: 'No caíste · entraste por tu cuenta',
+    kind: "good",
+    verdict: "No caíste · entraste por tu cuenta",
     outcome:
-      'Entraste al portal del SRI escribiendo tú la dirección. No había ninguna factura pendiente ni multa: el correo era falso.',
+      "Entraste al portal del SRI escribiendo tú la dirección. No había ninguna factura pendiente ni multa: el correo era falso.",
   },
 
   // Los cinco finales de la barra de acciones del cliente. Ninguno entrega la
   // clave, pero no todos protegen igual: por eso hay 'partial' entre medio, y
   // no solo "caíste / no caíste".
   e_spam: {
-    kind: 'good',
-    verdict: 'No caíste · lo reportaste',
+    kind: "good",
+    verdict: "No caíste · lo reportaste",
     outcome:
-      'Marcarlo como spam es la mejor reacción posible: no caíste y además tu proveedor de correo aprende a filtrar ese remitente, así que el mismo mensaje le llega a menos gente.',
+      "Marcarlo como spam es la mejor reacción posible: no caíste y además tu proveedor de correo aprende a filtrar ese remitente, así que el mismo mensaje le llega a menos gente.",
   },
   e_eliminar: {
-    kind: 'good',
-    verdict: 'No caíste · lo eliminaste',
+    kind: "good",
+    verdict: "No caíste · lo eliminaste",
     outcome:
-      'Lo borraste sin tocar el enlace ni el adjunto, que es suficiente para no caer. Marcarlo como spam habría hecho algo más: avisar al filtro para que no le llegue a otros.',
+      "Lo borraste sin tocar el enlace ni el adjunto, que es suficiente para no caer. Marcarlo como spam habría hecho algo más: avisar al filtro para que no le llegue a otros.",
   },
   e_archivar: {
-    kind: 'partial',
-    verdict: 'No caíste, pero lo dejaste ahí',
+    kind: "partial",
+    verdict: "No caíste, pero lo dejaste ahí",
     outcome:
-      'Archivarlo te sacó el correo de la vista sin resolver nada. Sigue en tu buzón, nadie más se enteró, y si mañana le llega a un compañero va a llegar igual de intacto.',
+      "Archivarlo te sacó el correo de la vista sin resolver nada. Sigue en tu buzón, nadie más se enteró, y si mañana le llega a un compañero va a llegar igual de intacto.",
   },
   e_responder: {
-    kind: 'partial',
-    verdict: 'No entregaste la clave, pero contestaste',
+    kind: "partial",
+    verdict: "No entregaste la clave, pero contestaste",
     outcome:
-      'No diste tus datos, pero confirmaste que tu dirección existe y que alguien la lee. Es justo lo que un atacante busca para insistir con algo mejor preparado, y ahora tiene una conversación abierta contigo.',
+      "No diste tus datos, pero confirmaste que tu dirección existe y que alguien la lee. Es justo lo que un atacante busca para insistir con algo mejor preparado, y ahora tiene una conversación abierta contigo.",
   },
   e_reenviar: {
-    kind: 'partial',
-    verdict: 'No caíste tú, pero lo pasaste',
+    kind: "partial",
+    verdict: "No caíste tú, pero lo pasaste",
     outcome:
-      'Se lo reenviaste a otra persona para que opine. Tú no caíste, pero pusiste el enlace y el adjunto en la bandeja de alguien que quizá no los mire con la misma desconfianza. Para consultar una duda es mejor una captura, o preguntar sin reenviar.',
+      "Se lo reenviaste a otra persona para que opine. Tú no caíste, pero pusiste el enlace y el adjunto en la bandeja de alguien que quizá no los mire con la misma desconfianza. Para consultar una duda es mejor una captura, o preguntar sin reenviar.",
   },
-}
+};
 
 /// Todas llevan a un final: en la barra de un cliente de correo no puede haber
 /// botones de adorno. Ver MailToolbar.
 const ACCIONES: AccionCorreo[] = [
   {
     Icono: Reply,
-    etiqueta: 'Responder',
-    titulo: 'Responder',
-    goto: 'e_responder',
-    label: 'Respondió el correo',
+    etiqueta: "Responder",
+    titulo: "Responder",
+    goto: "e_responder",
+    label: "Respondió el correo",
   },
   {
     Icono: Forward,
-    etiqueta: 'Reenviar',
-    titulo: 'Reenviar',
-    goto: 'e_reenviar',
-    label: 'Reenvió el correo a otra persona',
+    etiqueta: "Reenviar",
+    titulo: "Reenviar",
+    goto: "e_reenviar",
+    label: "Reenvió el correo a otra persona",
   },
   {
     Icono: Archive,
-    etiqueta: 'Archivar',
-    titulo: 'Archivar',
-    goto: 'e_archivar',
-    label: 'Archivó el correo',
+    etiqueta: "Archivar",
+    titulo: "Archivar",
+    goto: "e_archivar",
+    label: "Archivó el correo",
   },
   {
     Icono: Trash2,
-    etiqueta: 'Eliminar',
-    titulo: 'Eliminar',
-    goto: 'e_eliminar',
-    label: 'Eliminó el correo',
+    etiqueta: "Eliminar",
+    titulo: "Eliminar",
+    goto: "e_eliminar",
+    label: "Eliminó el correo",
   },
   {
     Icono: ShieldAlert,
-    etiqueta: 'Spam',
-    titulo: 'Marcar como spam',
-    goto: 'e_spam',
-    label: 'Marcó el correo como spam',
+    etiqueta: "Spam",
+    titulo: "Marcar como spam",
+    goto: "e_spam",
+    label: "Marcó el correo como spam",
   },
-]
+];
+
+/// A dónde va el correo según qué botón de la barra terminó el escenario, y
+/// si eso lo saca de Recibidos. Archivar no tiene carpeta propia en esta
+/// bandeja: solo desaparece de la vista, como dice su final ("sigue en tu
+/// buzón" pero ya no en Recibidos).
+const DESTINO_ACCION: Record<
+  string,
+  {
+    carpeta?: "Enviados" | "Spam" | "Papelera";
+    prefijo?: string;
+    vaciaRecibidos: boolean;
+  }
+> = {
+  e_archivar: { vaciaRecibidos: true },
+  e_eliminar: { carpeta: "Papelera", vaciaRecibidos: true },
+  e_spam: { carpeta: "Spam", vaciaRecibidos: true },
+  e_responder: { carpeta: "Enviados", prefijo: "Re:", vaciaRecibidos: false },
+  e_reenviar: { carpeta: "Enviados", prefijo: "Fwd:", vaciaRecibidos: false },
+};
+
+/// Misma fila de remitente que la bandeja principal (avatar, nombre,
+/// dirección): la lista de una carpeta con un mensaje suelto no debería verse
+/// más pobre que el mensaje abierto.
+function ResumenMensaje({ prefijo }: { prefijo?: string }) {
+  return (
+    <div className={styles.senderRow}>
+      <div className={styles.avatar} aria-hidden>
+        {REMITENTE_NOMBRE.slice(0, 1).toUpperCase()}
+      </div>
+      <div className={styles.senderId}>
+        <p className={styles.senderName}>{REMITENTE_NOMBRE}</p>
+        <p className={styles.senderAddr}>{DIRECCION}</p>
+        <p className={styles.mailFolderAsunto}>{prefijo ? `${prefijo} ${ASUNTO}` : ASUNTO}</p>
+      </div>
+    </div>
+  );
+}
 
 /// Estas carpetas son navegación interna del cliente, no decisiones del
-/// escenario. Por eso no llevan data-hotspot-goto ni cierran la corrida: mirar
-/// otra bandeja no responde todavía a la amenaza.
-const CARPETAS: CarpetaCorreo[] = [
-  {
-    nombre: 'Enviados',
-    vacia: 'No hay correos enviados.',
-  },
-  {
-    nombre: 'Papelera',
-    vacia: 'La papelera está vacía.',
-  },
-]
+/// escenario: mirar otra bandeja no responde todavía a la amenaza. Lo que sí
+/// cambia con la acción tomada es qué hay dentro de cada una, para que la
+/// barra de acciones y la barra lateral cuenten la misma historia.
+function carpetasCorreo(current: string, isEnding: boolean): CarpetaCorreo[] {
+  const destino = isEnding ? DESTINO_ACCION[current] : undefined;
+
+  const carpetas: CarpetaCorreo[] = [
+    {
+      nombre: "Enviados",
+      vacia: "No hay correos enviados.",
+      contenido:
+        destino?.carpeta === "Enviados" ? (
+          <ResumenMensaje prefijo={destino.prefijo} />
+        ) : undefined,
+    },
+    {
+      nombre: "Spam",
+      vacia: "No hay correos marcados como spam.",
+      contenido: destino?.carpeta === "Spam" ? <ResumenMensaje /> : undefined,
+    },
+    {
+      nombre: "Papelera",
+      vacia: "La papelera está vacía.",
+      contenido:
+        destino?.carpeta === "Papelera" ? <ResumenMensaje /> : undefined,
+    },
+  ];
+
+  if (destino?.vaciaRecibidos) {
+    carpetas.push({
+      nombre: "Recibidos",
+      vacia: "No hay correos en la bandeja de entrada.",
+    });
+  }
+
+  return carpetas;
+}
 
 /// Cada señal apunta, cuando puede, al elemento real marcado con
 /// data-signal en una de las dos pantallas. Si esa pantalla no es la que
 /// llevó a este final, el recorrido igual muestra el texto, sin resaltar.
 const SENALES: Senal[] = [
   {
-    id: 'dominio',
-    pantalla: 'n1',
-    targetId: 'remitente',
+    id: "dominio",
+    pantalla: "n1",
+    targetId: "remitente",
     texto:
-      'El remitente usa un <b>dominio parecido</b> pero ajeno: <b>sri-facturacion-ec.com</b>, no sri.gob.ec.',
+      "El remitente usa un <b>dominio parecido</b> pero ajeno: <b>sri-facturacion-ec.com</b>, no sri.gob.ec.",
   },
   {
-    id: 'externo',
-    pantalla: 'n1',
-    targetId: 'externo',
+    id: "externo",
+    pantalla: "n1",
+    targetId: "externo",
     texto:
-      'El propio cliente de correo lo marcó como <b>externo</b>: no vino de dentro de la organización, aunque diga ser de una institución.',
+      "El propio cliente de correo lo marcó como <b>externo</b>: no vino de dentro de la organización, aunque diga ser de una institución.",
   },
   {
-    id: 'plazo',
-    pantalla: 'n1',
-    targetId: 'plazo',
-    texto: 'Impone un <b>plazo de 24 horas</b> y amenaza con una multa.',
+    id: "plazo",
+    pantalla: "n1",
+    targetId: "plazo",
+    texto: "Impone un <b>plazo de 24 horas</b> y amenaza con una multa.",
   },
   {
-    id: 'conexion',
-    pantalla: 'n2',
-    targetId: 'url-insegura',
-    texto: 'El enlace lleva a una página <b>sin conexión segura</b> (http).',
+    id: "conexion",
+    pantalla: "n2",
+    targetId: "url-insegura",
+    texto: "El enlace lleva a una página <b>sin conexión segura</b> (http).",
   },
   {
-    id: 'adjunto',
-    pantalla: 'n1',
-    targetId: 'adjunto',
+    id: "adjunto",
+    pantalla: "n1",
+    targetId: "adjunto",
     texto:
-      'El adjunto no es un documento sino un <b>programa</b>: un <b>.vbs</b> se ejecuta al abrirlo. La doble extensión <b>.pdf.vbs</b> lo disfraza, porque Windows oculta la última.',
+      "El adjunto no es un documento sino un <b>programa</b>: un <b>.vbs</b> se ejecuta al abrirlo. La doble extensión <b>.pdf.vbs</b> lo disfraza, porque Windows oculta la última.",
   },
   {
-    id: 'clave',
-    pantalla: 'n2',
-    targetId: 'campo-clave',
+    id: "clave",
+    pantalla: "n2",
+    targetId: "campo-clave",
     texto: 'Pide tu <b>clave</b> del portal para "validar" algo.',
   },
-]
+];
 
 const RULE =
-  'Regla de oro: ninguna entidad pública te pide tu clave por correo. Si un mensaje dice que tienes algo pendiente, <b>entra al portal oficial escribiendo tú la dirección</b>, nunca por el enlace del correo.'
+  "Regla de oro: ninguna entidad pública te pide tu clave por correo. Si un mensaje dice que tienes algo pendiente, <b>entra al portal oficial escribiendo tú la dirección</b>, nunca por el enlace del correo.";
 
-const RESUMEN = 'Un correo dice que tienes una factura electrónica pendiente de validar.'
+const RESUMEN =
+  "Un correo dice que tienes una factura electrónica pendiente de validar.";
 
 const CONTEXTO = (
   <>
     <p>
-      Abres tu correo y ves un mensaje del <strong>Servicio de Rentas Internas</strong> que llegó
-      hace unos minutos, sobre una factura pendiente.
+      Abres tu correo y ves un mensaje del{" "}
+      <strong>Servicio de Rentas Internas</strong> que llegó hace unos minutos,
+      sobre una factura pendiente.
     </p>
     <p>
-      Emites facturas de vez en cuando, así que un aviso del SRI no te sorprende. Nunca antes te
-      habían escrito por este tema.
+      Emites facturas de vez en cuando, así que un aviso del SRI no te
+      sorprende. Nunca antes te habían escrito por este tema.
     </p>
   </>
-)
+);
 
 /// Solo mecánica, y solo antes de entrar: dentro del escenario el bloque de
 /// decisión ya la explica, y repetirla ahí robaría espacio a la historia.
 const NOTA = (
   <>
     <p>
-      Vas a ver tu computador con el correo abierto. Puedes actuar sobre la pantalla como lo harías
-      de verdad.
+      Vas a ver tu computador con el correo abierto. Puedes actuar sobre la
+      pantalla como lo harías de verdad.
     </p>
     <p className="mt-2">
-      Lo primero que hagas cierra el escenario y te muestra en qué habría terminado.
+      Lo primero que hagas cierra el escenario y te muestra en qué habría
+      terminado.
     </p>
   </>
-)
+);
+
+const ASUNTO = "Factura electrónica pendiente de validación";
+const REMITENTE_NOMBRE = "SRI · Facturación Electrónica";
+const DIRECCION = "notificaciones@sri-facturacion-ec.com";
 
 const ATAJO_PORTAL = {
-  texto: '🏦 Portal SRI',
-  goto: 'e_portal',
-  label: 'Cerró el correo y entró al portal del SRI escribiendo la dirección',
-}
+  texto: "🏦 Portal SRI",
+  goto: "e_portal",
+  label: "Cerró el correo y entró al portal del SRI escribiendo la dirección",
+};
 
 /// Cinco minutos antes de abrir el escenario. La hora del correo se calcula a
 /// partir del ahora porque la barra de tareas muestra la hora real y avanza:
 /// con una hora fija el mensaje quedaría fechado en un momento que el reloj de
 /// la propia ventana desmiente. "Hace unos minutos" es además lo que dice el
 /// contexto, y lo que hace verosímil que todavía no lo hubieras visto.
-const MINUTOS_DE_ANTIGUEDAD = 5
+const MINUTOS_DE_ANTIGUEDAD = 5;
 
 function horaDeLlegada(): string {
-  const llegada = new Date(Date.now() - MINUTOS_DE_ANTIGUEDAD * 60_000)
-  return `hoy ${formatoHora(llegada)}`
+  const llegada = new Date(Date.now() - MINUTOS_DE_ANTIGUEDAD * 60_000);
+  return `hoy ${formatoHora(llegada)}`;
 }
 
 interface PantallaProps {
-  onHotspot: (event: React.MouseEvent) => void
+  onHotspot: (event: React.MouseEvent) => void;
 }
 
-function PantallaCorreo({ onHotspot, recibido }: PantallaProps & { recibido: string }) {
+function PantallaCorreo({
+  onHotspot,
+  recibido,
+  carpetas,
+}: PantallaProps & { recibido: string; carpetas: CarpetaCorreo[] }) {
   return (
     <VentanaCorreo
       onClick={onHotspot}
       atajo={ATAJO_PORTAL}
       reloj="vivo"
       acciones={ACCIONES}
-      carpetas={CARPETAS}
-      asunto="Factura electrónica pendiente de validación"
+      carpetas={carpetas}
+      asunto={ASUNTO}
       remitente={{
-        nombre: 'SRI · Facturación Electrónica',
-        direccion: 'notificaciones@sri-facturacion-ec.com',
-        etiqueta: 'Externo',
-        senalDireccion: 'remitente',
-        senalEtiqueta: 'externo',
+        nombre: REMITENTE_NOMBRE,
+        direccion: DIRECCION,
+        etiqueta: "Externo",
+        senalDireccion: "remitente",
+        senalEtiqueta: "externo",
       }}
       recibido={recibido}
       adjunto={
@@ -287,19 +375,22 @@ function PantallaCorreo({ onHotspot, recibido }: PantallaProps & { recibido: str
       }
       pie={
         <>
-          <p>Servicio de Rentas Internas · Dirección Nacional de Facturación Electrónica</p>
+          <p>
+            Servicio de Rentas Internas · Dirección Nacional de Facturación
+            Electrónica
+          </p>
           <p>Av. Amazonas y Unión Nacional de Periodistas, Quito, Ecuador</p>
           <p>
-            Este correo y sus anexos son de carácter confidencial. Si lo recibió por error,
-            notifíquelo al remitente y elimínelo de su sistema.
+            Este correo y sus anexos son de carácter confidencial. Si lo recibió
+            por error, notifíquelo al remitente y elimínelo de su sistema.
           </p>
         </>
       }
     >
       <p>Estimado contribuyente:</p>
       <p>
-        Nuestro sistema detectó una <b>factura electrónica no validada</b> asociada a su RUC. Si no
-        completa la validación en las próximas{' '}
+        Nuestro sistema detectó una <b>factura electrónica no validada</b>{" "}
+        asociada a su RUC. Si no completa la validación en las próximas{" "}
         <mark className={styles.marca} data-signal="plazo">
           24 horas
         </mark>
@@ -317,7 +408,7 @@ function PantallaCorreo({ onHotspot, recibido }: PantallaProps & { recibido: str
       </p>
       <p className="fine">Este mensaje es automático, por favor no responda.</p>
     </VentanaCorreo>
-  )
+  );
 }
 
 function PantallaPortal({ onHotspot }: PantallaProps) {
@@ -329,8 +420,8 @@ function PantallaPortal({ onHotspot }: PantallaProps) {
       reloj="vivo"
       atajo={{
         ...ATAJO_PORTAL,
-        goto: 'e_dominio',
-        label: 'Salió sin ingresar datos y entró al portal por su cuenta',
+        goto: "e_dominio",
+        label: "Salió sin ingresar datos y entró al portal por su cuenta",
       }}
     >
       {/* Pestaña de navegador: en el celular no hay pestañas visibles. */}
@@ -354,7 +445,9 @@ function PantallaPortal({ onHotspot }: PantallaProps) {
           ←
         </button>
         <span className={styles.warn}>⚠ No seguro</span>
-        <span className={styles.url}>http://sri-facturacion-ec.com/validar-ruc</span>
+        <span className={styles.url}>
+          http://sri-facturacion-ec.com/validar-ruc
+        </span>
       </div>
 
       <div className={styles.page}>
@@ -391,10 +484,12 @@ function PantallaPortal({ onHotspot }: PantallaProps) {
           </BotonHotspot>
         </div>
 
-        <p className={styles.pageFooter}>Portal de validación · sri-facturacion-ec.com</p>
+        <p className={styles.pageFooter}>
+          Portal de validación · sri-facturacion-ec.com
+        </p>
       </div>
     </VentanaEscritorio>
-  )
+  );
 }
 
 /**
@@ -413,38 +508,50 @@ function PantallaPortal({ onHotspot }: PantallaProps) {
  * reconoce sola el anzuelo. Para quien de verdad se atasca está la pista
  * desplegable, que es opt-in.
  */
-function DecisionEnCurso({ fallo, enPortal }: { fallo: boolean; enPortal: boolean }) {
+function DecisionEnCurso({
+  fallo,
+  enPortal,
+}: {
+  fallo: boolean;
+  enPortal: boolean;
+}) {
   return (
     <div className="grid gap-3">
       <p className="text-lg font-semibold text-ink">¿Qué haces?</p>
       <p className="text-lg leading-relaxed text-body">
-        Actúa sobre la ventana como lo harías frente a tu correo de verdad: puedes usar{' '}
-        <strong>cualquier parte de ella</strong>, incluida la barra de abajo. Antes de tocar un
-        enlace, mantén el cursor encima para ver a dónde lleva.
+        Actúa sobre la ventana como lo harías frente a tu correo de verdad:
+        puedes usar <strong>cualquier parte de ella</strong>, incluida la barra
+        de abajo. Antes de tocar un enlace, mantén el cursor encima para ver a
+        dónde lleva.
       </p>
       {/* Va aquí y no dentro de la página: el marco de los escenarios separa lo
           que la app real mostraría de lo que explica el ejercicio, y una página
           de phishing jamás avisaría de qué son sus campos. */}
       {enPortal && (
         <p className="rounded-md border border-hairline-strong bg-canvas-soft px-3 py-2 text-base leading-relaxed text-body">
-          El formulario ya aparece con{' '}
-          <strong className="text-ink">tu RUC y tu clave escritos</strong>. Es así para no pedirte
-          datos verdaderos —ese RUC no es el de nadie—, pero enviarlo cuenta como entregarlos.
+          El formulario ya aparece con{" "}
+          <strong className="text-ink">tu RUC y tu clave escritos</strong>. Es
+          así para no pedirte datos verdaderos —ese RUC no es el de nadie—, pero
+          enviarlo cuenta como entregarlos.
         </p>
       )}
 
       <p className="text-base leading-relaxed text-body">
-        Lo primero que hagas cierra el escenario y te muestra en qué terminaba. No hay confirmación,
-        igual que en la vida real. Puedes volver atrás con la flecha del navegador sin decidir nada.
+        Lo primero que hagas cierra el escenario y te muestra en qué terminaba.
+        No hay confirmación, igual que en la vida real. Puedes volver atrás con
+        la flecha del navegador sin decidir nada.
       </p>
 
       {/* Solo aparece si ya intentó tocar algo que no responde: es exactamente
           la persona que está atascada, y la pista le llega sin habérsela
           ofrecido antes a quien no la necesita. */}
       {fallo && (
-        <p role="status" className="rounded-md bg-surface-strong px-3 py-2 text-base text-body">
-          Ahí no hay nada que hacer. Solo algunos elementos responden: recórrelos con el cursor (o
-          con la tecla Tab) y se marcarán al pasar.
+        <p
+          role="status"
+          className="rounded-md bg-surface-strong px-3 py-2 text-base text-body"
+        >
+          Ahí no hay nada que hacer. Solo algunos elementos responden:
+          recórrelos con el cursor (o con la tecla Tab) y se marcarán al pasar.
         </p>
       )}
 
@@ -453,62 +560,69 @@ function DecisionEnCurso({ fallo, enPortal }: { fallo: boolean; enPortal: boolea
           No sé por dónde empezar
         </summary>
         <p className="mt-2 text-base leading-relaxed text-body">
-          Tienes tres caminos posibles: hacer lo que el correo te pide, abrir lo que trae adjunto, o
-          dejar el correo de lado y entrar al portal por tu cuenta desde la barra de tareas. Cuál de
-          los tres es el acertado es justamente lo que decides tú.
+          Tienes tres caminos posibles: hacer lo que el correo te pide, abrir lo
+          que trae adjunto, o dejar el correo de lado y entrar al portal por tu
+          cuenta desde la barra de tareas. Cuál de los tres es el acertado es
+          justamente lo que decides tú.
         </p>
       </details>
     </div>
-  )
+  );
 }
 
 function FacturaSri() {
-  const engine = useStoryEngine(STORY, 'n1', 'phishing/factura-sri')
+  const engine = useStoryEngine(STORY, "n1", "phishing/factura-sri");
 
   // El nodo final (p. ej. "e_adjunto") no es una pantalla: es la consecuencia
   // de una. Se recuerda cuál era la pantalla activa para que el recorrido de
   // señales tenga sobre qué resaltar.
-  const [pantallaActual, setPantallaActual] = useState<'n1' | 'n2'>('n1')
+  const [pantallaActual, setPantallaActual] = useState<"n1" | "n2">("n1");
   /// Se enciende con el primer clic que no cae en ningún punto interactivo y
   /// ya no se apaga: quien exploró a ciegas una vez agradece tener la pista a
   /// la vista el resto del escenario.
-  const [tocoEnVacio, setTocoEnVacio] = useState(false)
+  const [tocoEnVacio, setTocoEnVacio] = useState(false);
   /// Se calcula una vez al montar y no en cada render: si no, el correo se
   /// "rejuvenecería" solo cada quince segundos, al ritmo del reloj de la barra.
-  const [recibido, setRecibido] = useState(horaDeLlegada)
+  const [recibido, setRecibido] = useState(horaDeLlegada);
 
   function elegir(goto: string, label?: string) {
     if (engine.isEnding) {
-      return
+      return;
     }
-    engine.choose(goto, label)
-    if (goto === 'n1' || goto === 'n2') {
-      setPantallaActual(goto)
+    engine.choose(goto, label);
+    if (goto === "n1" || goto === "n2") {
+      setPantallaActual(goto);
     }
   }
 
   function reiniciar() {
-    engine.restart()
-    setPantallaActual('n1')
-    setTocoEnVacio(false)
+    engine.restart();
+    setPantallaActual("n1");
+    setTocoEnVacio(false);
     // Al repetir, el correo vuelve a acabar de llegar. Conservar la hora del
     // intento anterior dejaría un mensaje de hace media hora en una bandeja
     // cuyo reloj ya avanzó.
-    setRecibido(horaDeLlegada())
+    setRecibido(horaDeLlegada());
   }
 
   const onHotspot = (event: React.MouseEvent) => {
     if (!manejarClicHotspot(event, elegir) && !engine.isEnding) {
-      setTocoEnVacio(true)
+      setTocoEnVacio(true);
     }
-  }
+  };
+
+  const carpetas = carpetasCorreo(engine.current, engine.isEnding);
 
   const pantalla =
-    pantallaActual === 'n1' ? (
-      <PantallaCorreo onHotspot={onHotspot} recibido={recibido} />
+    pantallaActual === "n1" ? (
+      <PantallaCorreo
+        onHotspot={onHotspot}
+        recibido={recibido}
+        carpetas={carpetas}
+      />
     ) : (
       <PantallaPortal onHotspot={onHotspot} />
-    )
+    );
 
   const decision = engine.isEnding ? (
     <PanelVeredicto
@@ -519,11 +633,11 @@ function FacturaSri() {
       restartLabel="↻ Repetir el escenario"
       onRestart={reiniciar}
       contenedorId="pantalla-escenario"
-      onPantalla={(id) => id && setPantallaActual(id as 'n1' | 'n2')}
+      onPantalla={(id) => id && setPantallaActual(id as "n1" | "n2")}
     />
   ) : (
-    <DecisionEnCurso fallo={tocoEnVacio} enPortal={pantallaActual === 'n2'} />
-  )
+    <DecisionEnCurso fallo={tocoEnVacio} enPortal={pantallaActual === "n2"} />
+  );
 
   return (
     <EscenarioLayout
@@ -536,7 +650,7 @@ function FacturaSri() {
       onEmpezar={engine.restart}
       dispositivo="escritorio"
     />
-  )
+  );
 }
 
-export default FacturaSri
+export default FacturaSri;

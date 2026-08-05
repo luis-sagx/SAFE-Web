@@ -77,4 +77,20 @@ describe('FacturaSri', () => {
       screen.getByRole('heading', { name: 'Factura electrónica pendiente de validación' }),
     ).toBeDefined()
   })
+
+  it('al eliminar el correo, la barra lateral lo refleja: sale de Recibidos y aparece en Papelera', () => {
+    renderEscenario()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Eliminar' }))
+
+    // Recibidos se vacía sin más clics: la propia bandeja activa ya lo muestra.
+    expect(screen.getByText('No hay correos en la bandeja de entrada.')).toBeDefined()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Abrir Papelera' }))
+
+    expect(screen.getByRole('heading', { name: 'Papelera' })).toBeDefined()
+    expect(screen.queryByText('La papelera está vacía.')).toBeNull()
+    expect(screen.getByText('Factura electrónica pendiente de validación')).toBeDefined()
+    expect(screen.getByText('notificaciones@sri-facturacion-ec.com')).toBeDefined()
+  })
 })
