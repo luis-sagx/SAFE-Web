@@ -105,11 +105,13 @@ function DeviceScreen({
           <span className={styles.tab}>{view.title}</span>
         </div>
 
-        <div className={styles.urlbar} data-signal={view.senalUrl}>
+        <div className={styles.urlbar}>
           <span className={view.secure ? styles.lock : styles.warn}>
             {view.secure ? '🔒' : '⚠ No seguro'}
           </span>
-          <span className={styles.url}>{view.url}</span>
+          <span className={styles.url} data-signal={view.senalUrl}>
+            {view.url}
+          </span>
         </div>
 
         <div className={styles.page}>

@@ -36,7 +36,7 @@ interface EscenarioLayoutProps {
  */
 /** Alto y angosto, como se sostiene un celular. */
 const MARCO_TELEFONO =
-  'sm:max-h-[640px] sm:w-[460px] sm:rounded-[28px] sm:border sm:border-hairline-strong sm:shadow-[0_30px_70px_rgba(0,0,0,0.22)] lg:h-[640px] lg:max-h-full lg:flex-none lg:self-center'
+  'sm:max-h-[40rem] sm:w-[28.75rem] sm:rounded-[1.75rem] sm:border sm:border-hairline-strong sm:shadow-[0_30px_70px_rgba(0,0,0,0.22)] lg:h-[40rem] lg:max-h-full lg:flex-none lg:self-center'
 
 /** Ancho y bajo, como una ventana de escritorio. Los anchos con vw + min/max
  *  se recalculan solos según el viewport en vez de un solo punto de quiebre
@@ -47,15 +47,24 @@ const MARCO_TELEFONO =
  *  viewport. Con `min(76vh, 720px)` la ventana dejaba sin usar unos 80px que
  *  tenía disponibles en un portátil de 768px de alto, y ese espacio es
  *  exactamente el que le faltaba al correo para no tener que desplazarse. El
- *  tope de 860px evita el efecto contrario en un monitor grande, donde una
- *  ventana altísima tampoco se parece a nada real.
+ *  tope de 60rem evita el efecto contrario en un monitor grande, donde una
+ *  ventana altísima tampoco se parece a nada real. Subió de 53.75 a 60rem al
+ *  pasar el escenario a navegador: sus barras —pestañas, dirección y
+ *  marcadores— gastan unos 140px que la ventana anterior no gastaba, y salían
+ *  enteros del espacio del mensaje.
+ *
+ *  Las medidas van en rem y no en px: en rem se recalculan solas si alguien
+ *  sube el tamaño de letra del navegador, que es lo primero que hace mucha
+ *  gente mayor. En px la ventana se quedaría del mismo tamaño y el texto, ya
+ *  más grande, dejaría de caber. Solo siguen en píxeles los bordes, los
+ *  contornos y las sombras, que escalados se ven borrosos sin ganar nada.
  *
  *  Los topes subieron junto con la tipografía: el curso lo van a hacer adultos
  *  mayores, y una letra legible en una ventana que no crece con ella solo
  *  consigue que el correo no quepa.
  *
- *  El ancho se pide con `calc(100vw - 540px)` y no con una fracción del
- *  viewport: 540px es lo que ocupan la columna de decisión, el hueco entre
+ *  El ancho se pide con `calc(100vw - 33.75rem)` y no con una fracción del
+ *  viewport: esos 33.75rem son lo que ocupan la columna de decisión, el hueco entre
  *  ambas y los márgenes. Así la ventana se queda con TODO lo que sobra en vez
  *  de con un porcentaje fijo, que en pantallas anchas dejaba un vacío enorme a
  *  los lados y en las estrechas se pasaba de largo.
@@ -66,7 +75,7 @@ const MARCO_TELEFONO =
  *  reparte lo que sobre cuando el tope se queda corto.
  */
 const MARCO_ESCRITORIO =
-  'sm:max-h-[min(82vh,860px)] sm:w-[96vw] sm:max-w-[1100px] sm:rounded-xl sm:border sm:border-hairline-strong sm:shadow-[0_30px_70px_rgba(0,0,0,0.22)] lg:h-full lg:max-h-[860px] lg:w-[calc(100vw-540px)] lg:min-w-[560px] lg:max-w-[1200px] lg:flex-none lg:self-center'
+  'sm:max-h-[min(88vh,60rem)] sm:w-[96vw] sm:max-w-[68.75rem] sm:rounded-xl sm:border sm:border-hairline-strong sm:shadow-[0_30px_70px_rgba(0,0,0,0.22)] lg:h-full lg:max-h-[60rem] lg:w-[calc(100vw-33.75rem)] lg:min-w-[35rem] lg:max-w-[75rem] lg:flex-none lg:self-center'
 
 function EscenarioLayout({
   escenarioId,
@@ -210,7 +219,7 @@ function EscenarioLayout({
 
         {/* Apilado, el bloque nunca pasa de media pantalla: si no cabe, se
             desplaza él, no la página. Al costado puede usar todo el alto. */}
-        <div className="max-h-[45%] w-full shrink-0 overflow-y-auto border-t border-hairline bg-canvas px-4 py-4 sm:w-[460px] sm:border-0 sm:bg-transparent sm:px-0 sm:py-0 lg:w-[380px] lg:max-h-full lg:self-center xl:w-[460px]">
+        <div className="max-h-[45%] w-full shrink-0 overflow-y-auto border-t border-hairline bg-canvas px-4 py-4 sm:w-[28.75rem] sm:border-0 sm:bg-transparent sm:px-0 sm:py-0 lg:w-[23.75rem] lg:max-h-full lg:self-center xl:w-[28.75rem]">
           {/* La historia queda a un clic, no ocupando espacio permanente. Vive
               en un diálogo y no en un bloque fijo porque se consulta poco: casi
               siempre se recuerda, y cuando no, se abre.
@@ -241,7 +250,7 @@ function EscenarioLayout({
         aria-labelledby="titulo-contexto"
         className="m-auto w-[min(92vw,32rem)] rounded-lg border border-hairline-strong bg-surface p-6 text-ink shadow-card backdrop:bg-ink/40"
       >
-        <h2 id="titulo-contexto" className="text-[11px] font-semibold uppercase tracking-[0.88px] text-muted">
+        <h2 id="titulo-contexto" className="text-[0.6875rem] font-semibold uppercase tracking-[0.88px] text-muted">
           Tu situación
         </h2>
         <p className="mt-2 text-lg leading-relaxed text-ink">

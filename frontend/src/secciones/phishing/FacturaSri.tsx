@@ -433,13 +433,15 @@ function Navegador({
 
       {/* La dirección de la pestaña activa. Es la señal principal del escenario:
           con pestañas, comparar la falsa con la real es cambiar de una a otra. */}
-      <div className={styles.urlbar} data-signal={actual?.senalUrl}>
+      <div className={styles.urlbar}>
         {actual?.segura ? (
           <span className={styles.lock}>🔒</span>
         ) : (
           <span className={styles.warn}>⚠ No seguro</span>
         )}
-        <span className={styles.url}>{actual?.url}</span>
+        <span className={styles.url} data-signal={actual?.senalUrl}>
+          {actual?.url}
+        </span>
       </div>
 
       <div className={styles.marcadores}>
