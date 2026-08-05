@@ -45,7 +45,7 @@ export interface RunSummary {
 export interface ProgresoEscenario {
   id: string
   /** Solo aparece si el participante ya lo intentó al menos una vez. */
-  ultimoOutcome: RunOutcome
+  ultimoOutcome?: RunOutcome
 }
 
 export interface Progreso {
