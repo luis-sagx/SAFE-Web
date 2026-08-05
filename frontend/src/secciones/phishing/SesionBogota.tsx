@@ -20,7 +20,7 @@ const CORREO: ScreenView = {
       no reconocemos.
     </p>
     <p>Si fue usted, puede ignorar este mensaje. Si no, actúe de inmediato:</p>
-    <p><a class="cta" href="#">No fui yo — proteger mi cuenta</a></p>
+    <p><a class="cta" href="#" data-hotspot-goto="n2" data-hotspot-label="Pulsó "No fui yo — proteger mi cuenta" en el correo">No fui yo — proteger mi cuenta</a></p>
     <p class="fine">
       Banco del Litoral · Departamento de Seguridad
     </p>

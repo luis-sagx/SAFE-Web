@@ -20,7 +20,7 @@ const CORREO: ScreenView = {
       perderás el acceso a tu buzón y tendrás que abrir un ticket con Sistemas para
       recuperarlo.
     </p>
-    <p><a class="cta" href="#">Mantener mi contraseña actual</a></p>
+    <p><a class="cta" href="#" data-hotspot-goto="n2" data-hotspot-label="Pulsó "Renovar mi contraseña ahora" en el correo">Renovar mi contraseña ahora</a></p>
   `,
   footer: `
     <p>Departamento de Tecnología · Corporación Andes<br />
@@ -35,7 +35,7 @@ const PAGINA: ScreenView = {
   senalUrl: 'url',
   brand: 'Corporación Andes',
   title: 'Inicia sesión para continuar',
-  subtitle: 'Confirma tu contraseña actual para mantenerla vigente 90 días más.',
+  subtitle: 'Confirma tu contraseña actual para renovarla por 90 días más.',
   fields: [
     {
       label: 'Correo institucional',
@@ -57,7 +57,7 @@ const STORY: Story<ScreenNode> = {
     kind: 'scene',
     view: CORREO,
     choices: [
-      { label: 'Hacer clic en el botón para no perder el acceso.', goto: 'n2' },
+      { label: 'Renovar la contraseña desde el enlace del correo.', goto: 'n2' },
       {
         label: 'Escribir a Soporte TI usando el contacto del directorio interno para confirmar.',
         goto: 'e_confirma',

@@ -41,7 +41,7 @@ const CORREO: ScreenView = {
       <mark class="marca" data-signal="plazo">48 horas</mark>; pasado ese plazo el premio se
       reasigna a otro participante.
     </p>
-    <p><a class="cta" href="#">Reclamar mi premio ahora</a></p>
+    <p><a class="cta" href="#" data-hotspot-goto="n2" data-hotspot-label="Pulsó "Reclamar mi premio ahora" en el correo">Reclamar mi premio ahora</a></p>
   `,
   footer: `
     <p>Lotería del Pacífico · Departamento de Premios y Reclamos</p>
