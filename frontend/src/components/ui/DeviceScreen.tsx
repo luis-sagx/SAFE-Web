@@ -1,3 +1,4 @@
+import { Paperclip } from 'lucide-react'
 import { Taskbar, Titlebar, VentanaCorreo, type AccionCorreo } from './DesktopChrome'
 import styles from './DeviceScreen.module.css'
 
@@ -79,7 +80,7 @@ function DeviceScreen({
           view.attachment && (
             <span className={styles.attachment} data-signal={view.senalAdjunto}>
               <span className={styles.attachmentTipo} aria-hidden>
-                📎
+                <Paperclip className={styles.attachmentIcono} strokeWidth={1.75} />
               </span>
               <span className={styles.attachmentNombre}>{view.attachment}</span>
             </span>

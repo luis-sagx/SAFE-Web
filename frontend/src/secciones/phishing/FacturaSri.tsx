@@ -1,4 +1,4 @@
-import { Archive, Forward, Reply, ShieldAlert, Trash2 } from 'lucide-react'
+import { Archive, File, Forward, Reply, ShieldAlert, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import EscenarioLayout from '../../components/EscenarioLayout'
 import {
@@ -253,8 +253,12 @@ function PantallaCorreo({ onHotspot, recibido }: PantallaProps & { recibido: str
           signalId="adjunto"
           className={styles.attachment}
         >
+          {/* Icono genérico y no uno de código o de advertencia: los de
+              advertencia delatarían la trampa, y este escenario mide si la
+              persona lee la extensión. Un cliente real tampoco distingue: a un
+              tipo que no sabe previsualizar le pone el icono de siempre. */}
           <span className={styles.attachmentTipo} aria-hidden>
-            VBS
+            <File className={styles.attachmentIcono} strokeWidth={1.75} />
           </span>
           <span className={styles.attachmentNombre}>
             Factura_004521.pdf.vbs

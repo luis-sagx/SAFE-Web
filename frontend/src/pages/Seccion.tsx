@@ -101,7 +101,7 @@ function Seccion() {
                 <span aria-hidden className="mx-2 text-muted-soft">
                   ·
                 </span>
-                <span className="text-body">meta {progreso.requeridos}</span>
+                <span className="text-body"></span>
               </p>
             </div>
 
