@@ -1,4 +1,5 @@
 import StoryEscenario, { type ScreenNode } from '../../components/StoryEscenario'
+import { ACCIONES_BARRA, finalesDeBarra } from './barraDeCorreo'
 import type { Story } from '../../hooks/useStoryEngine'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
 
@@ -36,6 +37,8 @@ const PAGO: ScreenView = {
 }
 
 const STORY: Story<ScreenNode> = {
+  // Responder, reenviar, archivar, eliminar y marcar como spam.
+  ...finalesDeBarra('fraude', CORREO),
   n1: {
     kind: 'scene',
     view: CORREO,
@@ -98,6 +101,7 @@ function CobroDirigido() {
       resumen={RESUMEN}
       contexto={CONTEXTO}
       story={STORY}
+      accionesCorreo={ACCIONES_BARRA}
       signalsTitle="Las señales de este correo"
       signals={SIGNALS}
       rule={RULE}

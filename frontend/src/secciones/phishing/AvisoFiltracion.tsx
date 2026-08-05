@@ -1,4 +1,5 @@
 import StoryEscenario, { type ScreenNode } from '../../components/StoryEscenario'
+import { ACCIONES_BARRA, finalesDeBarra } from './barraDeCorreo'
 import type { Story } from '../../hooks/useStoryEngine'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
 
@@ -40,6 +41,8 @@ const SITIO_OFICIAL: ScreenView = {
 }
 
 const STORY: Story<ScreenNode> = {
+  // Responder, reenviar, archivar, eliminar y marcar como spam.
+  ...finalesDeBarra('legitimo', CORREO),
   n1: {
     kind: 'scene',
     view: CORREO,
@@ -109,6 +112,7 @@ function AvisoFiltracion() {
       resumen={RESUMEN}
       contexto={CONTEXTO}
       story={STORY}
+      accionesCorreo={ACCIONES_BARRA}
       signalsTitle="Por qué este aviso sí era real"
       signals={SIGNALS}
       rule={RULE}

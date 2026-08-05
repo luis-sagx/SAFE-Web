@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react'
 import EscenarioLayout from './EscenarioLayout'
 import DeviceScreen, { type ScreenView } from './ui/DeviceScreen'
+import { manejarClicHotspot } from './ui/interactivo'
+import type { AccionCorreo } from './ui/DesktopChrome'
 import StoryChoices from './ui/StoryChoices'
 import StoryResultPanel from './ui/StoryResultPanel'
 import { useStoryEngine, type Story, type StoryNode } from '../hooks/useStoryEngine'
@@ -24,6 +26,9 @@ interface StoryEscenarioProps {
   rule: string
   restartLabel: string
   pregunta?: string
+  /** Acciones del cliente de correo. El escenario que las pasa tiene que
+   *  declarar también sus finales en el grafo (ver finalesDeBarra). */
+  accionesCorreo?: AccionCorreo[]
 }
 
 /**
@@ -42,8 +47,17 @@ function StoryEscenario({
   rule,
   restartLabel,
   pregunta = '¿Qué haces?',
+  accionesCorreo,
 }: StoryEscenarioProps) {
   const engine = useStoryEngine(story, 'n1', escenarioId)
+
+  // Un clic en la barra del cliente vale lo mismo que elegir de la lista: los
+  // botones llevan su destino en `data-hotspot-goto` y este manejador único lo
+  // traduce en una decisión del grafo.
+  const onHotspot = (event: React.MouseEvent) => {
+    if (engine.isEnding) return
+    manejarClicHotspot(event, engine.choose)
+  }
 
   const decision = engine.isEnding ? (
     <StoryResultPanel
@@ -70,7 +84,9 @@ function StoryEscenario({
       resumen={resumen}
       contexto={contexto}
       nota={nota}
-      pantalla={<DeviceScreen view={engine.node.view} />}
+      pantalla={
+        <DeviceScreen view={engine.node.view} acciones={accionesCorreo} onHotspot={onHotspot} />
+      }
       decision={decision}
       onEmpezar={engine.restart}
       // El correo y la web se abren más en computador que en celular; el SMS

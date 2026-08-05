@@ -1,4 +1,4 @@
-import { Taskbar, Titlebar, VentanaCorreo } from './DesktopChrome'
+import { Taskbar, Titlebar, VentanaCorreo, type AccionCorreo } from './DesktopChrome'
 import styles from './DeviceScreen.module.css'
 
 /**
@@ -41,10 +41,22 @@ export type ScreenView =
       msgs: { text: string; time: string; mine?: boolean }[]
     }
 
-function DeviceScreen({ view }: { view: ScreenView }) {
+function DeviceScreen({
+  view,
+  acciones,
+  onHotspot,
+}: {
+  view: ScreenView
+  /** Barra de acciones del cliente. Solo se pinta si el escenario declara sus
+   *  finales; sin ellos los botones no tendrían a dónde saltar. */
+  acciones?: AccionCorreo[]
+  onHotspot?: (event: React.MouseEvent) => void
+}) {
   if (view.kind === 'mail') {
     return (
       <VentanaCorreo
+        acciones={acciones}
+        onClick={onHotspot}
         asunto={view.subject}
         remitente={{ nombre: view.from, direccion: view.address, etiqueta: view.label }}
         recibido={view.date}
