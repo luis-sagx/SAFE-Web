@@ -3,7 +3,6 @@ import {
   Building2,
   File,
   Forward,
-  Globe,
   Landmark,
   Newspaper,
   Reply,
@@ -11,15 +10,15 @@ import {
   ShieldCheck,
   Trash2,
 } from 'lucide-react'
-import type { ReactNode } from 'react'
 import { useState } from 'react'
 import EscenarioLayout from '../../components/EscenarioLayout'
 import {
   CuerpoCorreo,
-  Taskbar,
-  Titlebar,
+  VentanaNavegador,
   type AccionCorreo,
   type CarpetaCorreo,
+  type MarcadorNavegador,
+  type PestanaNavegador,
 } from '../../components/ui/DesktopChrome'
 import styles from '../../components/ui/DeviceScreen.module.css'
 import { BotonHotspot, EnlaceHotspot, manejarClicHotspot } from '../../components/ui/interactivo'
@@ -326,10 +325,7 @@ function horaDeLlegada(): string {
 /// Lo que muestra la barra de direcciones y la pestaña de cada pantalla. La
 /// dirección es la señal principal del escenario, así que vive junto al nodo y
 /// no dentro de cada componente.
-const PESTANAS: Record<
-  string,
-  { titulo: string; url: string; segura: boolean; cierra?: string; senalUrl?: string }
-> = {
+const PESTANAS: Record<string, Omit<PestanaNavegador, 'id'>> = {
   n1: { titulo: 'Correo', url: 'https://correo.safeweb.com/u/0/#recibidos', segura: true },
   n2: {
     titulo: 'Validación de comprobante',
@@ -350,121 +346,16 @@ const PESTANAS: Record<
   },
 }
 
-const MARCADORES = [
+const MARCADORES: MarcadorNavegador[] = [
   { Icono: Landmark, texto: 'Banco del Litoral' },
-  { Icono: Building2, texto: 'SRI en Línea', portal: true },
+  {
+    Icono: Building2,
+    texto: 'SRI en Línea',
+    goto: 'n3',
+    label: 'Abrió el portal del SRI desde sus marcadores',
+  },
   { Icono: Newspaper, texto: 'El Comercio' },
 ]
-
-/**
- * El navegador: una ventana con pestañas, en vez de una ventana por pantalla.
- *
- * Es lo que hace que el escenario se juegue como se juega en la vida real. El
- * correo es una pestaña más; el enlace del mensaje abre otra, como abriría
- * cualquier enlace; y las dos direcciones quedan a un clic de distancia, que es
- * exactamente la comparación que el escenario quiere que alguien haga.
- *
- * También cambia dónde está la salida segura: ya no es un atajo del escritorio
- * sino un marcador del navegador, junto a los demás sitios de siempre. Entrar
- * por ahí es literalmente "abrir el portal por mi cuenta".
- */
-function Navegador({
-  pestanas,
-  activa,
-  cierrePortal,
-  onHotspot,
-  children,
-}: {
-  pestanas: string[]
-  activa: string
-  /** Final al que lleva cerrar la pestaña del portal. */
-  cierrePortal: string
-  onHotspot: (event: React.MouseEvent) => void
-  children: ReactNode
-}) {
-  const actual = PESTANAS[activa]
-
-  return (
-    <section
-      className={`${styles.screen} ${styles.desktop}`}
-      aria-label="Navegador web"
-      onClick={onHotspot}
-    >
-      <Titlebar texto="Navegador" />
-
-      <div className={styles.tabstrip} role="tablist">
-        {pestanas.map((id) => {
-          const meta = PESTANAS[id]
-          if (!meta) return null
-          const esActiva = id === activa
-          const cierra = id === 'n3' ? cierrePortal : meta.cierra
-
-          return (
-            <span
-              key={id}
-              className={`${styles.tab} ${esActiva ? '' : styles.tabInactiva}`}
-              role="tab"
-              aria-selected={esActiva}
-              data-hotspot-goto={esActiva ? undefined : id}
-              data-hotspot-label={`Cambió a la pestaña "${meta.titulo}"`}
-            >
-              <Globe aria-hidden className={styles.tabIcono} strokeWidth={1.75} />
-              <span className={styles.tabTexto}>{meta.titulo}</span>
-              {cierra && (
-                <button
-                  type="button"
-                  className={styles.tabClose}
-                  title={`Cerrar ${meta.titulo}`}
-                  aria-label={`Cerrar la pestaña ${meta.titulo}`}
-                  data-cierra={id}
-                  data-hotspot-goto={cierra}
-                  data-hotspot-label={`Cerró la pestaña "${meta.titulo}"`}
-                >
-                  ✕
-                </button>
-              )}
-            </span>
-          )
-        })}
-        <span className={styles.tabNueva} aria-hidden>
-          +
-        </span>
-      </div>
-
-      {/* La dirección de la pestaña activa. Es la señal principal del escenario:
-          con pestañas, comparar la falsa con la real es cambiar de una a otra. */}
-      <div className={styles.urlbar}>
-        {actual?.segura ? (
-          <span className={styles.lock}>🔒</span>
-        ) : (
-          <span className={styles.warn}>⚠ No seguro</span>
-        )}
-        <span className={styles.url} data-signal={actual?.senalUrl}>
-          {actual?.url}
-        </span>
-      </div>
-
-      <div className={styles.marcadores}>
-        {MARCADORES.map(({ Icono, texto, portal }) => (
-          <button
-            key={texto}
-            type="button"
-            className={styles.marcador}
-            data-hotspot-goto={portal ? 'n3' : undefined}
-            data-hotspot-label={portal ? 'Abrió el portal del SRI desde sus marcadores' : undefined}
-          >
-            <Icono aria-hidden className={styles.marcadorIcono} strokeWidth={1.75} />
-            {texto}
-          </button>
-        ))}
-      </div>
-
-      {children}
-
-      <Taskbar app="🌐 Navegador" reloj="vivo" />
-    </section>
-  )
-}
 
 function ContenidoCorreo({ recibido, carpetas }: { recibido: string; carpetas: CarpetaCorreo[] }) {
   return (
@@ -780,13 +671,18 @@ function FacturaSri() {
   }
 
   const pantalla = (
-    <Navegador
-      pestanas={pestanas}
-      activa={pantallaActual}
+    <VentanaNavegador
       // Quien llegó a abrir la página falsa acredita por haberla dejado sin
       // escribir nada; quien nunca la tocó, por haber entrado por su cuenta.
-      cierrePortal={pestanas.includes('n2') ? 'e_dominio' : 'e_portal'}
-      onHotspot={onHotspot}
+      pestanas={pestanas.map((id) => ({
+        ...PESTANAS[id]!,
+        id,
+        cierra:
+          id === 'n3' ? (pestanas.includes('n2') ? 'e_dominio' : 'e_portal') : PESTANAS[id]!.cierra,
+      }))}
+      activa={pantallaActual}
+      marcadores={MARCADORES}
+      onClick={onHotspot}
     >
       {pantallaActual === 'n1' ? (
         <ContenidoCorreo
@@ -798,7 +694,7 @@ function FacturaSri() {
       ) : (
         <ContenidoPortalReal />
       )}
-    </Navegador>
+    </VentanaNavegador>
   )
 
   const decision = engine.isEnding ? (

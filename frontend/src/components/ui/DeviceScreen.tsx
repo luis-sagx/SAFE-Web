@@ -1,11 +1,16 @@
 import { Paperclip } from 'lucide-react'
-import { Taskbar, Titlebar, VentanaCorreo, type AccionCorreo, type Reloj } from './DesktopChrome'
+import { CuerpoCorreo, type AccionCorreo } from './DesktopChrome'
 import styles from './DeviceScreen.module.css'
 
 /**
- * Pantallas simuladas compartidas por los escenarios de correo y SMS. Solo
- * dibujan lo que la app real mostraría (regla diegética de EscenarioLayout);
- * las preguntas y el feedback viven fuera del marco.
+ * Contenido de las pantallas simuladas de correo, web y SMS. Solo dibuja lo que
+ * la app real mostraría (regla diegética de EscenarioLayout); las preguntas y
+ * el feedback viven fuera del marco.
+ *
+ * El correo y la web devuelven contenido a secas, sin ventana: van dentro de
+ * una pestaña del navegador, que es quien pone la barra de título, la de
+ * direcciones y la de tareas. El SMS conserva su propio marco porque no es una
+ * página web sino un teléfono.
  *
  * Los campos de formulario no son editables a propósito: el participante juzga
  * una pantalla, nunca escribe credenciales reales en ella.
@@ -55,24 +60,18 @@ function DeviceScreen({
   view,
   acciones,
   destinatario,
-  reloj,
-  onHotspot,
 }: {
   view: ScreenView
   /** Barra de acciones del cliente. Solo se pinta si el escenario declara sus
    *  finales; sin ellos los botones no tendrían a dónde saltar. */
   acciones?: AccionCorreo[]
   destinatario?: string
-  reloj?: Reloj
-  onHotspot?: (event: React.MouseEvent) => void
 }) {
   if (view.kind === 'mail') {
     return (
-      <VentanaCorreo
+      <CuerpoCorreo
         acciones={acciones}
         destinatario={destinatario}
-        reloj={reloj}
-        onClick={onHotspot}
         asunto={view.subject}
         remitente={{
           nombre: view.from,
@@ -96,50 +95,29 @@ function DeviceScreen({
       >
         {/* Contenido fijo del escenario: permite negritas y el enlace falso. */}
         <div dangerouslySetInnerHTML={{ __html: view.body }} />
-      </VentanaCorreo>
+      </CuerpoCorreo>
     )
   }
 
   if (view.kind === 'web') {
     return (
-      <section className={`${styles.screen} ${styles.desktop}`} aria-label="Página web simulada">
-        <Titlebar texto={view.title} />
+      <div className={styles.page}>
+        <p className={styles.brand}>{view.brand}</p>
+        <h2 className={styles.pageTitle}>{view.title}</h2>
+        {view.subtitle && <p className={styles.pageSub}>{view.subtitle}</p>}
 
-        {/* Pestaña de navegador: en el celular no hay pestañas visibles, y es
-            la segunda señal más fuerte de que esto es un computador. */}
-        <div className={styles.tabstrip} aria-hidden>
-          <span className={styles.tab}>{view.title}</span>
+        <div className={styles.form}>
+          {view.fields.map((field) => (
+            <label key={field.label} className={styles.field} data-signal={field.senal}>
+              <span>{field.label}</span>
+              <span className={styles.input}>{field.placeholder}</span>
+            </label>
+          ))}
+          <div className={styles.submit}>{view.button}</div>
         </div>
 
-        <div className={styles.urlbar}>
-          <span className={view.secure ? styles.lock : styles.warn}>
-            {view.secure ? '🔒' : '⚠ No seguro'}
-          </span>
-          <span className={styles.url} data-signal={view.senalUrl}>
-            {view.url}
-          </span>
-        </div>
-
-        <div className={styles.page}>
-          <p className={styles.brand}>{view.brand}</p>
-          <h2 className={styles.pageTitle}>{view.title}</h2>
-          {view.subtitle && <p className={styles.pageSub}>{view.subtitle}</p>}
-
-          <div className={styles.form}>
-            {view.fields.map((field) => (
-              <label key={field.label} className={styles.field} data-signal={field.senal}>
-                <span>{field.label}</span>
-                <span className={styles.input}>{field.placeholder}</span>
-              </label>
-            ))}
-            <div className={styles.submit}>{view.button}</div>
-          </div>
-
-          {view.footer && <p className={styles.pageFooter}>{view.footer}</p>}
-        </div>
-
-        <Taskbar reloj={reloj} />
-      </section>
+        {view.footer && <p className={styles.pageFooter}>{view.footer}</p>}
+      </div>
     )
   }
 
