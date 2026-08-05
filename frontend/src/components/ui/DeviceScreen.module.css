@@ -507,6 +507,85 @@ button.mailNavItem {
   margin-bottom: 0;
 }
 
+/* Cerrar la pestaña: es la forma en que alguien termina de verdad con una
+   página que ya consultó. Va en la pestaña y no como un botón dentro del sitio,
+   porque cerrar es del navegador, no de la web que se está viendo. */
+.tabClose {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  border: none;
+  border-radius: 5px;
+  background: transparent;
+  color: #5f6b7a;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+}
+.tabClose:hover {
+  background: rgba(0, 0, 0, 0.09);
+  color: #16202c;
+}
+
+/* Aviso del portal legítimo: no hay nada pendiente. Verde porque comunica
+   ausencia de problema, que es justo el hecho que desmiente al correo. */
+.portalAviso {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-top: 18px;
+  padding: 16px 18px;
+  border: 1px solid #b7dcc4;
+  border-radius: 8px;
+  background: #eef8f1;
+  color: #14532d;
+  font-size: 16px;
+  line-height: 1.5;
+}
+.portalAvisoIcono {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.portalSesion {
+  margin: 14px 0 0;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: #f1f4f8;
+  font-size: 14.5px;
+  color: #3b4553;
+}
+.portalTabla {
+  width: 100%;
+  margin-top: 16px;
+  border-collapse: collapse;
+  font-size: 14.5px;
+}
+.portalTabla th,
+.portalTabla td {
+  text-align: left;
+  padding: 10px 8px;
+  border-bottom: 1px solid var(--line);
+  color: #3b4553;
+}
+.portalTabla th {
+  font-size: 12.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--dim);
+}
+.portalVacio {
+  padding: 22px 8px;
+  text-align: center;
+  color: var(--dim);
+  font-size: 14.5px;
+}
+
 /* ---------- Pantallas bajas ----------
    En un portátil de 768px de alto el correo no cabía y había que desplazarlo,
    justo cuando lo que se juzga es el mensaje completo: el pie, el adjunto y el
@@ -662,8 +741,11 @@ button.mailNavItem {
   background: #dfe3e9;
 }
 .tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
   margin-top: 6px;
-  padding: 7px 16px;
+  padding: 7px 12px 7px 16px;
   border-radius: 8px 8px 0 0;
   background: #fff;
   font-size: 14.5px;

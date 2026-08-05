@@ -1,4 +1,4 @@
-import { Archive, File, Forward, Reply, ShieldAlert, Trash2 } from 'lucide-react'
+import { Archive, File, Forward, Reply, ShieldAlert, ShieldCheck, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import EscenarioLayout from '../../components/EscenarioLayout'
 import {
@@ -32,6 +32,12 @@ import { useStoryEngine, type Story, type StoryNode } from '../../hooks/useStory
 const STORY: Story<StoryNode> = {
   n1: { kind: 'scene' },
   n2: { kind: 'scene' },
+  // El portal legítimo. Son dos nodos con la misma pantalla porque el final
+  // depende de por dónde se llegó: quien nunca abrió la página falsa acierta
+  // por no haberla tocado, y quien la abrió y se fue, por haber leído la
+  // dirección a tiempo. Distinguirlos mantiene la traza legible.
+  n3: { kind: 'scene' },
+  n3b: { kind: 'scene' },
   e_adjunto: {
     kind: 'bad',
     verdict: 'Caíste en la trampa',
@@ -158,6 +164,13 @@ const SENALES: Senal[] = [
       'El remitente usa un <b>dominio parecido</b> pero ajeno: <b>sri-facturacion-ec.com</b>, no sri.gob.ec.',
   },
   {
+    id: 'dominio-real',
+    pantalla: 'n3',
+    targetId: 'url-real',
+    texto:
+      'Así se ve el portal de verdad: <b>sri.gob.ec</b> y con conexión segura. Compáralo con la dirección a la que llevaba el correo.',
+  },
+  {
     id: 'externo',
     pantalla: 'n1',
     targetId: 'externo',
@@ -225,8 +238,8 @@ const NOTA = (
 
 const ATAJO_PORTAL = {
   texto: '🏦 Portal SRI',
-  goto: 'e_portal',
-  label: 'Cerró el correo y entró al portal del SRI escribiendo la dirección',
+  goto: 'n3',
+  label: 'Dejó el correo y abrió el portal del SRI por su cuenta',
 }
 
 /// Cinco minutos antes de abrir el escenario. La hora del correo se calcula a
@@ -329,8 +342,8 @@ function PantallaPortal({ onHotspot }: PantallaProps) {
       reloj="vivo"
       atajo={{
         ...ATAJO_PORTAL,
-        goto: 'e_dominio',
-        label: 'Salió sin ingresar datos y entró al portal por su cuenta',
+        goto: 'n3b',
+        label: 'Salió de la página sin escribir nada y abrió el portal por su cuenta',
       }}
     >
       {/* Pestaña de navegador: en el celular no hay pestañas visibles. */}
@@ -413,7 +426,15 @@ function PantallaPortal({ onHotspot }: PantallaProps) {
  * reconoce sola el anzuelo. Para quien de verdad se atasca está la pista
  * desplegable, que es opt-in.
  */
-function DecisionEnCurso({ fallo, enPortal }: { fallo: boolean; enPortal: boolean }) {
+function DecisionEnCurso({
+  fallo,
+  enPortal,
+  enPortalReal,
+}: {
+  fallo: boolean
+  enPortal: boolean
+  enPortalReal: boolean
+}) {
   return (
     <div className="grid gap-3">
       <p className="text-lg font-semibold text-ink">¿Qué haces?</p>
@@ -422,6 +443,14 @@ function DecisionEnCurso({ fallo, enPortal }: { fallo: boolean; enPortal: boolea
         <strong>cualquier parte de ella</strong>, incluida la barra de abajo. Antes de tocar un
         enlace, mantén el cursor encima para ver a dónde lleva.
       </p>
+      {enPortalReal && (
+        <p className="rounded-md border border-hairline-strong bg-canvas-soft px-3 py-2 text-base leading-relaxed text-body">
+          Este es el portal del SRI de verdad, abierto por ti.{' '}
+          <strong className="text-ink">No hay ninguna factura pendiente</strong>, así que el correo
+          mentía. Cierra la pestaña cuando termines de comprobarlo.
+        </p>
+      )}
+
       {/* Va aquí y no dentro de la página: el marco de los escenarios separa lo
           que la app real mostraría de lo que explica el ejercicio, y una página
           de phishing jamás avisaría de qué son sus campos. */}
@@ -462,13 +491,106 @@ function DecisionEnCurso({ fallo, enPortal }: { fallo: boolean; enPortal: boolea
   )
 }
 
+/**
+ * El portal verdadero del SRI.
+ *
+ * Existe para que el camino acertado se *vea* y no solo se cuente. Aquí está el
+ * hecho que desmiente al correo —no hay ningún comprobante pendiente ni ninguna
+ * multa— y el contraste con la página falsa: dominio sri.gob.ec, conexión
+ * segura y una sesión ya iniciada, sin ningún formulario pidiendo la clave.
+ *
+ * `salida` cambia según de dónde se llegó: cerrar la pestaña desde aquí acredita
+ * por no haber tocado la página falsa, o por haberla dejado a tiempo.
+ */
+function PantallaPortalReal({ onHotspot, salida }: PantallaProps & { salida: string }) {
+  return (
+    <VentanaEscritorio
+      titulo="SRI en Línea"
+      ariaLabel="Portal del SRI"
+      onClick={onHotspot}
+      reloj="vivo"
+    >
+      <div className={styles.tabstrip}>
+        <span className={styles.tab}>
+          SRI en Línea
+          {/* Cerrar la pestaña es lo que hace de verdad quien ya comprobó lo
+              que venía a comprobar. La flecha de atrás sigue devolviendo a la
+              pantalla anterior sin cerrar el escenario. */}
+          <button
+            type="button"
+            className={styles.tabClose}
+            title="Cerrar pestaña"
+            aria-label="Cerrar la pestaña del portal"
+            data-hotspot-goto={salida}
+            data-hotspot-label="Comprobó en el portal real y cerró la pestaña"
+          >
+            ✕
+          </button>
+        </span>
+      </div>
+
+      <div className={styles.urlbar} data-signal="url-real">
+        <button
+          type="button"
+          className={styles.navBack}
+          title="Atrás"
+          aria-label="Volver a la pantalla anterior"
+          data-hotspot-goto={salida === 'e_portal' ? 'n1' : 'n2'}
+          data-hotspot-label="Volvió atrás desde el portal del SRI"
+        >
+          ←
+        </button>
+        <span className={styles.lock}>🔒</span>
+        <span className={styles.url}>https://srienlinea.sri.gob.ec/comprobantes</span>
+      </div>
+
+      <div className={styles.page}>
+        <p className={styles.brand}>SRI · Servicio de Rentas Internas</p>
+        <h2 className={styles.pageTitle}>Comprobantes electrónicos</h2>
+        <p className={styles.portalSesion}>
+          Sesión iniciada · RUC 0000000000001 · último ingreso hoy
+        </p>
+
+        <table className={styles.portalTabla}>
+          <thead>
+            <tr>
+              <th>Comprobante</th>
+              <th>Fecha</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td colSpan={3} className={styles.portalVacio}>
+                No hay comprobantes pendientes de validación.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div className={styles.portalAviso}>
+          <ShieldCheck aria-hidden className={styles.portalAvisoIcono} strokeWidth={1.75} />
+          <span>
+            Tu RUC no tiene comprobantes pendientes ni multas registradas. Tampoco hay ninguna
+            notificación abierta a tu nombre.
+          </span>
+        </div>
+
+        <p className={styles.pageFooter}>srienlinea.sri.gob.ec · Servicio de Rentas Internas</p>
+      </div>
+    </VentanaEscritorio>
+  )
+}
+
 function FacturaSri() {
   const engine = useStoryEngine(STORY, 'n1', 'phishing/factura-sri')
 
   // El nodo final (p. ej. "e_adjunto") no es una pantalla: es la consecuencia
   // de una. Se recuerda cuál era la pantalla activa para que el recorrido de
   // señales tenga sobre qué resaltar.
-  const [pantallaActual, setPantallaActual] = useState<'n1' | 'n2'>('n1')
+  // Guarda el id del nodo, no una lista cerrada de dos valores: con el portal
+  // real ya son cuatro pantallas y la lista habría que ampliarla cada vez.
+  const [pantallaActual, setPantallaActual] = useState('n1')
   /// Se enciende con el primer clic que no cae en ningún punto interactivo y
   /// ya no se apaga: quien exploró a ciegas una vez agradece tener la pista a
   /// la vista el resto del escenario.
@@ -482,7 +604,9 @@ function FacturaSri() {
       return
     }
     engine.choose(goto, label)
-    if (goto === 'n1' || goto === 'n2') {
+    // Toda escena es una pantalla; los finales no lo son, y por eso se conserva
+    // la última para que el repaso de señales tenga sobre qué resaltar.
+    if (STORY[goto]?.kind === 'scene') {
       setPantallaActual(goto)
     }
   }
@@ -506,8 +630,13 @@ function FacturaSri() {
   const pantalla =
     pantallaActual === 'n1' ? (
       <PantallaCorreo onHotspot={onHotspot} recibido={recibido} />
-    ) : (
+    ) : pantallaActual === 'n2' ? (
       <PantallaPortal onHotspot={onHotspot} />
+    ) : (
+      <PantallaPortalReal
+        onHotspot={onHotspot}
+        salida={pantallaActual === 'n3' ? 'e_portal' : 'e_dominio'}
+      />
     )
 
   const decision = engine.isEnding ? (
@@ -519,10 +648,14 @@ function FacturaSri() {
       restartLabel="↻ Repetir el escenario"
       onRestart={reiniciar}
       contenedorId="pantalla-escenario"
-      onPantalla={(id) => id && setPantallaActual(id as 'n1' | 'n2')}
+      onPantalla={(id) => id && setPantallaActual(id)}
     />
   ) : (
-    <DecisionEnCurso fallo={tocoEnVacio} enPortal={pantallaActual === 'n2'} />
+    <DecisionEnCurso
+      fallo={tocoEnVacio}
+      enPortal={pantallaActual === 'n2'}
+      enPortalReal={pantallaActual.startsWith('n3')}
+    />
   )
 
   return (
