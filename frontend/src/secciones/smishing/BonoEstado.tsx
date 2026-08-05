@@ -1,6 +1,7 @@
 import StoryEscenario, { type ScreenNode } from '../../components/StoryEscenario'
 import type { Story } from '../../hooks/useStoryEngine'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
+import type { Senal } from '../../components/ui/PanelVeredicto'
 
 const SMS: ScreenView = {
   kind: 'sms',
@@ -88,12 +89,12 @@ const STORY: Story<ScreenNode> = {
   },
 }
 
-const SIGNALS = [
-  'Te da un <b>premio que nunca pediste</b> y un plazo de horas para reclamarlo.',
-  'Usa un <b>enlace acortado</b> que oculta el destino real.',
-  'La página está en <b>bono-social-ec.online</b>, sin conexión segura ni dominio .gob.ec.',
-  'Pide tu <b>clave de banca en línea</b> para "recibir" un depósito.',
-  'Pide el <b>código que llega por SMS</b>: con eso completan el acceso a tu cuenta.',
+const SENALES: Senal[] = [
+  { id: 's1', texto: 'Te da un <b>premio que nunca pediste</b> y un plazo de horas para reclamarlo.' },
+  { id: 's2', texto: 'Usa un <b>enlace acortado</b> que oculta el destino real.' },
+  { id: 's3', texto: 'La página está en <b>bono-social-ec.online</b>, sin conexión segura ni dominio .gob.ec.' },
+  { id: 's4', texto: 'Pide tu <b>clave de banca en línea</b> para "recibir" un depósito.' },
+  { id: 's5', texto: 'Pide el <b>código que llega por SMS</b>: con eso completan el acceso a tu cuenta.' },
 ]
 const RULE =
   'Regla de oro: para <b>recibir</b> dinero nadie necesita tu clave ni tu código de verificación; solo tu número de cuenta. Cualquier bono o subsidio se confirma en el sitio oficial <b>.gob.ec</b>, escrito por ti.'
@@ -120,8 +121,7 @@ function BonoEstado() {
       resumen={RESUMEN}
       contexto={CONTEXTO}
       story={STORY}
-      signalsTitle="Las señales de este mensaje"
-      signals={SIGNALS}
+      senales={SENALES}
       rule={RULE}
       restartLabel="↻ Repetir el escenario"
     />

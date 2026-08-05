@@ -2,6 +2,7 @@ import StoryEscenario, { type ScreenNode } from '../../components/StoryEscenario
 import { ACCIONES_BARRA, finalesDeBarra } from './barraDeCorreo'
 import type { Story } from '../../hooks/useStoryEngine'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
+import type { Senal } from '../../components/ui/PanelVeredicto'
 
 const HILO_PREVIO = `
   <div style="border-left:3px solid #d7dde1;padding-left:12px;margin:14px 0;color:#5f6b7a;font-size:13px;line-height:1.55;">
@@ -16,6 +17,7 @@ const CORREO: ScreenView = {
   kind: 'mail',
   from: 'Secretaría — Unidad Educativa San Rafael',
   address: 'secretaria@unidadsanrafael.edu.ec',
+  senalDireccion: 'remitente',
   subject: 'Re: Pensión de julio',
   date: 'hoy 11:15',
   body: `
@@ -84,10 +86,10 @@ const STORY: Story<ScreenNode> = {
   },
 }
 
-const SIGNALS = [
-  'No hay dominio falso, ni error de redacción, ni urgencia artificial: el hilo es <b>100% real</b>.',
-  'La única anomalía es el hecho en sí: <b>un cambio de número de cuenta</b>.',
-  'Responder dentro del mismo hilo <b>no verifica nada</b>: si la cuenta está comprometida, el atacante también contesta ahí.',
+const SENALES: Senal[] = [
+  { id: 's1', texto: 'No hay dominio falso, ni error de redacción, ni urgencia artificial: el hilo es <b>100% real</b>.' },
+  { id: 's2', targetId: 'cuenta', texto: 'La única anomalía es el hecho en sí: <b>un cambio de número de cuenta</b>.' },
+  { id: 's3', targetId: 'remitente', texto: 'Responder dentro del mismo hilo <b>no verifica nada</b>: si la cuenta está comprometida, el atacante también contesta ahí.' },
 ]
 const RULE =
   'Regla de oro: todo cambio de número de cuenta se confirma <b>por llamada al número que ya tenías</b>, jamás por el mismo canal donde llegó el aviso. Responder el correo para verificar es preguntarle al estafador si es estafador.'
@@ -115,8 +117,7 @@ function SecuestroHilo() {
       contexto={CONTEXTO}
       story={STORY}
       accionesCorreo={ACCIONES_BARRA}
-      signalsTitle="Las señales de este correo"
-      signals={SIGNALS}
+      senales={SENALES}
       rule={RULE}
       restartLabel="↻ Repetir el escenario"
     />

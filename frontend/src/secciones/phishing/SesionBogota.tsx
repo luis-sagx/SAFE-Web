@@ -2,11 +2,15 @@ import StoryEscenario, { type ScreenNode } from '../../components/StoryEscenario
 import { ACCIONES_BARRA, finalesDeBarra } from './barraDeCorreo'
 import type { Story } from '../../hooks/useStoryEngine'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
+import type { Senal } from '../../components/ui/PanelVeredicto'
 
 const CORREO: ScreenView = {
   kind: 'mail',
   from: 'Banco del Litoral · Seguridad',
   address: 'alertas@bancodellitoral.com.ec',
+  senalDireccion: 'remitente',
+  label: 'Externo',
+  senalEtiqueta: 'externo',
   subject: 'Alerta de seguridad: nuevo inicio de sesión',
   date: 'hoy 21:47',
   body: `
@@ -27,10 +31,11 @@ const PAGINA_CLAVE: ScreenView = {
   kind: 'web',
   url: 'bancodellitoral.com.ec.seguridad-alertas.com',
   secure: true,
+  senalUrl: 'url',
   brand: 'Banco del Litoral',
   title: 'Verificación de seguridad',
   subtitle: 'Confirme su contraseña para cerrar el acceso no reconocido.',
-  fields: [{ label: 'Contraseña de banca en línea', placeholder: '••••••••' }],
+  fields: [{ label: 'Contraseña de banca en línea', placeholder: '••••••••', senal: 'campo-clave' }],
   button: 'Cerrar acceso no reconocido',
 }
 
@@ -105,11 +110,11 @@ const STORY: Story<ScreenNode> = {
   },
 }
 
-const SIGNALS = [
-  'El botón "seguro" ("No fui yo") es la trampa: te lleva directo a pedir credenciales.',
-  'El dominio real es <b>seguridad-alertas.com</b>; "bancodellitoral.com.ec" es apenas un subdominio.',
-  'Pide el <b>código OTP dentro de una página web</b>, en vez de dentro de la app del banco.',
-  'El correo está impecable — sin errores — porque la trampa no está en la redacción.',
+const SENALES: Senal[] = [
+  { id: 's1', texto: 'El botón "seguro" ("No fui yo") es la trampa: te lleva directo a pedir credenciales.' },
+  { id: 's2', targetId: 'remitente', texto: 'El dominio real es <b>seguridad-alertas.com</b>; "bancodellitoral.com.ec" es apenas un subdominio.' },
+  { id: 's3', targetId: 'campo-clave', texto: 'Pide el <b>código OTP dentro de una página web</b>, en vez de dentro de la app del banco.' },
+  { id: 's4', texto: 'El correo está impecable — sin errores — porque la trampa no está en la redacción.' },
 ]
 const RULE =
   'Regla de oro: lee el dominio de derecha a izquierda; lo real es lo que está inmediatamente antes de la primera barra. Ninguna alerta se atiende desde el enlace de la propia alerta.'
@@ -134,8 +139,7 @@ function SesionBogota() {
       contexto={CONTEXTO}
       story={STORY}
       accionesCorreo={ACCIONES_BARRA}
-      signalsTitle="Las señales de esta alerta"
-      signals={SIGNALS}
+      senales={SENALES}
       rule={RULE}
       restartLabel="↻ Repetir el escenario"
     />

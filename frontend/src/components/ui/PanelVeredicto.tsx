@@ -30,7 +30,7 @@ interface PanelVeredictoProps {
 const CLASE_RESALTADA = 'senal-resaltada'
 
 /**
- * Reemplaza a StoryResultPanel para los escenarios interactivos: primero el
+ * Panel de resultado de todos los escenarios: primero el
  * veredicto, después un recorrido de las señales que resalta el elemento real
  * en la pantalla en vez de listarlas aparte, y cierra con la regla de oro.
  */

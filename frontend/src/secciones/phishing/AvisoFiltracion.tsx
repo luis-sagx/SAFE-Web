@@ -2,11 +2,13 @@ import StoryEscenario, { type ScreenNode } from '../../components/StoryEscenario
 import { ACCIONES_BARRA, finalesDeBarra } from './barraDeCorreo'
 import type { Story } from '../../hooks/useStoryEngine'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
+import type { Senal } from '../../components/ui/PanelVeredicto'
 
 const CORREO: ScreenView = {
   kind: 'mail',
   from: 'TiendaExpress',
   address: 'seguridad@tiendaexpress.com.ec',
+  senalDireccion: 'remitente',
   subject: 'Aviso importante de seguridad',
   date: 'hoy 08:15',
   body: `
@@ -81,11 +83,11 @@ const STORY: Story<ScreenNode> = {
   },
 }
 
-const SIGNALS = [
-  'No pide tu contraseña ni ningún dato: pide que <b>vos la cambies</b>, no te la solicita.',
-  'Explica <b>qué se expuso y qué no</b>, en vez de generar pánico genérico.',
-  'El enlace que menciona apunta al <b>dominio real</b>, y el cambio se puede hacer sin tocar ningún enlace.',
-  'Un aviso así, buscado en internet, <b>aparece en noticias reales</b> de seguridad.',
+const SENALES: Senal[] = [
+  { id: 's1', texto: 'No pide tu contraseña ni ningún dato: pide que <b>vos la cambies</b>, no te la solicita.' },
+  { id: 's2', texto: 'Explica <b>qué se expuso y qué no</b>, en vez de generar pánico genérico.' },
+  { id: 's3', targetId: 'remitente', texto: 'El enlace que menciona apunta al <b>dominio real</b>, y el cambio se puede hacer sin tocar ningún enlace.' },
+  { id: 's4', texto: 'Un aviso así, buscado en internet, <b>aparece en noticias reales</b> de seguridad.' },
 ]
 const RULE =
   'Regla de oro: cambiá la clave entrando vos al sitio, nunca por el enlace del correo. Y no repitas contraseñas — una filtración en una tienda abre todas las puertas que compartan esa clave.'
@@ -113,8 +115,7 @@ function AvisoFiltracion() {
       contexto={CONTEXTO}
       story={STORY}
       accionesCorreo={ACCIONES_BARRA}
-      signalsTitle="Por qué este aviso sí era real"
-      signals={SIGNALS}
+      senales={SENALES}
       rule={RULE}
       restartLabel="↻ Repetir el escenario"
     />

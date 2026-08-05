@@ -16,11 +16,18 @@ export type ScreenView =
       address: string
       subject: string
       date: string
-      /** HTML fijo del escenario, nunca contenido de un usuario. */
+      /** HTML fijo del escenario, nunca contenido de un usuario. Puede llevar
+       *  `data-signal` en cualquier elemento para que el repaso lo resalte. */
       body: string
+      /** Pie institucional del mensaje. HTML fijo, como `body`. */
+      footer?: string
       attachment?: string
       /** Etiqueta del cliente de correo: "Promociones", "Externo"… */
       label?: string
+      /** `data-signal` del repaso para la dirección, la etiqueta y el adjunto. */
+      senalDireccion?: string
+      senalEtiqueta?: string
+      senalAdjunto?: string
     }
   | {
       kind: 'web'
@@ -30,9 +37,11 @@ export type ScreenView =
       brand: string
       title: string
       subtitle?: string
-      fields: { label: string; placeholder: string }[]
+      fields: { label: string; placeholder: string; senal?: string }[]
       button: string
       footer?: string
+      /** `data-signal` de la barra de direcciones. */
+      senalUrl?: string
     }
   | {
       kind: 'sms'
@@ -58,11 +67,17 @@ function DeviceScreen({
         acciones={acciones}
         onClick={onHotspot}
         asunto={view.subject}
-        remitente={{ nombre: view.from, direccion: view.address, etiqueta: view.label }}
+        remitente={{
+          nombre: view.from,
+          direccion: view.address,
+          etiqueta: view.label,
+          senalDireccion: view.senalDireccion,
+          senalEtiqueta: view.senalEtiqueta,
+        }}
         recibido={view.date}
         adjunto={
           view.attachment && (
-            <span className={styles.attachment}>
+            <span className={styles.attachment} data-signal={view.senalAdjunto}>
               <span className={styles.attachmentTipo} aria-hidden>
                 📎
               </span>
@@ -70,6 +85,7 @@ function DeviceScreen({
             </span>
           )
         }
+        pie={view.footer && <div dangerouslySetInnerHTML={{ __html: view.footer }} />}
       >
         {/* Contenido fijo del escenario: permite negritas y el enlace falso. */}
         <div dangerouslySetInnerHTML={{ __html: view.body }} />
@@ -88,7 +104,7 @@ function DeviceScreen({
           <span className={styles.tab}>{view.title}</span>
         </div>
 
-        <div className={styles.urlbar}>
+        <div className={styles.urlbar} data-signal={view.senalUrl}>
           <span className={view.secure ? styles.lock : styles.warn}>
             {view.secure ? '🔒' : '⚠ No seguro'}
           </span>
@@ -102,7 +118,7 @@ function DeviceScreen({
 
           <div className={styles.form}>
             {view.fields.map((field) => (
-              <label key={field.label} className={styles.field}>
+              <label key={field.label} className={styles.field} data-signal={field.senal}>
                 <span>{field.label}</span>
                 <span className={styles.input}>{field.placeholder}</span>
               </label>

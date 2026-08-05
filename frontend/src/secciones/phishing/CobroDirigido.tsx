@@ -2,11 +2,15 @@ import StoryEscenario, { type ScreenNode } from '../../components/StoryEscenario
 import { ACCIONES_BARRA, finalesDeBarra } from './barraDeCorreo'
 import type { Story } from '../../hooks/useStoryEngine'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
+import type { Senal } from '../../components/ui/PanelVeredicto'
 
 const CORREO: ScreenView = {
   kind: 'mail',
   from: 'Envíos Rápido',
   address: 'aranceles@enviosrapido-ec.shop',
+  senalDireccion: 'remitente',
+  label: 'Externo',
+  senalEtiqueta: 'externo',
   subject: 'Pendiente: arancel de aduana de tu pedido',
   date: 'hoy 10:33',
   body: `
@@ -71,11 +75,11 @@ const STORY: Story<ScreenNode> = {
   },
 }
 
-const SIGNALS = [
-  'El correo trae tu <b>nombre completo y parte de tu cédula</b> — datos de una filtración, no prueba de que sean ellos.',
-  'El monto es <b>diminuto a propósito</b>, calculado para no despertar sospecha.',
-  'Los couriers cobran aranceles <b>al entregar</b>, nunca por un enlace de correo.',
-  'El dominio es <b>enviosrapido-ec.shop</b>, no el sitio oficial de la transportadora.',
+const SENALES: Senal[] = [
+  { id: 's1', texto: 'El correo trae tu <b>nombre completo y parte de tu cédula</b> — datos de una filtración, no prueba de que sean ellos.' },
+  { id: 's2', targetId: 'monto', texto: 'El monto es <b>diminuto a propósito</b>, calculado para no despertar sospecha.' },
+  { id: 's3', texto: 'Los couriers cobran aranceles <b>al entregar</b>, nunca por un enlace de correo.' },
+  { id: 's4', targetId: 'remitente', texto: 'El dominio es <b>enviosrapido-ec.shop</b>, no el sitio oficial de la transportadora.' },
 ]
 const RULE =
   'Regla de oro: que alguien conozca tus datos no prueba que sea quien dice ser. Los datos personales confirman que hubo una filtración en algún lado, no que el mensaje sea legítimo.'
@@ -102,8 +106,7 @@ function CobroDirigido() {
       contexto={CONTEXTO}
       story={STORY}
       accionesCorreo={ACCIONES_BARRA}
-      signalsTitle="Las señales de este correo"
-      signals={SIGNALS}
+      senales={SENALES}
       rule={RULE}
       restartLabel="↻ Repetir el escenario"
     />

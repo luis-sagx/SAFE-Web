@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import EscenarioLayout from '../../components/EscenarioLayout'
 import { useStoryEngine, type Story, type StoryNode } from '../../hooks/useStoryEngine'
 import StoryChoices from '../../components/ui/StoryChoices'
-import StoryResultPanel from '../../components/ui/StoryResultPanel'
+import PanelVeredicto, { type Senal } from '../../components/ui/PanelVeredicto'
 import styles from './CambioNumero.module.css'
 
 type Msg =
@@ -95,11 +95,11 @@ const STORY: Story<ChatNode> = {
   },
 }
 
-const SIGNALS = [
-  'Escribe desde un <b>número nuevo</b>, sin llamar.',
-  'Usa una <b>excusa</b> para no poder hablar por voz o videollamada.',
-  'Pide <b>dinero urgente</b> a una cuenta que no reconoces.',
-  'No logra responder una <b>pregunta de verificación</b> sencilla.',
+const SENALES: Senal[] = [
+  { id: 's1', texto: 'Escribe desde un <b>número nuevo</b>, sin llamar.' },
+  { id: 's2', texto: 'Usa una <b>excusa</b> para no poder hablar por voz o videollamada.' },
+  { id: 's3', texto: 'Pide <b>dinero urgente</b> a una cuenta que no reconoces.' },
+  { id: 's4', texto: 'No logra responder una <b>pregunta de verificación</b> sencilla.' },
 ]
 const RULE =
   'Regla de oro: si un familiar te escribe pidiendo dinero desde un número nuevo, <b>llámalo tú al número de siempre</b> o pregúntale algo que solo esa persona sabría, antes de enviar nada.'
@@ -341,14 +341,14 @@ function CambioNumero() {
   const decision = (
     <div className="grid gap-3">
       {engine.isEnding ? (
-        <StoryResultPanel
+        <PanelVeredicto
       escenarioId="suplantacion/cambio-numero"
           node={engine.node}
-          signalsTitle="Las señales de esta conversación"
-          signals={SIGNALS}
-          rule={RULE}
+          senales={SENALES}
+          regla={RULE}
           restartLabel="↻ Repetir la conversación"
           onRestart={handleRestart}
+      contenedorId="pantalla-escenario"
         />
       ) : (
         choicesVisible &&

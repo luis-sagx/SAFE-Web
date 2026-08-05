@@ -190,7 +190,12 @@
 
 /* Frase señalada dentro del cuerpo del correo (p. ej. el plazo). Sin el fondo
    amarillo por defecto de <mark>: delataría la señal antes de que el
-   participante la investigue por su cuenta. */
+   participante la investigue por su cuenta.
+
+   La variante :global es para los escenarios cuyo cuerpo viaja como HTML: ahí
+   CSS Modules no reescribe la clase, así que `class="marca"` no casaba con nada
+   y el <mark> se pintaba amarillo. */
+.prose :global(.marca),
 .marca {
   background: none;
   color: inherit;

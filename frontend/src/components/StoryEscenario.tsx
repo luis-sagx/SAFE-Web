@@ -4,7 +4,7 @@ import DeviceScreen, { type ScreenView } from './ui/DeviceScreen'
 import { manejarClicHotspot } from './ui/interactivo'
 import type { AccionCorreo } from './ui/DesktopChrome'
 import StoryChoices from './ui/StoryChoices'
-import StoryResultPanel from './ui/StoryResultPanel'
+import PanelVeredicto, { type Senal } from './ui/PanelVeredicto'
 import { useStoryEngine, type Story, type StoryNode } from '../hooks/useStoryEngine'
 
 /** Cada nodo declara qué muestra la pantalla simulada, incluidos los finales:
@@ -20,9 +20,9 @@ interface StoryEscenarioProps {
   /** Cómo se juega. Solo se muestra en el briefing. */
   nota?: ReactNode
   story: Story<ScreenNode>
-  signalsTitle: string
-  /** Llevan negritas <b>; contenido fijo del código. */
-  signals: string[]
+  /** Las pistas que había en la pantalla. El repaso las recorre una a una y
+   *  resalta el elemento real de la simulación al que apunta cada una. */
+  senales: Senal[]
   rule: string
   restartLabel: string
   pregunta?: string
@@ -42,8 +42,7 @@ function StoryEscenario({
   contexto,
   nota,
   story,
-  signalsTitle,
-  signals,
+  senales,
   rule,
   restartLabel,
   pregunta = '¿Qué haces?',
@@ -60,14 +59,14 @@ function StoryEscenario({
   }
 
   const decision = engine.isEnding ? (
-    <StoryResultPanel
+    <PanelVeredicto
       escenarioId={escenarioId}
       node={engine.node}
-      signalsTitle={signalsTitle}
-      signals={signals}
-      rule={rule}
+      senales={senales}
+      regla={rule}
       restartLabel={restartLabel}
       onRestart={engine.restart}
+      contenedorId="pantalla-escenario"
     />
   ) : (
     engine.node.choices && (

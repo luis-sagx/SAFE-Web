@@ -2,6 +2,7 @@ import StoryEscenario, { type ScreenNode } from '../../components/StoryEscenario
 import { ACCIONES_BARRA, finalesDeBarra } from './barraDeCorreo'
 import type { Story } from '../../hooks/useStoryEngine'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
+import type { Senal } from '../../components/ui/PanelVeredicto'
 
 // QR decorativo y fijo: no es escaneable de verdad, solo tiene que leerse como
 // un código QR dentro del cuerpo del correo.
@@ -28,6 +29,8 @@ const CORREO: ScreenView = {
   kind: 'mail',
   from: 'Banco del Litoral · Actualización de datos',
   address: 'notificaciones@bancodellitoral.com',
+  senalDireccion: 'remitente',
+  senalEtiqueta: 'externo',
   subject: 'Actualice sus datos antes de que se limite su cuenta',
   date: 'hoy 09:10',
   label: 'Externo',
@@ -54,7 +57,7 @@ const PAGINA: ScreenView = {
   subtitle: 'Confirme su información para evitar la limitación de su cuenta.',
   fields: [
     { label: 'Cédula', placeholder: '0000000000' },
-    { label: 'Clave de acceso', placeholder: '••••••••' },
+    { label: 'Clave de acceso', placeholder: '••••••••', senal: 'campo-clave' },
   ],
   button: 'Confirmar datos',
 }
@@ -112,11 +115,11 @@ const STORY: Story<ScreenNode> = {
   },
 }
 
-const SIGNALS = [
-  'Un <b>QR es un enlace que no puedes leer antes de escanearlo</b>: no hay texto que inspeccionar.',
-  'El destino real es <b>litoral-actualiza.web.app</b>, sin el dominio del banco.',
-  'El formulario pide la <b>clave de acceso</b>, algo que una actualización de datos nunca necesita.',
-  'Mete <b>prisa</b> con un plazo de 72 horas.',
+const SENALES: Senal[] = [
+  { id: 's1', texto: 'Un <b>QR es un enlace que no puedes leer antes de escanearlo</b>: no hay texto que inspeccionar.' },
+  { id: 's2', targetId: 'remitente', texto: 'El destino real es <b>litoral-actualiza.web.app</b>, sin el dominio del banco.' },
+  { id: 's3', targetId: 'campo-clave', texto: 'El formulario pide la <b>clave de acceso</b>, algo que una actualización de datos nunca necesita.' },
+  { id: 's4', targetId: 'plazo', texto: 'Mete <b>prisa</b> con un plazo de 72 horas.' },
 ]
 const RULE =
   'Regla de oro: al escanear un QR, primero <b>lee la vista previa de la URL</b> y recién ahí decide. Vale igual para los QR de correos, locales, surtidores y parquímetros.'
@@ -144,8 +147,7 @@ function QuishingActualice() {
       contexto={CONTEXTO}
       story={STORY}
       accionesCorreo={ACCIONES_BARRA}
-      signalsTitle="Las señales de este correo"
-      signals={SIGNALS}
+      senales={SENALES}
       rule={RULE}
       restartLabel="↻ Repetir el escenario"
     />

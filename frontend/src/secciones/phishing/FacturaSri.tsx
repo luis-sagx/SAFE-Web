@@ -19,7 +19,7 @@ import { useStoryEngine, type Story, type StoryNode } from '../../hooks/useStory
  * real— igual que lo haría frente a su bandeja de verdad. Ver
  * docs/superpowers/specs/2026-08-04-escenario-interactivo-factura-sri-design.md.
  *
- * Por eso no usa StoryEscenario/DeviceScreen/StoryChoices/StoryResultPanel:
+ * Por eso no usa StoryEscenario/DeviceScreen/StoryChoices:
  * esos siguen sirviendo tal cual a los escenarios que todavía eligen de una
  * lista (ClaveCaducada, RolDePagos). Este es la plantilla para cuando se
  * repliquen.

@@ -1,6 +1,7 @@
 import StoryEscenario, { type ScreenNode } from '../../components/StoryEscenario'
 import type { Story } from '../../hooks/useStoryEngine'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
+import type { Senal } from '../../components/ui/PanelVeredicto'
 
 const PRIMER_SMS = {
   text: 'ENVIAEXPRESS: su paquete 4471-EC está RETENIDO en aduana por un valor pendiente de $1,20. Regularice hoy para evitar la devolución: http://envia-express.info/pago',
@@ -97,12 +98,12 @@ const STORY: Story<ScreenNode> = {
   },
 }
 
-const SIGNALS = [
-  'Llega de un <b>número de celular</b>, no del canal habitual del courier.',
-  'El dominio es <b>envia-express.info</b> y la página no tiene conexión segura.',
-  'Un monto <b>diminuto</b> baja tu guardia: lo que buscan es la tarjeta, no el dólar.',
-  'Pide <b>número completo, caducidad y CVV</b>: eso alcanza para comprar en tu nombre.',
-  'Al responder, la <b>urgencia aumenta</b> en vez de darte información concreta.',
+const SENALES: Senal[] = [
+  { id: 's1', texto: 'Llega de un <b>número de celular</b>, no del canal habitual del courier.' },
+  { id: 's2', texto: 'El dominio es <b>envia-express.info</b> y la página no tiene conexión segura.' },
+  { id: 's3', texto: 'Un monto <b>diminuto</b> baja tu guardia: lo que buscan es la tarjeta, no el dólar.' },
+  { id: 's4', texto: 'Pide <b>número completo, caducidad y CVV</b>: eso alcanza para comprar en tu nombre.' },
+  { id: 's5', texto: 'Al responder, la <b>urgencia aumenta</b> en vez de darte información concreta.' },
 ]
 const RULE =
   'Regla de oro: un aviso de paquete se comprueba <b>en la app o la web del courier con tu número de guía</b>, nunca por el enlace del mensaje. Nadie necesita tu CVV para cobrarte un dólar.'
@@ -129,8 +130,7 @@ function PaqueteRetenido() {
       resumen={RESUMEN}
       contexto={CONTEXTO}
       story={STORY}
-      signalsTitle="Las señales de este mensaje"
-      signals={SIGNALS}
+      senales={SENALES}
       rule={RULE}
       restartLabel="↻ Repetir el escenario"
     />

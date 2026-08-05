@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type KeyboardEvent } from 'react'
 import EscenarioLayout from '../../components/EscenarioLayout'
 import { useStoryEngine, type Story, type StoryNode } from '../../hooks/useStoryEngine'
 import StoryChoices from '../../components/ui/StoryChoices'
-import StoryResultPanel from '../../components/ui/StoryResultPanel'
+import PanelVeredicto, { type Senal } from '../../components/ui/PanelVeredicto'
 import styles from './LlamadaAntiestafas.module.css'
 
 interface CallNode extends StoryNode {
@@ -82,11 +82,11 @@ const STORY: Story<CallNode> = {
   },
 }
 
-const SIGNALS = [
-  'Un premio que <b>nunca pediste</b>.',
-  'Te piden <b>pagar</b> para poder recibirlo.',
-  'El dinero va a una <b>cuenta personal</b>, no a la empresa.',
-  'Te meten <b>prisa</b>: “solo por hoy”.',
+const SENALES: Senal[] = [
+  { id: 's1', texto: 'Un premio que <b>nunca pediste</b>.' },
+  { id: 's2', texto: 'Te piden <b>pagar</b> para poder recibirlo.' },
+  { id: 's3', texto: 'El dinero va a una <b>cuenta personal</b>, no a la empresa.' },
+  { id: 's4', texto: 'Te meten <b>prisa</b>: “solo por hoy”.' },
 ]
 const RULE =
   'Regla de oro: <b>nunca pagues para recibir un premio</b>. Cuelga y llama tú al número oficial del negocio.'
@@ -400,14 +400,14 @@ function LlamadaAntiestafas() {
   const decision = (
     <div className="grid gap-3">
       {isEnding ? (
-        <StoryResultPanel
+        <PanelVeredicto
       escenarioId="vishing/llamada-antiestafas"
           node={node}
-          signalsTitle="Las 4 señales de esta llamada"
-          signals={SIGNALS}
-          rule={RULE}
+          senales={SENALES}
+          regla={RULE}
           restartLabel="↻ Recibir la llamada otra vez"
           onRestart={handleRestart}
+      contenedorId="pantalla-escenario"
         />
       ) : (
         showChoices && (

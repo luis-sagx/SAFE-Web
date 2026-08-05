@@ -2,25 +2,29 @@ import StoryEscenario, { type ScreenNode } from '../../components/StoryEscenario
 import { ACCIONES_BARRA, finalesDeBarra } from './barraDeCorreo'
 import type { Story } from '../../hooks/useStoryEngine'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
+import type { Senal } from '../../components/ui/PanelVeredicto'
 
 const CORREO: ScreenView = {
   kind: 'mail',
   from: 'Soporte TI · Corporación Andes',
   address: 'soporte-ti@andes-ec.net',
+  senalDireccion: 'remitente',
+  label: 'Externo',
+  senalEtiqueta: 'externo',
   subject: 'Tu contraseña caduca hoy · acción requerida',
   date: 'hoy 16:05',
   body: `
-    <p>Hola,</p>
+    <p><span data-signal="saludo">Hola,</span></p>
     <p>
-      Tu contraseña de correo institucional <b>caduca hoy a las 18:00</b>. Si no la renuevas,
+      Tu contraseña de correo institucional <mark class="marca" data-signal="plazo">caduca hoy a las 18:00</mark>. Si no la renuevas,
       perderás el acceso a tu buzón y tendrás que abrir un ticket con Sistemas para
       recuperarlo.
     </p>
     <p><a class="cta" href="#">Mantener mi contraseña actual</a></p>
-    <p class="fine">
-      Departamento de Tecnología · Corporación Andes<br />
-      Correo generado automáticamente por el servidor de identidad.
-    </p>
+  `,
+  footer: `
+    <p>Departamento de Tecnología · Corporación Andes<br />
+      Correo generado automáticamente por el servidor de identidad.</p>
   `,
 }
 
@@ -28,12 +32,13 @@ const PAGINA: ScreenView = {
   kind: 'web',
   url: 'https://correo.andes-ec.net/owa/login',
   secure: true,
+  senalUrl: 'url',
   brand: 'Corporación Andes',
   title: 'Inicia sesión para continuar',
   subtitle: 'Confirma tu contraseña actual para mantenerla vigente 90 días más.',
   fields: [
     { label: 'Correo institucional', placeholder: 'nombre.apellido@andes.com.ec' },
-    { label: 'Contraseña actual', placeholder: '••••••••' },
+    { label: 'Contraseña actual', placeholder: '••••••••', senal: 'campo-clave' },
   ],
   button: 'Mantener contraseña',
 }
@@ -95,12 +100,12 @@ const STORY: Story<ScreenNode> = {
   },
 }
 
-const SIGNALS = [
-  'El dominio del remitente es <b>andes-ec.net</b>, parecido al real <b>andes.com.ec</b>.',
-  'Tiene <b>candado y https</b>: la conexión segura no dice nada de quién está del otro lado.',
-  'Amenaza con <b>perder el acceso hoy mismo</b> para que actúes sin pensar.',
-  'Pide escribir tu <b>contraseña actual</b> en una página abierta desde un correo.',
-  'No te llama por tu nombre ni menciona ningún dato tuyo.',
+const SENALES: Senal[] = [
+  { id: 's1', targetId: 'remitente', texto: 'El dominio del remitente es <b>andes-ec.net</b>, parecido al real <b>andes.com.ec</b>.' },
+  { id: 's2', targetId: 'url', texto: 'Tiene <b>candado y https</b>: la conexión segura no dice nada de quién está del otro lado.' },
+  { id: 's3', targetId: 'plazo', texto: 'Amenaza con <b>perder el acceso hoy mismo</b> para que actúes sin pensar.' },
+  { id: 's4', targetId: 'campo-clave', texto: 'Pide escribir tu <b>contraseña actual</b> en una página abierta desde un correo.' },
+  { id: 's5', targetId: 'saludo', texto: 'No te llama por tu nombre ni menciona ningún dato tuyo.' },
 ]
 const RULE =
   'Regla de oro: el candado verde no significa que el sitio sea legítimo, solo que la conexión va cifrada. <b>Lee el dominio completo</b> y cambia tus contraseñas entrando por el sistema de la empresa, nunca desde un enlace.'
@@ -129,8 +134,7 @@ function ClaveCaducada() {
       contexto={CONTEXTO}
       story={STORY}
       accionesCorreo={ACCIONES_BARRA}
-      signalsTitle="Las señales de este correo"
-      signals={SIGNALS}
+      senales={SENALES}
       rule={RULE}
       restartLabel="↻ Repetir el escenario"
     />
