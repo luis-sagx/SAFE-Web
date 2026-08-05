@@ -133,7 +133,11 @@ const BASE: EscenarioBase[] = [
     escenarioId: 'rol-de-pagos',
     titulo: 'Rol de pagos disponible',
     descripcion: 'Talento Humano notifica que el rol del mes ya está publicado en el portal.',
-    version: 2,
+    // v3: el escenario se juega en un navegador con pestañas — el
+    // participante actúa directo sobre el correo y el portal en vez de
+    // elegir de una lista de opciones. Las corridas de versiones distintas
+    // no son comparables entre sí.
+    version: 3,
     naturaleza: 'legitimo',
     dificultad: 3,
     espeja: 'phishing/clave-caducada',
@@ -162,7 +166,11 @@ const BASE: EscenarioBase[] = [
     escenarioId: 'quishing-actualice',
     titulo: 'Código para actualizar datos',
     descripcion: 'El banco pide escanear un código QR para no perder el acceso a la cuenta.',
-    version: 2,
+    // v3: el escenario se juega en un navegador con pestañas; el QR es el
+    // punto interactivo (no hay "vista previa" posible, así que escanear ya
+    // abre la página falsa). Las corridas de versiones distintas no son
+    // comparables entre sí.
+    version: 3,
     naturaleza: 'fraude',
     dificultad: 4,
     espeja: 'phishing/aviso-filtracion',
@@ -183,11 +191,16 @@ const BASE: EscenarioBase[] = [
     // El más difícil del módulo: la redacción es impecable y el anzuelo está en
     // el dominio y en pedir el OTP fuera de la app. Espeja con aviso-filtracion,
     // que es la misma forma —una alerta de seguridad— pero verdadera.
+    //
+    // v3: el escenario se juega en un navegador con pestañas; pasar de la
+    // página de clave al OTP es la misma pestaña avanzando un paso, como en
+    // un kit de phishing real. Las corridas de versiones distintas no son
+    // comparables entre sí.
     seccionId: 'phishing',
     escenarioId: 'sesion-bogota',
     titulo: 'Inicio de sesión desconocido',
     descripcion: 'Una alerta nocturna avisa de un acceso a tu cuenta desde otra ciudad.',
-    version: 2,
+    version: 3,
     naturaleza: 'fraude',
     dificultad: 5,
     espeja: 'phishing/aviso-filtracion',
