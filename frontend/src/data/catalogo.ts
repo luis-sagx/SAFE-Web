@@ -101,9 +101,11 @@ const BASE: EscenarioBase[] = [
     descripcion:
       'Un correo institucional anuncia un comprobante pendiente y da un plazo de 24 horas.',
     // v2: la barra del cliente de correo pasó a ser funcional y sumó cinco
-    // finales (responder, reenviar, archivar, eliminar, marcar como spam). Las
-    // corridas de la v1 no son comparables: en ellas esas salidas no existían.
-    version: 2,
+    // finales (responder, reenviar, archivar, eliminar, marcar como spam).
+    // v3: el adjunto pasó de .html a un ejecutable .vbs con doble extensión.
+    // Las corridas de versiones distintas no son comparables entre sí: el
+    // estímulo que vio cada participante no fue el mismo.
+    version: 3,
     naturaleza: 'fraude',
     dificultad: 2,
     espeja: 'phishing/rol-de-pagos',
