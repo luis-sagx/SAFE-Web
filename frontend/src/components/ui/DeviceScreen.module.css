@@ -241,13 +241,22 @@
   gap: 2px;
 }
 .mailNavItem {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  width: 100%;
   display: flex;
   align-items: center;
   gap: 8px;
+  font: inherit;
   font-size: 15px;
+  text-align: left;
   color: var(--dim);
   padding: 7px 8px;
   border-radius: 6px;
+}
+button.mailNavItem {
+  cursor: pointer;
 }
 .mailNavIcon {
   width: 18px;
@@ -320,6 +329,9 @@
   overflow-y: auto;
   overscroll-behavior: contain;
   padding: 20px 22px 24px;
+}
+.mailFolderEmpty {
+  color: var(--dim);
 }
 
 .subject {
