@@ -1,5 +1,4 @@
-import { MailNav, Taskbar, Titlebar } from './DesktopChrome'
-import { useAuth } from '../../context/AuthContext'
+import { Taskbar, Titlebar, VentanaCorreo } from './DesktopChrome'
 import styles from './DeviceScreen.module.css'
 
 /**
@@ -43,50 +42,26 @@ export type ScreenView =
     }
 
 function DeviceScreen({ view }: { view: ScreenView }) {
-  const { correoSimulado } = useAuth()
   if (view.kind === 'mail') {
     return (
-      <section className={`${styles.screen} ${styles.desktop}`} aria-label="Bandeja de correo">
-        <Titlebar texto="Correo (Recibidos)" />
-
-        <div className={styles.desktopBody}>
-          <MailNav />
-
-          <div className={styles.mailbody}>
-            <h1 className={styles.subject}>{view.subject}</h1>
-
-            <div className={styles.senderRow}>
-              <div className={styles.avatar} aria-hidden>
-                {view.from.slice(0, 1).toUpperCase()}
-              </div>
-              <div className={styles.senderId}>
-                <p className={styles.senderName}>
-                  {view.from}
-                  {view.label && <span className={styles.label}>{view.label}</span>}
-                </p>
-                <p className={styles.senderAddr}>{view.address}</p>
-                <p className={styles.senderTo}>para {correoSimulado}</p>
-              </div>
-              <span className={styles.date}>{view.date}</span>
-            </div>
-
-            <div
-              className={styles.prose}
-              // Contenido fijo del escenario: permite negritas y el enlace falso.
-              dangerouslySetInnerHTML={{ __html: view.body }}
-            />
-
-            {view.attachment && (
-              <div className={styles.attachment}>
-                <span aria-hidden>📎</span>
-                {view.attachment}
-              </div>
-            )}
-          </div>
-        </div>
-
-        <Taskbar />
-      </section>
+      <VentanaCorreo
+        asunto={view.subject}
+        remitente={{ nombre: view.from, direccion: view.address, etiqueta: view.label }}
+        recibido={view.date}
+        adjunto={
+          view.attachment && (
+            <span className={styles.attachment}>
+              <span className={styles.attachmentTipo} aria-hidden>
+                📎
+              </span>
+              <span className={styles.attachmentNombre}>{view.attachment}</span>
+            </span>
+          )
+        }
+      >
+        {/* Contenido fijo del escenario: permite negritas y el enlace falso. */}
+        <div dangerouslySetInnerHTML={{ __html: view.body }} />
+      </VentanaCorreo>
     )
   }
 

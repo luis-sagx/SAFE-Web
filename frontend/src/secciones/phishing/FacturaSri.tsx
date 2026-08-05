@@ -1,10 +1,8 @@
 import { Archive, Forward, Reply, ShieldAlert, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import EscenarioLayout from '../../components/EscenarioLayout'
-import { useAuth } from '../../context/AuthContext'
 import {
-  MailNav,
-  MailToolbar,
+  VentanaCorreo,
   VentanaEscritorio,
   type AccionCorreo,
 } from '../../components/ui/DesktopChrome'
@@ -226,99 +224,69 @@ interface PantallaProps {
 }
 
 function PantallaCorreo({ onHotspot, recibido }: PantallaProps & { recibido: string }) {
-  const { correoSimulado } = useAuth()
   return (
-    <VentanaEscritorio
-      titulo="Correo (Recibidos)"
-      ariaLabel="Bandeja de correo"
+    <VentanaCorreo
       onClick={onHotspot}
       atajo={ATAJO_PORTAL}
       reloj="vivo"
+      acciones={ACCIONES}
+      asunto="Factura electrónica pendiente de validación"
+      remitente={{
+        nombre: 'SRI · Facturación Electrónica',
+        direccion: 'notificaciones@sri-facturacion-ec.com',
+        etiqueta: 'Externo',
+        senalDireccion: 'remitente',
+        senalEtiqueta: 'externo',
+      }}
+      recibido={recibido}
+      adjunto={
+        <BotonHotspot
+          goto="e_adjunto"
+          label="Descargó el archivo adjunto"
+          signalId="adjunto"
+          className={styles.attachment}
+        >
+          <span className={styles.attachmentTipo} aria-hidden>
+            HTML
+          </span>
+          <span className={styles.attachmentNombre}>
+            Factura_004521.html
+            <span className={styles.attachmentPeso}>34 KB</span>
+          </span>
+        </BotonHotspot>
+      }
+      pie={
+        <>
+          <p>Servicio de Rentas Internas · Dirección Nacional de Facturación Electrónica</p>
+          <p>Av. Amazonas y Unión Nacional de Periodistas, Quito, Ecuador</p>
+          <p>
+            Este correo y sus anexos son de carácter confidencial. Si lo recibió por error,
+            notifíquelo al remitente y elimínelo de su sistema.
+          </p>
+        </>
+      }
     >
-      <div className={styles.desktopBody}>
-        <MailNav />
-
-        <div className={styles.mailPane}>
-          <MailToolbar acciones={ACCIONES} />
-
-          <div className={styles.mailbody}>
-            <h1 className={styles.subject}>Factura electrónica pendiente de validación</h1>
-
-            <div className={styles.senderRow}>
-              <div className={styles.avatar} aria-hidden>
-                S
-              </div>
-              <div className={styles.senderId}>
-                <p className={styles.senderName}>
-                  SRI · Facturación Electrónica
-                  <span className={styles.label} data-signal="externo">
-                    Externo
-                  </span>
-                </p>
-                <p className={styles.senderAddr} data-signal="remitente">
-                  notificaciones@sri-facturacion-ec.com
-                </p>
-                <p className={styles.senderTo}>para {correoSimulado}</p>
-              </div>
-              <span className={styles.date}>{recibido}</span>
-            </div>
-
-            <div className={styles.prose}>
-              <p>Estimado contribuyente:</p>
-              <p>
-                Nuestro sistema detectó una <b>factura electrónica no validada</b> asociada a su
-                RUC. Si no completa la validación en las próximas{' '}
-                <mark className={styles.marca} data-signal="plazo">
-                  24 horas
-                </mark>
-                , su comprobante será anulado y se aplicará una multa administrativa.
-              </p>
-              <p>
-                <EnlaceHotspot
-                  goto="n2"
-                  label="Abrió el enlace para validar la factura"
-                  href="http://sri-facturacion-ec.com/validar-ruc"
-                  className="cta"
-                >
-                  Validar mi factura ahora
-                </EnlaceHotspot>
-              </p>
-              <p className="fine">Este mensaje es automático, por favor no responda.</p>
-            </div>
-
-            <div className={styles.attachmentZone}>
-              <p className={styles.attachmentCount}>1 archivo adjunto</p>
-              <BotonHotspot
-                goto="e_adjunto"
-                label="Descargó el archivo adjunto"
-                signalId="adjunto"
-                className={styles.attachment}
-              >
-                <span className={styles.attachmentTipo} aria-hidden>
-                  HTML
-                </span>
-                <span className={styles.attachmentNombre}>
-                  Factura_004521.html
-                  <span className={styles.attachmentPeso}>34 KB</span>
-                </span>
-              </BotonHotspot>
-            </div>
-
-            {/* Pie institucional: ningún correo real termina justo después del
-              botón. Es texto plano a propósito, sin enlaces — un "darse de
-              baja" que no responde al clic frustraría sin enseñar nada. */}
-            <div className={styles.mailFooter}>
-              <p>Servicio de Rentas Internas · Dirección Nacional de Facturación Electrónica</p>
-              <p>Av. Amazonas y Unión Nacional de Periodistas, Quito, Ecuador</p>
-              <p>
-                Este correo y sus anexos son de carácter confidencial. Si lo recibió por error,
-                notifíquelo al remitente y elimínelo de su sistema.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </VentanaEscritorio>
+      <p>Estimado contribuyente:</p>
+      <p>
+        Nuestro sistema detectó una <b>factura electrónica no validada</b> asociada a su RUC. Si no
+        completa la validación en las próximas{' '}
+        <mark className={styles.marca} data-signal="plazo">
+          24 horas
+        </mark>
+        , su comprobante será anulado y se aplicará una multa administrativa.
+      </p>
+      <p>
+        <EnlaceHotspot
+          goto="n2"
+          label="Abrió el enlace para validar la factura"
+          href="http://sri-facturacion-ec.com/validar-ruc"
+          className="cta"
+        >
+          Validar mi factura ahora
+        </EnlaceHotspot>
+      </p>
+      <p className="fine">Este mensaje es automático, por favor no responda.</p>
+    </VentanaCorreo>
   )
 }
 

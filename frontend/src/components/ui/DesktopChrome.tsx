@@ -5,7 +5,18 @@ import {
   formatoHora,
   useRelojDelSistema,
 } from '../../hooks/useRelojDelSistema'
+import { useAuth } from '../../context/AuthContext'
 import styles from './DeviceScreen.module.css'
+
+/** Acceso directo anclado en la barra de tareas. */
+export interface AtajoTaskbar {
+  texto: string
+  goto: string
+  label: string
+}
+
+/** Hora del sistema: un par fijo, o `'vivo'` para la real del equipo. */
+export type Reloj = { hora: string; fecha: string } | 'vivo'
 
 export interface AccionCorreo {
   Icono: LucideIcon
@@ -114,7 +125,7 @@ export function Taskbar({
   atajo,
   reloj = { hora: '10:41', fecha: '4/8/2026' },
 }: {
-  atajo?: { texto: string; goto: string; label: string }
+  atajo?: AtajoTaskbar
   /** La hora del sistema.
    *
    *  `'vivo'` toma la hora real del equipo y la deja avanzar, que es lo que
@@ -125,7 +136,7 @@ export function Taskbar({
    *
    *  Un par fijo sigue valiendo para los escenarios cuya historia depende de
    *  una hora concreta ("son casi las diez de la noche"). */
-  reloj?: { hora: string; fecha: string } | 'vivo'
+  reloj?: Reloj
 }) {
   const ahora = useRelojDelSistema()
   const { hora, fecha } =
@@ -176,8 +187,8 @@ export function VentanaEscritorio({
   children,
 }: {
   titulo: string
-  atajo?: { texto: string; goto: string; label: string }
-  reloj?: { hora: string; fecha: string } | 'vivo'
+  atajo?: AtajoTaskbar
+  reloj?: Reloj
   onClick?: (event: React.MouseEvent) => void
   ariaLabel: string
   children: ReactNode
@@ -186,6 +197,123 @@ export function VentanaEscritorio({
     <section className={`${styles.screen} ${styles.desktop}`} aria-label={ariaLabel} onClick={onClick}>
       <Titlebar texto={titulo} />
       {children}
+      <Taskbar atajo={atajo} reloj={reloj} />
+    </section>
+  )
+}
+
+/** Remitente tal y como lo pinta la cabecera del mensaje. */
+export interface RemitenteCorreo {
+  nombre: string
+  direccion: string
+  /** Etiqueta que pone el propio cliente: "Externo", "Promociones"… */
+  etiqueta?: string
+  /** `data-signal` para que el repaso pueda resaltar la dirección. */
+  senalDireccion?: string
+  senalEtiqueta?: string
+}
+
+interface VentanaCorreoProps {
+  asunto: string
+  remitente: RemitenteCorreo
+  /** Fecha u hora de llegada, ya formateada por el escenario. */
+  recibido: string
+  /** Barra de acciones. Sin ella no se pinta: un cliente sin barra se ve
+   *  incompleto, pero una barra que no responde se ve rota, y eso es peor. */
+  acciones?: AccionCorreo[]
+  atajo?: AtajoTaskbar
+  reloj?: Reloj
+  /** Manejador delegado de puntos interactivos, si el escenario los usa. */
+  onClick?: (event: React.MouseEvent) => void
+  /** El adjunto entero, para que cada escenario decida si es pulsable. */
+  adjunto?: ReactNode
+  /** Pie institucional del mensaje. */
+  pie?: ReactNode
+  /** Cuerpo del correo. */
+  children: ReactNode
+}
+
+/**
+ * La ventana de correo, completa y una sola vez.
+ *
+ * Estaba escrita dos veces —en DeviceScreen para los escenarios que eligen de
+ * una lista, y a mano en el escenario interactivo— y las dos copias ya habían
+ * divergido: la barra de acciones, el pie y el adjunto con miniatura solo
+ * existían en una. Cada mejora del cliente había que hacerla dos veces o se
+ * quedaba a medias.
+ *
+ * Aquí vive todo lo que es *el cliente de correo*: la ventana, las carpetas, la
+ * barra de acciones, la cabecera del remitente, la zona de adjuntos y la franja
+ * de tareas. Lo que cambia de un escenario a otro —quién escribe, qué dice, qué
+ * trae adjunto— entra por props, y el cuerpo por `children`, que admite tanto
+ * HTML fijo como puntos interactivos de verdad.
+ */
+export function VentanaCorreo({
+  asunto,
+  remitente,
+  recibido,
+  acciones,
+  atajo,
+  reloj,
+  onClick,
+  adjunto,
+  pie,
+  children,
+}: VentanaCorreoProps) {
+  const { correoSimulado } = useAuth()
+
+  return (
+    <section
+      className={`${styles.screen} ${styles.desktop}`}
+      aria-label="Bandeja de correo"
+      onClick={onClick}
+    >
+      <Titlebar texto="Correo (Recibidos)" />
+
+      <div className={styles.desktopBody}>
+        <MailNav />
+
+        <div className={styles.mailPane}>
+          {acciones && <MailToolbar acciones={acciones} />}
+
+          <div className={styles.mailbody}>
+            <h1 className={styles.subject}>{asunto}</h1>
+
+            <div className={styles.senderRow}>
+              <div className={styles.avatar} aria-hidden>
+                {remitente.nombre.slice(0, 1).toUpperCase()}
+              </div>
+              <div className={styles.senderId}>
+                <p className={styles.senderName}>
+                  {remitente.nombre}
+                  {remitente.etiqueta && (
+                    <span className={styles.label} data-signal={remitente.senalEtiqueta}>
+                      {remitente.etiqueta}
+                    </span>
+                  )}
+                </p>
+                <p className={styles.senderAddr} data-signal={remitente.senalDireccion}>
+                  {remitente.direccion}
+                </p>
+                <p className={styles.senderTo}>para {correoSimulado}</p>
+              </div>
+              <span className={styles.date}>{recibido}</span>
+            </div>
+
+            <div className={styles.prose}>{children}</div>
+
+            {adjunto && (
+              <div className={styles.attachmentZone}>
+                <p className={styles.attachmentCount}>1 archivo adjunto</p>
+                {adjunto}
+              </div>
+            )}
+
+            {pie && <div className={styles.mailFooter}>{pie}</div>}
+          </div>
+        </div>
+      </div>
+
       <Taskbar atajo={atajo} reloj={reloj} />
     </section>
   )
