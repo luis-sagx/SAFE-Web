@@ -1,32 +1,31 @@
 import {
   Archive,
+  Building2,
   File,
   Forward,
+  Globe,
+  Landmark,
+  Newspaper,
   Reply,
   ShieldAlert,
+  ShieldCheck,
   Trash2,
-} from "lucide-react";
-import { useState } from "react";
-import EscenarioLayout from "../../components/EscenarioLayout";
+} from 'lucide-react'
+import type { ReactNode } from 'react'
+import { useState } from 'react'
+import EscenarioLayout from '../../components/EscenarioLayout'
 import {
-  VentanaCorreo,
-  VentanaEscritorio,
+  CuerpoCorreo,
+  Taskbar,
+  Titlebar,
   type AccionCorreo,
   type CarpetaCorreo,
-} from "../../components/ui/DesktopChrome";
-import styles from "../../components/ui/DeviceScreen.module.css";
-import {
-  BotonHotspot,
-  EnlaceHotspot,
-  manejarClicHotspot,
-} from "../../components/ui/interactivo";
-import PanelVeredicto, { type Senal } from "../../components/ui/PanelVeredicto";
-import { formatoHora } from "../../hooks/useRelojDelSistema";
-import {
-  useStoryEngine,
-  type Story,
-  type StoryNode,
-} from "../../hooks/useStoryEngine";
+} from '../../components/ui/DesktopChrome'
+import styles from '../../components/ui/DeviceScreen.module.css'
+import { BotonHotspot, EnlaceHotspot, manejarClicHotspot } from '../../components/ui/interactivo'
+import PanelVeredicto, { type Senal } from '../../components/ui/PanelVeredicto'
+import { formatoHora } from '../../hooks/useRelojDelSistema'
+import { useStoryEngine, type Story, type StoryNode } from '../../hooks/useStoryEngine'
 
 /**
  * Primer escenario interactivo del proyecto: en vez de elegir de una lista de
@@ -45,107 +44,116 @@ import {
 /// `goto`/`label` en la pantalla, no en una lista aparte que haya que
 /// mantener sincronizada.
 const STORY: Story<StoryNode> = {
-  n1: { kind: "scene" },
-  n2: { kind: "scene" },
+  n1: { kind: 'scene' },
+  n2: { kind: 'scene' },
+  // El portal legítimo. Un solo nodo, aunque el final dependa de por dónde se
+  // llegó: con dos nodos, el marcador abría una segunda pestaña del mismo sitio
+  // en vez de ir a la que ya estaba abierta. Cuál de los dos finales acredita
+  // se decide al cerrarla, mirando si la página falsa llegó a abrirse.
+  n3: { kind: 'scene' },
   e_adjunto: {
-    kind: "bad",
-    verdict: "Caíste en la trampa",
+    kind: 'bad',
+    verdict: 'Caíste en la trampa',
     outcome:
-      "No se abrió ninguna factura: el archivo era un programa y tu equipo lo ejecutó. En segundo plano descargó un ladrón de contraseñas que recogió las que tenías guardadas en el navegador, incluida la del portal del SRI. No apareció ninguna ventana ni ningún aviso.",
+      'No se abrió ninguna factura: el archivo era un programa y tu equipo lo ejecutó. En segundo plano descargó un ladrón de contraseñas que recogió las que tenías guardadas en el navegador, incluida la del portal del SRI. No apareció ninguna ventana ni ningún aviso.',
   },
   e_datos: {
-    kind: "bad",
-    verdict: "Caíste en la trampa",
+    kind: 'bad',
+    verdict: 'Caíste en la trampa',
     outcome:
-      "Entregaste tu RUC y tu clave del portal en un sitio que no es del SRI. Con esos datos pueden emitir comprobantes a tu nombre y ver tu información tributaria.",
+      'Entregaste tu RUC y tu clave del portal en un sitio que no es del SRI. Con esos datos pueden emitir comprobantes a tu nombre y ver tu información tributaria.',
   },
   e_dominio: {
-    kind: "good",
-    verdict: "No caíste · revisaste la dirección",
+    kind: 'good',
+    verdict: 'No caíste · revisaste la dirección',
     outcome:
-      "La dirección era sri-facturacion-ec.com y ni siquiera usaba conexión segura. El portal real del SRI está en sri.gob.ec. Cerraste la página sin escribir nada.",
+      'La dirección era sri-facturacion-ec.com y ni siquiera usaba conexión segura. El portal real del SRI está en sri.gob.ec. Cerraste la página sin escribir nada.',
   },
   e_portal: {
-    kind: "good",
-    verdict: "No caíste · entraste por tu cuenta",
+    kind: 'good',
+    verdict: 'No caíste · entraste por tu cuenta',
     outcome:
-      "Entraste al portal del SRI escribiendo tú la dirección. No había ninguna factura pendiente ni multa: el correo era falso.",
+      'Entraste al portal del SRI escribiendo tú la dirección. No había ninguna factura pendiente ni multa: el correo era falso.',
   },
 
   // Los cinco finales de la barra de acciones del cliente. Ninguno entrega la
   // clave, pero no todos protegen igual: por eso hay 'partial' entre medio, y
   // no solo "caíste / no caíste".
   e_spam: {
-    kind: "good",
-    verdict: "No caíste · lo reportaste",
+    kind: 'good',
+    verdict: 'No caíste · lo reportaste',
     outcome:
-      "Marcarlo como spam es la mejor reacción posible: no caíste y además tu proveedor de correo aprende a filtrar ese remitente, así que el mismo mensaje le llega a menos gente.",
+      'Marcarlo como spam es la mejor reacción posible: no caíste y además tu proveedor de correo aprende a filtrar ese remitente, así que el mismo mensaje le llega a menos gente.',
   },
   e_eliminar: {
-    kind: "good",
-    verdict: "No caíste · lo eliminaste",
+    kind: 'good',
+    verdict: 'No caíste · lo eliminaste',
     outcome:
-      "Lo borraste sin tocar el enlace ni el adjunto, que es suficiente para no caer. Marcarlo como spam habría hecho algo más: avisar al filtro para que no le llegue a otros.",
+      'Lo borraste sin tocar el enlace ni el adjunto, que es suficiente para no caer. Marcarlo como spam habría hecho algo más: avisar al filtro para que no le llegue a otros.',
   },
   e_archivar: {
-    kind: "partial",
-    verdict: "No caíste, pero lo dejaste ahí",
+    kind: 'partial',
+    verdict: 'No caíste, pero lo dejaste ahí',
     outcome:
-      "Archivarlo te sacó el correo de la vista sin resolver nada. Sigue en tu buzón, nadie más se enteró, y si mañana le llega a un compañero va a llegar igual de intacto.",
+      'Archivarlo te sacó el correo de la vista sin resolver nada. Sigue en tu buzón, nadie más se enteró, y si mañana le llega a un compañero va a llegar igual de intacto.',
   },
   e_responder: {
-    kind: "partial",
-    verdict: "No entregaste la clave, pero contestaste",
+    kind: 'partial',
+    verdict: 'No entregaste la clave, pero contestaste',
     outcome:
-      "No diste tus datos, pero confirmaste que tu dirección existe y que alguien la lee. Es justo lo que un atacante busca para insistir con algo mejor preparado, y ahora tiene una conversación abierta contigo.",
+      'No diste tus datos, pero confirmaste que tu dirección existe y que alguien la lee. Es justo lo que un atacante busca para insistir con algo mejor preparado, y ahora tiene una conversación abierta contigo.',
   },
   e_reenviar: {
-    kind: "partial",
-    verdict: "No caíste tú, pero lo pasaste",
+    kind: 'partial',
+    verdict: 'No caíste tú, pero lo pasaste',
     outcome:
-      "Se lo reenviaste a otra persona para que opine. Tú no caíste, pero pusiste el enlace y el adjunto en la bandeja de alguien que quizá no los mire con la misma desconfianza. Para consultar una duda es mejor una captura, o preguntar sin reenviar.",
+      'Se lo reenviaste a otra persona para que opine. Tú no caíste, pero pusiste el enlace y el adjunto en la bandeja de alguien que quizá no los mire con la misma desconfianza. Para consultar una duda es mejor una captura, o preguntar sin reenviar.',
   },
-};
+}
 
 /// Todas llevan a un final: en la barra de un cliente de correo no puede haber
 /// botones de adorno. Ver MailToolbar.
 const ACCIONES: AccionCorreo[] = [
   {
     Icono: Reply,
-    etiqueta: "Responder",
-    titulo: "Responder",
-    goto: "e_responder",
-    label: "Respondió el correo",
+    etiqueta: 'Responder',
+    titulo: 'Responder',
+    goto: 'e_responder',
+    label: 'Respondió el correo',
   },
   {
     Icono: Forward,
-    etiqueta: "Reenviar",
-    titulo: "Reenviar",
-    goto: "e_reenviar",
-    label: "Reenvió el correo a otra persona",
+    etiqueta: 'Reenviar',
+    titulo: 'Reenviar',
+    goto: 'e_reenviar',
+    label: 'Reenvió el correo a otra persona',
   },
   {
     Icono: Archive,
-    etiqueta: "Archivar",
-    titulo: "Archivar",
-    goto: "e_archivar",
-    label: "Archivó el correo",
+    etiqueta: 'Archivar',
+    titulo: 'Archivar',
+    goto: 'e_archivar',
+    label: 'Archivó el correo',
   },
   {
     Icono: Trash2,
-    etiqueta: "Eliminar",
-    titulo: "Eliminar",
-    goto: "e_eliminar",
-    label: "Eliminó el correo",
+    etiqueta: 'Eliminar',
+    titulo: 'Eliminar',
+    goto: 'e_eliminar',
+    label: 'Eliminó el correo',
   },
   {
     Icono: ShieldAlert,
-    etiqueta: "Spam",
-    titulo: "Marcar como spam",
-    goto: "e_spam",
-    label: "Marcó el correo como spam",
+    etiqueta: 'Spam',
+    titulo: 'Marcar como spam',
+    goto: 'e_spam',
+    label: 'Marcó el correo como spam',
   },
-];
+]
+
+const ASUNTO = 'Factura electrónica pendiente de validación'
+const REMITENTE_NOMBRE = 'SRI · Facturación Electrónica'
+const DIRECCION = 'notificaciones@sri-facturacion-ec.com'
 
 /// A dónde va el correo según qué botón de la barra terminó el escenario, y
 /// si eso lo saca de Recibidos. Archivar no tiene carpeta propia en esta
@@ -154,17 +162,17 @@ const ACCIONES: AccionCorreo[] = [
 const DESTINO_ACCION: Record<
   string,
   {
-    carpeta?: "Enviados" | "Spam" | "Papelera";
-    prefijo?: string;
-    vaciaRecibidos: boolean;
+    carpeta?: 'Enviados' | 'Spam' | 'Papelera'
+    prefijo?: string
+    vaciaRecibidos: boolean
   }
 > = {
   e_archivar: { vaciaRecibidos: true },
-  e_eliminar: { carpeta: "Papelera", vaciaRecibidos: true },
-  e_spam: { carpeta: "Spam", vaciaRecibidos: true },
-  e_responder: { carpeta: "Enviados", prefijo: "Re:", vaciaRecibidos: false },
-  e_reenviar: { carpeta: "Enviados", prefijo: "Fwd:", vaciaRecibidos: false },
-};
+  e_eliminar: { carpeta: 'Papelera', vaciaRecibidos: true },
+  e_spam: { carpeta: 'Spam', vaciaRecibidos: true },
+  e_responder: { carpeta: 'Enviados', prefijo: 'Re:', vaciaRecibidos: false },
+  e_reenviar: { carpeta: 'Enviados', prefijo: 'Fwd:', vaciaRecibidos: false },
+}
 
 /// Misma fila de remitente que la bandeja principal (avatar, nombre,
 /// dirección): la lista de una carpeta con un mensaje suelto no debería verse
@@ -181,7 +189,7 @@ function ResumenMensaje({ prefijo }: { prefijo?: string }) {
         <p className={styles.mailFolderAsunto}>{prefijo ? `${prefijo} ${ASUNTO}` : ASUNTO}</p>
       </div>
     </div>
-  );
+  )
 }
 
 /// Estas carpetas son navegación interna del cliente, no decisiones del
@@ -189,38 +197,34 @@ function ResumenMensaje({ prefijo }: { prefijo?: string }) {
 /// cambia con la acción tomada es qué hay dentro de cada una, para que la
 /// barra de acciones y la barra lateral cuenten la misma historia.
 function carpetasCorreo(current: string, isEnding: boolean): CarpetaCorreo[] {
-  const destino = isEnding ? DESTINO_ACCION[current] : undefined;
-
+  const destino = isEnding ? DESTINO_ACCION[current] : undefined
   const carpetas: CarpetaCorreo[] = [
     {
-      nombre: "Enviados",
-      vacia: "No hay correos enviados.",
+      nombre: 'Enviados',
+      vacia: 'No hay correos enviados.',
       contenido:
-        destino?.carpeta === "Enviados" ? (
-          <ResumenMensaje prefijo={destino.prefijo} />
-        ) : undefined,
+        destino?.carpeta === 'Enviados' ? <ResumenMensaje prefijo={destino.prefijo} /> : undefined,
     },
     {
-      nombre: "Spam",
-      vacia: "No hay correos marcados como spam.",
-      contenido: destino?.carpeta === "Spam" ? <ResumenMensaje /> : undefined,
+      nombre: 'Spam',
+      vacia: 'No hay correos marcados como spam.',
+      contenido: destino?.carpeta === 'Spam' ? <ResumenMensaje /> : undefined,
     },
     {
-      nombre: "Papelera",
-      vacia: "La papelera está vacía.",
-      contenido:
-        destino?.carpeta === "Papelera" ? <ResumenMensaje /> : undefined,
+      nombre: 'Papelera',
+      vacia: 'La papelera está vacía.',
+      contenido: destino?.carpeta === 'Papelera' ? <ResumenMensaje /> : undefined,
     },
-  ];
+  ]
 
   if (destino?.vaciaRecibidos) {
     carpetas.push({
-      nombre: "Recibidos",
-      vacia: "No hay correos en la bandeja de entrada.",
-    });
+      nombre: 'Recibidos',
+      vacia: 'No hay correos en la bandeja de entrada.',
+    })
   }
 
-  return carpetas;
+  return carpetas
 }
 
 /// Cada señal apunta, cuando puede, al elemento real marcado con
@@ -228,126 +232,252 @@ function carpetasCorreo(current: string, isEnding: boolean): CarpetaCorreo[] {
 /// llevó a este final, el recorrido igual muestra el texto, sin resaltar.
 const SENALES: Senal[] = [
   {
-    id: "dominio",
-    pantalla: "n1",
-    targetId: "remitente",
+    id: 'dominio',
+    pantalla: 'n1',
+    targetId: 'remitente',
     texto:
-      "El remitente usa un <b>dominio parecido</b> pero ajeno: <b>sri-facturacion-ec.com</b>, no sri.gob.ec.",
+      'El remitente usa un <b>dominio parecido</b> pero ajeno: <b>sri-facturacion-ec.com</b>, no sri.gob.ec.',
   },
   {
-    id: "externo",
-    pantalla: "n1",
-    targetId: "externo",
+    id: 'dominio-real',
+    pantalla: 'n3',
+    targetId: 'url-real',
     texto:
-      "El propio cliente de correo lo marcó como <b>externo</b>: no vino de dentro de la organización, aunque diga ser de una institución.",
+      'Así se ve el portal de verdad: <b>sri.gob.ec</b> y con conexión segura. Compáralo con la dirección a la que llevaba el correo.',
   },
   {
-    id: "plazo",
-    pantalla: "n1",
-    targetId: "plazo",
-    texto: "Impone un <b>plazo de 24 horas</b> y amenaza con una multa.",
-  },
-  {
-    id: "conexion",
-    pantalla: "n2",
-    targetId: "url-insegura",
-    texto: "El enlace lleva a una página <b>sin conexión segura</b> (http).",
-  },
-  {
-    id: "adjunto",
-    pantalla: "n1",
-    targetId: "adjunto",
+    id: 'externo',
+    pantalla: 'n1',
+    targetId: 'externo',
     texto:
-      "El adjunto no es un documento sino un <b>programa</b>: un <b>.vbs</b> se ejecuta al abrirlo. La doble extensión <b>.pdf.vbs</b> lo disfraza, porque Windows oculta la última.",
+      'El propio cliente de correo lo marcó como <b>externo</b>: no vino de dentro de la organización, aunque diga ser de una institución.',
   },
   {
-    id: "clave",
-    pantalla: "n2",
-    targetId: "campo-clave",
+    id: 'plazo',
+    pantalla: 'n1',
+    targetId: 'plazo',
+    texto: 'Impone un <b>plazo de 24 horas</b> y amenaza con una multa.',
+  },
+  {
+    id: 'conexion',
+    pantalla: 'n2',
+    targetId: 'url-insegura',
+    texto: 'El enlace lleva a una página <b>sin conexión segura</b> (http).',
+  },
+  {
+    id: 'adjunto',
+    pantalla: 'n1',
+    targetId: 'adjunto',
+    texto:
+      'El adjunto no es un documento sino un <b>programa</b>: un <b>.vbs</b> se ejecuta al abrirlo. La doble extensión <b>.pdf.vbs</b> lo disfraza, porque Windows oculta la última.',
+  },
+  {
+    id: 'clave',
+    pantalla: 'n2',
+    targetId: 'campo-clave',
     texto: 'Pide tu <b>clave</b> del portal para "validar" algo.',
   },
-];
+]
 
 const RULE =
-  "Regla de oro: ninguna entidad pública te pide tu clave por correo. Si un mensaje dice que tienes algo pendiente, <b>entra al portal oficial escribiendo tú la dirección</b>, nunca por el enlace del correo.";
+  'Regla de oro: ninguna entidad pública te pide tu clave por correo. Si un mensaje dice que tienes algo pendiente, <b>entra al portal oficial escribiendo tú la dirección</b>, nunca por el enlace del correo.'
 
-const RESUMEN =
-  "Un correo dice que tienes una factura electrónica pendiente de validar.";
+const RESUMEN = 'Un correo dice que tienes una factura electrónica pendiente de validar.'
 
 const CONTEXTO = (
   <>
     <p>
-      Abres tu correo y ves un mensaje del{" "}
-      <strong>Servicio de Rentas Internas</strong> que llegó hace unos minutos,
-      sobre una factura pendiente.
+      Abres tu correo y ves un mensaje del <strong>Servicio de Rentas Internas</strong> que llegó
+      hace unos minutos, sobre una factura pendiente.
     </p>
     <p>
-      Emites facturas de vez en cuando, así que un aviso del SRI no te
-      sorprende. Nunca antes te habían escrito por este tema.
+      Emites facturas de vez en cuando, así que un aviso del SRI no te sorprende. Nunca antes te
+      habían escrito por este tema.
     </p>
   </>
-);
+)
 
 /// Solo mecánica, y solo antes de entrar: dentro del escenario el bloque de
 /// decisión ya la explica, y repetirla ahí robaría espacio a la historia.
 const NOTA = (
   <>
     <p>
-      Vas a ver tu computador con el correo abierto. Puedes actuar sobre la
-      pantalla como lo harías de verdad.
+      Vas a ver tu computador con el correo abierto. Puedes actuar sobre la pantalla como lo harías
+      de verdad.
     </p>
     <p className="mt-2">
-      Lo primero que hagas cierra el escenario y te muestra en qué habría
-      terminado.
+      Lo primero que hagas cierra el escenario y te muestra en qué habría terminado.
     </p>
   </>
-);
-
-const ASUNTO = "Factura electrónica pendiente de validación";
-const REMITENTE_NOMBRE = "SRI · Facturación Electrónica";
-const DIRECCION = "notificaciones@sri-facturacion-ec.com";
-
-const ATAJO_PORTAL = {
-  texto: "🏦 Portal SRI",
-  goto: "e_portal",
-  label: "Cerró el correo y entró al portal del SRI escribiendo la dirección",
-};
+)
 
 /// Cinco minutos antes de abrir el escenario. La hora del correo se calcula a
 /// partir del ahora porque la barra de tareas muestra la hora real y avanza:
 /// con una hora fija el mensaje quedaría fechado en un momento que el reloj de
 /// la propia ventana desmiente. "Hace unos minutos" es además lo que dice el
 /// contexto, y lo que hace verosímil que todavía no lo hubieras visto.
-const MINUTOS_DE_ANTIGUEDAD = 5;
+const MINUTOS_DE_ANTIGUEDAD = 5
 
 function horaDeLlegada(): string {
-  const llegada = new Date(Date.now() - MINUTOS_DE_ANTIGUEDAD * 60_000);
-  return `hoy ${formatoHora(llegada)}`;
+  const llegada = new Date(Date.now() - MINUTOS_DE_ANTIGUEDAD * 60_000)
+  return `hoy ${formatoHora(llegada)}`
 }
 
-interface PantallaProps {
-  onHotspot: (event: React.MouseEvent) => void;
+/// Lo que muestra la barra de direcciones y la pestaña de cada pantalla. La
+/// dirección es la señal principal del escenario, así que vive junto al nodo y
+/// no dentro de cada componente.
+const PESTANAS: Record<
+  string,
+  { titulo: string; url: string; segura: boolean; cierra?: string; senalUrl?: string }
+> = {
+  n1: { titulo: 'Correo', url: 'https://correo.safeweb.com/u/0/#recibidos', segura: true },
+  n2: {
+    titulo: 'Validación de comprobante',
+    url: 'http://sri-facturacion-ec.com/validar-ruc',
+    segura: false,
+    // Cerrarla devuelve al correo sin decidir nada: irse de una página que da
+    // mala espina no es un veredicto todavía.
+    cierra: 'n1',
+    senalUrl: 'url-insegura',
+  },
+  // Sin `cierra` fijo: lo decide el escenario según haya visitado o no la
+  // página falsa (ver `cierrePortal`).
+  n3: {
+    titulo: 'SRI en Línea',
+    url: 'https://srienlinea.sri.gob.ec/comprobantes',
+    segura: true,
+    senalUrl: 'url-real',
+  },
 }
 
-function PantallaCorreo({
+const MARCADORES = [
+  { Icono: Landmark, texto: 'Banco del Litoral' },
+  { Icono: Building2, texto: 'SRI en Línea', portal: true },
+  { Icono: Newspaper, texto: 'El Comercio' },
+]
+
+/**
+ * El navegador: una ventana con pestañas, en vez de una ventana por pantalla.
+ *
+ * Es lo que hace que el escenario se juegue como se juega en la vida real. El
+ * correo es una pestaña más; el enlace del mensaje abre otra, como abriría
+ * cualquier enlace; y las dos direcciones quedan a un clic de distancia, que es
+ * exactamente la comparación que el escenario quiere que alguien haga.
+ *
+ * También cambia dónde está la salida segura: ya no es un atajo del escritorio
+ * sino un marcador del navegador, junto a los demás sitios de siempre. Entrar
+ * por ahí es literalmente "abrir el portal por mi cuenta".
+ */
+function Navegador({
+  pestanas,
+  activa,
+  cierrePortal,
   onHotspot,
-  recibido,
-  carpetas,
-}: PantallaProps & { recibido: string; carpetas: CarpetaCorreo[] }) {
+  children,
+}: {
+  pestanas: string[]
+  activa: string
+  /** Final al que lleva cerrar la pestaña del portal. */
+  cierrePortal: string
+  onHotspot: (event: React.MouseEvent) => void
+  children: ReactNode
+}) {
+  const actual = PESTANAS[activa]
+
   return (
-    <VentanaCorreo
+    <section
+      className={`${styles.screen} ${styles.desktop}`}
+      aria-label="Navegador web"
       onClick={onHotspot}
-      atajo={ATAJO_PORTAL}
-      reloj="vivo"
+    >
+      <Titlebar texto="Navegador" />
+
+      <div className={styles.tabstrip} role="tablist">
+        {pestanas.map((id) => {
+          const meta = PESTANAS[id]
+          if (!meta) return null
+          const esActiva = id === activa
+          const cierra = id === 'n3' ? cierrePortal : meta.cierra
+
+          return (
+            <span
+              key={id}
+              className={`${styles.tab} ${esActiva ? '' : styles.tabInactiva}`}
+              role="tab"
+              aria-selected={esActiva}
+              data-hotspot-goto={esActiva ? undefined : id}
+              data-hotspot-label={`Cambió a la pestaña "${meta.titulo}"`}
+            >
+              <Globe aria-hidden className={styles.tabIcono} strokeWidth={1.75} />
+              <span className={styles.tabTexto}>{meta.titulo}</span>
+              {cierra && (
+                <button
+                  type="button"
+                  className={styles.tabClose}
+                  title={`Cerrar ${meta.titulo}`}
+                  aria-label={`Cerrar la pestaña ${meta.titulo}`}
+                  data-cierra={id}
+                  data-hotspot-goto={cierra}
+                  data-hotspot-label={`Cerró la pestaña "${meta.titulo}"`}
+                >
+                  ✕
+                </button>
+              )}
+            </span>
+          )
+        })}
+        <span className={styles.tabNueva} aria-hidden>
+          +
+        </span>
+      </div>
+
+      {/* La dirección de la pestaña activa. Es la señal principal del escenario:
+          con pestañas, comparar la falsa con la real es cambiar de una a otra. */}
+      <div className={styles.urlbar}>
+        {actual?.segura ? (
+          <span className={styles.lock}>🔒</span>
+        ) : (
+          <span className={styles.warn}>⚠ No seguro</span>
+        )}
+        <span className={styles.url} data-signal={actual?.senalUrl}>
+          {actual?.url}
+        </span>
+      </div>
+
+      <div className={styles.marcadores}>
+        {MARCADORES.map(({ Icono, texto, portal }) => (
+          <button
+            key={texto}
+            type="button"
+            className={styles.marcador}
+            data-hotspot-goto={portal ? 'n3' : undefined}
+            data-hotspot-label={portal ? 'Abrió el portal del SRI desde sus marcadores' : undefined}
+          >
+            <Icono aria-hidden className={styles.marcadorIcono} strokeWidth={1.75} />
+            {texto}
+          </button>
+        ))}
+      </div>
+
+      {children}
+
+      <Taskbar app="🌐 Navegador" reloj="vivo" />
+    </section>
+  )
+}
+
+function ContenidoCorreo({ recibido, carpetas }: { recibido: string; carpetas: CarpetaCorreo[] }) {
+  return (
+    <CuerpoCorreo
       acciones={ACCIONES}
       carpetas={carpetas}
       asunto={ASUNTO}
       remitente={{
         nombre: REMITENTE_NOMBRE,
         direccion: DIRECCION,
-        etiqueta: "Externo",
-        senalDireccion: "remitente",
-        senalEtiqueta: "externo",
+        etiqueta: 'Externo',
+        senalDireccion: 'remitente',
+        senalEtiqueta: 'externo',
       }}
       recibido={recibido}
       adjunto={
@@ -375,22 +505,19 @@ function PantallaCorreo({
       }
       pie={
         <>
-          <p>
-            Servicio de Rentas Internas · Dirección Nacional de Facturación
-            Electrónica
-          </p>
+          <p>Servicio de Rentas Internas · Dirección Nacional de Facturación Electrónica</p>
           <p>Av. Amazonas y Unión Nacional de Periodistas, Quito, Ecuador</p>
           <p>
-            Este correo y sus anexos son de carácter confidencial. Si lo recibió
-            por error, notifíquelo al remitente y elimínelo de su sistema.
+            Este correo y sus anexos son de carácter confidencial. Si lo recibió por error,
+            notifíquelo al remitente y elimínelo de su sistema.
           </p>
         </>
       }
     >
       <p>Estimado contribuyente:</p>
       <p>
-        Nuestro sistema detectó una <b>factura electrónica no validada</b>{" "}
-        asociada a su RUC. Si no completa la validación en las próximas{" "}
+        Nuestro sistema detectó una <b>factura electrónica no validada</b> asociada a su RUC. Si no
+        completa la validación en las próximas{' '}
         <mark className={styles.marca} data-signal="plazo">
           24 horas
         </mark>
@@ -407,49 +534,13 @@ function PantallaCorreo({
         </EnlaceHotspot>
       </p>
       <p className="fine">Este mensaje es automático, por favor no responda.</p>
-    </VentanaCorreo>
-  );
+    </CuerpoCorreo>
+  )
 }
 
-function PantallaPortal({ onHotspot }: PantallaProps) {
+function ContenidoPortalFalso() {
   return (
-    <VentanaEscritorio
-      titulo="Validación de comprobante"
-      ariaLabel="Página web simulada"
-      onClick={onHotspot}
-      reloj="vivo"
-      atajo={{
-        ...ATAJO_PORTAL,
-        goto: "e_dominio",
-        label: "Salió sin ingresar datos y entró al portal por su cuenta",
-      }}
-    >
-      {/* Pestaña de navegador: en el celular no hay pestañas visibles. */}
-      <div className={styles.tabstrip} aria-hidden>
-        <span className={styles.tab}>Validación de comprobante</span>
-      </div>
-
-      <div className={styles.urlbar} data-signal="url-insegura">
-        {/* Vuelve al correo sin cerrar el escenario: n1 es una escena, no un
-            final, así que la corrida sigue abierta. El paso queda en la traza,
-            que es justo lo que interesa medir — volver a mirar el mensaje antes
-            de decidir es una conducta prudente, no una decisión final. */}
-        <button
-          type="button"
-          className={styles.navBack}
-          title="Atrás"
-          aria-label="Volver al correo"
-          data-hotspot-goto="n1"
-          data-hotspot-label="Volvió al correo desde la página, sin escribir nada"
-        >
-          ←
-        </button>
-        <span className={styles.warn}>⚠ No seguro</span>
-        <span className={styles.url}>
-          http://sri-facturacion-ec.com/validar-ruc
-        </span>
-      </div>
-
+    <>
       <div className={styles.page}>
         <p className={styles.brand}>Servicio de Rentas</p>
         <h2 className={styles.pageTitle}>Validación de comprobante</h2>
@@ -484,12 +575,10 @@ function PantallaPortal({ onHotspot }: PantallaProps) {
           </BotonHotspot>
         </div>
 
-        <p className={styles.pageFooter}>
-          Portal de validación · sri-facturacion-ec.com
-        </p>
+        <p className={styles.pageFooter}>Portal de validación · sri-facturacion-ec.com</p>
       </div>
-    </VentanaEscritorio>
-  );
+    </>
+  )
 }
 
 /**
@@ -511,47 +600,51 @@ function PantallaPortal({ onHotspot }: PantallaProps) {
 function DecisionEnCurso({
   fallo,
   enPortal,
+  enPortalReal,
 }: {
-  fallo: boolean;
-  enPortal: boolean;
+  fallo: boolean
+  enPortal: boolean
+  enPortalReal: boolean
 }) {
   return (
     <div className="grid gap-3">
       <p className="text-lg font-semibold text-ink">¿Qué haces?</p>
       <p className="text-lg leading-relaxed text-body">
-        Actúa sobre la ventana como lo harías frente a tu correo de verdad:
-        puedes usar <strong>cualquier parte de ella</strong>, incluida la barra
-        de abajo. Antes de tocar un enlace, mantén el cursor encima para ver a
-        dónde lleva.
+        Actúa sobre la ventana como lo harías frente a tu correo de verdad: puedes usar{' '}
+        <strong>cualquier parte de ella</strong>, incluida la barra de abajo. Antes de tocar un
+        enlace, mantén el cursor encima para ver a dónde lleva.
       </p>
+      {enPortalReal && (
+        <p className="rounded-md border border-hairline-strong bg-canvas-soft px-3 py-2 text-base leading-relaxed text-body">
+          Este es el portal del SRI de verdad, abierto por ti.{' '}
+          <strong className="text-ink">No hay ninguna factura pendiente</strong>, así que el correo
+          mentía. Cierra la pestaña cuando termines de comprobarlo.
+        </p>
+      )}
+
       {/* Va aquí y no dentro de la página: el marco de los escenarios separa lo
           que la app real mostraría de lo que explica el ejercicio, y una página
           de phishing jamás avisaría de qué son sus campos. */}
       {enPortal && (
         <p className="rounded-md border border-hairline-strong bg-canvas-soft px-3 py-2 text-base leading-relaxed text-body">
-          El formulario ya aparece con{" "}
-          <strong className="text-ink">tu RUC y tu clave escritos</strong>. Es
-          así para no pedirte datos verdaderos —ese RUC no es el de nadie—, pero
-          enviarlo cuenta como entregarlos.
+          El formulario ya aparece con{' '}
+          <strong className="text-ink">tu RUC y tu clave escritos</strong>. Es así para no pedirte
+          datos verdaderos —ese RUC no es el de nadie—, pero enviarlo cuenta como entregarlos.
         </p>
       )}
 
       <p className="text-base leading-relaxed text-body">
-        Lo primero que hagas cierra el escenario y te muestra en qué terminaba.
-        No hay confirmación, igual que en la vida real. Puedes volver atrás con
-        la flecha del navegador sin decidir nada.
+        Lo primero que hagas cierra el escenario y te muestra en qué terminaba. No hay confirmación,
+        igual que en la vida real. Puedes volver atrás con la flecha del navegador sin decidir nada.
       </p>
 
       {/* Solo aparece si ya intentó tocar algo que no responde: es exactamente
           la persona que está atascada, y la pista le llega sin habérsela
           ofrecido antes a quien no la necesita. */}
       {fallo && (
-        <p
-          role="status"
-          className="rounded-md bg-surface-strong px-3 py-2 text-base text-body"
-        >
-          Ahí no hay nada que hacer. Solo algunos elementos responden:
-          recórrelos con el cursor (o con la tecla Tab) y se marcarán al pasar.
+        <p role="status" className="rounded-md bg-surface-strong px-3 py-2 text-base text-body">
+          Ahí no hay nada que hacer. Solo algunos elementos responden: recórrelos con el cursor (o
+          con la tecla Tab) y se marcarán al pasar.
         </p>
       )}
 
@@ -560,69 +653,153 @@ function DecisionEnCurso({
           No sé por dónde empezar
         </summary>
         <p className="mt-2 text-base leading-relaxed text-body">
-          Tienes tres caminos posibles: hacer lo que el correo te pide, abrir lo
-          que trae adjunto, o dejar el correo de lado y entrar al portal por tu
-          cuenta desde la barra de tareas. Cuál de los tres es el acertado es
-          justamente lo que decides tú.
+          Tienes tres caminos posibles: hacer lo que el correo te pide, abrir lo que trae adjunto, o
+          dejar el correo de lado y entrar al portal por tu cuenta desde la barra de tareas. Cuál de
+          los tres es el acertado es justamente lo que decides tú.
         </p>
       </details>
     </div>
-  );
+  )
+}
+
+/**
+ * El portal verdadero del SRI.
+ *
+ * Existe para que el camino acertado se *vea* y no solo se cuente. Aquí está el
+ * hecho que desmiente al correo —no hay ningún comprobante pendiente ni ninguna
+ * multa— y el contraste con la página falsa: dominio sri.gob.ec, conexión
+ * segura y una sesión ya iniciada, sin ningún formulario pidiendo la clave.
+ *
+ * Cerrar su pestaña es lo que acredita, y el final depende de si la página
+ * falsa llegó a abrirse: entrar por cuenta propia sin tocarla, o haberla
+ * dejado sin escribir nada (ver `cierrePortal`).
+ */
+function ContenidoPortalReal() {
+  return (
+    <>
+      <div className={styles.page}>
+        <p className={styles.brand}>SRI · Servicio de Rentas Internas</p>
+        <h2 className={styles.pageTitle}>Comprobantes electrónicos</h2>
+        <p className={styles.portalSesion}>
+          Sesión iniciada · RUC 0000000000001 · último ingreso hoy
+        </p>
+
+        <table className={styles.portalTabla}>
+          <thead>
+            <tr>
+              <th>Comprobante</th>
+              <th>Fecha</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td colSpan={3} className={styles.portalVacio}>
+                No hay comprobantes pendientes de validación.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div className={styles.portalAviso}>
+          <ShieldCheck aria-hidden className={styles.portalAvisoIcono} strokeWidth={1.75} />
+          <span>
+            Tu RUC no tiene comprobantes pendientes ni multas registradas. Tampoco hay ninguna
+            notificación abierta a tu nombre.
+          </span>
+        </div>
+
+        <p className={styles.pageFooter}>srienlinea.sri.gob.ec · Servicio de Rentas Internas</p>
+      </div>
+    </>
+  )
 }
 
 function FacturaSri() {
-  const engine = useStoryEngine(STORY, "n1", "phishing/factura-sri");
+  const engine = useStoryEngine(STORY, 'n1', 'phishing/factura-sri')
 
   // El nodo final (p. ej. "e_adjunto") no es una pantalla: es la consecuencia
   // de una. Se recuerda cuál era la pantalla activa para que el recorrido de
   // señales tenga sobre qué resaltar.
-  const [pantallaActual, setPantallaActual] = useState<"n1" | "n2">("n1");
+  // Guarda el id del nodo, no una lista cerrada de dos valores: con el portal
+  // real ya son cuatro pantallas y la lista habría que ampliarla cada vez.
+  const [pantallaActual, setPantallaActual] = useState('n1')
   /// Se enciende con el primer clic que no cae en ningún punto interactivo y
   /// ya no se apaga: quien exploró a ciegas una vez agradece tener la pista a
   /// la vista el resto del escenario.
-  const [tocoEnVacio, setTocoEnVacio] = useState(false);
+  const [tocoEnVacio, setTocoEnVacio] = useState(false)
   /// Se calcula una vez al montar y no en cada render: si no, el correo se
   /// "rejuvenecería" solo cada quince segundos, al ritmo del reloj de la barra.
-  const [recibido, setRecibido] = useState(horaDeLlegada);
+  const [recibido, setRecibido] = useState(horaDeLlegada)
+  /// Las pestañas abiertas, en su orden. Se abren al navegar, como en un
+  /// navegador de verdad: al principio solo está el correo.
+  const [pestanas, setPestanas] = useState(['n1'])
+  /// Cierto mientras el repaso va señal por señal. Durante el repaso el mensaje
+  /// vuelve a Recibidos: las acciones que lo mueven a Spam o a la Papelera
+  /// dejaban la bandeja vacía, y el recorrido acababa explicando señales sobre
+  /// una pantalla donde ya no había nada que señalar.
+  const [repasando, setRepasando] = useState(false)
 
   function elegir(goto: string, label?: string) {
     if (engine.isEnding) {
-      return;
+      return
     }
-    engine.choose(goto, label);
-    if (goto === "n1" || goto === "n2") {
-      setPantallaActual(goto);
+    engine.choose(goto, label)
+    // Toda escena es una pantalla; los finales no lo son, y por eso se conserva
+    // la última para que el repaso de señales tenga sobre qué resaltar.
+    if (STORY[goto]?.kind === 'scene') {
+      setPantallaActual(goto)
+      setPestanas((abiertas) => (abiertas.includes(goto) ? abiertas : [...abiertas, goto]))
     }
   }
 
   function reiniciar() {
-    engine.restart();
-    setPantallaActual("n1");
-    setTocoEnVacio(false);
+    engine.restart()
+    setPantallaActual('n1')
+    setPestanas(['n1'])
+    setRepasando(false)
+    setTocoEnVacio(false)
     // Al repetir, el correo vuelve a acabar de llegar. Conservar la hora del
     // intento anterior dejaría un mensaje de hace media hora en una bandeja
     // cuyo reloj ya avanzó.
-    setRecibido(horaDeLlegada());
+    setRecibido(horaDeLlegada())
   }
 
   const onHotspot = (event: React.MouseEvent) => {
-    if (!manejarClicHotspot(event, elegir) && !engine.isEnding) {
-      setTocoEnVacio(true);
+    // Cerrar una pestaña la quita de la barra además de llevar a donde diga su
+    // `goto`: para el correo, de vuelta a él; para el portal real, al final.
+    const cerrada = (event.target as HTMLElement).closest<HTMLElement>('[data-cierra]')?.dataset
+      .cierra
+    if (cerrada) {
+      setPestanas((abiertas) => abiertas.filter((id) => id !== cerrada))
     }
-  };
 
-  const carpetas = carpetasCorreo(engine.current, engine.isEnding);
+    if (!manejarClicHotspot(event, elegir) && !engine.isEnding) {
+      setTocoEnVacio(true)
+    }
+  }
 
-  const pantalla =
-    pantallaActual === "n1" ? (
-      <PantallaCorreo
-        onHotspot={onHotspot}
-        recibido={recibido}
-        carpetas={carpetas}
-      />
-    ) : (
-      <PantallaPortal onHotspot={onHotspot} />
-    );
+  const pantalla = (
+    <Navegador
+      pestanas={pestanas}
+      activa={pantallaActual}
+      // Quien llegó a abrir la página falsa acredita por haberla dejado sin
+      // escribir nada; quien nunca la tocó, por haber entrado por su cuenta.
+      cierrePortal={pestanas.includes('n2') ? 'e_dominio' : 'e_portal'}
+      onHotspot={onHotspot}
+    >
+      {pantallaActual === 'n1' ? (
+        <ContenidoCorreo
+          recibido={recibido}
+          carpetas={carpetasCorreo(engine.current, engine.isEnding && !repasando)}
+        />
+      ) : pantallaActual === 'n2' ? (
+        <ContenidoPortalFalso />
+      ) : (
+        <ContenidoPortalReal />
+      )}
+    </Navegador>
+  )
 
   const decision = engine.isEnding ? (
     <PanelVeredicto
@@ -633,11 +810,18 @@ function FacturaSri() {
       restartLabel="↻ Repetir el escenario"
       onRestart={reiniciar}
       contenedorId="pantalla-escenario"
-      onPantalla={(id) => id && setPantallaActual(id as "n1" | "n2")}
+      onPantalla={(id) => {
+        setRepasando(Boolean(id))
+        if (id) setPantallaActual(id)
+      }}
     />
   ) : (
-    <DecisionEnCurso fallo={tocoEnVacio} enPortal={pantallaActual === "n2"} />
-  );
+    <DecisionEnCurso
+      fallo={tocoEnVacio}
+      enPortal={pantallaActual === 'n2'}
+      enPortalReal={pantallaActual.startsWith('n3')}
+    />
+  )
 
   return (
     <EscenarioLayout
@@ -650,7 +834,7 @@ function FacturaSri() {
       onEmpezar={engine.restart}
       dispositivo="escritorio"
     />
-  );
+  )
 }
 
-export default FacturaSri;
+export default FacturaSri

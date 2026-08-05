@@ -103,9 +103,12 @@ const BASE: EscenarioBase[] = [
     // v2: la barra del cliente de correo pasó a ser funcional y sumó cinco
     // finales (responder, reenviar, archivar, eliminar, marcar como spam).
     // v3: el adjunto pasó de .html a un ejecutable .vbs con doble extensión.
+    // v4: el atajo del portal abre el portal real en vez de saltar al final.
+    // v5: el escenario se juega en un navegador con pestañas; el enlace del
+    // correo abre una pestaña nueva y el portal se abre desde los marcadores.
     // Las corridas de versiones distintas no son comparables entre sí: el
     // estímulo que vio cada participante no fue el mismo.
-    version: 3,
+    version: 5,
     naturaleza: 'fraude',
     dificultad: 2,
     espeja: 'phishing/rol-de-pagos',
@@ -137,15 +140,22 @@ const BASE: EscenarioBase[] = [
     Component: lazy(() => import('../secciones/phishing/RolDePagos')),
   },
   {
+    // Sustituye a cobro-dirigido (paquete en aduana): los dos eran "paga poco
+    // para recibir algo", así que juntos repetían la lección en vez de
+    // ampliarla. Su .tsx sigue en el repositorio por si se quiere recuperar.
+    //
+    // Dificultad 1: es la puerta de entrada del módulo. La señal decisiva no
+    // está en la pantalla —se responde con "¿yo jugué?"— y eso la vuelve
+    // accesible para quien nunca ha mirado un dominio en su vida.
     seccionId: 'phishing',
-    escenarioId: 'cobro-dirigido',
-    titulo: 'Paquete en aduana',
-    descripcion: 'Un correo con tus datos personales pide $2.40 para liberar un envío retenido.',
-    version: 2,
+    escenarioId: 'loteria-premiada',
+    titulo: 'Premio de lotería',
+    descripcion: 'Un correo anuncia un premio millonario y pide un pago para poder liberarlo.',
+    version: 1,
     naturaleza: 'fraude',
-    dificultad: 3,
+    dificultad: 1,
     espeja: 'phishing/aviso-filtracion',
-    Component: lazy(() => import('../secciones/phishing/CobroDirigido')),
+    Component: lazy(() => import('../secciones/phishing/LoteriaPremiada')),
   },
   {
     seccionId: 'phishing',

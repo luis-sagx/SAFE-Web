@@ -21,7 +21,7 @@ function EtiquetaAprobacion({ node }: { node: StoryNode }) {
   return (
     <div className="mt-3">
       <span
-        className={`inline-flex items-center rounded-full px-2.5 py-1 text-[13px] font-semibold uppercase tracking-[0.88px] ${
+        className={`inline-flex items-center rounded-full px-2.5 py-1 text-[0.8125rem] font-semibold uppercase tracking-[0.88px] ${
           aprobado ? 'bg-mint-light text-primary' : 'bg-surface-strong text-body'
         }`}
       >

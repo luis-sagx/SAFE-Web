@@ -32,12 +32,12 @@
   flex-shrink: 0;
   display: flex;
   align-items: center;
-  padding: 10px 14px;
+  padding: 0.625rem 0.875rem;
   border-bottom: 1px solid var(--line);
   background: #eef0f3;
 }
 .titlebarText {
-  font-size: 15px;
+  font-size: 0.9375rem;
   font-weight: 600;
   color: var(--dim);
   overflow: hidden;
@@ -52,9 +52,9 @@
   flex-shrink: 0;
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 0 10px;
-  height: 46px;
+  gap: 0.375rem;
+  padding: 0 0.625rem;
+  height: 2.875rem;
   background: linear-gradient(180deg, #263243 0%, #1f2937 100%);
   border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
@@ -67,16 +67,16 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 30px;
-  height: 28px;
-  border-radius: 5px;
+  width: 1.875rem;
+  height: 1.75rem;
+  border-radius: 0.3125rem;
   color: #cfd8e3;
-  font-size: 17px;
+  font-size: 1.0625rem;
   line-height: 1;
 }
 .taskbarDivider {
   width: 1px;
-  height: 20px;
+  height: 1.25rem;
   background: rgba(255, 255, 255, 0.12);
   margin: 0 2px;
 }
@@ -95,16 +95,16 @@
   position: relative;
   display: inline-flex;
   align-items: center;
-  gap: 7px;
+  gap: 0.4375rem;
   border: 1px solid rgba(255, 255, 255, 0.14);
   background: rgba(255, 255, 255, 0.09);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07);
   color: #e8ecf1;
   font: inherit;
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: 600;
-  padding: 5px 11px;
-  border-radius: 6px;
+  padding: 0.3125rem 0.6875rem;
+  border-radius: 0.375rem;
   cursor: pointer;
 }
 /* La rayita de "app anclada" al pie del icono. */
@@ -114,7 +114,7 @@
   left: 50%;
   bottom: -1px;
   transform: translateX(-50%);
-  width: 16px;
+  width: 1rem;
   height: 2px;
   border-radius: 2px;
   background: rgba(255, 255, 255, 0.35);
@@ -133,12 +133,17 @@
   background: rgba(255, 255, 255, 0.6);
 }
 
+/* La app en la que ya estás: mismo relieve que un atajo, pero sin cursor de
+   mano ni realce al pasar — no hay nada que pulsar. */
+.taskbarApp {
+  cursor: default;
+}
 .taskbarTray {
   margin-left: auto;
   display: inline-flex;
   align-items: center;
-  gap: 9px;
-  font-size: 13px;
+  gap: 0.5625rem;
+  font-size: 0.8125rem;
   color: #aab4c2;
 }
 .taskbarClock {
@@ -146,7 +151,7 @@
   flex-direction: column;
   align-items: flex-end;
   line-height: 1.25;
-  font-size: 13px;
+  font-size: 0.8125rem;
   color: #cbd2db;
   padding-left: 2px;
 }
@@ -175,7 +180,7 @@
 [data-hotspot-goto]:hover {
   outline: 2px solid rgba(0, 104, 55, 0.45);
   outline-offset: 2px;
-  border-radius: 3px;
+  border-radius: 0.1875rem;
   filter: brightness(0.97);
 }
 
@@ -215,7 +220,7 @@
 :global(.senal-resaltada) {
   outline: 3px solid #16a34a;
   outline-offset: 3px;
-  border-radius: 4px;
+  border-radius: 0.25rem;
   background: rgba(22, 163, 74, 0.1);
   transition:
     outline-color 0.2s,
@@ -232,10 +237,10 @@
 
 .mailNav {
   flex-shrink: 0;
-  width: 152px;
+  width: 9.5rem;
   border-right: 1px solid var(--line);
   background: #f6f8fa;
-  padding: 12px 8px;
+  padding: 0.75rem 0.5rem;
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -247,20 +252,20 @@
   width: 100%;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 0.5rem;
   font: inherit;
-  font-size: 15px;
+  font-size: 0.9375rem;
   text-align: left;
   color: var(--dim);
-  padding: 7px 8px;
-  border-radius: 6px;
+  padding: 0.4375rem 0.5rem;
+  border-radius: 0.375rem;
 }
 button.mailNavItem {
   cursor: pointer;
 }
 .mailNavIcon {
-  width: 18px;
-  height: 18px;
+  width: 1.125rem;
+  height: 1.125rem;
   flex-shrink: 0;
 }
 .mailNavActive {
@@ -284,7 +289,7 @@ button.mailNavItem {
   display: flex;
   align-items: stretch;
   gap: 2px;
-  padding: 5px 10px;
+  padding: 0.3125rem 0.625rem;
   border-bottom: 1px solid var(--line);
   background: #fbfcfd;
 }
@@ -300,10 +305,10 @@ button.mailNavItem {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 3px;
-  min-width: 70px;
-  padding: 7px 9px;
-  border-radius: 6px;
+  gap: 0.1875rem;
+  min-width: 4.375rem;
+  padding: 0.4375rem 0.5625rem;
+  border-radius: 0.375rem;
   cursor: pointer;
 }
 .mailToolbarBtn:hover {
@@ -311,11 +316,11 @@ button.mailNavItem {
   color: #16202c;
 }
 .mailToolbarIcon {
-  width: 20px;
-  height: 20px;
+  width: 1.25rem;
+  height: 1.25rem;
 }
 .mailToolbarTexto {
-  font-size: 12.5px;
+  font-size: 0.78125rem;
   font-weight: 600;
   line-height: 1;
   letter-spacing: 0.01em;
@@ -328,29 +333,29 @@ button.mailNavItem {
   min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding: 20px 22px 24px;
+  padding: 1.25rem 1.375rem 1.5rem;
 }
 .mailFolderEmpty {
   color: var(--dim);
 }
 
 .subject {
-  font-size: 23px;
+  font-size: 1.4375rem;
   line-height: 1.3;
   font-weight: 700;
-  margin: 0 0 14px;
+  margin: 0 0 0.875rem;
 }
 
 .senderRow {
   display: flex;
   align-items: flex-start;
-  gap: 10px;
-  padding-bottom: 14px;
+  gap: 0.625rem;
+  padding-bottom: 0.875rem;
   border-bottom: 1px solid var(--line);
 }
 .avatar {
-  width: 44px;
-  height: 44px;
+  width: 2.75rem;
+  height: 2.75rem;
   border-radius: 50%;
   flex-shrink: 0;
   background: #d7e3f4;
@@ -366,51 +371,51 @@ button.mailNavItem {
 }
 .senderName {
   margin: 0;
-  font-size: 17px;
+  font-size: 1.0625rem;
   font-weight: 700;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 0.5rem;
   flex-wrap: wrap;
 }
 .label {
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: #8a5b00;
   background: #fff3d6;
   border: 1px solid #f0d9a0;
-  border-radius: 999px;
-  padding: 2px 7px;
+  border-radius: 62.4375rem;
+  padding: 2px 0.4375rem;
 }
 .senderAddr,
 .senderTo {
   margin: 2px 0 0;
-  font-size: 14.5px;
+  font-size: 0.90625rem;
   color: var(--dim);
   overflow-wrap: anywhere;
 }
 .date {
-  font-size: 14px;
+  font-size: 0.875rem;
   color: var(--dim);
   flex-shrink: 0;
 }
 
 .mailFolderAsunto {
-  margin: 6px 0 0;
-  font-size: 12px;
+  margin: 0.375rem 0 0;
+  font-size: 0.75rem;
   font-weight: 400;
   color: var(--dim);
 }
 
 .prose {
-  margin-top: 16px;
-  font-size: 17.5px;
+  margin-top: 1rem;
+  font-size: 1.09375rem;
   line-height: 1.6;
 }
 .prose p {
-  margin: 0 0 12px;
+  margin: 0 0 0.75rem;
 }
 .prose a {
   color: #1a73e8;
@@ -424,13 +429,13 @@ button.mailNavItem {
   color: #fff;
   text-decoration: none;
   font-weight: 700;
-  font-size: 17px;
-  padding: 11px 18px;
-  border-radius: 6px;
-  margin: 4px 0 12px;
+  font-size: 1.0625rem;
+  padding: 0.6875rem 1.125rem;
+  border-radius: 0.375rem;
+  margin: 0.25rem 0 0.75rem;
 }
 .prose :global(.fine) {
-  font-size: 14.5px;
+  font-size: 0.90625rem;
   color: var(--dim);
 }
 
@@ -439,13 +444,13 @@ button.mailNavItem {
    suelto justo debajo de la línea de "mensaje automático", sin nada que lo
    presentara, y se leía como un botón perdido en medio del texto. */
 .attachmentZone {
-  margin-top: 18px;
-  padding-top: 14px;
+  margin-top: 1.125rem;
+  padding-top: 0.875rem;
   border-top: 1px solid var(--line);
 }
 .attachmentCount {
-  margin: 0 0 8px;
-  font-size: 14px;
+  margin: 0 0 0.5rem;
+  font-size: 0.875rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -455,11 +460,11 @@ button.mailNavItem {
 .attachment {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: 0.625rem;
   border: 1px solid var(--line);
-  border-radius: 8px;
-  padding: 10px 14px 10px 10px;
-  font-size: 15.5px;
+  border-radius: 0.5rem;
+  padding: 0.625rem 0.875rem 0.625rem 0.625rem;
+  font-size: 0.96875rem;
   color: #16202c;
   background: #f6f8fa;
 }
@@ -469,19 +474,19 @@ button.mailNavItem {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
+  width: 2.25rem;
+  height: 2.25rem;
   flex-shrink: 0;
-  border-radius: 5px;
+  border-radius: 0.3125rem;
   background: #e2e8f0;
   color: #475569;
-  font-size: 11.5px;
+  font-size: 0.71875rem;
   font-weight: 700;
   letter-spacing: 0.04em;
 }
 .attachmentIcono {
-  width: 20px;
-  height: 20px;
+  width: 1.25rem;
+  height: 1.25rem;
 }
 .attachmentNombre {
   display: flex;
@@ -490,7 +495,7 @@ button.mailNavItem {
   line-height: 1.35;
 }
 .attachmentPeso {
-  font-size: 14px;
+  font-size: 0.875rem;
   color: var(--dim);
   font-weight: 400;
 }
@@ -500,18 +505,165 @@ button.mailNavItem {
    eso el mensaje se lee corto y "de examen", y además queda menos superficie
    donde buscar señales. */
 .mailFooter {
-  margin-top: 18px;
-  padding-top: 14px;
+  margin-top: 1.125rem;
+  padding-top: 0.875rem;
   border-top: 1px solid var(--line);
-  font-size: 14px;
+  font-size: 0.875rem;
   line-height: 1.55;
   color: var(--dim);
 }
 .mailFooter p {
-  margin: 0 0 6px;
+  margin: 0 0 0.375rem;
 }
 .mailFooter p:last-child {
   margin-bottom: 0;
+}
+
+/* ---------- Navegador con pestañas ----------
+   Reemplaza a "una ventana por pantalla" en el escenario interactivo: el correo
+   y las páginas conviven como pestañas, igual que en el equipo de cualquiera.
+   Es lo que permite comparar dos direcciones sin cerrar nada. */
+.tabInactiva {
+  background: #eceff3;
+  color: #5f6b7a;
+  font-weight: 500;
+}
+.tabInactiva:hover {
+  background: #f4f6f9;
+}
+.tabIcono {
+  width: 0.9375rem;
+  height: 0.9375rem;
+  flex-shrink: 0;
+}
+.tabNueva {
+  appearance: none;
+  align-self: center;
+  margin-left: 0.375rem;
+  width: 1.625rem;
+  height: 1.625rem;
+  border: none;
+  border-radius: 0.375rem;
+  background: transparent;
+  color: #3b4553;
+  font-size: 1.0625rem;
+  line-height: 1;
+  cursor: default;
+}
+
+/* Barra de marcadores. Los sitios de siempre, y entre ellos el del SRI: entrar
+   por aquí es "abrir el portal por mi cuenta". Se parece a los demás a
+   propósito — destacarlo empujaría hacia la respuesta correcta. */
+.marcadores {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.375rem 0.75rem;
+  background: #f2f4f7;
+  border-bottom: 1px solid #dfe3e9;
+}
+.marcador {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4375rem;
+  padding: 0.3125rem 0.625rem;
+  border: none;
+  border-radius: 0.375rem;
+  background: transparent;
+  color: #3b4553;
+  font: inherit;
+  font-size: 0.84375rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.marcador:hover {
+  background: rgba(0, 0, 0, 0.07);
+}
+.marcadorIcono {
+  width: 0.9375rem;
+  height: 0.9375rem;
+  flex-shrink: 0;
+}
+
+/* Cerrar la pestaña: es la forma en que alguien termina de verdad con una
+   página que ya consultó. Va en la pestaña y no como un botón dentro del sitio,
+   porque cerrar es del navegador, no de la web que se está viendo. */
+.tabClose {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.375rem;
+  height: 1.375rem;
+  flex-shrink: 0;
+  border: none;
+  border-radius: 0.3125rem;
+  background: transparent;
+  color: #5f6b7a;
+  font-size: 0.875rem;
+  line-height: 1;
+  cursor: pointer;
+}
+.tabClose:hover {
+  background: rgba(0, 0, 0, 0.09);
+  color: #16202c;
+}
+
+/* Aviso del portal legítimo: no hay nada pendiente. Verde porque comunica
+   ausencia de problema, que es justo el hecho que desmiente al correo. */
+.portalAviso {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-top: 1.125rem;
+  padding: 1rem 1.125rem;
+  border: 1px solid #b7dcc4;
+  border-radius: 0.5rem;
+  background: #eef8f1;
+  color: #14532d;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+.portalAvisoIcono {
+  width: 1.375rem;
+  height: 1.375rem;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.portalSesion {
+  margin: 0.875rem 0 0;
+  padding: 0.625rem 0.875rem;
+  border-radius: 0.5rem;
+  background: #f1f4f8;
+  font-size: 0.90625rem;
+  color: #3b4553;
+}
+.portalTabla {
+  width: 100%;
+  margin-top: 1rem;
+  border-collapse: collapse;
+  font-size: 0.90625rem;
+}
+.portalTabla th,
+.portalTabla td {
+  text-align: left;
+  padding: 0.625rem 0.5rem;
+  border-bottom: 1px solid var(--line);
+  color: #3b4553;
+}
+.portalTabla th {
+  font-size: 0.78125rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--dim);
+}
+.portalVacio {
+  padding: 1.375rem 0.5rem;
+  text-align: center;
+  color: var(--dim);
+  font-size: 0.90625rem;
 }
 
 /* ---------- Pantallas bajas ----------
@@ -528,68 +680,91 @@ button.mailNavItem {
    parta en más líneas, así que el correo crece a lo alto aunque la pantalla no
    sea baja. Es lo que pasaba en una tablet de 820px de ancho. */
 @media (max-height: 940px), (max-width: 900px) {
+  /* El cromo del navegador —pestañas, dirección y marcadores— suma unos 140px
+     que la ventana de antes no gastaba. En una pantalla baja eso sale entero
+     del correo, así que aquí cede él primero: son barras, no contenido que
+     haya que leer. */
+  .tabstrip {
+    padding: 0 0.5rem;
+  }
+  .tab {
+    margin-top: 0.25rem;
+    padding: 0.3125rem 0.5rem 0.3125rem 0.75rem;
+  }
+  .urlbar {
+    padding: 0.3125rem 0.625rem;
+  }
+  .url {
+    padding: 0.25rem 0.625rem;
+  }
+  .marcadores {
+    padding: 0.1875rem 0.625rem;
+  }
+  .marcador {
+    padding: 0.1875rem 0.5rem;
+  }
   .mailbody {
-    padding: 10px 18px 10px;
+    padding: 0.625rem 1.125rem 0.625rem;
   }
   .mailNav {
-    padding: 8px 8px;
+    padding: 0.5rem 0.5rem;
   }
   .subject {
-    font-size: 20.5px;
-    margin-bottom: 10px;
+    font-size: 1.28125rem;
+    margin-bottom: 0.625rem;
   }
   .senderRow {
-    padding-bottom: 8px;
-    gap: 9px;
+    padding-bottom: 0.5rem;
+    gap: 0.5625rem;
   }
   .avatar {
-    width: 36px;
-    height: 36px;
+    width: 2.25rem;
+    height: 2.25rem;
   }
   .prose {
-    margin-top: 9px;
+    margin-top: 0.5625rem;
     line-height: 1.5;
   }
   .prose p {
-    margin-bottom: 8px;
+    margin-bottom: 0.5rem;
   }
   .prose :global(.cta) {
-    padding: 9px 15px;
-    margin: 2px 0 9px;
+    padding: 0.5625rem 0.9375rem;
+    margin: 2px 0 0.5625rem;
   }
   .attachmentZone,
   .mailFooter {
-    margin-top: 9px;
-    padding-top: 8px;
+    margin-top: 0.5625rem;
+    padding-top: 0.5rem;
   }
   .attachmentCount {
-    margin-bottom: 5px;
+    margin-bottom: 0.3125rem;
   }
   .attachment {
-    padding: 7px 12px 7px 8px;
+    padding: 0.4375rem 0.75rem 0.4375rem 0.5rem;
   }
   .attachmentTipo {
-    width: 26px;
-    height: 26px;
+    width: 1.625rem;
+    height: 1.625rem;
   }
   .mailFooter {
-    font-size: 13px;
+    font-size: 0.8125rem;
     line-height: 1.45;
   }
   .mailFooter p {
-    margin-bottom: 4px;
+    margin-bottom: 0.25rem;
   }
   .mailToolbar {
-    padding: 3px 10px;
+    padding: 0.1875rem 0.625rem;
   }
   .mailToolbarBtn {
-    padding: 4px 8px;
+    padding: 0.25rem 0.5rem;
   }
   .titlebar {
-    padding: 7px 14px;
+    padding: 0.4375rem 0.875rem;
   }
   .taskbar {
-    height: 34px;
+    height: 2.125rem;
   }
 }
 
@@ -607,10 +782,10 @@ button.mailNavItem {
   .mailToolbarBtn {
     min-width: 0;
     flex: 1;
-    padding: 5px 2px;
+    padding: 0.3125rem 2px;
   }
   .mailToolbarTexto {
-    font-size: 11.5px;
+    font-size: 0.71875rem;
   }
 }
 
@@ -619,44 +794,44 @@ button.mailNavItem {
    pie casi en letra menuda— antes que obligar a desplazar el mensaje. */
 @media (max-height: 660px) {
   .mailbody {
-    padding: 9px 14px 11px;
+    padding: 0.5625rem 0.875rem 0.6875rem;
   }
   .subject {
-    font-size: 18.5px;
-    margin-bottom: 7px;
+    font-size: 1.15625rem;
+    margin-bottom: 0.4375rem;
   }
   .senderRow {
-    padding-bottom: 8px;
+    padding-bottom: 0.5rem;
   }
   .avatar {
-    width: 27px;
-    height: 27px;
-    font-size: 14.5px;
+    width: 1.6875rem;
+    height: 1.6875rem;
+    font-size: 0.90625rem;
   }
   .prose {
-    margin-top: 9px;
-    font-size: 15px;
+    margin-top: 0.5625rem;
+    font-size: 0.9375rem;
     line-height: 1.45;
   }
   .prose p {
-    margin-bottom: 7px;
+    margin-bottom: 0.4375rem;
   }
   .prose :global(.cta) {
-    padding: 7px 13px;
-    font-size: 15.5px;
+    padding: 0.4375rem 0.8125rem;
+    font-size: 0.96875rem;
   }
   .attachmentZone,
   .mailFooter {
-    margin-top: 8px;
-    padding-top: 7px;
+    margin-top: 0.5rem;
+    padding-top: 0.4375rem;
   }
   .mailFooter {
-    font-size: 12px;
+    font-size: 0.75rem;
     line-height: 1.35;
   }
   .senderAddr,
   .senderTo {
-    font-size: 14px;
+    font-size: 0.875rem;
   }
 }
 
@@ -665,21 +840,28 @@ button.mailNavItem {
 .tabstrip {
   flex-shrink: 0;
   display: flex;
-  padding: 0 10px;
+  padding: 0 0.625rem;
   background: #dfe3e9;
 }
 .tab {
-  margin-top: 6px;
-  padding: 7px 16px;
-  border-radius: 8px 8px 0 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+  margin-top: 0.375rem;
+  padding: 0.4375rem 0.75rem 0.4375rem 1rem;
+  border-radius: 0.5rem 0.5rem 0 0;
   background: #fff;
-  font-size: 14.5px;
+  font-size: 0.90625rem;
   font-weight: 600;
   color: #3b4553;
-  max-width: 220px;
+  max-width: 16.25rem;
+  white-space: nowrap;
+}
+/* El recorte va en el título y no en la pestaña: recortando la pestaña entera,
+   la ✕ de cerrar se quedaba fuera del borde y no había forma de pulsarla. */
+.tabTexto {
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 /* Flecha de atrás del navegador simulado. Sin ella, entrar a la página falsa
@@ -690,14 +872,14 @@ button.mailNavItem {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 30px;
-  height: 30px;
+  width: 1.875rem;
+  height: 1.875rem;
   flex-shrink: 0;
   border: none;
-  border-radius: 6px;
+  border-radius: 0.375rem;
   background: transparent;
   color: #3b4553;
-  font-size: 17px;
+  font-size: 1.0625rem;
   line-height: 1;
   cursor: pointer;
 }
@@ -709,11 +891,11 @@ button.mailNavItem {
   flex-shrink: 0;
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 12px;
+  gap: 0.5rem;
+  padding: 0.625rem 0.75rem;
   background: #dfe3e9;
   border-bottom: 1px solid #cfd5dd;
-  font-size: 14.5px;
+  font-size: 0.90625rem;
 }
 .lock {
   color: #1c7a45;
@@ -723,15 +905,15 @@ button.mailNavItem {
   color: #a12020;
   font-weight: 700;
   background: #fbe3e3;
-  border-radius: 4px;
-  padding: 2px 6px;
+  border-radius: 0.25rem;
+  padding: 2px 0.375rem;
   flex-shrink: 0;
   white-space: nowrap;
 }
 .url {
   background: #fff;
-  border-radius: 999px;
-  padding: 6px 12px;
+  border-radius: 62.4375rem;
+  padding: 0.375rem 0.75rem;
   flex: 1;
   min-width: 0;
   overflow: hidden;
@@ -746,37 +928,37 @@ button.mailNavItem {
   overflow-y: auto;
   overscroll-behavior: contain;
   background: #fff;
-  padding: 26px 20px;
+  padding: 1.625rem 1.25rem;
 }
 .brand {
   margin: 0;
-  font-size: 15.5px;
+  font-size: 0.96875rem;
   font-weight: 800;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: #14487f;
 }
 .pageTitle {
-  margin: 12px 0 0;
-  font-size: 24px;
+  margin: 0.75rem 0 0;
+  font-size: 1.5rem;
   font-weight: 700;
 }
 .pageSub {
-  margin: 8px 0 0;
-  font-size: 16px;
+  margin: 0.5rem 0 0;
+  font-size: 1rem;
   line-height: 1.5;
   color: #5f6b7a;
 }
 
 .form {
-  margin-top: 20px;
+  margin-top: 1.25rem;
   display: grid;
-  gap: 14px;
+  gap: 0.875rem;
 }
 .field {
   display: grid;
-  gap: 6px;
-  font-size: 15px;
+  gap: 0.375rem;
+  font-size: 0.9375rem;
   font-weight: 600;
   color: #3b4553;
 }
@@ -787,26 +969,26 @@ button.mailNavItem {
    leerse como lo que representan: información ya entregada. */
 .input {
   border: 1px solid #ccd3dc;
-  border-radius: 6px;
-  padding: 12px 12px;
-  font-size: 17px;
+  border-radius: 0.375rem;
+  padding: 0.75rem 0.75rem;
+  font-size: 1.0625rem;
   font-weight: 400;
   color: #1f2a37;
   background: #ffffff;
 }
 .submit {
-  margin-top: 4px;
+  margin-top: 0.25rem;
   background: #14487f;
   color: #fff;
   text-align: center;
   font-weight: 700;
-  font-size: 18px;
-  padding: 13px;
-  border-radius: 6px;
+  font-size: 1.125rem;
+  padding: 0.8125rem;
+  border-radius: 0.375rem;
 }
 .pageFooter {
-  margin: 18px 0 0;
-  font-size: 14px;
+  margin: 1.125rem 0 0;
+  font-size: 0.875rem;
   line-height: 1.5;
   color: #8a94a1;
 }
@@ -820,7 +1002,7 @@ button.mailNavItem {
 
 .smsbar {
   flex-shrink: 0;
-  padding: 12px 16px;
+  padding: 0.75rem 1rem;
   background: #f7f8fa;
   border-bottom: 1px solid #dfe3e9;
   text-align: center;
@@ -830,12 +1012,12 @@ button.mailNavItem {
 }
 .smsName {
   margin: 0;
-  font-size: 18px;
+  font-size: 1.125rem;
   font-weight: 700;
 }
 .smsSub {
   margin: 2px 0 0;
-  font-size: 14px;
+  font-size: 0.875rem;
   color: #6b7684;
 }
 
@@ -844,10 +1026,10 @@ button.mailNavItem {
   min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding: 16px 12px;
+  padding: 1rem 0.75rem;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 0.625rem;
 }
 .smsRow {
   display: flex;
@@ -860,9 +1042,9 @@ button.mailNavItem {
 }
 .smsBubble {
   max-width: 84%;
-  padding: 10px 13px 8px;
-  border-radius: 16px;
-  font-size: 17.5px;
+  padding: 0.625rem 0.8125rem 0.5rem;
+  border-radius: 1rem;
+  font-size: 1.09375rem;
   line-height: 1.45;
   background: #e6e9ee;
   overflow-wrap: anywhere;
@@ -881,8 +1063,8 @@ button.mailNavItem {
 .smsTime {
   display: block;
   text-align: right;
-  font-size: 12.5px;
-  margin-top: 4px;
+  font-size: 0.78125rem;
+  margin-top: 0.25rem;
   color: #6b7684;
 }
 .smsRow.mine .smsTime {
@@ -891,27 +1073,27 @@ button.mailNavItem {
 
 .smsComposer {
   flex-shrink: 0;
-  padding: 10px 14px;
+  padding: 0.625rem 0.875rem;
   background: #f7f8fa;
   border-top: 1px solid #dfe3e9;
 }
 .smsField {
   border: 1px solid #dfe3e9;
   background: #fff;
-  border-radius: 20px;
-  padding: 10px 15px;
-  font-size: 17px;
+  border-radius: 1.25rem;
+  padding: 0.625rem 0.9375rem;
+  font-size: 1.0625rem;
   color: #97a1ad;
 }
 
 .mailbody::-webkit-scrollbar,
 .page::-webkit-scrollbar,
 .smsThread::-webkit-scrollbar {
-  width: 6px;
+  width: 0.375rem;
 }
 .mailbody::-webkit-scrollbar-thumb,
 .page::-webkit-scrollbar-thumb,
 .smsThread::-webkit-scrollbar-thumb {
   background: #c9d0d9;
-  border-radius: 6px;
+  border-radius: 0.375rem;
 }
