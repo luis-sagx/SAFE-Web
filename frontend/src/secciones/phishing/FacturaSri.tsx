@@ -137,33 +137,39 @@ const ACCIONES: AccionCorreo[] = [
 const SENALES: Senal[] = [
   {
     id: 'dominio',
+    pantalla: 'n1',
     targetId: 'remitente',
     texto:
       'El remitente usa un <b>dominio parecido</b> pero ajeno: <b>sri-facturacion-ec.com</b>, no sri.gob.ec.',
   },
   {
     id: 'externo',
+    pantalla: 'n1',
     targetId: 'externo',
     texto:
       'El propio cliente de correo lo marcó como <b>externo</b>: no vino de dentro de la organización, aunque diga ser de una institución.',
   },
   {
     id: 'plazo',
+    pantalla: 'n1',
     targetId: 'plazo',
     texto: 'Impone un <b>plazo de 24 horas</b> y amenaza con una multa.',
   },
   {
     id: 'conexion',
+    pantalla: 'n2',
     targetId: 'url-insegura',
     texto: 'El enlace lleva a una página <b>sin conexión segura</b> (http).',
   },
   {
     id: 'adjunto',
+    pantalla: 'n1',
     targetId: 'adjunto',
     texto: 'Trae un <b>adjunto .html</b>: una factura real nunca llega así.',
   },
   {
     id: 'clave',
+    pantalla: 'n2',
     targetId: 'campo-clave',
     texto: 'Pide tu <b>clave</b> del portal para "validar" algo.',
   },
@@ -457,6 +463,7 @@ function FacturaSri() {
       restartLabel="↻ Repetir el escenario"
       onRestart={reiniciar}
       contenedorId="pantalla-escenario"
+      onPantalla={(id) => id && setPantallaActual(id as 'n1' | 'n2')}
     />
   ) : (
     <DecisionEnCurso fallo={tocoEnVacio} />

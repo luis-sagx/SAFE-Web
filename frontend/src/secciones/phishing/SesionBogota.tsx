@@ -112,8 +112,8 @@ const STORY: Story<ScreenNode> = {
 
 const SENALES: Senal[] = [
   { id: 's1', texto: 'El botón "seguro" ("No fui yo") es la trampa: te lleva directo a pedir credenciales.' },
-  { id: 's2', targetId: 'remitente', texto: 'El dominio real es <b>seguridad-alertas.com</b>; "bancodellitoral.com.ec" es apenas un subdominio.' },
-  { id: 's3', targetId: 'campo-clave', texto: 'Pide el <b>código OTP dentro de una página web</b>, en vez de dentro de la app del banco.' },
+  { id: 's2', targetId: 'remitente', pantalla: 'n1', texto: 'El dominio real es <b>seguridad-alertas.com</b>; "bancodellitoral.com.ec" es apenas un subdominio.' },
+  { id: 's3', targetId: 'campo-clave', pantalla: 'n2', texto: 'Pide el <b>código OTP dentro de una página web</b>, en vez de dentro de la app del banco.' },
   { id: 's4', texto: 'El correo está impecable — sin errores — porque la trampa no está en la redacción.' },
 ]
 const RULE =

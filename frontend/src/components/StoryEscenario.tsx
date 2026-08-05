@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import EscenarioLayout from './EscenarioLayout'
 import DeviceScreen, { type ScreenView } from './ui/DeviceScreen'
 import { manejarClicHotspot } from './ui/interactivo'
@@ -50,6 +50,12 @@ function StoryEscenario({
 }: StoryEscenarioProps) {
   const engine = useStoryEngine(story, 'n1', escenarioId)
 
+  // Durante el repaso la pantalla vuelve a la que contiene cada señal: un
+  // escenario que termina en la página falsa no puede resaltar lo que estaba
+  // en el correo.
+  const [pantallaRepaso, setPantallaRepaso] = useState<string | undefined>()
+  const vista = (pantallaRepaso && story[pantallaRepaso]?.view) || engine.node.view
+
   // Un clic en la barra del cliente vale lo mismo que elegir de la lista: los
   // botones llevan su destino en `data-hotspot-goto` y este manejador único lo
   // traduce en una decisión del grafo.
@@ -67,6 +73,7 @@ function StoryEscenario({
       restartLabel={restartLabel}
       onRestart={engine.restart}
       contenedorId="pantalla-escenario"
+      onPantalla={setPantallaRepaso}
     />
   ) : (
     engine.node.choices && (
@@ -84,13 +91,13 @@ function StoryEscenario({
       contexto={contexto}
       nota={nota}
       pantalla={
-        <DeviceScreen view={engine.node.view} acciones={accionesCorreo} onHotspot={onHotspot} />
+        <DeviceScreen view={vista} acciones={accionesCorreo} onHotspot={onHotspot} />
       }
       decision={decision}
       onEmpezar={engine.restart}
       // El correo y la web se abren más en computador que en celular; el SMS
       // se queda en celular, que es donde de verdad llegan los mensajes.
-      dispositivo={engine.node.view.kind === 'sms' ? 'telefono' : 'escritorio'}
+      dispositivo={vista.kind === 'sms' ? 'telefono' : 'escritorio'}
     />
   )
 }

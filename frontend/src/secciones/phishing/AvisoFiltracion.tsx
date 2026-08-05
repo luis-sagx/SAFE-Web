@@ -86,7 +86,7 @@ const STORY: Story<ScreenNode> = {
 const SENALES: Senal[] = [
   { id: 's1', texto: 'No pide tu contraseña ni ningún dato: pide que <b>vos la cambies</b>, no te la solicita.' },
   { id: 's2', texto: 'Explica <b>qué se expuso y qué no</b>, en vez de generar pánico genérico.' },
-  { id: 's3', targetId: 'remitente', texto: 'El enlace que menciona apunta al <b>dominio real</b>, y el cambio se puede hacer sin tocar ningún enlace.' },
+  { id: 's3', targetId: 'remitente', pantalla: 'n1', texto: 'El enlace que menciona apunta al <b>dominio real</b>, y el cambio se puede hacer sin tocar ningún enlace.' },
   { id: 's4', texto: 'Un aviso así, buscado en internet, <b>aparece en noticias reales</b> de seguridad.' },
 ]
 const RULE =

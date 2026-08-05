@@ -11,6 +11,14 @@ export interface Senal {
    *  da, o el escenario no está mostrando esa pantalla ahora mismo, la señal
    *  se explica igual — solo que sin resaltar nada. */
   targetId?: string
+  /** Nodo del grafo cuya pantalla contiene esta señal.
+   *
+   *  Un escenario de varias pantallas termina mostrando la última —la página
+   *  falsa, por ejemplo—, y ahí las señales del correo no tienen nada que
+   *  resaltar: se explicaban en texto sobre una pantalla que ya no las
+   *  contenía. Con esto el repaso devuelve la vista a la pantalla de cada
+   *  señal antes de señalarla. */
+  pantalla?: string
 }
 
 interface PanelVeredictoProps {
@@ -25,6 +33,8 @@ interface PanelVeredictoProps {
   /** id del contenedor de la pantalla (ver EscenarioLayout), para ubicar el
    *  elemento que corresponde a cada señal. */
   contenedorId: string
+  /** Avisa qué pantalla toca mostrar en cada paso del repaso. */
+  onPantalla?: (pantallaId: string | undefined) => void
 }
 
 const CLASE_RESALTADA = 'senal-resaltada'
@@ -42,6 +52,7 @@ function PanelVeredicto({
   restartLabel,
   onRestart,
   contenedorId,
+  onPantalla,
 }: PanelVeredictoProps) {
   const haySenales = senales.length > 0
 
@@ -61,6 +72,10 @@ function PanelVeredicto({
   }, [])
 
   useEffect(() => {
+    onPantalla?.(enSenal ? senales[paso]?.pantalla : undefined)
+  }, [enSenal, paso, senales, onPantalla])
+
+  useEffect(() => {
     if (!enSenal) {
       return
     }
@@ -70,16 +85,29 @@ function PanelVeredicto({
       return
     }
 
-    const contenedor = document.getElementById(contenedorId)
-    const elemento = contenedor?.querySelector<HTMLElement>(`[data-signal="${targetId}"]`)
-    if (!elemento) {
-      return
+    let resaltado: HTMLElement | null = null
+
+    // En dos tiempos: la pantalla que contiene la señal puede estar montándose
+    // todavía cuando corre este efecto, así que si no aparece a la primera se
+    // vuelve a buscar en el siguiente cuadro.
+    function resaltar() {
+      const contenedor = document.getElementById(contenedorId)
+      const elemento = contenedor?.querySelector<HTMLElement>(`[data-signal="${targetId}"]`)
+      if (!elemento) {
+        return false
+      }
+      resaltado = elemento
+      elemento.classList.add(CLASE_RESALTADA)
+      elemento.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      return true
     }
 
-    elemento.classList.add(CLASE_RESALTADA)
-    elemento.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    const id = resaltar() ? 0 : window.setTimeout(resaltar, 60)
 
-    return () => elemento.classList.remove(CLASE_RESALTADA)
+    return () => {
+      if (id) window.clearTimeout(id)
+      resaltado?.classList.remove(CLASE_RESALTADA)
+    }
   }, [enSenal, paso, senales, contenedorId])
 
   // 'partial' no es un fallo: una respuesta prudente pero incompleta no puede

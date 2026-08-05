@@ -94,11 +94,11 @@ const STORY: Story<ScreenNode> = {
 }
 
 const SENALES: Senal[] = [
-  { id: 's1', targetId: 'remitente', texto: 'El dominio del remitente es <b>exactamente</b> el de la empresa: andes.com.ec.' },
-  { id: 's2', targetId: 'saludo', texto: 'Te llama <b>por tu nombre</b> y menciona un período y un plazo concretos.' },
+  { id: 's1', targetId: 'remitente', pantalla: 'n1', texto: 'El dominio del remitente es <b>exactamente</b> el de la empresa: andes.com.ec.' },
+  { id: 's2', targetId: 'saludo', pantalla: 'n1', texto: 'Te llama <b>por tu nombre</b> y menciona un período y un plazo concretos.' },
   { id: 's3', texto: '<b>No pide credenciales</b> ni datos: solo avisa dónde está la información.' },
-  { id: 's4', targetId: 'canal', texto: 'Ofrece un <b>canal alterno verificable</b> (la extensión 214).' },
-  { id: 's5', targetId: 'portal', texto: 'El portal está en el <b>dominio corporativo</b> y con conexión segura.' },
+  { id: 's4', targetId: 'canal', pantalla: 'n1', texto: 'Ofrece un <b>canal alterno verificable</b> (la extensión 214).' },
+  { id: 's5', targetId: 'portal', pantalla: 'n1', texto: 'El portal está en el <b>dominio corporativo</b> y con conexión segura.' },
 ]
 const RULE =
   'Regla de oro: no todo correo es una trampa. Lo que distingue a uno legítimo es que <b>no te pide tu clave y su dominio es el real</b>. Aun así, entra al portal escribiendo tú la dirección: es la costumbre que te protege siempre.'

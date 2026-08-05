@@ -77,9 +77,9 @@ const STORY: Story<ScreenNode> = {
 
 const SENALES: Senal[] = [
   { id: 's1', texto: 'El correo trae tu <b>nombre completo y parte de tu cédula</b> — datos de una filtración, no prueba de que sean ellos.' },
-  { id: 's2', targetId: 'monto', texto: 'El monto es <b>diminuto a propósito</b>, calculado para no despertar sospecha.' },
+  { id: 's2', targetId: 'monto', pantalla: 'n1', texto: 'El monto es <b>diminuto a propósito</b>, calculado para no despertar sospecha.' },
   { id: 's3', texto: 'Los couriers cobran aranceles <b>al entregar</b>, nunca por un enlace de correo.' },
-  { id: 's4', targetId: 'remitente', texto: 'El dominio es <b>enviosrapido-ec.shop</b>, no el sitio oficial de la transportadora.' },
+  { id: 's4', targetId: 'remitente', pantalla: 'n1', texto: 'El dominio es <b>enviosrapido-ec.shop</b>, no el sitio oficial de la transportadora.' },
 ]
 const RULE =
   'Regla de oro: que alguien conozca tus datos no prueba que sea quien dice ser. Los datos personales confirman que hubo una filtración en algún lado, no que el mensaje sea legítimo.'

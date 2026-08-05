@@ -88,8 +88,8 @@ const STORY: Story<ScreenNode> = {
 
 const SENALES: Senal[] = [
   { id: 's1', texto: 'No hay dominio falso, ni error de redacción, ni urgencia artificial: el hilo es <b>100% real</b>.' },
-  { id: 's2', targetId: 'cuenta', texto: 'La única anomalía es el hecho en sí: <b>un cambio de número de cuenta</b>.' },
-  { id: 's3', targetId: 'remitente', texto: 'Responder dentro del mismo hilo <b>no verifica nada</b>: si la cuenta está comprometida, el atacante también contesta ahí.' },
+  { id: 's2', targetId: 'cuenta', pantalla: 'n1', texto: 'La única anomalía es el hecho en sí: <b>un cambio de número de cuenta</b>.' },
+  { id: 's3', targetId: 'remitente', pantalla: 'n1', texto: 'Responder dentro del mismo hilo <b>no verifica nada</b>: si la cuenta está comprometida, el atacante también contesta ahí.' },
 ]
 const RULE =
   'Regla de oro: todo cambio de número de cuenta se confirma <b>por llamada al número que ya tenías</b>, jamás por el mismo canal donde llegó el aviso. Responder el correo para verificar es preguntarle al estafador si es estafador.'

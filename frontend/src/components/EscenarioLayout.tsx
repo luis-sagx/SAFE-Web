@@ -50,9 +50,15 @@ const MARCO_TELEFONO =
  *  tope de 860px evita el efecto contrario en un monitor grande, donde una
  *  ventana altísima tampoco se parece a nada real.
  *
- *  Los topes subieron de 720x880 a 860x1000 junto con la tipografía: el curso
- *  lo van a hacer adultos mayores, y una letra legible en una ventana que no
- *  crece con ella solo consigue que el correo no quepa.
+ *  Los topes subieron junto con la tipografía: el curso lo van a hacer adultos
+ *  mayores, y una letra legible en una ventana que no crece con ella solo
+ *  consigue que el correo no quepa.
+ *
+ *  El ancho se pide con `calc(100vw - 540px)` y no con una fracción del
+ *  viewport: 540px es lo que ocupan la columna de decisión, el hueco entre
+ *  ambas y los márgenes. Así la ventana se queda con TODO lo que sobra en vez
+ *  de con un porcentaje fijo, que en pantallas anchas dejaba un vacío enorme a
+ *  los lados y en las estrechas se pasaba de largo.
  *
  *  `self-center` y no `self-stretch`: al estirar, el tope de 720px deja la
  *  ventana anclada arriba del todo en una pantalla alta, con el hueco entero
@@ -60,7 +66,7 @@ const MARCO_TELEFONO =
  *  reparte lo que sobre cuando el tope se queda corto.
  */
 const MARCO_ESCRITORIO =
-  'sm:max-h-[min(82vh,860px)] sm:w-[96vw] sm:max-w-[920px] sm:rounded-xl sm:border sm:border-hairline-strong sm:shadow-[0_30px_70px_rgba(0,0,0,0.22)] lg:h-full lg:max-h-[860px] lg:w-[60vw] lg:min-w-[560px] lg:max-w-[1000px] lg:flex-none lg:self-center'
+  'sm:max-h-[min(82vh,860px)] sm:w-[96vw] sm:max-w-[1100px] sm:rounded-xl sm:border sm:border-hairline-strong sm:shadow-[0_30px_70px_rgba(0,0,0,0.22)] lg:h-full lg:max-h-[860px] lg:w-[calc(100vw-540px)] lg:min-w-[560px] lg:max-w-[1200px] lg:flex-none lg:self-center'
 
 function EscenarioLayout({
   escenarioId,
@@ -204,7 +210,7 @@ function EscenarioLayout({
 
         {/* Apilado, el bloque nunca pasa de media pantalla: si no cabe, se
             desplaza él, no la página. Al costado puede usar todo el alto. */}
-        <div className="max-h-[45%] w-full shrink-0 overflow-y-auto border-t border-hairline bg-canvas px-4 py-4 sm:w-[460px] sm:border-0 sm:bg-transparent sm:px-0 sm:py-0 lg:max-h-full lg:self-center">
+        <div className="max-h-[45%] w-full shrink-0 overflow-y-auto border-t border-hairline bg-canvas px-4 py-4 sm:w-[460px] sm:border-0 sm:bg-transparent sm:px-0 sm:py-0 lg:w-[380px] lg:max-h-full lg:self-center xl:w-[460px]">
           {/* La historia queda a un clic, no ocupando espacio permanente. Vive
               en un diálogo y no en un bloque fijo porque se consulta poco: casi
               siempre se recuerda, y cuando no, se abre.

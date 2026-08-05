@@ -117,9 +117,9 @@ const STORY: Story<ScreenNode> = {
 
 const SENALES: Senal[] = [
   { id: 's1', texto: 'Un <b>QR es un enlace que no puedes leer antes de escanearlo</b>: no hay texto que inspeccionar.' },
-  { id: 's2', targetId: 'remitente', texto: 'El destino real es <b>litoral-actualiza.web.app</b>, sin el dominio del banco.' },
-  { id: 's3', targetId: 'campo-clave', texto: 'El formulario pide la <b>clave de acceso</b>, algo que una actualización de datos nunca necesita.' },
-  { id: 's4', targetId: 'plazo', texto: 'Mete <b>prisa</b> con un plazo de 72 horas.' },
+  { id: 's2', targetId: 'remitente', pantalla: 'n1', texto: 'El destino real es <b>litoral-actualiza.web.app</b>, sin el dominio del banco.' },
+  { id: 's3', targetId: 'campo-clave', pantalla: 'n2', texto: 'El formulario pide la <b>clave de acceso</b>, algo que una actualización de datos nunca necesita.' },
+  { id: 's4', targetId: 'plazo', pantalla: 'n1', texto: 'Mete <b>prisa</b> con un plazo de 72 horas.' },
 ]
 const RULE =
   'Regla de oro: al escanear un QR, primero <b>lee la vista previa de la URL</b> y recién ahí decide. Vale igual para los QR de correos, locales, surtidores y parquímetros.'
