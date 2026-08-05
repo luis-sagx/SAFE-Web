@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import AccionesFinal from './AccionesFinal'
+import EtiquetaAprobacion from './EtiquetaAprobacion'
 import type { StoryNode } from '../../hooks/useStoryEngine'
 
 export interface Senal {
@@ -102,6 +103,8 @@ function PanelVeredicto({
         {node.verdict}
       </p>
       <p className="mt-3 text-base leading-relaxed text-body">{node.outcome}</p>
+
+      <EtiquetaAprobacion node={node} />
 
       {enVeredicto && (
         <button

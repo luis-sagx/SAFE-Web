@@ -1,3 +1,4 @@
+import EtiquetaAprobacion from './EtiquetaAprobacion'
 import type { StoryNode } from '../../hooks/useStoryEngine'
 import AccionesFinal from './AccionesFinal'
 
@@ -44,6 +45,8 @@ function StoryResultPanel({
       </p>
 
       <p className="mt-3 text-base leading-relaxed text-body">{node.outcome}</p>
+
+      <EtiquetaAprobacion node={node} />
 
       <div className="mt-5 rounded-md bg-canvas-soft p-4">
         <h4 className="text-sm font-semibold text-ink">{signalsTitle}</h4>
