@@ -480,6 +480,150 @@
   margin-bottom: 0;
 }
 
+/* ---------- Pantallas bajas ----------
+   En un portátil de 768px de alto el correo no cabía y había que desplazarlo,
+   justo cuando lo que se juzga es el mensaje completo: el pie, el adjunto y el
+   remitente son las señales, y ninguna debería quedar fuera de vista.
+
+   Se aprieta el aire y se baja un punto la tipografía, no se escala la ventana
+   con transform: al escalar, el texto queda borroso y por debajo del tamaño
+   legible mínimo, que en una pantalla donde hay que leer direcciones de correo
+   letra a letra sería contraproducente.
+
+   Dispara por alto O por ancho: una ventana estrecha hace que el texto se
+   parta en más líneas, así que el correo crece a lo alto aunque la pantalla no
+   sea baja. Es lo que pasaba en una tablet de 820px de ancho. */
+@media (max-height: 940px), (max-width: 900px) {
+  .mailbody {
+    padding: 12px 18px 14px;
+  }
+  .subject {
+    font-size: 17px;
+    margin-bottom: 10px;
+  }
+  .senderRow {
+    padding-bottom: 10px;
+    gap: 9px;
+  }
+  .avatar {
+    width: 32px;
+    height: 32px;
+  }
+  .prose {
+    margin-top: 11px;
+    font-size: 13.5px;
+    line-height: 1.5;
+  }
+  .prose p {
+    margin-bottom: 9px;
+  }
+  .prose :global(.cta) {
+    padding: 9px 15px;
+    margin: 2px 0 9px;
+  }
+  .attachmentZone,
+  .mailFooter {
+    margin-top: 11px;
+    padding-top: 10px;
+  }
+  .attachmentCount {
+    margin-bottom: 5px;
+  }
+  .attachment {
+    padding: 7px 12px 7px 8px;
+  }
+  .attachmentTipo {
+    width: 26px;
+    height: 26px;
+  }
+  .mailFooter {
+    font-size: 11px;
+    line-height: 1.45;
+  }
+  .mailFooter p {
+    margin-bottom: 4px;
+  }
+  .mailToolbar {
+    padding: 3px 10px;
+  }
+  .mailToolbarBtn {
+    padding: 4px 8px;
+  }
+  .titlebar {
+    padding: 7px 14px;
+  }
+  .taskbar {
+    height: 34px;
+  }
+}
+
+/* En pantalla angosta desaparece la columna de carpetas, igual que en la app de
+   correo de cualquier teléfono. Son 132px de un ancho de 375: con ella puesta,
+   el mensaje se parte en el doble de líneas y el asunto ocupa tres. No se
+   pierde nada que haya que juzgar — es decorativa. */
+@media (max-width: 640px) {
+  .mailNav {
+    display: none;
+  }
+  .mailToolbar {
+    justify-content: space-between;
+  }
+  .mailToolbarBtn {
+    min-width: 0;
+    flex: 1;
+    padding: 5px 2px;
+  }
+  .mailToolbarTexto {
+    font-size: 9.5px;
+  }
+}
+
+/* Segundo escalón, para pantallas de 600px de alto o menos, donde el primero
+   se queda corto. Aquí ya se sacrifica presencia visual —avatar más pequeño,
+   pie casi en letra menuda— antes que obligar a desplazar el mensaje. */
+@media (max-height: 660px) {
+  .mailbody {
+    padding: 9px 14px 11px;
+  }
+  .subject {
+    font-size: 15.5px;
+    margin-bottom: 7px;
+  }
+  .senderRow {
+    padding-bottom: 8px;
+  }
+  .avatar {
+    width: 27px;
+    height: 27px;
+    font-size: 12px;
+  }
+  .prose {
+    margin-top: 9px;
+    font-size: 12.5px;
+    line-height: 1.45;
+  }
+  .prose p {
+    margin-bottom: 7px;
+  }
+  .prose :global(.cta) {
+    padding: 7px 13px;
+    font-size: 13px;
+  }
+  .attachmentZone,
+  .mailFooter {
+    margin-top: 8px;
+    padding-top: 7px;
+  }
+  .mailFooter {
+    font-size: 10px;
+    line-height: 1.35;
+  }
+  .senderAddr,
+  .senderTo {
+    font-size: 11.5px;
+  }
+}
+
 /* ---------- Navegador ---------- */
 
 .tabstrip {

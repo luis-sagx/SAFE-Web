@@ -43,13 +43,15 @@ const MARCO_TELEFONO =
  *  fijo: sin eso, la ventana se sale de pantalla en un portátil de 1024px, que
  *  es justo donde el layout pasa de apilado a lado a lado.
  *
- *  El alto es relativo por el mismo motivo. Con 560px fijos, en una pantalla de
- *  1000px quedaban 250px de blanco arriba y otros tantos abajo: la ventana se
- *  leía como una tarjetita flotando, no como "tu computador", y el correo iba
- *  apretado dentro. El tope en 720px evita el efecto contrario en un monitor
- *  grande, donde una ventana altísima tampoco se parece a nada real. */
+ *  El alto llena la columna (`h-full`) en vez de pedir una fracción del
+ *  viewport. Con `min(76vh, 720px)` la ventana dejaba sin usar unos 80px que
+ *  tenía disponibles en un portátil de 768px de alto, y ese espacio es
+ *  exactamente el que le faltaba al correo para no tener que desplazarse. El
+ *  tope de 720px evita el efecto contrario en un monitor grande, donde una
+ *  ventana altísima tampoco se parece a nada real.
+ */
 const MARCO_ESCRITORIO =
-  'sm:max-h-[min(78vh,720px)] sm:w-[94vw] sm:max-w-[820px] sm:rounded-xl sm:border sm:border-hairline-strong sm:shadow-[0_30px_70px_rgba(0,0,0,0.22)] lg:h-[min(76vh,720px)] lg:max-h-full lg:w-[56vw] lg:min-w-[520px] lg:max-w-[880px] lg:flex-none lg:self-center'
+  'sm:max-h-[min(78vh,720px)] sm:w-[94vw] sm:max-w-[820px] sm:rounded-xl sm:border sm:border-hairline-strong sm:shadow-[0_30px_70px_rgba(0,0,0,0.22)] lg:h-full lg:max-h-[720px] lg:w-[56vw] lg:min-w-[520px] lg:max-w-[880px] lg:flex-none lg:self-stretch'
 
 function EscenarioLayout({
   escenarioId,
@@ -162,7 +164,7 @@ function EscenarioLayout({
           900px de alto no entran a la vez un dispositivo creíble y un bloque de
           opciones largo: apilarlos ahí aplasta el dispositivo justo cuando es lo
           que hay que juzgar. */}
-      <main className="flex min-h-0 flex-1 flex-col items-center sm:gap-4 sm:px-4 sm:py-4 lg:flex-row lg:items-stretch lg:justify-center lg:gap-8 lg:py-6">
+      <main className="flex min-h-0 flex-1 flex-col items-center sm:gap-4 sm:px-4 sm:py-4 lg:flex-row lg:items-stretch lg:justify-center lg:gap-8 lg:py-6 [@media(max-height:940px)]:sm:py-2 [@media(max-height:940px)]:lg:py-3">
         <div
           ref={escenaRef}
           // Fijo a propósito: el recorrido de señales de un escenario
