@@ -1,4 +1,4 @@
-import { CheckCircle2 } from 'lucide-react'
+import { CheckCircle2, LockKeyhole } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link, Navigate, useParams } from 'react-router'
 import AppHeader from '../components/AppHeader'
@@ -6,6 +6,7 @@ import BarraProgreso from '../components/BarraProgreso'
 import InfoLink from '../components/InfoLink'
 import { escenariosDeSeccion, getSeccion } from '../data/catalogo'
 import { fetchProgreso, type Progreso } from '../lib/api'
+import { escenarioEstaDisponible } from '../lib/bloqueoEscenarios'
 
 /// Los puntos de dificultad no delatan nada: un escenario legítimo puede ser
 /// tan difícil como uno de fraude, y de hecho los que espejan lo son.
@@ -140,56 +141,80 @@ function Seccion() {
               // eso. "Sin jugar" es seguro porque no habla del contenido.
               const ultimo = progreso?.escenarios.find((e) => e.id === escenario.id)?.ultimoOutcome
               const aprobado = ultimo === 'CORRECTO'
+              const disponible = escenarioEstaDisponible(escenarios, progreso, escenario.id)
+              const cardClassName = `group flex w-full flex-col rounded-lg border bg-surface p-5 transition ${
+                disponible ? 'hover:-translate-y-0.5 hover:shadow-card' : 'opacity-70'
+              } ${
+                aprobado
+                  ? 'border-mint-mid hover:border-success/50'
+                  : disponible
+                    ? 'border-hairline-strong hover:border-link/40'
+                    : 'border-hairline-strong'
+              }`
+              const contenido = (
+                <>
+                  <div className="flex items-center justify-between gap-3">
+                    <span
+                      className={`font-mono text-xs font-medium tabular-nums ${
+                        aprobado ? 'text-success' : 'text-muted'
+                      }`}
+                    >
+                      {String(indice + 1).padStart(2, '0')}
+                    </span>
+                    <Dificultad nivel={escenario.dificultad} />
+                  </div>
+
+                  <h3 className="mt-3 text-lg font-semibold text-ink">{escenario.titulo}</h3>
+                  <p className="mt-2 flex-1 text-base leading-relaxed text-body">
+                    {escenario.descripcion}
+                  </p>
+
+                  <div className="mt-4 flex items-center justify-between border-t border-hairline pt-3">
+                    {aprobado ? (
+                      <span className="inline-flex items-center gap-1 text-[11px] font-semibold uppercase tracking-[0.88px] text-success">
+                        <CheckCircle2 aria-hidden className="size-3.5" strokeWidth={2.5} />
+                        Aprobado
+                      </span>
+                    ) : ultimo !== undefined ? (
+                      <span className="text-[11px] font-semibold uppercase tracking-[0.88px] text-muted">
+                        Sin aprobar
+                      </span>
+                    ) : disponible ? (
+                      <span className="text-[11px] font-semibold uppercase tracking-[0.88px] text-muted-soft">
+                        Sin jugar
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 text-[11px] font-semibold uppercase tracking-[0.88px] text-muted">
+                        <LockKeyhole aria-hidden className="size-3.5" strokeWidth={2.5} />
+                        Bloqueado
+                      </span>
+                    )}
+                    <span
+                      aria-hidden
+                      className={`text-sm font-medium transition ${
+                        disponible ? 'text-link group-hover:translate-x-0.5' : 'text-muted'
+                      }`}
+                    >
+                      {disponible ? (ultimo !== undefined ? 'Repetir →' : 'Empezar →') : 'Candado'}
+                    </span>
+                  </div>
+                </>
+              )
 
               return (
                 <li key={escenario.id} className="flex">
-                  <Link
-                    to={`/seccion/${escenario.seccionId}/${escenario.escenarioId}`}
-                    className={`group flex w-full flex-col rounded-lg border bg-surface p-5 transition hover:-translate-y-0.5 hover:shadow-card ${
-                      aprobado
-                        ? 'border-mint-mid hover:border-success/50'
-                        : 'border-hairline-strong hover:border-link/40'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between gap-3">
-                      <span
-                        className={`font-mono text-xs font-medium tabular-nums ${
-                          aprobado ? 'text-success' : 'text-muted'
-                        }`}
-                      >
-                        {String(indice + 1).padStart(2, '0')}
-                      </span>
-                      <Dificultad nivel={escenario.dificultad} />
+                  {disponible ? (
+                    <Link
+                      to={`/seccion/${escenario.seccionId}/${escenario.escenarioId}`}
+                      className={cardClassName}
+                    >
+                      {contenido}
+                    </Link>
+                  ) : (
+                    <div className={cardClassName} aria-disabled="true">
+                      {contenido}
                     </div>
-
-                    <h3 className="mt-3 text-lg font-semibold text-ink">{escenario.titulo}</h3>
-                    <p className="mt-2 flex-1 text-base leading-relaxed text-body">
-                      {escenario.descripcion}
-                    </p>
-
-                    <div className="mt-4 flex items-center justify-between border-t border-hairline pt-3">
-                      {aprobado ? (
-                        <span className="inline-flex items-center gap-1 text-[11px] font-semibold uppercase tracking-[0.88px] text-success">
-                          <CheckCircle2 aria-hidden className="size-3.5" strokeWidth={2.5} />
-                          Aprobado
-                        </span>
-                      ) : ultimo !== undefined ? (
-                        <span className="text-[11px] font-semibold uppercase tracking-[0.88px] text-muted">
-                          Sin aprobar
-                        </span>
-                      ) : (
-                        <span className="text-[11px] font-semibold uppercase tracking-[0.88px] text-muted-soft">
-                          Sin jugar
-                        </span>
-                      )}
-                      <span
-                        aria-hidden
-                        className="text-sm font-medium text-link transition group-hover:translate-x-0.5"
-                      >
-                        {ultimo !== undefined ? 'Repetir →' : 'Empezar →'}
-                      </span>
-                    </div>
-                  </Link>
+                  )}
                 </li>
               )
             })}

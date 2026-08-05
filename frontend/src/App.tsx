@@ -1,5 +1,6 @@
 import { Suspense } from 'react'
 import { Navigate, Route, Routes } from 'react-router'
+import RequireEscenarioDisponible from './components/RequireEscenarioDisponible'
 import RequireAuth from './components/RequireAuth'
 import { ESCENARIOS } from './data/catalogo'
 import Bienvenida from './pages/Bienvenida'
@@ -22,13 +23,21 @@ function App() {
 
           {/* Una ruta por entrada del catálogo: agregar un escenario no obliga
               a tocar este archivo. */}
-          {ESCENARIOS.map(({ id, seccionId, escenarioId, Component }) => (
-            <Route
-              key={id}
-              path={`/seccion/${seccionId}/${escenarioId}`}
-              element={<Component />}
-            />
-          ))}
+          {ESCENARIOS.map((escenario) => {
+            const { id, seccionId, escenarioId, Component } = escenario
+
+            return (
+              <Route
+                key={id}
+                path={`/seccion/${seccionId}/${escenarioId}`}
+                element={
+                  <RequireEscenarioDisponible escenario={escenario}>
+                    <Component />
+                  </RequireEscenarioDisponible>
+                }
+              />
+            )
+          })}
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />
