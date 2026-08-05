@@ -1020,7 +1020,12 @@ function ContenidoCorreo({ recibido, carpetas }: { recibido: string; carpetas: C
         . Escanee el siguiente código con la cámara de su celular para continuar:
       </p>
       <div style={{ textAlign: 'center', margin: '14px 0' }}>
+        {/* El nombre accesible de un botón sale de su texto visible, y el SVG
+            no tiene ninguno: sin este span el botón quedaría sin nombre para
+            un lector de pantalla (y sin forma de ubicarlo por rol+nombre en
+            los tests). */}
         <BotonHotspot goto="n2" label="Escaneó el código QR" signalId="qr">
+          <span className="sr-only">Código QR — escanear para continuar</span>
           <span dangerouslySetInnerHTML={{ __html: QR_SVG }} />
         </BotonHotspot>
       </div>
@@ -1238,7 +1243,7 @@ describe('QuishingActualice', () => {
   it('escanear el QR y enviar el formulario cuenta como caer en la trampa', () => {
     renderEscenario()
 
-    fireEvent.click(screen.getByRole('button', { name: 'Escaneó el código QR' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Código QR — escanear para continuar' }))
     fireEvent.click(screen.getByRole('button', { name: 'Confirmar datos' }))
 
     expect(screen.getByText('Caíste en la trampa')).toBeDefined()
