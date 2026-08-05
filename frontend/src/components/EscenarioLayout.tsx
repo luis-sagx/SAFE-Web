@@ -201,20 +201,25 @@ function EscenarioLayout({
         {/* Apilado, el bloque nunca pasa de media pantalla: si no cabe, se
             desplaza él, no la página. Al costado puede usar todo el alto. */}
         <div className="max-h-[45%] w-full shrink-0 overflow-y-auto border-t border-hairline bg-canvas px-4 py-4 sm:w-[420px] sm:border-0 sm:bg-transparent sm:px-0 sm:py-0 lg:max-h-full lg:self-center">
-          {decision}
-
           {/* La historia queda a un clic, no ocupando espacio permanente. Vive
               en un diálogo y no en un bloque fijo porque se consulta poco: casi
-              siempre se recuerda, y cuando no, se abre. Lo que sí necesita
-              estar siempre a la vista es la pantalla y la decisión. */}
+              siempre se recuerda, y cuando no, se abre.
+
+              Va encima de la decisión y con aspecto de enlace, no de botón: es
+              una consulta de apoyo, no una acción del ejercicio, y compitiendo
+              en peso con "¿Qué haces?" desviaba la atención de lo único que hay
+              que hacer aquí. Sigue siendo un <button> porque abre un diálogo;
+              solo se viste de enlace. */}
           <button
             type="button"
             onClick={() => dialogoRef.current?.showModal()}
-            className="mt-5 inline-flex min-h-9 items-center gap-1.5 rounded-md border border-hairline-strong bg-surface px-3 text-sm font-medium text-ink transition hover:bg-surface-strong focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link"
+            className="mb-4 inline-flex items-center gap-1.5 text-sm font-medium text-link underline decoration-dotted underline-offset-4 transition hover:decoration-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link"
           >
-            <Info aria-hidden className="size-4 text-muted" strokeWidth={2} />
+            <Info aria-hidden className="size-3.5" strokeWidth={2} />
             Ver contexto
           </button>
+
+          {decision}
         </div>
       </main>
 
