@@ -315,6 +315,20 @@ function PantallaPortal({ onHotspot }: PantallaProps) {
       </div>
 
       <div className={styles.urlbar} data-signal="url-insegura">
+        {/* Vuelve al correo sin cerrar el escenario: n1 es una escena, no un
+            final, así que la corrida sigue abierta. El paso queda en la traza,
+            que es justo lo que interesa medir — volver a mirar el mensaje antes
+            de decidir es una conducta prudente, no una decisión final. */}
+        <button
+          type="button"
+          className={styles.navBack}
+          title="Atrás"
+          aria-label="Volver al correo"
+          data-hotspot-goto="n1"
+          data-hotspot-label="Volvió al correo desde la página, sin escribir nada"
+        >
+          ←
+        </button>
         <span className={styles.warn}>⚠ No seguro</span>
         <span className={styles.url}>http://sri-facturacion-ec.com/validar-ruc</span>
       </div>
@@ -329,13 +343,20 @@ function PantallaPortal({ onHotspot }: PantallaProps) {
         <div className={styles.form}>
           <label className={styles.field}>
             <span>RUC o cédula</span>
-            {/* No editable a propósito: el participante juzga la pantalla,
-                nunca escribe credenciales reales en ella. */}
-            <span className={styles.input}>0000000000001</span>
+            {/* No editable a propósito, y con un valor que no es el de nadie:
+                el participante juzga la pantalla, nunca escribe credenciales
+                reales en ella. */}
+            <span className={styles.input}>
+              <span className="sr-only">Tu RUC, ya completado: </span>
+              0000000000001
+            </span>
           </label>
           <label className={styles.field} data-signal="campo-clave">
             <span>Clave del portal SRI</span>
-            <span className={styles.input}>••••••••</span>
+            <span className={styles.input}>
+              <span className="sr-only">Tu clave, ya completada: </span>
+              ••••••••
+            </span>
           </label>
           <BotonHotspot
             goto="e_datos"
@@ -368,7 +389,7 @@ function PantallaPortal({ onHotspot }: PantallaProps) {
  * reconoce sola el anzuelo. Para quien de verdad se atasca está la pista
  * desplegable, que es opt-in.
  */
-function DecisionEnCurso({ fallo }: { fallo: boolean }) {
+function DecisionEnCurso({ fallo, enPortal }: { fallo: boolean; enPortal: boolean }) {
   return (
     <div className="grid gap-3">
       <p className="text-lg font-semibold text-ink">¿Qué haces?</p>
@@ -377,9 +398,20 @@ function DecisionEnCurso({ fallo }: { fallo: boolean }) {
         <strong>cualquier parte de ella</strong>, incluida la barra de abajo. Antes de tocar un
         enlace, mantén el cursor encima para ver a dónde lleva.
       </p>
+      {/* Va aquí y no dentro de la página: el marco de los escenarios separa lo
+          que la app real mostraría de lo que explica el ejercicio, y una página
+          de phishing jamás avisaría de qué son sus campos. */}
+      {enPortal && (
+        <p className="rounded-md border border-hairline-strong bg-canvas-soft px-3 py-2 text-base leading-relaxed text-body">
+          El formulario ya aparece con{' '}
+          <strong className="text-ink">tu RUC y tu clave escritos</strong>. Es así para no pedirte
+          datos verdaderos —ese RUC no es el de nadie—, pero enviarlo cuenta como entregarlos.
+        </p>
+      )}
+
       <p className="text-base leading-relaxed text-body">
         Lo primero que hagas cierra el escenario y te muestra en qué terminaba. No hay confirmación,
-        igual que en la vida real.
+        igual que en la vida real. Puedes volver atrás con la flecha del navegador sin decidir nada.
       </p>
 
       {/* Solo aparece si ya intentó tocar algo que no responde: es exactamente
@@ -426,8 +458,8 @@ function FacturaSri() {
       return
     }
     engine.choose(goto, label)
-    if (goto === 'n2') {
-      setPantallaActual('n2')
+    if (goto === 'n1' || goto === 'n2') {
+      setPantallaActual(goto)
     }
   }
 
@@ -466,7 +498,7 @@ function FacturaSri() {
       onPantalla={(id) => id && setPantallaActual(id as 'n1' | 'n2')}
     />
   ) : (
-    <DecisionEnCurso fallo={tocoEnVacio} />
+    <DecisionEnCurso fallo={tocoEnVacio} enPortal={pantallaActual === 'n2'} />
   )
 
   return (

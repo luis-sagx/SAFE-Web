@@ -659,6 +659,29 @@
   white-space: nowrap;
 }
 
+/* Flecha de atrás del navegador simulado. Sin ella, entrar a la página falsa
+   era un viaje de ida: cualquier clic terminaba el escenario, cuando en un
+   navegador de verdad volver es lo primero que se intenta ante una duda. */
+.navBack {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: #3b4553;
+  font-size: 17px;
+  line-height: 1;
+  cursor: pointer;
+}
+.navBack:hover {
+  background: rgba(0, 0, 0, 0.07);
+}
+
 .urlbar {
   flex-shrink: 0;
   display: flex;
