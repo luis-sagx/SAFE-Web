@@ -49,9 +49,14 @@ const MARCO_TELEFONO =
  *  exactamente el que le faltaba al correo para no tener que desplazarse. El
  *  tope de 720px evita el efecto contrario en un monitor grande, donde una
  *  ventana altísima tampoco se parece a nada real.
+ *
+ *  `self-center` y no `self-stretch`: al estirar, el tope de 720px deja la
+ *  ventana anclada arriba del todo en una pantalla alta, con el hueco entero
+ *  debajo. Con `h-full` ya ocupa el alto disponible, así que centrarla solo
+ *  reparte lo que sobre cuando el tope se queda corto.
  */
 const MARCO_ESCRITORIO =
-  'sm:max-h-[min(78vh,720px)] sm:w-[94vw] sm:max-w-[820px] sm:rounded-xl sm:border sm:border-hairline-strong sm:shadow-[0_30px_70px_rgba(0,0,0,0.22)] lg:h-full lg:max-h-[720px] lg:w-[56vw] lg:min-w-[520px] lg:max-w-[880px] lg:flex-none lg:self-stretch'
+  'sm:max-h-[min(78vh,720px)] sm:w-[94vw] sm:max-w-[820px] sm:rounded-xl sm:border sm:border-hairline-strong sm:shadow-[0_30px_70px_rgba(0,0,0,0.22)] lg:h-full lg:max-h-[720px] lg:w-[56vw] lg:min-w-[520px] lg:max-w-[880px] lg:flex-none lg:self-center'
 
 function EscenarioLayout({
   escenarioId,
