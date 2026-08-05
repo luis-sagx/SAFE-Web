@@ -46,12 +46,11 @@ import { useStoryEngine, type Story, type StoryNode } from '../../hooks/useStory
 const STORY: Story<StoryNode> = {
   n1: { kind: 'scene' },
   n2: { kind: 'scene' },
-  // El portal legítimo. Son dos nodos con la misma pantalla porque el final
-  // depende de por dónde se llegó: quien nunca abrió la página falsa acierta
-  // por no haberla tocado, y quien la abrió y se fue, por haber leído la
-  // dirección a tiempo. Distinguirlos mantiene la traza legible.
+  // El portal legítimo. Un solo nodo, aunque el final dependa de por dónde se
+  // llegó: con dos nodos, el marcador abría una segunda pestaña del mismo sitio
+  // en vez de ir a la que ya estaba abierta. Cuál de los dos finales acredita
+  // se decide al cerrarla, mirando si la página falsa llegó a abrirse.
   n3: { kind: 'scene' },
-  n3b: { kind: 'scene' },
   e_adjunto: {
     kind: 'bad',
     verdict: 'Caíste en la trampa',
@@ -279,18 +278,12 @@ const PESTANAS: Record<
     cierra: 'n1',
     senalUrl: 'url-insegura',
   },
+  // Sin `cierra` fijo: lo decide el escenario según haya visitado o no la
+  // página falsa (ver `cierrePortal`).
   n3: {
     titulo: 'SRI en Línea',
     url: 'https://srienlinea.sri.gob.ec/comprobantes',
     segura: true,
-    cierra: 'e_portal',
-    senalUrl: 'url-real',
-  },
-  n3b: {
-    titulo: 'SRI en Línea',
-    url: 'https://srienlinea.sri.gob.ec/comprobantes',
-    segura: true,
-    cierra: 'e_dominio',
     senalUrl: 'url-real',
   },
 }
@@ -316,13 +309,14 @@ const MARCADORES = [
 function Navegador({
   pestanas,
   activa,
-  gotoPortal,
+  cierrePortal,
   onHotspot,
   children,
 }: {
   pestanas: string[]
   activa: string
-  gotoPortal: string
+  /** Final al que lleva cerrar la pestaña del portal. */
+  cierrePortal: string
   onHotspot: (event: React.MouseEvent) => void
   children: ReactNode
 }) {
@@ -341,6 +335,7 @@ function Navegador({
           const meta = PESTANAS[id]
           if (!meta) return null
           const esActiva = id === activa
+          const cierra = id === 'n3' ? cierrePortal : meta.cierra
 
           return (
             <span
@@ -353,14 +348,14 @@ function Navegador({
             >
               <Globe aria-hidden className={styles.tabIcono} strokeWidth={1.75} />
               <span className={styles.tabTexto}>{meta.titulo}</span>
-              {meta.cierra && (
+              {cierra && (
                 <button
                   type="button"
                   className={styles.tabClose}
                   title={`Cerrar ${meta.titulo}`}
                   aria-label={`Cerrar la pestaña ${meta.titulo}`}
                   data-cierra={id}
-                  data-hotspot-goto={meta.cierra}
+                  data-hotspot-goto={cierra}
                   data-hotspot-label={`Cerró la pestaña "${meta.titulo}"`}
                 >
                   ✕
@@ -391,7 +386,7 @@ function Navegador({
             key={texto}
             type="button"
             className={styles.marcador}
-            data-hotspot-goto={portal ? gotoPortal : undefined}
+            data-hotspot-goto={portal ? 'n3' : undefined}
             data-hotspot-label={portal ? 'Abrió el portal del SRI desde sus marcadores' : undefined}
           >
             <Icono aria-hidden className={styles.marcadorIcono} strokeWidth={1.75} />
@@ -611,9 +606,9 @@ function DecisionEnCurso({
  * multa— y el contraste con la página falsa: dominio sri.gob.ec, conexión
  * segura y una sesión ya iniciada, sin ningún formulario pidiendo la clave.
  *
- * Cerrar su pestaña es lo que acredita, y el final depende de por dónde se
- * llegó: `n3` para quien nunca abrió la página falsa y `n3b` para quien la
- * abrió y se fue a tiempo (ver PESTANAS).
+ * Cerrar su pestaña es lo que acredita, y el final depende de si la página
+ * falsa llegó a abrirse: entrar por cuenta propia sin tocarla, o haberla
+ * dejado sin escribir nada (ver `cierrePortal`).
  */
 function ContenidoPortalReal() {
   return (
@@ -718,9 +713,9 @@ function FacturaSri() {
     <Navegador
       pestanas={pestanas}
       activa={pantallaActual}
-      // Quien ya abrió la página falsa acredita por haberla dejado; quien no,
-      // por no haberla tocado nunca.
-      gotoPortal={pestanas.includes('n2') ? 'n3b' : 'n3'}
+      // Quien llegó a abrir la página falsa acredita por haberla dejado sin
+      // escribir nada; quien nunca la tocó, por haber entrado por su cuenta.
+      cierrePortal={pestanas.includes('n2') ? 'e_dominio' : 'e_portal'}
       onHotspot={onHotspot}
     >
       {pantallaActual === 'n1' ? (
