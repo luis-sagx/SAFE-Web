@@ -181,7 +181,7 @@ const SENALES: Senal[] = [
     pantalla: 'n1',
     targetId: 'adjunto',
     texto:
-      'El adjunto no es un documento, es un <b>programa</b>: termina en <b>.vbs</b>, un archivo que Windows <b>ejecuta</b> al abrirlo. Lleva además doble extensión —<b>.pdf.vbs</b>— porque Windows oculta la última cuando conoce el tipo, y en pantalla puede leerse como si fuera un PDF.',
+      'El adjunto no es un documento sino un <b>programa</b>: un <b>.vbs</b> se ejecuta al abrirlo. La doble extensión <b>.pdf.vbs</b> lo disfraza, porque Windows oculta la última.',
   },
   {
     id: 'clave',

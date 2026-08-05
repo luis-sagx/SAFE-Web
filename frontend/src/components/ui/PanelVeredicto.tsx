@@ -159,20 +159,29 @@ function PanelVeredicto({
               Saltar
             </button>
           </div>
+          {/* Alto reservado para la señal más larga del catálogo (146px medidos
+              en la columna estrecha). Sin él, los textos van de una a cinco
+              líneas y la fila de botones sube y baja hasta 87px entre paso y
+              paso, obligando a buscar el botón de nuevo cada vez. */}
           <p
-            className="mt-3 text-lg leading-relaxed text-body"
+            className="mt-3 min-h-[146px] text-lg leading-relaxed text-body"
             dangerouslySetInnerHTML={{ __html: senales[paso]?.texto ?? '' }}
           />
+          {/* "Anterior" se renderiza siempre, deshabilitado en el primer paso.
+              Antes aparecía a partir del segundo, así que "Siguiente" pasaba de
+              ocupar toda la fila a la mitad y se desplazaba casi 200px justo
+              cuando la persona iba a volver a pulsarlo. Un botón deshabilitado
+              queda además fuera del recorrido del teclado, sin necesidad de
+              ocultarlo. */}
           <div className="mt-4 flex gap-2">
-            {paso > 0 && (
-              <button
-                type="button"
-                className="h-12 flex-1 rounded-md border border-hairline-strong bg-surface text-base font-medium text-ink transition hover:bg-canvas-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link"
-                onClick={() => setPaso((p) => p - 1)}
-              >
-                ← Anterior
-              </button>
-            )}
+            <button
+              type="button"
+              disabled={paso === 0}
+              className="h-12 flex-1 rounded-md border border-hairline-strong bg-surface text-base font-medium text-ink transition hover:bg-canvas-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link disabled:cursor-default disabled:border-hairline disabled:text-muted-soft disabled:hover:bg-surface"
+              onClick={() => setPaso((p) => p - 1)}
+            >
+              ← Anterior
+            </button>
             <button
               type="button"
               className="h-12 flex-1 rounded-md bg-primary text-base font-medium text-on-primary transition hover:bg-primary-active focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link"
