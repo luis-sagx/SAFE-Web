@@ -10,6 +10,7 @@ import {
 import styles from '../../components/ui/DeviceScreen.module.css'
 import { BotonHotspot, EnlaceHotspot, manejarClicHotspot } from '../../components/ui/interactivo'
 import PanelVeredicto, { type Senal } from '../../components/ui/PanelVeredicto'
+import { formatoHora } from '../../hooks/useRelojDelSistema'
 import { useStoryEngine, type Story, type StoryNode } from '../../hooks/useStoryEngine'
 
 /**
@@ -177,9 +178,8 @@ const RESUMEN = 'Un correo dice que tienes una factura electrónica pendiente de
 const CONTEXTO = (
   <>
     <p>
-      Son casi las nueve de la mañana. Abres tu correo y ves un mensaje del{' '}
-      <strong>Servicio de Rentas Internas</strong> que llegó hace unos minutos, sobre una factura
-      pendiente.
+      Abres tu correo y ves un mensaje del <strong>Servicio de Rentas Internas</strong> que llegó
+      hace unos minutos, sobre una factura pendiente.
     </p>
     <p>
       Emites facturas de vez en cuando, así que un aviso del SRI no te sorprende. Nunca antes te
@@ -208,23 +208,30 @@ const ATAJO_PORTAL = {
   label: 'Cerró el correo y entró al portal del SRI escribiendo la dirección',
 }
 
-/// Unos minutos después de que llegó el correo (08:42) y en línea con lo que
-/// cuenta el contexto ("casi las nueve"). Antes el reloj del sistema marcaba
-/// 10:41 y contradecía a los otros dos.
-const RELOJ = { hora: '08:47', fecha: '4/8/2026' }
+/// Cinco minutos antes de abrir el escenario. La hora del correo se calcula a
+/// partir del ahora porque la barra de tareas muestra la hora real y avanza:
+/// con una hora fija el mensaje quedaría fechado en un momento que el reloj de
+/// la propia ventana desmiente. "Hace unos minutos" es además lo que dice el
+/// contexto, y lo que hace verosímil que todavía no lo hubieras visto.
+const MINUTOS_DE_ANTIGUEDAD = 5
+
+function horaDeLlegada(): string {
+  const llegada = new Date(Date.now() - MINUTOS_DE_ANTIGUEDAD * 60_000)
+  return `hoy ${formatoHora(llegada)}`
+}
 
 interface PantallaProps {
   onHotspot: (event: React.MouseEvent) => void
 }
 
-function PantallaCorreo({ onHotspot }: PantallaProps) {
+function PantallaCorreo({ onHotspot, recibido }: PantallaProps & { recibido: string }) {
   return (
     <VentanaEscritorio
       titulo="Correo (Recibidos)"
       ariaLabel="Bandeja de correo"
       onClick={onHotspot}
       atajo={ATAJO_PORTAL}
-      reloj={RELOJ}
+      reloj="vivo"
     >
       <div className={styles.desktopBody}>
         <MailNav />
@@ -251,7 +258,7 @@ function PantallaCorreo({ onHotspot }: PantallaProps) {
                 </p>
                 <p className={styles.senderTo}>para mí</p>
               </div>
-              <span className={styles.date}>hoy 08:42</span>
+              <span className={styles.date}>{recibido}</span>
             </div>
 
             <div className={styles.prose}>
@@ -319,7 +326,7 @@ function PantallaPortal({ onHotspot }: PantallaProps) {
       titulo="Validación de comprobante"
       ariaLabel="Página web simulada"
       onClick={onHotspot}
-      reloj={RELOJ}
+      reloj="vivo"
       atajo={{
         ...ATAJO_PORTAL,
         goto: 'e_dominio',
@@ -434,6 +441,9 @@ function FacturaSri() {
   /// ya no se apaga: quien exploró a ciegas una vez agradece tener la pista a
   /// la vista el resto del escenario.
   const [tocoEnVacio, setTocoEnVacio] = useState(false)
+  /// Se calcula una vez al montar y no en cada render: si no, el correo se
+  /// "rejuvenecería" solo cada quince segundos, al ritmo del reloj de la barra.
+  const [recibido, setRecibido] = useState(horaDeLlegada)
 
   function elegir(goto: string, label?: string) {
     if (engine.isEnding) {
@@ -449,6 +459,10 @@ function FacturaSri() {
     engine.restart()
     setPantallaActual('n1')
     setTocoEnVacio(false)
+    // Al repetir, el correo vuelve a acabar de llegar. Conservar la hora del
+    // intento anterior dejaría un mensaje de hace media hora en una bandeja
+    // cuyo reloj ya avanzó.
+    setRecibido(horaDeLlegada())
   }
 
   const onHotspot = (event: React.MouseEvent) => {
@@ -459,7 +473,7 @@ function FacturaSri() {
 
   const pantalla =
     pantallaActual === 'n1' ? (
-      <PantallaCorreo onHotspot={onHotspot} />
+      <PantallaCorreo onHotspot={onHotspot} recibido={recibido} />
     ) : (
       <PantallaPortal onHotspot={onHotspot} />
     )

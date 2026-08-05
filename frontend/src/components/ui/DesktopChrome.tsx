@@ -1,5 +1,10 @@
 import { Inbox, Send, Trash2, type LucideIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
+import {
+  formatoFecha,
+  formatoHora,
+  useRelojDelSistema,
+} from '../../hooks/useRelojDelSistema'
 import styles from './DeviceScreen.module.css'
 
 export interface AccionCorreo {
@@ -110,12 +115,22 @@ export function Taskbar({
   reloj = { hora: '10:41', fecha: '4/8/2026' },
 }: {
   atajo?: { texto: string; goto: string; label: string }
-  /** La hora del sistema. Cada escenario la fija para que coincida con la que
-   *  cuenta su historia y con la fecha del mensaje en pantalla: tres relojes
-   *  distintos en la misma escena rompen la ilusión justo en un ejercicio que
-   *  depende de que se la crean. */
-  reloj?: { hora: string; fecha: string }
+  /** La hora del sistema.
+   *
+   *  `'vivo'` toma la hora real del equipo y la deja avanzar, que es lo que
+   *  hace que la ventana se lea como el computador de quien está jugando. Solo
+   *  sirve si el escenario también sitúa su mensaje en relación al ahora: un
+   *  reloj real junto a un correo fechado a una hora fija vuelve a dejar dos
+   *  relojes que se contradicen, que es el problema que esto viene a resolver.
+   *
+   *  Un par fijo sigue valiendo para los escenarios cuya historia depende de
+   *  una hora concreta ("son casi las diez de la noche"). */
+  reloj?: { hora: string; fecha: string } | 'vivo'
 }) {
+  const ahora = useRelojDelSistema()
+  const { hora, fecha } =
+    reloj === 'vivo' ? { hora: formatoHora(ahora), fecha: formatoFecha(ahora) } : reloj
+
   return (
     <div className={styles.taskbar}>
       <span className={styles.taskbarStart} aria-hidden>
@@ -142,8 +157,8 @@ export function Taskbar({
         <span>📶</span>
         <span>🔊</span>
         <span className={styles.taskbarClock}>
-          <span>{reloj.hora}</span>
-          <span>{reloj.fecha}</span>
+          <span>{hora}</span>
+          <span>{fecha}</span>
         </span>
       </span>
     </div>
@@ -162,7 +177,7 @@ export function VentanaEscritorio({
 }: {
   titulo: string
   atajo?: { texto: string; goto: string; label: string }
-  reloj?: { hora: string; fecha: string }
+  reloj?: { hora: string; fecha: string } | 'vivo'
   onClick?: (event: React.MouseEvent) => void
   ariaLabel: string
   children: ReactNode
