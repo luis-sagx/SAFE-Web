@@ -732,6 +732,11 @@ function FacturaSri() {
   /// Las pestañas abiertas, en su orden. Se abren al navegar, como en un
   /// navegador de verdad: al principio solo está el correo.
   const [pestanas, setPestanas] = useState(['n1'])
+  /// Cierto mientras el repaso va señal por señal. Durante el repaso el mensaje
+  /// vuelve a Recibidos: las acciones que lo mueven a Spam o a la Papelera
+  /// dejaban la bandeja vacía, y el recorrido acababa explicando señales sobre
+  /// una pantalla donde ya no había nada que señalar.
+  const [repasando, setRepasando] = useState(false)
 
   function elegir(goto: string, label?: string) {
     if (engine.isEnding) {
@@ -750,6 +755,7 @@ function FacturaSri() {
     engine.restart()
     setPantallaActual('n1')
     setPestanas(['n1'])
+    setRepasando(false)
     setTocoEnVacio(false)
     // Al repetir, el correo vuelve a acabar de llegar. Conservar la hora del
     // intento anterior dejaría un mensaje de hace media hora en una bandeja
@@ -783,7 +789,7 @@ function FacturaSri() {
       {pantallaActual === 'n1' ? (
         <ContenidoCorreo
           recibido={recibido}
-          carpetas={carpetasCorreo(engine.current, engine.isEnding)}
+          carpetas={carpetasCorreo(engine.current, engine.isEnding && !repasando)}
         />
       ) : pantallaActual === 'n2' ? (
         <ContenidoPortalFalso />
@@ -802,7 +808,10 @@ function FacturaSri() {
       restartLabel="↻ Repetir el escenario"
       onRestart={reiniciar}
       contenedorId="pantalla-escenario"
-      onPantalla={(id) => id && setPantallaActual(id)}
+      onPantalla={(id) => {
+        setRepasando(Boolean(id))
+        if (id) setPantallaActual(id)
+      }}
     />
   ) : (
     <DecisionEnCurso
