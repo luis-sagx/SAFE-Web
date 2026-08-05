@@ -402,6 +402,13 @@ button.mailNavItem {
   flex-shrink: 0;
 }
 
+.mailFolderAsunto {
+  margin: 6px 0 0;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--dim);
+}
+
 .prose {
   margin-top: 16px;
   font-size: 17.5px;

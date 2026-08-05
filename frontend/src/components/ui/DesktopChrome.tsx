@@ -1,4 +1,4 @@
-import { Inbox, Send, Trash2, type LucideIcon } from 'lucide-react'
+import { Inbox, Send, ShieldAlert, Trash2, type LucideIcon } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
 import { formatoFecha, formatoHora, useRelojDelSistema } from '../../hooks/useRelojDelSistema'
 import { useAuth } from '../../context/AuthContext'
@@ -29,6 +29,10 @@ export interface AccionCorreo {
 export interface CarpetaCorreo {
   nombre: string
   vacia: string
+  /** Reemplaza `vacia` cuando una acción de la barra movió el correo aquí
+   *  (p. ej. Eliminar → Papelera). Sin ella la carpeta se ve vacía siempre,
+   *  aunque el escenario acabe de mandar el correo a esa bandeja. */
+  contenido?: ReactNode
 }
 
 /**
@@ -129,6 +133,7 @@ export function MailNav({
     <nav className={styles.mailNav} aria-label="Carpetas del correo" aria-hidden={!navegable}>
       {renderCarpeta('Recibidos', Inbox)}
       {renderCarpeta('Enviados', Send)}
+      {renderCarpeta('Spam', ShieldAlert)}
       {renderCarpeta('Papelera', Trash2)}
     </nav>
   )
@@ -188,9 +193,7 @@ export function Taskbar({
       </span>
       <span className={styles.taskbarDivider} aria-hidden />
 
-      {app && (
-        <span className={`${styles.taskbarAtajo} ${styles.taskbarApp}`}>{app}</span>
-      )}
+      {app && <span className={`${styles.taskbarAtajo} ${styles.taskbarApp}`}>{app}</span>}
 
       {atajo && (
         <button
@@ -342,9 +345,11 @@ export function CuerpoCorreo({
 
       <div className={styles.mailPane}>
         {carpetaSecundaria ? (
-          <div className={`${styles.mailbody} ${styles.mailFolderEmpty}`}>
+          <div
+            className={`${styles.mailbody} ${carpetaSecundaria.contenido ? '' : styles.mailFolderEmpty}`}
+          >
             <h1 className={styles.subject}>{carpetaSecundaria.nombre}</h1>
-            <p>{carpetaSecundaria.vacia}</p>
+            {carpetaSecundaria.contenido ?? <p>{carpetaSecundaria.vacia}</p>}
           </div>
         ) : (
           <>
