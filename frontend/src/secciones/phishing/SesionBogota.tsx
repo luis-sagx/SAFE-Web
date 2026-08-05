@@ -37,6 +37,10 @@ const PAGINA_CLAVE: ScreenView = {
   subtitle: 'Confirme su contraseña para cerrar el acceso no reconocido.',
   fields: [{ label: 'Contraseña de banca en línea', placeholder: '••••••••', senal: 'campo-clave' }],
   button: 'Cerrar acceso no reconocido',
+  botonGoto: 'n3',
+  botonLabel: 'Escribió su contraseña para cerrar el acceso',
+  cerrarGoto: 'e_dominio',
+  cerrarLabel: 'Cerró la página sin escribir nada',
 }
 
 const PAGINA_OTP: ScreenView = {
@@ -48,6 +52,10 @@ const PAGINA_OTP: ScreenView = {
   subtitle: 'Ingrese el código que le acabamos de enviar por SMS.',
   fields: [{ label: 'Código de verificación', placeholder: '000000' }],
   button: 'Confirmar y cerrar sesión',
+  botonGoto: 'e_otp',
+  botonLabel: 'Escribió el código que llegó por SMS',
+  cerrarGoto: 'e_detiene',
+  cerrarLabel: 'Se detuvo y cerró la página antes de dar el código',
 }
 
 const STORY: Story<ScreenNode> = {

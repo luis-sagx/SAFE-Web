@@ -48,6 +48,15 @@ export type ScreenView =
       footer?: string
       /** `data-signal` de la barra de direcciones. */
       senalUrl?: string
+      /** Nodo al que lleva enviar el formulario. Sin esto el botón es de
+       *  adorno, y un botón de envío que no responde es lo que menos se
+       *  perdona en una pantalla que imita a una real. */
+      botonGoto?: string
+      botonLabel?: string
+      /** Nodo al que lleva cerrar la pestaña de esta página. Sin esto la
+       *  pestaña no lleva la ✕: cerrar tiene que significar algo. */
+      cerrarGoto?: string
+      cerrarLabel?: string
     }
   | {
       kind: 'sms'
@@ -113,7 +122,18 @@ function DeviceScreen({
               <span className={styles.input}>{field.placeholder}</span>
             </label>
           ))}
-          <div className={styles.submit}>{view.button}</div>
+          {view.botonGoto ? (
+            <button
+              type="button"
+              className={`${styles.hotspot} ${styles.submit}`}
+              data-hotspot-goto={view.botonGoto}
+              data-hotspot-label={view.botonLabel}
+            >
+              {view.button}
+            </button>
+          ) : (
+            <div className={styles.submit}>{view.button}</div>
+          )}
         </div>
 
         {view.footer && <p className={styles.pageFooter}>{view.footer}</p>}

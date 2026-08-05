@@ -59,6 +59,7 @@ function pestanaDeVista(id: string, view: ScreenView, dominio: string): PestanaN
       url: view.url,
       segura: view.secure,
       senalUrl: view.senalUrl,
+      cierra: view.cerrarGoto,
     }
   }
   return null
@@ -126,6 +127,15 @@ function StoryEscenario({
   const onHotspot = (event: React.MouseEvent) => {
     // Cambiar de pestaña se resuelve aquí y no llega al grafo: en este motor la
     // decisión es la que se elige de la lista, no la pantalla que se mira.
+    const cerrada = (event.target as HTMLElement).closest<HTMLElement>('[data-cierra]')?.dataset
+      .cierra
+    if (cerrada) {
+      setPestanas((abiertas) => abiertas.filter((p) => p.id !== cerrada))
+      setPestanaMirada(undefined)
+      if (!engine.isEnding) manejarClicHotspot(event, engine.choose)
+      return
+    }
+
     const pestana = (event.target as HTMLElement).closest<HTMLElement>('[data-pestana]')?.dataset
       .pestana
     if (pestana) {

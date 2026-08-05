@@ -62,6 +62,10 @@ const RECLAMO: ScreenView = {
     { label: 'Banco y número de cuenta', placeholder: 'Banco · 00000000', senal: 'campo-cuenta' },
   ],
   button: 'Pagar $85 y liberar mi premio',
+  botonGoto: 'e_paga',
+  botonLabel: 'Pagó los $85 para liberar el premio',
+  cerrarGoto: 'e_frena',
+  cerrarLabel: 'Cerró la página del reclamo sin pagar ni escribir nada',
 }
 
 const STORY: Story<ScreenNode> = {

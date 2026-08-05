@@ -48,6 +48,10 @@ const PAGINA: ScreenView = {
     },
   ],
   button: 'Mantener contraseña',
+  botonGoto: 'e_clave',
+  botonLabel: 'Escribió su contraseña en la página del correo',
+  cerrarGoto: 'e_remitente',
+  cerrarLabel: 'Cerró la página sin escribir nada',
 }
 
 const STORY: Story<ScreenNode> = {

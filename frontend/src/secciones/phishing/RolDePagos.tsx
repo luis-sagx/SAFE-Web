@@ -42,6 +42,10 @@ const PORTAL: ScreenView = {
     { label: 'Contraseña', placeholder: '••••••••' },
   ],
   button: 'Ingresar',
+  botonGoto: 'e_bien',
+  botonLabel: 'Entró al portal del colaborador',
+  cerrarGoto: 'e_borra',
+  cerrarLabel: 'Cerró el portal sin revisar nada',
   footer: 'portal.andes.com.ec · Talento Humano',
 }
 

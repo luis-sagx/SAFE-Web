@@ -60,6 +60,10 @@ const PAGINA: ScreenView = {
     { label: 'Clave de acceso', placeholder: '••••••••', senal: 'campo-clave' },
   ],
   button: 'Confirmar datos',
+  botonGoto: 'e_datos',
+  botonLabel: 'Confirmó su cédula y su clave en el formulario',
+  cerrarGoto: 'e_cierra',
+  cerrarLabel: 'Cerró la página sin completar nada',
 }
 
 const STORY: Story<ScreenNode> = {
