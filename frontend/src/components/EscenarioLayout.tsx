@@ -108,7 +108,7 @@ function EscenarioLayout({
   const volver = (
     <Link
       to={`/seccion/${escenario.seccionId}`}
-      className="text-sm font-medium text-link underline"
+      className="text-base font-medium text-link underline"
     >
       ← Volver a la sección
     </Link>
@@ -122,35 +122,35 @@ function EscenarioLayout({
           <InfoLink />
         </AppHeader>
 
-        <main className="mx-auto max-w-2xl px-6 py-12">
-          <p className="text-sm font-medium text-muted">{getSeccion(escenario.seccionId)?.canal}</p>
-          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-ink">
+        <main className="mx-auto max-w-3xl px-6 py-12">
+          <p className="text-base font-medium text-muted">{getSeccion(escenario.seccionId)?.canal}</p>
+          <h1 className="mt-2 text-4xl font-semibold tracking-tight text-ink">
             {escenario.titulo}
           </h1>
 
           {/* El saludo con nombre vive aquí y no en cada escenario: la historia
               que escribe el autor empieza siempre en la escena, y quién la
               protagoniza lo sabe el layout, no el guion. */}
-          <p className="mt-6 text-base leading-relaxed text-ink">
+          <p className="mt-6 text-lg leading-relaxed text-ink">
             Hola, <strong className="font-semibold">{displayName}</strong>. Esto es lo que te está
             pasando:
           </p>
 
-          <div className="mt-3 space-y-4 text-base leading-relaxed text-body">{contexto}</div>
+          <div className="mt-3 space-y-4 text-lg leading-relaxed text-body">{contexto}</div>
 
           {/* Se avisa antes de entrar, y en todos los escenarios: si alguien
               ve su propio nombre en una bandeja simulada sin saber que la
               dirección es inventada, puede creer que el ejercicio le está
               mandando correo de verdad —o peor, que le llegó uno real. El
               dominio no existe fuera de la simulación. */}
-          <p className="mt-6 text-sm leading-relaxed text-body">
+          <p className="mt-6 text-base leading-relaxed text-body">
             En los escenarios usas un correo ficticio,{' '}
             <span className="font-medium text-ink">{correoSimulado}</span>. No existe fuera de este
             entrenamiento: nada de lo que ocurra aquí sale ni entra a tu correo real.
           </p>
 
           {nota && (
-            <div className="mt-4 rounded-lg border border-hairline-strong bg-canvas-soft p-4 text-sm leading-relaxed text-body">
+            <div className="mt-4 rounded-lg border border-hairline-strong bg-canvas-soft p-5 text-base leading-relaxed text-body">
               {nota}
             </div>
           )}
@@ -159,7 +159,7 @@ function EscenarioLayout({
             ref={empezarRef}
             type="button"
             onClick={handleEmpezar}
-            className="mt-10 min-h-11 rounded-md bg-primary px-6 py-3 text-base font-medium text-on-primary transition hover:bg-primary-active focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link"
+            className="mt-10 min-h-12 rounded-md bg-primary px-7 py-3.5 text-lg font-medium text-on-primary transition hover:bg-primary-active focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link"
           >
             Empezar
           </button>
@@ -175,10 +175,10 @@ function EscenarioLayout({
     <div className="flex h-dvh flex-col overflow-hidden bg-canvas-soft">
       <AppHeader>
         {volver}
-        <p className="text-sm text-muted lg:order-3">
+        <p className="text-base text-muted lg:order-3">
           {displayName} · {roleLabel}
         </p>
-        <p className="w-full text-sm leading-snug text-body lg:order-2 lg:w-auto lg:flex-1 lg:px-6">
+        <p className="w-full text-base leading-snug text-body lg:order-2 lg:w-auto lg:flex-1 lg:px-6">
           {resumen}
         </p>
         <span className="lg:order-4">
@@ -223,7 +223,7 @@ function EscenarioLayout({
           <button
             type="button"
             onClick={() => dialogoRef.current?.showModal()}
-            className="mb-4 inline-flex items-center gap-1.5 text-sm font-medium text-link underline decoration-dotted underline-offset-4 transition hover:decoration-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link"
+            className="mb-4 inline-flex items-center gap-1.5 text-base font-medium text-link underline decoration-dotted underline-offset-4 transition hover:decoration-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link"
           >
             <Info aria-hidden className="size-3.5" strokeWidth={2} />
             Ver contexto
@@ -244,15 +244,15 @@ function EscenarioLayout({
         <h2 id="titulo-contexto" className="text-[11px] font-semibold uppercase tracking-[0.88px] text-muted">
           Tu situación
         </h2>
-        <p className="mt-2 text-base leading-relaxed text-ink">
+        <p className="mt-2 text-lg leading-relaxed text-ink">
           Hola, <strong className="font-semibold">{displayName}</strong>.
         </p>
-        <div className="mt-2 space-y-3 text-base leading-relaxed text-body">{contexto}</div>
+        <div className="mt-2 space-y-3 text-lg leading-relaxed text-body">{contexto}</div>
 
         <form method="dialog" className="mt-6 flex justify-end">
           <button
             type="submit"
-            className="min-h-10 rounded-md bg-primary px-5 text-base font-medium text-on-primary transition hover:bg-primary-active focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link"
+            className="min-h-11 rounded-md bg-primary px-6 text-lg font-medium text-on-primary transition hover:bg-primary-active focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link"
           >
             Seguir
           </button>
