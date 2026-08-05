@@ -6,7 +6,7 @@ const BIENVENIDA = '/bienvenida'
 // Puerta única de la zona autenticada: si un escenario está montado, ya hay
 // sesión válida y no necesita comprobarla otra vez.
 function RequireAuth() {
-  const { isAuthenticated, loading, participant } = useAuth()
+  const { isAuthenticated, loading, participant, onboardingDismissed } = useAuth()
   const location = useLocation()
 
   if (loading) {
@@ -18,9 +18,16 @@ function RequireAuth() {
   }
 
   // Primer ingreso, o pidió que volviera a aparecer (ver ícono ⓘ): manda a la
-  // bienvenida antes que a cualquier otra pantalla. La comparación con
-  // BIENVENIDA evita el bucle: una vez ahí, se queda ahí hasta que continúe.
-  if (participant && !participant.onboardingVisto && location.pathname !== BIENVENIDA) {
+  // bienvenida antes que a cualquier otra pantalla. onboardingDismissed cubre
+  // la sesión actual: si acaba de continuar dejando el checkbox desmarcado,
+  // igual puede salir ahora — el flag desmarcado solo reactiva el aviso en el
+  // próximo ingreso, no debe atraparlo aquí.
+  if (
+    participant &&
+    !participant.onboardingVisto &&
+    !onboardingDismissed &&
+    location.pathname !== BIENVENIDA
+  ) {
     return <Navigate to={BIENVENIDA} replace />
   }
 

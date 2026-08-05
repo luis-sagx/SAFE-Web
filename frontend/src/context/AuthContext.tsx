@@ -20,6 +20,9 @@ interface AuthValue {
   logout: () => void
   /** true: la bienvenida no vuelve a aparecer sola. false: reactivarla. */
   marcarOnboardingVisto: (visto: boolean) => Promise<void>
+  /** Ya se pasó por la bienvenida en esta sesión: deja salir aunque el
+   *  participante haya pedido que vuelva a aparecer en el próximo ingreso. */
+  onboardingDismissed: boolean
   displayName: string
   roleLabel: string
   initials: string
@@ -75,6 +78,7 @@ function initialsOf(participant: Participant | null): string {
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [participant, setParticipant] = useState<Participant | null>(null)
   const [loading, setLoading] = useState(Boolean(api.getToken()))
+  const [onboardingDismissed, setOnboardingDismissed] = useState(false)
 
   // Tras recargar hay token pero no participante en memoria: se rehidrata
   // contra el API, que de paso valida que el token siga vivo.
@@ -112,6 +116,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const session = await api.login(email, password)
     api.setToken(session.accessToken)
     setParticipant(session.participant)
+    setOnboardingDismissed(false)
     return session.participant
   }, [])
 
@@ -119,17 +124,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const session = await api.register(credentials)
     api.setToken(session.accessToken)
     setParticipant(session.participant)
+    setOnboardingDismissed(false)
     return session.participant
   }, [])
 
   const logout = useCallback(() => {
     api.setToken(null)
     setParticipant(null)
+    setOnboardingDismissed(false)
   }, [])
 
+  // Se marca "visto" para esta sesión sin importar el valor elegido: el
+  // participante ya pasó por la bienvenida ahora mismo, así que dejarla
+  // desmarcada solo debe reactivarla en el próximo ingreso, no atraparlo aquí.
   const marcarOnboardingVisto = useCallback(async (visto: boolean) => {
     const actualizado = await api.patchMe({ onboardingVisto: visto })
     setParticipant(actualizado)
+    setOnboardingDismissed(true)
   }, [])
 
   const value = useMemo<AuthValue>(
@@ -141,12 +152,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       register,
       logout,
       marcarOnboardingVisto,
+      onboardingDismissed,
       displayName: firstName(participant),
       roleLabel: participant?.cohort ?? 'Participante',
       initials: initialsOf(participant),
       correoSimulado: correoSimuladoDe(participant),
     }),
-    [participant, loading, login, register, logout, marcarOnboardingVisto],
+    [participant, loading, login, register, logout, marcarOnboardingVisto, onboardingDismissed],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
