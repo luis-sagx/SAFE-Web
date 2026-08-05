@@ -93,7 +93,7 @@ function PanelVeredicto({
 
   return (
     <div className={`rounded-lg border bg-surface p-5 ${tono.borde}`}>
-      <p className="flex items-center gap-2 text-base font-semibold text-ink">
+      <p className="flex items-center gap-2 text-lg font-semibold text-ink">
         <span
           className={`flex size-6 shrink-0 items-center justify-center rounded-full text-sm text-white ${tono.fondo}`}
           aria-hidden
@@ -102,7 +102,7 @@ function PanelVeredicto({
         </span>
         {node.verdict}
       </p>
-      <p className="mt-3 text-base leading-relaxed text-body">{node.outcome}</p>
+      <p className="mt-3 text-lg leading-relaxed text-body">{node.outcome}</p>
 
       <EtiquetaAprobacion node={node} />
 
@@ -110,7 +110,7 @@ function PanelVeredicto({
         <button
           ref={primerBotonRef}
           type="button"
-          className="mt-5 min-h-11 w-full rounded-md border border-hairline-strong bg-surface px-4 py-3 text-base font-medium text-ink transition hover:bg-canvas-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link"
+          className="mt-5 min-h-12 w-full rounded-md border border-hairline-strong bg-surface px-4 py-3 text-lg font-medium text-ink transition hover:bg-canvas-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link"
           onClick={() => setPaso(0)}
         >
           Ver las señales
@@ -120,26 +120,26 @@ function PanelVeredicto({
       {enSenal && (
         <div className="mt-5 rounded-md bg-canvas-soft p-4">
           <div className="flex items-center justify-between">
-            <h4 className="text-sm font-semibold text-ink">
+            <h4 className="text-base font-semibold text-ink">
               Señal {paso + 1} de {senales.length}
             </h4>
             <button
               type="button"
-              className="text-sm font-medium text-link underline"
+              className="text-base font-medium text-link underline"
               onClick={() => setPaso(senales.length)}
             >
               Saltar
             </button>
           </div>
           <p
-            className="mt-3 text-base leading-relaxed text-body"
+            className="mt-3 text-lg leading-relaxed text-body"
             dangerouslySetInnerHTML={{ __html: senales[paso]?.texto ?? '' }}
           />
           <div className="mt-4 flex gap-2">
             {paso > 0 && (
               <button
                 type="button"
-                className="h-11 flex-1 rounded-md border border-hairline-strong bg-surface text-sm font-medium text-ink transition hover:bg-canvas-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link"
+                className="h-12 flex-1 rounded-md border border-hairline-strong bg-surface text-base font-medium text-ink transition hover:bg-canvas-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link"
                 onClick={() => setPaso((p) => p - 1)}
               >
                 ← Anterior
@@ -147,7 +147,7 @@ function PanelVeredicto({
             )}
             <button
               type="button"
-              className="h-11 flex-1 rounded-md bg-primary text-sm font-medium text-on-primary transition hover:bg-primary-active focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link"
+              className="h-12 flex-1 rounded-md bg-primary text-base font-medium text-on-primary transition hover:bg-primary-active focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link"
               onClick={() => setPaso((p) => p + 1)}
             >
               Siguiente →
@@ -160,7 +160,7 @@ function PanelVeredicto({
         <>
           <div className="mt-5 rounded-md bg-canvas-soft p-4">
             <p
-              className="text-base leading-relaxed text-ink"
+              className="text-lg leading-relaxed text-ink"
               dangerouslySetInnerHTML={{ __html: regla }}
             />
           </div>

@@ -71,7 +71,7 @@ function StoryEscenario({
   ) : (
     engine.node.choices && (
       <div className="grid gap-3">
-        <p className="text-base font-semibold text-ink">{pregunta}</p>
+        <p className="text-lg font-semibold text-ink">{pregunta}</p>
         <StoryChoices choices={engine.node.choices} onChoose={engine.choose} />
       </div>
     )

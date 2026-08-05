@@ -73,7 +73,7 @@ function AccionesFinal({ escenarioId, onRestart, restartLabel, autoFocus }: Acci
   const volver = (
     <Link
       to={`/seccion/${seccionId}`}
-      className="mt-3 block text-center text-sm font-medium text-link underline"
+      className="mt-3 block text-center text-base font-medium text-link underline"
     >
       Volver a la sección
     </Link>
@@ -89,12 +89,12 @@ function AccionesFinal({ escenarioId, onRestart, restartLabel, autoFocus }: Acci
         <Link
           ref={principalRef as React.Ref<HTMLAnchorElement>}
           to={`/seccion/${siguiente.seccionId}/${siguiente.escenarioId}`}
-          className="mt-5 flex min-h-11 items-center justify-center rounded-md bg-primary px-4 py-3 text-base font-medium text-on-primary transition hover:bg-primary-active focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link"
+          className="mt-5 flex min-h-11 items-center justify-center rounded-md bg-primary px-4 py-3 text-lg font-medium text-on-primary transition hover:bg-primary-active focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link"
         >
           Siguiente escenario →
         </Link>
         {restantes !== null && (
-          <p className="mt-2 text-center text-sm text-muted">
+          <p className="mt-2 text-center text-base text-muted">
             {restantes === 1 ? 'Te queda 1 escenario' : `Te quedan ${restantes} escenarios`} en este
             módulo.
           </p>
@@ -107,7 +107,7 @@ function AccionesFinal({ escenarioId, onRestart, restartLabel, autoFocus }: Acci
   return (
     <>
       {escenarios.length > 0 && (
-        <p className="mt-5 text-center text-sm text-body">
+        <p className="mt-5 text-center text-base text-body">
           Ya recorriste los {escenarios.length} escenarios del módulo. Ahora puedes repetir el que
           quieras.
         </p>
@@ -115,7 +115,7 @@ function AccionesFinal({ escenarioId, onRestart, restartLabel, autoFocus }: Acci
       <button
         ref={principalRef as React.Ref<HTMLButtonElement>}
         type="button"
-        className="mt-3 min-h-11 w-full rounded-md bg-primary px-4 py-3 text-base font-medium text-on-primary transition hover:bg-primary-active focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link"
+        className="mt-3 min-h-11 w-full rounded-md bg-primary px-4 py-3 text-lg font-medium text-on-primary transition hover:bg-primary-active focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link"
         onClick={onRestart}
       >
         {restartLabel}

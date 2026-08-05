@@ -17,10 +17,10 @@ function StoryChoices({ choices, onChoose }: StoryChoicesProps) {
         <button
           key={choice.label}
           type="button"
-          className="flex min-h-11 w-full items-start gap-3 rounded-lg border border-hairline-strong bg-surface px-4 py-3 text-left text-base leading-relaxed text-ink transition hover:border-link/50 hover:bg-canvas-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link"
+          className="flex min-h-12 w-full items-start gap-3 rounded-lg border border-hairline-strong bg-surface px-4 py-4 text-left text-lg leading-relaxed text-ink transition hover:border-link/50 hover:bg-canvas-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link"
           onClick={() => onChoose(choice.goto, choice.label)}
         >
-          <span className="mt-px flex size-6 shrink-0 items-center justify-center rounded-full bg-surface-strong text-sm font-semibold text-body">
+          <span className="mt-px flex size-7 shrink-0 items-center justify-center rounded-full bg-surface-strong text-base font-semibold text-body">
             {index + 1}
           </span>
           <span>{choice.label}</span>

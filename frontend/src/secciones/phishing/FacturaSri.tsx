@@ -365,13 +365,13 @@ function PantallaPortal({ onHotspot }: PantallaProps) {
 function DecisionEnCurso({ fallo }: { fallo: boolean }) {
   return (
     <div className="grid gap-3">
-      <p className="text-base font-semibold text-ink">¿Qué haces?</p>
-      <p className="text-base leading-relaxed text-body">
+      <p className="text-lg font-semibold text-ink">¿Qué haces?</p>
+      <p className="text-lg leading-relaxed text-body">
         Actúa sobre la ventana como lo harías frente a tu correo de verdad: puedes usar{' '}
         <strong>cualquier parte de ella</strong>, incluida la barra de abajo. Antes de tocar un
         enlace, mantén el cursor encima para ver a dónde lleva.
       </p>
-      <p className="text-sm leading-relaxed text-body">
+      <p className="text-base leading-relaxed text-body">
         Lo primero que hagas cierra el escenario y te muestra en qué terminaba. No hay confirmación,
         igual que en la vida real.
       </p>
@@ -380,17 +380,17 @@ function DecisionEnCurso({ fallo }: { fallo: boolean }) {
           la persona que está atascada, y la pista le llega sin habérsela
           ofrecido antes a quien no la necesita. */}
       {fallo && (
-        <p role="status" className="rounded-md bg-surface-strong px-3 py-2 text-sm text-body">
+        <p role="status" className="rounded-md bg-surface-strong px-3 py-2 text-base text-body">
           Ahí no hay nada que hacer. Solo algunos elementos responden: recórrelos con el cursor (o
           con la tecla Tab) y se marcarán al pasar.
         </p>
       )}
 
       <details className="group rounded-md border border-hairline-strong bg-surface px-3 py-2">
-        <summary className="cursor-pointer list-none text-sm font-medium text-link underline decoration-dotted underline-offset-4">
+        <summary className="cursor-pointer list-none text-base font-medium text-link underline decoration-dotted underline-offset-4">
           No sé por dónde empezar
         </summary>
-        <p className="mt-2 text-sm leading-relaxed text-body">
+        <p className="mt-2 text-base leading-relaxed text-body">
           Tienes tres caminos posibles: hacer lo que el correo te pide, abrir lo que trae adjunto, o
           dejar el correo de lado y entrar al portal por tu cuenta desde la barra de tareas. Cuál de
           los tres es el acertado es justamente lo que decides tú.

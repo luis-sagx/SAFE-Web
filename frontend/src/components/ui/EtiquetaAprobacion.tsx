@@ -21,7 +21,7 @@ function EtiquetaAprobacion({ node }: { node: StoryNode }) {
   return (
     <div className="mt-3">
       <span
-        className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.88px] ${
+        className={`inline-flex items-center rounded-full px-2.5 py-1 text-[13px] font-semibold uppercase tracking-[0.88px] ${
           aprobado ? 'bg-mint-light text-primary' : 'bg-surface-strong text-body'
         }`}
       >
@@ -29,7 +29,7 @@ function EtiquetaAprobacion({ node }: { node: StoryNode }) {
       </span>
 
       {!aprobado && (
-        <p className="mt-2 text-sm leading-relaxed text-body">
+        <p className="mt-2 text-base leading-relaxed text-body">
           Este no suma para los que necesitas aprobar en el módulo. Podrás repetirlo cuando hayas
           pasado por todos.
         </p>
