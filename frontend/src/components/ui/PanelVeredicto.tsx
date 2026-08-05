@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import AccionesFinal from './AccionesFinal'
 import type { StoryNode } from '../../hooks/useStoryEngine'
 
 export interface Senal {
@@ -12,6 +13,8 @@ export interface Senal {
 }
 
 interface PanelVeredictoProps {
+  /** 'phishing/factura-sri'. Lo necesita AccionesFinal para el siguiente. */
+  escenarioId: string
   node: StoryNode
   senales: Senal[]
   /** Lleva negritas <b>; contenido fijo del código. */
@@ -31,6 +34,7 @@ const CLASE_RESALTADA = 'senal-resaltada'
  * en la pantalla en vez de listarlas aparte, y cierra con la regla de oro.
  */
 function PanelVeredicto({
+  escenarioId,
   node,
   senales,
   regla,
@@ -158,14 +162,12 @@ function PanelVeredicto({
             />
           </div>
 
-          <button
-            ref={haySenales ? undefined : primerBotonRef}
-            type="button"
-            className="mt-5 min-h-11 w-full rounded-md bg-primary px-4 py-3 text-base font-medium text-on-primary transition hover:bg-primary-active focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link"
-            onClick={onRestart}
-          >
-            {restartLabel}
-          </button>
+          <AccionesFinal
+            escenarioId={escenarioId}
+            onRestart={onRestart}
+            restartLabel={restartLabel}
+            autoFocus={!haySenales}
+          />
         </>
       )}
     </div>

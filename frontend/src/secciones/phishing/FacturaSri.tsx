@@ -466,6 +466,7 @@ function FacturaSri() {
 
   const decision = engine.isEnding ? (
     <PanelVeredicto
+      escenarioId="phishing/factura-sri"
       node={engine.node}
       senales={SENALES}
       regla={RULE}

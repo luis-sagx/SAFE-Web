@@ -47,6 +47,7 @@ function StoryEscenario({
 
   const decision = engine.isEnding ? (
     <StoryResultPanel
+      escenarioId={escenarioId}
       node={engine.node}
       signalsTitle={signalsTitle}
       signals={signals}

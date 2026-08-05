@@ -401,6 +401,7 @@ function LlamadaAntiestafas() {
     <div className="grid gap-3">
       {isEnding ? (
         <StoryResultPanel
+      escenarioId="vishing/llamada-antiestafas"
           node={node}
           signalsTitle="Las 4 señales de esta llamada"
           signals={SIGNALS}

@@ -1,6 +1,9 @@
 import type { StoryNode } from '../../hooks/useStoryEngine'
+import AccionesFinal from './AccionesFinal'
 
 interface StoryResultPanelProps {
+  /** 'phishing/rol-de-pagos'. Lo necesita AccionesFinal para el siguiente. */
+  escenarioId: string
   node: StoryNode
   signalsTitle: string
   /** Llevan negritas <b>; es contenido fijo del código, nunca de un usuario. */
@@ -11,6 +14,7 @@ interface StoryResultPanelProps {
 }
 
 function StoryResultPanel({
+  escenarioId,
   node,
   signalsTitle,
   signals,
@@ -59,13 +63,11 @@ function StoryResultPanel({
         />
       </div>
 
-      <button
-        type="button"
-        className="mt-5 min-h-11 w-full rounded-md bg-primary px-4 py-3 text-base font-medium text-on-primary transition hover:bg-primary-active focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link"
-        onClick={onRestart}
-      >
-        {restartLabel}
-      </button>
+      <AccionesFinal
+        escenarioId={escenarioId}
+        onRestart={onRestart}
+        restartLabel={restartLabel}
+      />
     </div>
   )
 }

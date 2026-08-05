@@ -342,6 +342,7 @@ function CambioNumero() {
     <div className="grid gap-3">
       {engine.isEnding ? (
         <StoryResultPanel
+      escenarioId="suplantacion/cambio-numero"
           node={engine.node}
           signalsTitle="Las señales de esta conversación"
           signals={SIGNALS}
