@@ -1,4 +1,5 @@
 import { MailNav, Taskbar, Titlebar } from './DesktopChrome'
+import { useAuth } from '../../context/AuthContext'
 import styles from './DeviceScreen.module.css'
 
 /**
@@ -14,7 +15,6 @@ export type ScreenView =
       kind: 'mail'
       from: string
       address: string
-      to: string
       subject: string
       date: string
       /** HTML fijo del escenario, nunca contenido de un usuario. */
@@ -43,6 +43,7 @@ export type ScreenView =
     }
 
 function DeviceScreen({ view }: { view: ScreenView }) {
+  const { correoSimulado } = useAuth()
   if (view.kind === 'mail') {
     return (
       <section className={`${styles.screen} ${styles.desktop}`} aria-label="Bandeja de correo">
@@ -64,7 +65,7 @@ function DeviceScreen({ view }: { view: ScreenView }) {
                   {view.label && <span className={styles.label}>{view.label}</span>}
                 </p>
                 <p className={styles.senderAddr}>{view.address}</p>
-                <p className={styles.senderTo}>para {view.to}</p>
+                <p className={styles.senderTo}>para {correoSimulado}</p>
               </div>
               <span className={styles.date}>{view.date}</span>
             </div>

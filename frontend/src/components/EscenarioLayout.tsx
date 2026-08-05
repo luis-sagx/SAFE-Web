@@ -74,7 +74,7 @@ function EscenarioLayout({
     throw new Error(`Escenario "${escenarioId}" no está en el catálogo.`)
   }
 
-  const { displayName, roleLabel } = useAuth()
+  const { displayName, roleLabel, correoSimulado } = useAuth()
   const [fase, setFase] = useState<'briefing' | 'escenario'>('briefing')
   const empezarRef = useRef<HTMLButtonElement>(null)
   const escenaRef = useRef<HTMLDivElement>(null)
@@ -128,8 +128,19 @@ function EscenarioLayout({
 
           <div className="mt-3 space-y-4 text-base leading-relaxed text-body">{contexto}</div>
 
+          {/* Se avisa antes de entrar, y en todos los escenarios: si alguien
+              ve su propio nombre en una bandeja simulada sin saber que la
+              dirección es inventada, puede creer que el ejercicio le está
+              mandando correo de verdad —o peor, que le llegó uno real. El
+              dominio no existe fuera de la simulación. */}
+          <p className="mt-6 text-sm leading-relaxed text-body">
+            En los escenarios usas un correo ficticio,{' '}
+            <span className="font-medium text-ink">{correoSimulado}</span>. No existe fuera de este
+            entrenamiento: nada de lo que ocurra aquí sale ni entra a tu correo real.
+          </p>
+
           {nota && (
-            <div className="mt-6 rounded-lg border border-hairline-strong bg-canvas-soft p-4 text-sm leading-relaxed text-body">
+            <div className="mt-4 rounded-lg border border-hairline-strong bg-canvas-soft p-4 text-sm leading-relaxed text-body">
               {nota}
             </div>
           )}

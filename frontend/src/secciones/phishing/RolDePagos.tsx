@@ -6,7 +6,6 @@ const CORREO: ScreenView = {
   kind: 'mail',
   from: 'Talento Humano · Corporación Andes',
   address: 'nomina@andes.com.ec',
-  to: 'mí',
   subject: 'Tu rol de pagos de julio ya está disponible',
   date: 'ayer 17:20',
   body: `

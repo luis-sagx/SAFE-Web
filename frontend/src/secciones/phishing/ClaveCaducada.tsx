@@ -6,7 +6,6 @@ const CORREO: ScreenView = {
   kind: 'mail',
   from: 'Soporte TI · Corporación Andes',
   address: 'soporte-ti@andes-ec.net',
-  to: 'mí',
   subject: 'Tu contraseña caduca hoy · acción requerida',
   date: 'hoy 16:05',
   body: `

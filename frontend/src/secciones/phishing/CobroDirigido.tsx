@@ -6,7 +6,6 @@ const CORREO: ScreenView = {
   kind: 'mail',
   from: 'Envíos Rápido',
   address: 'aranceles@enviosrapido-ec.shop',
-  to: 'mí',
   subject: 'Pendiente: arancel de aduana de tu pedido',
   date: 'hoy 10:33',
   body: `

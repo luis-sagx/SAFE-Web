@@ -6,7 +6,6 @@ const CORREO: ScreenView = {
   kind: 'mail',
   from: 'TiendaExpress',
   address: 'seguridad@tiendaexpress.com.ec',
-  to: 'mí',
   subject: 'Aviso importante de seguridad',
   date: 'hoy 08:15',
   body: `

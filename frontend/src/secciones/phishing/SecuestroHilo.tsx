@@ -15,7 +15,6 @@ const CORREO: ScreenView = {
   kind: 'mail',
   from: 'Secretaría — Unidad Educativa San Rafael',
   address: 'secretaria@unidadsanrafael.edu.ec',
-  to: 'mí',
   subject: 'Re: Pensión de julio',
   date: 'hoy 11:15',
   body: `

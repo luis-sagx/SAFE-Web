@@ -6,7 +6,6 @@ const CORREO: ScreenView = {
   kind: 'mail',
   from: 'Banco del Litoral · Seguridad',
   address: 'alertas@bancodellitoral.com.ec',
-  to: 'mí',
   subject: 'Alerta de seguridad: nuevo inicio de sesión',
   date: 'hoy 21:47',
   body: `

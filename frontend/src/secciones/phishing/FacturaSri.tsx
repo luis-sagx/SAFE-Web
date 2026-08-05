@@ -1,6 +1,7 @@
 import { Archive, Forward, Reply, ShieldAlert, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import EscenarioLayout from '../../components/EscenarioLayout'
+import { useAuth } from '../../context/AuthContext'
 import {
   MailNav,
   MailToolbar,
@@ -225,6 +226,7 @@ interface PantallaProps {
 }
 
 function PantallaCorreo({ onHotspot, recibido }: PantallaProps & { recibido: string }) {
+  const { correoSimulado } = useAuth()
   return (
     <VentanaEscritorio
       titulo="Correo (Recibidos)"
@@ -256,7 +258,7 @@ function PantallaCorreo({ onHotspot, recibido }: PantallaProps & { recibido: str
                 <p className={styles.senderAddr} data-signal="remitente">
                   notificaciones@sri-facturacion-ec.com
                 </p>
-                <p className={styles.senderTo}>para mí</p>
+                <p className={styles.senderTo}>para {correoSimulado}</p>
               </div>
               <span className={styles.date}>{recibido}</span>
             </div>

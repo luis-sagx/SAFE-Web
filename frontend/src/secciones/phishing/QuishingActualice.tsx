@@ -27,7 +27,6 @@ const CORREO: ScreenView = {
   kind: 'mail',
   from: 'Banco del Litoral · Actualización de datos',
   address: 'notificaciones@bancodellitoral.com',
-  to: 'mí',
   subject: 'Actualice sus datos antes de que se limite su cuenta',
   date: 'hoy 09:10',
   label: 'Externo',

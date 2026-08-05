@@ -23,12 +23,40 @@ interface AuthValue {
   displayName: string
   roleLabel: string
   initials: string
+  /** Dirección de correo ficticia del participante dentro de los escenarios. */
+  correoSimulado: string
 }
 
 const AuthContext = createContext<AuthValue | undefined>(undefined)
 
 function firstName(participant: Participant | null): string {
   return participant?.nombre?.trim().split(/\s+/)[0] ?? ''
+}
+
+/// Dominio inventado. Nunca existe fuera de la simulación: los escenarios no
+/// envían ni reciben correo de verdad, y el participante tiene que poder
+/// distinguir de un vistazo lo que pasa dentro del ejercicio de lo que pasa en
+/// su bandeja real.
+const DOMINIO_SIMULADO = 'safeweb.com'
+
+/// Deja solo letras sin tilde: la dirección tiene que poder escribirse y
+/// leerse en voz alta, y "sebastián" o "peña" no sobreviven a un buzón real.
+function normalizar(texto: string | null | undefined): string {
+  return (texto ?? '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z]/g, '')
+}
+
+/// nombreapellido@safeweb.com, con la primera palabra de cada uno. Si la cuenta
+/// no tiene nombre —la del investigador, o una ya anonimizada— cae a
+/// "participante", para que la dirección nunca quede vacía ni a medias.
+function correoSimuladoDe(participant: Participant | null): string {
+  const nombre = normalizar(participant?.nombre?.trim().split(/\s+/)[0])
+  const apellido = normalizar(participant?.apellido?.trim().split(/\s+/)[0])
+
+  return `${`${nombre}${apellido}` || 'participante'}@${DOMINIO_SIMULADO}`
 }
 
 /// Inicial del nombre + inicial del apellido. Si falta el apellido —la cuenta
@@ -116,6 +144,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       displayName: firstName(participant),
       roleLabel: participant?.cohort ?? 'Participante',
       initials: initialsOf(participant),
+      correoSimulado: correoSimuladoDe(participant),
     }),
     [participant, loading, login, register, logout, marcarOnboardingVisto],
   )
