@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type KeyboardEvent } from 'react'
 import EscenarioLayout from '../../components/EscenarioLayout'
 import { useStoryEngine, type Story, type StoryNode } from '../../hooks/useStoryEngine'
 import StoryChoices from '../../components/ui/StoryChoices'
-import StoryResultPanel from '../../components/ui/StoryResultPanel'
+import PanelVeredicto, { type Senal } from '../../components/ui/PanelVeredicto'
 import styles from './LlamadaAntiestafas.module.css'
 
 interface CallNode extends StoryNode {
@@ -82,11 +82,11 @@ const STORY: Story<CallNode> = {
   },
 }
 
-const SIGNALS = [
-  'Un premio que <b>nunca pediste</b>.',
-  'Te piden <b>pagar</b> para poder recibirlo.',
-  'El dinero va a una <b>cuenta personal</b>, no a la empresa.',
-  'Te meten <b>prisa</b>: “solo por hoy”.',
+const SENALES: Senal[] = [
+  { id: 's1', texto: 'Un premio que <b>nunca pediste</b>.' },
+  { id: 's2', texto: 'Te piden <b>pagar</b> para poder recibirlo.' },
+  { id: 's3', texto: 'El dinero va a una <b>cuenta personal</b>, no a la empresa.' },
+  { id: 's4', texto: 'Te meten <b>prisa</b>: “solo por hoy”.' },
 ]
 const RULE =
   'Regla de oro: <b>nunca pagues para recibir un premio</b>. Cuelga y llama tú al número oficial del negocio.'
@@ -103,11 +103,15 @@ const CONTEXTO = (
       No participaste en ningún sorteo ni dejaste tu número en ningún concurso, pero eso todavía no
       lo sabés cuando el teléfono suena.
     </p>
-    <p>
-      Vas a poder contestar o rechazar la llamada, y si contestás, escuchar y decidir qué respondés
-      en cada momento. Colgar es siempre una opción válida.
-    </p>
   </>
+)
+
+/// Mecánica, no historia: solo se muestra en el briefing.
+const NOTA = (
+  <p>
+    Vas a poder contestar o rechazar la llamada, y si contestas, escuchar y decidir qué respondes en
+    cada momento. Colgar es siempre una opción válida.
+  </p>
 )
 
 function formatTime(totalSeconds: number) {
@@ -396,13 +400,14 @@ function LlamadaAntiestafas() {
   const decision = (
     <div className="grid gap-3">
       {isEnding ? (
-        <StoryResultPanel
+        <PanelVeredicto
+      escenarioId="vishing/llamada-antiestafas"
           node={node}
-          signalsTitle="Las 4 señales de esta llamada"
-          signals={SIGNALS}
-          rule={RULE}
+          senales={SENALES}
+          regla={RULE}
           restartLabel="↻ Recibir la llamada otra vez"
           onRestart={handleRestart}
+      contenedorId="pantalla-escenario"
         />
       ) : (
         showChoices && (
@@ -426,6 +431,7 @@ function LlamadaAntiestafas() {
       escenarioId="vishing/llamada-antiestafas"
       resumen={RESUMEN}
       contexto={CONTEXTO}
+      nota={NOTA}
       pantalla={pantalla}
       decision={decision}
       onEmpezar={handleRestart}

@@ -100,18 +100,24 @@ const BASE: EscenarioBase[] = [
     titulo: 'Factura por validar',
     descripcion:
       'Un correo institucional anuncia un comprobante pendiente y da un plazo de 24 horas.',
-    version: 1,
+    // v2: la barra del cliente de correo pasó a ser funcional y sumó cinco
+    // finales (responder, reenviar, archivar, eliminar, marcar como spam). Las
+    // corridas de la v1 no son comparables: en ellas esas salidas no existían.
+    version: 2,
     naturaleza: 'fraude',
     dificultad: 2,
     espeja: 'phishing/rol-de-pagos',
     Component: lazy(() => import('../secciones/phishing/FacturaSri')),
   },
   {
+    // v2 en los siete: la barra del cliente pasó a ser funcional y sumó cinco
+    // finales (responder, reenviar, archivar, eliminar, spam). En los dos
+    // legítimos, eliminar y marcar como spam cuentan como fallo.
     seccionId: 'phishing',
     escenarioId: 'clave-caducada',
     titulo: 'Contraseña por caducar',
     descripcion: 'Soporte técnico avisa que tu clave vence hoy y ofrece un enlace para renovarla.',
-    version: 1,
+    version: 2,
     naturaleza: 'fraude',
     dificultad: 3,
     espeja: 'phishing/rol-de-pagos',
@@ -122,11 +128,69 @@ const BASE: EscenarioBase[] = [
     escenarioId: 'rol-de-pagos',
     titulo: 'Rol de pagos disponible',
     descripcion: 'Talento Humano notifica que el rol del mes ya está publicado en el portal.',
-    version: 1,
+    version: 2,
     naturaleza: 'legitimo',
     dificultad: 3,
     espeja: 'phishing/clave-caducada',
     Component: lazy(() => import('../secciones/phishing/RolDePagos')),
+  },
+  {
+    seccionId: 'phishing',
+    escenarioId: 'cobro-dirigido',
+    titulo: 'Paquete en aduana',
+    descripcion: 'Un correo con tus datos personales pide $2.40 para liberar un envío retenido.',
+    version: 2,
+    naturaleza: 'fraude',
+    dificultad: 3,
+    espeja: 'phishing/aviso-filtracion',
+    Component: lazy(() => import('../secciones/phishing/CobroDirigido')),
+  },
+  {
+    seccionId: 'phishing',
+    escenarioId: 'quishing-actualice',
+    titulo: 'Código para actualizar datos',
+    descripcion: 'El banco pide escanear un código QR para no perder el acceso a la cuenta.',
+    version: 2,
+    naturaleza: 'fraude',
+    dificultad: 4,
+    espeja: 'phishing/aviso-filtracion',
+    Component: lazy(() => import('../secciones/phishing/QuishingActualice')),
+  },
+  {
+    seccionId: 'phishing',
+    escenarioId: 'secuestro-hilo',
+    titulo: 'Cambio de cuenta bancaria',
+    descripcion: 'La secretaría del colegio informa una cuenta nueva para el pago de la pensión.',
+    version: 2,
+    naturaleza: 'fraude',
+    dificultad: 4,
+    espeja: 'phishing/rol-de-pagos',
+    Component: lazy(() => import('../secciones/phishing/SecuestroHilo')),
+  },
+  {
+    // El más difícil del módulo: la redacción es impecable y el anzuelo está en
+    // el dominio y en pedir el OTP fuera de la app. Espeja con aviso-filtracion,
+    // que es la misma forma —una alerta de seguridad— pero verdadera.
+    seccionId: 'phishing',
+    escenarioId: 'sesion-bogota',
+    titulo: 'Inicio de sesión desconocido',
+    descripcion: 'Una alerta nocturna avisa de un acceso a tu cuenta desde otra ciudad.',
+    version: 2,
+    naturaleza: 'fraude',
+    dificultad: 5,
+    espeja: 'phishing/aviso-filtracion',
+    Component: lazy(() => import('../secciones/phishing/SesionBogota')),
+  },
+  {
+    seccionId: 'phishing',
+    escenarioId: 'aviso-filtracion',
+    titulo: 'Aviso de filtración de datos',
+    descripcion: 'Una tienda en línea comunica un incidente de seguridad que afecta a tu cuenta.',
+    version: 2,
+    naturaleza: 'legitimo',
+    dificultad: 4,
+    espeja: 'phishing/sesion-bogota',
+    Component: lazy(() => import('../secciones/phishing/AvisoFiltracion')),
   },
   // Las otras cinco amenazas quedan fuera del MVP (ver spec
   // docs/superpowers/specs/2026-08-03-safe-web-mvp-phishing-design.md §9.1).

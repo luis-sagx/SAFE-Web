@@ -1,29 +1,31 @@
 import StoryEscenario, { type ScreenNode } from '../../components/StoryEscenario'
+import { ACCIONES_BARRA, finalesDeBarra } from './barraDeCorreo'
 import type { Story } from '../../hooks/useStoryEngine'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
+import type { Senal } from '../../components/ui/PanelVeredicto'
 
 const CORREO: ScreenView = {
   kind: 'mail',
   from: 'Talento Humano · Corporación Andes',
   address: 'nomina@andes.com.ec',
-  to: 'mí',
+  senalDireccion: 'remitente',
   subject: 'Tu rol de pagos de julio ya está disponible',
   date: 'ayer 17:20',
   body: `
-    <p>Hola Daniela:</p>
+    <p><span data-signal="saludo">Hola,</span></p>
     <p>
       Tu rol de pagos del período <b>julio 2026</b> ya está publicado en el portal del
       colaborador, junto con el detalle de horas extra y descuentos.
     </p>
     <p>
-      Puedes consultarlo en <b>portal.andes.com.ec</b>, con el mismo usuario de tu correo
-      institucional. Si algo no cuadra, responde a este correo o escribe a la extensión 214
+      Puedes consultarlo en <b data-signal="portal">portal.andes.com.ec</b>, con el mismo usuario de tu correo
+      institucional. Si algo no cuadra, responde a este correo o escribe a <span data-signal="canal">la extensión 214</span>
       antes del 8 de agosto.
     </p>
-    <p class="fine">
-      Talento Humano · Corporación Andes<br />
-      Nunca te pediremos tu contraseña por correo ni por teléfono.
-    </p>
+  `,
+  footer: `
+    <p>Talento Humano · Corporación Andes<br />
+      Nunca te pediremos tu contraseña por correo ni por teléfono.</p>
   `,
 }
 
@@ -31,6 +33,7 @@ const PORTAL: ScreenView = {
   kind: 'web',
   url: 'https://portal.andes.com.ec/rrhh/rol',
   secure: true,
+  senalUrl: 'portal-url',
   brand: 'Corporación Andes',
   title: 'Portal del colaborador',
   subtitle: 'Ingresa con tu usuario institucional para ver tu rol de pagos.',
@@ -43,6 +46,8 @@ const PORTAL: ScreenView = {
 }
 
 const STORY: Story<ScreenNode> = {
+  // Responder, reenviar, archivar, eliminar y marcar como spam.
+  ...finalesDeBarra('legitimo', CORREO),
   n1: {
     kind: 'scene',
     view: CORREO,
@@ -88,12 +93,12 @@ const STORY: Story<ScreenNode> = {
   },
 }
 
-const SIGNALS = [
-  'El dominio del remitente es <b>exactamente</b> el de la empresa: andes.com.ec.',
-  'Te llama <b>por tu nombre</b> y menciona un período y un plazo concretos.',
-  '<b>No pide credenciales</b> ni datos: solo avisa dónde está la información.',
-  'Ofrece un <b>canal alterno verificable</b> (la extensión 214).',
-  'El portal está en el <b>dominio corporativo</b> y con conexión segura.',
+const SENALES: Senal[] = [
+  { id: 's1', targetId: 'remitente', pantalla: 'n1', texto: 'El dominio del remitente es <b>exactamente</b> el de la empresa: andes.com.ec.' },
+  { id: 's2', targetId: 'saludo', pantalla: 'n1', texto: 'Te llama <b>por tu nombre</b> y menciona un período y un plazo concretos.' },
+  { id: 's3', texto: '<b>No pide credenciales</b> ni datos: solo avisa dónde está la información.' },
+  { id: 's4', targetId: 'canal', pantalla: 'n1', texto: 'Ofrece un <b>canal alterno verificable</b> (la extensión 214).' },
+  { id: 's5', targetId: 'portal', pantalla: 'n1', texto: 'El portal está en el <b>dominio corporativo</b> y con conexión segura.' },
 ]
 const RULE =
   'Regla de oro: no todo correo es una trampa. Lo que distingue a uno legítimo es que <b>no te pide tu clave y su dominio es el real</b>. Aun así, entra al portal escribiendo tú la dirección: es la costumbre que te protege siempre.'
@@ -110,7 +115,6 @@ const CONTEXTO = (
       Este mes trabajaste horas extra y quieres confirmar que estén incluidas antes de que cierre
       el plazo de reclamos.
     </p>
-    <p>Vas a leer el correo y decidir qué haces.</p>
   </>
 )
 
@@ -121,8 +125,8 @@ function RolDePagos() {
       resumen={RESUMEN}
       contexto={CONTEXTO}
       story={STORY}
-      signalsTitle="Por qué este correo sí era legítimo"
-      signals={SIGNALS}
+      accionesCorreo={ACCIONES_BARRA}
+      senales={SENALES}
       rule={RULE}
       restartLabel="↻ Repetir el escenario"
     />

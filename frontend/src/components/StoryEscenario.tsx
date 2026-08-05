@@ -1,8 +1,10 @@
-import type { ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import EscenarioLayout from './EscenarioLayout'
 import DeviceScreen, { type ScreenView } from './ui/DeviceScreen'
+import { manejarClicHotspot } from './ui/interactivo'
+import type { AccionCorreo } from './ui/DesktopChrome'
 import StoryChoices from './ui/StoryChoices'
-import StoryResultPanel from './ui/StoryResultPanel'
+import PanelVeredicto, { type Senal } from './ui/PanelVeredicto'
 import { useStoryEngine, type Story, type StoryNode } from '../hooks/useStoryEngine'
 
 /** Cada nodo declara qué muestra la pantalla simulada, incluidos los finales:
@@ -15,13 +17,18 @@ interface StoryEscenarioProps {
   escenarioId: string
   resumen: string
   contexto: ReactNode
+  /** Cómo se juega. Solo se muestra en el briefing. */
+  nota?: ReactNode
   story: Story<ScreenNode>
-  signalsTitle: string
-  /** Llevan negritas <b>; contenido fijo del código. */
-  signals: string[]
+  /** Las pistas que había en la pantalla. El repaso las recorre una a una y
+   *  resalta el elemento real de la simulación al que apunta cada una. */
+  senales: Senal[]
   rule: string
   restartLabel: string
   pregunta?: string
+  /** Acciones del cliente de correo. El escenario que las pasa tiene que
+   *  declarar también sus finales en el grafo (ver finalesDeBarra). */
+  accionesCorreo?: AccionCorreo[]
 }
 
 /**
@@ -33,28 +40,45 @@ function StoryEscenario({
   escenarioId,
   resumen,
   contexto,
+  nota,
   story,
-  signalsTitle,
-  signals,
+  senales,
   rule,
   restartLabel,
   pregunta = '¿Qué haces?',
+  accionesCorreo,
 }: StoryEscenarioProps) {
   const engine = useStoryEngine(story, 'n1', escenarioId)
 
+  // Durante el repaso la pantalla vuelve a la que contiene cada señal: un
+  // escenario que termina en la página falsa no puede resaltar lo que estaba
+  // en el correo.
+  const [pantallaRepaso, setPantallaRepaso] = useState<string | undefined>()
+  const vista = (pantallaRepaso && story[pantallaRepaso]?.view) || engine.node.view
+
+  // Un clic en la barra del cliente vale lo mismo que elegir de la lista: los
+  // botones llevan su destino en `data-hotspot-goto` y este manejador único lo
+  // traduce en una decisión del grafo.
+  const onHotspot = (event: React.MouseEvent) => {
+    if (engine.isEnding) return
+    manejarClicHotspot(event, engine.choose)
+  }
+
   const decision = engine.isEnding ? (
-    <StoryResultPanel
+    <PanelVeredicto
+      escenarioId={escenarioId}
       node={engine.node}
-      signalsTitle={signalsTitle}
-      signals={signals}
-      rule={rule}
+      senales={senales}
+      regla={rule}
       restartLabel={restartLabel}
       onRestart={engine.restart}
+      contenedorId="pantalla-escenario"
+      onPantalla={setPantallaRepaso}
     />
   ) : (
     engine.node.choices && (
       <div className="grid gap-3">
-        <p className="text-sm font-semibold text-ink">{pregunta}</p>
+        <p className="text-lg font-semibold text-ink">{pregunta}</p>
         <StoryChoices choices={engine.node.choices} onChoose={engine.choose} />
       </div>
     )
@@ -65,12 +89,15 @@ function StoryEscenario({
       escenarioId={escenarioId}
       resumen={resumen}
       contexto={contexto}
-      pantalla={<DeviceScreen view={engine.node.view} />}
+      nota={nota}
+      pantalla={
+        <DeviceScreen view={vista} acciones={accionesCorreo} onHotspot={onHotspot} />
+      }
       decision={decision}
       onEmpezar={engine.restart}
       // El correo y la web se abren más en computador que en celular; el SMS
       // se queda en celular, que es donde de verdad llegan los mensajes.
-      dispositivo={engine.node.view.kind === 'sms' ? 'telefono' : 'escritorio'}
+      dispositivo={vista.kind === 'sms' ? 'telefono' : 'escritorio'}
     />
   )
 }

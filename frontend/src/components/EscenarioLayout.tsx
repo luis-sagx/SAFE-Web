@@ -1,3 +1,4 @@
+import { Info } from 'lucide-react'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { Link } from 'react-router'
 import AppHeader from './AppHeader'
@@ -10,8 +11,12 @@ interface EscenarioLayoutProps {
   escenarioId: string
   /** Una línea; queda visible durante todo el escenario. */
   resumen: string
-  /** Cuerpo del briefing: la narración que el participante lee antes de entrar. */
+  /** La situación: quién eres y qué te está pasando. Solo historia, nada de
+   *  mecánica — acompaña al participante también dentro del escenario, donde
+   *  una frase como "vas a ver tu correo" ya no tendría sentido. */
   contexto: ReactNode
+  /** Cómo se juega. Aparece únicamente en el briefing, antes de entrar. */
+  nota?: ReactNode
   /** Va dentro del marco del dispositivo. Solo lo que la app real mostraría. */
   pantalla: ReactNode
   /** Va debajo del marco: pregunta, opciones, feedback, resultado. */
@@ -31,19 +36,43 @@ interface EscenarioLayoutProps {
  */
 /** Alto y angosto, como se sostiene un celular. */
 const MARCO_TELEFONO =
-  'sm:max-h-[640px] sm:w-[420px] sm:rounded-[28px] sm:border sm:border-hairline-strong sm:shadow-[0_30px_70px_rgba(0,0,0,0.22)] lg:h-[640px] lg:max-h-full lg:flex-none lg:self-center'
+  'sm:max-h-[640px] sm:w-[460px] sm:rounded-[28px] sm:border sm:border-hairline-strong sm:shadow-[0_30px_70px_rgba(0,0,0,0.22)] lg:h-[640px] lg:max-h-full lg:flex-none lg:self-center'
 
 /** Ancho y bajo, como una ventana de escritorio. Los anchos con vw + min/max
  *  se recalculan solos según el viewport en vez de un solo punto de quiebre
  *  fijo: sin eso, la ventana se sale de pantalla en un portátil de 1024px, que
- *  es justo donde el layout pasa de apilado a lado a lado. */
+ *  es justo donde el layout pasa de apilado a lado a lado.
+ *
+ *  El alto llena la columna (`h-full`) en vez de pedir una fracción del
+ *  viewport. Con `min(76vh, 720px)` la ventana dejaba sin usar unos 80px que
+ *  tenía disponibles en un portátil de 768px de alto, y ese espacio es
+ *  exactamente el que le faltaba al correo para no tener que desplazarse. El
+ *  tope de 860px evita el efecto contrario en un monitor grande, donde una
+ *  ventana altísima tampoco se parece a nada real.
+ *
+ *  Los topes subieron junto con la tipografía: el curso lo van a hacer adultos
+ *  mayores, y una letra legible en una ventana que no crece con ella solo
+ *  consigue que el correo no quepa.
+ *
+ *  El ancho se pide con `calc(100vw - 540px)` y no con una fracción del
+ *  viewport: 540px es lo que ocupan la columna de decisión, el hueco entre
+ *  ambas y los márgenes. Así la ventana se queda con TODO lo que sobra en vez
+ *  de con un porcentaje fijo, que en pantallas anchas dejaba un vacío enorme a
+ *  los lados y en las estrechas se pasaba de largo.
+ *
+ *  `self-center` y no `self-stretch`: al estirar, el tope de 720px deja la
+ *  ventana anclada arriba del todo en una pantalla alta, con el hueco entero
+ *  debajo. Con `h-full` ya ocupa el alto disponible, así que centrarla solo
+ *  reparte lo que sobre cuando el tope se queda corto.
+ */
 const MARCO_ESCRITORIO =
-  'sm:max-h-[560px] sm:w-[94vw] sm:max-w-[760px] sm:rounded-xl sm:border sm:border-hairline-strong sm:shadow-[0_30px_70px_rgba(0,0,0,0.22)] lg:h-[560px] lg:max-h-full lg:w-[52vw] lg:min-w-[520px] lg:max-w-[820px] lg:flex-none lg:self-center'
+  'sm:max-h-[min(82vh,860px)] sm:w-[96vw] sm:max-w-[1100px] sm:rounded-xl sm:border sm:border-hairline-strong sm:shadow-[0_30px_70px_rgba(0,0,0,0.22)] lg:h-full lg:max-h-[860px] lg:w-[calc(100vw-540px)] lg:min-w-[560px] lg:max-w-[1200px] lg:flex-none lg:self-center'
 
 function EscenarioLayout({
   escenarioId,
   resumen,
   contexto,
+  nota,
   pantalla,
   decision,
   onEmpezar,
@@ -55,10 +84,11 @@ function EscenarioLayout({
     throw new Error(`Escenario "${escenarioId}" no está en el catálogo.`)
   }
 
-  const { displayName, roleLabel } = useAuth()
+  const { displayName, roleLabel, correoSimulado } = useAuth()
   const [fase, setFase] = useState<'briefing' | 'escenario'>('briefing')
   const empezarRef = useRef<HTMLButtonElement>(null)
   const escenaRef = useRef<HTMLDivElement>(null)
+  const dialogoRef = useRef<HTMLDialogElement>(null)
 
   useEffect(() => {
     if (fase === 'briefing') {
@@ -98,7 +128,32 @@ function EscenarioLayout({
             {escenario.titulo}
           </h1>
 
-          <div className="mt-6 space-y-4 text-base leading-relaxed text-body">{contexto}</div>
+          {/* El saludo con nombre vive aquí y no en cada escenario: la historia
+              que escribe el autor empieza siempre en la escena, y quién la
+              protagoniza lo sabe el layout, no el guion. */}
+          <p className="mt-6 text-base leading-relaxed text-ink">
+            Hola, <strong className="font-semibold">{displayName}</strong>. Esto es lo que te está
+            pasando:
+          </p>
+
+          <div className="mt-3 space-y-4 text-base leading-relaxed text-body">{contexto}</div>
+
+          {/* Se avisa antes de entrar, y en todos los escenarios: si alguien
+              ve su propio nombre en una bandeja simulada sin saber que la
+              dirección es inventada, puede creer que el ejercicio le está
+              mandando correo de verdad —o peor, que le llegó uno real. El
+              dominio no existe fuera de la simulación. */}
+          <p className="mt-6 text-sm leading-relaxed text-body">
+            En los escenarios usas un correo ficticio,{' '}
+            <span className="font-medium text-ink">{correoSimulado}</span>. No existe fuera de este
+            entrenamiento: nada de lo que ocurra aquí sale ni entra a tu correo real.
+          </p>
+
+          {nota && (
+            <div className="mt-4 rounded-lg border border-hairline-strong bg-canvas-soft p-4 text-sm leading-relaxed text-body">
+              {nota}
+            </div>
+          )}
 
           <button
             ref={empezarRef}
@@ -135,7 +190,7 @@ function EscenarioLayout({
           900px de alto no entran a la vez un dispositivo creíble y un bloque de
           opciones largo: apilarlos ahí aplasta el dispositivo justo cuando es lo
           que hay que juzgar. */}
-      <main className="flex min-h-0 flex-1 flex-col items-center sm:gap-4 sm:px-4 sm:py-4 lg:flex-row lg:items-stretch lg:justify-center lg:gap-8 lg:py-6">
+      <main className="flex min-h-0 flex-1 flex-col items-center sm:gap-4 sm:px-4 sm:py-4 lg:flex-row lg:items-stretch lg:justify-center lg:gap-8 lg:py-6 [@media(max-height:940px)]:sm:py-2 [@media(max-height:940px)]:lg:py-3">
         <div
           ref={escenaRef}
           // Fijo a propósito: el recorrido de señales de un escenario
@@ -155,10 +210,54 @@ function EscenarioLayout({
 
         {/* Apilado, el bloque nunca pasa de media pantalla: si no cabe, se
             desplaza él, no la página. Al costado puede usar todo el alto. */}
-        <div className="max-h-[45%] w-full shrink-0 overflow-y-auto border-t border-hairline bg-canvas px-4 py-4 sm:w-[420px] sm:border-0 sm:bg-transparent sm:px-0 sm:py-0 lg:max-h-full lg:self-center">
+        <div className="max-h-[45%] w-full shrink-0 overflow-y-auto border-t border-hairline bg-canvas px-4 py-4 sm:w-[460px] sm:border-0 sm:bg-transparent sm:px-0 sm:py-0 lg:w-[380px] lg:max-h-full lg:self-center xl:w-[460px]">
+          {/* La historia queda a un clic, no ocupando espacio permanente. Vive
+              en un diálogo y no en un bloque fijo porque se consulta poco: casi
+              siempre se recuerda, y cuando no, se abre.
+
+              Va encima de la decisión y con aspecto de enlace, no de botón: es
+              una consulta de apoyo, no una acción del ejercicio, y compitiendo
+              en peso con "¿Qué haces?" desviaba la atención de lo único que hay
+              que hacer aquí. Sigue siendo un <button> porque abre un diálogo;
+              solo se viste de enlace. */}
+          <button
+            type="button"
+            onClick={() => dialogoRef.current?.showModal()}
+            className="mb-4 inline-flex items-center gap-1.5 text-sm font-medium text-link underline decoration-dotted underline-offset-4 transition hover:decoration-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link"
+          >
+            <Info aria-hidden className="size-3.5" strokeWidth={2} />
+            Ver contexto
+          </button>
+
           {decision}
         </div>
       </main>
+
+      {/* <dialog> nativo: el navegador ya resuelve el foco atrapado, el cierre
+          con Escape y el fondo inerte. Una capa propia con divs tendría que
+          reimplementar las tres cosas y saldría peor. */}
+      <dialog
+        ref={dialogoRef}
+        aria-labelledby="titulo-contexto"
+        className="m-auto w-[min(92vw,32rem)] rounded-lg border border-hairline-strong bg-surface p-6 text-ink shadow-card backdrop:bg-ink/40"
+      >
+        <h2 id="titulo-contexto" className="text-[11px] font-semibold uppercase tracking-[0.88px] text-muted">
+          Tu situación
+        </h2>
+        <p className="mt-2 text-base leading-relaxed text-ink">
+          Hola, <strong className="font-semibold">{displayName}</strong>.
+        </p>
+        <div className="mt-2 space-y-3 text-base leading-relaxed text-body">{contexto}</div>
+
+        <form method="dialog" className="mt-6 flex justify-end">
+          <button
+            type="submit"
+            className="min-h-10 rounded-md bg-primary px-5 text-base font-medium text-on-primary transition hover:bg-primary-active focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link"
+          >
+            Seguir
+          </button>
+        </form>
+      </dialog>
     </div>
   )
 }

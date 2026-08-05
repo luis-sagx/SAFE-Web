@@ -1,4 +1,4 @@
-import { Taskbar, Titlebar } from './DesktopChrome'
+import { Taskbar, Titlebar, VentanaCorreo, type AccionCorreo } from './DesktopChrome'
 import styles from './DeviceScreen.module.css'
 
 /**
@@ -14,14 +14,20 @@ export type ScreenView =
       kind: 'mail'
       from: string
       address: string
-      to: string
       subject: string
       date: string
-      /** HTML fijo del escenario, nunca contenido de un usuario. */
+      /** HTML fijo del escenario, nunca contenido de un usuario. Puede llevar
+       *  `data-signal` en cualquier elemento para que el repaso lo resalte. */
       body: string
+      /** Pie institucional del mensaje. HTML fijo, como `body`. */
+      footer?: string
       attachment?: string
       /** Etiqueta del cliente de correo: "Promociones", "Externo"… */
       label?: string
+      /** `data-signal` del repaso para la dirección, la etiqueta y el adjunto. */
+      senalDireccion?: string
+      senalEtiqueta?: string
+      senalAdjunto?: string
     }
   | {
       kind: 'web'
@@ -31,9 +37,11 @@ export type ScreenView =
       brand: string
       title: string
       subtitle?: string
-      fields: { label: string; placeholder: string }[]
+      fields: { label: string; placeholder: string; senal?: string }[]
       button: string
       footer?: string
+      /** `data-signal` de la barra de direcciones. */
+      senalUrl?: string
     }
   | {
       kind: 'sms'
@@ -42,57 +50,46 @@ export type ScreenView =
       msgs: { text: string; time: string; mine?: boolean }[]
     }
 
-function DeviceScreen({ view }: { view: ScreenView }) {
+function DeviceScreen({
+  view,
+  acciones,
+  onHotspot,
+}: {
+  view: ScreenView
+  /** Barra de acciones del cliente. Solo se pinta si el escenario declara sus
+   *  finales; sin ellos los botones no tendrían a dónde saltar. */
+  acciones?: AccionCorreo[]
+  onHotspot?: (event: React.MouseEvent) => void
+}) {
   if (view.kind === 'mail') {
     return (
-      <section className={`${styles.screen} ${styles.desktop}`} aria-label="Bandeja de correo">
-        <Titlebar texto="Correo (Recibidos)" />
-
-        <div className={styles.desktopBody}>
-          {/* Carpetas fijas, no interactivas: solo dan el aspecto de cliente
-              de escritorio. Un celular muestra esto en un menú, no siempre
-              visible al lado. */}
-          <nav className={styles.mailNav} aria-hidden>
-            <span className={`${styles.mailNavItem} ${styles.mailNavActive}`}>📥 Recibidos</span>
-            <span className={styles.mailNavItem}>📤 Enviados</span>
-            <span className={styles.mailNavItem}>🗑 Papelera</span>
-          </nav>
-
-          <div className={styles.mailbody}>
-            <h1 className={styles.subject}>{view.subject}</h1>
-
-            <div className={styles.senderRow}>
-              <div className={styles.avatar} aria-hidden>
-                {view.from.slice(0, 1).toUpperCase()}
-              </div>
-              <div className={styles.senderId}>
-                <p className={styles.senderName}>
-                  {view.from}
-                  {view.label && <span className={styles.label}>{view.label}</span>}
-                </p>
-                <p className={styles.senderAddr}>{view.address}</p>
-                <p className={styles.senderTo}>para {view.to}</p>
-              </div>
-              <span className={styles.date}>{view.date}</span>
-            </div>
-
-            <div
-              className={styles.prose}
-              // Contenido fijo del escenario: permite negritas y el enlace falso.
-              dangerouslySetInnerHTML={{ __html: view.body }}
-            />
-
-            {view.attachment && (
-              <div className={styles.attachment}>
-                <span aria-hidden>📎</span>
-                {view.attachment}
-              </div>
-            )}
-          </div>
-        </div>
-
-        <Taskbar />
-      </section>
+      <VentanaCorreo
+        acciones={acciones}
+        onClick={onHotspot}
+        asunto={view.subject}
+        remitente={{
+          nombre: view.from,
+          direccion: view.address,
+          etiqueta: view.label,
+          senalDireccion: view.senalDireccion,
+          senalEtiqueta: view.senalEtiqueta,
+        }}
+        recibido={view.date}
+        adjunto={
+          view.attachment && (
+            <span className={styles.attachment} data-signal={view.senalAdjunto}>
+              <span className={styles.attachmentTipo} aria-hidden>
+                📎
+              </span>
+              <span className={styles.attachmentNombre}>{view.attachment}</span>
+            </span>
+          )
+        }
+        pie={view.footer && <div dangerouslySetInnerHTML={{ __html: view.footer }} />}
+      >
+        {/* Contenido fijo del escenario: permite negritas y el enlace falso. */}
+        <div dangerouslySetInnerHTML={{ __html: view.body }} />
+      </VentanaCorreo>
     )
   }
 
@@ -107,7 +104,7 @@ function DeviceScreen({ view }: { view: ScreenView }) {
           <span className={styles.tab}>{view.title}</span>
         </div>
 
-        <div className={styles.urlbar}>
+        <div className={styles.urlbar} data-signal={view.senalUrl}>
           <span className={view.secure ? styles.lock : styles.warn}>
             {view.secure ? '🔒' : '⚠ No seguro'}
           </span>
@@ -121,7 +118,7 @@ function DeviceScreen({ view }: { view: ScreenView }) {
 
           <div className={styles.form}>
             {view.fields.map((field) => (
-              <label key={field.label} className={styles.field}>
+              <label key={field.label} className={styles.field} data-signal={field.senal}>
                 <span>{field.label}</span>
                 <span className={styles.input}>{field.placeholder}</span>
               </label>

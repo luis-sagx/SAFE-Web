@@ -32,5 +32,7 @@ dist-ssr
 .playwright-mcp/
 shots/
 
-# Respaldos del .env: mismos secretos, mismo trato.
-.env.bak-*
+# Respaldos del .env: mismos secretos, mismo trato. El comodín va pegado a
+# "bak" y no tras un guion: `.env.bak` a secas —lo que deja `cp .env .env.bak`—
+# se colaba por el hueco entre los dos patrones.
+.env.bak*

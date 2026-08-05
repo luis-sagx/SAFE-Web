@@ -1,4 +1,10 @@
-/* Interior de las apps simuladas de correo, navegador y SMS. Todo lo que se ve
+/* Interior de las apps simuladas de correo, navegador y SMS.
+
+   TIPOGRAFÍA: los tamaños de este archivo están un 20% por encima de lo que
+   pediría un cliente de correo real. Es deliberado — al curso se apuntan
+   adultos mayores, y una simulación fiel pero ilegible no entrena a nadie. Al
+   subirla hubo que agrandar también la ventana (ver MARCO_ESCRITORIO): letra
+   grande en una ventana que no crece solo consigue que el mensaje no quepa. Todo lo que se ve
    aquí es lo que la app real mostraría; las opciones y el resultado viven fuera
    del marco, en EscenarioLayout. */
 
@@ -31,7 +37,7 @@
   background: #eef0f3;
 }
 .titlebarText {
-  font-size: 12.5px;
+  font-size: 15px;
   font-weight: 600;
   color: var(--dim);
   overflow: hidden;
@@ -46,37 +52,103 @@
   flex-shrink: 0;
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 7px 14px;
-  background: #1f2937;
+  gap: 6px;
+  padding: 0 10px;
+  height: 46px;
+  background: linear-gradient(180deg, #263243 0%, #1f2937 100%);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
+
+/* Botón de inicio: cuadrícula de cuatro, la forma que casi todo el mundo
+   reconoce como "el menú de inicio". Decorativo, pero con el mismo relieve que
+   los demás elementos para que la franja entera se lea como una barra viva y
+   no como una imagen pegada al pie de la ventana. */
 .taskbarStart {
-  color: #1a73e8;
-  font-size: 15px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 28px;
+  border-radius: 5px;
+  color: #cfd8e3;
+  font-size: 17px;
   line-height: 1;
 }
-.taskbarClock {
-  margin-left: auto;
-  font-size: 11.5px;
-  color: #cbd2db;
+.taskbarDivider {
+  width: 1px;
+  height: 20px;
+  background: rgba(255, 255, 255, 0.12);
+  margin: 0 2px;
 }
+
+/* Acceso directo anclado. Se ve como una app de la barra —icono, nombre y la
+   rayita inferior que marca lo anclado— porque eso es lo que es: la vía para
+   salir del correo y entrar al sitio por cuenta propia.
+
+   Deliberadamente NO lleva brillo, pulso ni ningún realce que lo destaque en
+   reposo. Los dos destinos de este atajo son finales buenos, así que llamar la
+   atención sobre él sería empujar hacia la respuesta correcta y contaminar lo
+   que el escenario mide. El objetivo es que se encuentre igual de fácil que en
+   un computador de verdad, no más. */
 .taskbarAtajo {
   appearance: none;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  background: rgba(255, 255, 255, 0.08);
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.09);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07);
   color: #e8ecf1;
   font: inherit;
-  font-size: 11.5px;
+  font-size: 14px;
   font-weight: 600;
-  padding: 4px 10px;
-  border-radius: 999px;
+  padding: 5px 11px;
+  border-radius: 6px;
   cursor: pointer;
 }
-.taskbarAtajo:hover,
-.taskbarAtajo:focus-visible {
-  background: rgba(255, 255, 255, 0.16);
-  outline: 2px solid #16a34a;
-  outline-offset: 1px;
+/* La rayita de "app anclada" al pie del icono. */
+.taskbarAtajo::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -1px;
+  transform: translateX(-50%);
+  width: 16px;
+  height: 2px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.35);
+}
+/* Especificidad extra a propósito: gana sobre el contorno verde genérico de
+   [data-hotspot-goto]:hover, que sobre la franja oscura se ve casi negro y
+   además delataría el atajo como "elemento del ejercicio". Aquí el aviso de
+   que se puede pulsar es el que da un sistema operativo real: el fondo del
+   icono se aclara. El contorno verde de foco por teclado sí se conserva. */
+.taskbar .taskbarAtajo:hover {
+  outline: none;
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.32);
+}
+.taskbar .taskbarAtajo:hover::after {
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.taskbarTray {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 13px;
+  color: #aab4c2;
+}
+.taskbarClock {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  line-height: 1.25;
+  font-size: 13px;
+  color: #cbd2db;
+  padding-left: 2px;
 }
 
 /* ---------- Puntos interactivos (escenarios con hotspots reales) ----------
@@ -91,17 +163,45 @@
   color: inherit;
   cursor: pointer;
 }
-.hotspot:hover {
+/* El realce al pasar por encima tiene que verse: con solo brightness(0.97) —un
+   3%— no había forma de descubrir que el adjunto o el atajo eran accionables, y
+   el participante se quedaba sin saber qué tocar.
+
+   Aparece únicamente en hover/foco, nunca en reposo: marcar los tres puntos de
+   forma permanente convertiría la pantalla en una lista de opciones disfrazada,
+   que es justo de lo que este escenario se alejó (spec §2.1). Explorar sigue
+   siendo parte del ejercicio; lo que se arregla es que explorar tenga respuesta. */
+.hotspot:hover,
+[data-hotspot-goto]:hover {
+  outline: 2px solid rgba(0, 104, 55, 0.45);
+  outline-offset: 2px;
+  border-radius: 3px;
   filter: brightness(0.97);
 }
-.hotspot:focus-visible {
+
+@media (prefers-reduced-motion: no-preference) {
+  .hotspot,
+  [data-hotspot-goto] {
+    transition: outline-color 120ms ease;
+  }
+}
+/* El foco cubre también el enlace del correo y el atajo de la barra de tareas,
+   que no llevan la clase .hotspot: quien navega con teclado tiene que poder
+   recorrer los tres puntos igual que quien usa el mouse. */
+.hotspot:focus-visible,
+[data-hotspot-goto]:focus-visible {
   outline: 3px solid #16a34a;
   outline-offset: 2px;
 }
 
 /* Frase señalada dentro del cuerpo del correo (p. ej. el plazo). Sin el fondo
    amarillo por defecto de <mark>: delataría la señal antes de que el
-   participante la investigue por su cuenta. */
+   participante la investigue por su cuenta.
+
+   La variante :global es para los escenarios cuyo cuerpo viaja como HTML: ahí
+   CSS Modules no reescribe la clase, así que `class="marca"` no casaba con nada
+   y el <mark> se pintaba amarillo. */
+.prose :global(.marca),
 .marca {
   background: none;
   color: inherit;
@@ -132,7 +232,7 @@
 
 .mailNav {
   flex-shrink: 0;
-  width: 132px;
+  width: 152px;
   border-right: 1px solid var(--line);
   background: #f6f8fa;
   padding: 12px 8px;
@@ -141,15 +241,76 @@
   gap: 2px;
 }
 .mailNavItem {
-  font-size: 12.5px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
   color: var(--dim);
   padding: 7px 8px;
   border-radius: 6px;
+}
+.mailNavIcon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
 }
 .mailNavActive {
   background: #e3ecfb;
   color: #14487f;
   font-weight: 700;
+}
+
+/* Columna derecha del cliente: la barra de acciones queda fija arriba y solo
+   se desplaza el mensaje, como en cualquier cliente real. */
+.mailPane {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.mailToolbar {
+  flex-shrink: 0;
+  display: flex;
+  align-items: stretch;
+  gap: 2px;
+  padding: 5px 10px;
+  border-bottom: 1px solid var(--line);
+  background: #fbfcfd;
+}
+/* Icono arriba y nombre debajo. En columna las cinco acciones caben en el
+   ancho de la ventana; en fila, con el nombre al lado del icono, no cabían. */
+.mailToolbarBtn {
+  appearance: none;
+  border: none;
+  background: none;
+  color: var(--dim);
+  font: inherit;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  min-width: 70px;
+  padding: 7px 9px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.mailToolbarBtn:hover {
+  background: #e9eef4;
+  color: #16202c;
+}
+.mailToolbarIcon {
+  width: 20px;
+  height: 20px;
+}
+.mailToolbarTexto {
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
 }
 
 .mailbody {
@@ -162,7 +323,7 @@
 }
 
 .subject {
-  font-size: 19px;
+  font-size: 23px;
   line-height: 1.3;
   font-weight: 700;
   margin: 0 0 14px;
@@ -176,8 +337,8 @@
   border-bottom: 1px solid var(--line);
 }
 .avatar {
-  width: 38px;
-  height: 38px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   flex-shrink: 0;
   background: #d7e3f4;
@@ -193,7 +354,7 @@
 }
 .senderName {
   margin: 0;
-  font-size: 14px;
+  font-size: 17px;
   font-weight: 700;
   display: flex;
   align-items: center;
@@ -201,7 +362,7 @@
   flex-wrap: wrap;
 }
 .label {
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -214,19 +375,19 @@
 .senderAddr,
 .senderTo {
   margin: 2px 0 0;
-  font-size: 12px;
+  font-size: 14.5px;
   color: var(--dim);
   overflow-wrap: anywhere;
 }
 .date {
-  font-size: 11.5px;
+  font-size: 14px;
   color: var(--dim);
   flex-shrink: 0;
 }
 
 .prose {
   margin-top: 16px;
-  font-size: 14.5px;
+  font-size: 17.5px;
   line-height: 1.6;
 }
 .prose p {
@@ -244,27 +405,236 @@
   color: #fff;
   text-decoration: none;
   font-weight: 700;
-  font-size: 14px;
+  font-size: 17px;
   padding: 11px 18px;
   border-radius: 6px;
   margin: 4px 0 12px;
 }
 .prose :global(.fine) {
-  font-size: 12px;
+  font-size: 14.5px;
+  color: var(--dim);
+}
+
+/* Zona de adjuntos: franja propia separada del cuerpo, con su rótulo y su
+   recuento, como en cualquier cliente real. Antes el adjunto quedaba flotando
+   suelto justo debajo de la línea de "mensaje automático", sin nada que lo
+   presentara, y se leía como un botón perdido en medio del texto. */
+.attachmentZone {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+.attachmentCount {
+  margin: 0 0 8px;
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
   color: var(--dim);
 }
 
 .attachment {
-  margin-top: 8px;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   border: 1px solid var(--line);
-  border-radius: 6px;
-  padding: 9px 12px;
-  font-size: 13px;
+  border-radius: 8px;
+  padding: 10px 14px 10px 10px;
+  font-size: 15.5px;
   color: #16202c;
   background: #f6f8fa;
+}
+/* Cuadradito con la extensión, como la miniatura de tipo de archivo que
+   muestran los clientes cuando no pueden previsualizar el contenido. */
+.attachmentTipo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border-radius: 5px;
+  background: #e2e8f0;
+  color: #475569;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+.attachmentNombre {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1.35;
+}
+.attachmentPeso {
+  font-size: 14px;
+  color: var(--dim);
+  font-weight: 400;
+}
+
+/* Pie institucional del mensaje. Un correo real no termina en seco después de
+   la llamada a la acción: cierra con dirección, aviso legal y letra chica. Sin
+   eso el mensaje se lee corto y "de examen", y además queda menos superficie
+   donde buscar señales. */
+.mailFooter {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--dim);
+}
+.mailFooter p {
+  margin: 0 0 6px;
+}
+.mailFooter p:last-child {
+  margin-bottom: 0;
+}
+
+/* ---------- Pantallas bajas ----------
+   En un portátil de 768px de alto el correo no cabía y había que desplazarlo,
+   justo cuando lo que se juzga es el mensaje completo: el pie, el adjunto y el
+   remitente son las señales, y ninguna debería quedar fuera de vista.
+
+   Se aprieta el aire y se baja un punto la tipografía, no se escala la ventana
+   con transform: al escalar, el texto queda borroso y por debajo del tamaño
+   legible mínimo, que en una pantalla donde hay que leer direcciones de correo
+   letra a letra sería contraproducente.
+
+   Dispara por alto O por ancho: una ventana estrecha hace que el texto se
+   parta en más líneas, así que el correo crece a lo alto aunque la pantalla no
+   sea baja. Es lo que pasaba en una tablet de 820px de ancho. */
+@media (max-height: 940px), (max-width: 900px) {
+  .mailbody {
+    padding: 10px 18px 10px;
+  }
+  .mailNav {
+    padding: 8px 8px;
+  }
+  .subject {
+    font-size: 20.5px;
+    margin-bottom: 10px;
+  }
+  .senderRow {
+    padding-bottom: 8px;
+    gap: 9px;
+  }
+  .avatar {
+    width: 36px;
+    height: 36px;
+  }
+  .prose {
+    margin-top: 9px;
+    line-height: 1.5;
+  }
+  .prose p {
+    margin-bottom: 8px;
+  }
+  .prose :global(.cta) {
+    padding: 9px 15px;
+    margin: 2px 0 9px;
+  }
+  .attachmentZone,
+  .mailFooter {
+    margin-top: 9px;
+    padding-top: 8px;
+  }
+  .attachmentCount {
+    margin-bottom: 5px;
+  }
+  .attachment {
+    padding: 7px 12px 7px 8px;
+  }
+  .attachmentTipo {
+    width: 26px;
+    height: 26px;
+  }
+  .mailFooter {
+    font-size: 13px;
+    line-height: 1.45;
+  }
+  .mailFooter p {
+    margin-bottom: 4px;
+  }
+  .mailToolbar {
+    padding: 3px 10px;
+  }
+  .mailToolbarBtn {
+    padding: 4px 8px;
+  }
+  .titlebar {
+    padding: 7px 14px;
+  }
+  .taskbar {
+    height: 34px;
+  }
+}
+
+/* En pantalla angosta desaparece la columna de carpetas, igual que en la app de
+   correo de cualquier teléfono. Son 132px de un ancho de 375: con ella puesta,
+   el mensaje se parte en el doble de líneas y el asunto ocupa tres. No se
+   pierde nada que haya que juzgar — es decorativa. */
+@media (max-width: 640px) {
+  .mailNav {
+    display: none;
+  }
+  .mailToolbar {
+    justify-content: space-between;
+  }
+  .mailToolbarBtn {
+    min-width: 0;
+    flex: 1;
+    padding: 5px 2px;
+  }
+  .mailToolbarTexto {
+    font-size: 11.5px;
+  }
+}
+
+/* Segundo escalón, para pantallas de 600px de alto o menos, donde el primero
+   se queda corto. Aquí ya se sacrifica presencia visual —avatar más pequeño,
+   pie casi en letra menuda— antes que obligar a desplazar el mensaje. */
+@media (max-height: 660px) {
+  .mailbody {
+    padding: 9px 14px 11px;
+  }
+  .subject {
+    font-size: 18.5px;
+    margin-bottom: 7px;
+  }
+  .senderRow {
+    padding-bottom: 8px;
+  }
+  .avatar {
+    width: 27px;
+    height: 27px;
+    font-size: 14.5px;
+  }
+  .prose {
+    margin-top: 9px;
+    font-size: 15px;
+    line-height: 1.45;
+  }
+  .prose p {
+    margin-bottom: 7px;
+  }
+  .prose :global(.cta) {
+    padding: 7px 13px;
+    font-size: 15.5px;
+  }
+  .attachmentZone,
+  .mailFooter {
+    margin-top: 8px;
+    padding-top: 7px;
+  }
+  .mailFooter {
+    font-size: 12px;
+    line-height: 1.35;
+  }
+  .senderAddr,
+  .senderTo {
+    font-size: 14px;
+  }
 }
 
 /* ---------- Navegador ---------- */
@@ -280,7 +650,7 @@
   padding: 7px 16px;
   border-radius: 8px 8px 0 0;
   background: #fff;
-  font-size: 12px;
+  font-size: 14.5px;
   font-weight: 600;
   color: #3b4553;
   max-width: 220px;
@@ -297,7 +667,7 @@
   padding: 10px 12px;
   background: #dfe3e9;
   border-bottom: 1px solid #cfd5dd;
-  font-size: 12px;
+  font-size: 14.5px;
 }
 .lock {
   color: #1c7a45;
@@ -334,7 +704,7 @@
 }
 .brand {
   margin: 0;
-  font-size: 13px;
+  font-size: 15.5px;
   font-weight: 800;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -342,12 +712,12 @@
 }
 .pageTitle {
   margin: 12px 0 0;
-  font-size: 20px;
+  font-size: 24px;
   font-weight: 700;
 }
 .pageSub {
   margin: 8px 0 0;
-  font-size: 13.5px;
+  font-size: 16px;
   line-height: 1.5;
   color: #5f6b7a;
 }
@@ -360,18 +730,23 @@
 .field {
   display: grid;
   gap: 6px;
-  font-size: 12.5px;
+  font-size: 15px;
   font-weight: 600;
   color: #3b4553;
 }
+/* Los campos se ven RELLENOS, no vacíos: el gris claro de antes los hacía
+   pasar por marcador de posición, y entonces la pantalla parecía un formulario
+   a medio hacer en vez de uno con los datos ya escritos. Que no sean editables
+   es deliberado —nadie teclea credenciales reales aquí—, pero tienen que
+   leerse como lo que representan: información ya entregada. */
 .input {
   border: 1px solid #ccd3dc;
   border-radius: 6px;
   padding: 12px 12px;
-  font-size: 14px;
+  font-size: 17px;
   font-weight: 400;
-  color: #97a1ad;
-  background: #fbfcfd;
+  color: #1f2a37;
+  background: #ffffff;
 }
 .submit {
   margin-top: 4px;
@@ -379,13 +754,13 @@
   color: #fff;
   text-align: center;
   font-weight: 700;
-  font-size: 15px;
+  font-size: 18px;
   padding: 13px;
   border-radius: 6px;
 }
 .pageFooter {
   margin: 18px 0 0;
-  font-size: 11.5px;
+  font-size: 14px;
   line-height: 1.5;
   color: #8a94a1;
 }
@@ -409,12 +784,12 @@
 }
 .smsName {
   margin: 0;
-  font-size: 15px;
+  font-size: 18px;
   font-weight: 700;
 }
 .smsSub {
   margin: 2px 0 0;
-  font-size: 11.5px;
+  font-size: 14px;
   color: #6b7684;
 }
 
@@ -441,7 +816,7 @@
   max-width: 84%;
   padding: 10px 13px 8px;
   border-radius: 16px;
-  font-size: 14.5px;
+  font-size: 17.5px;
   line-height: 1.45;
   background: #e6e9ee;
   overflow-wrap: anywhere;
@@ -460,7 +835,7 @@
 .smsTime {
   display: block;
   text-align: right;
-  font-size: 10.5px;
+  font-size: 12.5px;
   margin-top: 4px;
   color: #6b7684;
 }
@@ -479,7 +854,7 @@
   background: #fff;
   border-radius: 20px;
   padding: 10px 15px;
-  font-size: 14px;
+  font-size: 17px;
   color: #97a1ad;
 }
 

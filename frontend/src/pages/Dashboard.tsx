@@ -1,6 +1,7 @@
 import { CheckCircle2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import AppHeader from '../components/AppHeader'
+import BarraProgreso from '../components/BarraProgreso'
 import InfoLink from '../components/InfoLink'
 import { Link } from 'react-router'
 import { useAuth } from '../context/AuthContext'
@@ -10,6 +11,32 @@ import { fetchProgreso, type Progreso } from '../lib/api'
 /// Solo las secciones con escenarios tienen gating; las demás muestran
 /// "Pronto" y no hace falta pedir su progreso.
 const SECCIONES_ACTIVAS = SECCIONES.filter((s) => escenariosDeSeccion(s.id).length > 0)
+
+/**
+ * Avance del entrenamiento completo, sumando solo los módulos disponibles.
+ *
+ * Las secciones que aún no tienen escenarios se quedan fuera del denominador a
+ * propósito: contarlas mostraría un avance de "3 de 48" que no refleja nada que
+ * el participante pueda hacer hoy, y que se movería solo porque abrimos un
+ * módulo nuevo.
+ */
+function calcularGlobal(progresos: Record<string, Progreso>) {
+  let aprobados = 0
+  let total = 0
+  let requeridos = 0
+  let modulosAprobados = 0
+
+  for (const seccion of SECCIONES_ACTIVAS) {
+    const progreso = progresos[seccion.id]
+    total += escenariosDeSeccion(seccion.id).length
+    if (!progreso) continue
+    aprobados += progreso.aprobados
+    requeridos += progreso.requeridos
+    if (progreso.aprobado) modulosAprobados += 1
+  }
+
+  return { aprobados, total, requeridos, modulosAprobados, modulos: SECCIONES_ACTIVAS.length }
+}
 
 function Dashboard() {
   const { displayName, logout } = useAuth()
@@ -31,6 +58,8 @@ function Dashboard() {
       cancelled = true
     }
   }, [])
+
+  const global = calcularGlobal(progresos)
 
   return (
     <div className="min-h-screen bg-canvas">
@@ -60,6 +89,44 @@ function Dashboard() {
           Elige un tipo de engaño y enfréntate a una situación como las de todos los días. No hay
           respuestas que te dejen mal: la idea es practicar.
         </p>
+
+        {global.total > 0 && (
+          <section
+            aria-labelledby="titulo-global"
+            className="mt-8 rounded-lg border border-hairline-strong bg-canvas-soft p-5"
+          >
+            <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
+              <h2
+                id="titulo-global"
+                className="text-[11px] font-semibold uppercase tracking-[0.88px] text-muted"
+              >
+                Tu avance
+              </h2>
+              <p className="text-sm text-body">
+                <span className="text-lg font-semibold tabular-nums text-ink">
+                  {global.aprobados}
+                </span>
+                <span className="text-muted">/{global.total}</span> escenarios
+                <span aria-hidden className="mx-2 text-muted-soft">
+                  ·
+                </span>
+                <span className="font-medium text-ink tabular-nums">{global.modulosAprobados}</span>
+                <span className="text-muted">/{global.modulos}</span>{' '}
+                {global.modulos === 1 ? 'módulo' : 'módulos'}
+              </p>
+            </div>
+
+            <BarraProgreso
+              className="mt-3"
+              variante="continua"
+              aprobados={global.aprobados}
+              total={global.total}
+              requeridos={global.requeridos || undefined}
+              aprobado={global.modulosAprobados === global.modulos}
+              etiqueta="Avance del entrenamiento completo"
+            />
+          </section>
+        )}
 
         {/* Tres columnas como máximo: las seis secciones se reparten en dos
             filas exactas. Con cuatro quedaba una fila coja. */}
@@ -97,12 +164,25 @@ function Dashboard() {
                   {seccion.descripcion}
                 </p>
 
-                <div className="mt-5 flex items-center justify-between border-t border-hairline pt-3">
-                  <span className="text-sm text-muted">{seccion.canal}</span>
+                <div className="mt-5 border-t border-hairline pt-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-sm text-muted">{seccion.canal}</span>
+                    {progreso && (
+                      <span className="text-sm font-medium text-ink tabular-nums">
+                        {progreso.aprobados}/{escenarios.length}
+                        <span className="font-normal text-muted"> · meta {progreso.requeridos}</span>
+                      </span>
+                    )}
+                  </div>
                   {progreso && (
-                    <span className="text-sm font-medium text-ink">
-                      {progreso.aprobados}/{escenarios.length} · necesitas {progreso.requeridos}
-                    </span>
+                    <BarraProgreso
+                      className="mt-2.5"
+                      aprobados={progreso.aprobados}
+                      total={escenarios.length}
+                      requeridos={progreso.requeridos}
+                      aprobado={progreso.aprobado}
+                      etiqueta={`Avance de ${seccion.titulo}`}
+                    />
                   )}
                 </div>
               </>

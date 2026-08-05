@@ -69,15 +69,21 @@ export function BotonHotspot({ goto, label, signalId, className, children }: Hot
 
 /** Manejador único para el contenedor de la pantalla: busca el punto
  *  interactivo más cercano al elemento clicado y dispara la elección. Un solo
- *  `onClick` en la raíz reemplaza un `onClick` por botón. */
+ *  `onClick` en la raíz reemplaza un `onClick` por botón.
+ *
+ *  Devuelve `false` cuando el clic no cayó en ningún punto interactivo, para
+ *  que la pantalla pueda acusar recibo. Sin eso, tocar el cuerpo del correo no
+ *  produce ningún efecto visible y no hay forma de distinguir "aquí no hay
+ *  nada" de "la simulación se colgó". */
 export function manejarClicHotspot(
   event: React.MouseEvent,
   onHotspot: (goto: string, label?: string) => void,
-) {
+): boolean {
   const objetivo = (event.target as HTMLElement).closest<HTMLElement>('[data-hotspot-goto]')
   if (!objetivo) {
-    return
+    return false
   }
 
   onHotspot(objetivo.dataset.hotspotGoto ?? '', objetivo.dataset.hotspotLabel)
+  return true
 }

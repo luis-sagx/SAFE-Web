@@ -12,7 +12,13 @@ import { hash } from 'bcryptjs';
 import { PrismaClient } from '../generated/identidad/client.js';
 
 const prisma = new PrismaClient({
-  adapter: new PrismaPg({ connectionString: process.env.IDENTIDAD_DATABASE_URL }),
+  // El schema va como segundo argumento, no como `?schema=` en la URL: el
+  // driver adapter no honra ese parámetro y se queda en `public`, donde el rol
+  // no tiene permiso. Mismo motivo que en `apps/identidad/src/prisma`.
+  adapter: new PrismaPg(
+    { connectionString: process.env.IDENTIDAD_DATABASE_URL },
+    { schema: 'identidad' },
+  ),
 });
 
 function arg(name: string, fallback: string): string {
