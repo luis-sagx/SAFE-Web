@@ -127,8 +127,16 @@ function StoryEscenario({
   for (const id of abiertas) {
     const meta = story[id] && pestanaDeVista(story[id]!.view, dominio)
     if (!meta) continue
+    // Dos pantallas del mismo sitio comparten pestaña, pero no significan lo
+    // mismo: en aviso-filtracion, cerrar tras guardar la contraseña no es lo
+    // mismo que cerrar sin guardarla. La pestaña conserva su sitio y su
+    // identidad, y toma el título y el cierre de la última pantalla que se
+    // abrió en ella, que es la que se está viendo.
     const yaAbierta = porUrl.get(meta.url)
-    if (yaAbierta) continue
+    if (yaAbierta) {
+      pestanas[yaAbierta] = meta
+      continue
+    }
     porUrl.set(meta.url, id)
     pestanas[id] = meta
     visibles.push(id)
@@ -146,6 +154,14 @@ function StoryEscenario({
           engine.isEnding && !pantallaRepaso ? engine.current : undefined,
         )
       : undefined
+
+  // Y durante el repaso manda la pantalla que se está explicando: si no, la
+  // señal que vive en la barra de direcciones no tendría dónde resaltarse.
+  const metaVisible = pestanaDeVista(vista, dominio)
+  const pestanaVisible = metaVisible && porUrl.get(metaVisible.url)
+  if (pestanaVisible && pestanas[pestanaVisible]) {
+    pestanas[pestanaVisible] = metaVisible
+  }
 
   const urlVisible = pestanaDeVista(vista, dominio)?.url
   const activa = (urlVisible && porUrl.get(urlVisible)) ?? visibles[0] ?? 'n1'

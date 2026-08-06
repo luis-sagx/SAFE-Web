@@ -24,7 +24,7 @@ const CORREO: ScreenView = {
       perderás el acceso a tu buzón y tendrás que abrir un ticket con Sistemas para
       recuperarlo.
     </p>
-    <p><a class="cta" href="${URL_FALSA}" data-hotspot-goto="n2" data-hotspot-label="Pulsó "Renovar mi contraseña ahora" en el correo">Renovar mi contraseña ahora</a></p>
+    <p><a class="cta" href="${URL_FALSA}" data-hotspot-goto="n2" data-hotspot-label="Pulsó &quot;Renovar mi contraseña ahora&quot; en el correo">Renovar mi contraseña ahora</a></p>
   `,
   footer: `
     <p>Departamento de Tecnología · Corporación Andes<br />
