@@ -1,130 +1,153 @@
-import StoryEscenario, { type ScreenNode } from '../../components/StoryEscenario'
-import { ACCIONES_BARRA, finalesDeBarra } from './barraDeCorreo'
-import type { Story } from '../../hooks/useStoryEngine'
-import type { ScreenView } from '../../components/ui/DeviceScreen'
-import type { Senal } from '../../components/ui/PanelVeredicto'
+import { Archive, Forward, Landmark, Newspaper, Reply, ShieldAlert, Trash2 } from 'lucide-react'
+import { useState } from 'react'
+import EscenarioLayout from '../../components/EscenarioLayout'
+import {
+  CuerpoCorreo,
+  type AccionCorreo,
+  type CarpetaCorreo,
+} from '../../components/ui/DesktopChrome'
+import styles from '../../components/ui/DeviceScreen.module.css'
+import { BotonHotspot, manejarClicHotspot } from '../../components/ui/interactivo'
+import { Navegador, type MarcadorNavegador, type PestanaConfig } from '../../components/ui/Navegador'
+import PanelVeredicto, { type Senal } from '../../components/ui/PanelVeredicto'
+import { formatoHora } from '../../hooks/useRelojDelSistema'
+import { useStoryEngine, type Story, type StoryNode } from '../../hooks/useStoryEngine'
 
-// QR decorativo y fijo: no es escaneable de verdad, solo tiene que leerse como
-// un código QR dentro del cuerpo del correo.
+// QR decorativo y fijo: no es escaneable de verdad, solo tiene que leerse
+// como un código QR dentro del cuerpo del correo. Tocarlo es "escanearlo".
 const QR_SVG = `
-  <div style="text-align:center;margin:14px 0;">
-    <svg width="120" height="120" viewBox="0 0 29 29" style="background:#fff;border:1px solid #ddd;padding:6px;">
-      <rect width="29" height="29" fill="#fff"/>
-      <g fill="#111">
-        <rect x="0" y="0" width="7" height="7"/><rect x="1" y="1" width="5" height="5" fill="#fff"/><rect x="2" y="2" width="3" height="3"/>
-        <rect x="22" y="0" width="7" height="7"/><rect x="23" y="1" width="5" height="5" fill="#fff"/><rect x="24" y="2" width="3" height="3"/>
-        <rect x="0" y="22" width="7" height="7"/><rect x="1" y="23" width="5" height="5" fill="#fff"/><rect x="2" y="24" width="3" height="3"/>
-        <rect x="9" y="1" width="2" height="2"/><rect x="13" y="1" width="2" height="2"/><rect x="17" y="3" width="2" height="2"/>
-        <rect x="9" y="9" width="3" height="3"/><rect x="14" y="9" width="2" height="4"/><rect x="18" y="10" width="4" height="2"/>
-        <rect x="9" y="14" width="4" height="2"/><rect x="16" y="14" width="2" height="6"/><rect x="20" y="15" width="3" height="3"/>
-        <rect x="9" y="18" width="2" height="4"/><rect x="13" y="19" width="3" height="2"/><rect x="9" y="24" width="6" height="2"/>
-        <rect x="18" y="20" width="4" height="4"/><rect x="24" y="9" width="2" height="6"/><rect x="24" y="18" width="4" height="2"/>
-        <rect x="24" y="22" width="2" height="5"/>
-      </g>
-    </svg>
-  </div>
+  <svg width="120" height="120" viewBox="0 0 29 29" style="background:#fff;border:1px solid #ddd;padding:6px;">
+    <rect width="29" height="29" fill="#fff"/>
+    <g fill="#111">
+      <rect x="0" y="0" width="7" height="7"/><rect x="1" y="1" width="5" height="5" fill="#fff"/><rect x="2" y="2" width="3" height="3"/>
+      <rect x="22" y="0" width="7" height="7"/><rect x="23" y="1" width="5" height="5" fill="#fff"/><rect x="24" y="2" width="3" height="3"/>
+      <rect x="0" y="22" width="7" height="7"/><rect x="1" y="23" width="5" height="5" fill="#fff"/><rect x="2" y="24" width="3" height="3"/>
+      <rect x="9" y="1" width="2" height="2"/><rect x="13" y="1" width="2" height="2"/><rect x="17" y="3" width="2" height="2"/>
+      <rect x="9" y="9" width="3" height="3"/><rect x="14" y="9" width="2" height="4"/><rect x="18" y="10" width="4" height="2"/>
+      <rect x="9" y="14" width="4" height="2"/><rect x="16" y="14" width="2" height="6"/><rect x="20" y="15" width="3" height="3"/>
+      <rect x="9" y="18" width="2" height="4"/><rect x="13" y="19" width="3" height="2"/><rect x="9" y="24" width="6" height="2"/>
+      <rect x="18" y="20" width="4" height="4"/><rect x="24" y="9" width="2" height="6"/><rect x="24" y="18" width="4" height="2"/>
+      <rect x="24" y="22" width="2" height="5"/>
+    </g>
+  </svg>
 `
 
-const CORREO: ScreenView = {
-  kind: 'mail',
-  from: 'Banco del Litoral · Actualización de datos',
-  address: 'notificaciones@bancodellitoral.com',
-  senalDireccion: 'remitente',
-  senalEtiqueta: 'externo',
-  subject: 'Actualice sus datos antes de que se limite su cuenta',
-  date: 'hoy 09:10',
-  label: 'Externo',
-  body: `
-    <p>Estimado cliente:</p>
-    <p>
-      Según nuestra política de actualización de datos, necesitamos que confirme su información
-      antes de <b>72 horas</b>. Escanee el siguiente código con la cámara de su celular para
-      continuar:
-    </p>
-    ${QR_SVG}
-    <p class="fine">
-      Banco del Litoral · Este es un mensaje automático.
-    </p>
-  `,
-}
+const STORY: Story<StoryNode> = {
+  n1: { kind: 'scene' },
+  n2: { kind: 'scene' },
 
-const PAGINA: ScreenView = {
-  kind: 'web',
-  url: 'litoral-actualiza.web.app',
-  secure: false,
-  brand: 'Banco del Litoral',
-  title: 'Actualización de datos',
-  subtitle: 'Confirme su información para evitar la limitación de su cuenta.',
-  fields: [
-    { label: 'Cédula', placeholder: '0000000000' },
-    { label: 'Clave de acceso', placeholder: '••••••••', senal: 'campo-clave' },
-  ],
-  button: 'Confirmar datos',
-  botonGoto: 'e_datos',
-  botonLabel: 'Confirmó su cédula y su clave en el formulario',
-  cerrarGoto: 'e_cierra',
-  cerrarLabel: 'Cerró la página sin completar nada',
-}
-
-const STORY: Story<ScreenNode> = {
-  // Responder, reenviar, archivar, eliminar y marcar como spam.
-  ...finalesDeBarra('fraude', CORREO),
-  n1: {
-    kind: 'scene',
-    view: CORREO,
-    choices: [
-      { label: 'Escanear el código y completar el formulario que abre.', goto: 'n2' },
-      {
-        label: 'Escanear, leer la vista previa del enlace antes de tocar nada más.',
-        goto: 'e_preview',
-      },
-      { label: 'Ignorar el QR y hacer la actualización entrando directo a la app del banco.', goto: 'e_app' },
-    ],
-  },
-  n2: {
-    kind: 'scene',
-    view: PAGINA,
-    choices: [
-      { label: 'Completar cédula y clave para evitar que limiten mi cuenta.', goto: 'e_datos' },
-      { label: 'Notar que pide la clave de acceso y cerrar sin completar nada.', goto: 'e_cierra' },
-    ],
-  },
   e_datos: {
     kind: 'bad',
-    view: PAGINA,
     verdict: 'Caíste en la trampa',
     outcome:
       'Entregaste tu cédula y tu clave en litoral-actualiza.web.app, un sitio que no es del banco. Con esos datos entraron a tu cuenta esa misma noche.',
   },
+  // Absorbe el antiguo final "vista previa antes de escanear": un QR no tiene
+  // href, así que no existe una vista previa real — escanear ya abre la
+  // página falsa, y lo que distingue el buen final es cerrarla sin enviar el
+  // formulario (ver spec §4.1).
   e_cierra: {
     kind: 'good',
-    view: PAGINA,
-    verdict: 'No caíste · el formulario te delató',
+    verdict: 'No caíste · cerraste sin completar nada',
     outcome:
-      'Una actualización de datos real nunca pide tu clave de acceso. Cerraste la página antes de escribir nada.',
-  },
-  e_preview: {
-    kind: 'good',
-    view: CORREO,
-    verdict: 'No caíste · leíste el enlace antes de tocarlo',
-    outcome:
-      'La vista previa mostraba litoral-actualiza.web.app, no un dominio del banco. No completaste el escaneo y reportaste el correo.',
+      'Escaneaste el código y llegaste a litoral-actualiza.web.app, un sitio que no es del banco. El formulario pedía la clave de acceso —algo que una actualización de datos real nunca necesita— y cerraste la pestaña sin escribir nada. Un QR no se puede inspeccionar antes de escanearlo: la señal de alerta estaba en la página, no en el código.',
   },
   e_app: {
     kind: 'good',
-    view: CORREO,
     verdict: 'No caíste · entraste por tu cuenta',
     outcome:
-      'Abriste la app del banco por tu cuenta. No había ninguna actualización de datos pendiente: el correo era falso.',
+      'Entraste a la app del banco por tu cuenta. No había ninguna actualización de datos pendiente: el correo era falso.',
+  },
+  e_eliminar: {
+    kind: 'good',
+    verdict: 'No caíste · lo eliminaste',
+    outcome:
+      'Lo borraste sin escanear el código, que es suficiente para no caer. Marcarlo como spam habría hecho algo más: avisar al filtro para que no le llegue a otros.',
+  },
+  e_spam: {
+    kind: 'good',
+    verdict: 'No caíste · lo reportaste',
+    outcome:
+      'Marcarlo como spam es la mejor reacción posible: no caíste y además tu proveedor de correo aprende a filtrar ese remitente.',
+  },
+  e_archivar: {
+    kind: 'partial',
+    verdict: 'No caíste, pero lo dejaste ahí',
+    outcome:
+      'Archivarlo te sacó el correo de la vista sin resolver nada. Sigue en tu buzón, y si mañana le llega a un compañero va a llegar igual de intacto.',
+  },
+  e_responder: {
+    kind: 'partial',
+    verdict: 'No entregaste nada, pero contestaste',
+    outcome:
+      'No escaneaste el código, pero confirmaste que tu dirección existe y que alguien la lee. Es justo lo que un atacante busca para insistir con algo mejor preparado.',
+  },
+  e_reenviar: {
+    kind: 'partial',
+    verdict: 'No caíste tú, pero lo pasaste',
+    outcome:
+      'Se lo reenviaste a otra persona para que opine. Tú no caíste, pero pusiste el código QR en la bandeja de alguien que quizá lo escanee sin la misma desconfianza.',
   },
 }
 
+const ACCIONES: AccionCorreo[] = [
+  { Icono: Reply, etiqueta: 'Responder', titulo: 'Responder', goto: 'e_responder', label: 'Respondió el correo' },
+  { Icono: Forward, etiqueta: 'Reenviar', titulo: 'Reenviar', goto: 'e_reenviar', label: 'Reenvió el correo a otra persona' },
+  { Icono: Archive, etiqueta: 'Archivar', titulo: 'Archivar', goto: 'e_archivar', label: 'Archivó el correo' },
+  { Icono: Trash2, etiqueta: 'Eliminar', titulo: 'Eliminar', goto: 'e_eliminar', label: 'Eliminó el correo' },
+  { Icono: ShieldAlert, etiqueta: 'Spam', titulo: 'Marcar como spam', goto: 'e_spam', label: 'Marcó el correo como spam' },
+]
+
+const ASUNTO = 'Actualice sus datos antes de que se limite su cuenta'
+const REMITENTE_NOMBRE = 'Banco del Litoral · Actualización de datos'
+const DIRECCION = 'notificaciones@bancodellitoral.com'
+
+const DESTINO_ACCION: Record<
+  string,
+  { carpeta?: 'Enviados' | 'Spam' | 'Papelera'; prefijo?: string; vaciaRecibidos: boolean }
+> = {
+  e_archivar: { vaciaRecibidos: true },
+  e_eliminar: { carpeta: 'Papelera', vaciaRecibidos: true },
+  e_spam: { carpeta: 'Spam', vaciaRecibidos: true },
+  e_responder: { carpeta: 'Enviados', prefijo: 'Re:', vaciaRecibidos: false },
+  e_reenviar: { carpeta: 'Enviados', prefijo: 'Fwd:', vaciaRecibidos: false },
+}
+
+function ResumenMensaje({ prefijo }: { prefijo?: string }) {
+  return (
+    <div className={styles.senderRow}>
+      <div className={styles.avatar} aria-hidden>
+        {REMITENTE_NOMBRE.slice(0, 1).toUpperCase()}
+      </div>
+      <div className={styles.senderId}>
+        <p className={styles.senderName}>{REMITENTE_NOMBRE}</p>
+        <p className={styles.senderAddr}>{DIRECCION}</p>
+        <p className={styles.mailFolderAsunto}>{prefijo ? `${prefijo} ${ASUNTO}` : ASUNTO}</p>
+      </div>
+    </div>
+  )
+}
+
+function carpetasCorreo(current: string, isEnding: boolean): CarpetaCorreo[] {
+  const destino = isEnding ? DESTINO_ACCION[current] : undefined
+  const carpetas: CarpetaCorreo[] = [
+    { nombre: 'Enviados', vacia: 'No hay correos enviados.', contenido: destino?.carpeta === 'Enviados' ? <ResumenMensaje prefijo={destino.prefijo} /> : undefined },
+    { nombre: 'Spam', vacia: 'No hay correos marcados como spam.', contenido: destino?.carpeta === 'Spam' ? <ResumenMensaje /> : undefined },
+    { nombre: 'Papelera', vacia: 'La papelera está vacía.', contenido: destino?.carpeta === 'Papelera' ? <ResumenMensaje /> : undefined },
+  ]
+  if (destino?.vaciaRecibidos) {
+    carpetas.push({ nombre: 'Recibidos', vacia: 'No hay correos en la bandeja de entrada.' })
+  }
+  return carpetas
+}
+
 const SENALES: Senal[] = [
-  { id: 's1', texto: 'Un <b>QR es un enlace que no puedes leer antes de escanearlo</b>: no hay texto que inspeccionar.' },
+  { id: 's1', targetId: 'qr', pantalla: 'n1', texto: 'Un <b>QR es un enlace que no puedes leer antes de escanearlo</b>: no hay texto que inspeccionar antes de tocarlo.' },
   { id: 's2', targetId: 'remitente', pantalla: 'n1', texto: 'El destino real es <b>litoral-actualiza.web.app</b>, sin el dominio del banco.' },
   { id: 's3', targetId: 'campo-clave', pantalla: 'n2', texto: 'El formulario pide la <b>clave de acceso</b>, algo que una actualización de datos nunca necesita.' },
   { id: 's4', targetId: 'plazo', pantalla: 'n1', texto: 'Mete <b>prisa</b> con un plazo de 72 horas.' },
 ]
+
 const RULE =
   'Regla de oro: al escanear un QR, primero <b>lee la vista previa de la URL</b> y recién ahí decide. Vale igual para los QR de correos, locales, surtidores y parquímetros.'
 
@@ -143,17 +166,230 @@ const CONTEXTO = (
   </>
 )
 
-function QuishingActualice() {
+const NOTA = (
+  <>
+    <p>
+      Vas a ver tu computador con el correo abierto. Puedes actuar sobre la pantalla como lo harías
+      de verdad.
+    </p>
+    <p className="mt-2">
+      Lo primero que hagas cierra el escenario y te muestra en qué habría terminado.
+    </p>
+  </>
+)
+
+const MINUTOS_DE_ANTIGUEDAD = 40
+
+function horaDeLlegada(): string {
+  const llegada = new Date(Date.now() - MINUTOS_DE_ANTIGUEDAD * 60_000)
+  return `hoy ${formatoHora(llegada)}`
+}
+
+const PESTANAS: Record<string, PestanaConfig> = {
+  n1: { titulo: 'Correo', url: 'https://correo.safeweb.com/u/0/#recibidos', segura: true },
+  n2: {
+    titulo: 'Actualización de datos',
+    url: 'http://litoral-actualiza.web.app/actualizar',
+    segura: false,
+    cierra: 'e_cierra',
+  },
+}
+
+const MARCADORES: MarcadorNavegador[] = [
+  { Icono: Landmark, texto: 'Banco del Litoral', goto: 'e_app', label: 'Entró directamente a la app del banco desde sus marcadores' },
+  { Icono: Newspaper, texto: 'El Comercio' },
+]
+
+function ContenidoCorreo({ recibido, carpetas }: { recibido: string; carpetas: CarpetaCorreo[] }) {
   return (
-    <StoryEscenario
+    <CuerpoCorreo
+      acciones={ACCIONES}
+      carpetas={carpetas}
+      asunto={ASUNTO}
+      remitente={{
+        nombre: REMITENTE_NOMBRE,
+        direccion: DIRECCION,
+        etiqueta: 'Externo',
+        senalDireccion: 'remitente',
+        senalEtiqueta: 'externo',
+      }}
+      recibido={recibido}
+      pie={<p className="fine">Banco del Litoral · Este es un mensaje automático.</p>}
+    >
+      <p>Estimado cliente:</p>
+      <p>
+        Según nuestra política de actualización de datos, necesitamos que confirme su información
+        antes de{' '}
+        <mark className={styles.marca} data-signal="plazo">
+          72 horas
+        </mark>
+        . Escanee el siguiente código con la cámara de su celular para continuar:
+      </p>
+      <div style={{ textAlign: 'center', margin: '14px 0' }}>
+        {/* El nombre accesible de un botón sale de su texto visible, y el SVG
+            no tiene ninguno: sin este span el botón quedaría sin nombre para
+            un lector de pantalla (y sin forma de ubicarlo por rol+nombre en
+            los tests). */}
+        <BotonHotspot goto="n2" label="Escaneó el código QR" signalId="qr">
+          <span className="sr-only">Código QR — escanear para continuar</span>
+          <span dangerouslySetInnerHTML={{ __html: QR_SVG }} />
+        </BotonHotspot>
+      </div>
+    </CuerpoCorreo>
+  )
+}
+
+function ContenidoPortalFalso() {
+  return (
+    <div className={styles.page}>
+      <p className={styles.brand}>Banco del Litoral</p>
+      <h2 className={styles.pageTitle}>Actualización de datos</h2>
+      <p className={styles.pageSub}>Confirme su información para evitar la limitación de su cuenta.</p>
+
+      <div className={styles.form}>
+        <label className={styles.field}>
+          <span>Cédula</span>
+          <span className={styles.input}>
+            <span className="sr-only">Tu cédula, ya completada: </span>
+            0000000000
+          </span>
+        </label>
+        <label className={styles.field} data-signal="campo-clave">
+          <span>Clave de acceso</span>
+          <span className={styles.input}>
+            <span className="sr-only">Tu clave, ya completada: </span>
+            ••••••••
+          </span>
+        </label>
+        <BotonHotspot goto="e_datos" label="Ingresó su cédula y su clave de acceso" className={styles.submit}>
+          Confirmar datos
+        </BotonHotspot>
+      </div>
+    </div>
+  )
+}
+
+function DecisionEnCurso({ fallo, enPagina }: { fallo: boolean; enPagina: boolean }) {
+  return (
+    <div className="grid gap-3">
+      <p className="text-lg font-semibold text-ink">¿Qué haces?</p>
+      <p className="text-lg leading-relaxed text-body">
+        Actúa sobre la ventana como lo harías frente a tu correo de verdad: puedes usar{' '}
+        <strong>cualquier parte de ella</strong>, incluida la barra de abajo.
+      </p>
+
+      {enPagina && (
+        <p className="rounded-md border border-hairline-strong bg-canvas-soft px-3 py-2 text-base leading-relaxed text-body">
+          El formulario ya aparece con{' '}
+          <strong className="text-ink">tu cédula y tu clave de acceso escritas</strong>. Es así
+          para no pedirte datos reales, pero enviarlo cuenta como entregarlos.
+        </p>
+      )}
+
+      <p className="text-base leading-relaxed text-body">
+        Lo primero que hagas cierra el escenario y te muestra en qué terminaba. No hay confirmación,
+        igual que en la vida real. Puedes volver atrás con la flecha del navegador sin decidir nada.
+      </p>
+
+      {fallo && (
+        <p role="status" className="rounded-md bg-surface-strong px-3 py-2 text-base text-body">
+          Ahí no hay nada que hacer. Solo algunos elementos responden: recórrelos con el cursor (o
+          con la tecla Tab) y se marcarán al pasar.
+        </p>
+      )}
+
+      <details className="group rounded-md border border-hairline-strong bg-surface px-3 py-2">
+        <summary className="cursor-pointer list-none text-base font-medium text-link underline decoration-dotted underline-offset-4">
+          No sé por dónde empezar
+        </summary>
+        <p className="mt-2 text-base leading-relaxed text-body">
+          Tienes tres caminos posibles: escanear el código y ver a dónde lleva, dejarlo de lado y
+          entrar a la app del banco por tu cuenta desde los marcadores, o usar alguno de los
+          botones de la barra de arriba. Cuál de ellos es el acertado es justamente lo que decides
+          tú.
+        </p>
+      </details>
+    </div>
+  )
+}
+
+function QuishingActualice() {
+  const engine = useStoryEngine(STORY, 'n1', 'phishing/quishing-actualice')
+
+  const [pantallaActual, setPantallaActual] = useState('n1')
+  const [tocoEnVacio, setTocoEnVacio] = useState(false)
+  const [recibido, setRecibido] = useState(horaDeLlegada)
+  const [pestanas, setPestanas] = useState(['n1'])
+  const [repasando, setRepasando] = useState(false)
+
+  function elegir(goto: string, label?: string) {
+    if (engine.isEnding) return
+    engine.choose(goto, label)
+    if (STORY[goto]?.kind === 'scene') {
+      setPantallaActual(goto)
+      setPestanas((abiertas) => (abiertas.includes(goto) ? abiertas : [...abiertas, goto]))
+    }
+  }
+
+  function reiniciar() {
+    engine.restart()
+    setPantallaActual('n1')
+    setPestanas(['n1'])
+    setRepasando(false)
+    setTocoEnVacio(false)
+    setRecibido(horaDeLlegada())
+  }
+
+  const onHotspot = (event: React.MouseEvent) => {
+    const cerrada = (event.target as HTMLElement).closest<HTMLElement>('[data-cierra]')?.dataset
+      .cierra
+    if (cerrada) {
+      setPestanas((abiertas) => abiertas.filter((id) => id !== cerrada))
+    }
+
+    if (!manejarClicHotspot(event, elegir) && !engine.isEnding) {
+      setTocoEnVacio(true)
+    }
+  }
+
+  const pantalla = (
+    <Navegador pestanas={PESTANAS} abiertas={pestanas} activa={pantallaActual} marcadores={MARCADORES} onHotspot={onHotspot}>
+      {pantallaActual === 'n1' ? (
+        <ContenidoCorreo recibido={recibido} carpetas={carpetasCorreo(engine.current, engine.isEnding && !repasando)} />
+      ) : (
+        <ContenidoPortalFalso />
+      )}
+    </Navegador>
+  )
+
+  const decision = engine.isEnding ? (
+    <PanelVeredicto
+      escenarioId="phishing/quishing-actualice"
+      node={engine.node}
+      senales={SENALES}
+      regla={RULE}
+      restartLabel="↻ Repetir el escenario"
+      onRestart={reiniciar}
+      contenedorId="pantalla-escenario"
+      onPantalla={(id) => {
+        setRepasando(Boolean(id))
+        if (id) setPantallaActual(id)
+      }}
+    />
+  ) : (
+    <DecisionEnCurso fallo={tocoEnVacio} enPagina={pantallaActual === 'n2'} />
+  )
+
+  return (
+    <EscenarioLayout
       escenarioId="phishing/quishing-actualice"
       resumen={RESUMEN}
       contexto={CONTEXTO}
-      story={STORY}
-      accionesCorreo={ACCIONES_BARRA}
-      senales={SENALES}
-      rule={RULE}
-      restartLabel="↻ Repetir el escenario"
+      nota={NOTA}
+      pantalla={pantalla}
+      decision={decision}
+      onEmpezar={engine.restart}
+      dispositivo="escritorio"
     />
   )
 }

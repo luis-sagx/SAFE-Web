@@ -1,6 +1,6 @@
 import { Building2, Landmark, Newspaper } from 'lucide-react'
 import StoryEscenario, { type ScreenNode } from '../../components/StoryEscenario'
-import type { MarcadorNavegador } from '../../components/ui/DesktopChrome'
+import type { MarcadorNavegador } from '../../components/ui/Navegador'
 import { ACCIONES_BARRA, finalesDeBarra } from './barraDeCorreo'
 import type { Story } from '../../hooks/useStoryEngine'
 import type { ScreenView } from '../../components/ui/DeviceScreen'

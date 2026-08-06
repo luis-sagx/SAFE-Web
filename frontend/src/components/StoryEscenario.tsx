@@ -4,13 +4,8 @@ import Instrucciones from './ui/Instrucciones'
 import { carpetasCorreo } from './ui/carpetasCorreo'
 import DeviceScreen, { type ScreenView } from './ui/DeviceScreen'
 import { evitarNavegacion, manejarClicHotspot } from './ui/interactivo'
-import {
-  VentanaNavegador,
-  type AccionCorreo,
-  type MarcadorNavegador,
-  type PestanaNavegador,
-  type Reloj,
-} from './ui/DesktopChrome'
+import type { AccionCorreo, Reloj } from './ui/DesktopChrome'
+import { Navegador, type MarcadorNavegador, type PestanaConfig } from './ui/Navegador'
 import StoryChoices from './ui/StoryChoices'
 import PanelVeredicto, { type Senal } from './ui/PanelVeredicto'
 import { useAuth } from '../context/AuthContext'
@@ -55,13 +50,12 @@ interface StoryEscenarioProps {
 /// Cómo se ve cada pantalla en la barra de direcciones. El correo va en el
 /// dominio del participante, para que la dirección de la pestaña y la del
 /// mensaje cuenten lo mismo.
-function pestanaDeVista(id: string, view: ScreenView, dominio: string): PestanaNavegador | null {
+function pestanaDeVista(view: ScreenView, dominio: string): PestanaConfig | null {
   if (view.kind === 'mail') {
-    return { id, titulo: 'Correo', url: `https://correo.${dominio}/recibidos`, segura: true }
+    return { titulo: 'Correo', url: `https://correo.${dominio}/recibidos`, segura: true }
   }
   if (view.kind === 'web') {
     return {
-      id,
       titulo: view.title,
       url: view.url,
       segura: view.secure,
@@ -117,19 +111,28 @@ function StoryEscenario({
   /// Las pestañas se acumulan según el recorrido: cada pantalla nueva abre una,
   /// como haría un enlace en un navegador de verdad. Se indexan por dirección
   /// para que dos nodos con la misma página compartan pestaña.
-  const [pestanas, setPestanas] = useState<PestanaNavegador[]>(() => {
-    const inicial = pestanaDeVista('n1', story.n1!.view, dominio)
-    return inicial ? [inicial] : []
-  })
+  const [abiertas, setAbiertas] = useState<string[]>(['n1'])
 
   useEffect(() => {
-    const nueva = pestanaDeVista(engine.current, engine.node.view, dominio)
-    if (!nueva) return
-    setPestanas((abiertas) =>
-      abiertas.some((p) => p.url === nueva.url) ? abiertas : [...abiertas, nueva],
-    )
+    if (!pestanaDeVista(engine.node.view, dominio)) return
+    setAbiertas((ids) => (ids.includes(engine.current) ? ids : [...ids, engine.current]))
     setPestanaMirada(undefined)
   }, [engine.current, engine.node.view, dominio])
+
+  // Una pestaña por escena con pantalla. Se indexan por nodo, como pide su
+  // Navegador, y las que comparten dirección se pliegan en una sola.
+  const pestanas: Record<string, PestanaConfig> = {}
+  const porUrl = new Map<string, string>()
+  const visibles: string[] = []
+  for (const id of abiertas) {
+    const meta = story[id] && pestanaDeVista(story[id]!.view, dominio)
+    if (!meta) continue
+    const yaAbierta = porUrl.get(meta.url)
+    if (yaAbierta) continue
+    porUrl.set(meta.url, id)
+    pestanas[id] = meta
+    visibles.push(id)
+  }
 
   // El mensaje que las carpetas muestran cuando una acción lo mueve. Sale de la
   // primera pantalla de correo del guion, que es la del mensaje del escenario.
@@ -144,8 +147,8 @@ function StoryEscenario({
         )
       : undefined
 
-  const urlVisible = pestanaDeVista(nodoVisible, vista, dominio)?.url
-  const activa = pestanas.find((p) => p.url === urlVisible)?.id ?? pestanas[0]?.id ?? 'n1'
+  const urlVisible = pestanaDeVista(vista, dominio)?.url
+  const activa = (urlVisible && porUrl.get(urlVisible)) ?? visibles[0] ?? 'n1'
 
   // Un clic en la barra del cliente vale lo mismo que elegir de la lista: los
   // botones llevan su destino en `data-hotspot-goto` y este manejador único lo
@@ -158,7 +161,7 @@ function StoryEscenario({
     const cerrada = (event.target as HTMLElement).closest<HTMLElement>('[data-cierra]')?.dataset
       .cierra
     if (cerrada) {
-      setPestanas((abiertas) => abiertas.filter((p) => p.id !== cerrada))
+      setAbiertas((ids) => ids.filter((id) => id !== cerrada))
       setPestanaMirada(undefined)
       if (!engine.isEnding) manejarClicHotspot(event, engine.choose)
       return
@@ -219,12 +222,13 @@ function StoryEscenario({
             destinatario={destinatario}
           />
         ) : (
-          <VentanaNavegador
+          <Navegador
             pestanas={pestanas}
+            abiertas={visibles}
             activa={activa}
-            marcadores={marcadores}
+            marcadores={marcadores ?? []}
             reloj={reloj}
-            onClick={onHotspot}
+            onHotspot={onHotspot}
           >
             <DeviceScreen
               view={vista}
@@ -233,7 +237,7 @@ function StoryEscenario({
               destinatario={destinatario}
               carpetaForzada={pantallaRepaso ? 'Recibidos' : undefined}
             />
-          </VentanaNavegador>
+          </Navegador>
         )
       }
       decision={decision}

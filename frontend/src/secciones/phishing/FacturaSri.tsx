@@ -15,11 +15,8 @@ import EscenarioLayout from '../../components/EscenarioLayout'
 import Instrucciones from '../../components/ui/Instrucciones'
 import {
   CuerpoCorreo,
-  VentanaNavegador,
   type AccionCorreo,
   type CarpetaCorreo,
-  type MarcadorNavegador,
-  type PestanaNavegador,
 } from '../../components/ui/DesktopChrome'
 import { carpetasCorreo } from '../../components/ui/carpetasCorreo'
 import styles from '../../components/ui/DeviceScreen.module.css'
@@ -29,6 +26,11 @@ import {
   evitarNavegacion,
   manejarClicHotspot,
 } from '../../components/ui/interactivo'
+import {
+  Navegador,
+  type MarcadorNavegador,
+  type PestanaConfig,
+} from '../../components/ui/Navegador'
 import PanelVeredicto, { type Senal } from '../../components/ui/PanelVeredicto'
 import { formatoHora } from '../../hooks/useRelojDelSistema'
 import { useStoryEngine, type Story, type StoryNode } from '../../hooks/useStoryEngine'
@@ -161,6 +163,10 @@ const ASUNTO = 'Factura electrónica pendiente de validación'
 const REMITENTE_NOMBRE = 'SRI · Facturación Electrónica'
 const DIRECCION = 'notificaciones@sri-facturacion-ec.com'
 
+/// A dónde va el correo según qué botón de la barra terminó el escenario, y
+/// si eso lo saca de Recibidos. Archivar no tiene carpeta propia en esta
+/// bandeja: solo desaparece de la vista, como dice su final ("sigue en tu
+/// buzón" pero ya no en Recibidos).
 /// Cada señal apunta, cuando puede, al elemento real marcado con
 /// data-signal en una de las dos pantallas. Si esa pantalla no es la que
 /// llevó a este final, el recorrido igual muestra el texto, sin resaltar.
@@ -260,7 +266,7 @@ function horaDeLlegada(): string {
 /// Lo que muestra la barra de direcciones y la pestaña de cada pantalla. La
 /// dirección es la señal principal del escenario, así que vive junto al nodo y
 /// no dentro de cada componente.
-const PESTANAS: Record<string, Omit<PestanaNavegador, 'id'>> = {
+const PESTANAS: Record<string, PestanaConfig> = {
   n1: { titulo: 'Correo', url: 'https://correo.safeweb.com/u/0/#recibidos', segura: true },
   n2: {
     titulo: 'Validación de comprobante',
@@ -292,18 +298,9 @@ const MARCADORES: MarcadorNavegador[] = [
   { Icono: Newspaper, texto: 'El Comercio' },
 ]
 
-function ContenidoCorreo({
-  recibido,
-  carpetas,
-  forzarRecibidos,
-}: {
-  recibido: string
-  carpetas: CarpetaCorreo[]
-  forzarRecibidos: boolean
-}) {
+function ContenidoCorreo({ recibido, carpetas }: { recibido: string; carpetas: CarpetaCorreo[] }) {
   return (
     <CuerpoCorreo
-      carpetaForzada={forzarRecibidos ? 'Recibidos' : undefined}
       acciones={ACCIONES}
       carpetas={carpetas}
       asunto={ASUNTO}
@@ -608,22 +605,19 @@ function FacturaSri() {
   }
 
   const pantalla = (
-    <VentanaNavegador
-      // Quien llegó a abrir la página falsa acredita por haberla dejado sin
-      // escribir nada; quien nunca la tocó, por haber entrado por su cuenta.
-      pestanas={pestanas.map((id) => ({
-        ...PESTANAS[id]!,
-        id,
-        cierra:
-          id === 'n3' ? (pestanas.includes('n2') ? 'e_dominio' : 'e_portal') : PESTANAS[id]!.cierra,
-      }))}
+    <Navegador
+      pestanas={PESTANAS}
+      abiertas={pestanas}
       activa={pantallaActual}
       marcadores={MARCADORES}
-      onClick={onHotspot}
+      // Quien llegó a abrir la página falsa acredita por haberla dejado sin
+      // escribir nada; quien nunca la tocó, por haber entrado por su cuenta.
+      cierrePortal={pestanas.includes('n2') ? 'e_dominio' : 'e_portal'}
+      pestanaCierreDinamico="n3"
+      onHotspot={onHotspot}
     >
       {pantallaActual === 'n1' ? (
         <ContenidoCorreo
-          forzarRecibidos={repasando}
           recibido={recibido}
           carpetas={carpetasCorreo(
             { nombre: REMITENTE_NOMBRE, direccion: DIRECCION, asunto: ASUNTO },
@@ -635,7 +629,7 @@ function FacturaSri() {
       ) : (
         <ContenidoPortalReal />
       )}
-    </VentanaNavegador>
+    </Navegador>
   )
 
   const decision = engine.isEnding ? (
