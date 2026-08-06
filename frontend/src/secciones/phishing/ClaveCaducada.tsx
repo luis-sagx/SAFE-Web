@@ -4,6 +4,8 @@ import type { Story } from '../../hooks/useStoryEngine'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
 import type { Senal } from '../../components/ui/PanelVeredicto'
 
+const URL_FALSA = 'https://correo.andes-ec.net/owa/login'
+
 const CORREO: ScreenView = {
   kind: 'mail',
   from: 'Soporte TI · Corporación Andes',
@@ -20,7 +22,7 @@ const CORREO: ScreenView = {
       perderás el acceso a tu buzón y tendrás que abrir un ticket con Sistemas para
       recuperarlo.
     </p>
-    <p><a class="cta" href="#" data-hotspot-goto="n2" data-hotspot-label="Pulsó "Renovar mi contraseña ahora" en el correo">Renovar mi contraseña ahora</a></p>
+    <p><a class="cta" href="${URL_FALSA}" data-hotspot-goto="n2" data-hotspot-label="Pulsó "Renovar mi contraseña ahora" en el correo">Renovar mi contraseña ahora</a></p>
   `,
   footer: `
     <p>Departamento de Tecnología · Corporación Andes<br />
@@ -30,17 +32,14 @@ const CORREO: ScreenView = {
 
 const PAGINA: ScreenView = {
   kind: 'web',
-  url: 'https://correo.andes-ec.net/owa/login',
+  url: URL_FALSA,
   secure: true,
   senalUrl: 'url',
   brand: 'Corporación Andes',
   title: 'Inicia sesión para continuar',
   subtitle: 'Confirma tu contraseña actual para renovarla por 90 días más.',
   fields: [
-    {
-      label: 'Correo institucional',
-      placeholder: 'nombre.apellido@andes.com.ec',
-    },
+    { label: 'Correo institucional', placeholder: '', valor: 'correo' },
     {
       label: 'Contraseña actual',
       placeholder: '••••••••',

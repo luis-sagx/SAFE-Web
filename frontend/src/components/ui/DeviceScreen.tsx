@@ -1,4 +1,5 @@
 import { Paperclip } from 'lucide-react'
+import { useAuth } from '../../context/AuthContext'
 import { CuerpoCorreo, type AccionCorreo, type CarpetaCorreo } from './DesktopChrome'
 import styles from './DeviceScreen.module.css'
 
@@ -43,7 +44,16 @@ export type ScreenView =
       brand: string
       title: string
       subtitle?: string
-      fields: { label: string; placeholder: string; senal?: string }[]
+      fields: {
+        label: string
+        placeholder: string
+        senal?: string
+        /** Rellena el campo con los datos del participante en vez del texto de
+         *  ejemplo. Un formulario que ya trae *tu* correo se lee como el de un
+         *  sitio que te conoce, que es media trampa; y de paso deja tu dominio
+         *  real a la vista, junto al falso de la barra de direcciones. */
+        valor?: 'correo' | 'usuario'
+      }[]
       button: string
       footer?: string
       /** `data-signal` de la barra de direcciones. */
@@ -80,6 +90,10 @@ function DeviceScreen({
   destinatario?: string
   carpetaForzada?: string
 }) {
+  const { correoSimulado } = useAuth()
+  const correo = destinatario ?? correoSimulado
+  const usuario = correo.split('@')[0]
+
   if (view.kind === 'mail') {
     return (
       <CuerpoCorreo
@@ -125,7 +139,13 @@ function DeviceScreen({
           {view.fields.map((field) => (
             <label key={field.label} className={styles.field} data-signal={field.senal}>
               <span>{field.label}</span>
-              <span className={styles.input}>{field.placeholder}</span>
+              <span className={styles.input}>
+                {field.valor === 'correo'
+                  ? correo
+                  : field.valor === 'usuario'
+                    ? usuario
+                    : field.placeholder}
+              </span>
             </label>
           ))}
           {view.botonGoto ? (

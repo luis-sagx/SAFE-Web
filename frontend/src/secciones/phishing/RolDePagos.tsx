@@ -38,7 +38,7 @@ const PORTAL: ScreenView = {
   title: 'Portal del colaborador',
   subtitle: 'Ingresa con tu usuario institucional para ver tu rol de pagos.',
   fields: [
-    { label: 'Usuario', placeholder: 'daniela.mora' },
+    { label: 'Usuario', placeholder: '', valor: 'usuario' },
     { label: 'Contraseña', placeholder: '••••••••' },
   ],
   button: 'Ingresar',

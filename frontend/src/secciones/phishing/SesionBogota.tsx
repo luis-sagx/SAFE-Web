@@ -4,6 +4,8 @@ import type { Story } from '../../hooks/useStoryEngine'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
 import type { Senal } from '../../components/ui/PanelVeredicto'
 
+const URL_FALSA = 'https://bancodellitoral.com.ec.seguridad-alertas.com/verificar'
+
 const CORREO: ScreenView = {
   kind: 'mail',
   from: 'Banco del Litoral · Seguridad',
@@ -20,7 +22,7 @@ const CORREO: ScreenView = {
       no reconocemos.
     </p>
     <p>Si fue usted, puede ignorar este mensaje. Si no, actúe de inmediato:</p>
-    <p><a class="cta" href="#" data-hotspot-goto="n2" data-hotspot-label="Pulsó "No fui yo — proteger mi cuenta" en el correo">No fui yo — proteger mi cuenta</a></p>
+    <p><a class="cta" href="${URL_FALSA}" data-hotspot-goto="n2" data-hotspot-label="Pulsó "No fui yo — proteger mi cuenta" en el correo">No fui yo — proteger mi cuenta</a></p>
     <p class="fine">
       Banco del Litoral · Departamento de Seguridad
     </p>
@@ -29,7 +31,7 @@ const CORREO: ScreenView = {
 
 const PAGINA_CLAVE: ScreenView = {
   kind: 'web',
-  url: 'bancodellitoral.com.ec.seguridad-alertas.com',
+  url: URL_FALSA,
   secure: true,
   senalUrl: 'url',
   brand: 'Banco del Litoral',
@@ -45,7 +47,7 @@ const PAGINA_CLAVE: ScreenView = {
 
 const PAGINA_OTP: ScreenView = {
   kind: 'web',
-  url: 'bancodellitoral.com.ec.seguridad-alertas.com',
+  url: URL_FALSA,
   secure: true,
   brand: 'Banco del Litoral',
   title: 'Un paso más',

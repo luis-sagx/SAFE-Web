@@ -22,7 +22,12 @@ import {
 } from '../../components/ui/DesktopChrome'
 import { carpetasCorreo } from '../../components/ui/carpetasCorreo'
 import styles from '../../components/ui/DeviceScreen.module.css'
-import { BotonHotspot, EnlaceHotspot, manejarClicHotspot } from '../../components/ui/interactivo'
+import {
+  BotonHotspot,
+  EnlaceHotspot,
+  evitarNavegacion,
+  manejarClicHotspot,
+} from '../../components/ui/interactivo'
 import PanelVeredicto, { type Senal } from '../../components/ui/PanelVeredicto'
 import { formatoHora } from '../../hooks/useRelojDelSistema'
 import { useStoryEngine, type Story, type StoryNode } from '../../hooks/useStoryEngine'
@@ -595,6 +600,8 @@ function FacturaSri() {
   }
 
   const onHotspot = (event: React.MouseEvent) => {
+    evitarNavegacion(event)
+
     // Cerrar una pestaña la quita de la barra además de llevar a donde diga su
     // `goto`: para el correo, de vuelta a él; para el portal real, al final.
     const cerrada = (event.target as HTMLElement).closest<HTMLElement>('[data-cierra]')?.dataset

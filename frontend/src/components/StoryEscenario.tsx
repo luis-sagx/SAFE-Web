@@ -2,7 +2,7 @@ import { useEffect, useState, type ReactNode } from 'react'
 import EscenarioLayout from './EscenarioLayout'
 import { carpetasCorreo } from './ui/carpetasCorreo'
 import DeviceScreen, { type ScreenView } from './ui/DeviceScreen'
-import { manejarClicHotspot } from './ui/interactivo'
+import { evitarNavegacion, manejarClicHotspot } from './ui/interactivo'
 import {
   VentanaNavegador,
   type AccionCorreo,
@@ -139,6 +139,8 @@ function StoryEscenario({
   // botones llevan su destino en `data-hotspot-goto` y este manejador único lo
   // traduce en una decisión del grafo.
   const onHotspot = (event: React.MouseEvent) => {
+    evitarNavegacion(event)
+
     // Cambiar de pestaña se resuelve aquí y no llega al grafo: en este motor la
     // decisión es la que se elige de la lista, no la pantalla que se mira.
     const cerrada = (event.target as HTMLElement).closest<HTMLElement>('[data-cierra]')?.dataset

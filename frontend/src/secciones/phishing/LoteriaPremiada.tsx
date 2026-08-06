@@ -18,6 +18,8 @@ import type { Senal } from '../../components/ui/PanelVeredicto'
  * ejercicio, como el SRI en factura-sri.
  */
 
+const URL_FALSA = 'http://loteria-pacifico-premios.online/reclamo'
+
 const CORREO: ScreenView = {
   kind: 'mail',
   from: 'Lotería del Pacífico · Premios',
@@ -41,7 +43,7 @@ const CORREO: ScreenView = {
       <mark class="marca" data-signal="plazo">48 horas</mark>; pasado ese plazo el premio se
       reasigna a otro participante.
     </p>
-    <p><a class="cta" href="#" data-hotspot-goto="n2" data-hotspot-label="Pulsó "Reclamar mi premio ahora" en el correo">Reclamar mi premio ahora</a></p>
+    <p><a class="cta" href="${URL_FALSA}" data-hotspot-goto="n2" data-hotspot-label="Pulsó "Reclamar mi premio ahora" en el correo">Reclamar mi premio ahora</a></p>
   `,
   footer: `
     <p>Lotería del Pacífico · Departamento de Premios y Reclamos</p>
@@ -51,7 +53,7 @@ const CORREO: ScreenView = {
 
 const RECLAMO: ScreenView = {
   kind: 'web',
-  url: 'http://loteria-pacifico-premios.online/reclamo',
+  url: URL_FALSA,
   secure: false,
   senalUrl: 'url-insegura',
   brand: 'Lotería del Pacífico',
