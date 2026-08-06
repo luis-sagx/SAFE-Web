@@ -29,6 +29,11 @@ export type ScreenView =
       /** Pie institucional del mensaje. HTML fijo, como `body`. */
       footer?: string
       attachment?: string
+      /** Nodo al que lleva abrir el adjunto. Sin esto el adjunto es de adorno:
+       *  se ve pero no se abre, que es justo lo que un participante intenta
+       *  hacer primero cuando el correo dice "adjunto el comprobante". */
+      adjuntoGoto?: string
+      adjuntoLabel?: string
       /** Etiqueta del cliente de correo: "Promociones", "Externo"… */
       label?: string
       /** `data-signal` del repaso para la dirección, la etiqueta y el adjunto. */
@@ -41,6 +46,10 @@ export type ScreenView =
       url: string
       /** Candado del navegador. Falso pinta la advertencia "No seguro". */
       secure: boolean
+      /** Archivo abierto desde el disco (un adjunto descargado, p. ej.). No
+       *  lleva candado ni advertencia: poner candado a un archivo local
+       *  enseñaría justo lo contrario de lo que mide este módulo. */
+      local?: boolean
       brand: string
       title: string
       subtitle?: string
@@ -77,6 +86,24 @@ export type ScreenView =
       sub: string
       msgs: { text: string; time: string; mine?: boolean }[]
     }
+
+/// El botón de una página simulada, sea el envío de un formulario o la acción
+/// única de una página informativa ("llamar a este número"). Sin `botonGoto`
+/// se pinta igual pero no responde: hay páginas donde el botón es decorado.
+function Accion({ view }: { view: Extract<ScreenView, { kind: 'web' }> }) {
+  if (!view.botonGoto) return <div className={styles.submit}>{view.button}</div>
+
+  return (
+    <button
+      type="button"
+      className={`${styles.hotspot} ${styles.submit}`}
+      data-hotspot-goto={view.botonGoto}
+      data-hotspot-label={view.botonLabel}
+    >
+      {view.button}
+    </button>
+  )
+}
 
 function DeviceScreen({
   view,
@@ -115,7 +142,14 @@ function DeviceScreen({
         recibido={view.date}
         adjunto={
           view.attachment && (
-            <span className={styles.attachment} data-signal={view.senalAdjunto}>
+            <span
+              className={styles.attachment}
+              data-signal={view.senalAdjunto}
+              data-hotspot-goto={view.adjuntoGoto}
+              data-hotspot-label={view.adjuntoLabel}
+              role={view.adjuntoGoto ? 'button' : undefined}
+              tabIndex={view.adjuntoGoto ? 0 : undefined}
+            >
               <span className={styles.attachmentTipo} aria-hidden>
                 <Paperclip className={styles.attachmentIcono} strokeWidth={1.75} />
               </span>
@@ -148,6 +182,7 @@ function DeviceScreen({
                 </span>
               </div>
             ))}
+            {view.button && <Accion view={view} />}
           </div>
         ) : (
           <div className={styles.form}>
@@ -163,18 +198,7 @@ function DeviceScreen({
                 </span>
               </label>
             ))}
-            {view.botonGoto ? (
-              <button
-                type="button"
-                className={`${styles.hotspot} ${styles.submit}`}
-                data-hotspot-goto={view.botonGoto}
-                data-hotspot-label={view.botonLabel}
-              >
-                {view.button}
-              </button>
-            ) : (
-              <div className={styles.submit}>{view.button}</div>
-            )}
+            <Accion view={view} />
           </div>
         )}
 

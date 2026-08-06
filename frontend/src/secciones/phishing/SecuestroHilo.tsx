@@ -46,6 +46,9 @@ const CORREO: ScreenView = {
     ${HILO_PREVIO}
   `,
   attachment: 'Comprobante_pension_julio.pdf',
+  adjuntoGoto: 'n4',
+  adjuntoLabel: 'Abrió el comprobante adjunto',
+  senalAdjunto: 'adjunto',
 }
 
 /// La banca en línea, abierta desde los marcadores: es donde la decisión se
@@ -89,9 +92,39 @@ const COLEGIO: ScreenView = {
     { etiqueta: 'Correo', valor: 'secretaria@unidadsanrafael.edu.ec' },
   ],
   fields: [],
+  button: '📞 Llamar al (02) 244 1180',
+  botonGoto: 'e_llama',
+  botonLabel: 'Llamó al colegio al número de su sitio oficial',
+  // Cerrar aquí no decide nada: buscar el número y no usarlo deja al
+  // participante donde estaba, con el correo todavía sin responder.
+  cerrarGoto: 'n1',
+  cerrarLabel: 'Miró el teléfono del colegio y volvió al correo',
+}
+
+/// El comprobante, abierto desde el disco después de descargarlo. No es una
+/// trampa técnica —es un PDF de verdad, sin macros ni doble extensión— y por
+/// eso mismo enseña algo distinto de factura-sri: un documento con membrete
+/// convence, y aquí lo único que aporta es el número de cuenta nuevo, que es
+/// exactamente lo que había que desconfiar. Un archivo no verifica nada.
+const COMPROBANTE: ScreenView = {
+  kind: 'web',
+  url: 'C:\\Usuarios\\Descargas\\Comprobante_pension_julio.pdf',
+  secure: true,
+  local: true,
+  brand: 'Unidad Educativa San Rafael',
+  title: 'Comprobante de pago · Pensión julio',
+  subtitle: 'Documento generado por Secretaría · 05/08/2026',
+  datos: [
+    { etiqueta: 'Estudiante', valor: 'A nombre del representante' },
+    { etiqueta: 'Concepto', valor: 'Pensión de julio' },
+    { etiqueta: 'Monto', valor: '$145,00' },
+    { etiqueta: 'Banco', valor: 'Banco Austral', senal: 'banco-nuevo' },
+    { etiqueta: 'Número de cuenta', valor: '2200418877', senal: 'cuenta-pdf' },
+  ],
+  fields: [],
   button: '',
-  cerrarGoto: 'e_llama',
-  cerrarLabel: 'Llamó al colegio al número de su sitio oficial',
+  cerrarGoto: 'n1',
+  cerrarLabel: 'Cerró el comprobante y volvió al correo',
 }
 
 const STORY: Story<ScreenNode> = {
@@ -100,6 +133,7 @@ const STORY: Story<ScreenNode> = {
   n1: { kind: 'scene', view: CORREO },
   n2: { kind: 'scene', view: BANCA },
   n3: { kind: 'scene', view: COLEGIO },
+  n4: { kind: 'scene', view: COMPROBANTE },
   e_transfiere: {
     kind: 'bad',
     view: BANCA,
@@ -172,13 +206,21 @@ const INSTRUCCION = (
 
 const PISTA = (
   <p>
-    Aquí no hay nada raro que descubrir en el correo. Lo que se decide es otra cosa: si haces la
-    transferencia, si preguntas por donde llegó el mensaje, si respondes con la barra del cliente o
-    si lo confirmas por un camino que no dependa de ese correo.
+    Aquí no hay nada raro que descubrir en el correo. Puedes abrir el comprobante adjunto y mirarlo.
+    Lo que se decide es otra cosa: si haces la transferencia, si preguntas por donde llegó el
+    mensaje, si respondes con la barra del cliente o si lo confirmas por un camino que no dependa de
+    ese correo.
   </p>
 )
 
 const SENALES: Senal[] = [
+  {
+    id: 's0',
+    pantalla: 'n4',
+    targetId: 'cuenta-pdf',
+    texto:
+      'El comprobante tiene membrete, fecha y monto correctos — y aun así <b>solo repite el número de cuenta nuevo</b>. Un archivo adjunto no confirma nada: lo escribió quien mandó el correo.',
+  },
   {
     id: 's1',
     pantalla: 'n1',

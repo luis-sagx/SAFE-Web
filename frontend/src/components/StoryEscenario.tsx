@@ -59,6 +59,7 @@ function pestanaDeVista(view: ScreenView, dominio: string): PestanaConfig | null
       titulo: view.title,
       url: view.url,
       segura: view.secure,
+      local: view.local,
       senalUrl: view.senalUrl,
       cierra: view.cerrarGoto,
     }

@@ -1,6 +1,6 @@
 import { Globe, type LucideIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
-import { Taskbar, Titlebar , type Reloj } from './DesktopChrome'
+import { Taskbar, Titlebar, type Reloj } from './DesktopChrome'
 import styles from './DeviceScreen.module.css'
 
 /**
@@ -15,6 +15,10 @@ export interface PestanaConfig {
   titulo: string
   url: string
   segura: boolean
+  /** Archivo abierto desde el disco: la barra muestra el nombre del archivo,
+   *  sin candado ni "No seguro". Ninguno de los dos aplica a un archivo local,
+   *  y el candado además enseñaría lo contrario de lo que mide el módulo. */
+  local?: boolean
   /** Nodo al que lleva cerrar esta pestaña. Si la pestaña decide su cierre en
    *  tiempo de ejecución (p. ej. según si se visitó otra pantalla antes), se
    *  deja sin definir aquí y se resuelve con `cierrePortal` +
@@ -116,7 +120,9 @@ export function Navegador({
       </div>
 
       <div className={styles.urlbar}>
-        {actual?.segura ? (
+        {actual?.local ? (
+          <span className={styles.lock}>📄</span>
+        ) : actual?.segura ? (
           <span className={styles.lock}>🔒</span>
         ) : (
           <span className={styles.warn}>⚠ No seguro</span>
@@ -127,20 +133,20 @@ export function Navegador({
       </div>
 
       {marcadores.length > 0 && (
-      <div className={styles.marcadores}>
-        {marcadores.map(({ Icono, texto, goto, label }) => (
-          <button
-            key={texto}
-            type="button"
-            className={styles.marcador}
-            data-hotspot-goto={goto}
-            data-hotspot-label={label}
-          >
-            <Icono aria-hidden className={styles.marcadorIcono} strokeWidth={1.75} />
-            {texto}
-          </button>
-        ))}
-      </div>
+        <div className={styles.marcadores}>
+          {marcadores.map(({ Icono, texto, goto, label }) => (
+            <button
+              key={texto}
+              type="button"
+              className={styles.marcador}
+              data-hotspot-goto={goto}
+              data-hotspot-label={label}
+            >
+              <Icono aria-hidden className={styles.marcadorIcono} strokeWidth={1.75} />
+              {texto}
+            </button>
+          ))}
+        </div>
       )}
 
       {children}
