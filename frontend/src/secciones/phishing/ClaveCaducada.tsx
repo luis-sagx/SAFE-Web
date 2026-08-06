@@ -55,11 +55,32 @@ const PAGINA: ScreenView = {
   cerrarLabel: 'Cerró la página sin escribir nada',
 }
 
+const INTRANET: ScreenView = {
+  kind: 'web',
+  url: 'https://intranet.andes.com.ec/directorio/soporte-ti',
+  secure: true,
+  senalUrl: 'url-real',
+  brand: 'Corporación Andes',
+  title: 'Directorio interno',
+  subtitle: 'Soporte TI · Departamento de Tecnología',
+  datos: [
+    { etiqueta: 'Correo', valor: 'soporte.ti@andes.com.ec', senal: 'correo-real' },
+    { etiqueta: 'Extensión', valor: '2140' },
+    { etiqueta: 'Horario', valor: 'Lunes a viernes, de 08:00 a 18:00' },
+  ],
+  fields: [],
+  button: '',
+  footer: 'Soporte TI nunca solicita contraseñas por correo ni por teléfono.',
+  cerrarGoto: 'e_confirma',
+  cerrarLabel: 'Consultó el directorio interno y cerró la pestaña',
+}
+
 const STORY: Story<ScreenNode> = {
   // Responder, reenviar, archivar, eliminar y marcar como spam.
   ...finalesDeBarra('fraude', CORREO),
   n1: { kind: 'scene', view: CORREO },
   n2: { kind: 'scene', view: PAGINA },
+  n3: { kind: 'scene', view: INTRANET },
   e_clave: {
     kind: 'bad',
     view: PAGINA,
@@ -116,17 +137,17 @@ const SENALES: Senal[] = [
     texto: 'No te llama por tu nombre ni menciona ningún dato tuyo.',
   },
 ]
-/// El directorio interno es la vía de verificación que no pasa por el correo:
-/// abrirlo por cuenta propia es lo que aquí equivale a "entrar al portal
-/// escribiendo tú la dirección". Los otros dos marcadores son sitios de
-/// siempre, para que el bueno no sea el único pulsable y se delate.
+/// La intranet es la vía de verificación que no pasa por el correo: abrirla por
+/// cuenta propia es lo que aquí equivale a "entrar al portal escribiendo tú la
+/// dirección". Los otros dos marcadores son sitios de siempre, para que el
+/// bueno no sea el único pulsable y se delate.
 const MARCADORES: MarcadorNavegador[] = [
   { Icono: Landmark, texto: 'Banco del Litoral' },
   {
     Icono: Building2,
-    texto: 'Directorio interno',
-    goto: 'e_confirma',
-    label: 'Abrió el directorio interno para buscar el contacto real de Soporte TI',
+    texto: 'Intranet Andes',
+    goto: 'n3',
+    label: 'Abrió la intranet para buscar el contacto real de Soporte TI',
   },
   { Icono: Newspaper, texto: 'El Comercio' },
 ]
@@ -149,9 +170,17 @@ const PISTA = (
   <p>
     Tienes cuatro caminos posibles: hacer lo que el correo pide, contestarle, decidir qué hacer con
     el mensaje desde la barra del cliente, o dejarlo de lado y buscar a Soporte TI por tu cuenta en
-    el directorio interno. Cuál de ellos es el acertado es justamente lo que decides tú.
+    la intranet de la empresa. Cuál de ellos es el acertado es justamente lo que decides tú.
   </p>
 )
+
+const SENAL_REAL: Senal = {
+  id: 's6',
+  targetId: 'correo-real',
+  pantalla: 'n3',
+  texto:
+    'Así se escribe Soporte TI de verdad: <b>soporte.ti@andes.com.ec</b>. El del correo era <b>soporte-ti@andes-ec.net</b> — otro dominio, aunque se parezca.',
+}
 
 const RULE =
   'Regla de oro: el candado verde no significa que el sitio sea legítimo, solo que la conexión va cifrada. <b>Lee el dominio completo</b> y cambia tus contraseñas entrando por el sistema de la empresa, nunca desde un enlace.'
@@ -184,7 +213,7 @@ function ClaveCaducada() {
       instruccion={INSTRUCCION}
       pista={PISTA}
       dominioCorreo="andes.com.ec"
-      senales={SENALES}
+      senales={[...SENALES, SENAL_REAL]}
       rule={RULE}
       reloj={{ hora: '16:12', fecha: '4/8/2026' }}
       restartLabel="↻ Repetir el escenario"

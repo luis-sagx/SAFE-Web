@@ -54,6 +54,9 @@ export type ScreenView =
          *  real a la vista, junto al falso de la barra de direcciones. */
         valor?: 'correo' | 'usuario'
       }[]
+      /** Datos de una página informativa. Cuando los hay, sustituyen al
+       *  formulario: un directorio no se rellena, se lee. */
+      datos?: { etiqueta: string; valor: string; senal?: string }[]
       button: string
       footer?: string
       /** `data-signal` de la barra de direcciones. */
@@ -135,32 +138,45 @@ function DeviceScreen({
         <h2 className={styles.pageTitle}>{view.title}</h2>
         {view.subtitle && <p className={styles.pageSub}>{view.subtitle}</p>}
 
-        <div className={styles.form}>
-          {view.fields.map((field) => (
-            <label key={field.label} className={styles.field} data-signal={field.senal}>
-              <span>{field.label}</span>
-              <span className={styles.input}>
-                {field.valor === 'correo'
-                  ? correo
-                  : field.valor === 'usuario'
-                    ? usuario
-                    : field.placeholder}
-              </span>
-            </label>
-          ))}
-          {view.botonGoto ? (
-            <button
-              type="button"
-              className={`${styles.hotspot} ${styles.submit}`}
-              data-hotspot-goto={view.botonGoto}
-              data-hotspot-label={view.botonLabel}
-            >
-              {view.button}
-            </button>
-          ) : (
-            <div className={styles.submit}>{view.button}</div>
-          )}
-        </div>
+        {view.datos ? (
+          <div className={styles.datos}>
+            {view.datos.map((dato) => (
+              <div key={dato.etiqueta} className={styles.dato}>
+                <span className={styles.datoEtiqueta}>{dato.etiqueta}</span>
+                <span className={styles.datoValor} data-signal={dato.senal}>
+                  {dato.valor}
+                </span>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className={styles.form}>
+            {view.fields.map((field) => (
+              <label key={field.label} className={styles.field} data-signal={field.senal}>
+                <span>{field.label}</span>
+                <span className={styles.input}>
+                  {field.valor === 'correo'
+                    ? correo
+                    : field.valor === 'usuario'
+                      ? usuario
+                      : field.placeholder}
+                </span>
+              </label>
+            ))}
+            {view.botonGoto ? (
+              <button
+                type="button"
+                className={`${styles.hotspot} ${styles.submit}`}
+                data-hotspot-goto={view.botonGoto}
+                data-hotspot-label={view.botonLabel}
+              >
+                {view.button}
+              </button>
+            ) : (
+              <div className={styles.submit}>{view.button}</div>
+            )}
+          </div>
+        )}
 
         {view.footer && <p className={styles.pageFooter}>{view.footer}</p>}
       </div>

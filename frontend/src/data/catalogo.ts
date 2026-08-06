@@ -125,7 +125,9 @@ const BASE: EscenarioBase[] = [
     // v3: se juega sobre la pantalla, sin lista de opciones. Las salidas que no
     // eran botones —avisar a Soporte TI, cerrar la página falsa— pasaron a
     // serlo: un marcador del navegador y la ✕ de la pestaña.
-    version: 3,
+    // v4: el marcador abre la intranet de verdad en vez de saltar al veredicto,
+    // para que el camino acertado se vea y no solo se cuente.
+    version: 4,
     naturaleza: 'fraude',
     dificultad: 3,
     espeja: 'phishing/rol-de-pagos',

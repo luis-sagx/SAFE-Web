@@ -666,6 +666,33 @@ button.mailNavItem {
   font-size: 0.90625rem;
 }
 
+/* Ficha de datos de una página informativa: un directorio, una ficha de
+   contacto. No es un formulario, así que no usa .field ni .input — parecerlo
+   invitaría a escribir donde no hay nada que escribir. */
+.datos {
+  margin-top: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.dato {
+  display: flex;
+  gap: 1rem;
+  align-items: baseline;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--line);
+}
+.datoEtiqueta {
+  flex-shrink: 0;
+  width: 8.5rem;
+  font-size: 0.875rem;
+  color: var(--dim);
+}
+.datoValor {
+  font-size: 1.0625rem;
+  color: #16202c;
+}
+
 /* ---------- Pantallas bajas ----------
    En un portátil de 768px de alto el correo no cabía y había que desplazarlo,
    justo cuando lo que se juzga es el mensaje completo: el pie, el adjunto y el
