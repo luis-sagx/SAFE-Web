@@ -1,5 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import EscenarioLayout from './EscenarioLayout'
+import Instrucciones from './ui/Instrucciones'
 import { carpetasCorreo } from './ui/carpetasCorreo'
 import DeviceScreen, { type ScreenView } from './ui/DeviceScreen'
 import { evitarNavegacion, manejarClicHotspot } from './ui/interactivo'
@@ -47,6 +48,8 @@ interface StoryEscenarioProps {
   /** Qué se le dice al participante cuando el nodo no ofrece lista de opciones
    *  y hay que actuar sobre la propia pantalla. */
   instruccion?: ReactNode
+  /** Los caminos posibles, para quien se atasca. No dice cuál es el bueno. */
+  pista?: ReactNode
 }
 
 /// Cómo se ve cada pantalla en la barra de direcciones. El correo va en el
@@ -89,6 +92,7 @@ function StoryEscenario({
   reloj,
   marcadores,
   instruccion,
+  pista,
 }: StoryEscenarioProps) {
   const engine = useStoryEngine(story, 'n1', escenarioId)
   const { usuarioSimulado } = useAuth()
@@ -102,6 +106,10 @@ function StoryEscenario({
   /// decisión del escenario —es mirar, como abrir otra carpeta del correo— así
   /// que no entra en la traza; la siguiente decisión la deshace.
   const [pestanaMirada, setPestanaMirada] = useState<string | undefined>()
+  /// Se enciende con el primer clic que no cae en ningún punto interactivo y ya
+  /// no se apaga: quien exploró a ciegas una vez agradece tener la pista a la
+  /// vista el resto del escenario.
+  const [tocoEnVacio, setTocoEnVacio] = useState(false)
   const nodoVisible = pantallaRepaso ?? pestanaMirada ?? engine.current
   const vista = story[nodoVisible]?.view ?? engine.node.view
 
@@ -164,7 +172,11 @@ function StoryEscenario({
     }
 
     if (engine.isEnding) return
-    manejarClicHotspot(event, engine.choose)
+    // Solo cuando la pantalla es el control: con lista de opciones, pulsar el
+    // cuerpo del correo no tiene por qué responder a nada.
+    if (!manejarClicHotspot(event, engine.choose) && !engine.node.choices) {
+      setTocoEnVacio(true)
+    }
   }
 
   const decision = engine.isEnding ? (
@@ -184,7 +196,9 @@ function StoryEscenario({
       {engine.node.choices ? (
         <StoryChoices choices={engine.node.choices} onChoose={engine.choose} />
       ) : (
-        instruccion
+        <Instrucciones pista={pista} fallo={tocoEnVacio}>
+          {instruccion}
+        </Instrucciones>
       )}
     </div>
   )

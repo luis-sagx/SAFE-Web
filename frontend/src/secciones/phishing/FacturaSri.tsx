@@ -12,6 +12,7 @@ import {
 } from 'lucide-react'
 import { useState } from 'react'
 import EscenarioLayout from '../../components/EscenarioLayout'
+import Instrucciones from '../../components/ui/Instrucciones'
 import {
   CuerpoCorreo,
   VentanaNavegador,
@@ -443,55 +444,46 @@ function DecisionEnCurso({
   return (
     <div className="grid gap-3">
       <p className="text-lg font-semibold text-ink">¿Qué haces?</p>
-      <p className="text-lg leading-relaxed text-body">
-        Actúa sobre la ventana como lo harías frente a tu correo de verdad: puedes usar{' '}
-        <strong>cualquier parte de ella</strong>, incluida la barra de abajo. Antes de tocar un
-        enlace, mantén el cursor encima para ver a dónde lleva.
-      </p>
-      {enPortalReal && (
-        <p className="rounded-md border border-hairline-strong bg-canvas-soft px-3 py-2 text-base leading-relaxed text-body">
-          Este es el portal del SRI de verdad, abierto por ti.{' '}
-          <strong className="text-ink">No hay ninguna factura pendiente</strong>, así que el correo
-          mentía. Cierra la pestaña cuando termines de comprobarlo.
+      <Instrucciones
+        fallo={fallo}
+        pista={
+          <p>
+            Tienes tres caminos posibles: hacer lo que el correo te pide, abrir lo que trae adjunto,
+            o dejar el correo de lado y entrar al portal por tu cuenta desde los marcadores. Cuál de
+            los tres es el acertado es justamente lo que decides tú.
+          </p>
+        }
+      >
+        <p className="text-lg leading-relaxed text-body">
+          Actúa sobre la ventana como lo harías frente a tu correo de verdad: puedes usar{' '}
+          <strong>cualquier parte de ella</strong>, incluida la barra de abajo. Antes de tocar un
+          enlace, mantén el cursor encima para ver a dónde lleva.
         </p>
-      )}
+        {enPortalReal && (
+          <p className="rounded-md border border-hairline-strong bg-canvas-soft px-3 py-2 text-base leading-relaxed text-body">
+            Este es el portal del SRI de verdad, abierto por ti.{' '}
+            <strong className="text-ink">No hay ninguna factura pendiente</strong>, así que el
+            correo mentía. Cierra la pestaña cuando termines de comprobarlo.
+          </p>
+        )}
 
-      {/* Va aquí y no dentro de la página: el marco de los escenarios separa lo
+        {/* Va aquí y no dentro de la página: el marco de los escenarios separa lo
           que la app real mostraría de lo que explica el ejercicio, y una página
           de phishing jamás avisaría de qué son sus campos. */}
-      {enPortal && (
-        <p className="rounded-md border border-hairline-strong bg-canvas-soft px-3 py-2 text-base leading-relaxed text-body">
-          El formulario ya aparece con{' '}
-          <strong className="text-ink">tu RUC y tu clave escritos</strong>. Es así para no pedirte
-          datos verdaderos —ese RUC no es el de nadie—, pero enviarlo cuenta como entregarlos.
-        </p>
-      )}
+        {enPortal && (
+          <p className="rounded-md border border-hairline-strong bg-canvas-soft px-3 py-2 text-base leading-relaxed text-body">
+            El formulario ya aparece con{' '}
+            <strong className="text-ink">tu RUC y tu clave escritos</strong>. Es así para no pedirte
+            datos verdaderos —ese RUC no es el de nadie—, pero enviarlo cuenta como entregarlos.
+          </p>
+        )}
 
-      <p className="text-base leading-relaxed text-body">
-        Lo primero que hagas cierra el escenario y te muestra en qué terminaba. No hay confirmación,
-        igual que en la vida real. Puedes volver atrás con la flecha del navegador sin decidir nada.
-      </p>
-
-      {/* Solo aparece si ya intentó tocar algo que no responde: es exactamente
-          la persona que está atascada, y la pista le llega sin habérsela
-          ofrecido antes a quien no la necesita. */}
-      {fallo && (
-        <p role="status" className="rounded-md bg-surface-strong px-3 py-2 text-base text-body">
-          Ahí no hay nada que hacer. Solo algunos elementos responden: recórrelos con el cursor (o
-          con la tecla Tab) y se marcarán al pasar.
+        <p className="text-base leading-relaxed text-body">
+          Lo primero que hagas cierra el escenario y te muestra en qué terminaba. No hay
+          confirmación, igual que en la vida real. Puedes volver atrás con la flecha del navegador
+          sin decidir nada.
         </p>
-      )}
-
-      <details className="group rounded-md border border-hairline-strong bg-surface px-3 py-2">
-        <summary className="cursor-pointer list-none text-base font-medium text-link underline decoration-dotted underline-offset-4">
-          No sé por dónde empezar
-        </summary>
-        <p className="mt-2 text-base leading-relaxed text-body">
-          Tienes tres caminos posibles: hacer lo que el correo te pide, abrir lo que trae adjunto, o
-          dejar el correo de lado y entrar al portal por tu cuenta desde la barra de tareas. Cuál de
-          los tres es el acertado es justamente lo que decides tú.
-        </p>
-      </details>
+      </Instrucciones>
     </div>
   )
 }

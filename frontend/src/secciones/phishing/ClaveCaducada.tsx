@@ -145,6 +145,14 @@ const INSTRUCCION = (
   </>
 )
 
+const PISTA = (
+  <p>
+    Tienes cuatro caminos posibles: hacer lo que el correo pide, contestarle, decidir qué hacer con
+    el mensaje desde la barra del cliente, o dejarlo de lado y buscar a Soporte TI por tu cuenta en
+    el directorio interno. Cuál de ellos es el acertado es justamente lo que decides tú.
+  </p>
+)
+
 const RULE =
   'Regla de oro: el candado verde no significa que el sitio sea legítimo, solo que la conexión va cifrada. <b>Lee el dominio completo</b> y cambia tus contraseñas entrando por el sistema de la empresa, nunca desde un enlace.'
 
@@ -174,6 +182,7 @@ function ClaveCaducada() {
       accionesCorreo={ACCIONES_BARRA}
       marcadores={MARCADORES}
       instruccion={INSTRUCCION}
+      pista={PISTA}
       dominioCorreo="andes.com.ec"
       senales={SENALES}
       rule={RULE}
