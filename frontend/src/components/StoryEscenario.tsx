@@ -44,6 +44,9 @@ interface StoryEscenarioProps {
   reloj?: Reloj
   /** Sitios de la barra de marcadores. Sin ellos la barra no se pinta. */
   marcadores?: MarcadorNavegador[]
+  /** Qué se le dice al participante cuando el nodo no ofrece lista de opciones
+   *  y hay que actuar sobre la propia pantalla. */
+  instruccion?: ReactNode
 }
 
 /// Cómo se ve cada pantalla en la barra de direcciones. El correo va en el
@@ -85,6 +88,7 @@ function StoryEscenario({
   dominioCorreo,
   reloj,
   marcadores,
+  instruccion,
 }: StoryEscenarioProps) {
   const engine = useStoryEngine(story, 'n1', escenarioId)
   const { usuarioSimulado } = useAuth()
@@ -175,12 +179,14 @@ function StoryEscenario({
       onPantalla={setPantallaRepaso}
     />
   ) : (
-    engine.node.choices && (
-      <div className="grid gap-3">
-        <p className="text-lg font-semibold text-ink">{pregunta}</p>
+    <div className="grid gap-3">
+      <p className="text-lg font-semibold text-ink">{pregunta}</p>
+      {engine.node.choices ? (
         <StoryChoices choices={engine.node.choices} onChoose={engine.choose} />
-      </div>
-    )
+      ) : (
+        instruccion
+      )}
+    </div>
   )
 
   return (

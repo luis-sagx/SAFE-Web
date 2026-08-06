@@ -122,7 +122,10 @@ const BASE: EscenarioBase[] = [
     escenarioId: 'clave-caducada',
     titulo: 'Contraseña por caducar',
     descripcion: 'Soporte técnico avisa que tu clave vence hoy y ofrece un enlace para renovarla.',
-    version: 2,
+    // v3: se juega sobre la pantalla, sin lista de opciones. Las salidas que no
+    // eran botones —avisar a Soporte TI, cerrar la página falsa— pasaron a
+    // serlo: un marcador del navegador y la ✕ de la pestaña.
+    version: 3,
     naturaleza: 'fraude',
     dificultad: 3,
     espeja: 'phishing/rol-de-pagos',

@@ -1,4 +1,6 @@
+import { Building2, Landmark, Newspaper } from 'lucide-react'
 import StoryEscenario, { type ScreenNode } from '../../components/StoryEscenario'
+import type { MarcadorNavegador } from '../../components/ui/DesktopChrome'
 import { ACCIONES_BARRA, finalesDeBarra } from './barraDeCorreo'
 import type { Story } from '../../hooks/useStoryEngine'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
@@ -56,35 +58,8 @@ const PAGINA: ScreenView = {
 const STORY: Story<ScreenNode> = {
   // Responder, reenviar, archivar, eliminar y marcar como spam.
   ...finalesDeBarra('fraude', CORREO),
-  n1: {
-    kind: 'scene',
-    view: CORREO,
-    choices: [
-      { label: 'Renovar la contraseña desde el enlace del correo.', goto: 'n2' },
-      {
-        label: 'Escribir a Soporte TI usando el contacto del directorio interno para confirmar.',
-        goto: 'e_confirma',
-      },
-      {
-        label: 'Comparar el dominio del remitente con el de la empresa.',
-        goto: 'e_remitente',
-      },
-    ],
-  },
-  n2: {
-    kind: 'scene',
-    view: PAGINA,
-    choices: [
-      {
-        label: 'La página es igual a la de siempre: escribo mi contraseña.',
-        goto: 'e_clave',
-      },
-      {
-        label: 'Comparar la dirección con la del correo institucional real.',
-        goto: 'e_remitente',
-      },
-    ],
-  },
+  n1: { kind: 'scene', view: CORREO },
+  n2: { kind: 'scene', view: PAGINA },
   e_clave: {
     kind: 'bad',
     view: PAGINA,
@@ -141,6 +116,35 @@ const SENALES: Senal[] = [
     texto: 'No te llama por tu nombre ni menciona ningún dato tuyo.',
   },
 ]
+/// El directorio interno es la vía de verificación que no pasa por el correo:
+/// abrirlo por cuenta propia es lo que aquí equivale a "entrar al portal
+/// escribiendo tú la dirección". Los otros dos marcadores son sitios de
+/// siempre, para que el bueno no sea el único pulsable y se delate.
+const MARCADORES: MarcadorNavegador[] = [
+  { Icono: Landmark, texto: 'Banco del Litoral' },
+  {
+    Icono: Building2,
+    texto: 'Directorio interno',
+    goto: 'e_confirma',
+    label: 'Abrió el directorio interno para buscar el contacto real de Soporte TI',
+  },
+  { Icono: Newspaper, texto: 'El Comercio' },
+]
+
+const INSTRUCCION = (
+  <>
+    <p className="text-lg leading-relaxed text-body">
+      Actúa sobre la ventana como lo harías frente a tu correo de verdad: puedes usar{' '}
+      <strong>cualquier parte de ella</strong>, incluidos los marcadores. Antes de tocar un enlace,
+      mantén el cursor encima para ver a dónde lleva.
+    </p>
+    <p className="text-base leading-relaxed text-body">
+      Lo primero que hagas cierra el escenario y te muestra en qué terminaba. Cambiar de pestaña no
+      decide nada.
+    </p>
+  </>
+)
+
 const RULE =
   'Regla de oro: el candado verde no significa que el sitio sea legítimo, solo que la conexión va cifrada. <b>Lee el dominio completo</b> y cambia tus contraseñas entrando por el sistema de la empresa, nunca desde un enlace.'
 
@@ -168,6 +172,8 @@ function ClaveCaducada() {
       contexto={CONTEXTO}
       story={STORY}
       accionesCorreo={ACCIONES_BARRA}
+      marcadores={MARCADORES}
+      instruccion={INSTRUCCION}
       dominioCorreo="andes.com.ec"
       senales={SENALES}
       rule={RULE}
