@@ -1,4 +1,4 @@
-import { Globe, type LucideIcon } from 'lucide-react'
+import { FileText, Globe, Lock, TriangleAlert, X, type LucideIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { Taskbar, Titlebar, type Reloj } from './DesktopChrome'
 import styles from './DeviceScreen.module.css'
@@ -108,7 +108,7 @@ export function Navegador({
                   data-hotspot-goto={cierra}
                   data-hotspot-label={`Cerró la pestaña "${meta.titulo}"`}
                 >
-                  ✕
+                  <X aria-hidden className={styles.tabCloseIcono} strokeWidth={2} />
                 </button>
               )}
             </span>
@@ -120,12 +120,19 @@ export function Navegador({
       </div>
 
       <div className={styles.urlbar}>
+        {/* Iconos de trazo y no emoji: 🔒 y ⚠ se dibujan distinto —y a color— en
+            cada sistema operativo, y el indicador de seguridad de la barra de
+            direcciones es justo lo que este módulo enseña a leer. Uno que
+            cambia de aspecto según la máquina enseña peor. */}
         {actual?.local ? (
-          <span className={styles.lock}>📄</span>
+          <FileText aria-hidden className={styles.urlIcono} strokeWidth={1.75} />
         ) : actual?.segura ? (
-          <span className={styles.lock}>🔒</span>
+          <Lock aria-hidden className={`${styles.urlIcono} ${styles.lock}`} strokeWidth={2} />
         ) : (
-          <span className={styles.warn}>⚠ No seguro</span>
+          <span className={styles.warn}>
+            <TriangleAlert aria-hidden className={styles.warnIcono} strokeWidth={2} />
+            No seguro
+          </span>
         )}
         <span className={styles.url} data-signal={actual?.senalUrl}>
           {actual?.url}
@@ -151,7 +158,7 @@ export function Navegador({
 
       {children}
 
-      <Taskbar app="🌐 Navegador" reloj={reloj} />
+      <Taskbar app={{ Icono: Globe, texto: 'Navegador' }} reloj={reloj} />
     </section>
   )
 }

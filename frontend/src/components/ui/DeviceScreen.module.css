@@ -71,8 +71,11 @@
   height: 1.75rem;
   border-radius: 0.3125rem;
   color: #cfd8e3;
-  font-size: 1.0625rem;
   line-height: 1;
+}
+.taskbarStartIcono {
+  width: 1.0625rem;
+  height: 1.0625rem;
 }
 .taskbarDivider {
   width: 1px;
@@ -138,6 +141,11 @@
 .taskbarApp {
   cursor: default;
 }
+.taskbarAppIcono {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+}
 .taskbarTray {
   margin-left: auto;
   display: inline-flex;
@@ -145,6 +153,11 @@
   gap: 0.5625rem;
   font-size: 0.8125rem;
   color: #aab4c2;
+}
+.taskbarTrayIcono {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
 }
 .taskbarClock {
   display: flex;
@@ -538,8 +551,13 @@ button.mailNavItem {
 }
 .tabNueva {
   appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   align-self: center;
-  margin-left: 0.375rem;
+  /* El mismo aire que la pestaña: es lo que deja los dos centros a la misma
+     altura (ver .tabstrip). */
+  margin-top: var(--tab-aire);
   width: 1.625rem;
   height: 1.625rem;
   border: none;
@@ -602,9 +620,15 @@ button.mailNavItem {
   border-radius: 0.3125rem;
   background: transparent;
   color: #5f6b7a;
-  font-size: 0.875rem;
   line-height: 1;
   cursor: pointer;
+}
+/* Icono de trazo en vez del carácter ✕: el glifo se dibuja más alto que ancho
+   en la tipografía de la pantalla y la cruz se veía rectangular. El icono son
+   dos trazos del mismo largo, así que sale cuadrada en cualquier equipo. */
+.tabCloseIcono {
+  width: 0.875rem;
+  height: 0.875rem;
 }
 .tabClose:hover {
   background: rgba(0, 0, 0, 0.09);
@@ -712,10 +736,10 @@ button.mailNavItem {
      del correo, así que aquí cede él primero: son barras, no contenido que
      haya que leer. */
   .tabstrip {
+    --tab-aire: 0.25rem;
     padding: 0 0.5rem;
   }
   .tab {
-    margin-top: 0.25rem;
     padding: 0.3125rem 0.5rem 0.3125rem 0.75rem;
   }
   .urlbar {
@@ -864,9 +888,17 @@ button.mailNavItem {
 
 /* ---------- Navegador ---------- */
 
+/* El aire sobre las pestañas vive en una variable porque lo comparten la
+   pestaña y el botón "+": si solo se lo damos a la pestaña, el "+" queda
+   centrado en toda la franja y por tanto unos píxeles más arriba que el texto
+   de las pestañas. Con la misma variable, los dos centros coinciden solos, y
+   la versión apretada de pantallas bajas solo tiene que cambiar el número una
+   vez. */
 .tabstrip {
+  --tab-aire: 0.375rem;
   flex-shrink: 0;
   display: flex;
+  gap: 0.25rem;
   padding: 0 0.625rem;
   background: #dfe3e9;
 }
@@ -874,7 +906,7 @@ button.mailNavItem {
   display: inline-flex;
   align-items: center;
   gap: 0.625rem;
-  margin-top: 0.375rem;
+  margin-top: var(--tab-aire);
   padding: 0.4375rem 0.75rem 0.4375rem 1rem;
   border-radius: 0.5rem 0.5rem 0 0;
   background: #fff;
@@ -924,11 +956,22 @@ button.mailNavItem {
   border-bottom: 1px solid #cfd5dd;
   font-size: 0.90625rem;
 }
+/* Indicador de seguridad de la barra de direcciones. Mismo tamaño para los
+   tres estados —candado, archivo local y advertencia— para que cambiar de
+   pestaña no mueva la dirección de sitio. */
+.urlIcono {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+  color: #5f6b7a;
+}
 .lock {
   color: #1c7a45;
-  flex-shrink: 0;
 }
 .warn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
   color: #a12020;
   font-weight: 700;
   background: #fbe3e3;
@@ -936,6 +979,11 @@ button.mailNavItem {
   padding: 2px 0.375rem;
   flex-shrink: 0;
   white-space: nowrap;
+}
+.warnIcono {
+  width: 0.9375rem;
+  height: 0.9375rem;
+  flex-shrink: 0;
 }
 .url {
   background: #fff;
