@@ -12,14 +12,25 @@ import {
 } from 'lucide-react'
 import { useState } from 'react'
 import EscenarioLayout from '../../components/EscenarioLayout'
+import Instrucciones from '../../components/ui/Instrucciones'
 import {
   CuerpoCorreo,
   type AccionCorreo,
   type CarpetaCorreo,
 } from '../../components/ui/DesktopChrome'
+import { carpetasCorreo } from '../../components/ui/carpetasCorreo'
 import styles from '../../components/ui/DeviceScreen.module.css'
-import { BotonHotspot, EnlaceHotspot, manejarClicHotspot } from '../../components/ui/interactivo'
-import { Navegador, type MarcadorNavegador, type PestanaConfig } from '../../components/ui/Navegador'
+import {
+  BotonHotspot,
+  EnlaceHotspot,
+  evitarNavegacion,
+  manejarClicHotspot,
+} from '../../components/ui/interactivo'
+import {
+  Navegador,
+  type MarcadorNavegador,
+  type PestanaConfig,
+} from '../../components/ui/Navegador'
 import PanelVeredicto, { type Senal } from '../../components/ui/PanelVeredicto'
 import { formatoHora } from '../../hooks/useRelojDelSistema'
 import { useStoryEngine, type Story, type StoryNode } from '../../hooks/useStoryEngine'
@@ -156,74 +167,6 @@ const DIRECCION = 'notificaciones@sri-facturacion-ec.com'
 /// si eso lo saca de Recibidos. Archivar no tiene carpeta propia en esta
 /// bandeja: solo desaparece de la vista, como dice su final ("sigue en tu
 /// buzón" pero ya no en Recibidos).
-const DESTINO_ACCION: Record<
-  string,
-  {
-    carpeta?: 'Enviados' | 'Spam' | 'Papelera'
-    prefijo?: string
-    vaciaRecibidos: boolean
-  }
-> = {
-  e_archivar: { vaciaRecibidos: true },
-  e_eliminar: { carpeta: 'Papelera', vaciaRecibidos: true },
-  e_spam: { carpeta: 'Spam', vaciaRecibidos: true },
-  e_responder: { carpeta: 'Enviados', prefijo: 'Re:', vaciaRecibidos: false },
-  e_reenviar: { carpeta: 'Enviados', prefijo: 'Fwd:', vaciaRecibidos: false },
-}
-
-/// Misma fila de remitente que la bandeja principal (avatar, nombre,
-/// dirección): la lista de una carpeta con un mensaje suelto no debería verse
-/// más pobre que el mensaje abierto.
-function ResumenMensaje({ prefijo }: { prefijo?: string }) {
-  return (
-    <div className={styles.senderRow}>
-      <div className={styles.avatar} aria-hidden>
-        {REMITENTE_NOMBRE.slice(0, 1).toUpperCase()}
-      </div>
-      <div className={styles.senderId}>
-        <p className={styles.senderName}>{REMITENTE_NOMBRE}</p>
-        <p className={styles.senderAddr}>{DIRECCION}</p>
-        <p className={styles.mailFolderAsunto}>{prefijo ? `${prefijo} ${ASUNTO}` : ASUNTO}</p>
-      </div>
-    </div>
-  )
-}
-
-/// Estas carpetas son navegación interna del cliente, no decisiones del
-/// escenario: mirar otra bandeja no responde todavía a la amenaza. Lo que sí
-/// cambia con la acción tomada es qué hay dentro de cada una, para que la
-/// barra de acciones y la barra lateral cuenten la misma historia.
-function carpetasCorreo(current: string, isEnding: boolean): CarpetaCorreo[] {
-  const destino = isEnding ? DESTINO_ACCION[current] : undefined
-  const carpetas: CarpetaCorreo[] = [
-    {
-      nombre: 'Enviados',
-      vacia: 'No hay correos enviados.',
-      contenido:
-        destino?.carpeta === 'Enviados' ? <ResumenMensaje prefijo={destino.prefijo} /> : undefined,
-    },
-    {
-      nombre: 'Spam',
-      vacia: 'No hay correos marcados como spam.',
-      contenido: destino?.carpeta === 'Spam' ? <ResumenMensaje /> : undefined,
-    },
-    {
-      nombre: 'Papelera',
-      vacia: 'La papelera está vacía.',
-      contenido: destino?.carpeta === 'Papelera' ? <ResumenMensaje /> : undefined,
-    },
-  ]
-
-  if (destino?.vaciaRecibidos) {
-    carpetas.push({
-      nombre: 'Recibidos',
-      vacia: 'No hay correos en la bandeja de entrada.',
-    })
-  }
-
-  return carpetas
-}
-
 /// Cada señal apunta, cuando puede, al elemento real marcado con
 /// data-signal en una de las dos pantallas. Si esa pantalla no es la que
 /// llevó a este final, el recorrido igual muestra el texto, sin resaltar.
@@ -346,7 +289,12 @@ const PESTANAS: Record<string, PestanaConfig> = {
 
 const MARCADORES: MarcadorNavegador[] = [
   { Icono: Landmark, texto: 'Banco del Litoral' },
-  { Icono: Building2, texto: 'SRI en Línea', goto: 'n3', label: 'Abrió el portal del SRI desde sus marcadores' },
+  {
+    Icono: Building2,
+    texto: 'SRI en Línea',
+    goto: 'n3',
+    label: 'Abrió el portal del SRI desde sus marcadores',
+  },
   { Icono: Newspaper, texto: 'El Comercio' },
 ]
 
@@ -493,55 +441,46 @@ function DecisionEnCurso({
   return (
     <div className="grid gap-3">
       <p className="text-lg font-semibold text-ink">¿Qué haces?</p>
-      <p className="text-lg leading-relaxed text-body">
-        Actúa sobre la ventana como lo harías frente a tu correo de verdad: puedes usar{' '}
-        <strong>cualquier parte de ella</strong>, incluida la barra de abajo. Antes de tocar un
-        enlace, mantén el cursor encima para ver a dónde lleva.
-      </p>
-      {enPortalReal && (
-        <p className="rounded-md border border-hairline-strong bg-canvas-soft px-3 py-2 text-base leading-relaxed text-body">
-          Este es el portal del SRI de verdad, abierto por ti.{' '}
-          <strong className="text-ink">No hay ninguna factura pendiente</strong>, así que el correo
-          mentía. Cierra la pestaña cuando termines de comprobarlo.
+      <Instrucciones
+        fallo={fallo}
+        pista={
+          <p>
+            Tienes tres caminos posibles: hacer lo que el correo te pide, abrir lo que trae adjunto,
+            o dejar el correo de lado y entrar al portal por tu cuenta desde los marcadores. Cuál de
+            los tres es el acertado es justamente lo que decides tú.
+          </p>
+        }
+      >
+        <p className="text-lg leading-relaxed text-body">
+          Actúa sobre la ventana como lo harías frente a tu correo de verdad: puedes usar{' '}
+          <strong>cualquier parte de ella</strong>, incluida la barra de abajo. Antes de tocar un
+          enlace, mantén el cursor encima para ver a dónde lleva.
         </p>
-      )}
+        {enPortalReal && (
+          <p className="rounded-md border border-hairline-strong bg-canvas-soft px-3 py-2 text-base leading-relaxed text-body">
+            Este es el portal del SRI de verdad, abierto por ti.{' '}
+            <strong className="text-ink">No hay ninguna factura pendiente</strong>, así que el
+            correo mentía. Cierra la pestaña cuando termines de comprobarlo.
+          </p>
+        )}
 
-      {/* Va aquí y no dentro de la página: el marco de los escenarios separa lo
+        {/* Va aquí y no dentro de la página: el marco de los escenarios separa lo
           que la app real mostraría de lo que explica el ejercicio, y una página
           de phishing jamás avisaría de qué son sus campos. */}
-      {enPortal && (
-        <p className="rounded-md border border-hairline-strong bg-canvas-soft px-3 py-2 text-base leading-relaxed text-body">
-          El formulario ya aparece con{' '}
-          <strong className="text-ink">tu RUC y tu clave escritos</strong>. Es así para no pedirte
-          datos verdaderos —ese RUC no es el de nadie—, pero enviarlo cuenta como entregarlos.
-        </p>
-      )}
+        {enPortal && (
+          <p className="rounded-md border border-hairline-strong bg-canvas-soft px-3 py-2 text-base leading-relaxed text-body">
+            El formulario ya aparece con{' '}
+            <strong className="text-ink">tu RUC y tu clave escritos</strong>. Es así para no pedirte
+            datos verdaderos —ese RUC no es el de nadie—, pero enviarlo cuenta como entregarlos.
+          </p>
+        )}
 
-      <p className="text-base leading-relaxed text-body">
-        Lo primero que hagas cierra el escenario y te muestra en qué terminaba. No hay confirmación,
-        igual que en la vida real. Puedes volver atrás con la flecha del navegador sin decidir nada.
-      </p>
-
-      {/* Solo aparece si ya intentó tocar algo que no responde: es exactamente
-          la persona que está atascada, y la pista le llega sin habérsela
-          ofrecido antes a quien no la necesita. */}
-      {fallo && (
-        <p role="status" className="rounded-md bg-surface-strong px-3 py-2 text-base text-body">
-          Ahí no hay nada que hacer. Solo algunos elementos responden: recórrelos con el cursor (o
-          con la tecla Tab) y se marcarán al pasar.
+        <p className="text-base leading-relaxed text-body">
+          Lo primero que hagas cierra el escenario y te muestra en qué terminaba. No hay
+          confirmación, igual que en la vida real. Puedes volver atrás con la flecha del navegador
+          sin decidir nada.
         </p>
-      )}
-
-      <details className="group rounded-md border border-hairline-strong bg-surface px-3 py-2">
-        <summary className="cursor-pointer list-none text-base font-medium text-link underline decoration-dotted underline-offset-4">
-          No sé por dónde empezar
-        </summary>
-        <p className="mt-2 text-base leading-relaxed text-body">
-          Tienes tres caminos posibles: hacer lo que el correo te pide, abrir lo que trae adjunto, o
-          dejar el correo de lado y entrar al portal por tu cuenta desde la barra de tareas. Cuál de
-          los tres es el acertado es justamente lo que decides tú.
-        </p>
-      </details>
+      </Instrucciones>
     </div>
   )
 }
@@ -650,6 +589,8 @@ function FacturaSri() {
   }
 
   const onHotspot = (event: React.MouseEvent) => {
+    evitarNavegacion(event)
+
     // Cerrar una pestaña la quita de la barra además de llevar a donde diga su
     // `goto`: para el correo, de vuelta a él; para el portal real, al final.
     const cerrada = (event.target as HTMLElement).closest<HTMLElement>('[data-cierra]')?.dataset
@@ -678,7 +619,10 @@ function FacturaSri() {
       {pantallaActual === 'n1' ? (
         <ContenidoCorreo
           recibido={recibido}
-          carpetas={carpetasCorreo(engine.current, engine.isEnding && !repasando)}
+          carpetas={carpetasCorreo(
+            { nombre: REMITENTE_NOMBRE, direccion: DIRECCION, asunto: ASUNTO },
+            engine.isEnding && !repasando ? engine.current : undefined,
+          )}
         />
       ) : pantallaActual === 'n2' ? (
         <ContenidoPortalFalso />

@@ -67,6 +67,22 @@ export function BotonHotspot({ goto, label, signalId, className, children }: Hot
   )
 }
 
+/**
+ * Corta la navegación de cualquier enlace de la pantalla simulada.
+ *
+ * Los enlaces llevan un `href` real —es la única forma de que el navegador
+ * revele el destino al pasar el cursor, que es la habilidad que el módulo
+ * enseña— pero seguirlo sacaría al participante del entrenamiento hacia un
+ * dominio que no existe. En los cuerpos de correo, que se inyectan como HTML,
+ * no hay ningún manejador propio que lo impida: tiene que hacerlo el
+ * contenedor.
+ */
+export function evitarNavegacion(event: React.MouseEvent) {
+  if ((event.target as HTMLElement).closest('a')) {
+    event.preventDefault()
+  }
+}
+
 /** Manejador único para el contenedor de la pantalla: busca el punto
  *  interactivo más cercano al elemento clicado y dispara la elección. Un solo
  *  `onClick` en la raíz reemplaza un `onClick` por botón.
@@ -79,6 +95,8 @@ export function manejarClicHotspot(
   event: React.MouseEvent,
   onHotspot: (goto: string, label?: string) => void,
 ): boolean {
+  evitarNavegacion(event)
+
   const objetivo = (event.target as HTMLElement).closest<HTMLElement>('[data-hotspot-goto]')
   if (!objetivo) {
     return false

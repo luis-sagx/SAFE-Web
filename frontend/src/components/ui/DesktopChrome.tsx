@@ -280,6 +280,12 @@ interface VentanaCorreoProps {
   adjunto?: ReactNode
   /** Pie institucional del mensaje. */
   pie?: ReactNode
+  /** Destinatario del mensaje. Por defecto, la dirección de entrenamiento. */
+  destinatario?: string
+  /** Obliga a mostrar una carpeta concreta. Lo usa el repaso de señales: tras
+   *  mandar el correo a Spam el participante se queda mirando esa carpeta, y
+   *  el repaso necesita el mensaje delante para poder señalarlo. */
+  carpetaForzada?: string
   /** Cuerpo del correo. */
   children: ReactNode
 }
@@ -333,15 +339,18 @@ export function CuerpoCorreo({
   carpetas,
   adjunto,
   pie,
+  destinatario,
+  carpetaForzada,
   children,
 }: VentanaCorreoProps) {
   const { correoSimulado } = useAuth()
-  const [carpetaActiva, setCarpetaActiva] = useState('Recibidos')
+  const [carpetaElegida, setCarpetaElegida] = useState('Recibidos')
+  const carpetaActiva = carpetaForzada ?? carpetaElegida
   const carpetaSecundaria = carpetas?.find((carpeta) => carpeta.nombre === carpetaActiva)
 
   return (
     <div className={styles.desktopBody}>
-      <MailNav activa={carpetaActiva} carpetas={carpetas} onSelect={setCarpetaActiva} />
+      <MailNav activa={carpetaActiva} carpetas={carpetas} onSelect={setCarpetaElegida} />
 
       <div className={styles.mailPane}>
         {carpetaSecundaria ? (
@@ -374,7 +383,7 @@ export function CuerpoCorreo({
                   <p className={styles.senderAddr} data-signal={remitente.senalDireccion}>
                     {remitente.direccion}
                   </p>
-                  <p className={styles.senderTo}>para {correoSimulado}</p>
+                  <p className={styles.senderTo}>para {destinatario ?? correoSimulado}</p>
                 </div>
                 <span className={styles.date}>{recibido}</span>
               </div>

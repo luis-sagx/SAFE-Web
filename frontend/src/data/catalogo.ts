@@ -122,7 +122,12 @@ const BASE: EscenarioBase[] = [
     escenarioId: 'clave-caducada',
     titulo: 'Contraseña por caducar',
     descripcion: 'Soporte técnico avisa que tu clave vence hoy y ofrece un enlace para renovarla.',
-    version: 2,
+    // v3: se juega sobre la pantalla, sin lista de opciones. Las salidas que no
+    // eran botones —avisar a Soporte TI, cerrar la página falsa— pasaron a
+    // serlo: un marcador del navegador y la ✕ de la pestaña.
+    // v4: el marcador abre la intranet de verdad en vez de saltar al veredicto,
+    // para que el camino acertado se vea y no solo se cuente.
+    version: 4,
     naturaleza: 'fraude',
     dificultad: 3,
     espeja: 'phishing/rol-de-pagos',
@@ -155,7 +160,8 @@ const BASE: EscenarioBase[] = [
     escenarioId: 'loteria-premiada',
     titulo: 'Premio de lotería',
     descripcion: 'Un correo anuncia un premio millonario y pide un pago para poder liberarlo.',
-    version: 1,
+    // v2: se juega sobre la pantalla, sin lista de opciones.
+    version: 2,
     naturaleza: 'fraude',
     dificultad: 1,
     espeja: 'phishing/aviso-filtracion',
@@ -181,7 +187,8 @@ const BASE: EscenarioBase[] = [
     escenarioId: 'secuestro-hilo',
     titulo: 'Cambio de cuenta bancaria',
     descripcion: 'La secretaría del colegio informa una cuenta nueva para el pago de la pensión.',
-    version: 2,
+    // v3: se juega sobre la pantalla, sin lista de opciones.
+    version: 3,
     naturaleza: 'fraude',
     dificultad: 4,
     espeja: 'phishing/rol-de-pagos',
@@ -211,7 +218,8 @@ const BASE: EscenarioBase[] = [
     escenarioId: 'aviso-filtracion',
     titulo: 'Aviso de filtración de datos',
     descripcion: 'Una tienda en línea comunica un incidente de seguridad que afecta a tu cuenta.',
-    version: 2,
+    // v3: se juega sobre la pantalla, sin lista de opciones.
+    version: 3,
     naturaleza: 'legitimo',
     dificultad: 4,
     espeja: 'phishing/sesion-bogota',

@@ -1,11 +1,17 @@
 import { Paperclip } from 'lucide-react'
-import { Taskbar, Titlebar, VentanaCorreo, type AccionCorreo } from './DesktopChrome'
+import { useAuth } from '../../context/AuthContext'
+import { CuerpoCorreo, type AccionCorreo, type CarpetaCorreo } from './DesktopChrome'
 import styles from './DeviceScreen.module.css'
 
 /**
- * Pantallas simuladas compartidas por los escenarios de correo y SMS. Solo
- * dibujan lo que la app real mostraría (regla diegética de EscenarioLayout);
- * las preguntas y el feedback viven fuera del marco.
+ * Contenido de las pantallas simuladas de correo, web y SMS. Solo dibuja lo que
+ * la app real mostraría (regla diegética de EscenarioLayout); las preguntas y
+ * el feedback viven fuera del marco.
+ *
+ * El correo y la web devuelven contenido a secas, sin ventana: van dentro de
+ * una pestaña del navegador, que es quien pone la barra de título, la de
+ * direcciones y la de tareas. El SMS conserva su propio marco porque no es una
+ * página web sino un teléfono.
  *
  * Los campos de formulario no son editables a propósito: el participante juzga
  * una pantalla, nunca escribe credenciales reales en ella.
@@ -23,6 +29,11 @@ export type ScreenView =
       /** Pie institucional del mensaje. HTML fijo, como `body`. */
       footer?: string
       attachment?: string
+      /** Nodo al que lleva abrir el adjunto. Sin esto el adjunto es de adorno:
+       *  se ve pero no se abre, que es justo lo que un participante intenta
+       *  hacer primero cuando el correo dice "adjunto el comprobante". */
+      adjuntoGoto?: string
+      adjuntoLabel?: string
       /** Etiqueta del cliente de correo: "Promociones", "Externo"… */
       label?: string
       /** `data-signal` del repaso para la dirección, la etiqueta y el adjunto. */
@@ -35,14 +46,39 @@ export type ScreenView =
       url: string
       /** Candado del navegador. Falso pinta la advertencia "No seguro". */
       secure: boolean
+      /** Archivo abierto desde el disco (un adjunto descargado, p. ej.). No
+       *  lleva candado ni advertencia: poner candado a un archivo local
+       *  enseñaría justo lo contrario de lo que mide este módulo. */
+      local?: boolean
       brand: string
       title: string
       subtitle?: string
-      fields: { label: string; placeholder: string; senal?: string }[]
+      fields: {
+        label: string
+        placeholder: string
+        senal?: string
+        /** Rellena el campo con los datos del participante en vez del texto de
+         *  ejemplo. Un formulario que ya trae *tu* correo se lee como el de un
+         *  sitio que te conoce, que es media trampa; y de paso deja tu dominio
+         *  real a la vista, junto al falso de la barra de direcciones. */
+        valor?: 'correo' | 'usuario'
+      }[]
+      /** Datos de una página informativa. Cuando los hay, sustituyen al
+       *  formulario: un directorio no se rellena, se lee. */
+      datos?: { etiqueta: string; valor: string; senal?: string }[]
       button: string
       footer?: string
       /** `data-signal` de la barra de direcciones. */
       senalUrl?: string
+      /** Nodo al que lleva enviar el formulario. Sin esto el botón es de
+       *  adorno, y un botón de envío que no responde es lo que menos se
+       *  perdona en una pantalla que imita a una real. */
+      botonGoto?: string
+      botonLabel?: string
+      /** Nodo al que lleva cerrar la pestaña de esta página. Sin esto la
+       *  pestaña no lleva la ✕: cerrar tiene que significar algo. */
+      cerrarGoto?: string
+      cerrarLabel?: string
     }
   | {
       kind: 'sms'
@@ -51,22 +87,50 @@ export type ScreenView =
       msgs: { text: string; time: string; mine?: boolean }[]
     }
 
+/// El botón de una página simulada, sea el envío de un formulario o la acción
+/// única de una página informativa ("llamar a este número"). Sin `botonGoto`
+/// se pinta igual pero no responde: hay páginas donde el botón es decorado.
+function Accion({ view }: { view: Extract<ScreenView, { kind: 'web' }> }) {
+  if (!view.botonGoto) return <div className={styles.submit}>{view.button}</div>
+
+  return (
+    <button
+      type="button"
+      className={`${styles.hotspot} ${styles.submit}`}
+      data-hotspot-goto={view.botonGoto}
+      data-hotspot-label={view.botonLabel}
+    >
+      {view.button}
+    </button>
+  )
+}
+
 function DeviceScreen({
   view,
   acciones,
-  onHotspot,
+  carpetas,
+  destinatario,
+  carpetaForzada,
 }: {
   view: ScreenView
   /** Barra de acciones del cliente. Solo se pinta si el escenario declara sus
    *  finales; sin ellos los botones no tendrían a dónde saltar. */
   acciones?: AccionCorreo[]
-  onHotspot?: (event: React.MouseEvent) => void
+  carpetas?: CarpetaCorreo[]
+  destinatario?: string
+  carpetaForzada?: string
 }) {
+  const { correoSimulado } = useAuth()
+  const correo = destinatario ?? correoSimulado
+  const usuario = correo.split('@')[0]
+
   if (view.kind === 'mail') {
     return (
-      <VentanaCorreo
+      <CuerpoCorreo
         acciones={acciones}
-        onClick={onHotspot}
+        carpetas={carpetas}
+        destinatario={destinatario}
+        carpetaForzada={carpetaForzada}
         asunto={view.subject}
         remitente={{
           nombre: view.from,
@@ -78,7 +142,14 @@ function DeviceScreen({
         recibido={view.date}
         adjunto={
           view.attachment && (
-            <span className={styles.attachment} data-signal={view.senalAdjunto}>
+            <span
+              className={styles.attachment}
+              data-signal={view.senalAdjunto}
+              data-hotspot-goto={view.adjuntoGoto}
+              data-hotspot-label={view.adjuntoLabel}
+              role={view.adjuntoGoto ? 'button' : undefined}
+              tabIndex={view.adjuntoGoto ? 0 : undefined}
+            >
               <span className={styles.attachmentTipo} aria-hidden>
                 <Paperclip className={styles.attachmentIcono} strokeWidth={1.75} />
               </span>
@@ -90,50 +161,49 @@ function DeviceScreen({
       >
         {/* Contenido fijo del escenario: permite negritas y el enlace falso. */}
         <div dangerouslySetInnerHTML={{ __html: view.body }} />
-      </VentanaCorreo>
+      </CuerpoCorreo>
     )
   }
 
   if (view.kind === 'web') {
     return (
-      <section className={`${styles.screen} ${styles.desktop}`} aria-label="Página web simulada">
-        <Titlebar texto={view.title} />
+      <div className={styles.page}>
+        <p className={styles.brand}>{view.brand}</p>
+        <h2 className={styles.pageTitle}>{view.title}</h2>
+        {view.subtitle && <p className={styles.pageSub}>{view.subtitle}</p>}
 
-        {/* Pestaña de navegador: en el celular no hay pestañas visibles, y es
-            la segunda señal más fuerte de que esto es un computador. */}
-        <div className={styles.tabstrip} aria-hidden>
-          <span className={styles.tab}>{view.title}</span>
-        </div>
-
-        <div className={styles.urlbar}>
-          <span className={view.secure ? styles.lock : styles.warn}>
-            {view.secure ? '🔒' : '⚠ No seguro'}
-          </span>
-          <span className={styles.url} data-signal={view.senalUrl}>
-            {view.url}
-          </span>
-        </div>
-
-        <div className={styles.page}>
-          <p className={styles.brand}>{view.brand}</p>
-          <h2 className={styles.pageTitle}>{view.title}</h2>
-          {view.subtitle && <p className={styles.pageSub}>{view.subtitle}</p>}
-
+        {view.datos ? (
+          <div className={styles.datos}>
+            {view.datos.map((dato) => (
+              <div key={dato.etiqueta} className={styles.dato}>
+                <span className={styles.datoEtiqueta}>{dato.etiqueta}</span>
+                <span className={styles.datoValor} data-signal={dato.senal}>
+                  {dato.valor}
+                </span>
+              </div>
+            ))}
+            {view.button && <Accion view={view} />}
+          </div>
+        ) : (
           <div className={styles.form}>
             {view.fields.map((field) => (
               <label key={field.label} className={styles.field} data-signal={field.senal}>
                 <span>{field.label}</span>
-                <span className={styles.input}>{field.placeholder}</span>
+                <span className={styles.input}>
+                  {field.valor === 'correo'
+                    ? correo
+                    : field.valor === 'usuario'
+                      ? usuario
+                      : field.placeholder}
+                </span>
               </label>
             ))}
-            <div className={styles.submit}>{view.button}</div>
+            <Accion view={view} />
           </div>
+        )}
 
-          {view.footer && <p className={styles.pageFooter}>{view.footer}</p>}
-        </div>
-
-        <Taskbar />
-      </section>
+        {view.footer && <p className={styles.pageFooter}>{view.footer}</p>}
+      </div>
     )
   }
 

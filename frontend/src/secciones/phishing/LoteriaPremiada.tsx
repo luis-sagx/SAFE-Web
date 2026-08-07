@@ -1,4 +1,6 @@
+import { Landmark, Newspaper, Search } from 'lucide-react'
 import StoryEscenario, { type ScreenNode } from '../../components/StoryEscenario'
+import type { MarcadorNavegador } from '../../components/ui/Navegador'
 import { ACCIONES_BARRA, finalesDeBarra } from './barraDeCorreo'
 import type { Story } from '../../hooks/useStoryEngine'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
@@ -17,6 +19,8 @@ import type { Senal } from '../../components/ui/PanelVeredicto'
  * escenarios solo usan nombres reales cuando la institución es el asunto del
  * ejercicio, como el SRI en factura-sri.
  */
+
+const URL_FALSA = 'http://loteria-pacifico-premios.online/reclamo'
 
 const CORREO: ScreenView = {
   kind: 'mail',
@@ -41,7 +45,7 @@ const CORREO: ScreenView = {
       <mark class="marca" data-signal="plazo">48 horas</mark>; pasado ese plazo el premio se
       reasigna a otro participante.
     </p>
-    <p><a class="cta" href="#">Reclamar mi premio ahora</a></p>
+    <p><a class="cta" href="${URL_FALSA}" data-hotspot-goto="n2" data-hotspot-label="Pulsó &quot;Reclamar mi premio ahora&quot; en el correo">Reclamar mi premio ahora</a></p>
   `,
   footer: `
     <p>Lotería del Pacífico · Departamento de Premios y Reclamos</p>
@@ -51,7 +55,7 @@ const CORREO: ScreenView = {
 
 const RECLAMO: ScreenView = {
   kind: 'web',
-  url: 'http://loteria-pacifico-premios.online/reclamo',
+  url: URL_FALSA,
   secure: false,
   senalUrl: 'url-insegura',
   brand: 'Lotería del Pacífico',
@@ -62,54 +66,55 @@ const RECLAMO: ScreenView = {
     { label: 'Banco y número de cuenta', placeholder: 'Banco · 00000000', senal: 'campo-cuenta' },
   ],
   button: 'Pagar $85 y liberar mi premio',
+  botonGoto: 'e_paga',
+  botonLabel: 'Pagó los $85 para liberar el premio',
+  cerrarGoto: 'e_frena',
+  cerrarLabel: 'Cerró la página del reclamo sin pagar ni escribir nada',
+}
+
+/// El buscador: aquí es donde "comprobarlo por mi cuenta" deja de ser una
+/// intención y se ve. No existe ninguna lotería con ese nombre, y eso es lo que
+/// desmonta el correo entero.
+const BUSCADOR: ScreenView = {
+  kind: 'web',
+  url: 'https://www.buscador.ec/?q=loteria+del+pacifico',
+  secure: true,
+  brand: 'Buscador',
+  title: 'lotería del pacífico',
+  subtitle: 'Aproximadamente 4 resultados',
+  datos: [
+    {
+      etiqueta: 'Resultado',
+      valor: 'No hay ninguna lotería registrada con ese nombre en el Ecuador.',
+      senal: 'sin-registro',
+    },
+    {
+      etiqueta: 'Foros',
+      valor: '"Me llegó un correo diciendo que gané un premio de la Lotería del Pacífico"',
+    },
+    {
+      etiqueta: 'Noticias',
+      valor: 'Advierten sobre correos que anuncian premios falsos y piden un pago por adelantado',
+    },
+  ],
+  fields: [],
+  button: '',
+  cerrarGoto: 'e_verifica',
+  cerrarLabel: 'Buscó la lotería por su cuenta y cerró la pestaña',
 }
 
 const STORY: Story<ScreenNode> = {
   // Responder, reenviar, archivar, eliminar y marcar como spam.
   ...finalesDeBarra('fraude', CORREO),
-  n1: {
-    kind: 'scene',
-    view: CORREO,
-    choices: [
-      { label: 'Abrir el enlace para reclamar el premio.', goto: 'n2' },
-      {
-        label: 'Preguntarme primero si alguna vez compré un boleto de esa lotería.',
-        goto: 'e_nojugue',
-      },
-      {
-        label: 'Buscar la lotería por mi cuenta y llamar al número de su sitio oficial.',
-        goto: 'e_verifica',
-      },
-    ],
-  },
-  n2: {
-    kind: 'scene',
-    view: RECLAMO,
-    choices: [
-      { label: 'Pagar los $85: es poco al lado de lo que voy a recibir.', goto: 'e_paga' },
-      {
-        label: 'Escribir mi cédula y mi número de cuenta para que hagan la transferencia.',
-        goto: 'e_cuenta',
-      },
-      {
-        label: 'Frenar: me están pidiendo pagar para poder cobrar. Cerrar la página.',
-        goto: 'e_frena',
-      },
-    ],
-  },
+  n1: { kind: 'scene', view: CORREO },
+  n2: { kind: 'scene', view: RECLAMO },
+  n3: { kind: 'scene', view: BUSCADOR },
   e_paga: {
     kind: 'bad',
     view: RECLAMO,
     verdict: 'Caíste en la estafa',
     outcome:
       'Pagaste los $85 y el premio no llegó. En su lugar llegó otro correo: ahora faltaba un "seguro de transferencia" de $190. Así funciona — cada pago abre la puerta al siguiente, y quien ya pagó cuesta más que se detenga.',
-  },
-  e_cuenta: {
-    kind: 'bad',
-    view: RECLAMO,
-    verdict: 'Caíste en la estafa',
-    outcome:
-      'Entregaste tu cédula y tu número de cuenta. No hacía falta que pagaras nada: con esos datos ya pueden suplantarte ante tu banco e intentar movimientos a tu nombre.',
   },
   e_frena: {
     kind: 'good',
@@ -118,21 +123,47 @@ const STORY: Story<ScreenNode> = {
     outcome:
       'Cerraste la página al notar que te pedían pagar para poder cobrar. Un premio real se descuenta del monto o se entrega ante notario; nunca se cobra por adelantado.',
   },
-  e_nojugue: {
-    kind: 'good',
-    view: CORREO,
-    verdict: 'No caíste · nunca jugaste',
-    outcome:
-      'No has comprado ningún boleto de esa lotería, así que no había nada que ganar. Es la pregunta que desarma este fraude entero, y no hace falta mirar la pantalla para responderla.',
-  },
   e_verifica: {
     kind: 'good',
-    view: CORREO,
-    verdict: 'No caíste · verificaste por tu cuenta',
+    view: BUSCADOR,
+    verdict: 'No caíste · lo comprobaste por tu cuenta',
     outcome:
-      'Buscaste la lotería y llamaste al número de su sitio oficial. No existía ningún sorteo con ese nombre ni ningún premio a tu nombre.',
+      'Antes de tocar el enlace buscaste la lotería por tu lado, y no existía: ni ese sorteo ni ese premio. Comprobar por fuera del mensaje es lo que resuelve estos casos, porque un correo falso no puede desmentirse a sí mismo.',
   },
 }
+
+const MARCADORES: MarcadorNavegador[] = [
+  { Icono: Landmark, texto: 'Banco del Litoral' },
+  {
+    Icono: Search,
+    texto: 'Buscador',
+    goto: 'n3',
+    label: 'Buscó la lotería por su cuenta en internet',
+  },
+  { Icono: Newspaper, texto: 'El Comercio' },
+]
+
+const INSTRUCCION = (
+  <>
+    <p className="text-lg leading-relaxed text-body">
+      Actúa sobre la ventana como lo harías frente a tu correo de verdad: puedes usar{' '}
+      <strong>cualquier parte de ella</strong>, incluidos los marcadores. Antes de tocar un enlace,
+      mantén el cursor encima para ver a dónde lleva.
+    </p>
+    <p className="text-base leading-relaxed text-body">
+      Lo primero que hagas cierra el escenario y te muestra en qué terminaba. Cambiar de pestaña no
+      decide nada.
+    </p>
+  </>
+)
+
+const PISTA = (
+  <p>
+    Tienes cuatro caminos posibles: hacer lo que el correo pide, contestarle, decidir qué hacer con
+    el mensaje desde la barra del cliente, o comprobar por tu cuenta si esa lotería existe. Cuál de
+    ellos es el acertado es justamente lo que decides tú.
+  </p>
+)
 
 const SENALES: Senal[] = [
   {
@@ -172,10 +203,19 @@ const SENALES: Senal[] = [
   },
 ]
 
+const SENAL_BUSCADOR: Senal = {
+  id: 'sin-registro',
+  pantalla: 'n3',
+  targetId: 'sin-registro',
+  texto:
+    'Buscarla por tu cuenta lo resuelve en un minuto: <b>esa lotería no existe</b>. Un premio de verdad se puede confirmar fuera del correo que lo anuncia.',
+}
+
 const RULE =
   'Regla de oro: <b>nunca se paga para cobrar un premio</b>. Y antes de mirar cualquier otra señal, pregúntate si llegaste a jugar: si no compraste el boleto, no hay premio que reclamar.'
 
-const RESUMEN = 'Un correo anuncia que ganaste un premio de una lotería y pide un pago para cobrarlo.'
+const RESUMEN =
+  'Un correo anuncia que ganaste un premio de una lotería y pide un pago para cobrarlo.'
 
 const CONTEXTO = (
   <>
@@ -198,7 +238,10 @@ function LoteriaPremiada() {
       contexto={CONTEXTO}
       story={STORY}
       accionesCorreo={ACCIONES_BARRA}
-      senales={SENALES}
+      marcadores={MARCADORES}
+      instruccion={INSTRUCCION}
+      pista={PISTA}
+      senales={[...SENALES, SENAL_BUSCADOR]}
       rule={RULE}
       restartLabel="↻ Repetir el escenario"
     />
