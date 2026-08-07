@@ -1,4 +1,4 @@
-@import 'tailwindcss';
+@import "tailwindcss";
 
 /* Tokens del sistema de diseño. Ver DESIGN.md — solo modo claro. */
 @theme {
@@ -33,8 +33,8 @@
   --color-danger: #b4342f;
   --color-warning: #ab6400;
 
-  --font-sans: 'Inter', -apple-system, system-ui, sans-serif;
-  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  --font-sans: "Inter", -apple-system, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", "Fira Code", monospace;
 
   --radius-xs: 4px;
   --radius-sm: 6px;
@@ -54,6 +54,12 @@
    no, y el enlace "Volver" parece cambiar de sitio al navegar. */
 html {
   scrollbar-gutter: stable;
+}
+
+@media (min-width: 64rem) {
+  html {
+    font-size: clamp(0.875rem, 0.575rem + 0.4vw, 1rem);
+  }
 }
 
 body {
