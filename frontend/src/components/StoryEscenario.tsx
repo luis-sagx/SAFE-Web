@@ -258,6 +258,7 @@ function StoryEscenario({
         )
       }
       decision={decision}
+      resultado={engine.resultado}
       onEmpezar={engine.restart}
       // El correo y la web se abren más en computador que en celular; el SMS
       // se queda en celular, que es donde de verdad llegan los mensajes.

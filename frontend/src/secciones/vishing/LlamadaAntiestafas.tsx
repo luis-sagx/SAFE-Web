@@ -122,7 +122,7 @@ function formatTime(totalSeconds: number) {
 
 function LlamadaAntiestafas() {
   const engine = useStoryEngine(STORY, 'n1', 'vishing/llamada-antiestafas')
-  const { current, node, isEnding, choose, restart } = engine
+  const { current, node, isEnding, resultado, choose, restart } = engine
 
   const [phase, setPhase] = useState<'ringing' | 'active' | 'ended'>('ringing')
   const [seconds, setSeconds] = useState(0)
@@ -434,6 +434,7 @@ function LlamadaAntiestafas() {
       nota={NOTA}
       pantalla={pantalla}
       decision={decision}
+      resultado={resultado}
       onEmpezar={handleRestart}
     />
   )

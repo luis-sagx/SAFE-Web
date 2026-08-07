@@ -215,7 +215,7 @@ function ClaveCaducada() {
       dominioCorreo="andes.com.ec"
       senales={[...SENALES, SENAL_REAL]}
       rule={RULE}
-      reloj={{ hora: '16:12', fecha: '4/8/2026' }}
+      reloj={{ hora: '16:12' }}
       restartLabel="↻ Repetir el escenario"
     />
   )

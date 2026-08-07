@@ -1,4 +1,13 @@
-import { Inbox, Send, ShieldAlert, Trash2, type LucideIcon } from 'lucide-react'
+import {
+  Inbox,
+  LayoutGrid,
+  Send,
+  ShieldAlert,
+  Trash2,
+  Volume2,
+  Wifi,
+  type LucideIcon,
+} from 'lucide-react'
 import { useState, type ReactNode } from 'react'
 import { formatoFecha, formatoHora, useRelojDelSistema } from '../../hooks/useRelojDelSistema'
 import { useAuth } from '../../context/AuthContext'
@@ -11,8 +20,13 @@ export interface AtajoTaskbar {
   label: string
 }
 
-/** Hora del sistema: un par fijo, o `'vivo'` para la real del equipo. */
-export type Reloj = { hora: string; fecha: string } | 'vivo'
+/** Hora del sistema: una fija, o `'vivo'` para la real del equipo.
+ *
+ *  Solo la hora. La fecha del reloj es siempre la de hoy, sin excepción: los
+ *  correos llegan fechados "hoy 20:20", así que una fecha inventada en la barra
+ *  de tareas contradecía al mensaje que hay que juzgar — y de paso delataba la
+ *  simulación a quien mirase el reloj. */
+export type Reloj = { hora: string } | 'vivo'
 
 export interface AccionCorreo {
   Icono: LucideIcon
@@ -164,11 +178,11 @@ export function Titlebar({ texto }: { texto: string }) {
 export function Taskbar({
   app,
   atajo,
-  reloj = { hora: '10:41', fecha: '4/8/2026' },
+  reloj = { hora: '10:41' },
 }: {
   /** Programa en el que ya se está, anclado y sin acción: pulsar el icono de la
    *  app que tienes delante no hace nada en ningún sistema. */
-  app?: string
+  app?: { Icono: LucideIcon; texto: string }
   atajo?: AtajoTaskbar
   /** La hora del sistema.
    *
@@ -178,22 +192,27 @@ export function Taskbar({
    *  reloj real junto a un correo fechado a una hora fija vuelve a dejar dos
    *  relojes que se contradicen, que es el problema que esto viene a resolver.
    *
-   *  Un par fijo sigue valiendo para los escenarios cuya historia depende de
-   *  una hora concreta ("son casi las diez de la noche"). */
+   *  Una hora fija sigue valiendo para los escenarios cuya historia depende de
+   *  una hora concreta ("son casi las diez de la noche"). La fecha nunca se
+   *  fija: siempre es la de hoy. */
   reloj?: Reloj
 }) {
   const ahora = useRelojDelSistema()
-  const { hora, fecha } =
-    reloj === 'vivo' ? { hora: formatoHora(ahora), fecha: formatoFecha(ahora) } : reloj
+  const hora = reloj === 'vivo' ? formatoHora(ahora) : reloj.hora
 
   return (
     <div className={styles.taskbar}>
       <span className={styles.taskbarStart} aria-hidden>
-        ⊞
+        <LayoutGrid className={styles.taskbarStartIcono} strokeWidth={2} />
       </span>
       <span className={styles.taskbarDivider} aria-hidden />
 
-      {app && <span className={`${styles.taskbarAtajo} ${styles.taskbarApp}`}>{app}</span>}
+      {app && (
+        <span className={`${styles.taskbarAtajo} ${styles.taskbarApp}`}>
+          <app.Icono aria-hidden className={styles.taskbarAppIcono} strokeWidth={1.75} />
+          {app.texto}
+        </span>
+      )}
 
       {atajo && (
         <button
@@ -211,11 +230,13 @@ export function Taskbar({
       )}
 
       <span className={styles.taskbarTray} aria-hidden>
-        <span>📶</span>
-        <span>🔊</span>
+        <Wifi className={styles.taskbarTrayIcono} strokeWidth={1.75} />
+        <Volume2 className={styles.taskbarTrayIcono} strokeWidth={1.75} />
         <span className={styles.taskbarClock}>
           <span>{hora}</span>
-          <span>{fecha}</span>
+          {/* La fecha es siempre la de hoy, aunque la hora esté fijada por el
+              escenario: los mensajes llegan fechados "hoy 20:20". */}
+          <span>{formatoFecha(ahora)}</span>
         </span>
       </span>
     </div>

@@ -1,12 +1,14 @@
 import { Archive, Forward, Landmark, Reply, ShieldAlert, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import EscenarioLayout from '../../components/EscenarioLayout'
+import { carpetasCorreo } from '../../components/ui/carpetasCorreo'
 import {
   CuerpoCorreo,
   type AccionCorreo,
   type CarpetaCorreo,
 } from '../../components/ui/DesktopChrome'
 import styles from '../../components/ui/DeviceScreen.module.css'
+import Instrucciones from '../../components/ui/Instrucciones'
 import { BotonHotspot, EnlaceHotspot, manejarClicHotspot } from '../../components/ui/interactivo'
 import { Navegador, type MarcadorNavegador, type PestanaConfig } from '../../components/ui/Navegador'
 import PanelVeredicto, { type Senal } from '../../components/ui/PanelVeredicto'
@@ -84,44 +86,10 @@ const ASUNTO = 'Alerta de seguridad: nuevo inicio de sesión'
 const REMITENTE_NOMBRE = 'Banco del Litoral · Seguridad'
 const DIRECCION = 'alertas@bancodellitoral.com.ec'
 
-const DESTINO_ACCION: Record<
-  string,
-  { carpeta?: 'Enviados' | 'Spam' | 'Papelera'; prefijo?: string; vaciaRecibidos: boolean }
-> = {
-  e_archivar: { vaciaRecibidos: true },
-  e_eliminar: { carpeta: 'Papelera', vaciaRecibidos: true },
-  e_spam: { carpeta: 'Spam', vaciaRecibidos: true },
-  e_responder: { carpeta: 'Enviados', prefijo: 'Re:', vaciaRecibidos: false },
-  e_reenviar: { carpeta: 'Enviados', prefijo: 'Fwd:', vaciaRecibidos: false },
-}
-
-function ResumenMensaje({ prefijo }: { prefijo?: string }) {
-  return (
-    <div className={styles.senderRow}>
-      <div className={styles.avatar} aria-hidden>
-        {REMITENTE_NOMBRE.slice(0, 1).toUpperCase()}
-      </div>
-      <div className={styles.senderId}>
-        <p className={styles.senderName}>{REMITENTE_NOMBRE}</p>
-        <p className={styles.senderAddr}>{DIRECCION}</p>
-        <p className={styles.mailFolderAsunto}>{prefijo ? `${prefijo} ${ASUNTO}` : ASUNTO}</p>
-      </div>
-    </div>
-  )
-}
-
-function carpetasCorreo(current: string, isEnding: boolean): CarpetaCorreo[] {
-  const destino = isEnding ? DESTINO_ACCION[current] : undefined
-  const carpetas: CarpetaCorreo[] = [
-    { nombre: 'Enviados', vacia: 'No hay correos enviados.', contenido: destino?.carpeta === 'Enviados' ? <ResumenMensaje prefijo={destino.prefijo} /> : undefined },
-    { nombre: 'Spam', vacia: 'No hay correos marcados como spam.', contenido: destino?.carpeta === 'Spam' ? <ResumenMensaje /> : undefined },
-    { nombre: 'Papelera', vacia: 'La papelera está vacía.', contenido: destino?.carpeta === 'Papelera' ? <ResumenMensaje /> : undefined },
-  ]
-  if (destino?.vaciaRecibidos) {
-    carpetas.push({ nombre: 'Recibidos', vacia: 'No hay correos en la bandeja de entrada.' })
-  }
-  return carpetas
-}
+/// El mensaje tal como lo muestran las carpetas cuando una acción de la barra
+/// lo mueve de bandeja. Lo pinta `carpetasCorreo`, compartido por todos los
+/// escenarios de correo.
+const MENSAJE = { nombre: REMITENTE_NOMBRE, direccion: DIRECCION, asunto: ASUNTO }
 
 // s2 anclada a la URL de n2 (la página falsa), no al remitente: el
 // remitente muestra un dominio limpio (bancodellitoral.com.ec), que es
@@ -275,47 +243,41 @@ function DecisionEnCurso({ fallo, pantalla }: { fallo: boolean; pantalla: string
   return (
     <div className="grid gap-3">
       <p className="text-lg font-semibold text-ink">¿Qué haces?</p>
-      <p className="text-lg leading-relaxed text-body">
-        Actúa sobre la ventana como lo harías frente a tu correo de verdad: puedes usar{' '}
-        <strong>cualquier parte de ella</strong>, incluida la barra de abajo. Antes de tocar un
-        enlace, mantén el cursor encima para ver a dónde lleva.
-      </p>
-
-      {pantalla === 'n2' && (
-        <p className="rounded-md border border-hairline-strong bg-canvas-soft px-3 py-2 text-base leading-relaxed text-body">
-          El campo ya aparece con <strong className="text-ink">tu contraseña escrita</strong>. Es
-          así para no pedirte datos reales, pero enviarla cuenta como entregarla.
+      <Instrucciones
+        fallo={fallo}
+        pista={
+          <p>
+            Tienes dos caminos posibles: hacer lo que la alerta pide, o dejarla de lado y entrar a
+            verificar por la app del banco desde los marcadores. Cuál de los dos es el acertado es
+            justamente lo que decides tú.
+          </p>
+        }
+      >
+        <p className="text-lg leading-relaxed text-body">
+          Actúa sobre la ventana como lo harías frente a tu correo de verdad: puedes usar{' '}
+          <strong>cualquier parte de ella</strong>, incluida la barra de abajo. Antes de tocar un
+          enlace, mantén el cursor encima para ver a dónde lleva.
         </p>
-      )}
-      {pantalla === 'n3' && (
-        <p className="rounded-md border border-hairline-strong bg-canvas-soft px-3 py-2 text-base leading-relaxed text-body">
-          El campo ya aparece con <strong className="text-ink">el código escrito</strong>. Es así
-          para no pedirte datos reales, pero enviarlo cuenta como entregarlo.
-        </p>
-      )}
 
-      <p className="text-base leading-relaxed text-body">
-        Lo primero que hagas cierra el escenario y te muestra en qué terminaba. No hay confirmación,
-        igual que en la vida real. Puedes volver atrás con la flecha del navegador sin decidir nada.
-      </p>
+        {pantalla === 'n2' && (
+          <p className="rounded-md border border-hairline-strong bg-canvas-soft px-3 py-2 text-base leading-relaxed text-body">
+            El campo ya aparece con <strong className="text-ink">tu contraseña escrita</strong>. Es
+            así para no pedirte datos reales, pero enviarla cuenta como entregarla.
+          </p>
+        )}
+        {pantalla === 'n3' && (
+          <p className="rounded-md border border-hairline-strong bg-canvas-soft px-3 py-2 text-base leading-relaxed text-body">
+            El campo ya aparece con <strong className="text-ink">el código escrito</strong>. Es así
+            para no pedirte datos reales, pero enviarlo cuenta como entregarlo.
+          </p>
+        )}
 
-      {fallo && (
-        <p role="status" className="rounded-md bg-surface-strong px-3 py-2 text-base text-body">
-          Ahí no hay nada que hacer. Solo algunos elementos responden: recórrelos con el cursor (o
-          con la tecla Tab) y se marcarán al pasar.
+        <p className="text-base leading-relaxed text-body">
+          Lo primero que hagas cierra el escenario y te muestra en qué terminaba. No hay
+          confirmación, igual que en la vida real. Puedes volver atrás con la flecha del navegador
+          sin decidir nada.
         </p>
-      )}
-
-      <details className="group rounded-md border border-hairline-strong bg-surface px-3 py-2">
-        <summary className="cursor-pointer list-none text-base font-medium text-link underline decoration-dotted underline-offset-4">
-          No sé por dónde empezar
-        </summary>
-        <p className="mt-2 text-base leading-relaxed text-body">
-          Tienes dos caminos posibles: hacer lo que la alerta pide, o dejarla de lado y entrar a
-          verificar por la app del banco desde los marcadores. Cuál de los dos es el acertado es
-          justamente lo que decides tú.
-        </p>
-      </details>
+      </Instrucciones>
     </div>
   )
 }
@@ -366,7 +328,10 @@ function SesionBogota() {
   const pantalla = (
     <Navegador pestanas={PESTANAS} abiertas={pestanas} activa={pantallaActual} marcadores={MARCADORES} onHotspot={onHotspot}>
       {pantallaActual === 'n1' ? (
-        <ContenidoCorreo carpetas={carpetasCorreo(engine.current, engine.isEnding && !repasando)} recibido="hoy 21:47" />
+        <ContenidoCorreo
+          carpetas={carpetasCorreo(MENSAJE, engine.isEnding && !repasando ? engine.current : undefined)}
+          recibido="hoy 21:47"
+        />
       ) : pantallaActual === 'n2' ? (
         <ContenidoPaginaClave />
       ) : (
@@ -401,6 +366,7 @@ function SesionBogota() {
       nota={NOTA}
       pantalla={pantalla}
       decision={decision}
+      resultado={engine.resultado}
       onEmpezar={engine.restart}
       dispositivo="escritorio"
     />

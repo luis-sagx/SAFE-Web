@@ -1,36 +1,44 @@
-import { Info } from 'lucide-react'
-import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { Link } from 'react-router'
-import AppHeader from './AppHeader'
-import InfoLink from './InfoLink'
-import { useAuth } from '../context/AuthContext'
-import { getEscenario, getSeccion } from '../data/catalogo'
+import { Info } from "lucide-react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import { Link } from "react-router";
+import AppHeader from "./AppHeader";
+import InfoLink from "./InfoLink";
+import AvisoFinEscenario from "./ui/AvisoFinEscenario";
+import type { ResultadoEscenario } from "../hooks/useScenarioRun";
+import { useAuth } from "../context/AuthContext";
+import { getEscenario, getSeccion } from "../data/catalogo";
 
 interface EscenarioLayoutProps {
   /** Misma clave que recibe useScenarioRun, p. ej. 'estafa/saldo-contable'. */
-  escenarioId: string
+  escenarioId: string;
   /** Una línea; queda visible durante todo el escenario. */
-  resumen: string
+  resumen: string;
   /** La situación: quién eres y qué te está pasando. Solo historia, nada de
    *  mecánica — acompaña al participante también dentro del escenario, donde
    *  una frase como "vas a ver tu correo" ya no tendría sentido. */
-  contexto: ReactNode
+  contexto: ReactNode;
   /** Cómo se juega. Aparece únicamente en el briefing, antes de entrar. */
-  nota?: ReactNode
+  nota?: ReactNode;
   /** Dominio del correo del participante dentro de este escenario. Los
    *  ambientados en una empresa lo fijan al de esa empresa; el resto usan el
    *  del entrenamiento. */
-  dominioCorreo?: string
+  dominioCorreo?: string;
   /** Va dentro del marco del dispositivo. Solo lo que la app real mostraría. */
-  pantalla: ReactNode
+  pantalla: ReactNode;
   /** Va debajo del marco: pregunta, opciones, feedback, resultado. */
-  decision: ReactNode
-  onEmpezar: () => void
+  decision: ReactNode;
+  /** Con qué resultado cerró la corrida, o nada mientras siga abierta.
+   *
+   *  El layout lo usa para el diálogo de fin: el resultado sale al costado, y
+   *  quien estaba mirando la pantalla no se enteraba de que ya había decidido.
+   *  Ver AvisoFinEscenario. */
+  resultado?: ResultadoEscenario;
+  onEmpezar: () => void;
   /** Forma del marco exterior. 'telefono' es el default: la mayoría de
    *  escenarios (SMS, llamada, chat) se abren en el celular. 'escritorio' es
    *  para correo y web: el phishing se abre más en computador, y así se
    *  distingue de inmediato del resto de amenazas, que sí son de celular. */
-  dispositivo?: 'telefono' | 'escritorio'
+  dispositivo?: "telefono" | "escritorio";
 }
 
 /**
@@ -40,38 +48,21 @@ interface EscenarioLayoutProps {
  */
 /** Alto y angosto, como se sostiene un celular. */
 const MARCO_TELEFONO =
-  'sm:max-h-[40rem] sm:w-[28.75rem] sm:rounded-[1.75rem] sm:border sm:border-hairline-strong sm:shadow-[0_30px_70px_rgba(0,0,0,0.22)] lg:h-[40rem] lg:max-h-full lg:flex-none lg:self-center'
+  "sm:max-h-[40rem] sm:w-[28.75rem] sm:rounded-[1.75rem] sm:border sm:border-hairline-strong sm:shadow-[0_30px_70px_rgba(0,0,0,0.22)] lg:h-[40rem] lg:max-h-full lg:flex-none lg:self-center";
 
 /** Ancho y bajo, como una ventana de escritorio. Los anchos con vw + min/max
- *  se recalculan solos según el viewport en vez de un solo punto de quiebre
- *  fijo: sin eso, la ventana se sale de pantalla en un portátil de 1024px, que
- *  es justo donde el layout pasa de apilado a lado a lado.
  *
- *  El alto llena la columna (`h-full`) en vez de pedir una fracción del
- *  viewport. Con `min(76vh, 720px)` la ventana dejaba sin usar unos 80px que
- *  tenía disponibles en un portátil de 768px de alto, y ese espacio es
- *  exactamente el que le faltaba al correo para no tener que desplazarse. El
- *  tope de 60rem evita el efecto contrario en un monitor grande, donde una
- *  ventana altísima tampoco se parece a nada real. Subió de 53.75 a 60rem al
- *  pasar el escenario a navegador: sus barras —pestañas, dirección y
- *  marcadores— gastan unos 140px que la ventana anterior no gastaba, y salían
- *  enteros del espacio del mensaje.
+ *  El ancho se pide con `calc(100vw - <columna>)` y no con una fracción del
+ *  viewport: lo que se resta es lo que ocupan la columna de decisión, el hueco
+ *  entre ambas y los márgenes. Así la ventana se queda con TODO lo que sobra en
+ *  vez de con un porcentaje fijo, que en pantallas anchas dejaba un vacío enorme
+ *  a los lados y en las estrechas se pasaba de largo.
  *
- *  Las medidas van en rem y no en px: en rem se recalculan solas si alguien
- *  sube el tamaño de letra del navegador, que es lo primero que hace mucha
- *  gente mayor. En px la ventana se quedaría del mismo tamaño y el texto, ya
- *  más grande, dejaría de caber. Solo siguen en píxeles los bordes, los
- *  contornos y las sombras, que escalados se ven borrosos sin ganar nada.
- *
- *  Los topes subieron junto con la tipografía: el curso lo van a hacer adultos
- *  mayores, y una letra legible en una ventana que no crece con ella solo
- *  consigue que el correo no quepa.
- *
- *  El ancho se pide con `calc(100vw - 33.75rem)` y no con una fracción del
- *  viewport: esos 33.75rem son lo que ocupan la columna de decisión, el hueco entre
- *  ambas y los márgenes. Así la ventana se queda con TODO lo que sobra en vez
- *  de con un porcentaje fijo, que en pantallas anchas dejaba un vacío enorme a
- *  los lados y en las estrechas se pasaba de largo.
+ *  Y se resta distinto en cada tramo porque la columna de decisión mide
+ *  distinto: 23.75rem de 1024 a 1279, 28.75rem de ahí para arriba. Con el
+ *  33.75rem de xl aplicado también abajo, la ventana renunciaba a unos 10rem
+ *  que nadie estaba usando — justo en el tamaño de pantalla donde más falta
+ *  hacían.
  *
  *  `self-center` y no `self-stretch`: al estirar, el tope de 720px deja la
  *  ventana anclada arriba del todo en una pantalla alta, con el hueco entero
@@ -79,7 +70,7 @@ const MARCO_TELEFONO =
  *  reparte lo que sobre cuando el tope se queda corto.
  */
 const MARCO_ESCRITORIO =
-  'sm:max-h-[min(88vh,60rem)] sm:w-[96vw] sm:max-w-[68.75rem] sm:rounded-xl sm:border sm:border-hairline-strong sm:shadow-[0_30px_70px_rgba(0,0,0,0.22)] lg:h-full lg:max-h-[60rem] lg:w-[calc(100vw-33.75rem)] lg:min-w-[35rem] lg:max-w-[75rem] lg:flex-none lg:self-center'
+  "sm:max-h-[min(88vh,60rem)] sm:w-[96vw] sm:max-w-[68.75rem] sm:rounded-xl sm:border sm:border-hairline-strong sm:shadow-[0_30px_70px_rgba(0,0,0,0.22)] lg:h-full lg:max-h-[60rem] lg:w-[calc(100vw-28.75rem)] lg:min-w-[35rem] lg:max-w-[75rem] lg:flex-none lg:self-center xl:w-[calc(100vw-33.75rem)]";
 
 function EscenarioLayout({
   escenarioId,
@@ -89,35 +80,38 @@ function EscenarioLayout({
   dominioCorreo,
   pantalla,
   decision,
+  resultado,
   onEmpezar,
-  dispositivo = 'telefono',
+  dispositivo = "telefono",
 }: EscenarioLayoutProps) {
-  const escenario = getEscenario(escenarioId)
+  const escenario = getEscenario(escenarioId);
 
   if (!escenario) {
-    throw new Error(`Escenario "${escenarioId}" no está en el catálogo.`)
+    throw new Error(`Escenario "${escenarioId}" no está en el catálogo.`);
   }
 
-  const { displayName, roleLabel, correoSimulado, usuarioSimulado } = useAuth()
-  const correoDelEscenario = dominioCorreo ? `${usuarioSimulado}@${dominioCorreo}` : correoSimulado
-  const [fase, setFase] = useState<'briefing' | 'escenario'>('briefing')
-  const empezarRef = useRef<HTMLButtonElement>(null)
-  const escenaRef = useRef<HTMLDivElement>(null)
-  const dialogoRef = useRef<HTMLDialogElement>(null)
+  const { displayName, roleLabel, correoSimulado, usuarioSimulado } = useAuth();
+  const correoDelEscenario = dominioCorreo
+    ? `${usuarioSimulado}@${dominioCorreo}`
+    : correoSimulado;
+  const [fase, setFase] = useState<"briefing" | "escenario">("briefing");
+  const empezarRef = useRef<HTMLButtonElement>(null);
+  const escenaRef = useRef<HTMLDivElement>(null);
+  const dialogoRef = useRef<HTMLDialogElement>(null);
 
   useEffect(() => {
-    if (fase === 'briefing') {
-      empezarRef.current?.focus()
+    if (fase === "briefing") {
+      empezarRef.current?.focus();
     } else {
-      escenaRef.current?.focus()
+      escenaRef.current?.focus();
     }
-  }, [fase])
+  }, [fase]);
 
   function handleEmpezar() {
     // Reinicia la corrida para que durationMs no incluya el tiempo de lectura
     // del briefing: el hook fija startedAt al montarse, mucho antes de esto.
-    onEmpezar()
-    setFase('escenario')
+    onEmpezar();
+    setFase("escenario");
   }
 
   const volver = (
@@ -127,9 +121,9 @@ function EscenarioLayout({
     >
       ← Volver a la sección
     </Link>
-  )
+  );
 
-  if (fase === 'briefing') {
+  if (fase === "briefing") {
     return (
       <div className="min-h-dvh bg-canvas">
         <AppHeader>
@@ -138,7 +132,9 @@ function EscenarioLayout({
         </AppHeader>
 
         <main className="mx-auto max-w-3xl px-6 py-12">
-          <p className="text-base font-medium text-muted">{getSeccion(escenario.seccionId)?.canal}</p>
+          <p className="text-base font-medium text-muted">
+            {getSeccion(escenario.seccionId)?.canal}
+          </p>
           <h1 className="mt-2 text-4xl font-semibold tracking-tight text-ink">
             {escenario.titulo}
           </h1>
@@ -147,11 +143,13 @@ function EscenarioLayout({
               que escribe el autor empieza siempre en la escena, y quién la
               protagoniza lo sabe el layout, no el guion. */}
           <p className="mt-6 text-lg leading-relaxed text-ink">
-            Hola, <strong className="font-semibold">{displayName}</strong>. Esto es lo que te está
-            pasando:
+            Hola, <strong className="font-semibold">{displayName}</strong>. Esto
+            es lo que te está pasando:
           </p>
 
-          <div className="mt-3 space-y-4 text-lg leading-relaxed text-body">{contexto}</div>
+          <div className="mt-3 space-y-4 text-lg leading-relaxed text-body">
+            {contexto}
+          </div>
 
           {/* Se avisa antes de entrar, y en todos los escenarios: si alguien
               ve su propio nombre en una bandeja simulada sin saber que la
@@ -159,9 +157,10 @@ function EscenarioLayout({
               mandando correo de verdad —o peor, que le llegó uno real. El
               dominio no existe fuera de la simulación. */}
           <p className="mt-6 text-base leading-relaxed text-body">
-            En los escenarios usas un correo ficticio,{' '}
-            <span className="font-medium text-ink">{correoDelEscenario}</span>. No existe fuera de
-            este entrenamiento: nada de lo que ocurra aquí sale ni entra a tu correo real.
+            En los escenarios usas un correo ficticio,{" "}
+            <span className="font-medium text-ink">{correoDelEscenario}</span>.
+            No existe fuera de este entrenamiento: nada de lo que ocurra aquí
+            sale ni entra a tu correo real.
           </p>
 
           {nota && (
@@ -180,7 +179,7 @@ function EscenarioLayout({
           </button>
         </main>
       </div>
-    )
+    );
   }
 
   return (
@@ -216,11 +215,14 @@ function EscenarioLayout({
           id="pantalla-escenario"
           tabIndex={-1}
           aria-label={`${escenario.titulo}: pantalla simulada`}
-          className={`flex min-h-0 w-full flex-1 overflow-hidden focus:outline-none ${
-            dispositivo === 'escritorio' ? MARCO_ESCRITORIO : MARCO_TELEFONO
+          // `relative`: el aviso de fin se posiciona contra este marco, no
+          // contra la página, para taparlo exactamente a él.
+          className={`relative flex min-h-0 w-full flex-1 overflow-hidden focus:outline-none ${
+            dispositivo === "escritorio" ? MARCO_ESCRITORIO : MARCO_TELEFONO
           }`}
         >
           {pantalla}
+          <AvisoFinEscenario resultado={resultado} />
         </div>
 
         {/* Apilado, el bloque nunca pasa de media pantalla: si no cabe, se
@@ -256,13 +258,18 @@ function EscenarioLayout({
         aria-labelledby="titulo-contexto"
         className="m-auto w-[min(92vw,32rem)] rounded-lg border border-hairline-strong bg-surface p-6 text-ink shadow-card backdrop:bg-ink/40"
       >
-        <h2 id="titulo-contexto" className="text-[0.6875rem] font-semibold uppercase tracking-[0.88px] text-muted">
+        <h2
+          id="titulo-contexto"
+          className="text-[0.6875rem] font-semibold uppercase tracking-[0.88px] text-muted"
+        >
           Tu situación
         </h2>
         <p className="mt-2 text-lg leading-relaxed text-ink">
           Hola, <strong className="font-semibold">{displayName}</strong>.
         </p>
-        <div className="mt-2 space-y-3 text-lg leading-relaxed text-body">{contexto}</div>
+        <div className="mt-2 space-y-3 text-lg leading-relaxed text-body">
+          {contexto}
+        </div>
 
         <form method="dialog" className="mt-6 flex justify-end">
           <button
@@ -274,7 +281,7 @@ function EscenarioLayout({
         </form>
       </dialog>
     </div>
-  )
+  );
 }
 
-export default EscenarioLayout
+export default EscenarioLayout;
