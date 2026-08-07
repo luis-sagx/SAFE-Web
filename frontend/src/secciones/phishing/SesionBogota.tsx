@@ -366,6 +366,7 @@ function SesionBogota() {
       nota={NOTA}
       pantalla={pantalla}
       decision={decision}
+      resultado={engine.resultado}
       onEmpezar={engine.restart}
       dispositivo="escritorio"
     />

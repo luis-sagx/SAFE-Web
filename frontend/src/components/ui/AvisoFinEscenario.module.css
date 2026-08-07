@@ -1,0 +1,200 @@
+/* Golpe de fin de escenario, encima de la pantalla simulada.
+
+   Va sobre la pantalla y no junto al resultado a propósito: el problema que
+   resuelve es que la persona está mirando la pantalla y no se entera de que ya
+   decidió. Un aviso en la columna del resultado se pierde por la misma razón
+   por la que se pierde el resultado.
+
+   Dura menos de dos segundos y se quita solo, así que todo lo que tenga que
+   decir tiene que entrar de un vistazo: un disco de color grande, tres palabras
+   y hacia dónde mirar. Cualquier cosa más larga no da tiempo a leerse, y un
+   aviso que hay que cerrar convierte el final de cada escenario en un trámite. */
+
+.capa {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25rem;
+  padding: 1.5rem;
+  text-align: center;
+  /* No intercepta nada: si el clic que terminó el escenario venía seguido de
+     otro, ese otro pasa de largo en vez de chocar contra un velo invisible. */
+  pointer-events: none;
+  /* El color del resultado tiñe el centro y se apaga hacia los bordes, en vez
+     de un velo gris parejo: así el tono se lee antes que el icono, desde el
+     rabillo del ojo, que es exactamente el caso que esto atiende.
+
+     Va sobre una base oscura y no directamente sobre la pantalla: teñir de
+     verde o ámbar un correo blanco da un centro claro, y sobre claro el titular
+     en blanco deja de leerse. Con la base debajo, el centro queda oscuro y
+     teñido. */
+  background:
+    radial-gradient(circle at 50% 42%, var(--tono-suave), rgba(15, 23, 32, 0.45) 62%),
+    rgba(15, 23, 32, 0.25);
+  backdrop-filter: blur(4px) saturate(0.65);
+  animation:
+    capaEntra 0.2s ease,
+    capaSale 0.35s ease 1.45s forwards;
+}
+
+.bien {
+  --tono: #16a34a;
+  --tono-suave: rgba(22, 163, 74, 0.6);
+}
+.medias {
+  --tono: #d08700;
+  --tono-suave: rgba(208, 135, 0, 0.6);
+}
+.mal {
+  --tono: #d8453f;
+  --tono-suave: rgba(216, 69, 63, 0.6);
+}
+
+.disco {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 6.5rem;
+  height: 6.5rem;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: var(--tono);
+  color: #ffffff;
+  /* Aro de color propio + sombra proyectada: es lo que despega el disco del
+     fondo teñido, que si no se lo comería. */
+  box-shadow:
+    0 0 0 0.5rem var(--tono-suave),
+    0 0.75rem 1.75rem rgba(0, 0, 0, 0.2);
+  animation: discoEntra 0.42s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Onda que sale del disco y se pierde. Va en un pseudo-elemento para poder
+   crecer sin empujar nada. */
+.disco::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 3px solid var(--tono);
+  animation: onda 0.9s ease-out 0.12s;
+}
+
+.icono {
+  width: 3.5rem;
+  height: 3.5rem;
+}
+/* El trazo se dibuja en vez de aparecer de golpe: es lo que hace que el icono
+   se lea como una reacción a lo que acabas de hacer y no como una imagen que ya
+   estaba ahí. El dasharray es holgado a propósito: cubre el trazo más largo de
+   los tres iconos sin tener que medir cada uno. */
+.icono path,
+.icono line,
+.icono polyline,
+.icono circle {
+  stroke-dasharray: 140;
+  stroke-dashoffset: 140;
+  animation: dibujar 0.45s ease-out 0.14s forwards;
+}
+
+.texto {
+  animation: textoEntra 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.1s backwards;
+}
+
+.titulo {
+  margin: 0;
+  font-size: 1.875rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #ffffff;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.3);
+}
+
+.hacia {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4375rem;
+  margin: 0.5rem 0 0;
+  font-size: 1.0625rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.88);
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.28);
+}
+
+.flecha {
+  width: 1.25rem;
+  height: 1.25rem;
+  flex-shrink: 0;
+}
+
+@keyframes capaEntra {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes capaSale {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes discoEntra {
+  from {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes onda {
+  from {
+    transform: scale(1);
+    opacity: 0.65;
+  }
+  to {
+    transform: scale(1.8);
+    opacity: 0;
+  }
+}
+@keyframes textoEntra {
+  from {
+    opacity: 0;
+    transform: translateY(0.625rem);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes dibujar {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* Se conserva el desvanecido —es opacidad, no movimiento, y es lo que hace que
+   el aviso se quite solo— y se van los recorridos. */
+@media (prefers-reduced-motion: reduce) {
+  .disco,
+  .disco::after,
+  .texto {
+    animation: none;
+  }
+  .icono path,
+  .icono line,
+  .icono polyline,
+  .icono circle {
+    stroke-dasharray: none;
+    stroke-dashoffset: 0;
+    animation: none;
+  }
+}

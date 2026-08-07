@@ -3,6 +3,8 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Link } from "react-router";
 import AppHeader from "./AppHeader";
 import InfoLink from "./InfoLink";
+import AvisoFinEscenario from "./ui/AvisoFinEscenario";
+import type { ResultadoEscenario } from "../hooks/useScenarioRun";
 import { useAuth } from "../context/AuthContext";
 import { getEscenario, getSeccion } from "../data/catalogo";
 
@@ -25,6 +27,12 @@ interface EscenarioLayoutProps {
   pantalla: ReactNode;
   /** Va debajo del marco: pregunta, opciones, feedback, resultado. */
   decision: ReactNode;
+  /** Con qué resultado cerró la corrida, o nada mientras siga abierta.
+   *
+   *  El layout lo usa para el diálogo de fin: el resultado sale al costado, y
+   *  quien estaba mirando la pantalla no se enteraba de que ya había decidido.
+   *  Ver AvisoFinEscenario. */
+  resultado?: ResultadoEscenario;
   onEmpezar: () => void;
   /** Forma del marco exterior. 'telefono' es el default: la mayoría de
    *  escenarios (SMS, llamada, chat) se abren en el celular. 'escritorio' es
@@ -72,6 +80,7 @@ function EscenarioLayout({
   dominioCorreo,
   pantalla,
   decision,
+  resultado,
   onEmpezar,
   dispositivo = "telefono",
 }: EscenarioLayoutProps) {
@@ -206,11 +215,14 @@ function EscenarioLayout({
           id="pantalla-escenario"
           tabIndex={-1}
           aria-label={`${escenario.titulo}: pantalla simulada`}
-          className={`flex min-h-0 w-full flex-1 overflow-hidden focus:outline-none ${
+          // `relative`: el aviso de fin se posiciona contra este marco, no
+          // contra la página, para taparlo exactamente a él.
+          className={`relative flex min-h-0 w-full flex-1 overflow-hidden focus:outline-none ${
             dispositivo === "escritorio" ? MARCO_ESCRITORIO : MARCO_TELEFONO
           }`}
         >
           {pantalla}
+          <AvisoFinEscenario resultado={resultado} />
         </div>
 
         {/* Apilado, el bloque nunca pasa de media pantalla: si no cabe, se

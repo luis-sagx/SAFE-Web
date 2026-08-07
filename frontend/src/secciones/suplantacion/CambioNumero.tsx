@@ -370,6 +370,7 @@ function CambioNumero() {
       contexto={CONTEXTO}
       pantalla={pantalla}
       decision={decision}
+      resultado={engine.resultado}
       onEmpezar={handleRestart}
     />
   )

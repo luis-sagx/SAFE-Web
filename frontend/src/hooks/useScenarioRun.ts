@@ -6,6 +6,10 @@ import { getEscenario, type Escenario } from '../data/catalogo'
 export type RunStatus = 'idle' | 'saving' | 'saved' | 'queued'
 export type StoryKind = 'scene' | 'good' | 'partial' | 'bad'
 
+/** Con qué cerró una corrida. Es `StoryKind` sin `'scene'`, que es el único
+ *  valor que no es un final. */
+export type ResultadoEscenario = Exclude<StoryKind, 'scene'>
+
 export interface RunResult {
   endingId: string
   outcome: RunOutcome

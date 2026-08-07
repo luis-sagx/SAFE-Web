@@ -277,6 +277,7 @@ function SaldoContable() {
       contexto={CONTEXTO}
       pantalla={pantalla}
       decision={decision}
+      resultado={answered ? (isCorrect ? 'good' : 'bad') : undefined}
       onEmpezar={run.restart}
     />
   )
