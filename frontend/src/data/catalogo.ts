@@ -108,7 +108,8 @@ const BASE: EscenarioBase[] = [
     // correo abre una pestaña nueva y el portal se abre desde los marcadores.
     // Las corridas de versiones distintas no son comparables entre sí: el
     // estímulo que vio cada participante no fue el mismo.
-    version: 5,
+    // v6: el briefing enseña los datos prestados en una tarjeta.
+    version: 6,
     naturaleza: 'fraude',
     dificultad: 2,
     espeja: 'phishing/rol-de-pagos',
@@ -127,7 +128,8 @@ const BASE: EscenarioBase[] = [
     // serlo: un marcador del navegador y la ✕ de la pestaña.
     // v4: el marcador abre la intranet de verdad en vez de saltar al veredicto,
     // para que el camino acertado se vea y no solo se cuente.
-    version: 4,
+    // v5: el briefing enseña los datos prestados en una tarjeta.
+    version: 5,
     naturaleza: 'fraude',
     dificultad: 3,
     espeja: 'phishing/rol-de-pagos',
@@ -142,7 +144,8 @@ const BASE: EscenarioBase[] = [
     // participante actúa directo sobre el correo y el portal en vez de
     // elegir de una lista de opciones. Las corridas de versiones distintas
     // no son comparables entre sí.
-    version: 3,
+    // v4: el briefing enseña los datos prestados en una tarjeta.
+    version: 4,
     naturaleza: 'legitimo',
     dificultad: 3,
     espeja: 'phishing/clave-caducada',
@@ -162,7 +165,8 @@ const BASE: EscenarioBase[] = [
     descripcion: 'Un correo anuncia un premio millonario y pide un pago para poder liberarlo.',
     // v2: se juega sobre la pantalla, sin lista de opciones.
     // v3: el participante ve su cédula y su cuenta antes de empezar.
-    version: 3,
+    // v4: el briefing enseña los datos prestados en una tarjeta.
+    version: 4,
     naturaleza: 'fraude',
     dificultad: 1,
     espeja: 'phishing/aviso-filtracion',
@@ -177,7 +181,8 @@ const BASE: EscenarioBase[] = [
     // punto interactivo (no hay "vista previa" posible, así que escanear ya
     // abre la página falsa). Las corridas de versiones distintas no son
     // comparables entre sí.
-    version: 3,
+    // v4: el briefing enseña los datos prestados en una tarjeta.
+    version: 4,
     naturaleza: 'fraude',
     dificultad: 4,
     espeja: 'phishing/aviso-filtracion',
@@ -189,7 +194,8 @@ const BASE: EscenarioBase[] = [
     titulo: 'Cambio de cuenta bancaria',
     descripcion: 'La secretaría del colegio informa una cuenta nueva para el pago de la pensión.',
     // v3: se juega sobre la pantalla, sin lista de opciones.
-    version: 3,
+    // v4: la transferencia sale de la cuenta que enseña el briefing.
+    version: 4,
     naturaleza: 'fraude',
     dificultad: 4,
     espeja: 'phishing/rol-de-pagos',
@@ -208,7 +214,8 @@ const BASE: EscenarioBase[] = [
     escenarioId: 'sesion-bogota',
     titulo: 'Inicio de sesión desconocido',
     descripcion: 'Una alerta nocturna avisa de un acceso a tu cuenta desde otra ciudad.',
-    version: 3,
+    // v4: el briefing enseña los datos prestados en una tarjeta.
+    version: 4,
     naturaleza: 'fraude',
     dificultad: 5,
     espeja: 'phishing/aviso-filtracion',
@@ -220,7 +227,8 @@ const BASE: EscenarioBase[] = [
     titulo: 'Aviso de filtración de datos',
     descripcion: 'Una tienda en línea comunica un incidente de seguridad que afecta a tu cuenta.',
     // v3: se juega sobre la pantalla, sin lista de opciones.
-    version: 3,
+    // v4: el briefing enseña los datos prestados en una tarjeta.
+    version: 4,
     naturaleza: 'legitimo',
     dificultad: 4,
     espeja: 'phishing/sesion-bogota',

@@ -62,6 +62,10 @@ const BANCA: ScreenView = {
   title: 'Transferencia a terceros',
   subtitle: 'Revise los datos antes de confirmar la transferencia.',
   fields: [
+    // La cuenta de origen es la del participante, la misma que vio antes de
+    // empezar: sin ella la pantalla enseña a dónde va el dinero pero no de
+    // dónde sale, que es lo que hace propia la pérdida.
+    { label: 'Cuenta de origen', placeholder: '', valor: 'cuenta' },
     { label: 'Beneficiario', placeholder: 'Unidad Educativa San Rafael' },
     {
       label: 'Cuenta destino',
@@ -277,6 +281,7 @@ function SecuestroHilo() {
       contexto={CONTEXTO}
       story={STORY}
       accionesCorreo={ACCIONES_BARRA}
+      identidad={['cuenta']}
       marcadores={MARCADORES}
       instruccion={INSTRUCCION}
       pista={PISTA}
