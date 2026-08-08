@@ -86,7 +86,10 @@ export function carpetasCorreo(mensaje: MensajeCorreo, final?: string): CarpetaC
   ]
 
   if (destino?.vaciaRecibidos) {
-    carpetas.push({ nombre: 'Recibidos', vacia: 'No hay correos en la bandeja de entrada.' })
+    // No "no hay correos": la bandeja sigue teniendo los de siempre. Lo que
+    // cambió es que este ya no está entre ellos, que es lo que el participante
+    // tiene que poder comprobar después de archivarlo o borrarlo.
+    carpetas.push({ nombre: 'Recibidos', vacia: 'Ese correo ya no está en Recibidos.' })
   }
 
   return carpetas

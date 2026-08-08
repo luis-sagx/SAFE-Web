@@ -1,5 +1,9 @@
 import {
+  ArrowLeft,
   Inbox,
+  Minus,
+  Square,
+  X,
   LayoutGrid,
   Send,
   ShieldAlert,
@@ -9,6 +13,7 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
+import { OTROS_CORREOS } from './bandeja'
 import { formatoFecha, formatoHora, useRelojDelSistema } from '../../hooks/useRelojDelSistema'
 import { useAuth } from '../../context/AuthContext'
 import styles from './DeviceScreen.module.css'
@@ -162,6 +167,14 @@ export function Titlebar({ texto }: { texto: string }) {
   return (
     <div className={styles.titlebar}>
       <span className={styles.titlebarText}>{texto}</span>
+      {/* Minimizar, maximizar y cerrar. Decorativos, como el botón de inicio de
+          la barra de tareas: son lo que hace que una ventana se lea como una
+          ventana, y cerrarla de verdad sacaría al participante del ejercicio. */}
+      <span className={styles.titlebarBotones} aria-hidden>
+        <Minus className={styles.titlebarIcono} strokeWidth={2} />
+        <Square className={styles.titlebarIconoCuadro} strokeWidth={2} />
+        <X className={styles.titlebarIcono} strokeWidth={2} />
+      </span>
     </div>
   )
 }
@@ -366,20 +379,123 @@ export function CuerpoCorreo({
 }: VentanaCorreoProps) {
   const { correoSimulado } = useAuth()
   const [carpetaElegida, setCarpetaElegida] = useState('Recibidos')
+  /// Qué mensaje se está leyendo. Es estado de la pantalla, no del ejercicio:
+  /// abrir el recibo de la luz es mirar, como cambiar de pestaña, y por eso no
+  /// pasa por el grafo ni entra en la traza de la corrida.
+  const [leyendo, setLeyendo] = useState<string | null>(null)
   const carpetaActiva = carpetaForzada ?? carpetaElegida
   const carpetaSecundaria = carpetas?.find((carpeta) => carpeta.nombre === carpetaActiva)
+  /// El mensaje del ejercicio sigue en Recibidos mientras nada lo haya movido.
+  const enBandeja = !carpetaSecundaria || carpetaActiva !== 'Recibidos'
+  const otro = OTROS_CORREOS.find((correo) => correo.id === leyendo)
+
+  function abrir(id: string | null) {
+    setLeyendo(id)
+  }
+
+  const cabecera = (
+    nombre: string,
+    direccion: string,
+    fecha: string,
+    etiqueta?: ReactNode,
+    senalDireccion?: string,
+  ) => (
+    <div className={styles.senderRow}>
+      <div className={styles.avatar} aria-hidden>
+        {nombre.slice(0, 1).toUpperCase()}
+      </div>
+      <div className={styles.senderId}>
+        <p className={styles.senderName}>
+          {nombre}
+          {etiqueta}
+        </p>
+        <p className={styles.senderAddr} data-signal={senalDireccion}>
+          {direccion}
+        </p>
+        <p className={styles.senderTo}>para {destinatario ?? correoSimulado}</p>
+      </div>
+      <span className={styles.date}>{fecha}</span>
+    </div>
+  )
 
   return (
     <div className={styles.desktopBody}>
       <MailNav activa={carpetaActiva} carpetas={carpetas} onSelect={setCarpetaElegida} />
 
+      {/* La lista de la bandeja. Solo en Recibidos: las otras carpetas del
+          ejercicio muestran un mensaje suelto —el que se acaba de mover— y una
+          lista ahí no diría nada. */}
+      {carpetaActiva === 'Recibidos' && (
+        <div className={styles.mailList} role="list" aria-label="Bandeja de entrada">
+          {enBandeja && (
+            <button
+              type="button"
+              role="listitem"
+              className={`${styles.mailListItem} ${leyendo ? '' : styles.mailListActivo}`}
+              onClick={() => abrir(null)}
+            >
+              <span className={styles.mailListDe}>{remitente.nombre}</span>
+              <span className={styles.mailListAsunto}>{asunto}</span>
+              <span className={styles.mailListHora}>{recibido}</span>
+            </button>
+          )}
+          {OTROS_CORREOS.map((correo) => (
+            <button
+              key={correo.id}
+              type="button"
+              role="listitem"
+              className={`${styles.mailListItem} ${styles.mailListLeido} ${
+                leyendo === correo.id ? styles.mailListActivo : ''
+              }`}
+              onClick={() => abrir(correo.id)}
+            >
+              <span className={styles.mailListDe}>{correo.nombre}</span>
+              <span className={styles.mailListAsunto}>{correo.asunto}</span>
+              <span className={styles.mailListHora}>{correo.hora}</span>
+            </button>
+          ))}
+        </div>
+      )}
+
       <div className={styles.mailPane}>
-        {carpetaSecundaria ? (
+        {carpetaSecundaria && carpetaActiva !== 'Recibidos' ? (
           <div
             className={`${styles.mailbody} ${carpetaSecundaria.contenido ? '' : styles.mailFolderEmpty}`}
           >
             <h1 className={styles.subject}>{carpetaSecundaria.nombre}</h1>
             {carpetaSecundaria.contenido ?? <p>{carpetaSecundaria.vacia}</p>}
+          </div>
+        ) : otro ? (
+          <>
+            {/* Sin barra de acciones mientras se lee otro mensaje: responder o
+                eliminar son decisiones sobre el correo del ejercicio, y desde
+                aquí significarían otra cosa. En su lugar, la salida. */}
+            <div className={styles.mailToolbar}>
+              <button
+                type="button"
+                className={styles.mailToolbarBtn}
+                title="Volver al mensaje del ejercicio"
+                onClick={() => abrir(null)}
+              >
+                <ArrowLeft aria-hidden className={styles.mailToolbarIcon} strokeWidth={1.75} />
+                <span aria-hidden className={styles.mailToolbarTexto}>
+                  Volver
+                </span>
+              </button>
+            </div>
+
+            <div className={styles.mailbody}>
+              <h1 className={styles.subject}>{otro.asunto}</h1>
+              {cabecera(otro.nombre, otro.direccion, otro.hora)}
+              <div className={styles.prose}>
+                <p>{otro.cuerpo}</p>
+              </div>
+            </div>
+          </>
+        ) : !enBandeja ? (
+          <div className={`${styles.mailbody} ${styles.mailFolderEmpty}`}>
+            <h1 className={styles.subject}>Recibidos</h1>
+            <p>{carpetaSecundaria?.vacia}</p>
           </div>
         ) : (
           <>
@@ -388,26 +504,17 @@ export function CuerpoCorreo({
             <div className={styles.mailbody}>
               <h1 className={styles.subject}>{asunto}</h1>
 
-              <div className={styles.senderRow}>
-                <div className={styles.avatar} aria-hidden>
-                  {remitente.nombre.slice(0, 1).toUpperCase()}
-                </div>
-                <div className={styles.senderId}>
-                  <p className={styles.senderName}>
-                    {remitente.nombre}
-                    {remitente.etiqueta && (
-                      <span className={styles.label} data-signal={remitente.senalEtiqueta}>
-                        {remitente.etiqueta}
-                      </span>
-                    )}
-                  </p>
-                  <p className={styles.senderAddr} data-signal={remitente.senalDireccion}>
-                    {remitente.direccion}
-                  </p>
-                  <p className={styles.senderTo}>para {destinatario ?? correoSimulado}</p>
-                </div>
-                <span className={styles.date}>{recibido}</span>
-              </div>
+              {cabecera(
+                remitente.nombre,
+                remitente.direccion,
+                recibido,
+                remitente.etiqueta && (
+                  <span className={styles.label} data-signal={remitente.senalEtiqueta}>
+                    {remitente.etiqueta}
+                  </span>
+                ),
+                remitente.senalDireccion,
+              )}
 
               <div className={styles.prose}>{children}</div>
 

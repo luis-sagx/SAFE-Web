@@ -84,7 +84,7 @@ describe('FacturaSri', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Eliminar' }))
 
     // Recibidos se vacía sin más clics: la propia bandeja activa ya lo muestra.
-    expect(screen.getByText('No hay correos en la bandeja de entrada.')).toBeDefined()
+    expect(screen.getByText('Ese correo ya no está en Recibidos.')).toBeDefined()
 
     fireEvent.click(screen.getByRole('button', { name: 'Abrir Papelera' }))
 

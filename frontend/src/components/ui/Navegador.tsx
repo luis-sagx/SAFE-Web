@@ -1,5 +1,18 @@
-import { FileText, Globe, Lock, TriangleAlert, X, type LucideIcon } from 'lucide-react'
+import {
+  ArrowLeft,
+  ArrowRight,
+  EllipsisVertical,
+  FileText,
+  Globe,
+  Lock,
+  RotateCw,
+  Star,
+  TriangleAlert,
+  X,
+  type LucideIcon,
+} from 'lucide-react'
 import type { ReactNode } from 'react'
+import { useAuth } from '../../context/AuthContext'
 import { Taskbar, Titlebar, type Reloj } from './DesktopChrome'
 import styles from './DeviceScreen.module.css'
 
@@ -70,6 +83,12 @@ export function Navegador({
   children,
 }: NavegadorProps) {
   const actual = pestanas[activa]
+  /// La misma inicial que el cliente de correo usa para el avatar: es la misma
+  /// persona, con su sesión abierta en el navegador.
+  const { usuarioSimulado } = useAuth()
+  /// Con reserva: una cuenta ya anonimizada puede no tener nombre, y un avatar
+  /// vacío no debería tumbar la pantalla entera.
+  const inicial = (usuarioSimulado || 'participante').slice(0, 1).toUpperCase()
 
   return (
     <section
@@ -120,6 +139,15 @@ export function Navegador({
       </div>
 
       <div className={styles.urlbar}>
+        {/* Atrás, adelante y recargar. Atrás y adelante van apagados a
+            propósito: en una pestaña recién abierta no hay a dónde volver, y un
+            navegador de verdad los pinta igual de grises. */}
+        <span className={styles.navBotones} aria-hidden>
+          <ArrowLeft className={`${styles.navIcono} ${styles.navIconoApagado}`} strokeWidth={2} />
+          <ArrowRight className={`${styles.navIcono} ${styles.navIconoApagado}`} strokeWidth={2} />
+          <RotateCw className={styles.navIcono} strokeWidth={2} />
+        </span>
+
         {/* Iconos de trazo y no emoji: 🔒 y ⚠ se dibujan distinto —y a color— en
             cada sistema operativo, y el indicador de seguridad de la barra de
             direcciones es justo lo que este módulo enseña a leer. Uno que
@@ -136,6 +164,12 @@ export function Navegador({
         )}
         <span className={styles.url} data-signal={actual?.senalUrl}>
           {actual?.url}
+        </span>
+
+        <span className={styles.navBotones} aria-hidden>
+          <Star className={styles.navIcono} strokeWidth={2} />
+          <span className={styles.navPerfil}>{inicial}</span>
+          <EllipsisVertical className={styles.navIcono} strokeWidth={2} />
         </span>
       </div>
 
