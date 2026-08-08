@@ -109,9 +109,7 @@ const BASE: EscenarioBase[] = [
     // Las corridas de versiones distintas no son comparables entre sí: el
     // estímulo que vio cada participante no fue el mismo.
     // v6: el briefing enseña los datos prestados en una tarjeta.
-    // v7: la bandeja tiene los otros correos de siempre; el mensaje
-    // del ejercicio ya no llega a un buzón vacío.
-    version: 7,
+    version: 6,
     naturaleza: 'fraude',
     dificultad: 2,
     espeja: 'phishing/rol-de-pagos',
@@ -131,9 +129,7 @@ const BASE: EscenarioBase[] = [
     // v4: el marcador abre la intranet de verdad en vez de saltar al veredicto,
     // para que el camino acertado se vea y no solo se cuente.
     // v5: el briefing enseña los datos prestados en una tarjeta.
-    // v6: la bandeja tiene los otros correos de siempre; el mensaje
-    // del ejercicio ya no llega a un buzón vacío.
-    version: 6,
+    version: 5,
     naturaleza: 'fraude',
     dificultad: 3,
     espeja: 'phishing/rol-de-pagos',
@@ -149,9 +145,7 @@ const BASE: EscenarioBase[] = [
     // elegir de una lista de opciones. Las corridas de versiones distintas
     // no son comparables entre sí.
     // v4: el briefing enseña los datos prestados en una tarjeta.
-    // v5: la bandeja tiene los otros correos de siempre; el mensaje
-    // del ejercicio ya no llega a un buzón vacío.
-    version: 5,
+    version: 4,
     naturaleza: 'legitimo',
     dificultad: 3,
     espeja: 'phishing/clave-caducada',
@@ -172,9 +166,7 @@ const BASE: EscenarioBase[] = [
     // v2: se juega sobre la pantalla, sin lista de opciones.
     // v3: el participante ve su cédula y su cuenta antes de empezar.
     // v4: el briefing enseña los datos prestados en una tarjeta.
-    // v5: la bandeja tiene los otros correos de siempre; el mensaje
-    // del ejercicio ya no llega a un buzón vacío.
-    version: 5,
+    version: 4,
     naturaleza: 'fraude',
     dificultad: 1,
     espeja: 'phishing/aviso-filtracion',
@@ -190,9 +182,7 @@ const BASE: EscenarioBase[] = [
     // abre la página falsa). Las corridas de versiones distintas no son
     // comparables entre sí.
     // v4: el briefing enseña los datos prestados en una tarjeta.
-    // v5: la bandeja tiene los otros correos de siempre; el mensaje
-    // del ejercicio ya no llega a un buzón vacío.
-    version: 5,
+    version: 4,
     naturaleza: 'fraude',
     dificultad: 4,
     espeja: 'phishing/aviso-filtracion',
@@ -205,9 +195,7 @@ const BASE: EscenarioBase[] = [
     descripcion: 'La secretaría del colegio informa una cuenta nueva para el pago de la pensión.',
     // v3: se juega sobre la pantalla, sin lista de opciones.
     // v4: la transferencia sale de la cuenta que enseña el briefing.
-    // v5: la bandeja tiene los otros correos de siempre; el mensaje
-    // del ejercicio ya no llega a un buzón vacío.
-    version: 5,
+    version: 4,
     naturaleza: 'fraude',
     dificultad: 4,
     espeja: 'phishing/rol-de-pagos',
@@ -227,9 +215,7 @@ const BASE: EscenarioBase[] = [
     titulo: 'Inicio de sesión desconocido',
     descripcion: 'Una alerta nocturna avisa de un acceso a tu cuenta desde otra ciudad.',
     // v4: el briefing enseña los datos prestados en una tarjeta.
-    // v5: la bandeja tiene los otros correos de siempre; el mensaje
-    // del ejercicio ya no llega a un buzón vacío.
-    version: 5,
+    version: 4,
     naturaleza: 'fraude',
     dificultad: 5,
     espeja: 'phishing/aviso-filtracion',
@@ -242,9 +228,7 @@ const BASE: EscenarioBase[] = [
     descripcion: 'Una tienda en línea comunica un incidente de seguridad que afecta a tu cuenta.',
     // v3: se juega sobre la pantalla, sin lista de opciones.
     // v4: el briefing enseña los datos prestados en una tarjeta.
-    // v5: la bandeja tiene los otros correos de siempre; el mensaje
-    // del ejercicio ya no llega a un buzón vacío.
-    version: 5,
+    version: 4,
     naturaleza: 'legitimo',
     dificultad: 4,
     espeja: 'phishing/sesion-bogota',

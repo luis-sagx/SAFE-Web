@@ -49,7 +49,7 @@ describe('RolDePagos', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Eliminar' }))
 
-    expect(screen.getByText('Ese correo ya no está en Recibidos.')).toBeDefined()
+    expect(screen.getByText('No hay correos en la bandeja de entrada.')).toBeDefined()
 
     fireEvent.click(screen.getByRole('button', { name: 'Abrir Papelera' }))
 
