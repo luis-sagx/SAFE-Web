@@ -161,18 +161,28 @@ export function MailNav({
  *  como macOS y una franja ─ □ ✕ se lee como Windows; sin ninguno de los dos,
  *  el marco sigue leyéndose como "una ventana" para cualquiera, sea cual sea
  *  el sistema que use. */
+/** Minimizar, maximizar y cerrar. Decorativos, como el botón de inicio de la
+ *  barra de tareas: son lo que hace que una ventana se lea como una ventana, y
+ *  cerrarla de verdad sacaría al participante del ejercicio.
+ *
+ *  Sueltos de la barra de título porque el navegador no tiene: sus pestañas
+ *  suben hasta el borde de la ventana y los botones van a su derecha, como en
+ *  cualquier navegador desde hace diez años. */
+export function BotonesVentana() {
+  return (
+    <span className={styles.titlebarBotones} aria-hidden>
+      <Minus className={styles.titlebarIcono} strokeWidth={2} />
+      <Square className={styles.titlebarIconoCuadro} strokeWidth={2} />
+      <X className={styles.titlebarIcono} strokeWidth={2} />
+    </span>
+  )
+}
+
 export function Titlebar({ texto }: { texto: string }) {
   return (
     <div className={styles.titlebar}>
       <span className={styles.titlebarText}>{texto}</span>
-      {/* Minimizar, maximizar y cerrar. Decorativos, como el botón de inicio de
-          la barra de tareas: son lo que hace que una ventana se lea como una
-          ventana, y cerrarla de verdad sacaría al participante del ejercicio. */}
-      <span className={styles.titlebarBotones} aria-hidden>
-        <Minus className={styles.titlebarIcono} strokeWidth={2} />
-        <Square className={styles.titlebarIconoCuadro} strokeWidth={2} />
-        <X className={styles.titlebarIcono} strokeWidth={2} />
-      </span>
+      <BotonesVentana />
     </div>
   )
 }

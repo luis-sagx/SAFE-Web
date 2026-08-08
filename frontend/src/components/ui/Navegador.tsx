@@ -13,7 +13,7 @@ import {
 } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { useAuth } from '../../context/AuthContext'
-import { Taskbar, Titlebar, type Reloj } from './DesktopChrome'
+import { BotonesVentana, Taskbar, type Reloj } from './DesktopChrome'
 import styles from './DeviceScreen.module.css'
 
 /**
@@ -96,8 +96,12 @@ export function Navegador({
       aria-label="Navegador web"
       onClick={onHotspot}
     >
-      <Titlebar texto="Navegador" />
-
+      {/* Sin barra de título aparte: las pestañas ocupan el borde superior de
+          la ventana, como en cualquier navegador. Antes había cuatro franjas
+          grises apiladas antes del contenido —título, pestañas, dirección y
+          marcadores— y la de arriba no decía nada que las pestañas no dijeran
+          ya. Quitarla devuelve su alto al mensaje, que es lo que hay que
+          leer. */}
       <div className={styles.tabstrip} role="tablist">
         {abiertas.map((id) => {
           const meta = pestanas[id]
@@ -136,6 +140,7 @@ export function Navegador({
         <span className={styles.tabNueva} aria-hidden>
           +
         </span>
+        <BotonesVentana />
       </div>
 
       <div className={styles.urlbar}>
