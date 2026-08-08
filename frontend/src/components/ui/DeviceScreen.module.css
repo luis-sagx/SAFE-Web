@@ -721,6 +721,30 @@ button.mailNavItem {
    Un buscador no se lee como una ficha de datos: se lee como una lista de
    títulos azules con su dirección debajo. La forma importa tanto como el texto,
    porque parte de lo que se entrena es reconocer *dónde* está mirando uno. */
+.cajaBusqueda {
+  margin-top: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  max-width: 34rem;
+  padding: 0.625rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #fff;
+  box-shadow: 0 1px 3px rgb(16 32 44 / 8%);
+}
+.consulta {
+  flex: 1;
+  font-size: 1.0625rem;
+  color: #16202c;
+}
+.consultaIcono {
+  flex-shrink: 0;
+  width: 1.125rem;
+  height: 1.125rem;
+  color: #1a56b8;
+}
+
 .resultados {
   margin-top: 1.25rem;
   display: flex;

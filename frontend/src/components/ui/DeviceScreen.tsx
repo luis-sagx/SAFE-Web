@@ -1,4 +1,4 @@
-import { Paperclip } from 'lucide-react'
+import { Paperclip, Search } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { CUENTA_FICTICIA, IDENTIDAD_FICTICIA } from '../../lib/identidadFicticia'
 import { CuerpoCorreo, type AccionCorreo, type CarpetaCorreo } from './DesktopChrome'
@@ -184,7 +184,19 @@ function DeviceScreen({
     return (
       <div className={styles.page}>
         <p className={styles.brand}>{view.brand}</p>
-        <h2 className={styles.pageTitle}>{view.title}</h2>
+
+        {/* Un buscador enseña lo que se buscó dentro de su caja, no como
+            titular de la página: sin la caja, los resultados parecían el
+            contenido del sitio en vez de una búsqueda que hizo el
+            participante. */}
+        {view.resultados ? (
+          <div className={styles.cajaBusqueda} aria-label={`Búsqueda: ${view.title}`}>
+            <span className={styles.consulta}>{view.title}</span>
+            <Search aria-hidden className={styles.consultaIcono} strokeWidth={1.75} />
+          </div>
+        ) : (
+          <h2 className={styles.pageTitle}>{view.title}</h2>
+        )}
         {view.subtitle && <p className={styles.pageSub}>{view.subtitle}</p>}
 
         {view.resultados ? (
