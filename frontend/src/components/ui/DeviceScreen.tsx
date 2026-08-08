@@ -67,6 +67,10 @@ export type ScreenView =
       /** Datos de una página informativa. Cuando los hay, sustituyen al
        *  formulario: un directorio no se rellena, se lee. */
       datos?: { etiqueta: string; valor: string; senal?: string }[]
+      /** Resultados de una búsqueda. Mandan sobre `datos` y sobre el
+       *  formulario: comprobar algo por tu cuenta es media lección del módulo,
+       *  y una lista de pares etiqueta/valor no se lee como un buscador. */
+      resultados?: { titulo: string; url: string; fragmento: string; senal?: string }[]
       button: string
       footer?: string
       /** `data-signal` de la barra de direcciones. */
@@ -88,9 +92,6 @@ export type ScreenView =
       msgs: { text: string; time: string; mine?: boolean }[]
     }
 
-/// El botón de una página simulada, sea el envío de un formulario o la acción
-/// única de una página informativa ("llamar a este número"). Sin `botonGoto`
-/// se pinta igual pero no responde: hay páginas donde el botón es decorado.
 /// De dónde sale lo que se ve escrito en un campo. Un formulario que ya trae
 /// *tus* datos se lee como el de un sitio que te conoce, que es media trampa, y
 /// hace que enviarlo sea entregar algo tuyo y no rellenar casillas vacías.
@@ -101,6 +102,9 @@ const VALORES: Record<string, ((yo: { correo: string; usuario: string }) => stri
   cuenta: () => CUENTA_FICTICIA,
 }
 
+/// El botón de una página simulada, sea el envío de un formulario o la acción
+/// única de una página informativa ("llamar a este número"). Sin `botonGoto`
+/// se pinta igual pero no responde: hay páginas donde el botón es decorado.
 function Accion({ view }: { view: Extract<ScreenView, { kind: 'web' }> }) {
   if (!view.botonGoto) return <div className={styles.submit}>{view.button}</div>
 
@@ -183,7 +187,17 @@ function DeviceScreen({
         <h2 className={styles.pageTitle}>{view.title}</h2>
         {view.subtitle && <p className={styles.pageSub}>{view.subtitle}</p>}
 
-        {view.datos ? (
+        {view.resultados ? (
+          <div className={styles.resultados}>
+            {view.resultados.map((resultado) => (
+              <div key={resultado.url} data-signal={resultado.senal}>
+                <span className={styles.resultadoUrl}>{resultado.url}</span>
+                <span className={styles.resultadoTitulo}>{resultado.titulo}</span>
+                <p className={styles.resultadoTexto}>{resultado.fragmento}</p>
+              </div>
+            ))}
+          </div>
+        ) : view.datos ? (
           <div className={styles.datos}>
             {view.datos.map((dato) => (
               <div key={dato.etiqueta} className={styles.dato}>

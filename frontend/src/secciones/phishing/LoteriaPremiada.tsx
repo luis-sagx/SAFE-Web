@@ -86,20 +86,31 @@ const BUSCADOR: ScreenView = {
   secure: true,
   brand: 'Buscador',
   title: 'lotería del pacífico',
-  subtitle: 'Aproximadamente 4 resultados',
-  datos: [
+  subtitle: 'Cerca de 1.240 resultados (0,38 segundos)',
+  // Con resultados de verdad y no una ficha de datos: parte de lo que se
+  // entrena es reconocer dónde está uno mirando, y una lista de pares
+  // etiqueta/valor no se lee como un buscador. Ninguno de los tres dice
+  // "esto es una estafa" a la cara; lo que dicen es que el sorteo no consta
+  // en ningún lado, que es como se comprueba algo de verdad.
+  resultados: [
     {
-      etiqueta: 'Resultado',
-      valor: 'No hay ninguna lotería registrada con ese nombre en el Ecuador.',
+      titulo: 'Sorteos y loterías con permiso vigente en el Ecuador',
+      url: 'https://www.sorteosautorizados.ec › listado',
+      fragmento:
+        'Listado oficial de los sorteos con permiso vigente. No consta ninguna "Lotería del Pacífico" ni sorteo internacional con ese nombre.',
       senal: 'sin-registro',
     },
     {
-      etiqueta: 'Foros',
-      valor: '"Me llegó un correo diciendo que gané un premio de la Lotería del Pacífico"',
+      titulo: '"Gané un premio que nunca jugué": cómo funciona la estafa del sorteo por correo',
+      url: 'https://www.diarioandino.ec › seguridad › estafa-sorteo-correo',
+      fragmento:
+        'El mensaje anuncia un premio alto y pide un pago por adelantado para liberarlo. Quien paga recibe un segundo cobro, y luego otro.',
     },
     {
-      etiqueta: 'Noticias',
-      valor: 'Advierten sobre correos que anuncian premios falsos y piden un pago por adelantado',
+      titulo: 'Me llegó un correo de la Lotería del Pacífico — Foros EC',
+      url: 'https://foros.ec › t › loteria-del-pacifico-premio',
+      fragmento:
+        'A mí me llegó igual, con el mismo monto y las mismas 48 horas. Le escribí y lo único que querían era la transferencia de los $85.',
     },
   ],
   fields: [],
@@ -144,7 +155,7 @@ const MARCADORES: MarcadorNavegador[] = [
     goto: 'n3',
     label: 'Buscó la lotería por su cuenta en internet',
   },
-  { Icono: Newspaper, texto: 'El Comercio' },
+  { Icono: Newspaper, texto: 'Diario Andino' },
 ]
 
 const INSTRUCCION = (
