@@ -7,6 +7,7 @@ import { evitarNavegacion, manejarClicHotspot } from './ui/interactivo'
 import type { AccionCorreo, Reloj } from './ui/DesktopChrome'
 import { Navegador, type MarcadorNavegador, type PestanaConfig } from './ui/Navegador'
 import StoryChoices from './ui/StoryChoices'
+import type { DatoIdentidad } from './ui/TarjetaIdentidad'
 import PanelVeredicto, { type Senal } from './ui/PanelVeredicto'
 import { useAuth } from '../context/AuthContext'
 import { useStoryEngine, type Story, type StoryNode } from '../hooks/useStoryEngine'
@@ -45,6 +46,8 @@ interface StoryEscenarioProps {
   instruccion?: ReactNode
   /** Los caminos posibles, para quien se atasca. No dice cuál es el bueno. */
   pista?: ReactNode
+  /** Datos prestados que el escenario pone en juego (ver TarjetaIdentidad). */
+  identidad?: DatoIdentidad[]
 }
 
 /// Cómo se ve cada pantalla en la barra de direcciones. El correo va en el
@@ -88,6 +91,7 @@ function StoryEscenario({
   marcadores,
   instruccion,
   pista,
+  identidad,
 }: StoryEscenarioProps) {
   const engine = useStoryEngine(story, 'n1', escenarioId)
   const { usuarioSimulado } = useAuth()
@@ -257,6 +261,7 @@ function StoryEscenario({
           </Navegador>
         )
       }
+      identidad={identidad}
       decision={decision}
       resultado={engine.resultado}
       onEmpezar={engine.restart}

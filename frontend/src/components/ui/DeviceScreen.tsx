@@ -1,5 +1,6 @@
 import { Paperclip } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
+import { CUENTA_FICTICIA, IDENTIDAD_FICTICIA } from '../../lib/identidadFicticia'
 import { CuerpoCorreo, type AccionCorreo, type CarpetaCorreo } from './DesktopChrome'
 import styles from './DeviceScreen.module.css'
 
@@ -61,7 +62,7 @@ export type ScreenView =
          *  ejemplo. Un formulario que ya trae *tu* correo se lee como el de un
          *  sitio que te conoce, que es media trampa; y de paso deja tu dominio
          *  real a la vista, junto al falso de la barra de direcciones. */
-        valor?: 'correo' | 'usuario'
+        valor?: 'correo' | 'usuario' | 'cedula' | 'cuenta'
       }[]
       /** Datos de una página informativa. Cuando los hay, sustituyen al
        *  formulario: un directorio no se rellena, se lee. */
@@ -90,6 +91,16 @@ export type ScreenView =
 /// El botón de una página simulada, sea el envío de un formulario o la acción
 /// única de una página informativa ("llamar a este número"). Sin `botonGoto`
 /// se pinta igual pero no responde: hay páginas donde el botón es decorado.
+/// De dónde sale lo que se ve escrito en un campo. Un formulario que ya trae
+/// *tus* datos se lee como el de un sitio que te conoce, que es media trampa, y
+/// hace que enviarlo sea entregar algo tuyo y no rellenar casillas vacías.
+const VALORES: Record<string, ((yo: { correo: string; usuario: string }) => string) | undefined> = {
+  correo: (yo) => yo.correo,
+  usuario: (yo) => yo.usuario,
+  cedula: () => IDENTIDAD_FICTICIA.cedula,
+  cuenta: () => CUENTA_FICTICIA,
+}
+
 function Accion({ view }: { view: Extract<ScreenView, { kind: 'web' }> }) {
   if (!view.botonGoto) return <div className={styles.submit}>{view.button}</div>
 
@@ -122,7 +133,7 @@ function DeviceScreen({
 }) {
   const { correoSimulado } = useAuth()
   const correo = destinatario ?? correoSimulado
-  const usuario = correo.split('@')[0]
+  const usuario = correo.split('@')[0] ?? correo
 
   if (view.kind === 'mail') {
     return (
@@ -190,11 +201,7 @@ function DeviceScreen({
               <label key={field.label} className={styles.field} data-signal={field.senal}>
                 <span>{field.label}</span>
                 <span className={styles.input}>
-                  {field.valor === 'correo'
-                    ? correo
-                    : field.valor === 'usuario'
-                      ? usuario
-                      : field.placeholder}
+                  {VALORES[field.valor ?? '']?.({ correo, usuario }) ?? field.placeholder}
                 </span>
               </label>
             ))}

@@ -161,7 +161,8 @@ const BASE: EscenarioBase[] = [
     titulo: 'Premio de lotería',
     descripcion: 'Un correo anuncia un premio millonario y pide un pago para poder liberarlo.',
     // v2: se juega sobre la pantalla, sin lista de opciones.
-    version: 2,
+    // v3: el participante ve su cédula y su cuenta antes de empezar.
+    version: 3,
     naturaleza: 'fraude',
     dificultad: 1,
     espeja: 'phishing/aviso-filtracion',

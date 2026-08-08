@@ -7,6 +7,7 @@ import AvisoFinEscenario from "./ui/AvisoFinEscenario";
 import type { ResultadoEscenario } from "../hooks/useScenarioRun";
 import { useAuth } from "../context/AuthContext";
 import { getEscenario, getSeccion } from "../data/catalogo";
+import TarjetaIdentidad, { type DatoIdentidad } from "./ui/TarjetaIdentidad";
 
 interface EscenarioLayoutProps {
   /** Misma clave que recibe useScenarioRun, p. ej. 'estafa/saldo-contable'. */
@@ -19,6 +20,11 @@ interface EscenarioLayoutProps {
   contexto: ReactNode;
   /** Cómo se juega. Aparece únicamente en el briefing, antes de entrar. */
   nota?: ReactNode;
+  /** Datos prestados que este escenario pone en juego, además del correo. Con
+   *  ellos el briefing enseña una tarjeta de identidad en vez de una frase: un
+   *  formulario que pide la cédula no significa nada si no sabes cuál es la
+   *  tuya aquí dentro. */
+  identidad?: DatoIdentidad[];
   /** Dominio del correo del participante dentro de este escenario. Los
    *  ambientados en una empresa lo fijan al de esa empresa; el resto usan el
    *  del entrenamiento. */
@@ -77,6 +83,7 @@ function EscenarioLayout({
   resumen,
   contexto,
   nota,
+  identidad,
   dominioCorreo,
   pantalla,
   decision,
@@ -156,12 +163,22 @@ function EscenarioLayout({
               dirección es inventada, puede creer que el ejercicio le está
               mandando correo de verdad —o peor, que le llegó uno real. El
               dominio no existe fuera de la simulación. */}
-          <p className="mt-6 text-base leading-relaxed text-body">
-            En los escenarios usas un correo ficticio,{" "}
-            <span className="font-medium text-ink">{correoDelEscenario}</span>.
-            No existe fuera de este entrenamiento: nada de lo que ocurra aquí
-            sale ni entra a tu correo real.
-          </p>
+          {identidad ? (
+            <>
+              <TarjetaIdentidad correo={correoDelEscenario} datos={identidad} />
+              <p className="mt-3 text-base leading-relaxed text-body">
+                Nada de lo que ocurra aquí sale ni entra a tu correo real, ni
+                tiene que ver con tus datos de verdad.
+              </p>
+            </>
+          ) : (
+            <p className="mt-6 text-base leading-relaxed text-body">
+              En los escenarios usas un correo ficticio,{" "}
+              <span className="font-medium text-ink">{correoDelEscenario}</span>
+              . No existe fuera de este entrenamiento: nada de lo que ocurra
+              aquí sale ni entra a tu correo real.
+            </p>
+          )}
 
           {nota && (
             <div className="mt-4 rounded-lg border border-hairline-strong bg-canvas-soft p-5 text-base leading-relaxed text-body">

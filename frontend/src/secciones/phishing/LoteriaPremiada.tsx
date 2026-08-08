@@ -5,6 +5,7 @@ import { ACCIONES_BARRA, finalesDeBarra } from './barraDeCorreo'
 import type { Story } from '../../hooks/useStoryEngine'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
 import type { Senal } from '../../components/ui/PanelVeredicto'
+import { CUENTA_FICTICIA, IDENTIDAD_FICTICIA } from '../../lib/identidadFicticia'
 
 /**
  * El premio que nunca se jugó, con pago por adelantado para cobrarlo.
@@ -61,9 +62,13 @@ const RECLAMO: ScreenView = {
   brand: 'Lotería del Pacífico',
   title: 'Liberación de premio',
   subtitle: 'Complete sus datos para recibir la transferencia de USD 48.500,00.',
+  // Los campos vienen ya rellenos con los datos que el participante vio en el
+  // briefing, como los rellenaría el autocompletado del navegador. Con ceros de
+  // ejemplo, enviar el formulario se sentía como enviar casillas vacías; con
+  // sus números a la vista, pulsar el botón es verse entregar lo suyo.
   fields: [
-    { label: 'Cédula', placeholder: '0000000000' },
-    { label: 'Banco y número de cuenta', placeholder: 'Banco · 00000000', senal: 'campo-cuenta' },
+    { label: 'Cédula', placeholder: '', valor: 'cedula' },
+    { label: 'Banco y número de cuenta', placeholder: '', valor: 'cuenta', senal: 'campo-cuenta' },
   ],
   button: 'Pagar $85 y liberar mi premio',
   botonGoto: 'e_paga',
@@ -113,15 +118,14 @@ const STORY: Story<ScreenNode> = {
     kind: 'bad',
     view: RECLAMO,
     verdict: 'Caíste en la estafa',
-    outcome:
-      'Pagaste los $85 y el premio no llegó. En su lugar llegó otro correo: ahora faltaba un "seguro de transferencia" de $190. Así funciona — cada pago abre la puerta al siguiente, y quien ya pagó cuesta más que se detenga.',
+    outcome: `Pagaste los $85 y, de paso, entregaste tu cédula ${IDENTIDAD_FICTICIA.cedula} y tu cuenta ${CUENTA_FICTICIA}. El premio no llegó: llegó otro correo pidiendo un "seguro de transferencia" de $190. Así funciona — cada pago abre la puerta al siguiente, y quien ya pagó cuesta más que se detenga. Los datos, además, ya no se pueden recuperar.`,
   },
   e_frena: {
     kind: 'good',
     view: RECLAMO,
     verdict: 'No caíste · viste el pago por adelantado',
     outcome:
-      'Cerraste la página al notar que te pedían pagar para poder cobrar. Un premio real se descuenta del monto o se entrega ante notario; nunca se cobra por adelantado.',
+      'Cerraste la página al notar que te pedían pagar para poder cobrar, y tus datos se quedaron donde estaban. Un premio real se descuenta del monto o se entrega ante notario; nunca se cobra por adelantado.',
   },
   e_verifica: {
     kind: 'good',
@@ -199,7 +203,7 @@ const SENALES: Senal[] = [
     pantalla: 'n2',
     targetId: 'campo-cuenta',
     texto:
-      'Piden tu <b>cédula y tu número de cuenta</b>. Para <i>recibir</i> dinero nunca hacen falta los dos juntos, y con ellos se puede intentar mucho más que un depósito.',
+      'El formulario ya venía con <b>tu cédula y tu cuenta</b>, las que viste antes de empezar. Para <i>recibir</i> dinero nunca hacen falta las dos juntas, y con ellas se puede intentar mucho más que un depósito.',
   },
 ]
 
@@ -238,6 +242,7 @@ function LoteriaPremiada() {
       contexto={CONTEXTO}
       story={STORY}
       accionesCorreo={ACCIONES_BARRA}
+      identidad={['cedula', 'cuenta']}
       marcadores={MARCADORES}
       instruccion={INSTRUCCION}
       pista={PISTA}
