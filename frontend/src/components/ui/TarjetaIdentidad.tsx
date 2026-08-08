@@ -31,7 +31,7 @@ function TarjetaIdentidad({ correo, datos }: { correo: string; datos: DatoIdenti
     >
       <h2 className="text-base font-semibold text-ink">Tus datos en este escenario</h2>
       <p className="mt-1 text-base leading-relaxed text-body">
-        Son inventados y no existen fuera de este entrenamiento. Te los enseñamos ahora para que
+        Son inventados y no existen fuera de este entrenamiento. Te los enseñamos para que
         reconozcas lo que estarías entregando si un formulario te los pide.
       </p>
 

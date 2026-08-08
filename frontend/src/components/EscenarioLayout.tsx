@@ -260,7 +260,10 @@ function EscenarioLayout({
             className="mb-4 inline-flex items-center gap-1.5 text-base font-medium text-link underline decoration-dotted underline-offset-4 transition hover:decoration-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link"
           >
             <Info aria-hidden className="size-3.5" strokeWidth={2} />
-            Ver contexto
+            {/* El nombre dice lo que hay dentro: quien se olvidó de su cédula
+                ficticia no va a buscarla detrás de una palabra que promete
+                otra cosa. */}
+            {identidad ? "Ver contexto y mis datos" : "Ver contexto"}
           </button>
 
           {decision}
@@ -287,6 +290,14 @@ function EscenarioLayout({
         <div className="mt-2 space-y-3 text-lg leading-relaxed text-body">
           {contexto}
         </div>
+
+        {/* La tarjeta se enseña al empezar, pero entre el briefing y el
+            formulario que pide la cédula pueden pasar minutos: si para
+            entonces ya no recuerdas que esos números eran los tuyos, el
+            formulario vuelve a ser casillas vacías. */}
+        {identidad && (
+          <TarjetaIdentidad correo={correoDelEscenario} datos={identidad} />
+        )}
 
         <form method="dialog" className="mt-6 flex justify-end">
           <button
