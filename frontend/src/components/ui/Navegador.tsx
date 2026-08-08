@@ -141,6 +141,15 @@ export function Navegador({
 
       {marcadores.length > 0 && (
         <div className={styles.marcadores}>
+          {/* La barra va con nombre porque mucha gente nunca guardó un
+              marcador, y sin él esta franja se lee como decoración del
+              programa en vez de como sitios a los que se puede ir. En el
+              escenario legítimo eso llega a falsear el dato: el marcador es el
+              único camino al acierto, y quien no lo reconoce acaba borrando un
+              correo real por no encontrar el control, no por criterio.
+
+              Nombra la barra, no la respuesta: sigue sin decir cuál pulsar. */}
+          <span className={styles.marcadoresEtiqueta}>Marcadores</span>
           {marcadores.map(({ Icono, texto, goto, label }) => (
             <button
               key={texto}
