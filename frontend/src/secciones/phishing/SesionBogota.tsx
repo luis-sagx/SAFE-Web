@@ -8,6 +8,7 @@ import {
   type AccionCorreo,
   type CarpetaCorreo,
 } from '../../components/ui/DesktopChrome'
+import { AvisoSitio, CabeceraSitio, ENLACES_PIE, PieSitio } from '../../components/ui/armazonSitio'
 import styles from '../../components/ui/DeviceScreen.module.css'
 import Instrucciones from '../../components/ui/Instrucciones'
 import { BotonHotspot, EnlaceHotspot, manejarClicHotspot } from '../../components/ui/interactivo'
@@ -238,7 +239,10 @@ function ContenidoCorreo({ recibido, carpetas }: { recibido: string; carpetas: C
 function ContenidoPaginaClave() {
   return (
     <div className={styles.page}>
-      <p className={styles.brand}>Banco del Litoral</p>
+      <CabeceraSitio
+        marca="Banco del Litoral"
+        menu={['Cuentas', 'Transferencias', 'Pagos', 'Ayuda']}
+      />
       <h2 className={styles.pageTitle}>Verificación de seguridad</h2>
       <p className={styles.pageSub}>Confirme su contraseña para cerrar el acceso no reconocido.</p>
 
@@ -258,6 +262,13 @@ function ContenidoPaginaClave() {
           Cerrar acceso no reconocido
         </BotonHotspot>
       </div>
+
+      <AvisoSitio>
+        Por su seguridad, cierre todas las sesiones activas si no reconoce el acceso. Nunca le
+        pediremos su clave por correo ni por teléfono.
+      </AvisoSitio>
+
+      <PieSitio texto="Banco del Litoral · Entidad supervisada" enlaces={ENLACES_PIE} />
     </div>
   )
 }
@@ -265,7 +276,10 @@ function ContenidoPaginaClave() {
 function ContenidoPaginaOtp() {
   return (
     <div className={styles.page}>
-      <p className={styles.brand}>Banco del Litoral</p>
+      <CabeceraSitio
+        marca="Banco del Litoral"
+        menu={['Cuentas', 'Transferencias', 'Pagos', 'Ayuda']}
+      />
       <h2 className={styles.pageTitle}>Un paso más</h2>
       <p className={styles.pageSub}>Ingrese el código que le acabamos de enviar por SMS.</p>
 
@@ -285,6 +299,13 @@ function ContenidoPaginaOtp() {
           Confirmar y cerrar sesión
         </BotonHotspot>
       </div>
+
+      <AvisoSitio>
+        El código caduca en cinco minutos. Si no lo recibió, verifique que su número esté
+        actualizado en la aplicación.
+      </AvisoSitio>
+
+      <PieSitio texto="Banco del Litoral · Entidad supervisada" enlaces={ENLACES_PIE} />
     </div>
   )
 }

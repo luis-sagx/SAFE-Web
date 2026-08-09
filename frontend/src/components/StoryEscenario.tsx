@@ -134,14 +134,15 @@ function StoryEscenario({
   const pestanas: Record<string, PestanaConfig> = {}
   const porUrl = new Map<string, string>()
   const visibles: string[] = []
-  // Durante el repaso, la pantalla que se explica vuelve a la barra aunque su
-  // pestaña se hubiera cerrado: la señal que vive en la barra de direcciones
-  // necesita su pestaña para poder resaltarse.
-  const enBarra =
-    pantallaRepaso && !abiertas.includes(pantallaRepaso)
-      ? [...abiertas, pantallaRepaso]
-      : abiertas
-  for (const id of enBarra) {
+  // Durante el repaso también entra la pantalla que se está explicando, aunque
+  // el participante no llegara a abrirla. Desde que cerrar una pestaña dejó de
+  // terminar la corrida (issue #24), se puede acabar por la barra del cliente
+  // sin haber visitado la página falsa — y entonces la señal que vive en su
+  // barra de direcciones no tenía dónde resaltarse.
+  const paraPestanas =
+    pantallaRepaso && !abiertas.includes(pantallaRepaso) ? [...abiertas, pantallaRepaso] : abiertas
+
+  for (const id of paraPestanas) {
     const meta = story[id] && pestanaDeVista(story[id]!.view, dominio)
     if (!meta) continue
     // Dos pantallas del mismo sitio comparten pestaña, pero no significan lo

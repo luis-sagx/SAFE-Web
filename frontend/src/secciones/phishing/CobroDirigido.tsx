@@ -50,7 +50,10 @@ const STORY: Story<ScreenNode> = {
     choices: [
       { label: 'Pagar de una vez: es apenas $2.40.', goto: 'e_paga' },
       { label: 'Dudar del monto, pero pagar igual "por si acaso".', goto: 'e_paga_duda' },
-      { label: 'Rastrear el pedido en la web oficial del courier antes de pagar nada.', goto: 'e_rastrea' },
+      {
+        label: 'Rastrear el pedido en la web oficial del courier antes de pagar nada.',
+        goto: 'e_rastrea',
+      },
     ],
   },
   e_paga: {

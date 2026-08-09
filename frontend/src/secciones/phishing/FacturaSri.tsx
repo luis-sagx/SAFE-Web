@@ -19,6 +19,7 @@ import {
   type CarpetaCorreo,
 } from '../../components/ui/DesktopChrome'
 import { carpetasCorreo } from '../../components/ui/carpetasCorreo'
+import { AvisoSitio, CabeceraSitio, ENLACES_PIE, PieSitio } from '../../components/ui/armazonSitio'
 import styles from '../../components/ui/DeviceScreen.module.css'
 import {
   BotonHotspot,
@@ -351,7 +352,10 @@ function ContenidoPortalFalso() {
   return (
     <>
       <div className={styles.page}>
-        <p className={styles.brand}>Servicio de Rentas</p>
+        <CabeceraSitio
+          marca="Servicio de Rentas"
+          menu={['Comprobantes', 'Declaraciones', 'Trámites', 'Ayuda']}
+        />
         <h2 className={styles.pageTitle}>Validación de comprobante</h2>
         <p className={styles.pageSub}>
           Ingresa tus datos del portal para liberar la factura pendiente.
@@ -384,7 +388,15 @@ function ContenidoPortalFalso() {
           </BotonHotspot>
         </div>
 
-        <p className={styles.pageFooter}>Portal de validación · sri-facturacion-ec.com</p>
+        <AvisoSitio>
+          El comprobante quedará habilitado en un plazo máximo de 24 horas tras la validación. No
+          comparta sus credenciales con terceros.
+        </AvisoSitio>
+
+        <PieSitio
+          texto="Servicio de Rentas Internas · República del Ecuador"
+          enlaces={ENLACES_PIE}
+        />
       </div>
     </>
   )
@@ -478,7 +490,10 @@ function ContenidoPortalReal() {
   return (
     <>
       <div className={styles.page}>
-        <p className={styles.brand}>SRI · Servicio de Rentas Internas</p>
+        <CabeceraSitio
+          marca="SRI · Servicio de Rentas Internas"
+          menu={['Comprobantes', 'Declaraciones', 'Trámites', 'Ayuda']}
+        />
         <h2 className={styles.pageTitle}>Comprobantes electrónicos</h2>
         <p className={styles.portalSesion}>
           Sesión iniciada · RUC 0000000000001 · último ingreso hoy
@@ -509,7 +524,10 @@ function ContenidoPortalReal() {
           </span>
         </div>
 
-        <p className={styles.pageFooter}>srienlinea.sri.gob.ec · Servicio de Rentas Internas</p>
+        <PieSitio
+          texto="Servicio de Rentas Internas · República del Ecuador"
+          enlaces={ENLACES_PIE}
+        />
       </div>
     </>
   )

@@ -1,6 +1,7 @@
 import { Paperclip, Search } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { CUENTA_FICTICIA, IDENTIDAD_FICTICIA } from '../../lib/identidadFicticia'
+import { AvisoSitio, CabeceraSitio, PieSitio } from './armazonSitio'
 import { CuerpoCorreo, type AccionCorreo, type CarpetaCorreo } from './DesktopChrome'
 import styles from './DeviceScreen.module.css'
 
@@ -52,6 +53,22 @@ export type ScreenView =
        *  enseñaría justo lo contrario de lo que mide este módulo. */
       local?: boolean
       brand: string
+      /** Entradas del menú de la cabecera del sitio. Decorativas.
+       *
+       *  Un sitio de verdad tiene cabecera y pie, y sin ellos las pantallas se
+       *  leían como fichas y no como sitios. Va por escenario porque el menú de
+       *  un banco no es el de una intranet — y **si se le pone a una página
+       *  legítima hay que ponérselo también a la falsa del mismo escenario**:
+       *  un kit de phishing clona el sitio entero, y dejar la falsa desnuda
+       *  enseñaría que se reconoce por el acabado, que es mentira. La señal
+       *  está en la dirección. */
+      menu?: string[]
+      /** Enlaces del pie, junto al aviso de `footer`. Decorativos. */
+      pie?: string[]
+      /** Nota que el sitio pone bajo el formulario o la ficha. Las páginas
+       *  falsas copian estos avisos igual que copian el logotipo, así que las
+       *  lleva tanto la real como la clonada. */
+      aviso?: string
       title: string
       subtitle?: string
       fields: {
@@ -183,7 +200,11 @@ function DeviceScreen({
   if (view.kind === 'web') {
     return (
       <div className={styles.page}>
-        <p className={styles.brand}>{view.brand}</p>
+        {view.menu ? (
+          <CabeceraSitio marca={view.brand} menu={view.menu} />
+        ) : (
+          <p className={styles.brand}>{view.brand}</p>
+        )}
 
         {/* Un buscador enseña lo que se buscó dentro de su caja, no como
             titular de la página: sin la caja, los resultados parecían el
@@ -235,7 +256,9 @@ function DeviceScreen({
           </div>
         )}
 
-        {view.footer && <p className={styles.pageFooter}>{view.footer}</p>}
+        {view.aviso && <AvisoSitio>{view.aviso}</AvisoSitio>}
+
+        <PieSitio texto={view.footer} enlaces={view.pie} />
       </div>
     )
   }
