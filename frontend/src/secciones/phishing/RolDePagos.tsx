@@ -356,10 +356,16 @@ function RolDePagos() {
     }
   }
 
+  // La pantalla que se está viendo siempre tiene su pestaña en la barra. Importa
+  // en el repaso: las señales llevan a pantallas que se cerraron, o que nunca se
+  // llegaron a abrir, y sin esto se explicaba la página con la pestaña del
+  // correo marcada como activa.
+  const abiertas = pestanas.includes(pantallaActual) ? pestanas : [...pestanas, pantallaActual]
+
   const pantalla = (
     <Navegador
       pestanas={PESTANAS}
-      abiertas={pestanas}
+      abiertas={abiertas}
       activa={pantallaActual}
       marcadores={MARCADORES}
       onHotspot={onHotspot}
