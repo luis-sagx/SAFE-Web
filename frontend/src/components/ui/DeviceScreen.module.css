@@ -1018,6 +1018,7 @@ button.mailNavItem {
    oscuro: dos diferencias, no una, para que se sepa a qué pestaña corresponde
    la pantalla también en un proyector o en una pantalla mal calibrada. */
 .tab {
+  position: relative;
   display: inline-flex;
   align-items: center;
   gap: 0.625rem;
@@ -1045,6 +1046,23 @@ button.mailNavItem {
 }
 .tabInactiva:hover {
   background: rgba(255, 255, 255, 0.45);
+}
+/* Raya entre dos inactivas seguidas, como en un navegador de verdad: sin fondo
+   propio se leían como una sola franja larga y no se veía dónde acababa una
+   pestaña y empezaba la otra. Solo entre inactivas: al lado de la activa ya
+   separa su fondo blanco. */
+.tabInactiva + .tabInactiva::before {
+  content: '';
+  position: absolute;
+  left: -0.125rem;
+  top: 50%;
+  height: 1rem;
+  transform: translateY(-50%);
+  border-left: 1px solid rgb(16 32 44 / 20%);
+}
+.tabInactiva:hover::before,
+.tabInactiva:hover + .tabInactiva::before {
+  border-left-color: transparent;
 }
 
 /* El recorte va en el título y no en la pestaña: recortando la pestaña entera,
