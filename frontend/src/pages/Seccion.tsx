@@ -68,7 +68,10 @@ function Seccion() {
         <InfoLink />
       </AppHeader>
 
-      <main className="mx-auto max-w-4xl px-6 py-12">
+      {/* Mismo ancho que el dashboard y que la barra superior: las tres
+          pantallas de navegación se leen como una sola, sin que el contenido
+          salte de sitio al entrar en una sección. */}
+      <main className="mx-auto max-w-6xl px-6 py-12">
         <p className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.88px] text-muted">
           <seccion.Icono aria-hidden className="size-4 text-link" strokeWidth={2} />
           {seccion.titulo}
@@ -133,7 +136,7 @@ function Seccion() {
             Estamos preparando los escenarios de esta sección.
           </p>
         ) : (
-          <ol className="mt-8 grid gap-4 sm:grid-cols-2">
+          <ol className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {escenarios.map((escenario, indice) => {
               // Sin intentar no muestra ninguna insignia de resultado: mostrar
               // algo distinto de "aprobado"/"falta" antes de jugarlo delataría

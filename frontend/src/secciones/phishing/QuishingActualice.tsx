@@ -1,6 +1,7 @@
 import { Forward, Landmark, Newspaper, Reply, ShieldAlert, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import EscenarioLayout from '../../components/EscenarioLayout'
+import type { Contexto } from '../../components/ui/ContextoEscenario'
 import { carpetasCorreo } from '../../components/ui/carpetasCorreo'
 import {
   CuerpoCorreo,
@@ -114,18 +115,21 @@ const RULE =
 
 const RESUMEN = 'Un correo del banco pide escanear un QR para "actualizar tus datos".'
 
-const CONTEXTO = (
-  <>
-    <p>
-      Sos cliente del <strong>Banco del Litoral</strong>. Este mes el banco sí pidió, dentro de su
-      app, que los clientes actualicen algunos datos.
-    </p>
-    <p>
-      Ahora te llega un correo aparte, con un código QR grande y ningún enlace de texto que puedas
-      revisar antes de escanear.
-    </p>
-  </>
-)
+const CONTEXTO: Contexto = {
+  antes: (
+    <>
+      Sos cliente del <strong>Banco del Litoral</strong>. <strong>Este mes</strong> el banco sí
+      pidió, dentro de su app, que los clientes actualicen algunos datos.
+    </>
+  ),
+  ahora: (
+    <>
+      <strong>Días después</strong> te llega un correo aparte, con un <strong>código QR</strong>{' '}
+      grande.
+    </>
+  ),
+  detalle: 'No trae ningún enlace de texto que puedas revisar antes de escanear.',
+}
 
 const NOTA = (
   <>

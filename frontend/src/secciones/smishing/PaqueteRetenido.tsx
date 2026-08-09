@@ -1,4 +1,5 @@
 import StoryEscenario, { type ScreenNode } from '../../components/StoryEscenario'
+import type { Contexto } from '../../components/ui/ContextoEscenario'
 import type { Story } from '../../hooks/useStoryEngine'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
 import type { Senal } from '../../components/ui/PanelVeredicto'
@@ -110,18 +111,21 @@ const RULE =
 
 const RESUMEN = 'Un SMS dice que tu paquete está retenido por $1,20 de aduana.'
 
-const CONTEXTO = (
-  <>
-    <p>
-      Compraste algo por internet la semana pasada y <strong>sí estás esperando un paquete</strong>.
-      Debería llegar en estos días.
-    </p>
-    <p>
-      A media mañana te llega un mensaje de texto de un número que no tienes guardado, con el
-      logo del courier en el texto y un número de guía.
-    </p>
-  </>
-)
+const CONTEXTO: Contexto = {
+  antes: (
+    <>
+      Compraste algo por internet la semana pasada y{' '}
+      <strong>sí estás esperando un paquete</strong>: debería llegar en estos días.
+    </>
+  ),
+  ahora: (
+    <>
+      <strong>A media mañana</strong> te llega un mensaje de texto sobre ese envío, de un número que
+      no tienes guardado.
+    </>
+  ),
+  detalle: 'Trae el logo del courier en el texto y un número de guía.',
+}
 
 function PaqueteRetenido() {
   return (
