@@ -1,16 +1,16 @@
-import { Archive, Forward, Reply, ShieldAlert, Trash2 } from 'lucide-react'
+import { Forward, Reply, ShieldAlert, Trash2 } from 'lucide-react'
 import type { ScreenNode } from '../../components/StoryEscenario'
 import type { AccionCorreo } from '../../components/ui/DesktopChrome'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
 import type { Naturaleza } from '../../data/catalogo'
 
 /**
- * La barra del cliente de correo, con sus cinco finales, para cualquier
+ * La barra del cliente de correo, con sus cuatro finales, para cualquier
  * escenario de phishing.
  *
- * Responder, reenviar, archivar, eliminar y marcar como spam significan lo
- * mismo en todos los correos; lo único que cambia es **si el mensaje era real**.
- * Por eso los finales se generan a partir de la naturaleza del escenario en vez
+ * Responder, reenviar, eliminar y marcar como spam significan lo mismo en
+ * todos los correos; lo único que cambia es **si el mensaje era real**. Por
+ * eso los finales se generan a partir de la naturaleza del escenario en vez
  * de escribirse ocho veces: siete copias del mismo texto acabarían divergiendo,
  * igual que había pasado con la ventana.
  *
@@ -34,13 +34,6 @@ export const ACCIONES_BARRA: AccionCorreo[] = [
     titulo: 'Reenviar',
     goto: 'e_reenviar',
     label: 'Reenvió el correo a otra persona',
-  },
-  {
-    Icono: Archive,
-    etiqueta: 'Archivar',
-    titulo: 'Archivar',
-    goto: 'e_archivar',
-    label: 'Archivó el correo',
   },
   {
     Icono: Trash2,
@@ -71,12 +64,6 @@ const FRAUDE = {
     outcome:
       'Lo borraste sin tocar nada, que es suficiente para no caer. Marcarlo como spam habría hecho algo más: avisar al filtro para que no le llegue a otros.',
   },
-  e_archivar: {
-    kind: 'partial' as const,
-    verdict: 'No caíste, pero lo dejaste ahí',
-    outcome:
-      'Archivarlo te sacó el correo de la vista sin resolver nada. Sigue en tu buzón, nadie más se enteró, y si mañana le llega a un compañero va a llegar igual de intacto.',
-  },
   e_responder: {
     kind: 'partial' as const,
     verdict: 'No entregaste nada, pero contestaste',
@@ -104,12 +91,6 @@ const LEGITIMO = {
     outcome:
       'El correo era auténtico y lo borraste. Desconfiar de todo sale tan caro como confiar de más: te quedaste sin el aviso y sin lo que había que hacer con él.',
   },
-  e_archivar: {
-    kind: 'partial' as const,
-    verdict: 'Era real, y lo archivaste sin más',
-    outcome:
-      'No perdiste nada grave, porque el mensaje sigue ahí. Pero lo guardaste sin comprobar si pedía algo de tu parte, y eso era lo único que había que decidir.',
-  },
   e_responder: {
     kind: 'partial' as const,
     verdict: 'Contestaste sin verificar',
@@ -125,7 +106,7 @@ const LEGITIMO = {
 }
 
 /**
- * Los cinco finales listos para meter en el grafo de un escenario.
+ * Los cuatro finales listos para meter en el grafo de un escenario.
  *
  * `vista` es la pantalla sobre la que se leen: el panel de resultado se muestra
  * al lado del correo que lo provocó, así que los finales heredan la misma

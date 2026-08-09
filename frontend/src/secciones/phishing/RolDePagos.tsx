@@ -1,4 +1,4 @@
-import { Archive, Building2, Forward, Landmark, Newspaper, Reply, ShieldAlert, Trash2 } from 'lucide-react'
+import { Building2, Forward, Landmark, Newspaper, Reply, ShieldAlert, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import EscenarioLayout from '../../components/EscenarioLayout'
 import { carpetasCorreo } from '../../components/ui/carpetasCorreo'
@@ -50,13 +50,6 @@ const STORY: Story<StoryNode> = {
       'El aviso era real, así que no pasó nada grave. Pero lo mandaste a otra persona antes de comprobarlo tú mismo: si hubiera sido falso, el reenvío habría llevado el engaño con tu nombre encima.',
     score: 50,
   },
-  e_archivar: {
-    kind: 'partial',
-    verdict: 'Era real, y lo archivaste sin más',
-    outcome:
-      'No perdiste nada grave: el rol de pagos sigue disponible en el portal. Pero lo guardaste sin revisar si tus horas extra estaban completas, que era justo lo que había que comprobar.',
-    score: 50,
-  },
   e_spam: {
     kind: 'bad',
     verdict: 'Descartaste un aviso real',
@@ -69,7 +62,6 @@ const STORY: Story<StoryNode> = {
 const ACCIONES: AccionCorreo[] = [
   { Icono: Reply, etiqueta: 'Responder', titulo: 'Responder', goto: 'e_credenciales', label: 'Respondió el correo con su usuario y su contraseña' },
   { Icono: Forward, etiqueta: 'Reenviar', titulo: 'Reenviar', goto: 'e_reenviar', label: 'Reenvió el correo a otra persona' },
-  { Icono: Archive, etiqueta: 'Archivar', titulo: 'Archivar', goto: 'e_archivar', label: 'Archivó el correo' },
   { Icono: Trash2, etiqueta: 'Eliminar', titulo: 'Eliminar', goto: 'e_borra', label: 'Eliminó el correo' },
   { Icono: ShieldAlert, etiqueta: 'Spam', titulo: 'Marcar como spam', goto: 'e_spam', label: 'Marcó el correo como spam' },
 ]

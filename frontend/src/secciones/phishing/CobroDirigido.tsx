@@ -41,7 +41,7 @@ const PAGO: ScreenView = {
 }
 
 const STORY: Story<ScreenNode> = {
-  // Responder, reenviar, archivar, eliminar y marcar como spam.
+  // Responder, reenviar, eliminar y marcar como spam.
   ...finalesDeBarra('fraude', CORREO),
   n1: {
     kind: 'scene',

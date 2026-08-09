@@ -20,13 +20,11 @@ export interface MensajeCorreo {
 }
 
 /// A dónde va el correo según qué botón de la barra terminó el escenario, y si
-/// eso lo saca de Recibidos. Archivar no tiene carpeta propia: solo desaparece
-/// de la vista, como dice su final ("sigue en tu buzón" pero ya no a la vista).
+/// eso lo saca de Recibidos.
 const DESTINO_ACCION: Record<
   string,
   { carpeta?: 'Enviados' | 'Spam' | 'Papelera'; prefijo?: string; vaciaRecibidos: boolean }
 > = {
-  e_archivar: { vaciaRecibidos: true },
   e_eliminar: { carpeta: 'Papelera', vaciaRecibidos: true },
   e_spam: { carpeta: 'Spam', vaciaRecibidos: true },
   e_responder: { carpeta: 'Enviados', prefijo: 'Re:', vaciaRecibidos: false },
