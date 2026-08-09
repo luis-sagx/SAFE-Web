@@ -111,32 +111,36 @@ const SENALES: Senal[] = [
     id: 's1',
     targetId: 'remitente',
     pantalla: 'n1',
-    texto: 'El dominio del remitente es <b>andes-ec.net</b>, parecido al real <b>andes.com.ec</b>.',
+    texto:
+      'La dirección del remitente termina en <b>andes-ec.net</b>, y la de tu empresa es <b>andes.com.ec</b>. De lejos se parecen, pero el final es distinto, y esa parte final es la que dice quién es el dueño: son dos direcciones de dos dueños distintos.',
   },
   {
     id: 's2',
     targetId: 'url',
     pantalla: 'n2',
     texto:
-      'Tiene <b>candado y https</b>: la conexión segura no dice nada de quién está del otro lado.',
+      'La página tiene <b>candado</b> y su dirección empieza por <b>https</b>. Eso solo significa que nadie puede espiar lo que escribes mientras viaja, no que la página sea de tu empresa. Una página falsa consigue ese candado gratis y en minutos.',
   },
   {
     id: 's3',
     targetId: 'plazo',
     pantalla: 'n1',
-    texto: 'Amenaza con <b>perder el acceso hoy mismo</b> para que actúes sin pensar.',
+    texto:
+      'Amenaza con <b>perder el acceso hoy mismo</b> para que actúes sin pensar y no te dé tiempo de preguntar en sistemas.',
   },
   {
     id: 's4',
     targetId: 'campo-clave',
     pantalla: 'n2',
-    texto: 'Pide escribir tu <b>contraseña actual</b> en una página abierta desde un correo.',
+    texto:
+      'Te pide escribir tu <b>contraseña actual</b> en una página que abriste desde un correo. Tu empresa ya sabe cuál es tu cuenta: nunca necesita que le repitas la clave para renovarla.',
   },
   {
     id: 's5',
     targetId: 'saludo',
     pantalla: 'n1',
-    texto: 'No te llama por tu nombre ni menciona ningún dato tuyo.',
+    texto:
+      'No te llama por tu nombre ni menciona ningún dato tuyo: el mismo texto le sirve igual a cualquiera que lo reciba.',
   },
 ]
 /// La intranet es la vía de verificación que no pasa por el correo: abrirla por

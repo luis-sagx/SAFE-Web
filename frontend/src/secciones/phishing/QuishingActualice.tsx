@@ -132,26 +132,28 @@ const SENALES: Senal[] = [
     targetId: 'qr',
     pantalla: 'n1',
     texto:
-      'Un <b>QR es un enlace que no puedes leer antes de escanearlo</b>: no hay texto que inspeccionar antes de tocarlo.',
+      'Un <b>código QR es un enlace escondido dentro de un dibujo</b>: no hay texto que leer, así que no puedes ver a dónde te lleva hasta que ya lo abriste.',
   },
   {
     id: 's2',
     targetId: 'remitente',
     pantalla: 'n1',
-    texto: 'El destino real es <b>litoral-actualiza.web.app</b>, sin el dominio del banco.',
+    texto:
+      'El QR abre <b>litoral-actualiza.web.app</b>. Menciona al banco en el nombre, pero no es la dirección del banco: es un sitio gratuito que cualquiera puede crear en minutos con el nombre que quiera.',
   },
   {
     id: 's3',
     targetId: 'campo-clave',
     pantalla: 'n2',
     texto:
-      'El formulario pide la <b>clave de acceso</b>, algo que una actualización de datos nunca necesita.',
+      'El formulario pide la <b>clave de acceso</b>. Actualizar unos datos no necesita tu clave: la clave es lo que se usa para entrar a la cuenta, y es justo lo que buscan.',
   },
   {
     id: 's4',
     targetId: 'plazo',
     pantalla: 'n1',
-    texto: 'Mete <b>prisa</b> con un plazo de 72 horas.',
+    texto:
+      'Mete <b>prisa</b> con un plazo de 72 horas, para que actúes antes de comprobar nada con el banco.',
   },
 ]
 

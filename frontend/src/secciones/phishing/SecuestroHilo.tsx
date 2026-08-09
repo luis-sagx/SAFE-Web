@@ -236,7 +236,7 @@ const SENALES: Senal[] = [
     pantalla: 'n1',
     targetId: 'remitente',
     texto:
-      'No hay dominio falso, ni error de redacción, ni urgencia artificial: el hilo es <b>real</b> y la dirección también. La cuenta de la secretaría estaba hackeada, así que todo lo que sueles mirar salía bien.',
+      'No hay una dirección imitada, ni errores de redacción, ni urgencia artificial: el hilo es <b>real</b> y la dirección también. La cuenta de la secretaría estaba hackeada, así que todo lo que sueles mirar salía bien.',
   },
   {
     id: 's2',

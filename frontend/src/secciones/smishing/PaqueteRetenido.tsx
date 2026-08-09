@@ -101,7 +101,7 @@ const STORY: Story<ScreenNode> = {
 
 const SENALES: Senal[] = [
   { id: 's1', texto: 'Llega de un <b>número de celular</b>, no del canal habitual del courier.' },
-  { id: 's2', texto: 'El dominio es <b>envia-express.info</b> y la página no tiene conexión segura.' },
+  { id: 's2', texto: 'El enlace lleva a <b>envia-express.info</b>, que lleva el nombre del courier adentro pero no es la dirección de su sitio. Además empieza por http y no por https, así que no muestra el candado y lo que escribas viaja sin proteger.' },
   { id: 's3', texto: 'Un monto <b>diminuto</b> baja tu guardia: lo que buscan es la tarjeta, no el dólar.' },
   { id: 's4', texto: 'Pide <b>número completo, caducidad y CVV</b>: eso alcanza para comprar en tu nombre.' },
   { id: 's5', texto: 'Al responder, la <b>urgencia aumenta</b> en vez de darte información concreta.' },
