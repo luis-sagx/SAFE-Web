@@ -568,14 +568,6 @@ button.mailNavItem {
    Reemplaza a "una ventana por pantalla" en el escenario interactivo: el correo
    y las páginas conviven como pestañas, igual que en el equipo de cualquiera.
    Es lo que permite comparar dos direcciones sin cerrar nada. */
-.tabInactiva {
-  background: #eceff3;
-  color: #5f6b7a;
-  font-weight: 500;
-}
-.tabInactiva:hover {
-  background: rgba(255, 255, 255, 0.75);
-}
 .tabIcono {
   width: 0.9375rem;
   height: 0.9375rem;
@@ -1022,6 +1014,9 @@ button.mailNavItem {
   padding: 0 0.625rem;
   background: var(--cromo);
 }
+/* La pestaña activa es la única con fondo blanco, y encima lleva el texto más
+   oscuro: dos diferencias, no una, para que se sepa a qué pestaña corresponde
+   la pantalla también en un proyector o en una pantalla mal calibrada. */
 .tab {
   display: inline-flex;
   align-items: center;
@@ -1032,10 +1027,26 @@ button.mailNavItem {
   background: #fff;
   font-size: 0.90625rem;
   font-weight: 600;
-  color: #3b4553;
+  color: #16202c;
   max-width: 16.25rem;
   white-space: nowrap;
 }
+/* Va después de .tab y no en el bloque de arriba, que es donde estaba: con la
+   misma especificidad manda la última regla del archivo, así que .tab le
+   devolvía a la pestaña inactiva el fondo blanco y el texto marcado, y las dos
+   pestañas se veían iguales.
+
+   Las inactivas se quedan en el cromo, sin fondo propio, como en un navegador
+   de verdad. */
+.tabInactiva {
+  background: transparent;
+  color: #4a5765;
+  font-weight: 500;
+}
+.tabInactiva:hover {
+  background: rgba(255, 255, 255, 0.45);
+}
+
 /* El recorte va en el título y no en la pestaña: recortando la pestaña entera,
    la ✕ de cerrar se quedaba fuera del borde y no había forma de pulsarla. */
 .tabTexto {
