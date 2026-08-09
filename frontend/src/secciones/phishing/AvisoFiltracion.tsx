@@ -83,7 +83,7 @@ const REPETIDA: ScreenView = {
 }
 
 const STORY: Story<ScreenNode> = {
-  // Responder, reenviar, archivar, eliminar y marcar como spam. Aquí eliminar y
+  // Responder, reenviar, eliminar y marcar como spam. Aquí eliminar y
   // marcar como spam son un fallo: el correo era auténtico.
   ...finalesDeBarra('legitimo', CORREO),
   n1: { kind: 'scene', view: CORREO },
