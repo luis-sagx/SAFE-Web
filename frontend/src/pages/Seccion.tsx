@@ -1,10 +1,10 @@
-import { CheckCircle2, LockKeyhole } from 'lucide-react'
+import { ArrowRight, CheckCircle2, LockKeyhole } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link, Navigate, useParams } from 'react-router'
 import AppHeader from '../components/AppHeader'
 import BarraProgreso from '../components/BarraProgreso'
 import InfoLink from '../components/InfoLink'
-import { escenariosDeSeccion, getSeccion } from '../data/catalogo'
+import { escenariosDeSeccion, getSeccion, SECCIONES, type Seccion as SeccionCatalogo } from '../data/catalogo'
 import { fetchProgreso, type Progreso } from '../lib/api'
 import { escenarioEstaDisponible } from '../lib/bloqueoEscenarios'
 
@@ -22,6 +22,100 @@ function Dificultad({ nivel }: { nivel: number }) {
         />
       ))}
     </span>
+  )
+}
+
+/**
+ * A dónde se sigue cuando esta sección ya dio de sí.
+ *
+ * El orden del recorrido es el de SECCIONES, así que "el siguiente" es
+ * literalmente el de al lado; la última no muestra nada porque no hay a dónde
+ * seguir. Aparece al cierre de la lista y no arriba: es lo que se hace después
+ * de jugar, no antes.
+ *
+ * El umbral no se decide aquí. `aprobado` lo calcula el servidor con su propio
+ * UMBRALES (6 de 8 en phishing) y es el mismo que abre los escenarios; copiar
+ * el número al cliente lo dejaría mintiendo el día que cambie en el backend.
+ *
+ * Son dos condiciones distintas y se dicen por separado, porque el participante
+ * no puede hacer nada con la segunda: que tú lo hayas desbloqueado, y que el
+ * módulo exista ya.
+ */
+function SiguienteModulo({
+  seccion,
+  progreso,
+}: {
+  seccion: SeccionCatalogo
+  progreso: Progreso | null
+}) {
+  const siguiente = SECCIONES[SECCIONES.findIndex((s) => s.id === seccion.id) + 1]
+  // Sin progreso cargado no se sabe si está abierto, y una tarjeta que dice
+  // "bloqueado" y se corrige sola un segundo después miente en el intervalo.
+  if (!siguiente || !progreso) return null
+
+  const abierto = progreso.aprobado
+  const listo = escenariosDeSeccion(siguiente.id).length > 0
+  const faltan = Math.max(progreso.requeridos - progreso.aprobados, 0)
+  const Icono = siguiente.Icono
+
+  const estado = !abierto
+    ? `Se abre al aprobar ${progreso.requeridos} escenarios de ${seccion.titulo}. Te ${faltan === 1 ? 'falta' : 'faltan'} ${faltan}.`
+    : listo
+      ? siguiente.descripcion
+      : 'Ya lo desbloqueaste. Estamos preparando sus escenarios.'
+
+  const contenido = (
+    <>
+      <span
+        className={`flex size-10 shrink-0 items-center justify-center rounded-md bg-surface-strong ${
+          abierto && listo ? 'text-link' : 'text-muted'
+        }`}
+      >
+        {abierto ? (
+          <Icono aria-hidden className="size-5" strokeWidth={1.75} />
+        ) : (
+          <LockKeyhole aria-hidden className="size-5" strokeWidth={1.75} />
+        )}
+      </span>
+
+      <div className="min-w-0 flex-1">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.88px] text-muted">
+          Siguiente módulo
+        </p>
+        <h2 className="mt-1 text-lg font-semibold text-ink">{siguiente.titulo}</h2>
+        <p className="mt-1 text-base leading-relaxed text-body">{estado}</p>
+      </div>
+
+      {abierto && !listo && (
+        <span className="shrink-0 text-[11px] font-semibold uppercase tracking-[0.88px] text-muted">
+          Pronto
+        </span>
+      )}
+      {abierto && listo && (
+        <span
+          aria-hidden
+          className="flex shrink-0 items-center gap-1 text-sm font-medium text-link transition group-hover:translate-x-0.5"
+        >
+          Continuar
+          <ArrowRight className="size-4" strokeWidth={2} />
+        </span>
+      )}
+    </>
+  )
+
+  // Franja horizontal y no otra tarjeta: es el paso siguiente del recorrido, no
+  // un escenario más de esta lista.
+  const clases = 'mt-8 flex items-center gap-4 rounded-lg border p-5 transition'
+
+  return abierto && listo ? (
+    <Link
+      to={`/seccion/${siguiente.id}`}
+      className={`group ${clases} border-hairline-strong bg-surface hover:-translate-y-0.5 hover:border-link/40 hover:shadow-card`}
+    >
+      {contenido}
+    </Link>
+  ) : (
+    <div className={`${clases} border-hairline-strong bg-canvas-soft`}>{contenido}</div>
   )
 }
 
@@ -223,6 +317,8 @@ function Seccion() {
             })}
           </ol>
         )}
+
+        <SiguienteModulo seccion={seccion} progreso={progreso} />
       </main>
     </div>
   )

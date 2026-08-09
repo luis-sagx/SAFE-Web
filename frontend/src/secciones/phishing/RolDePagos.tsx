@@ -115,15 +115,10 @@ const CONTEXTO: Contexto = {
 }
 
 const NOTA = (
-  <>
-    <p>
-      Vas a ver tu computador con el correo abierto. Puedes actuar sobre la pantalla como lo harías
-      de verdad.
-    </p>
-    <p className="mt-2">
-      Lo primero que hagas cierra el escenario y te muestra en qué habría terminado.
-    </p>
-  </>
+  <p>
+    Vas a ver tu computador con el correo abierto. Puedes actuar sobre la pantalla como lo harías de
+    verdad.
+  </p>
 )
 
 function horaDeLlegada(): string {

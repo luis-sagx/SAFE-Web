@@ -227,15 +227,10 @@ const CONTEXTO: Contexto = {
 /// Solo mecánica, y solo antes de entrar: dentro del escenario el bloque de
 /// decisión ya la explica, y repetirla ahí robaría espacio a la historia.
 const NOTA = (
-  <>
-    <p>
-      Vas a ver tu computador con el correo abierto. Puedes actuar sobre la pantalla como lo harías
-      de verdad.
-    </p>
-    <p className="mt-2">
-      Lo primero que hagas cierra el escenario y te muestra en qué habría terminado.
-    </p>
-  </>
+  <p>
+    Vas a ver tu computador con el correo abierto. Puedes actuar sobre la pantalla como lo harías de
+    verdad.
+  </p>
 )
 
 /// Cinco minutos antes de abrir el escenario. La hora del correo se calcula a
