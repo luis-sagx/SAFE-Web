@@ -91,17 +91,22 @@ const LEGITIMO = {
     outcome:
       'El correo era auténtico y lo borraste. Desconfiar de todo sale tan caro como confiar de más: te quedaste sin el aviso y sin lo que había que hacer con él.',
   },
+  // Ni acierto ni error: el correo era real, así que contestarlo no expuso
+  // nada, y el resultado no debe leerse como un reproche (issue #34). Lo que
+  // falta es lo otro: el mensaje pedía algo y sigue sin hacerse. Ese "sin daño
+  // y sin resolver" es exactamente lo que significa 'partial' aquí, el mismo
+  // caso que archivarlo.
   e_responder: {
     kind: 'partial' as const,
-    verdict: 'Contestaste sin verificar',
+    verdict: 'Sin daño, pero sin resolver',
     outcome:
-      'Aquí no hubo daño: el remitente era quien decía ser. Pero responder no verifica nada por sí solo: si el correo hubiera sido falso, tu respuesta habría ido derecha al atacante.',
+      'El remitente era quien decía ser, así que tu respuesta no fue a parar a ningún atacante. Probablemente no llegó a nadie: los avisos de este tipo salen casi siempre de una dirección que no lee respuestas. Lo que sigue pendiente es lo que el mensaje te pedía a ti.',
   },
   e_reenviar: {
     kind: 'partial' as const,
-    verdict: 'Lo reenviaste sin verificar',
+    verdict: 'Lo pasaste, pero sigue pendiente',
     outcome:
-      'No hizo daño porque el mensaje era real. Pero reenviar antes de comprobar es el hábito que, con un correo falso, mete el engaño en la bandeja de otra persona con tu nombre encima.',
+      'El mensaje era auténtico, así que reenviarlo no puso a nadie en riesgo. Pero pedir una opinión no es lo mismo que actuar, y lo que el correo te pedía a ti sigue sin hacerse.',
   },
 }
 
