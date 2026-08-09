@@ -5,6 +5,7 @@ import { ACCIONES_BARRA, finalesDeBarra } from './barraDeCorreo'
 import type { Story } from '../../hooks/useStoryEngine'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
 import type { Senal } from '../../components/ui/PanelVeredicto'
+import { CUENTA_FICTICIA, IDENTIDAD_FICTICIA } from '../../lib/identidadFicticia'
 
 /**
  * El premio que nunca se jugó, con pago por adelantado para cobrarlo.
@@ -61,9 +62,13 @@ const RECLAMO: ScreenView = {
   brand: 'Lotería del Pacífico',
   title: 'Liberación de premio',
   subtitle: 'Complete sus datos para recibir la transferencia de USD 48.500,00.',
+  // Los campos vienen ya rellenos con los datos que el participante vio en el
+  // briefing, como los rellenaría el autocompletado del navegador. Con ceros de
+  // ejemplo, enviar el formulario se sentía como enviar casillas vacías; con
+  // sus números a la vista, pulsar el botón es verse entregar lo suyo.
   fields: [
-    { label: 'Cédula', placeholder: '0000000000' },
-    { label: 'Banco y número de cuenta', placeholder: 'Banco · 00000000', senal: 'campo-cuenta' },
+    { label: 'Cédula', placeholder: '', valor: 'cedula' },
+    { label: 'Banco y número de cuenta', placeholder: '', valor: 'cuenta', senal: 'campo-cuenta' },
   ],
   button: 'Pagar $85 y liberar mi premio',
   botonGoto: 'e_paga',
@@ -81,20 +86,31 @@ const BUSCADOR: ScreenView = {
   secure: true,
   brand: 'Buscador',
   title: 'lotería del pacífico',
-  subtitle: 'Aproximadamente 4 resultados',
-  datos: [
+  subtitle: 'Cerca de 1.240 resultados (0,38 segundos)',
+  // Con resultados de verdad y no una ficha de datos: parte de lo que se
+  // entrena es reconocer dónde está uno mirando, y una lista de pares
+  // etiqueta/valor no se lee como un buscador. Ninguno de los tres dice
+  // "esto es una estafa" a la cara; lo que dicen es que el sorteo no consta
+  // en ningún lado, que es como se comprueba algo de verdad.
+  resultados: [
     {
-      etiqueta: 'Resultado',
-      valor: 'No hay ninguna lotería registrada con ese nombre en el Ecuador.',
+      titulo: 'Sorteos y loterías con permiso vigente en el Ecuador',
+      url: 'https://www.sorteosautorizados.ec › listado',
+      fragmento:
+        'Listado oficial de los sorteos con permiso vigente. No consta ninguna "Lotería del Pacífico" ni sorteo internacional con ese nombre.',
       senal: 'sin-registro',
     },
     {
-      etiqueta: 'Foros',
-      valor: '"Me llegó un correo diciendo que gané un premio de la Lotería del Pacífico"',
+      titulo: '"Gané un premio que nunca jugué": cómo funciona la estafa del sorteo por correo',
+      url: 'https://www.diarioandino.ec › seguridad › estafa-sorteo-correo',
+      fragmento:
+        'El mensaje anuncia un premio alto y pide un pago por adelantado para liberarlo. Quien paga recibe un segundo cobro, y luego otro.',
     },
     {
-      etiqueta: 'Noticias',
-      valor: 'Advierten sobre correos que anuncian premios falsos y piden un pago por adelantado',
+      titulo: 'Me llegó un correo de la Lotería del Pacífico — Foros EC',
+      url: 'https://foros.ec › t › loteria-del-pacifico-premio',
+      fragmento:
+        'A mí me llegó igual, con el mismo monto y las mismas 48 horas. Le escribí y lo único que querían era la transferencia de los $85.',
     },
   ],
   fields: [],
@@ -113,15 +129,14 @@ const STORY: Story<ScreenNode> = {
     kind: 'bad',
     view: RECLAMO,
     verdict: 'Caíste en la estafa',
-    outcome:
-      'Pagaste los $85 y el premio no llegó. En su lugar llegó otro correo: ahora faltaba un "seguro de transferencia" de $190. Así funciona — cada pago abre la puerta al siguiente, y quien ya pagó cuesta más que se detenga.',
+    outcome: `Pagaste los $85 y, de paso, entregaste tu cédula ${IDENTIDAD_FICTICIA.cedula} y tu cuenta ${CUENTA_FICTICIA}. El premio no llegó: llegó otro correo pidiendo un "seguro de transferencia" de $190. Así funciona — cada pago abre la puerta al siguiente, y quien ya pagó cuesta más que se detenga. Los datos, además, ya no se pueden recuperar.`,
   },
   e_frena: {
     kind: 'good',
     view: RECLAMO,
     verdict: 'No caíste · viste el pago por adelantado',
     outcome:
-      'Cerraste la página al notar que te pedían pagar para poder cobrar. Un premio real se descuenta del monto o se entrega ante notario; nunca se cobra por adelantado.',
+      'Cerraste la página al notar que te pedían pagar para poder cobrar, y tus datos se quedaron donde estaban. Un premio real se descuenta del monto o se entrega ante notario; nunca se cobra por adelantado.',
   },
   e_verifica: {
     kind: 'good',
@@ -140,7 +155,7 @@ const MARCADORES: MarcadorNavegador[] = [
     goto: 'n3',
     label: 'Buscó la lotería por su cuenta en internet',
   },
-  { Icono: Newspaper, texto: 'El Comercio' },
+  { Icono: Newspaper, texto: 'Diario Andino' },
 ]
 
 const INSTRUCCION = (
@@ -199,7 +214,7 @@ const SENALES: Senal[] = [
     pantalla: 'n2',
     targetId: 'campo-cuenta',
     texto:
-      'Piden tu <b>cédula y tu número de cuenta</b>. Para <i>recibir</i> dinero nunca hacen falta los dos juntos, y con ellos se puede intentar mucho más que un depósito.',
+      'El formulario ya venía con <b>tu cédula y tu cuenta</b>, las que viste antes de empezar. Para <i>recibir</i> dinero nunca hacen falta las dos juntas, y con ellas se puede intentar mucho más que un depósito.',
   },
 ]
 
@@ -238,6 +253,7 @@ function LoteriaPremiada() {
       contexto={CONTEXTO}
       story={STORY}
       accionesCorreo={ACCIONES_BARRA}
+      identidad={['cedula', 'cuenta']}
       marcadores={MARCADORES}
       instruccion={INSTRUCCION}
       pista={PISTA}

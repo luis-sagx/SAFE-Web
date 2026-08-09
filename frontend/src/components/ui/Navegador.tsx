@@ -1,6 +1,19 @@
-import { FileText, Globe, Lock, TriangleAlert, X, type LucideIcon } from 'lucide-react'
+import {
+  ArrowLeft,
+  ArrowRight,
+  EllipsisVertical,
+  FileText,
+  Globe,
+  Lock,
+  RotateCw,
+  Star,
+  TriangleAlert,
+  X,
+  type LucideIcon,
+} from 'lucide-react'
 import type { ReactNode } from 'react'
-import { Taskbar, Titlebar, type Reloj } from './DesktopChrome'
+import { useAuth } from '../../context/AuthContext'
+import { BotonesVentana, Taskbar, type Reloj } from './DesktopChrome'
 import styles from './DeviceScreen.module.css'
 
 /**
@@ -70,6 +83,12 @@ export function Navegador({
   children,
 }: NavegadorProps) {
   const actual = pestanas[activa]
+  /// La misma inicial que el cliente de correo usa para el avatar: es la misma
+  /// persona, con su sesión abierta en el navegador.
+  const { usuarioSimulado } = useAuth()
+  /// Con reserva: una cuenta ya anonimizada puede no tener nombre, y un avatar
+  /// vacío no debería tumbar la pantalla entera.
+  const inicial = (usuarioSimulado || 'participante').slice(0, 1).toUpperCase()
 
   return (
     <section
@@ -77,8 +96,12 @@ export function Navegador({
       aria-label="Navegador web"
       onClick={onHotspot}
     >
-      <Titlebar texto="Navegador" />
-
+      {/* Sin barra de título aparte: las pestañas ocupan el borde superior de
+          la ventana, como en cualquier navegador. Antes había cuatro franjas
+          grises apiladas antes del contenido —título, pestañas, dirección y
+          marcadores— y la de arriba no decía nada que las pestañas no dijeran
+          ya. Quitarla devuelve su alto al mensaje, que es lo que hay que
+          leer. */}
       <div className={styles.tabstrip} role="tablist">
         {abiertas.map((id) => {
           const meta = pestanas[id]
@@ -117,9 +140,19 @@ export function Navegador({
         <span className={styles.tabNueva} aria-hidden>
           +
         </span>
+        <BotonesVentana />
       </div>
 
       <div className={styles.urlbar}>
+        {/* Atrás, adelante y recargar. Atrás y adelante van apagados a
+            propósito: en una pestaña recién abierta no hay a dónde volver, y un
+            navegador de verdad los pinta igual de grises. */}
+        <span className={styles.navBotones} aria-hidden>
+          <ArrowLeft className={`${styles.navIcono} ${styles.navIconoApagado}`} strokeWidth={2} />
+          <ArrowRight className={`${styles.navIcono} ${styles.navIconoApagado}`} strokeWidth={2} />
+          <RotateCw className={styles.navIcono} strokeWidth={2} />
+        </span>
+
         {/* Iconos de trazo y no emoji: 🔒 y ⚠ se dibujan distinto —y a color— en
             cada sistema operativo, y el indicador de seguridad de la barra de
             direcciones es justo lo que este módulo enseña a leer. Uno que
@@ -137,10 +170,25 @@ export function Navegador({
         <span className={styles.url} data-signal={actual?.senalUrl}>
           {actual?.url}
         </span>
+
+        <span className={styles.navBotones} aria-hidden>
+          <Star className={styles.navIcono} strokeWidth={2} />
+          <span className={styles.navPerfil}>{inicial}</span>
+          <EllipsisVertical className={styles.navIcono} strokeWidth={2} />
+        </span>
       </div>
 
       {marcadores.length > 0 && (
         <div className={styles.marcadores}>
+          {/* La barra va con nombre porque mucha gente nunca guardó un
+              marcador, y sin él esta franja se lee como decoración del
+              programa en vez de como sitios a los que se puede ir. En el
+              escenario legítimo eso llega a falsear el dato: el marcador es el
+              único camino al acierto, y quien no lo reconoce acaba borrando un
+              correo real por no encontrar el control, no por criterio.
+
+              Nombra la barra, no la respuesta: sigue sin decir cuál pulsar. */}
+          <span className={styles.marcadoresEtiqueta}>Marcadores</span>
           {marcadores.map(({ Icono, texto, goto, label }) => (
             <button
               key={texto}

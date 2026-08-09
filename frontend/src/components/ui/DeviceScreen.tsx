@@ -1,5 +1,6 @@
-import { Paperclip } from 'lucide-react'
+import { Paperclip, Search } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
+import { CUENTA_FICTICIA, IDENTIDAD_FICTICIA } from '../../lib/identidadFicticia'
 import { CuerpoCorreo, type AccionCorreo, type CarpetaCorreo } from './DesktopChrome'
 import styles from './DeviceScreen.module.css'
 
@@ -61,11 +62,15 @@ export type ScreenView =
          *  ejemplo. Un formulario que ya trae *tu* correo se lee como el de un
          *  sitio que te conoce, que es media trampa; y de paso deja tu dominio
          *  real a la vista, junto al falso de la barra de direcciones. */
-        valor?: 'correo' | 'usuario'
+        valor?: 'correo' | 'usuario' | 'cedula' | 'cuenta'
       }[]
       /** Datos de una página informativa. Cuando los hay, sustituyen al
        *  formulario: un directorio no se rellena, se lee. */
       datos?: { etiqueta: string; valor: string; senal?: string }[]
+      /** Resultados de una búsqueda. Mandan sobre `datos` y sobre el
+       *  formulario: comprobar algo por tu cuenta es media lección del módulo,
+       *  y una lista de pares etiqueta/valor no se lee como un buscador. */
+      resultados?: { titulo: string; url: string; fragmento: string; senal?: string }[]
       button: string
       footer?: string
       /** `data-signal` de la barra de direcciones. */
@@ -86,6 +91,16 @@ export type ScreenView =
       sub: string
       msgs: { text: string; time: string; mine?: boolean }[]
     }
+
+/// De dónde sale lo que se ve escrito en un campo. Un formulario que ya trae
+/// *tus* datos se lee como el de un sitio que te conoce, que es media trampa, y
+/// hace que enviarlo sea entregar algo tuyo y no rellenar casillas vacías.
+const VALORES: Record<string, ((yo: { correo: string; usuario: string }) => string) | undefined> = {
+  correo: (yo) => yo.correo,
+  usuario: (yo) => yo.usuario,
+  cedula: () => IDENTIDAD_FICTICIA.cedula,
+  cuenta: () => CUENTA_FICTICIA,
+}
 
 /// El botón de una página simulada, sea el envío de un formulario o la acción
 /// única de una página informativa ("llamar a este número"). Sin `botonGoto`
@@ -122,7 +137,7 @@ function DeviceScreen({
 }) {
   const { correoSimulado } = useAuth()
   const correo = destinatario ?? correoSimulado
-  const usuario = correo.split('@')[0]
+  const usuario = correo.split('@')[0] ?? correo
 
   if (view.kind === 'mail') {
     return (
@@ -169,10 +184,32 @@ function DeviceScreen({
     return (
       <div className={styles.page}>
         <p className={styles.brand}>{view.brand}</p>
-        <h2 className={styles.pageTitle}>{view.title}</h2>
+
+        {/* Un buscador enseña lo que se buscó dentro de su caja, no como
+            titular de la página: sin la caja, los resultados parecían el
+            contenido del sitio en vez de una búsqueda que hizo el
+            participante. */}
+        {view.resultados ? (
+          <div className={styles.cajaBusqueda} aria-label={`Búsqueda: ${view.title}`}>
+            <span className={styles.consulta}>{view.title}</span>
+            <Search aria-hidden className={styles.consultaIcono} strokeWidth={1.75} />
+          </div>
+        ) : (
+          <h2 className={styles.pageTitle}>{view.title}</h2>
+        )}
         {view.subtitle && <p className={styles.pageSub}>{view.subtitle}</p>}
 
-        {view.datos ? (
+        {view.resultados ? (
+          <div className={styles.resultados}>
+            {view.resultados.map((resultado) => (
+              <div key={resultado.url} data-signal={resultado.senal}>
+                <span className={styles.resultadoUrl}>{resultado.url}</span>
+                <span className={styles.resultadoTitulo}>{resultado.titulo}</span>
+                <p className={styles.resultadoTexto}>{resultado.fragmento}</p>
+              </div>
+            ))}
+          </div>
+        ) : view.datos ? (
           <div className={styles.datos}>
             {view.datos.map((dato) => (
               <div key={dato.etiqueta} className={styles.dato}>
@@ -190,11 +227,7 @@ function DeviceScreen({
               <label key={field.label} className={styles.field} data-signal={field.senal}>
                 <span>{field.label}</span>
                 <span className={styles.input}>
-                  {field.valor === 'correo'
-                    ? correo
-                    : field.valor === 'usuario'
-                      ? usuario
-                      : field.placeholder}
+                  {VALORES[field.valor ?? '']?.({ correo, usuario }) ?? field.placeholder}
                 </span>
               </label>
             ))}

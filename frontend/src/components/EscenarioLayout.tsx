@@ -7,6 +7,7 @@ import AvisoFinEscenario from "./ui/AvisoFinEscenario";
 import type { ResultadoEscenario } from "../hooks/useScenarioRun";
 import { useAuth } from "../context/AuthContext";
 import { getEscenario, getSeccion } from "../data/catalogo";
+import TarjetaIdentidad, { type DatoIdentidad } from "./ui/TarjetaIdentidad";
 
 interface EscenarioLayoutProps {
   /** Misma clave que recibe useScenarioRun, p. ej. 'estafa/saldo-contable'. */
@@ -19,6 +20,11 @@ interface EscenarioLayoutProps {
   contexto: ReactNode;
   /** Cómo se juega. Aparece únicamente en el briefing, antes de entrar. */
   nota?: ReactNode;
+  /** Datos prestados que este escenario pone en juego, además del correo, que
+   *  va siempre. Un formulario que pide la cédula no significa nada si no sabes
+   *  cuál es la tuya aquí dentro; y una cuenta bancaria en un escenario donde
+   *  no aparece dinero solo sería ruido, así que cada guion declara la suya. */
+  identidad?: DatoIdentidad[];
   /** Dominio del correo del participante dentro de este escenario. Los
    *  ambientados en una empresa lo fijan al de esa empresa; el resto usan el
    *  del entrenamiento. */
@@ -77,6 +83,7 @@ function EscenarioLayout({
   resumen,
   contexto,
   nota,
+  identidad = [],
   dominioCorreo,
   pantalla,
   decision,
@@ -154,13 +161,16 @@ function EscenarioLayout({
           {/* Se avisa antes de entrar, y en todos los escenarios: si alguien
               ve su propio nombre en una bandeja simulada sin saber que la
               dirección es inventada, puede creer que el ejercicio le está
-              mandando correo de verdad —o peor, que le llegó uno real. El
-              dominio no existe fuera de la simulación. */}
-          <p className="mt-6 text-base leading-relaxed text-body">
-            En los escenarios usas un correo ficticio,{" "}
-            <span className="font-medium text-ink">{correoDelEscenario}</span>.
-            No existe fuera de este entrenamiento: nada de lo que ocurra aquí
-            sale ni entra a tu correo real.
+              mandando correo de verdad —o peor, que le llegó uno real. Nada
+              de esto existe fuera de la simulación.
+
+              Va como tarjeta y no como frase porque los mismos datos vuelven
+              a aparecer dentro del escenario, escritos en un formulario que
+              los pide: hay que poder reconocerlos. */}
+          <TarjetaIdentidad correo={correoDelEscenario} datos={identidad} />
+          <p className="mt-3 text-base leading-relaxed text-body">
+            Nada de lo que ocurra aquí sale ni entra a tu correo real, ni tiene
+            que ver con tus datos de verdad.
           </p>
 
           {nota && (
@@ -243,7 +253,10 @@ function EscenarioLayout({
             className="mb-4 inline-flex items-center gap-1.5 text-base font-medium text-link underline decoration-dotted underline-offset-4 transition hover:decoration-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link"
           >
             <Info aria-hidden className="size-3.5" strokeWidth={2} />
-            Ver contexto
+            {/* El nombre dice lo que hay dentro: quien se olvidó de su cédula
+                ficticia no va a buscarla detrás de una palabra que promete
+                otra cosa. */}
+            Ver contexto y mis datos
           </button>
 
           {decision}
@@ -270,6 +283,12 @@ function EscenarioLayout({
         <div className="mt-2 space-y-3 text-lg leading-relaxed text-body">
           {contexto}
         </div>
+
+        {/* La tarjeta se enseña al empezar, pero entre el briefing y el
+            formulario que pide la cédula pueden pasar minutos: si para
+            entonces ya no recuerdas que esos números eran los tuyos, el
+            formulario vuelve a ser casillas vacías. */}
+        <TarjetaIdentidad correo={correoDelEscenario} datos={identidad} />
 
         <form method="dialog" className="mt-6 flex justify-end">
           <button

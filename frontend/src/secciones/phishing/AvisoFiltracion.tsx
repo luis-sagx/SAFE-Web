@@ -120,7 +120,7 @@ const MARCADORES: MarcadorNavegador[] = [
     label: 'Entró a TiendaExpress por su cuenta, sin enlaces',
   },
   { Icono: Store, texto: 'Mercado Andino' },
-  { Icono: Newspaper, texto: 'El Comercio' },
+  { Icono: Newspaper, texto: 'Diario Andino' },
 ]
 
 const INSTRUCCION = (

@@ -1,5 +1,8 @@
 import {
   Inbox,
+  Minus,
+  Square,
+  X,
   LayoutGrid,
   Send,
   ShieldAlert,
@@ -158,10 +161,28 @@ export function MailNav({
  *  como macOS y una franja ─ □ ✕ se lee como Windows; sin ninguno de los dos,
  *  el marco sigue leyéndose como "una ventana" para cualquiera, sea cual sea
  *  el sistema que use. */
+/** Minimizar, maximizar y cerrar. Decorativos, como el botón de inicio de la
+ *  barra de tareas: son lo que hace que una ventana se lea como una ventana, y
+ *  cerrarla de verdad sacaría al participante del ejercicio.
+ *
+ *  Sueltos de la barra de título porque el navegador no tiene: sus pestañas
+ *  suben hasta el borde de la ventana y los botones van a su derecha, como en
+ *  cualquier navegador desde hace diez años. */
+export function BotonesVentana() {
+  return (
+    <span className={styles.titlebarBotones} aria-hidden>
+      <Minus className={styles.titlebarIcono} strokeWidth={2} />
+      <Square className={styles.titlebarIconoCuadro} strokeWidth={2} />
+      <X className={styles.titlebarIcono} strokeWidth={2} />
+    </span>
+  )
+}
+
 export function Titlebar({ texto }: { texto: string }) {
   return (
     <div className={styles.titlebar}>
       <span className={styles.titlebarText}>{texto}</span>
+      <BotonesVentana />
     </div>
   )
 }
@@ -369,6 +390,31 @@ export function CuerpoCorreo({
   const carpetaActiva = carpetaForzada ?? carpetaElegida
   const carpetaSecundaria = carpetas?.find((carpeta) => carpeta.nombre === carpetaActiva)
 
+  const cabecera = (
+    nombre: string,
+    direccion: string,
+    fecha: string,
+    etiqueta?: ReactNode,
+    senalDireccion?: string,
+  ) => (
+    <div className={styles.senderRow}>
+      <div className={styles.avatar} aria-hidden>
+        {nombre.slice(0, 1).toUpperCase()}
+      </div>
+      <div className={styles.senderId}>
+        <p className={styles.senderName}>
+          {nombre}
+          {etiqueta}
+        </p>
+        <p className={styles.senderAddr} data-signal={senalDireccion}>
+          {direccion}
+        </p>
+        <p className={styles.senderTo}>para {destinatario ?? correoSimulado}</p>
+      </div>
+      <span className={styles.date}>{fecha}</span>
+    </div>
+  )
+
   return (
     <div className={styles.desktopBody}>
       <MailNav activa={carpetaActiva} carpetas={carpetas} onSelect={setCarpetaElegida} />
@@ -388,26 +434,17 @@ export function CuerpoCorreo({
             <div className={styles.mailbody}>
               <h1 className={styles.subject}>{asunto}</h1>
 
-              <div className={styles.senderRow}>
-                <div className={styles.avatar} aria-hidden>
-                  {remitente.nombre.slice(0, 1).toUpperCase()}
-                </div>
-                <div className={styles.senderId}>
-                  <p className={styles.senderName}>
-                    {remitente.nombre}
-                    {remitente.etiqueta && (
-                      <span className={styles.label} data-signal={remitente.senalEtiqueta}>
-                        {remitente.etiqueta}
-                      </span>
-                    )}
-                  </p>
-                  <p className={styles.senderAddr} data-signal={remitente.senalDireccion}>
-                    {remitente.direccion}
-                  </p>
-                  <p className={styles.senderTo}>para {destinatario ?? correoSimulado}</p>
-                </div>
-                <span className={styles.date}>{recibido}</span>
-              </div>
+              {cabecera(
+                remitente.nombre,
+                remitente.direccion,
+                recibido,
+                remitente.etiqueta && (
+                  <span className={styles.label} data-signal={remitente.senalEtiqueta}>
+                    {remitente.etiqueta}
+                  </span>
+                ),
+                remitente.senalDireccion,
+              )}
 
               <div className={styles.prose}>{children}</div>
 
