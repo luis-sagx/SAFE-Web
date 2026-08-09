@@ -32,7 +32,7 @@ const CORREO: ScreenView = {
   senalDireccion: 'remitente',
   label: 'Externo',
   senalEtiqueta: 'externo',
-  subject: '¡Felicidades! Su número resultó ganador — reclamo pendiente',
+  subject: '¡Felicidades! Su número resultó ganador, reclamo pendiente',
   date: 'hoy 07:14',
   body: `
     <p><span data-signal="saludo">Estimado ganador:</span></p>
@@ -114,7 +114,7 @@ const BUSCADOR: ScreenView = {
         'El mensaje anuncia un premio alto y pide un pago por adelantado para liberarlo. Quien paga recibe un segundo cobro, y luego otro.',
     },
     {
-      titulo: 'Me llegó un correo de la Lotería del Pacífico — Foros EC',
+      titulo: 'Me llegó un correo de la Lotería del Pacífico · Foros EC',
       url: 'https://foros.ec › t › loteria-del-pacifico-premio',
       fragmento:
         'A mí me llegó igual, con el mismo monto y las mismas 48 horas. Le escribí y lo único que querían era la transferencia de los $85.',
@@ -136,7 +136,7 @@ const STORY: Story<ScreenNode> = {
     kind: 'bad',
     view: RECLAMO,
     verdict: 'Caíste en la estafa',
-    outcome: `Pagaste los $85 y, de paso, entregaste tu cédula ${IDENTIDAD_FICTICIA.cedula} y tu cuenta ${CUENTA_FICTICIA}. El premio no llegó: llegó otro correo pidiendo un "seguro de transferencia" de $190. Así funciona — cada pago abre la puerta al siguiente, y quien ya pagó cuesta más que se detenga. Los datos, además, ya no se pueden recuperar.`,
+    outcome: `Pagaste los $85 y, de paso, entregaste tu cédula ${IDENTIDAD_FICTICIA.cedula} y tu cuenta ${CUENTA_FICTICIA}. El premio no llegó: llegó otro correo pidiendo un "seguro de transferencia" de $190. Así funciona: cada pago abre la puerta al siguiente, y quien ya pagó cuesta más que se detenga. Los datos, además, ya no se pueden recuperar.`,
   },
 }
 
@@ -159,7 +159,7 @@ const INSTRUCCION = (
       mantén el cursor encima para ver a dónde lleva.
     </p>
     <p className="text-base leading-relaxed text-body">
-      El escenario termina cuando decidas qué hacer con el mensaje —o si caes en lo que pide.
+      El escenario termina cuando decidas qué hacer con el mensaje, o si caes en lo que pide.
       Moverte por las pantallas no decide nada: puedes abrir una página, mirarla y cerrarla, y
       seguirás donde estabas.
     </p>

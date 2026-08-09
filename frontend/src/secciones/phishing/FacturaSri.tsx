@@ -221,7 +221,7 @@ const NOTA = (
       de verdad.
     </p>
     <p className="mt-2">
-      El escenario termina cuando decidas qué hacer con el mensaje —o si caes en lo que pide.
+      El escenario termina cuando decidas qué hacer con el mensaje, o si caes en lo que pide.
       Moverte por las pantallas y cerrarlas no decide nada.
     </p>
   </>
@@ -460,12 +460,12 @@ function DecisionEnCurso({
           <p className="rounded-md border border-hairline-strong bg-canvas-soft px-3 py-2 text-base leading-relaxed text-body">
             El formulario ya aparece con{' '}
             <strong className="text-ink">tu RUC y tu clave escritos</strong>. Es así para no pedirte
-            datos verdaderos —ese RUC no es el de nadie—, pero enviarlo cuenta como entregarlos.
+            datos verdaderos (ese RUC no es el de nadie), pero enviarlo cuenta como entregarlos.
           </p>
         )}
 
         <p className="text-base leading-relaxed text-body">
-          El escenario termina cuando decidas qué hacer con el mensaje —o si caes en lo que pide. No
+          El escenario termina cuando decidas qué hacer con el mensaje, o si caes en lo que pide. No
           hay confirmación, igual que en la vida real. Moverte entre pantallas, volver atrás o
           cerrar una pestaña no decide nada.
         </p>

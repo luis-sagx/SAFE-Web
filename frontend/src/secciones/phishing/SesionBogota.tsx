@@ -59,7 +59,7 @@ const STORY: Story<StoryNode> = {
     kind: 'partial',
     verdict: 'No caíste tú, pero la pasaste',
     outcome:
-      'Se la reenviaste a otra persona para que opine. Tú no caíste, pero pusiste la alerta —con su enlace— en la bandeja de alguien que quizá no la mire con la misma desconfianza.',
+      'Se la reenviaste a otra persona para que opine. Tú no caíste, pero pusiste la alerta (con su enlace) en la bandeja de alguien que quizá no la mire con la misma desconfianza.',
   },
 }
 
@@ -131,7 +131,7 @@ const SENALES: Senal[] = [
   },
   {
     id: 's4',
-    texto: 'El correo está impecable — sin errores — porque la trampa no está en la redacción.',
+    texto: 'El correo está impecable (sin errores) porque la trampa no está en la redacción.',
   },
 ]
 
@@ -162,7 +162,7 @@ const NOTA = (
       de verdad.
     </p>
     <p className="mt-2">
-      El escenario termina cuando decidas qué hacer con el mensaje —o si caes en lo que pide.
+      El escenario termina cuando decidas qué hacer con el mensaje, o si caes en lo que pide.
       Moverte por las pantallas y cerrarlas no decide nada.
     </p>
   </>
@@ -224,12 +224,12 @@ function ContenidoCorreo({ recibido, carpetas }: { recibido: string; carpetas: C
       <p>
         <EnlaceHotspot
           goto="n2"
-          label="Hizo clic en 'No fui yo — proteger mi cuenta'"
+          label="Hizo clic en 'No fui yo (proteger mi cuenta)'"
           href={`https://${FALSO}/clave`}
           signalId="cta-trampa"
           className="cta"
         >
-          No fui yo — proteger mi cuenta
+          No fui yo (proteger mi cuenta)
         </EnlaceHotspot>
       </p>
     </CuerpoCorreo>
@@ -344,7 +344,7 @@ function DecisionEnCurso({ fallo, pantalla }: { fallo: boolean; pantalla: string
         )}
 
         <p className="text-base leading-relaxed text-body">
-          El escenario termina cuando decidas qué hacer con el mensaje —o si caes en lo que pide. No
+          El escenario termina cuando decidas qué hacer con el mensaje, o si caes en lo que pide. No
           hay confirmación, igual que en la vida real. Moverte entre pantallas, volver atrás o
           cerrar una pestaña no decide nada.
         </p>

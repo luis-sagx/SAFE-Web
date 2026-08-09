@@ -162,7 +162,7 @@ const INSTRUCCION = (
       mantén el cursor encima para ver a dónde lleva.
     </p>
     <p className="text-base leading-relaxed text-body">
-      El escenario termina cuando decidas qué hacer con el mensaje —o si caes en lo que pide.
+      El escenario termina cuando decidas qué hacer con el mensaje, o si caes en lo que pide.
       Moverte por las pantallas no decide nada: puedes abrir una página, mirarla y cerrarla, y
       seguirás donde estabas.
     </p>
@@ -182,7 +182,7 @@ const SENAL_REAL: Senal = {
   targetId: 'correo-real',
   pantalla: 'n3',
   texto:
-    'Así se escribe Soporte TI de verdad: <b>soporte.ti@andes.com.ec</b>. El del correo era <b>soporte-ti@andes-ec.net</b> — otro dominio, aunque se parezca.',
+    'Así se escribe Soporte TI de verdad: <b>soporte.ti@andes.com.ec</b>. El del correo era <b>soporte-ti@andes-ec.net</b>, otro dominio, aunque se parezca.',
 }
 
 const RULE =
