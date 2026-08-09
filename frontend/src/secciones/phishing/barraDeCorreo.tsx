@@ -74,7 +74,7 @@ const FRAUDE = {
     kind: 'partial' as const,
     verdict: 'No caíste tú, pero lo pasaste',
     outcome:
-      'Se lo reenviaste a otra persona para que opine. Tú no caíste, pero pusiste el mensaje —con todo lo que trae— en la bandeja de alguien que quizá no lo mire con la misma desconfianza. Para consultar una duda es mejor una captura.',
+      'Se lo reenviaste a otra persona para que opine. Tú no caíste, pero pusiste el mensaje (con todo lo que trae) en la bandeja de alguien que quizá no lo mire con la misma desconfianza. Para consultar una duda es mejor una captura.',
   },
 }
 
@@ -95,7 +95,7 @@ const LEGITIMO = {
     kind: 'partial' as const,
     verdict: 'Contestaste sin verificar',
     outcome:
-      'Aquí no hubo daño: el remitente era quien decía ser. Pero responder no verifica nada por sí solo — si el correo hubiera sido falso, tu respuesta habría ido derecha al atacante.',
+      'Aquí no hubo daño: el remitente era quien decía ser. Pero responder no verifica nada por sí solo: si el correo hubiera sido falso, tu respuesta habría ido derecha al atacante.',
   },
   e_reenviar: {
     kind: 'partial' as const,

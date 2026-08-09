@@ -23,7 +23,7 @@ import type { Senal } from '../../components/ui/PanelVeredicto'
 
 const HILO_PREVIO = `
   <div style="border-left:3px solid #d7dde1;padding-left:12px;margin:14px 0;color:#5f6b7a;font-size:13px;line-height:1.55;">
-    <p style="margin:0 0 8px;"><b>Secretaría — Unidad Educativa San Rafael</b> · hace 3 días<br/>
+    <p style="margin:0 0 8px;"><b>Secretaría, Unidad Educativa San Rafael</b> · hace 3 días<br/>
     Buenas tardes, le recuerdo que la pensión de julio vence el día 30. El monto es $145.</p>
     <p style="margin:0;"><b>Yo</b> · hace 3 días<br/>
     Perfecto, gracias, hago la transferencia esta semana a la cuenta de siempre.</p>
@@ -32,7 +32,7 @@ const HILO_PREVIO = `
 
 const CORREO: ScreenView = {
   kind: 'mail',
-  from: 'Secretaría — Unidad Educativa San Rafael',
+  from: 'Secretaría, Unidad Educativa San Rafael',
   address: 'secretaria@unidadsanrafael.edu.ec',
   senalDireccion: 'remitente',
   subject: 'Re: Pensión de julio',
@@ -160,7 +160,7 @@ const STORY: Story<ScreenNode> = {
     view: CORREO,
     verdict: 'Preguntaste por el canal equivocado',
     outcome:
-      'Respondiste el mismo hilo preguntando si el cambio era real, y te contestaron que sí — porque quien contesta es el atacante, desde la cuenta que controla. Verificar por el mismo canal que trae el aviso no verifica nada.',
+      'Respondiste el mismo hilo preguntando si el cambio era real, y te contestaron que sí: porque quien contesta es el atacante, desde la cuenta que controla. Verificar por el mismo canal que trae el aviso no verifica nada.',
   },
   // Y marcar como spam tampoco es la buena reacción de siempre: la dirección
   // es la real del colegio, y el filtro se llevaría por delante los avisos
@@ -170,7 +170,7 @@ const STORY: Story<ScreenNode> = {
     view: CORREO,
     verdict: 'No caíste, pero castigaste la dirección real',
     outcome:
-      'No transferiste, y eso es lo importante. Pero la dirección es la auténtica del colegio: al marcarla como spam le enseñaste al filtro a esconder también las circulares y los recordatorios que sí vas a necesitar. El problema no era el remitente, era su cuenta hackeada — y eso se avisa llamando.',
+      'No transferiste, y eso es lo importante. Pero la dirección es la auténtica del colegio: al marcarla como spam le enseñaste al filtro a esconder también las circulares y los recordatorios que sí vas a necesitar. El problema no era el remitente, era su cuenta hackeada, y eso se avisa llamando.',
   },
 }
 
@@ -196,7 +196,7 @@ const INSTRUCCION = (
       <strong>cualquier parte de ella</strong>, incluidos los marcadores del navegador.
     </p>
     <p className="text-base leading-relaxed text-body">
-      El escenario termina cuando decidas qué hacer con el mensaje —o si caes en lo que pide.
+      El escenario termina cuando decidas qué hacer con el mensaje, o si caes en lo que pide.
       Moverte por las pantallas no decide nada: puedes abrir una página, mirarla y cerrarla, y
       seguirás donde estabas.
     </p>
@@ -218,7 +218,7 @@ const SENALES: Senal[] = [
     pantalla: 'n4',
     targetId: 'cuenta-pdf',
     texto:
-      'El comprobante tiene membrete, fecha y monto correctos — y aun así <b>solo repite el número de cuenta nuevo</b>. Un archivo adjunto no confirma nada: lo escribió quien mandó el correo.',
+      'El comprobante tiene membrete, fecha y monto correctos, y aun así <b>solo repite el número de cuenta nuevo</b>. Un archivo adjunto no confirma nada: lo escribió quien mandó el correo.',
   },
   {
     id: 's1',

@@ -77,7 +77,7 @@ const STORY: Story<ScreenNode> = {
 }
 
 const SENALES: Senal[] = [
-  { id: 's1', texto: 'El correo trae tu <b>nombre completo y parte de tu cédula</b> — datos de una filtración, no prueba de que sean ellos.' },
+  { id: 's1', texto: 'El correo trae tu <b>nombre completo y parte de tu cédula</b>, datos de una filtración, no prueba de que sean ellos.' },
   { id: 's2', targetId: 'monto', pantalla: 'n1', texto: 'El monto es <b>diminuto a propósito</b>, calculado para no despertar sospecha.' },
   { id: 's3', texto: 'Los couriers cobran aranceles <b>al entregar</b>, nunca por un enlace de correo.' },
   { id: 's4', targetId: 'remitente', pantalla: 'n1', texto: 'El dominio es <b>enviosrapido-ec.shop</b>, no el sitio oficial de la transportadora.' },
@@ -97,7 +97,7 @@ const CONTEXTO: Contexto = {
   ),
   detalle: (
     <>
-      Trae tu <strong>nombre completo</strong> y parte de tu <strong>número de cédula</strong> —
+      Trae tu <strong>nombre completo</strong> y parte de tu <strong>número de cédula</strong>,
       datos que vos nunca les diste a un courier.
     </>
   ),
