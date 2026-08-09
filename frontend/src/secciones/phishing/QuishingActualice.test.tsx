@@ -47,7 +47,7 @@ describe('QuishingActualice', () => {
   it('escanear el QR y enviar el formulario cuenta como caer en la trampa', () => {
     renderEscenario()
 
-    fireEvent.click(screen.getByRole('button', { name: 'Código QR — escanear para continuar' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Código QR, escanear para continuar' }))
     fireEvent.click(screen.getByRole('button', { name: 'Confirmar datos' }))
 
     expect(screen.getByText('Caíste en la trampa')).toBeDefined()

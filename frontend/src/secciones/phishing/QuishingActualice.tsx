@@ -182,7 +182,7 @@ const NOTA = (
       de verdad.
     </p>
     <p className="mt-2">
-      El escenario termina cuando decidas qué hacer con el mensaje —o si caes en lo que pide.
+      El escenario termina cuando decidas qué hacer con el mensaje, o si caes en lo que pide.
       Moverte por las pantallas y cerrarlas no decide nada.
     </p>
   </>
@@ -246,7 +246,7 @@ function ContenidoCorreo({ recibido, carpetas }: { recibido: string; carpetas: C
             un lector de pantalla (y sin forma de ubicarlo por rol+nombre en
             los tests). */}
         <BotonHotspot goto="n2" label="Escaneó el código QR" signalId="qr">
-          <span className="sr-only">Código QR — escanear para continuar</span>
+          <span className="sr-only">Código QR, escanear para continuar</span>
           <span dangerouslySetInnerHTML={{ __html: QR_SVG }} />
         </BotonHotspot>
       </div>
@@ -319,7 +319,7 @@ function DecisionEnCurso({ fallo, enPagina }: { fallo: boolean; enPagina: boolea
         )}
 
         <p className="text-base leading-relaxed text-body">
-          El escenario termina cuando decidas qué hacer con el mensaje —o si caes en lo que pide. No
+          El escenario termina cuando decidas qué hacer con el mensaje, o si caes en lo que pide. No
           hay confirmación, igual que en la vida real. Moverte entre pantallas, volver atrás o
           cerrar una pestaña no decide nada.
         </p>

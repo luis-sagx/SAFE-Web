@@ -37,7 +37,7 @@ const CORREO: ScreenView = {
       <mark class="marca" data-signal="alcance">No se expusieron datos de tarjetas ni
       contraseñas.</mark> Por precaución, le recomendamos
       <mark class="marca" data-signal="sin-enlace">cambiar su contraseña ingresando usted mismo a
-      tiendaexpress.com.ec</mark> — no hace falta ningún enlace para esto, y por eso este correo no
+      tiendaexpress.com.ec</mark>, no hace falta ningún enlace para esto, y por eso este correo no
       trae ninguno.
     </p>
     <p class="fine">
@@ -175,7 +175,7 @@ const SENALES: Senal[] = [
 ]
 
 const RULE =
-  'Regla de oro: cambia la clave entrando tú al sitio, nunca por el enlace del correo. Y no repitas contraseñas — una filtración en una tienda abre todas las puertas que compartan esa clave. Desconfiar de todo tampoco es criterio: descartar un aviso real cuesta caro.'
+  'Regla de oro: cambia la clave entrando tú al sitio, nunca por el enlace del correo. Y no repitas contraseñas: una filtración en una tienda abre todas las puertas que compartan esa clave. Desconfiar de todo tampoco es criterio: descartar un aviso real cuesta caro.'
 
 const RESUMEN = 'TiendaExpress avisa que un incidente de seguridad expuso tus datos.'
 
