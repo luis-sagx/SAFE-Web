@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { useNavigate } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 import { useAuth } from "../context/AuthContext";
 
 /** Las seis amenazas del estudio con su finalidad, en una frase cada una: qué
@@ -39,6 +39,24 @@ const AMENAZAS = [
   },
 ];
 
+const PANEL = "/dashboard";
+
+/**
+ * A dónde volver al cerrar el aviso.
+ *
+ * Solo rutas internas: `from` llega por el estado de navegación, y aceptar
+ * cualquier cadena convertiría este botón en un salto a donde diga quien
+ * fabrique el enlace. Se exige que empiece por una sola barra, y se descarta
+ * la propia bienvenida para no dejar a nadie dando vueltas en ella.
+ */
+function destinoDe(from: unknown): string {
+  if (typeof from !== "string") return PANEL;
+  if (!from.startsWith("/") || from.startsWith("//")) return PANEL;
+  if (from.startsWith("/bienvenida")) return PANEL;
+
+  return from;
+}
+
 /**
  * Aparece sola en el primer ingreso (RequireAuth la fuerza mientras
  * `onboardingVisto` sea false) y queda disponible siempre desde el ícono ⓘ.
@@ -49,6 +67,8 @@ const AMENAZAS = [
 function Bienvenida() {
   const { displayName, participant, marcarOnboardingVisto } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const destino = destinoDe((location.state as { from?: unknown } | null)?.from);
 
   // Refleja el estado actual al entrar por el ícono ⓘ: si ya lo había
   // marcado, sigue marcado, y desmarcarlo es lo que reactiva el aviso.
@@ -67,7 +87,9 @@ function Bienvenida() {
       // Informativo, no bloqueante: si falla el guardado, la única
       // consecuencia es que esta pantalla vuelva a aparecer la próxima vez.
     } finally {
-      navigate("/dashboard");
+      // `replace`: el aviso no debe quedarse en el historial, o volver atrás
+      // desde la pantalla recuperada lo abriría otra vez.
+      navigate(destino, { replace: true });
     }
   }
 
