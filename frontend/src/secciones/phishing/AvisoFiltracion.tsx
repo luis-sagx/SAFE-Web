@@ -1,5 +1,6 @@
 import { Newspaper, ShoppingBag, Store } from 'lucide-react'
 import StoryEscenario, { type ScreenNode } from '../../components/StoryEscenario'
+import type { Contexto } from '../../components/ui/ContextoEscenario'
 import type { MarcadorNavegador } from '../../components/ui/Navegador'
 import { ACCIONES_BARRA, finalesDeBarra } from './barraDeCorreo'
 import type { Story } from '../../hooks/useStoryEngine'
@@ -88,7 +89,7 @@ const REPETIDA: ScreenView = {
 }
 
 const STORY: Story<ScreenNode> = {
-  // Responder, reenviar, archivar, eliminar y marcar como spam. Aquí eliminar y
+  // Responder, reenviar, eliminar y marcar como spam. Aquí eliminar y
   // marcar como spam son un fallo: el correo era auténtico.
   ...finalesDeBarra('legitimo', CORREO),
   n1: { kind: 'scene', view: CORREO },
@@ -178,18 +179,22 @@ const RULE =
 
 const RESUMEN = 'TiendaExpress avisa que un incidente de seguridad expuso tus datos.'
 
-const CONTEXTO = (
-  <>
-    <p>
-      Compras seguido en <strong>TiendaExpress</strong>. Te llega un correo avisando que hubo un
-      incidente de seguridad.
-    </p>
-    <p>
-      No te pide nada raro: solo te cuenta qué pasó y te sugiere cambiar tu contraseña por tu
-      cuenta. Te toca decidir qué haces con él.
-    </p>
-  </>
-)
+const CONTEXTO: Contexto = {
+  antes: (
+    <>
+      Compras seguido en <strong>TiendaExpress</strong> y tienes cuenta con ellos desde hace
+      tiempo.
+    </>
+  ),
+  ahora: (
+    <>
+      Al revisar tu bandeja aparece un correo de la tienda: hubo un{' '}
+      <strong>incidente de seguridad</strong>.
+    </>
+  ),
+  detalle:
+    'No te pide nada raro: solo cuenta qué pasó y sugiere que cambies tu contraseña por tu cuenta.',
+}
 
 function AvisoFiltracion() {
   return (

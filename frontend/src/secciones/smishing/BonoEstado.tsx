@@ -1,4 +1,5 @@
 import StoryEscenario, { type ScreenNode } from '../../components/StoryEscenario'
+import type { Contexto } from '../../components/ui/ContextoEscenario'
 import type { Story } from '../../hooks/useStoryEngine'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
 import type { Senal } from '../../components/ui/PanelVeredicto'
@@ -101,18 +102,16 @@ const RULE =
 
 const RESUMEN = 'Un SMS anuncia que fuiste preseleccionado para un bono de $180.'
 
-const CONTEXTO = (
-  <>
-    <p>
-      Una mañana cualquiera te llega un mensaje de texto que anuncia un{' '}
+const CONTEXTO: Contexto = {
+  antes: 'Nunca postulaste a ningún bono, pero el dinero haría falta este mes.',
+  ahora: (
+    <>
+      <strong>Una mañana cualquiera</strong> te llega un mensaje de texto que anuncia un{' '}
       <strong>bono de $180</strong> a tu nombre.
-    </p>
-    <p>
-      Nunca postulaste a ningún bono, pero has escuchado que a varios conocidos les llegó algo
-      parecido y el dinero haría falta este mes.
-    </p>
-  </>
-)
+    </>
+  ),
+  detalle: 'Has escuchado que a varios conocidos les llegó algo parecido.',
+}
 
 function BonoEstado() {
   return (

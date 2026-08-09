@@ -1,5 +1,6 @@
 import { Landmark, School } from 'lucide-react'
 import StoryEscenario, { type ScreenNode } from '../../components/StoryEscenario'
+import type { Contexto } from '../../components/ui/ContextoEscenario'
 import type { MarcadorNavegador } from '../../components/ui/Navegador'
 import { ACCIONES_BARRA, finalesDeBarra } from './barraDeCorreo'
 import type { Story } from '../../hooks/useStoryEngine'
@@ -132,7 +133,7 @@ const COMPROBANTE: ScreenView = {
 }
 
 const STORY: Story<ScreenNode> = {
-  // Responder, reenviar, archivar, eliminar y marcar como spam.
+  // Responder, reenviar, eliminar y marcar como spam.
   ...finalesDeBarra('fraude', CORREO),
   n1: { kind: 'scene', view: CORREO },
   n2: { kind: 'scene', view: BANCA },
@@ -254,18 +255,21 @@ const RULE =
 
 const RESUMEN = 'La secretaría del colegio de tu hijo dice que "cambió de banco" para la pensión.'
 
-const CONTEXTO = (
-  <>
-    <p>
-      Tienes un hilo de correo real y en curso con la <strong>secretaría del colegio</strong> de tu
-      hijo, sobre la pensión de julio.
-    </p>
-    <p>
-      Ya habías acordado transferir esta semana a la cuenta de siempre. Ahora llega una respuesta
-      dentro del mismo hilo, desde la misma dirección de siempre.
-    </p>
-  </>
-)
+const CONTEXTO: Contexto = {
+  antes: (
+    <>
+      Pagas la pensión del colegio de tu hijo y tienes un hilo de correo real y en curso con la{' '}
+      <strong>secretaría</strong>, sobre la de julio.
+    </>
+  ),
+  ahora: (
+    <>
+      <strong>Esta semana</strong>, la que habías acordado para transferir, llega una respuesta
+      dentro de ese mismo hilo y desde la dirección de siempre.
+    </>
+  ),
+  detalle: 'Ya habían quedado en que el pago iba a la cuenta de siempre.',
+}
 
 function SecuestroHilo() {
   return (

@@ -1,6 +1,7 @@
-import { Archive, Forward, Landmark, Reply, ShieldAlert, Trash2 } from 'lucide-react'
+import { Forward, Landmark, Reply, ShieldAlert, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import EscenarioLayout from '../../components/EscenarioLayout'
+import type { Contexto } from '../../components/ui/ContextoEscenario'
 import { carpetasCorreo } from '../../components/ui/carpetasCorreo'
 import {
   CuerpoCorreo,
@@ -47,12 +48,6 @@ const STORY: Story<StoryNode> = {
     outcome:
       'Marcarlo como spam es la mejor reacción posible: no caíste y además tu proveedor de correo aprende a filtrar ese remitente.',
   },
-  e_archivar: {
-    kind: 'partial',
-    verdict: 'No caíste, pero lo dejaste ahí',
-    outcome:
-      'Archivarlo te sacó la alerta de la vista sin resolver nada. Sigue en tu buzón, y si mañana le llega a un compañero va a llegar igual de intacta.',
-  },
   e_responder: {
     kind: 'partial',
     verdict: 'No entregaste nada, pero contestaste',
@@ -81,13 +76,6 @@ const ACCIONES: AccionCorreo[] = [
     titulo: 'Reenviar',
     goto: 'e_reenviar',
     label: 'Reenvió el correo a otra persona',
-  },
-  {
-    Icono: Archive,
-    etiqueta: 'Archivar',
-    titulo: 'Archivar',
-    goto: 'e_archivar',
-    label: 'Archivó el correo',
   },
   {
     Icono: Trash2,
@@ -151,15 +139,20 @@ const RULE =
 
 const RESUMEN = 'Un correo avisa que alguien inició sesión en tu cuenta desde Bogotá.'
 
-const CONTEXTO = (
-  <>
-    <p>
-      Sos cliente del <strong>Banco del Litoral</strong>. Nunca viajaste a Colombia y no reconocés
-      ningún acceso reciente desde ahí.
-    </p>
-    <p>Son casi las diez de la noche cuando te llega la alerta.</p>
-  </>
-)
+const CONTEXTO: Contexto = {
+  antes: (
+    <>
+      Sos cliente del <strong>Banco del Litoral</strong>.
+    </>
+  ),
+  ahora: (
+    <>
+      <strong>Casi a las diez de la noche</strong> te llega un aviso de un{' '}
+      <strong>inicio de sesión desde Bogotá</strong> en tu cuenta.
+    </>
+  ),
+  detalle: 'Nunca viajaste a Colombia y no reconocés ningún acceso reciente desde ahí.',
+}
 
 const NOTA = (
   <>

@@ -1,5 +1,6 @@
 import { Building2, Landmark, Newspaper } from 'lucide-react'
 import StoryEscenario, { type ScreenNode } from '../../components/StoryEscenario'
+import type { Contexto } from '../../components/ui/ContextoEscenario'
 import type { MarcadorNavegador } from '../../components/ui/Navegador'
 import { ACCIONES_BARRA, finalesDeBarra } from './barraDeCorreo'
 import type { Story } from '../../hooks/useStoryEngine'
@@ -78,7 +79,7 @@ const INTRANET: ScreenView = {
 }
 
 const STORY: Story<ScreenNode> = {
-  // Responder, reenviar, archivar, eliminar y marcar como spam.
+  // Responder, reenviar, eliminar y marcar como spam.
   ...finalesDeBarra('fraude', CORREO),
   n1: { kind: 'scene', view: CORREO },
   n2: { kind: 'scene', view: PAGINA },
@@ -176,19 +177,21 @@ const RULE =
 
 const RESUMEN = 'Un correo de "Soporte TI" avisa que tu contraseña caduca hoy a las 18:00.'
 
-const CONTEXTO = (
-  <>
-    <p>
-      Trabajas en <strong>Corporación Andes</strong>. Tu correo institucional termina en{' '}
-      <strong>@andes.com.ec</strong> y sí has recibido antes avisos de Sistemas por cambios de
-      contraseña.
-    </p>
-    <p>
-      Son las cuatro de la tarde, estás cerrando pendientes, y llega un mensaje con un plazo que
-      vence en dos horas.
-    </p>
-  </>
-)
+const CONTEXTO: Contexto = {
+  antes: (
+    <>
+      Trabajas en <strong>Corporación Andes</strong> y tu correo institucional termina en{' '}
+      <strong>@andes.com.ec</strong>.
+    </>
+  ),
+  ahora: (
+    <>
+      <strong>A las cuatro de la tarde</strong>, cerrando pendientes, llega un mensaje de Sistemas
+      sobre tu contraseña, con un <strong>plazo que vence en dos horas</strong>.
+    </>
+  ),
+  detalle: 'Sí has recibido antes avisos de Sistemas por cambios de contraseña.',
+}
 
 function ClaveCaducada() {
   return (

@@ -1,15 +1,7 @@
-import {
-  Archive,
-  Building2,
-  Forward,
-  Landmark,
-  Newspaper,
-  Reply,
-  ShieldAlert,
-  Trash2,
-} from 'lucide-react'
+import { Building2, Forward, Landmark, Newspaper, Reply, ShieldAlert, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import EscenarioLayout from '../../components/EscenarioLayout'
+import type { Contexto } from '../../components/ui/ContextoEscenario'
 import { carpetasCorreo } from '../../components/ui/carpetasCorreo'
 import {
   CuerpoCorreo,
@@ -63,13 +55,6 @@ const STORY: Story<StoryNode> = {
       'El aviso era real, así que no pasó nada grave. Pero lo mandaste a otra persona antes de comprobarlo tú mismo: si hubiera sido falso, el reenvío habría llevado el engaño con tu nombre encima.',
     score: 50,
   },
-  e_archivar: {
-    kind: 'partial',
-    verdict: 'Era real, y lo archivaste sin más',
-    outcome:
-      'No perdiste nada grave: el rol de pagos sigue disponible en el portal. Pero lo guardaste sin revisar si tus horas extra estaban completas, que era justo lo que había que comprobar.',
-    score: 50,
-  },
   e_spam: {
     kind: 'bad',
     verdict: 'Descartaste un aviso real',
@@ -93,13 +78,6 @@ const ACCIONES: AccionCorreo[] = [
     titulo: 'Reenviar',
     goto: 'e_reenviar',
     label: 'Reenvió el correo a otra persona',
-  },
-  {
-    Icono: Archive,
-    etiqueta: 'Archivar',
-    titulo: 'Archivar',
-    goto: 'e_archivar',
-    label: 'Archivó el correo',
   },
   {
     Icono: Trash2,
@@ -172,18 +150,20 @@ const RULE =
 
 const RESUMEN = 'Talento Humano avisa que tu rol de pagos de julio ya está en el portal.'
 
-const CONTEXTO = (
-  <>
-    <p>
+const CONTEXTO: Contexto = {
+  antes: (
+    <>
       Trabajas en <strong>Corporación Andes</strong>. Todos los meses Talento Humano publica el rol
       de pagos en el portal del colaborador y avisa por correo.
-    </p>
-    <p>
-      Este mes trabajaste horas extra y quieres confirmar que estén incluidas antes de que cierre el
-      plazo de reclamos.
-    </p>
-  </>
-)
+    </>
+  ),
+  ahora: (
+    <>
+      <strong>Antes de que cierre el plazo de reclamos</strong> llega el correo del rol de este mes.
+    </>
+  ),
+  detalle: 'Este mes trabajaste horas extra y quieres confirmar que estén incluidas.',
+}
 
 const NOTA = (
   <>

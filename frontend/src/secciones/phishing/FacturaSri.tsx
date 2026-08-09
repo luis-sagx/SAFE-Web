@@ -1,5 +1,4 @@
 import {
-  Archive,
   Building2,
   File,
   Forward,
@@ -12,6 +11,7 @@ import {
 } from 'lucide-react'
 import { useState } from 'react'
 import EscenarioLayout from '../../components/EscenarioLayout'
+import type { Contexto } from '../../components/ui/ContextoEscenario'
 import Instrucciones from '../../components/ui/Instrucciones'
 import {
   CuerpoCorreo,
@@ -86,12 +86,6 @@ const STORY: Story<StoryNode> = {
     outcome:
       'Lo borraste sin tocar el enlace ni el adjunto, que es suficiente para no caer. Marcarlo como spam habría hecho algo más: avisar al filtro para que no le llegue a otros.',
   },
-  e_archivar: {
-    kind: 'partial',
-    verdict: 'No caíste, pero lo dejaste ahí',
-    outcome:
-      'Archivarlo te sacó el correo de la vista sin resolver nada. Sigue en tu buzón, nadie más se enteró, y si mañana le llega a un compañero va a llegar igual de intacto.',
-  },
   e_responder: {
     kind: 'partial',
     verdict: 'No entregaste la clave, pero contestaste',
@@ -124,13 +118,6 @@ const ACCIONES: AccionCorreo[] = [
     label: 'Reenvió el correo a otra persona',
   },
   {
-    Icono: Archive,
-    etiqueta: 'Archivar',
-    titulo: 'Archivar',
-    goto: 'e_archivar',
-    label: 'Archivó el correo',
-  },
-  {
     Icono: Trash2,
     etiqueta: 'Eliminar',
     titulo: 'Eliminar',
@@ -151,9 +138,7 @@ const REMITENTE_NOMBRE = 'SRI · Facturación Electrónica'
 const DIRECCION = 'notificaciones@sri-facturacion-ec.com'
 
 /// A dónde va el correo según qué botón de la barra terminó el escenario, y
-/// si eso lo saca de Recibidos. Archivar no tiene carpeta propia en esta
-/// bandeja: solo desaparece de la vista, como dice su final ("sigue en tu
-/// buzón" pero ya no en Recibidos).
+/// si eso lo saca de Recibidos.
 /// Cada señal apunta, cuando puede, al elemento real marcado con
 /// data-signal en una de las dos pantallas. Si esa pantalla no es la que
 /// llevó a este final, el recorrido igual muestra el texto, sin resaltar.
@@ -211,18 +196,20 @@ const RULE =
 
 const RESUMEN = 'Un correo dice que tienes una factura electrónica pendiente de validar.'
 
-const CONTEXTO = (
-  <>
-    <p>
-      Abres tu correo y ves un mensaje del <strong>Servicio de Rentas Internas</strong> que llegó
-      hace unos minutos, sobre una factura pendiente.
-    </p>
-    <p>
-      Emites facturas de vez en cuando, así que un aviso del SRI no te sorprende. Nunca antes te
-      habían escrito por este tema.
-    </p>
-  </>
-)
+const CONTEXTO: Contexto = {
+  antes: (
+    <>
+      Emites facturas de vez en cuando, así que un aviso del <strong>SRI</strong> no te sorprende.
+    </>
+  ),
+  ahora: (
+    <>
+      <strong>Hace unos minutos</strong> llegó a tu bandeja un correo del{' '}
+      <strong>Servicio de Rentas Internas</strong> sobre una factura pendiente.
+    </>
+  ),
+  detalle: 'Nunca antes te habían escrito por este tema.',
+}
 
 /// Solo mecánica, y solo antes de entrar: dentro del escenario el bloque de
 /// decisión ya la explica, y repetirla ahí robaría espacio a la historia.

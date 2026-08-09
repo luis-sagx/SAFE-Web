@@ -1,6 +1,7 @@
-import { Archive, Forward, Landmark, Newspaper, Reply, ShieldAlert, Trash2 } from 'lucide-react'
+import { Forward, Landmark, Newspaper, Reply, ShieldAlert, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import EscenarioLayout from '../../components/EscenarioLayout'
+import type { Contexto } from '../../components/ui/ContextoEscenario'
 import { carpetasCorreo } from '../../components/ui/carpetasCorreo'
 import {
   CuerpoCorreo,
@@ -70,12 +71,6 @@ const STORY: Story<StoryNode> = {
     outcome:
       'Marcarlo como spam es la mejor reacción posible: no caíste y además tu proveedor de correo aprende a filtrar ese remitente.',
   },
-  e_archivar: {
-    kind: 'partial',
-    verdict: 'No caíste, pero lo dejaste ahí',
-    outcome:
-      'Archivarlo te sacó el correo de la vista sin resolver nada. Sigue en tu buzón, y si mañana le llega a un compañero va a llegar igual de intacto.',
-  },
   e_responder: {
     kind: 'partial',
     verdict: 'No entregaste nada, pero contestaste',
@@ -104,13 +99,6 @@ const ACCIONES: AccionCorreo[] = [
     titulo: 'Reenviar',
     goto: 'e_reenviar',
     label: 'Reenvió el correo a otra persona',
-  },
-  {
-    Icono: Archive,
-    etiqueta: 'Archivar',
-    titulo: 'Archivar',
-    goto: 'e_archivar',
-    label: 'Archivó el correo',
   },
   {
     Icono: Trash2,
@@ -171,18 +159,21 @@ const RULE =
 
 const RESUMEN = 'Un correo del banco pide escanear un QR para "actualizar tus datos".'
 
-const CONTEXTO = (
-  <>
-    <p>
-      Sos cliente del <strong>Banco del Litoral</strong>. Este mes el banco sí pidió, dentro de su
-      app, que los clientes actualicen algunos datos.
-    </p>
-    <p>
-      Ahora te llega un correo aparte, con un código QR grande y ningún enlace de texto que puedas
-      revisar antes de escanear.
-    </p>
-  </>
-)
+const CONTEXTO: Contexto = {
+  antes: (
+    <>
+      Sos cliente del <strong>Banco del Litoral</strong>. <strong>Este mes</strong> el banco sí
+      pidió, dentro de su app, que los clientes actualicen algunos datos.
+    </>
+  ),
+  ahora: (
+    <>
+      <strong>Días después</strong> te llega un correo aparte, con un <strong>código QR</strong>{' '}
+      grande.
+    </>
+  ),
+  detalle: 'No trae ningún enlace de texto que puedas revisar antes de escanear.',
+}
 
 const NOTA = (
   <>

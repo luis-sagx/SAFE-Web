@@ -26,7 +26,7 @@ function TarjetaIdentidad({ correo, datos }: { correo: string; datos: DatoIdenti
 
   return (
     <section
-      className="mt-6 rounded-lg border border-hairline-strong bg-canvas-soft p-5"
+      className="rounded-lg border border-hairline-strong bg-canvas-soft p-5"
       aria-label="Tus datos en este escenario"
     >
       <h2 className="text-base font-semibold text-ink">Tus datos en este escenario</h2>

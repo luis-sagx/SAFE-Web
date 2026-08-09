@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react'
 import EscenarioLayout from '../../components/EscenarioLayout'
+import type { Contexto } from '../../components/ui/ContextoEscenario'
 import { useStoryEngine, type Story, type StoryNode } from '../../hooks/useStoryEngine'
 import StoryChoices from '../../components/ui/StoryChoices'
 import PanelVeredicto, { type Senal } from '../../components/ui/PanelVeredicto'
@@ -93,18 +94,17 @@ const RULE =
 
 const RESUMEN = 'Un número desconocido te llama diciendo que ganaste un sorteo.'
 
-const CONTEXTO = (
-  <>
-    <p>
-      Estás en tu casa, a media tarde. Suena el teléfono: un número que no tenés guardado y que
-      nunca viste antes.
-    </p>
-    <p>
-      No participaste en ningún sorteo ni dejaste tu número en ningún concurso, pero eso todavía no
-      lo sabés cuando el teléfono suena.
-    </p>
-  </>
-)
+const CONTEXTO: Contexto = {
+  antes: 'Estás en tu casa, sin ningún trámite ni reclamo pendiente.',
+  ahora: (
+    <>
+      <strong>A media tarde</strong> suena el teléfono: un número que no tenés guardado y que nunca
+      viste antes.
+    </>
+  ),
+  detalle:
+    'No participaste en ningún sorteo ni dejaste tu número en ningún concurso, pero eso todavía no lo pensás cuando el teléfono suena.',
+}
 
 /// Mecánica, no historia: solo se muestra en el briefing.
 const NOTA = (

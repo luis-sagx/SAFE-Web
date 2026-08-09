@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import EscenarioLayout from '../../components/EscenarioLayout'
+import type { Contexto } from '../../components/ui/ContextoEscenario'
 import { useAuth } from '../../context/AuthContext'
 import { useScenarioRun } from '../../hooks/useScenarioRun'
 import styles from './SaldoContable.module.css'
@@ -33,31 +34,31 @@ const RESUMEN = 'Vendés una computadora por $1000 y el comprador dice que ya te
 
 /** Los mensajes del comprador llegaron por otra app: son parte del contexto que
  *  el participante lee antes de abrir su banca, no de la pantalla del banco. */
-const CONTEXTO = (
-  <>
-    <p>
-      Estás vendiendo una computadora por <strong>$1000</strong> en redes sociales. Una persona te
-      contacta, conversa contigo y te indica que realizará el pago.
-    </p>
-    <p>
-      Luego te pide que envíes la computadora a otra ciudad del país mediante un delivery o
-      courier. Después de unas horas te envía un supuesto recibo de pago.
-    </p>
-
+const CONTEXTO: Contexto = {
+  antes: (
+    <>
+      Estás vendiendo una computadora por <strong>$1000</strong> en redes sociales. Un comprador
+      conversa con vos, te dice que ya hizo el pago y te pide enviarla a otra ciudad por delivery o
+      courier.
+    </>
+  ),
+  ahora: (
+    <>
+      <strong>Unas horas después</strong> te manda un supuesto recibo de pago, y abrís la
+      aplicación de tu banco para ver si el dinero entró.
+    </>
+  ),
+  extra: (
     <div className="rounded-lg border border-hairline-strong bg-canvas-soft p-4">
       <p className="text-sm font-semibold text-ink">Lo que te escribió el comprador</p>
       <ul className="mt-3 grid gap-2 text-base leading-relaxed text-body">
         <li>“Ya le hice el pago. Revise su cuenta, ya debe aparecer.”</li>
         <li>“Por favor envíeme la computadora hoy mismo. Ya tengo el delivery esperando.”</li>
-        <li className="text-danger">
-          “Me urge. Ya pagué. Si no envía ahora, voy a reportarlo.”
-        </li>
+        <li className="text-danger">“Me urge. Ya pagué. Si no envía ahora, voy a reportarlo.”</li>
       </ul>
     </div>
-
-    <p>Abrís la aplicación de tu banco para ver si el dinero llegó.</p>
-  </>
-)
+  ),
+}
 
 function SaldoContable() {
   const { displayName, initials } = useAuth()

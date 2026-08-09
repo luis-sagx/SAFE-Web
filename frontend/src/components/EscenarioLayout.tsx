@@ -4,6 +4,7 @@ import { Link } from "react-router";
 import AppHeader from "./AppHeader";
 import InfoLink from "./InfoLink";
 import AvisoFinEscenario from "./ui/AvisoFinEscenario";
+import ContextoEscenario, { type Contexto } from "./ui/ContextoEscenario";
 import type { ResultadoEscenario } from "../hooks/useScenarioRun";
 import { useAuth } from "../context/AuthContext";
 import { getEscenario, getSeccion } from "../data/catalogo";
@@ -16,8 +17,11 @@ interface EscenarioLayoutProps {
   resumen: string;
   /** La situación: quién eres y qué te está pasando. Solo historia, nada de
    *  mecánica — acompaña al participante también dentro del escenario, donde
-   *  una frase como "vas a ver tu correo" ya no tendría sentido. */
-  contexto: ReactNode;
+   *  una frase como "vas a ver tu correo" ya no tendría sentido.
+   *
+   *  Va en piezas y no como prosa libre: el formato lo pone el layout para
+   *  todos los escenarios a la vez (ver ContextoEscenario). */
+  contexto: Contexto;
   /** Cómo se juega. Aparece únicamente en el briefing, antes de entrar. */
   nota?: ReactNode;
   /** Datos prestados que este escenario pone en juego, además del correo, que
@@ -138,7 +142,16 @@ function EscenarioLayout({
           <InfoLink />
         </AppHeader>
 
-        <main className="mx-auto max-w-3xl px-6 py-12">
+        {/* Mismo ancho que el dashboard y las secciones. Con el contenido en
+            una sola columna esa medida daría renglones larguísimos, así que a
+            partir de lg se parte en dos: a la izquierda lo que se lee entero
+            —la historia y cómo se juega—, a la derecha lo que se consulta.
+
+            El reparto no es solo temático: el botón va debajo de las dos
+            columnas, así que cuelga de la más alta. Con "cómo se juega" a la
+            derecha, esa columna doblaba en alto a la otra y el botón quedaba
+            flotando muy por debajo del texto que acompaña. */}
+        <main className="mx-auto max-w-6xl px-6 py-12">
           <p className="text-base font-medium text-muted">
             {getSeccion(escenario.seccionId)?.canal}
           </p>
@@ -146,47 +159,63 @@ function EscenarioLayout({
             {escenario.titulo}
           </h1>
 
-          {/* El saludo con nombre vive aquí y no en cada escenario: la historia
-              que escribe el autor empieza siempre en la escena, y quién la
-              protagoniza lo sabe el layout, no el guion. */}
-          <p className="mt-6 text-lg leading-relaxed text-ink">
-            Hola, <strong className="font-semibold">{displayName}</strong>. Esto
-            es lo que te está pasando:
-          </p>
+          <div className="mt-8 grid items-start gap-8 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] lg:grid-rows-[auto_1fr] lg:gap-x-14">
+            <div>
+              {/* El saludo con nombre vive aquí y no en cada escenario: la
+                  historia que escribe el autor empieza siempre en la escena, y
+                  quién la protagoniza lo sabe el layout, no el guion. */}
+              <p className="text-lg leading-relaxed text-ink">
+                Hola, <strong className="font-semibold">{displayName}</strong>.
+                Esto es lo que te está pasando:
+              </p>
 
-          <div className="mt-3 space-y-4 text-lg leading-relaxed text-body">
-            {contexto}
-          </div>
+              <div className="mt-5">
+                <ContextoEscenario contexto={contexto} />
+              </div>
 
-          {/* Se avisa antes de entrar, y en todos los escenarios: si alguien
-              ve su propio nombre en una bandeja simulada sin saber que la
-              dirección es inventada, puede creer que el ejercicio le está
-              mandando correo de verdad —o peor, que le llegó uno real. Nada
-              de esto existe fuera de la simulación.
-
-              Va como tarjeta y no como frase porque los mismos datos vuelven
-              a aparecer dentro del escenario, escritos en un formulario que
-              los pide: hay que poder reconocerlos. */}
-          <TarjetaIdentidad correo={correoDelEscenario} datos={identidad} />
-          <p className="mt-3 text-base leading-relaxed text-body">
-            Nada de lo que ocurra aquí sale ni entra a tu correo real, ni tiene
-            que ver con tus datos de verdad.
-          </p>
-
-          {nota && (
-            <div className="mt-4 rounded-lg border border-hairline-strong bg-canvas-soft p-5 text-base leading-relaxed text-body">
-              {nota}
+              {/* Sin caja: es una frase más de lo que estás a punto de hacer,
+                  no un aviso aparte. Encerrada tenía el peso de una advertencia
+                  y partía en dos la lectura justo antes del botón. */}
+              {nota && (
+                <div className="mt-6 text-base leading-relaxed text-body">
+                  {nota}
+                </div>
+              )}
             </div>
-          )}
 
-          <button
-            ref={empezarRef}
-            type="button"
-            onClick={handleEmpezar}
-            className="mt-10 min-h-12 rounded-md bg-primary px-7 py-3.5 text-lg font-medium text-on-primary transition hover:bg-primary-active focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link"
-          >
-            Empezar
-          </button>
+            {/* Ocupa las dos filas de la rejilla para que el botón, que vive en
+                la segunda, no tenga que esperar a que esta columna termine:
+                cuando la historia es corta esta tarjeta es más alta, y el botón
+                quedaba colgando muy por debajo del texto al que acompaña. */}
+            <div className="lg:row-span-2">
+              {/* Se avisa antes de entrar, y en todos los escenarios: si
+                  alguien ve su propio nombre en una bandeja simulada sin saber
+                  que la dirección es inventada, puede creer que el ejercicio le
+                  está mandando correo de verdad —o peor, que le llegó uno real.
+                  Nada de esto existe fuera de la simulación.
+
+                  Va como tarjeta y no como frase porque los mismos datos
+                  vuelven a aparecer dentro del escenario, escritos en un
+                  formulario que los pide: hay que poder reconocerlos. */}
+              <TarjetaIdentidad correo={correoDelEscenario} datos={identidad} />
+              <p className="mt-3 text-base leading-relaxed text-body">
+                Nada de lo que ocurra aquí sale ni entra a tu correo real, ni
+                tiene que ver con tus datos de verdad.
+              </p>
+            </div>
+
+            {/* Debajo de la historia, no de la página: es lo que se pulsa
+                cuando terminas de leerla. `self-start` lo mantiene pegado a
+                ella aunque la columna de al lado siga bajando. */}
+            <button
+              ref={empezarRef}
+              type="button"
+              onClick={handleEmpezar}
+              className="min-h-12 justify-self-start rounded-md bg-primary px-7 py-3.5 text-lg font-medium text-on-primary transition hover:bg-primary-active focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link lg:col-start-1 lg:row-start-2 lg:self-start"
+            >
+              Empezar
+            </button>
+          </div>
         </main>
       </div>
     );
@@ -269,7 +298,9 @@ function EscenarioLayout({
       <dialog
         ref={dialogoRef}
         aria-labelledby="titulo-contexto"
-        className="m-auto w-[min(92vw,32rem)] rounded-lg border border-hairline-strong bg-surface p-6 text-ink shadow-card backdrop:bg-ink/40"
+        // Mismo ancho que el saludo de bienvenida (Bienvenida.tsx): son los
+        // dos únicos modales de la app y no hay motivo para que midan distinto.
+        className="m-auto w-[min(92vw,42rem)] rounded-xl border border-hairline-strong bg-surface p-8 text-ink shadow-card backdrop:bg-ink/40"
       >
         <h2
           id="titulo-contexto"
@@ -280,15 +311,17 @@ function EscenarioLayout({
         <p className="mt-2 text-lg leading-relaxed text-ink">
           Hola, <strong className="font-semibold">{displayName}</strong>.
         </p>
-        <div className="mt-2 space-y-3 text-lg leading-relaxed text-body">
-          {contexto}
+        <div className="mt-3">
+          <ContextoEscenario contexto={contexto} />
         </div>
 
         {/* La tarjeta se enseña al empezar, pero entre el briefing y el
             formulario que pide la cédula pueden pasar minutos: si para
             entonces ya no recuerdas que esos números eran los tuyos, el
             formulario vuelve a ser casillas vacías. */}
-        <TarjetaIdentidad correo={correoDelEscenario} datos={identidad} />
+        <div className="mt-6">
+          <TarjetaIdentidad correo={correoDelEscenario} datos={identidad} />
+        </div>
 
         <form method="dialog" className="mt-6 flex justify-end">
           <button
