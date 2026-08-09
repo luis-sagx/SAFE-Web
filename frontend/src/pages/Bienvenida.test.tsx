@@ -43,7 +43,12 @@ function renderDesde(from?: unknown) {
   )
 }
 
+/// El aviso pasa por seis amenazas antes de cerrarse: se avanza hasta que el
+/// botón deja de decir "Siguiente".
 async function continuar() {
+  for (let i = 0; i < 6; i++) {
+    fireEvent.click(await screen.findByRole('button', { name: 'Siguiente →' }))
+  }
   fireEvent.click(await screen.findByRole('button', { name: 'Continuar' }))
 }
 
@@ -101,6 +106,55 @@ describe('Bienvenida', () => {
     await continuar()
 
     expect(await screen.findByText('Panel')).toBeDefined()
+  })
+
+  // El recorrido es el motivo del cambio: seis párrafos juntos se saltaban
+  // enteros, así que ahora va uno por pantalla y con su forma de evitarlo.
+  it('presenta las seis amenazas de una en una, con qué hacer en cada caso', async () => {
+    renderDesde()
+
+    expect(await screen.findByText(/Hola, /)).toBeDefined()
+
+    for (const titulo of [
+      'Phishing',
+      'Smishing',
+      'Vishing',
+      'Suplantación de identidad',
+      'Estafa electrónica',
+      'Riesgo físico',
+    ]) {
+      fireEvent.click(await screen.findByRole('button', { name: 'Siguiente →' }))
+      expect(await screen.findByRole('heading', { name: titulo })).toBeDefined()
+      expect(screen.getByText(/Cómo evitarlo:/)).toBeDefined()
+    }
+
+    expect(screen.getByRole('button', { name: 'Continuar' })).toBeDefined()
+  })
+
+  it('deja volver a la amenaza anterior', async () => {
+    renderDesde()
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Siguiente →' }))
+    fireEvent.click(await screen.findByRole('button', { name: 'Siguiente →' }))
+    expect(await screen.findByRole('heading', { name: 'Smishing' })).toBeDefined()
+
+    fireEvent.click(screen.getByRole('button', { name: '← Anterior' }))
+
+    expect(await screen.findByRole('heading', { name: 'Phishing' })).toBeDefined()
+  })
+
+  // La casilla decide si el aviso vuelve a salir, así que solo tiene sentido
+  // cuando ya se recorrió entero.
+  it('la casilla de no volver a mostrarlo solo aparece al final', async () => {
+    renderDesde()
+
+    expect(screen.queryByRole('checkbox')).toBeNull()
+
+    for (let i = 0; i < 6; i++) {
+      fireEvent.click(await screen.findByRole('button', { name: 'Siguiente →' }))
+    }
+
+    expect(screen.getByRole('checkbox')).toBeDefined()
   })
 
   // El guardado es informativo: si falla, lo único que pasa es que el aviso
