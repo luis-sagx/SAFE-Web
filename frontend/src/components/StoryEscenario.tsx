@@ -2,6 +2,7 @@ import { useEffect, useState, type ReactNode } from 'react'
 import EscenarioLayout from './EscenarioLayout'
 import Instrucciones from './ui/Instrucciones'
 import { carpetasCorreo } from './ui/carpetasCorreo'
+import type { Contexto } from './ui/ContextoEscenario'
 import DeviceScreen, { type ScreenView } from './ui/DeviceScreen'
 import { evitarNavegacion, manejarClicHotspot } from './ui/interactivo'
 import type { AccionCorreo, Reloj } from './ui/DesktopChrome'
@@ -21,7 +22,7 @@ export interface ScreenNode extends StoryNode {
 interface StoryEscenarioProps {
   escenarioId: string
   resumen: string
-  contexto: ReactNode
+  contexto: Contexto
   /** Cómo se juega. Solo se muestra en el briefing. */
   nota?: ReactNode
   story: Story<ScreenNode>

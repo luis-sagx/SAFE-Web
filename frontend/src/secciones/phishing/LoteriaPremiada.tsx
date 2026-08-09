@@ -1,5 +1,6 @@
 import { Landmark, Newspaper, Search } from 'lucide-react'
 import StoryEscenario, { type ScreenNode } from '../../components/StoryEscenario'
+import type { Contexto } from '../../components/ui/ContextoEscenario'
 import type { MarcadorNavegador } from '../../components/ui/Navegador'
 import { ACCIONES_BARRA, finalesDeBarra } from './barraDeCorreo'
 import type { Story } from '../../hooks/useStoryEngine'
@@ -232,18 +233,16 @@ const RULE =
 const RESUMEN =
   'Un correo anuncia que ganaste un premio de una lotería y pide un pago para cobrarlo.'
 
-const CONTEXTO = (
-  <>
-    <p>
-      Es temprano y estás revisando el correo. Entre los mensajes de siempre aparece uno que dice
-      que ganaste <strong>casi cincuenta mil dólares</strong> en un sorteo.
-    </p>
-    <p>
-      No recuerdas haber comprado ningún boleto, aunque el correo insiste en que tu dirección salió
-      preseleccionada.
-    </p>
-  </>
-)
+const CONTEXTO: Contexto = {
+  antes: 'No juegas a la lotería: no recuerdas haber comprado ningún boleto.',
+  ahora: (
+    <>
+      <strong>Temprano</strong>, revisando el correo, aparece entre los mensajes de siempre uno que
+      dice que ganaste <strong>casi cincuenta mil dólares</strong> en un sorteo.
+    </>
+  ),
+  detalle: 'El correo insiste en que tu dirección salió preseleccionada.',
+}
 
 function LoteriaPremiada() {
   return (

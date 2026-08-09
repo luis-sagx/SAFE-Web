@@ -1,6 +1,7 @@
 import { Forward, Landmark, Reply, ShieldAlert, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import EscenarioLayout from '../../components/EscenarioLayout'
+import type { Contexto } from '../../components/ui/ContextoEscenario'
 import { carpetasCorreo } from '../../components/ui/carpetasCorreo'
 import {
   CuerpoCorreo,
@@ -101,26 +102,26 @@ const RULE =
 
 const RESUMEN = 'Un correo avisa que alguien inició sesión en tu cuenta desde Bogotá.'
 
-const CONTEXTO = (
-  <>
-    <p>
-      Sos cliente del <strong>Banco del Litoral</strong>. Nunca viajaste a Colombia y no reconocés
-      ningún acceso reciente desde ahí.
-    </p>
-    <p>Son casi las diez de la noche cuando te llega la alerta.</p>
-  </>
-)
+const CONTEXTO: Contexto = {
+  antes: (
+    <>
+      Sos cliente del <strong>Banco del Litoral</strong>.
+    </>
+  ),
+  ahora: (
+    <>
+      <strong>Casi a las diez de la noche</strong> te llega un aviso de un{' '}
+      <strong>inicio de sesión desde Bogotá</strong> en tu cuenta.
+    </>
+  ),
+  detalle: 'Nunca viajaste a Colombia y no reconocés ningún acceso reciente desde ahí.',
+}
 
 const NOTA = (
-  <>
-    <p>
-      Vas a ver tu computador con el correo abierto. Puedes actuar sobre la pantalla como lo harías
-      de verdad.
-    </p>
-    <p className="mt-2">
-      Lo primero que hagas cierra el escenario y te muestra en qué habría terminado.
-    </p>
-  </>
+  <p>
+    Vas a ver tu computador con el correo abierto. Puedes actuar sobre la pantalla como lo harías de
+    verdad.
+  </p>
 )
 
 const FALSO = 'bancodellitoral.com.ec.seguridad-alertas.com'

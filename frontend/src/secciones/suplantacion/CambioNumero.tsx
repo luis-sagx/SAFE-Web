@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import EscenarioLayout from '../../components/EscenarioLayout'
+import type { Contexto } from '../../components/ui/ContextoEscenario'
 import { useStoryEngine, type Story, type StoryNode } from '../../hooks/useStoryEngine'
 import StoryChoices from '../../components/ui/StoryChoices'
 import PanelVeredicto, { type Senal } from '../../components/ui/PanelVeredicto'
@@ -108,18 +109,20 @@ const WAVE_BARS = Array.from({ length: 14 }, (_, i) => `bar-${i}`)
 
 const RESUMEN = 'Tu hijo Andrés te escribe desde un número que no tenías guardado.'
 
-const CONTEXTO = (
-  <>
-    <p>
-      Son las nueve de la noche. Suena una notificación: un número que no conocés te escribe por
-      mensajería y dice ser <strong>Andrés, tu hijo</strong>.
-    </p>
-    <p>
-      Andrés vive en otra ciudad. Hablás con él casi todos los días, siempre desde su número de
-      siempre, el que tenés guardado hace años.
-    </p>
-  </>
-)
+const CONTEXTO: Contexto = {
+  antes: (
+    <>
+      Padre de <strong>Andrés</strong>, que vive en otra ciudad. Hablás con él casi todos los días,
+      siempre desde el número que tenés guardado hace años.
+    </>
+  ),
+  ahora: (
+    <>
+      <strong>A las nueve de la noche</strong> te escribe por mensajería un número que no conocés, y
+      dice ser <strong>Andrés, tu hijo</strong>.
+    </>
+  ),
+}
 
 function nowTime() {
   const d = new Date()

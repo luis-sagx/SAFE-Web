@@ -1,4 +1,5 @@
 import StoryEscenario, { type ScreenNode } from '../../components/StoryEscenario'
+import type { Contexto } from '../../components/ui/ContextoEscenario'
 import { ACCIONES_BARRA, finalesDeBarra } from './barraDeCorreo'
 import type { Story } from '../../hooks/useStoryEngine'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
@@ -86,17 +87,21 @@ const RULE =
 
 const RESUMEN = 'Un correo con tu nombre y cédula pide $2.40 para liberar un paquete de aduana.'
 
-const CONTEXTO = (
-  <>
-    <p>
-      Compraste unos audífonos inalámbricos hace unos días y sí estás esperando el envío.
-    </p>
-    <p>
-      El correo que te llega trae tu nombre completo y parte de tu número de cédula — datos que
-      vos nunca les diste a un courier.
-    </p>
-  </>
-)
+const CONTEXTO: Contexto = {
+  antes: 'Compraste unos audífonos inalámbricos hace unos días y sí estás esperando el envío.',
+  ahora: (
+    <>
+      <strong>Con el paquete todavía en camino</strong>, llega un correo del courier sobre ese
+      envío.
+    </>
+  ),
+  detalle: (
+    <>
+      Trae tu <strong>nombre completo</strong> y parte de tu <strong>número de cédula</strong> —
+      datos que vos nunca les diste a un courier.
+    </>
+  ),
+}
 
 function CobroDirigido() {
   return (

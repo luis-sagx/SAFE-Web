@@ -11,6 +11,7 @@ import {
 } from 'lucide-react'
 import { useState } from 'react'
 import EscenarioLayout from '../../components/EscenarioLayout'
+import type { Contexto } from '../../components/ui/ContextoEscenario'
 import Instrucciones from '../../components/ui/Instrucciones'
 import {
   CuerpoCorreo,
@@ -208,31 +209,28 @@ const RULE =
 
 const RESUMEN = 'Un correo dice que tienes una factura electrónica pendiente de validar.'
 
-const CONTEXTO = (
-  <>
-    <p>
-      Abres tu correo y ves un mensaje del <strong>Servicio de Rentas Internas</strong> que llegó
-      hace unos minutos, sobre una factura pendiente.
-    </p>
-    <p>
-      Emites facturas de vez en cuando, así que un aviso del SRI no te sorprende. Nunca antes te
-      habían escrito por este tema.
-    </p>
-  </>
-)
+const CONTEXTO: Contexto = {
+  antes: (
+    <>
+      Emites facturas de vez en cuando, así que un aviso del <strong>SRI</strong> no te sorprende.
+    </>
+  ),
+  ahora: (
+    <>
+      <strong>Hace unos minutos</strong> llegó a tu bandeja un correo del{' '}
+      <strong>Servicio de Rentas Internas</strong> sobre una factura pendiente.
+    </>
+  ),
+  detalle: 'Nunca antes te habían escrito por este tema.',
+}
 
 /// Solo mecánica, y solo antes de entrar: dentro del escenario el bloque de
 /// decisión ya la explica, y repetirla ahí robaría espacio a la historia.
 const NOTA = (
-  <>
-    <p>
-      Vas a ver tu computador con el correo abierto. Puedes actuar sobre la pantalla como lo harías
-      de verdad.
-    </p>
-    <p className="mt-2">
-      Lo primero que hagas cierra el escenario y te muestra en qué habría terminado.
-    </p>
-  </>
+  <p>
+    Vas a ver tu computador con el correo abierto. Puedes actuar sobre la pantalla como lo harías de
+    verdad.
+  </p>
 )
 
 /// Cinco minutos antes de abrir el escenario. La hora del correo se calcula a

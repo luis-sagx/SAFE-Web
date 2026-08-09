@@ -1,6 +1,7 @@
 import { Building2, Forward, Landmark, Newspaper, Reply, ShieldAlert, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import EscenarioLayout from '../../components/EscenarioLayout'
+import type { Contexto } from '../../components/ui/ContextoEscenario'
 import { carpetasCorreo } from '../../components/ui/carpetasCorreo'
 import {
   CuerpoCorreo,
@@ -98,29 +99,26 @@ const RULE =
 
 const RESUMEN = 'Talento Humano avisa que tu rol de pagos de julio ya está en el portal.'
 
-const CONTEXTO = (
-  <>
-    <p>
+const CONTEXTO: Contexto = {
+  antes: (
+    <>
       Trabajas en <strong>Corporación Andes</strong>. Todos los meses Talento Humano publica el rol
       de pagos en el portal del colaborador y avisa por correo.
-    </p>
-    <p>
-      Este mes trabajaste horas extra y quieres confirmar que estén incluidas antes de que cierre
-      el plazo de reclamos.
-    </p>
-  </>
-)
+    </>
+  ),
+  ahora: (
+    <>
+      <strong>Antes de que cierre el plazo de reclamos</strong> llega el correo del rol de este mes.
+    </>
+  ),
+  detalle: 'Este mes trabajaste horas extra y quieres confirmar que estén incluidas.',
+}
 
 const NOTA = (
-  <>
-    <p>
-      Vas a ver tu computador con el correo abierto. Puedes actuar sobre la pantalla como lo harías
-      de verdad.
-    </p>
-    <p className="mt-2">
-      Lo primero que hagas cierra el escenario y te muestra en qué habría terminado.
-    </p>
-  </>
+  <p>
+    Vas a ver tu computador con el correo abierto. Puedes actuar sobre la pantalla como lo harías de
+    verdad.
+  </p>
 )
 
 function horaDeLlegada(): string {

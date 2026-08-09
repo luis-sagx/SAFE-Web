@@ -1,4 +1,5 @@
 import StoryEscenario, { type ScreenNode } from '../../components/StoryEscenario'
+import type { Contexto } from '../../components/ui/ContextoEscenario'
 import type { Story } from '../../hooks/useStoryEngine'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
 import type { Senal } from '../../components/ui/PanelVeredicto'
@@ -93,18 +94,20 @@ const RULE =
 
 const RESUMEN = 'Llega un SMS del banco avisando un consumo de $42,90 con tu tarjeta.'
 
-const CONTEXTO = (
-  <>
-    <p>
-      Tienes activadas las <strong>alertas de consumo</strong> del Banco del Litoral: cada compra
-      con tu tarjeta te llega por mensaje de texto.
-    </p>
-    <p>
-      Esta tarde saliste del supermercado y, al rato, tu teléfono vibra con un mensaje nuevo en el
-      hilo de siempre del banco.
-    </p>
-  </>
-)
+const CONTEXTO: Contexto = {
+  antes: (
+    <>
+      Cliente del <strong>Banco del Litoral</strong>, con las <strong>alertas de consumo</strong>{' '}
+      activadas: cada compra con tu tarjeta te llega por mensaje de texto.
+    </>
+  ),
+  ahora: (
+    <>
+      <strong>Esta tarde</strong>, al rato de salir del supermercado, tu teléfono vibra con un
+      mensaje nuevo en el hilo de siempre del banco.
+    </>
+  ),
+}
 
 function AlertaConsumo() {
   return (
