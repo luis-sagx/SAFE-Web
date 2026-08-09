@@ -388,7 +388,13 @@ function SesionBogota() {
     const cerrada = (event.target as HTMLElement).closest<HTMLElement>('[data-cierra]')?.dataset
       .cierra
     if (cerrada) {
-      setPestanas((abiertas) => abiertas.filter((id) => id !== cerrada))
+      const quedan = pestanas.filter((id) => id !== cerrada)
+      setPestanas(quedan)
+      // Cerrar la pestaña que se está viendo devuelve el navegador a la que
+      // quede abierta (el correo). Con el escenario ya terminado `elegir` sale
+      // sin tocar la pantalla, así que sin esto la página cerrada seguía a la
+      // vista aunque su pestaña ya no estuviera en la barra (issue #26).
+      if (cerrada === pantallaActual) setPantallaActual(quedan.at(-1) ?? 'n1')
     }
 
     if (!manejarClicHotspot(event, elegir) && !engine.isEnding) {
@@ -396,10 +402,16 @@ function SesionBogota() {
     }
   }
 
+  // La pantalla que se está viendo siempre tiene su pestaña en la barra. Importa
+  // en el repaso: las señales llevan a pantallas que se cerraron, o que nunca se
+  // llegaron a abrir, y sin esto se explicaba la página con la pestaña del
+  // correo marcada como activa.
+  const abiertas = pestanas.includes(pantallaActual) ? pestanas : [...pestanas, pantallaActual]
+
   const pantalla = (
     <Navegador
       pestanas={PESTANAS}
-      abiertas={pestanas}
+      abiertas={abiertas}
       activa={pantallaActual}
       marcadores={MARCADORES}
       onHotspot={onHotspot}

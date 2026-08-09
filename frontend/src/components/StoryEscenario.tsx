@@ -120,10 +120,14 @@ function StoryEscenario({
   const [abiertas, setAbiertas] = useState<string[]>(['n1'])
 
   useEffect(() => {
+    // Un final no abre pantalla: llega sobre la que ya estaba. Y cuando lo
+    // dispara *cerrar* esa pestaña, abrirla otra vez dejaba el veredicto sobre
+    // una página que ya no está en la barra (issue #26).
+    if (engine.isEnding) return
     if (!pestanaDeVista(engine.node.view, dominio)) return
     setAbiertas((ids) => (ids.includes(engine.current) ? ids : [...ids, engine.current]))
     setPestanaMirada(undefined)
-  }, [engine.current, engine.node.view, dominio])
+  }, [engine.current, engine.isEnding, engine.node.view, dominio])
 
   // Una pestaña por escena con pantalla. Se indexan por nodo, como pide su
   // Navegador, y las que comparten dirección se pliegan en una sola.
@@ -191,8 +195,19 @@ function StoryEscenario({
     const cerrada = (event.target as HTMLElement).closest<HTMLElement>('[data-cierra]')?.dataset
       .cierra
     if (cerrada) {
-      setAbiertas((ids) => ids.filter((id) => id !== cerrada))
-      setPestanaMirada(undefined)
+      // Una pestaña puede plegar varias pantallas del mismo sitio: se cierran
+      // todas con ella, o quedarían abiertas sin pestaña que las muestre.
+      const url = pestanas[cerrada]?.url
+      const quedan = abiertas.filter(
+        (id) =>
+          id !== cerrada && (!story[id] || pestanaDeVista(story[id]!.view, dominio)?.url !== url),
+      )
+      setAbiertas(quedan)
+      // El navegador pasa a la pestaña que sigue abierta —normalmente el
+      // correo—, como al cerrar una pestaña de verdad. Sin esto, la barra de
+      // direcciones y el contenido se quedaban en la pestaña que acaba de
+      // desaparecer de la barra.
+      setPestanaMirada(quedan.at(-1))
       if (!engine.isEnding) manejarClicHotspot(event, engine.choose)
       return
     }
