@@ -1,0 +1,15 @@
+# Ajustes de pnpm. Desde pnpm 11 ya no se leen del campo "pnpm" de
+# package.json: ahí se ignoran en silencio, con un aviso fácil de pasar por alto.
+
+overrides:
+  # nanoid <3.3.17 se cuelga cuando se le pasa un generador propio y tamaño cero
+  # (GHSA-2v37-7h3g-55p8). Llega arrastrado por postcss, dentro de vite, y
+  # ninguno de los dos ha publicado todavía una versión que traiga la corregida.
+  #
+  # Se queda en la línea 3.x: nanoid 5 en adelante es solo ESM y cambia de API,
+  # y postcss lo carga con require — sin acotarlo, pnpm resolvía a la 6 y el
+  # build se habría roto en cuanto alguien tocara la configuración de estilos.
+  #
+  # A la izquierda va el rango vulnerable, no un pin: cuando postcss suba el
+  # suyo, este override deja de tener efecto y se puede borrar.
+  nanoid@<3.3.17: '^3.3.17'
