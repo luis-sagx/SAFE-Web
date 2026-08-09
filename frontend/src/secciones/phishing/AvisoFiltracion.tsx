@@ -174,14 +174,14 @@ const SENALES: Senal[] = [
     pantalla: 'n1',
     targetId: 'remitente',
     texto:
-      'La dirección es del <b>dominio real de la tienda</b>, el mismo donde compras, sin palabras añadidas ni terminaciones raras.',
+      'La dirección del remitente es <b>la misma de la tienda donde compras</b>, sin palabras añadidas ni terminaciones raras al final. Ese final es donde se nota una imitación, y aquí coincide.',
   },
   {
     id: 's4',
     pantalla: 'n2',
     targetId: 'dominio-real',
     texto:
-      'Al entrar por los marcadores llegas al <b>sitio verdadero, con candado</b>. Es el hábito que sirve siempre: el aviso puede ser falso, pero la dirección que escribes tú no.',
+      'Al entrar por tus marcadores llegas al <b>sitio verdadero</b>, no al que te indique un mensaje. Es el hábito que sirve siempre: el aviso puede ser falso, la dirección que guardaste tú no.',
   },
 ]
 

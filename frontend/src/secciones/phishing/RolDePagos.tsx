@@ -120,7 +120,8 @@ const SENALES: Senal[] = [
     id: 's1',
     targetId: 'remitente',
     pantalla: 'n1',
-    texto: 'El dominio del remitente es <b>exactamente</b> el de la empresa: andes.com.ec.',
+    texto:
+      'La dirección del remitente termina <b>exactamente</b> igual que la de la empresa, <b>andes.com.ec</b>, sin letras ni palabras de más. En una imitación esa parte final nunca coincide del todo.',
   },
   {
     id: 's2',
@@ -142,7 +143,8 @@ const SENALES: Senal[] = [
     id: 's5',
     targetId: 'portal',
     pantalla: 'n1',
-    texto: 'El portal está en el <b>dominio corporativo</b> y con conexión segura.',
+    texto:
+      'El enlace lleva al portal de la propia empresa, en su misma dirección de siempre y con el candado del navegador a la vista.',
   },
 ]
 

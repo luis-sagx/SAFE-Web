@@ -113,30 +113,32 @@ const SENALES: Senal[] = [
     id: 's1',
     targetId: 'cta-trampa',
     pantalla: 'n1',
-    texto: 'El botón "seguro" ("No fui yo") es la trampa: te lleva directo a pedir credenciales.',
+    texto:
+      'El botón que parece el seguro ("No fui yo") es justo la trampa: lleva a una página que te pide tu usuario y tu clave. Cuentan con que pulses el que suena a protegerte.',
   },
   {
     id: 's2',
     targetId: 'url-falsa',
     pantalla: 'n2',
     texto:
-      'El dominio real es <b>seguridad-alertas.com</b>; "bancodellitoral.com.ec" es apenas un subdominio.',
+      'La dirección era <b>bancodellitoral.com.ec.seguridad-alertas.com</b>. El dueño del sitio es lo que está justo antes de la primera barra, o sea <b>seguridad-alertas.com</b>. El nombre del banco va pegado adelante como adorno.',
   },
   {
     id: 's3',
     targetId: 'campo-otp',
     pantalla: 'n3',
     texto:
-      'Pide el <b>código OTP dentro de una página web</b>, en vez de dentro de la app del banco.',
+      'Pide dentro de una página web el <b>código de un solo uso</b> que llega al celular, cuando el banco solo lo pide dentro de su propia app. Ese código es la última confirmación: quien lo recibe termina de entrar a tu cuenta.',
   },
   {
     id: 's4',
-    texto: 'El correo está impecable (sin errores) porque la trampa no está en la redacción.',
+    texto:
+      'El correo está impecable, sin errores de redacción. La trampa no estaba ahí, así que buscar faltas de ortografía no te habría salvado.',
   },
 ]
 
 const RULE =
-  'Regla de oro: lee el dominio de derecha a izquierda; lo real es lo que está inmediatamente antes de la primera barra. Ninguna alerta se atiende desde el enlace de la propia alerta.'
+  'Regla de oro: en una dirección web manda el nombre que está <b>justo antes de la primera barra</b>. Todo lo que va antes puede escribirlo el atacante, incluido el nombre de tu banco. Y ninguna alerta se atiende desde el enlace de la propia alerta.'
 
 const RESUMEN = 'Un correo avisa que alguien inició sesión en tu cuenta desde Bogotá.'
 

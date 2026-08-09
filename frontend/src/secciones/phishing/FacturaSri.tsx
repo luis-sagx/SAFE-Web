@@ -149,46 +149,49 @@ const SENALES: Senal[] = [
     pantalla: 'n1',
     targetId: 'remitente',
     texto:
-      'El remitente usa un <b>dominio parecido</b> pero ajeno: <b>sri-facturacion-ec.com</b>, no sri.gob.ec.',
+      'Lo que va después de la arroba es la parte que dice de quién es el correo de verdad. Aquí dice <b>sri-facturacion-ec.com</b>, y la del SRI es <b>sri.gob.ec</b>. Cualquiera puede comprar un nombre que lleve "sri" adentro, y eso no lo vuelve oficial.',
   },
   {
     id: 'dominio-real',
     pantalla: 'n3',
     targetId: 'url-real',
     texto:
-      'Así se ve el portal de verdad: <b>sri.gob.ec</b> y con conexión segura. Compáralo con la dirección a la que llevaba el correo.',
+      'Así se ve el portal de verdad: su dirección termina en <b>sri.gob.ec</b>, y ese <b>.gob.ec</b> del final solo lo pueden usar entidades del Estado ecuatoriano. La del correo no lo tenía, solo lo imitaba.',
   },
   {
     id: 'externo',
     pantalla: 'n1',
     targetId: 'externo',
     texto:
-      'El propio cliente de correo lo marcó como <b>externo</b>: no vino de dentro de la organización, aunque diga ser de una institución.',
+      'Tu propio correo lo marcó como <b>externo</b>, o sea que vino de fuera y no de dentro de tu organización. No lo vuelve falso por sí solo, pero un mensaje que dice ser de una institución y llega así merece que lo compruebes aparte.',
   },
   {
     id: 'plazo',
     pantalla: 'n1',
     targetId: 'plazo',
-    texto: 'Impone un <b>plazo de 24 horas</b> y amenaza con una multa.',
+    texto:
+      'Te da <b>24 horas</b> y amenaza con una multa. La prisa es parte del engaño: si no te da tiempo de comprobar nada, decides con miedo.',
   },
   {
     id: 'conexion',
     pantalla: 'n2',
     targetId: 'url-insegura',
-    texto: 'El enlace lleva a una página <b>sin conexión segura</b> (http).',
+    texto:
+      'La dirección de esa página empieza por <b>http</b> y no por <b>https</b>, y por eso el navegador no muestra el candado. Lo que escribas ahí viaja sin proteger, y ningún portal que pida claves funciona así hoy.',
   },
   {
     id: 'adjunto',
     pantalla: 'n1',
     targetId: 'adjunto',
     texto:
-      'El adjunto no es un documento sino un <b>programa</b>: un <b>.vbs</b> se ejecuta al abrirlo. La doble extensión <b>.pdf.vbs</b> lo disfraza, porque Windows oculta la última.',
+      'El nombre del archivo termina en <b>.vbs</b>, y ese final es lo que dice qué es: no un documento, sino un <b>programa</b> que se ejecuta apenas lo abres. El <b>.pdf</b> de antes está puesto para disfrazarlo, y Windows suele esconder el final del nombre.',
   },
   {
     id: 'clave',
     pantalla: 'n2',
     targetId: 'campo-clave',
-    texto: 'Pide tu <b>clave</b> del portal para "validar" algo.',
+    texto:
+      'Te pide la <b>clave</b> del portal para "validar" una factura. Una clave sirve para entrar a tu cuenta, no para revisar un trámite: quien la reciba entra como si fueras tú.',
   },
 ]
 

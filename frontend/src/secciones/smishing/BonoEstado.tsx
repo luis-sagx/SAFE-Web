@@ -92,10 +92,10 @@ const STORY: Story<ScreenNode> = {
 
 const SENALES: Senal[] = [
   { id: 's1', texto: 'Te da un <b>premio que nunca pediste</b> y un plazo de horas para reclamarlo.' },
-  { id: 's2', texto: 'Usa un <b>enlace acortado</b> que oculta el destino real.' },
-  { id: 's3', texto: 'La página está en <b>bono-social-ec.online</b>, sin conexión segura ni dominio .gob.ec.' },
-  { id: 's4', texto: 'Pide tu <b>clave de banca en línea</b> para "recibir" un depósito.' },
-  { id: 's5', texto: 'Pide el <b>código que llega por SMS</b>: con eso completan el acceso a tu cuenta.' },
+  { id: 's2', texto: 'El enlace está <b>acortado</b> (bit.ly): el texto que ves no dice a qué página te lleva, así que no puedes saber a dónde vas hasta que ya estás ahí.' },
+  { id: 's3', texto: 'La página está en <b>bono-social-ec.online</b>, y las páginas del Estado ecuatoriano terminan en <b>.gob.ec</b>. El nombre suena oficial, pero el final delata que no lo es. Tampoco empieza por https: ni siquiera protege lo que escribes.' },
+  { id: 's4', texto: 'Pide tu <b>clave de banca en línea</b> para "recibir" un depósito. Para que te depositen basta tu número de cuenta: la clave solo sirve para sacar dinero, nunca para meterlo.' },
+  { id: 's5', texto: 'Pide el <b>código que te llega por SMS</b>. Ese código es la última puerta de tu banco: con tu clave y con él ya entran a tu cuenta desde su propio teléfono.' },
 ]
 const RULE =
   'Regla de oro: para <b>recibir</b> dinero nadie necesita tu clave ni tu código de verificación; solo tu número de cuenta. Cualquier bono o subsidio se confirma en el sitio oficial <b>.gob.ec</b>, escrito por ti.'

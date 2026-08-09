@@ -201,7 +201,7 @@ const SENALES: Senal[] = [
     pantalla: 'n1',
     targetId: 'remitente',
     texto:
-      'El dominio es <b>loteria-pacifico-premios.online</b>: un nombre inventado para la ocasión, no el de una institución.',
+      'La dirección del remitente es <b>loteria-pacifico-premios.online</b>, un nombre comprado para esta campaña y que además describe el premio. Una lotería de verdad escribe desde la dirección de su sitio de siempre.',
   },
   {
     id: 'cuenta',

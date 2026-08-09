@@ -159,12 +159,14 @@ function PanelVeredicto({
               Saltar
             </button>
           </div>
-          {/* Alto reservado para la señal más larga del catálogo (9.125rem
-              medidos en la columna estrecha). Sin él, los textos van de una a cinco
+          {/* Alto reservado para la señal más larga del catálogo: seis líneas en
+              la columna estrecha (11rem). Sin él, los textos van de una a seis
               líneas y la fila de botones sube y baja hasta 87px entre paso y
-              paso, obligando a buscar el botón de nuevo cada vez. */}
+              paso, obligando a buscar el botón de nuevo cada vez. Subió desde
+              9.125rem al reescribir las señales en lenguaje llano (issue #32):
+              explicar por qué algo es sospechoso ocupa más que nombrarlo. */}
           <p
-            className="mt-3 min-h-[9.125rem] text-lg leading-relaxed text-body"
+            className="mt-3 min-h-[11rem] text-lg leading-relaxed text-body"
             dangerouslySetInnerHTML={{ __html: senales[paso]?.texto ?? '' }}
           />
           {/* "Anterior" se renderiza siempre, deshabilitado en el primer paso.
