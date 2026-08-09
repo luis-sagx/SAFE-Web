@@ -8,6 +8,7 @@ import {
   type AccionCorreo,
   type CarpetaCorreo,
 } from '../../components/ui/DesktopChrome'
+import { AvisoSitio, CabeceraSitio, ENLACES_PIE, PieSitio } from '../../components/ui/armazonSitio'
 import styles from '../../components/ui/DeviceScreen.module.css'
 import Instrucciones from '../../components/ui/Instrucciones'
 import { BotonHotspot, manejarClicHotspot } from '../../components/ui/interactivo'
@@ -239,7 +240,10 @@ function ContenidoCorreo({ recibido, carpetas }: { recibido: string; carpetas: C
 function ContenidoPortal() {
   return (
     <div className={styles.page}>
-      <p className={styles.brand}>Corporación Andes</p>
+      <CabeceraSitio
+        marca="Corporación Andes"
+        menu={['Rol de pagos', 'Vacaciones', 'Certificados', 'Ayuda']}
+      />
       <h2 className={styles.pageTitle}>Portal del colaborador</h2>
       <p className={styles.pageSub}>
         Ingresa con tu usuario institucional para ver tu rol de pagos.
@@ -269,7 +273,12 @@ function ContenidoPortal() {
         </BotonHotspot>
       </div>
 
-      <p className={styles.pageFooter}>portal.andes.com.ec · Talento Humano</p>
+      <AvisoSitio>
+        Tu rol de pagos está disponible los primeros cinco días de cada mes. Los reclamos se
+        registran desde el mismo portal.
+      </AvisoSitio>
+
+      <PieSitio texto="Corporación Andes · Talento Humano" enlaces={ENLACES_PIE} />
     </div>
   )
 }

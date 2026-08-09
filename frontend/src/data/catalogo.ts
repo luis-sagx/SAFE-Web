@@ -111,7 +111,9 @@ const BASE: EscenarioBase[] = [
     // v6: el briefing enseña los datos prestados en una tarjeta.
     // v7: cerrar una pestaña ya no termina la corrida ni acredita;
     // devuelve al correo, y la decisión es lo que se haga con el mensaje.
-    version: 7,
+    // v8: las páginas del escenario llevan cabecera, aviso y pie de
+    // sitio, la falsa igual que la real.
+    version: 8,
     naturaleza: 'fraude',
     dificultad: 2,
     espeja: 'phishing/rol-de-pagos',
@@ -133,7 +135,9 @@ const BASE: EscenarioBase[] = [
     // v5: el briefing enseña los datos prestados en una tarjeta.
     // v6: cerrar una pestaña ya no termina la corrida ni acredita;
     // devuelve al correo, y la decisión es lo que se haga con el mensaje.
-    version: 6,
+    // v7: las páginas del escenario llevan cabecera y pie de sitio, la
+    // falsa igual que la real (prueba del issue #25).
+    version: 7,
     naturaleza: 'fraude',
     dificultad: 3,
     espeja: 'phishing/rol-de-pagos',
@@ -151,7 +155,9 @@ const BASE: EscenarioBase[] = [
     // v4: el briefing enseña los datos prestados en una tarjeta.
     // v5: cerrar una pestaña ya no termina la corrida ni acredita;
     // devuelve al correo, y la decisión es lo que se haga con el mensaje.
-    version: 5,
+    // v6: las páginas del escenario llevan cabecera, aviso y pie de
+    // sitio, la falsa igual que la real.
+    version: 6,
     naturaleza: 'legitimo',
     dificultad: 3,
     espeja: 'phishing/clave-caducada',
@@ -174,7 +180,9 @@ const BASE: EscenarioBase[] = [
     // v4: el briefing enseña los datos prestados en una tarjeta.
     // v5: cerrar una pestaña ya no termina la corrida ni acredita;
     // devuelve al correo, y la decisión es lo que se haga con el mensaje.
-    version: 5,
+    // v6: las páginas del escenario llevan cabecera, aviso y pie de
+    // sitio, la falsa igual que la real.
+    version: 6,
     naturaleza: 'fraude',
     dificultad: 1,
     espeja: 'phishing/aviso-filtracion',
@@ -192,7 +200,9 @@ const BASE: EscenarioBase[] = [
     // v4: el briefing enseña los datos prestados en una tarjeta.
     // v5: cerrar una pestaña ya no termina la corrida ni acredita;
     // devuelve al correo, y la decisión es lo que se haga con el mensaje.
-    version: 5,
+    // v6: las páginas del escenario llevan cabecera, aviso y pie de
+    // sitio, la falsa igual que la real.
+    version: 6,
     naturaleza: 'fraude',
     dificultad: 4,
     espeja: 'phishing/aviso-filtracion',
@@ -207,7 +217,9 @@ const BASE: EscenarioBase[] = [
     // v4: la transferencia sale de la cuenta que enseña el briefing.
     // v5: cerrar una pestaña ya no termina la corrida ni acredita;
     // devuelve al correo, y la decisión es lo que se haga con el mensaje.
-    version: 5,
+    // v6: las páginas del escenario llevan cabecera, aviso y pie de
+    // sitio, la falsa igual que la real.
+    version: 6,
     naturaleza: 'fraude',
     dificultad: 4,
     espeja: 'phishing/rol-de-pagos',
@@ -229,7 +241,9 @@ const BASE: EscenarioBase[] = [
     // v4: el briefing enseña los datos prestados en una tarjeta.
     // v5: cerrar una pestaña ya no termina la corrida ni acredita;
     // devuelve al correo, y la decisión es lo que se haga con el mensaje.
-    version: 5,
+    // v6: las páginas del escenario llevan cabecera, aviso y pie de
+    // sitio, la falsa igual que la real.
+    version: 6,
     naturaleza: 'fraude',
     dificultad: 5,
     espeja: 'phishing/aviso-filtracion',
@@ -244,7 +258,9 @@ const BASE: EscenarioBase[] = [
     // v4: el briefing enseña los datos prestados en una tarjeta.
     // v5: cerrar una pestaña ya no termina la corrida ni acredita;
     // devuelve al correo, y la decisión es lo que se haga con el mensaje.
-    version: 5,
+    // v6: las páginas del escenario llevan cabecera, aviso y pie de
+    // sitio, la falsa igual que la real.
+    version: 6,
     naturaleza: 'legitimo',
     dificultad: 4,
     espeja: 'phishing/sesion-bogota',
