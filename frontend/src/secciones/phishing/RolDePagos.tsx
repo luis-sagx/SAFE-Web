@@ -51,9 +51,9 @@ const STORY: Story<StoryNode> = {
   },
   e_reenviar: {
     kind: 'partial',
-    verdict: 'Lo reenviaste sin verificar',
+    verdict: 'Lo pasaste, pero sigue pendiente',
     outcome:
-      'El aviso era real, así que no pasó nada grave. Pero lo mandaste a otra persona antes de comprobarlo tú mismo: si hubiera sido falso, el reenvío habría llevado el engaño con tu nombre encima.',
+      'El aviso era auténtico, así que reenviarlo no puso a nadie en riesgo. Pero pedir una opinión no es lo mismo que actuar: tu rol de pagos sigue sin revisar y el plazo para reclamar diferencias corre igual.',
     score: 50,
   },
   e_spam: {

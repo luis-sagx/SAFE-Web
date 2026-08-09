@@ -157,7 +157,9 @@ const BASE: EscenarioBase[] = [
     // devuelve al correo, y la decisión es lo que se haga con el mensaje.
     // v6: las páginas del escenario llevan cabecera, aviso y pie de
     // sitio, la falsa igual que la real.
-    version: 6,
+    // v7: responder o reenviar un correo real deja de leerse como un
+    // reproche; sigue siendo parcial porque el mensaje pedía algo.
+    version: 7,
     naturaleza: 'legitimo',
     dificultad: 3,
     espeja: 'phishing/clave-caducada',
@@ -260,7 +262,9 @@ const BASE: EscenarioBase[] = [
     // devuelve al correo, y la decisión es lo que se haga con el mensaje.
     // v6: las páginas del escenario llevan cabecera, aviso y pie de
     // sitio, la falsa igual que la real.
-    version: 6,
+    // v7: responder o reenviar un correo real deja de leerse como un
+    // reproche; sigue siendo parcial porque el mensaje pedía algo.
+    version: 7,
     naturaleza: 'legitimo',
     dificultad: 4,
     espeja: 'phishing/sesion-bogota',
