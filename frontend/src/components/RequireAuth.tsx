@@ -28,7 +28,9 @@ function RequireAuth() {
     !onboardingDismissed &&
     location.pathname !== BIENVENIDA
   ) {
-    return <Navigate to={BIENVENIDA} replace />
+    // Con el destino al que iba: tras el aviso se sigue hasta ahí, en vez de
+    // aterrizar siempre en el panel.
+    return <Navigate to={BIENVENIDA} replace state={{ from: location.pathname }} />
   }
 
   return <Outlet />
