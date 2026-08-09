@@ -5,7 +5,10 @@ FROM node:24-alpine AS build
 WORKDIR /app
 RUN corepack enable
 
-COPY package.json pnpm-lock.yaml ./
+# pnpm-workspace.yaml va aquí y no en el COPY de después: lleva los overrides
+# (ver el archivo), y sin él `--frozen-lockfile` encuentra un lock que no
+# coincide con lo que declara el proyecto y aborta.
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN pnpm install --frozen-lockfile
 
 COPY . .
