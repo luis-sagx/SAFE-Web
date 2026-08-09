@@ -133,7 +133,9 @@ const BASE: EscenarioBase[] = [
     // v5: el briefing enseña los datos prestados en una tarjeta.
     // v6: cerrar una pestaña ya no termina la corrida ni acredita;
     // devuelve al correo, y la decisión es lo que se haga con el mensaje.
-    version: 6,
+    // v7: las páginas del escenario llevan cabecera y pie de sitio, la
+    // falsa igual que la real (prueba del issue #25).
+    version: 7,
     naturaleza: 'fraude',
     dificultad: 3,
     espeja: 'phishing/rol-de-pagos',

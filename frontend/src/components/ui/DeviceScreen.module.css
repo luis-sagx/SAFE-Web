@@ -1125,6 +1125,43 @@ button.mailNavItem {
   overscroll-behavior: contain;
   background: #fff;
   padding: 1.625rem 1.25rem;
+  /* Columna para que el pie del sitio caiga abajo del todo y no flotando a
+     media pantalla, que es donde acababa el contenido y empezaba el vacío. */
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---------- Armazón del sitio ----------
+   Cabecera con menú y pie con enlaces. Decorativos: ninguno responde al clic.
+   Van por escenario, y la regla es que la página falsa lleve lo mismo que la
+   real — la diferencia tiene que estar en la dirección, no en el acabado. */
+.sitioCabecera {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--line);
+}
+.sitioMenu {
+  display: flex;
+  gap: 1.125rem;
+  font-size: 0.90625rem;
+  color: var(--dim);
+}
+.sitioPie {
+  margin-top: auto;
+  padding-top: 1.125rem;
+  border-top: 1px solid var(--line);
+}
+.sitioPieEnlaces {
+  margin: 0.5rem 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  font-size: 0.875rem;
+  color: #8a94a1;
 }
 .brand {
   margin: 0;
@@ -1183,7 +1220,7 @@ button.mailNavItem {
   border-radius: 0.375rem;
 }
 .pageFooter {
-  margin: 1.125rem 0 0;
+  margin: 0;
   font-size: 0.875rem;
   line-height: 1.5;
   color: #8a94a1;

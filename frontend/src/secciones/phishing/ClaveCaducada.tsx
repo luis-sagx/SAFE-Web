@@ -39,6 +39,7 @@ const PAGINA: ScreenView = {
   secure: true,
   senalUrl: 'url',
   brand: 'Corporación Andes',
+  menu: ['Correo', 'Calendario', 'Contactos', 'Ayuda'],
   title: 'Inicia sesión para continuar',
   subtitle: 'Confirma tu contraseña actual para renovarla por 90 días más.',
   fields: [
@@ -49,6 +50,8 @@ const PAGINA: ScreenView = {
       senal: 'campo-clave',
     },
   ],
+  footer: 'Corporación Andes · Todos los derechos reservados',
+  pie: ['Aviso de privacidad', 'Términos de uso', 'Soporte'],
   button: 'Mantener contraseña',
   botonGoto: 'e_clave',
   botonLabel: 'Escribió su contraseña en la página del correo',
@@ -64,6 +67,7 @@ const INTRANET: ScreenView = {
   secure: true,
   senalUrl: 'url-real',
   brand: 'Corporación Andes',
+  menu: ['Directorio', 'Solicitudes', 'Noticias', 'Ayuda'],
   title: 'Directorio interno',
   subtitle: 'Soporte TI · Departamento de Tecnología',
   datos: [
@@ -74,6 +78,7 @@ const INTRANET: ScreenView = {
   fields: [],
   button: '',
   footer: 'Soporte TI nunca solicita contraseñas por correo ni por teléfono.',
+  pie: ['Aviso de privacidad', 'Términos de uso', 'Soporte'],
   cerrarGoto: 'n1',
   cerrarLabel: 'Consultó el directorio interno y volvió al correo',
 }
