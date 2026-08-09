@@ -64,6 +64,10 @@ export type ScreenView =
       menu?: string[]
       /** Enlaces del pie, junto al aviso de `footer`. Decorativos. */
       pie?: string[]
+      /** Nota que el sitio pone bajo el formulario o la ficha. Las páginas
+       *  falsas copian estos avisos igual que copian el logotipo, así que las
+       *  lleva tanto la real como la clonada. */
+      aviso?: string
       title: string
       subtitle?: string
       fields: {
@@ -257,6 +261,8 @@ function DeviceScreen({
             <Accion view={view} />
           </div>
         )}
+
+        {view.aviso && <p className={styles.pageAviso}>{view.aviso}</p>}
 
         {(view.footer || view.pie) && (
           <div className={styles.sitioPie}>

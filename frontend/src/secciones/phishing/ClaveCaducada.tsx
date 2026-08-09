@@ -50,6 +50,10 @@ const PAGINA: ScreenView = {
       senal: 'campo-clave',
     },
   ],
+  // El aviso lo copia del sitio real, como copia el logotipo: un kit de
+  // phishing no deja fuera la letra pequeña, y aquí además sirve de coartada.
+  aviso:
+    'Por seguridad, tu sesión se cerrará al terminar. Si no solicitaste esta renovación, comunícate con Soporte TI antes de continuar.',
   footer: 'Corporación Andes · Todos los derechos reservados',
   pie: ['Aviso de privacidad', 'Términos de uso', 'Soporte'],
   button: 'Mantener contraseña',
@@ -74,10 +78,14 @@ const INTRANET: ScreenView = {
     { etiqueta: 'Correo', valor: 'soporte.ti@andes.com.ec', senal: 'correo-real' },
     { etiqueta: 'Extensión', valor: '2140' },
     { etiqueta: 'Horario', valor: 'Lunes a viernes, de 08:00 a 18:00' },
+    { etiqueta: 'Responsable', valor: 'Ing. Marcela Bustos · Jefa de Soporte' },
+    { etiqueta: 'Oficina', valor: 'Edificio A, piso 3' },
   ],
   fields: [],
   button: '',
-  footer: 'Soporte TI nunca solicita contraseñas por correo ni por teléfono.',
+  aviso:
+    'Soporte TI nunca solicita contraseñas por correo ni por teléfono. Si recibes un mensaje que las pida, repórtalo a la extensión 2140.',
+  footer: 'Corporación Andes · Todos los derechos reservados',
   pie: ['Aviso de privacidad', 'Términos de uso', 'Soporte'],
   cerrarGoto: 'n1',
   cerrarLabel: 'Consultó el directorio interno y volvió al correo',
