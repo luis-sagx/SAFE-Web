@@ -77,8 +77,8 @@ const BANCA: ScreenView = {
   button: 'Transferir $145',
   botonGoto: 'e_transfiere',
   botonLabel: 'Transfirió los $145 a la cuenta nueva',
-  cerrarGoto: 'e_no_transfiere',
-  cerrarLabel: 'Abrió la banca y cerró sin transferir',
+  cerrarGoto: 'n1',
+  cerrarLabel: 'Abrió la banca, no transfirió y volvió al correo',
 }
 
 /// El sitio del colegio, con el teléfono de siempre: el canal alterno que hace
@@ -145,13 +145,6 @@ const STORY: Story<ScreenNode> = {
     outcome:
       'Transferiste a la cuenta nueva. La cuenta de correo de la secretaría estaba comprometida: el atacante escribía desde ahí, con el hilo real y el PDF corregido. El dinero no llegó a la escuela, y la pensión sigue debiéndose.',
   },
-  e_no_transfiere: {
-    kind: 'partial',
-    verdict: 'No transferiste, pero tampoco confirmaste',
-    view: BANCA,
-    outcome:
-      'Te frenaste a tiempo, que es lo que evita la pérdida. Pero quedaste igual de a ciegas: no sabes si el cambio era real ni avisaste al colegio de que su correo está comprometido, y la pensión sigue pendiente.',
-  },
   e_llama: {
     kind: 'good',
     view: COLEGIO,
@@ -202,8 +195,9 @@ const INSTRUCCION = (
       <strong>cualquier parte de ella</strong>, incluidos los marcadores del navegador.
     </p>
     <p className="text-base leading-relaxed text-body">
-      Lo primero que hagas cierra el escenario y te muestra en qué terminaba. Cambiar de pestaña no
-      decide nada.
+      El escenario termina cuando decidas qué hacer con el mensaje —o si caes en lo que pide.
+      Moverte por las pantallas no decide nada: puedes abrir una página, mirarla y cerrarla, y
+      seguirás donde estabas.
     </p>
   </>
 )

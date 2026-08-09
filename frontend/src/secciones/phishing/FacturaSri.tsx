@@ -57,7 +57,6 @@ const STORY: Story<StoryNode> = {
   // El portal legítimo. Un solo nodo, aunque el final dependa de por dónde se
   // llegó: con dos nodos, el marcador abría una segunda pestaña del mismo sitio
   // en vez de ir a la que ya estaba abierta. Cuál de los dos finales acredita
-  // se decide al cerrarla, mirando si la página falsa llegó a abrirse.
   n3: { kind: 'scene' },
   e_adjunto: {
     kind: 'bad',
@@ -70,18 +69,6 @@ const STORY: Story<StoryNode> = {
     verdict: 'Caíste en la trampa',
     outcome:
       'Entregaste tu RUC y tu clave del portal en un sitio que no es del SRI. Con esos datos pueden emitir comprobantes a tu nombre y ver tu información tributaria.',
-  },
-  e_dominio: {
-    kind: 'good',
-    verdict: 'No caíste · revisaste la dirección',
-    outcome:
-      'La dirección era sri-facturacion-ec.com y ni siquiera usaba conexión segura. El portal real del SRI está en sri.gob.ec. Cerraste la página sin escribir nada.',
-  },
-  e_portal: {
-    kind: 'good',
-    verdict: 'No caíste · entraste por tu cuenta',
-    outcome:
-      'Entraste al portal del SRI escribiendo tú la dirección. No había ninguna factura pendiente ni multa: el correo era falso.',
   },
 
   // Los cinco finales de la barra de acciones del cliente. Ninguno entrega la
@@ -246,7 +233,8 @@ const NOTA = (
       de verdad.
     </p>
     <p className="mt-2">
-      Lo primero que hagas cierra el escenario y te muestra en qué habría terminado.
+      El escenario termina cuando decidas qué hacer con el mensaje —o si caes en lo que pide.
+      Moverte por las pantallas y cerrarlas no decide nada.
     </p>
   </>
 )
@@ -277,12 +265,14 @@ const PESTANAS: Record<string, PestanaConfig> = {
     cierra: 'n1',
     senalUrl: 'url-insegura',
   },
-  // Sin `cierra` fijo: lo decide el escenario según haya visitado o no la
-  // página falsa (ver `cierrePortal`).
   n3: {
     titulo: 'SRI en Línea',
     url: 'https://srienlinea.sri.gob.ec/comprobantes',
     segura: true,
+    // Como la falsa: cerrarla devuelve al correo. Haber comprobado en el portal
+    // real es un buen paso, pero el escenario no termina hasta que se decida
+    // qué hacer con el mensaje (issue #24).
+    cierra: 'n1',
     senalUrl: 'url-real',
   },
 }
@@ -476,9 +466,9 @@ function DecisionEnCurso({
         )}
 
         <p className="text-base leading-relaxed text-body">
-          Lo primero que hagas cierra el escenario y te muestra en qué terminaba. No hay
-          confirmación, igual que en la vida real. Puedes volver atrás con la flecha del navegador
-          sin decidir nada.
+          El escenario termina cuando decidas qué hacer con el mensaje —o si caes en lo que pide. No
+          hay confirmación, igual que en la vida real. Moverte entre pantallas, volver atrás o
+          cerrar una pestaña no decide nada.
         </p>
       </Instrucciones>
     </div>
@@ -610,10 +600,6 @@ function FacturaSri() {
       abiertas={pestanas}
       activa={pantallaActual}
       marcadores={MARCADORES}
-      // Quien llegó a abrir la página falsa acredita por haberla dejado sin
-      // escribir nada; quien nunca la tocó, por haber entrado por su cuenta.
-      cierrePortal={pestanas.includes('n2') ? 'e_dominio' : 'e_portal'}
-      pestanaCierreDinamico="n3"
       onHotspot={onHotspot}
     >
       {pantallaActual === 'n1' ? (

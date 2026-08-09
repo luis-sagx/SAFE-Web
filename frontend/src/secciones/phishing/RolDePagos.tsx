@@ -1,4 +1,13 @@
-import { Archive, Building2, Forward, Landmark, Newspaper, Reply, ShieldAlert, Trash2 } from 'lucide-react'
+import {
+  Archive,
+  Building2,
+  Forward,
+  Landmark,
+  Newspaper,
+  Reply,
+  ShieldAlert,
+  Trash2,
+} from 'lucide-react'
 import { useState } from 'react'
 import EscenarioLayout from '../../components/EscenarioLayout'
 import { carpetasCorreo } from '../../components/ui/carpetasCorreo'
@@ -10,7 +19,11 @@ import {
 import styles from '../../components/ui/DeviceScreen.module.css'
 import Instrucciones from '../../components/ui/Instrucciones'
 import { BotonHotspot, manejarClicHotspot } from '../../components/ui/interactivo'
-import { Navegador, type MarcadorNavegador, type PestanaConfig } from '../../components/ui/Navegador'
+import {
+  Navegador,
+  type MarcadorNavegador,
+  type PestanaConfig,
+} from '../../components/ui/Navegador'
 import PanelVeredicto, { type Senal } from '../../components/ui/PanelVeredicto'
 import { formatoHora } from '../../hooks/useRelojDelSistema'
 import { useStoryEngine, type Story, type StoryNode } from '../../hooks/useStoryEngine'
@@ -67,11 +80,41 @@ const STORY: Story<StoryNode> = {
 }
 
 const ACCIONES: AccionCorreo[] = [
-  { Icono: Reply, etiqueta: 'Responder', titulo: 'Responder', goto: 'e_credenciales', label: 'Respondió el correo con su usuario y su contraseña' },
-  { Icono: Forward, etiqueta: 'Reenviar', titulo: 'Reenviar', goto: 'e_reenviar', label: 'Reenvió el correo a otra persona' },
-  { Icono: Archive, etiqueta: 'Archivar', titulo: 'Archivar', goto: 'e_archivar', label: 'Archivó el correo' },
-  { Icono: Trash2, etiqueta: 'Eliminar', titulo: 'Eliminar', goto: 'e_borra', label: 'Eliminó el correo' },
-  { Icono: ShieldAlert, etiqueta: 'Spam', titulo: 'Marcar como spam', goto: 'e_spam', label: 'Marcó el correo como spam' },
+  {
+    Icono: Reply,
+    etiqueta: 'Responder',
+    titulo: 'Responder',
+    goto: 'e_credenciales',
+    label: 'Respondió el correo con su usuario y su contraseña',
+  },
+  {
+    Icono: Forward,
+    etiqueta: 'Reenviar',
+    titulo: 'Reenviar',
+    goto: 'e_reenviar',
+    label: 'Reenvió el correo a otra persona',
+  },
+  {
+    Icono: Archive,
+    etiqueta: 'Archivar',
+    titulo: 'Archivar',
+    goto: 'e_archivar',
+    label: 'Archivó el correo',
+  },
+  {
+    Icono: Trash2,
+    etiqueta: 'Eliminar',
+    titulo: 'Eliminar',
+    goto: 'e_borra',
+    label: 'Eliminó el correo',
+  },
+  {
+    Icono: ShieldAlert,
+    etiqueta: 'Spam',
+    titulo: 'Marcar como spam',
+    goto: 'e_spam',
+    label: 'Marcó el correo como spam',
+  },
 ]
 
 const ASUNTO = 'Tu rol de pagos de julio ya está disponible'
@@ -94,11 +137,34 @@ const ALIAS_FINAL: Record<string, string> = {
 }
 
 const SENALES: Senal[] = [
-  { id: 's1', targetId: 'remitente', pantalla: 'n1', texto: 'El dominio del remitente es <b>exactamente</b> el de la empresa: andes.com.ec.' },
-  { id: 's2', targetId: 'saludo', pantalla: 'n1', texto: 'Te llama <b>por tu nombre</b> y menciona un período y un plazo concretos.' },
-  { id: 's3', texto: '<b>No pide credenciales</b> ni datos: solo avisa dónde está la información.' },
-  { id: 's4', targetId: 'canal', pantalla: 'n1', texto: 'Ofrece un <b>canal alterno verificable</b> (la extensión 214).' },
-  { id: 's5', targetId: 'portal', pantalla: 'n1', texto: 'El portal está en el <b>dominio corporativo</b> y con conexión segura.' },
+  {
+    id: 's1',
+    targetId: 'remitente',
+    pantalla: 'n1',
+    texto: 'El dominio del remitente es <b>exactamente</b> el de la empresa: andes.com.ec.',
+  },
+  {
+    id: 's2',
+    targetId: 'saludo',
+    pantalla: 'n1',
+    texto: 'Te llama <b>por tu nombre</b> y menciona un período y un plazo concretos.',
+  },
+  {
+    id: 's3',
+    texto: '<b>No pide credenciales</b> ni datos: solo avisa dónde está la información.',
+  },
+  {
+    id: 's4',
+    targetId: 'canal',
+    pantalla: 'n1',
+    texto: 'Ofrece un <b>canal alterno verificable</b> (la extensión 214).',
+  },
+  {
+    id: 's5',
+    targetId: 'portal',
+    pantalla: 'n1',
+    texto: 'El portal está en el <b>dominio corporativo</b> y con conexión segura.',
+  },
 ]
 
 const RULE =
@@ -113,8 +179,8 @@ const CONTEXTO = (
       de pagos en el portal del colaborador y avisa por correo.
     </p>
     <p>
-      Este mes trabajaste horas extra y quieres confirmar que estén incluidas antes de que cierre
-      el plazo de reclamos.
+      Este mes trabajaste horas extra y quieres confirmar que estén incluidas antes de que cierre el
+      plazo de reclamos.
     </p>
   </>
 )
@@ -126,7 +192,8 @@ const NOTA = (
       de verdad.
     </p>
     <p className="mt-2">
-      Lo primero que hagas cierra el escenario y te muestra en qué habría terminado.
+      El escenario termina cuando decidas qué hacer con el mensaje —o si caes en lo que pide.
+      Moverte por las pantallas y cerrarlas no decide nada.
     </p>
   </>
 )
@@ -143,13 +210,20 @@ const PESTANAS: Record<string, PestanaConfig> = {
     titulo: 'Portal del colaborador',
     url: 'https://portal.andes.com.ec/rrhh/rol',
     segura: true,
-    cierra: 'e_borra',
+    // Cerrar el portal devuelve al correo: irse de una página no es todavía
+    // una decisión sobre el mensaje (issue #24).
+    cierra: 'n1',
   },
 }
 
 const MARCADORES: MarcadorNavegador[] = [
   { Icono: Landmark, texto: 'Banco del Litoral' },
-  { Icono: Building2, texto: 'Portal Andes', goto: 'n2', label: 'Abrió el portal del colaborador desde sus marcadores' },
+  {
+    Icono: Building2,
+    texto: 'Portal Andes',
+    goto: 'n2',
+    label: 'Abrió el portal del colaborador desde sus marcadores',
+  },
   { Icono: Newspaper, texto: 'El Comercio' },
 ]
 
@@ -187,7 +261,9 @@ function ContenidoPortal() {
     <div className={styles.page}>
       <p className={styles.brand}>Corporación Andes</p>
       <h2 className={styles.pageTitle}>Portal del colaborador</h2>
-      <p className={styles.pageSub}>Ingresa con tu usuario institucional para ver tu rol de pagos.</p>
+      <p className={styles.pageSub}>
+        Ingresa con tu usuario institucional para ver tu rol de pagos.
+      </p>
 
       <div className={styles.form}>
         <label className={styles.field}>
@@ -204,7 +280,11 @@ function ContenidoPortal() {
             ••••••••
           </span>
         </label>
-        <BotonHotspot goto="e_bien" label="Ingresó a su portal del colaborador" className={styles.submit}>
+        <BotonHotspot
+          goto="e_bien"
+          label="Ingresó a su portal del colaborador"
+          className={styles.submit}
+        >
           Ingresar
         </BotonHotspot>
       </div>
@@ -242,9 +322,9 @@ function DecisionEnCurso({ fallo, enFormulario }: { fallo: boolean; enFormulario
         )}
 
         <p className="text-base leading-relaxed text-body">
-          Lo primero que hagas cierra el escenario y te muestra en qué terminaba. No hay
-          confirmación, igual que en la vida real. Puedes volver atrás con la flecha del navegador
-          sin decidir nada.
+          El escenario termina cuando decidas qué hacer con el mensaje —o si caes en lo que pide. No
+          hay confirmación, igual que en la vida real. Moverte entre pantallas, volver atrás o
+          cerrar una pestaña no decide nada.
         </p>
       </Instrucciones>
     </div>

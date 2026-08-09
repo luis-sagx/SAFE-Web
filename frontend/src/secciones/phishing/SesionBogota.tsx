@@ -10,7 +10,11 @@ import {
 import styles from '../../components/ui/DeviceScreen.module.css'
 import Instrucciones from '../../components/ui/Instrucciones'
 import { BotonHotspot, EnlaceHotspot, manejarClicHotspot } from '../../components/ui/interactivo'
-import { Navegador, type MarcadorNavegador, type PestanaConfig } from '../../components/ui/Navegador'
+import {
+  Navegador,
+  type MarcadorNavegador,
+  type PestanaConfig,
+} from '../../components/ui/Navegador'
 import PanelVeredicto, { type Senal } from '../../components/ui/PanelVeredicto'
 import { useStoryEngine, type Story, type StoryNode } from '../../hooks/useStoryEngine'
 
@@ -25,22 +29,11 @@ const STORY: Story<StoryNode> = {
     outcome:
       'Mientras escribías el código, el atacante lo usaba en vivo para entrar a tu cuenta real. Cuando terminaste, tu cuenta ya estaba vacía.',
   },
-  e_detiene: {
-    kind: 'good',
-    verdict: 'No caíste · te detuviste a tiempo',
-    outcome:
-      'Ya habías escrito la contraseña en el sitio falso, pero no llegaste a dar el código. Cambiaste la contraseña desde la app oficial antes de que la usaran.',
-  },
-  e_dominio: {
-    kind: 'good',
-    verdict: 'No caíste · leíste el dominio completo',
-    outcome:
-      'El dominio real es "seguridad-alertas.com" — bancodellitoral.com.ec es solo un subdominio dentro de esa trampa. Cerraste la página sin escribir nada.',
-  },
   e_app: {
     kind: 'good',
     verdict: 'No caíste · verificaste por la app',
-    outcome: 'Entraste a la app del banco por tu cuenta. No había ningún acceso desde Bogotá: el correo era falso.',
+    outcome:
+      'Entraste a la app del banco por tu cuenta. No había ningún acceso desde Bogotá: el correo era falso.',
   },
   e_eliminar: {
     kind: 'good',
@@ -75,11 +68,41 @@ const STORY: Story<StoryNode> = {
 }
 
 const ACCIONES: AccionCorreo[] = [
-  { Icono: Reply, etiqueta: 'Responder', titulo: 'Responder', goto: 'e_responder', label: 'Respondió el correo' },
-  { Icono: Forward, etiqueta: 'Reenviar', titulo: 'Reenviar', goto: 'e_reenviar', label: 'Reenvió el correo a otra persona' },
-  { Icono: Archive, etiqueta: 'Archivar', titulo: 'Archivar', goto: 'e_archivar', label: 'Archivó el correo' },
-  { Icono: Trash2, etiqueta: 'Eliminar', titulo: 'Eliminar', goto: 'e_eliminar', label: 'Eliminó el correo' },
-  { Icono: ShieldAlert, etiqueta: 'Spam', titulo: 'Marcar como spam', goto: 'e_spam', label: 'Marcó el correo como spam' },
+  {
+    Icono: Reply,
+    etiqueta: 'Responder',
+    titulo: 'Responder',
+    goto: 'e_responder',
+    label: 'Respondió el correo',
+  },
+  {
+    Icono: Forward,
+    etiqueta: 'Reenviar',
+    titulo: 'Reenviar',
+    goto: 'e_reenviar',
+    label: 'Reenvió el correo a otra persona',
+  },
+  {
+    Icono: Archive,
+    etiqueta: 'Archivar',
+    titulo: 'Archivar',
+    goto: 'e_archivar',
+    label: 'Archivó el correo',
+  },
+  {
+    Icono: Trash2,
+    etiqueta: 'Eliminar',
+    titulo: 'Eliminar',
+    goto: 'e_eliminar',
+    label: 'Eliminó el correo',
+  },
+  {
+    Icono: ShieldAlert,
+    etiqueta: 'Spam',
+    titulo: 'Marcar como spam',
+    goto: 'e_spam',
+    label: 'Marcó el correo como spam',
+  },
 ]
 
 const ASUNTO = 'Alerta de seguridad: nuevo inicio de sesión'
@@ -97,10 +120,30 @@ const MENSAJE = { nombre: REMITENTE_NOMBRE, direccion: DIRECCION, asunto: ASUNTO
 // está en la página, no en el mensaje. s3 anclada al campo de n3 (el OTP),
 // no al de n2 (la contraseña).
 const SENALES: Senal[] = [
-  { id: 's1', targetId: 'cta-trampa', pantalla: 'n1', texto: 'El botón "seguro" ("No fui yo") es la trampa: te lleva directo a pedir credenciales.' },
-  { id: 's2', targetId: 'url-falsa', pantalla: 'n2', texto: 'El dominio real es <b>seguridad-alertas.com</b>; "bancodellitoral.com.ec" es apenas un subdominio.' },
-  { id: 's3', targetId: 'campo-otp', pantalla: 'n3', texto: 'Pide el <b>código OTP dentro de una página web</b>, en vez de dentro de la app del banco.' },
-  { id: 's4', texto: 'El correo está impecable — sin errores — porque la trampa no está en la redacción.' },
+  {
+    id: 's1',
+    targetId: 'cta-trampa',
+    pantalla: 'n1',
+    texto: 'El botón "seguro" ("No fui yo") es la trampa: te lleva directo a pedir credenciales.',
+  },
+  {
+    id: 's2',
+    targetId: 'url-falsa',
+    pantalla: 'n2',
+    texto:
+      'El dominio real es <b>seguridad-alertas.com</b>; "bancodellitoral.com.ec" es apenas un subdominio.',
+  },
+  {
+    id: 's3',
+    targetId: 'campo-otp',
+    pantalla: 'n3',
+    texto:
+      'Pide el <b>código OTP dentro de una página web</b>, en vez de dentro de la app del banco.',
+  },
+  {
+    id: 's4',
+    texto: 'El correo está impecable — sin errores — porque la trampa no está en la redacción.',
+  },
 ]
 
 const RULE =
@@ -125,7 +168,8 @@ const NOTA = (
       de verdad.
     </p>
     <p className="mt-2">
-      Lo primero que hagas cierra el escenario y te muestra en qué habría terminado.
+      El escenario termina cuando decidas qué hacer con el mensaje —o si caes en lo que pide.
+      Moverte por las pantallas y cerrarlas no decide nada.
     </p>
   </>
 )
@@ -140,20 +184,25 @@ const PESTANAS: Record<string, PestanaConfig & { mismaPestana?: boolean }> = {
     titulo: 'Verificación de seguridad',
     url: `https://${FALSO}/clave`,
     segura: true,
-    cierra: 'e_dominio',
+    cierra: 'n1',
     senalUrl: 'url-falsa',
   },
   n3: {
     titulo: 'Un paso más',
     url: `https://${FALSO}/otp`,
     segura: true,
-    cierra: 'e_detiene',
+    cierra: 'n1',
     mismaPestana: true,
   },
 }
 
 const MARCADORES: MarcadorNavegador[] = [
-  { Icono: Landmark, texto: 'Banco del Litoral', goto: 'e_app', label: 'Verificó los accesos desde la app del banco' },
+  {
+    Icono: Landmark,
+    texto: 'Banco del Litoral',
+    goto: 'e_app',
+    label: 'Verificó los accesos desde la app del banco',
+  },
 ]
 
 function ContenidoCorreo({ recibido, carpetas }: { recibido: string; carpetas: CarpetaCorreo[] }) {
@@ -208,7 +257,11 @@ function ContenidoPaginaClave() {
             ••••••••
           </span>
         </label>
-        <BotonHotspot goto="n3" label="Escribió su contraseña para cerrar el acceso no reconocido" className={styles.submit}>
+        <BotonHotspot
+          goto="n3"
+          label="Escribió su contraseña para cerrar el acceso no reconocido"
+          className={styles.submit}
+        >
           Cerrar acceso no reconocido
         </BotonHotspot>
       </div>
@@ -231,7 +284,11 @@ function ContenidoPaginaOtp() {
             000000
           </span>
         </label>
-        <BotonHotspot goto="e_otp" label="Escribió el código que llegó por SMS" className={styles.submit}>
+        <BotonHotspot
+          goto="e_otp"
+          label="Escribió el código que llegó por SMS"
+          className={styles.submit}
+        >
           Confirmar y cerrar sesión
         </BotonHotspot>
       </div>
@@ -273,9 +330,9 @@ function DecisionEnCurso({ fallo, pantalla }: { fallo: boolean; pantalla: string
         )}
 
         <p className="text-base leading-relaxed text-body">
-          Lo primero que hagas cierra el escenario y te muestra en qué terminaba. No hay
-          confirmación, igual que en la vida real. Puedes volver atrás con la flecha del navegador
-          sin decidir nada.
+          El escenario termina cuando decidas qué hacer con el mensaje —o si caes en lo que pide. No
+          hay confirmación, igual que en la vida real. Moverte entre pantallas, volver atrás o
+          cerrar una pestaña no decide nada.
         </p>
       </Instrucciones>
     </div>
@@ -326,10 +383,19 @@ function SesionBogota() {
   }
 
   const pantalla = (
-    <Navegador pestanas={PESTANAS} abiertas={pestanas} activa={pantallaActual} marcadores={MARCADORES} onHotspot={onHotspot}>
+    <Navegador
+      pestanas={PESTANAS}
+      abiertas={pestanas}
+      activa={pantallaActual}
+      marcadores={MARCADORES}
+      onHotspot={onHotspot}
+    >
       {pantallaActual === 'n1' ? (
         <ContenidoCorreo
-          carpetas={carpetasCorreo(MENSAJE, engine.isEnding && !repasando ? engine.current : undefined)}
+          carpetas={carpetasCorreo(
+            MENSAJE,
+            engine.isEnding && !repasando ? engine.current : undefined,
+          )}
           recibido="hoy 21:47"
         />
       ) : pantallaActual === 'n2' ? (

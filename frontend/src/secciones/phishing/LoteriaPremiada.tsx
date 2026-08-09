@@ -73,8 +73,8 @@ const RECLAMO: ScreenView = {
   button: 'Pagar $85 y liberar mi premio',
   botonGoto: 'e_paga',
   botonLabel: 'Pagó los $85 para liberar el premio',
-  cerrarGoto: 'e_frena',
-  cerrarLabel: 'Cerró la página del reclamo sin pagar ni escribir nada',
+  cerrarGoto: 'n1',
+  cerrarLabel: 'Cerró la página del reclamo y volvió al correo',
 }
 
 /// El buscador: aquí es donde "comprobarlo por mi cuenta" deja de ser una
@@ -115,8 +115,8 @@ const BUSCADOR: ScreenView = {
   ],
   fields: [],
   button: '',
-  cerrarGoto: 'e_verifica',
-  cerrarLabel: 'Buscó la lotería por su cuenta y cerró la pestaña',
+  cerrarGoto: 'n1',
+  cerrarLabel: 'Buscó la lotería por su cuenta y volvió al correo',
 }
 
 const STORY: Story<ScreenNode> = {
@@ -130,20 +130,6 @@ const STORY: Story<ScreenNode> = {
     view: RECLAMO,
     verdict: 'Caíste en la estafa',
     outcome: `Pagaste los $85 y, de paso, entregaste tu cédula ${IDENTIDAD_FICTICIA.cedula} y tu cuenta ${CUENTA_FICTICIA}. El premio no llegó: llegó otro correo pidiendo un "seguro de transferencia" de $190. Así funciona — cada pago abre la puerta al siguiente, y quien ya pagó cuesta más que se detenga. Los datos, además, ya no se pueden recuperar.`,
-  },
-  e_frena: {
-    kind: 'good',
-    view: RECLAMO,
-    verdict: 'No caíste · viste el pago por adelantado',
-    outcome:
-      'Cerraste la página al notar que te pedían pagar para poder cobrar, y tus datos se quedaron donde estaban. Un premio real se descuenta del monto o se entrega ante notario; nunca se cobra por adelantado.',
-  },
-  e_verifica: {
-    kind: 'good',
-    view: BUSCADOR,
-    verdict: 'No caíste · lo comprobaste por tu cuenta',
-    outcome:
-      'Antes de tocar el enlace buscaste la lotería por tu lado, y no existía: ni ese sorteo ni ese premio. Comprobar por fuera del mensaje es lo que resuelve estos casos, porque un correo falso no puede desmentirse a sí mismo.',
   },
 }
 
@@ -166,8 +152,9 @@ const INSTRUCCION = (
       mantén el cursor encima para ver a dónde lleva.
     </p>
     <p className="text-base leading-relaxed text-body">
-      Lo primero que hagas cierra el escenario y te muestra en qué terminaba. Cambiar de pestaña no
-      decide nada.
+      El escenario termina cuando decidas qué hacer con el mensaje —o si caes en lo que pide.
+      Moverte por las pantallas no decide nada: puedes abrir una página, mirarla y cerrarla, y
+      seguirás donde estabas.
     </p>
   </>
 )

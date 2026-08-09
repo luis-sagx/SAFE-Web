@@ -51,8 +51,10 @@ const PAGINA: ScreenView = {
   button: 'Mantener contraseña',
   botonGoto: 'e_clave',
   botonLabel: 'Escribió su contraseña en la página del correo',
-  cerrarGoto: 'e_remitente',
-  cerrarLabel: 'Cerró la página sin escribir nada',
+  // Cerrarla devuelve al correo. Irse de una página que da mala espina no es
+  // todavía una decisión sobre el mensaje (issue #24).
+  cerrarGoto: 'n1',
+  cerrarLabel: 'Cerró la página falsa y volvió al correo',
 }
 
 const INTRANET: ScreenView = {
@@ -71,8 +73,8 @@ const INTRANET: ScreenView = {
   fields: [],
   button: '',
   footer: 'Soporte TI nunca solicita contraseñas por correo ni por teléfono.',
-  cerrarGoto: 'e_confirma',
-  cerrarLabel: 'Consultó el directorio interno y cerró la pestaña',
+  cerrarGoto: 'n1',
+  cerrarLabel: 'Consultó el directorio interno y volvió al correo',
 }
 
 const STORY: Story<ScreenNode> = {
@@ -87,20 +89,6 @@ const STORY: Story<ScreenNode> = {
     verdict: 'Caíste en la trampa',
     outcome:
       'La página era una copia alojada en andes-ec.net. Con tu contraseña entraron a tu buzón y desde ahí escribieron a contabilidad pidiendo una transferencia a tu nombre.',
-  },
-  e_remitente: {
-    kind: 'good',
-    view: PAGINA,
-    verdict: 'No caíste · comparaste el dominio',
-    outcome:
-      'El dominio de la empresa es andes.com.ec y el del correo y la página era andes-ec.net. Cerraste todo y avisaste a Sistemas: era una campaña dirigida a varias personas del área.',
-  },
-  e_confirma: {
-    kind: 'good',
-    view: CORREO,
-    verdict: 'No caíste · verificaste por el canal interno',
-    outcome:
-      'Soporte TI respondió que ellos no enviaron nada y que las contraseñas nunca se renuevan por enlace. Bloquearon el remitente para toda la empresa.',
   },
 }
 
@@ -160,8 +148,9 @@ const INSTRUCCION = (
       mantén el cursor encima para ver a dónde lleva.
     </p>
     <p className="text-base leading-relaxed text-body">
-      Lo primero que hagas cierra el escenario y te muestra en qué terminaba. Cambiar de pestaña no
-      decide nada.
+      El escenario termina cuando decidas qué hacer con el mensaje —o si caes en lo que pide.
+      Moverte por las pantallas no decide nada: puedes abrir una página, mirarla y cerrarla, y
+      seguirás donde estabas.
     </p>
   </>
 )

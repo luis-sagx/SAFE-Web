@@ -10,7 +10,11 @@ import {
 import styles from '../../components/ui/DeviceScreen.module.css'
 import Instrucciones from '../../components/ui/Instrucciones'
 import { BotonHotspot, manejarClicHotspot } from '../../components/ui/interactivo'
-import { Navegador, type MarcadorNavegador, type PestanaConfig } from '../../components/ui/Navegador'
+import {
+  Navegador,
+  type MarcadorNavegador,
+  type PestanaConfig,
+} from '../../components/ui/Navegador'
 import PanelVeredicto, { type Senal } from '../../components/ui/PanelVeredicto'
 import { formatoHora } from '../../hooks/useRelojDelSistema'
 import { useStoryEngine, type Story, type StoryNode } from '../../hooks/useStoryEngine'
@@ -48,12 +52,6 @@ const STORY: Story<StoryNode> = {
   // href, así que no existe una vista previa real — escanear ya abre la
   // página falsa, y lo que distingue el buen final es cerrarla sin enviar el
   // formulario (ver spec §4.1).
-  e_cierra: {
-    kind: 'good',
-    verdict: 'No caíste · cerraste sin completar nada',
-    outcome:
-      'Escaneaste el código y llegaste a litoral-actualiza.web.app, un sitio que no es del banco. El formulario pedía la clave de acceso —algo que una actualización de datos real nunca necesita— y cerraste la pestaña sin escribir nada. Un QR no se puede inspeccionar antes de escanearlo: la señal de alerta estaba en la página, no en el código.',
-  },
   e_app: {
     kind: 'good',
     verdict: 'No caíste · entraste por tu cuenta',
@@ -93,11 +91,41 @@ const STORY: Story<StoryNode> = {
 }
 
 const ACCIONES: AccionCorreo[] = [
-  { Icono: Reply, etiqueta: 'Responder', titulo: 'Responder', goto: 'e_responder', label: 'Respondió el correo' },
-  { Icono: Forward, etiqueta: 'Reenviar', titulo: 'Reenviar', goto: 'e_reenviar', label: 'Reenvió el correo a otra persona' },
-  { Icono: Archive, etiqueta: 'Archivar', titulo: 'Archivar', goto: 'e_archivar', label: 'Archivó el correo' },
-  { Icono: Trash2, etiqueta: 'Eliminar', titulo: 'Eliminar', goto: 'e_eliminar', label: 'Eliminó el correo' },
-  { Icono: ShieldAlert, etiqueta: 'Spam', titulo: 'Marcar como spam', goto: 'e_spam', label: 'Marcó el correo como spam' },
+  {
+    Icono: Reply,
+    etiqueta: 'Responder',
+    titulo: 'Responder',
+    goto: 'e_responder',
+    label: 'Respondió el correo',
+  },
+  {
+    Icono: Forward,
+    etiqueta: 'Reenviar',
+    titulo: 'Reenviar',
+    goto: 'e_reenviar',
+    label: 'Reenvió el correo a otra persona',
+  },
+  {
+    Icono: Archive,
+    etiqueta: 'Archivar',
+    titulo: 'Archivar',
+    goto: 'e_archivar',
+    label: 'Archivó el correo',
+  },
+  {
+    Icono: Trash2,
+    etiqueta: 'Eliminar',
+    titulo: 'Eliminar',
+    goto: 'e_eliminar',
+    label: 'Eliminó el correo',
+  },
+  {
+    Icono: ShieldAlert,
+    etiqueta: 'Spam',
+    titulo: 'Marcar como spam',
+    goto: 'e_spam',
+    label: 'Marcó el correo como spam',
+  },
 ]
 
 const ASUNTO = 'Actualice sus datos antes de que se limite su cuenta'
@@ -110,10 +138,32 @@ const DIRECCION = 'notificaciones@bancodellitoral.com'
 const MENSAJE = { nombre: REMITENTE_NOMBRE, direccion: DIRECCION, asunto: ASUNTO }
 
 const SENALES: Senal[] = [
-  { id: 's1', targetId: 'qr', pantalla: 'n1', texto: 'Un <b>QR es un enlace que no puedes leer antes de escanearlo</b>: no hay texto que inspeccionar antes de tocarlo.' },
-  { id: 's2', targetId: 'remitente', pantalla: 'n1', texto: 'El destino real es <b>litoral-actualiza.web.app</b>, sin el dominio del banco.' },
-  { id: 's3', targetId: 'campo-clave', pantalla: 'n2', texto: 'El formulario pide la <b>clave de acceso</b>, algo que una actualización de datos nunca necesita.' },
-  { id: 's4', targetId: 'plazo', pantalla: 'n1', texto: 'Mete <b>prisa</b> con un plazo de 72 horas.' },
+  {
+    id: 's1',
+    targetId: 'qr',
+    pantalla: 'n1',
+    texto:
+      'Un <b>QR es un enlace que no puedes leer antes de escanearlo</b>: no hay texto que inspeccionar antes de tocarlo.',
+  },
+  {
+    id: 's2',
+    targetId: 'remitente',
+    pantalla: 'n1',
+    texto: 'El destino real es <b>litoral-actualiza.web.app</b>, sin el dominio del banco.',
+  },
+  {
+    id: 's3',
+    targetId: 'campo-clave',
+    pantalla: 'n2',
+    texto:
+      'El formulario pide la <b>clave de acceso</b>, algo que una actualización de datos nunca necesita.',
+  },
+  {
+    id: 's4',
+    targetId: 'plazo',
+    pantalla: 'n1',
+    texto: 'Mete <b>prisa</b> con un plazo de 72 horas.',
+  },
 ]
 
 const RULE =
@@ -141,7 +191,8 @@ const NOTA = (
       de verdad.
     </p>
     <p className="mt-2">
-      Lo primero que hagas cierra el escenario y te muestra en qué habría terminado.
+      El escenario termina cuando decidas qué hacer con el mensaje —o si caes en lo que pide.
+      Moverte por las pantallas y cerrarlas no decide nada.
     </p>
   </>
 )
@@ -159,12 +210,17 @@ const PESTANAS: Record<string, PestanaConfig> = {
     titulo: 'Actualización de datos',
     url: 'http://litoral-actualiza.web.app/actualizar',
     segura: false,
-    cierra: 'e_cierra',
+    cierra: 'n1',
   },
 }
 
 const MARCADORES: MarcadorNavegador[] = [
-  { Icono: Landmark, texto: 'Banco del Litoral', goto: 'e_app', label: 'Entró directamente a la app del banco desde sus marcadores' },
+  {
+    Icono: Landmark,
+    texto: 'Banco del Litoral',
+    goto: 'e_app',
+    label: 'Entró directamente a la app del banco desde sus marcadores',
+  },
   { Icono: Newspaper, texto: 'El Comercio' },
 ]
 
@@ -212,7 +268,9 @@ function ContenidoPortalFalso() {
     <div className={styles.page}>
       <p className={styles.brand}>Banco del Litoral</p>
       <h2 className={styles.pageTitle}>Actualización de datos</h2>
-      <p className={styles.pageSub}>Confirme su información para evitar la limitación de su cuenta.</p>
+      <p className={styles.pageSub}>
+        Confirme su información para evitar la limitación de su cuenta.
+      </p>
 
       <div className={styles.form}>
         <label className={styles.field}>
@@ -229,7 +287,11 @@ function ContenidoPortalFalso() {
             ••••••••
           </span>
         </label>
-        <BotonHotspot goto="e_datos" label="Ingresó su cédula y su clave de acceso" className={styles.submit}>
+        <BotonHotspot
+          goto="e_datos"
+          label="Ingresó su cédula y su clave de acceso"
+          className={styles.submit}
+        >
           Confirmar datos
         </BotonHotspot>
       </div>
@@ -266,9 +328,9 @@ function DecisionEnCurso({ fallo, enPagina }: { fallo: boolean; enPagina: boolea
         )}
 
         <p className="text-base leading-relaxed text-body">
-          Lo primero que hagas cierra el escenario y te muestra en qué terminaba. No hay
-          confirmación, igual que en la vida real. Puedes volver atrás con la flecha del navegador
-          sin decidir nada.
+          El escenario termina cuando decidas qué hacer con el mensaje —o si caes en lo que pide. No
+          hay confirmación, igual que en la vida real. Moverte entre pantallas, volver atrás o
+          cerrar una pestaña no decide nada.
         </p>
       </Instrucciones>
     </div>
@@ -315,11 +377,20 @@ function QuishingActualice() {
   }
 
   const pantalla = (
-    <Navegador pestanas={PESTANAS} abiertas={pestanas} activa={pantallaActual} marcadores={MARCADORES} onHotspot={onHotspot}>
+    <Navegador
+      pestanas={PESTANAS}
+      abiertas={pestanas}
+      activa={pantallaActual}
+      marcadores={MARCADORES}
+      onHotspot={onHotspot}
+    >
       {pantallaActual === 'n1' ? (
         <ContenidoCorreo
           recibido={recibido}
-          carpetas={carpetasCorreo(MENSAJE, engine.isEnding && !repasando ? engine.current : undefined)}
+          carpetas={carpetasCorreo(
+            MENSAJE,
+            engine.isEnding && !repasando ? engine.current : undefined,
+          )}
         />
       ) : (
         <ContenidoPortalFalso />

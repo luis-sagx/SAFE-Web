@@ -60,8 +60,8 @@ const SITIO_OFICIAL: ScreenView = {
   button: 'Guardar contraseña',
   botonGoto: 'n3',
   botonLabel: 'Cambió su contraseña en el sitio real de TiendaExpress',
-  cerrarGoto: 'e_no_cambia',
-  cerrarLabel: 'Entró al sitio real pero cerró sin cambiar nada',
+  cerrarGoto: 'n1',
+  cerrarLabel: 'Entró al sitio real, no cambió nada y volvió al correo',
 }
 
 /// El segundo paso, que es donde este escenario se separa de "ya cambié la
@@ -78,6 +78,11 @@ const REPETIDA: ScreenView = {
   button: 'Cambiarla también en esos dos sitios',
   botonGoto: 'e_todos_lados',
   botonLabel: 'Cambió también la contraseña repetida en los otros sitios',
+  // La excepción a la regla del issue #24, y a propósito: aquí cerrar llega
+  // *después* de haber cambiado la contraseña, que sí fue una decisión y ya
+  // está tomada. Lo que se registra no es el cierre sino haberse quedado en
+  // un solo sitio, que es lo que la corrida tiene que poder distinguir de
+  // haberla cambiado en todos.
   cerrarGoto: 'e_una_tienda',
   cerrarLabel: 'Dejó la misma contraseña en los otros sitios',
 }
@@ -89,13 +94,6 @@ const STORY: Story<ScreenNode> = {
   n1: { kind: 'scene', view: CORREO },
   n2: { kind: 'scene', view: SITIO_OFICIAL },
   n3: { kind: 'scene', view: REPETIDA },
-  e_no_cambia: {
-    kind: 'partial',
-    view: SITIO_OFICIAL,
-    verdict: 'Entraste bien, pero te quedaste a medias',
-    outcome:
-      'Hiciste lo más difícil: entrar tú mismo al sitio en vez de seguir un enlace. Pero saliste sin cambiar nada, y la contraseña que estaba en juego sigue siendo la misma.',
-  },
   e_una_tienda: {
     kind: 'partial',
     view: REPETIDA,
