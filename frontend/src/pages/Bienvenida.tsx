@@ -2,40 +2,70 @@ import { useState, type FormEvent } from "react";
 import { useLocation, useNavigate } from "react-router";
 import { useAuth } from "../context/AuthContext";
 
-/** Las seis amenazas del estudio con su finalidad, en una frase cada una: qué
- *  busca quien la usa, no el canal por el que llega (eso ya lo dice el
- *  título). Texto corrido, no tarjetas: es un aviso que se lee una vez, no
- *  un catálogo. */
+/** Las seis amenazas del estudio, una por paso.
+ *
+ *  `finalidad` dice qué busca quien la usa —no el canal, que ya lo dice el
+ *  título— y `prevencion` dice qué hacer. Lo segundo faltaba: el aviso
+ *  enumeraba seis peligros y no daba ni una defensa, que es justo lo que el
+ *  participante necesita antes de empezar.
+ *
+ *  `ejemplo` es la frase que suena de verdad en cada ataque. Se reconoce antes
+ *  un ejemplo concreto que una definición, y este público reconoce estas
+ *  frases porque ya las ha recibido. */
 const AMENAZAS = [
   {
     titulo: "Phishing",
     finalidad:
       "un correo o una página falsa que buscan robarte la clave o instalar algo dañino.",
+    ejemplo:
+      "\u201cTiene una factura pendiente. Valide sus datos en las próximas 24 horas.\u201d",
+    prevencion:
+      "No entres por el enlace del correo. Escribe tú la dirección del sitio, o entra por donde ya sabes entrar.",
   },
   {
     titulo: "Smishing",
     finalidad:
       "lo mismo, pero por SMS o WhatsApp: un mensaje que imita a tu banco o una entidad real.",
+    ejemplo:
+      "\u201cSu cuenta será bloqueada hoy. Confirme su información aquí: bit.ly/…\u201d",
+    prevencion:
+      "Tu banco no te pide datos por mensaje. Llama al número que está en tu tarjeta, nunca al que trae el mensaje.",
   },
   {
     titulo: "Vishing",
     finalidad:
       "una llamada de alguien que se hace pasar por soporte o tu banco para sacarte un código.",
+    ejemplo:
+      "\u201cLe llamo de seguridad del banco. Para cancelar un cargo, dígame el código que le acaba de llegar.\u201d",
+    prevencion:
+      "Un código que llega a tu teléfono no se le dicta a nadie, llame quien llame. Cuelga y llama tú al banco.",
   },
   {
     titulo: "Suplantación de identidad",
     finalidad:
       "un contacto o perfil clonado que usa tu confianza en él para pedirte dinero o datos.",
+    ejemplo:
+      "\u201cHola, cambié de número. Estoy en un apuro, ¿me puedes hacer una transferencia?\u201d",
+    prevencion:
+      "Llama a esa persona al número que ya tenías guardado. Si de verdad es ella, contesta.",
   },
   {
     titulo: "Estafa electrónica",
     finalidad:
       "una compra, venta o inversión falsa donde el dinero nunca llega o se pide antes de tiempo.",
+    ejemplo:
+      "\u201cLe quedan pocas horas para asegurar su cupo. Transfiera el 50 % y le reservamos el producto.\u201d",
+    prevencion:
+      "Desconfía de la prisa y del pago por adelantado. Paga al recibir, y por medios que dejen constancia.",
   },
   {
     titulo: "Riesgo físico",
     finalidad:
       "información sensible expuesta en tu entorno (una clave anotada, una memoria USB), sin que nadie toque una pantalla.",
+    ejemplo:
+      "La clave del wifi en un papel pegado al monitor, o una memoria USB que apareció en el parqueadero.",
+    prevencion:
+      "Las claves no se anotan a la vista, y una memoria que no es tuya no se conecta a tu computador.",
   },
 ];
 
@@ -70,6 +100,13 @@ function Bienvenida() {
   const location = useLocation();
   const destino = destinoDe((location.state as { from?: unknown } | null)?.from);
 
+  // 0 es la portada; 1..6, una amenaza cada uno. De una en una y no las seis
+  // juntas porque seis párrafos en una pantalla se saltan enteros: quien
+  // quería empezar pulsaba "Continuar" sin haber leído ninguno.
+  const [paso, setPaso] = useState(0);
+  const amenaza = paso > 0 ? AMENAZAS[paso - 1] : undefined;
+  const ultimo = paso === AMENAZAS.length;
+
   // Refleja el estado actual al entrar por el ícono ⓘ: si ya lo había
   // marcado, sigue marcado, y desmarcarlo es lo que reactiva el aviso.
   const [noVolverAMostrar, setNoVolverAMostrar] = useState(
@@ -79,6 +116,13 @@ function Bienvenida() {
 
   async function handleContinuar(event: FormEvent) {
     event.preventDefault();
+
+    // Mientras queden amenazas, el botón avanza en vez de cerrar.
+    if (!ultimo) {
+      setPaso((actual) => actual + 1);
+      return;
+    }
+
     setEnviando(true);
 
     try {
@@ -99,51 +143,106 @@ function Bienvenida() {
         <p className="text-[11px] font-semibold uppercase tracking-[0.88px] text-muted">
           SAFE Web
         </p>
-        <h1 className="mt-1.5 text-2xl font-semibold tracking-tight text-ink">
-          Hola, {displayName}
-        </h1>
 
-        <p className="mt-3 text-base leading-relaxed text-body">
-          Vas a practicar a reconocer seis formas de fraude, una situación
-          simulada a la vez. Al final de cada una te mostramos qué señales
-          había, las hayas visto o no: la idea es que entrenes el criterio, no
-          que memorices una lista.
-        </p>
+        {/* Alto reservado para el paso más largo. Sin él, la fila de botones
+            sube y baja entre una amenaza y otra, y hay que volver a buscar el
+            botón en cada paso. */}
+        <div className="mt-1.5 min-h-[19rem]">
+          {amenaza ? (
+            <>
+              <p className="text-sm font-medium text-muted">
+                {paso} de {AMENAZAS.length}
+              </p>
+              <h1 className="mt-1 text-2xl font-semibold tracking-tight text-ink">
+                {amenaza.titulo}
+              </h1>
 
-        <div className="mt-6 grid gap-x-8 gap-y-4 sm:grid-cols-2">
-          {AMENAZAS.map((amenaza) => (
-            <p
-              key={amenaza.titulo}
-              className="text-sm leading-relaxed text-body"
-            >
-              <span className="font-semibold text-ink">{amenaza.titulo}: </span>
-              {amenaza.finalidad}
-            </p>
+              <p className="mt-4 text-lg leading-relaxed text-body">
+                <span className="font-semibold text-ink">Qué es: </span>
+                {amenaza.finalidad}
+              </p>
+
+              <p className="mt-4 rounded-md border-l-[3px] border-hairline-strong bg-canvas-soft px-4 py-3 text-lg italic leading-relaxed text-body">
+                {amenaza.ejemplo}
+              </p>
+
+              <p className="mt-4 text-lg leading-relaxed text-body">
+                <span className="font-semibold text-ink">Cómo evitarlo: </span>
+                {amenaza.prevencion}
+              </p>
+            </>
+          ) : (
+            <>
+              <h1 className="text-2xl font-semibold tracking-tight text-ink">
+                Hola, {displayName}
+              </h1>
+
+              <p className="mt-3 text-lg leading-relaxed text-body">
+                Vas a practicar a reconocer seis formas de fraude, una situación
+                simulada a la vez. Al final de cada una te mostramos qué señales
+                había, las hayas visto o no: la idea es que entrenes el
+                criterio, no que memorices una lista.
+              </p>
+
+              <p className="mt-4 text-lg leading-relaxed text-body">
+                Antes de empezar, te las presentamos una por una, con un ejemplo
+                de cómo suena cada una y qué hacer cuando te llegue.
+              </p>
+            </>
+          )}
+        </div>
+
+        {/* Los puntos dicen cuánto queda sin obligar a contar. No son
+            botones: saltar al paso cinco no tiene sentido cuando el recorrido
+            dura seis pantallas cortas. */}
+        <div className="mt-6 flex items-center gap-1.5" aria-hidden>
+          {AMENAZAS.map((otra, indice) => (
+            <span
+              key={otra.titulo}
+              className={`h-1.5 flex-1 rounded-full ${
+                indice < paso ? "bg-primary" : "bg-hairline-strong"
+              }`}
+            />
           ))}
         </div>
 
         <form onSubmit={handleContinuar} className="mt-6">
-          <label className="flex items-start gap-2.5 text-sm text-body">
-            <input
-              type="checkbox"
-              checked={noVolverAMostrar}
-              onChange={(event) => setNoVolverAMostrar(event.target.checked)}
-              className="mt-0.5 size-4 shrink-0"
-            />
-            No volver a mostrar esto al entrar (se reabre desde el ícono ⓘ).
-          </label>
+          {ultimo && (
+            <label className="flex items-start gap-2.5 text-base text-body">
+              <input
+                type="checkbox"
+                checked={noVolverAMostrar}
+                onChange={(event) => setNoVolverAMostrar(event.target.checked)}
+                className="mt-0.5 size-4 shrink-0"
+              />
+              No volver a mostrar esto al entrar (se reabre desde el ícono ⓘ).
+            </label>
+          )}
 
-          <button
-            type="submit"
-            disabled={enviando}
-            className="mt-5 h-11 w-full rounded-md bg-primary text-sm font-medium text-on-primary transition hover:bg-primary-active disabled:opacity-60"
-          >
-            {enviando ? "Un momento…" : "Continuar"}
-          </button>
+          <div className={`flex gap-3 ${ultimo ? "mt-5" : ""}`}>
+            {/* Se dibuja siempre, apagado en la portada: un botón que aparece
+                a mitad del recorrido mueve al otro de sitio justo cuando la
+                persona va a volver a pulsarlo. */}
+            <button
+              type="button"
+              disabled={paso === 0}
+              onClick={() => setPaso((actual) => actual - 1)}
+              className="h-12 rounded-md border border-hairline-strong bg-surface px-5 text-base font-medium text-ink transition hover:bg-canvas-soft disabled:cursor-default disabled:border-hairline disabled:text-muted-soft disabled:hover:bg-surface"
+            >
+              ← Anterior
+            </button>
+
+            <button
+              type="submit"
+              disabled={enviando}
+              className="h-12 flex-1 rounded-md bg-primary text-base font-medium text-on-primary transition hover:bg-primary-active disabled:opacity-60"
+            >
+              {enviando ? "Un momento…" : ultimo ? "Continuar" : "Siguiente →"}
+            </button>
+          </div>
         </form>
       </div>
     </div>
   );
 }
-
 export default Bienvenida;
