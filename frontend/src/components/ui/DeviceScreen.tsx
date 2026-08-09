@@ -1,6 +1,7 @@
 import { Paperclip, Search } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { CUENTA_FICTICIA, IDENTIDAD_FICTICIA } from '../../lib/identidadFicticia'
+import { AvisoSitio, CabeceraSitio, PieSitio } from './armazonSitio'
 import { CuerpoCorreo, type AccionCorreo, type CarpetaCorreo } from './DesktopChrome'
 import styles from './DeviceScreen.module.css'
 
@@ -200,14 +201,7 @@ function DeviceScreen({
     return (
       <div className={styles.page}>
         {view.menu ? (
-          <div className={styles.sitioCabecera}>
-            <p className={styles.brand}>{view.brand}</p>
-            <nav className={styles.sitioMenu} aria-hidden>
-              {view.menu.map((entrada) => (
-                <span key={entrada}>{entrada}</span>
-              ))}
-            </nav>
-          </div>
+          <CabeceraSitio marca={view.brand} menu={view.menu} />
         ) : (
           <p className={styles.brand}>{view.brand}</p>
         )}
@@ -262,20 +256,9 @@ function DeviceScreen({
           </div>
         )}
 
-        {view.aviso && <p className={styles.pageAviso}>{view.aviso}</p>}
+        {view.aviso && <AvisoSitio>{view.aviso}</AvisoSitio>}
 
-        {(view.footer || view.pie) && (
-          <div className={styles.sitioPie}>
-            {view.footer && <p className={styles.pageFooter}>{view.footer}</p>}
-            {view.pie && (
-              <p className={styles.sitioPieEnlaces} aria-hidden>
-                {view.pie.map((entrada) => (
-                  <span key={entrada}>{entrada}</span>
-                ))}
-              </p>
-            )}
-          </div>
-        )}
+        <PieSitio texto={view.footer} enlaces={view.pie} />
       </div>
     )
   }

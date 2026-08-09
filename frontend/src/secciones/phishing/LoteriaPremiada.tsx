@@ -6,6 +6,7 @@ import { ACCIONES_BARRA, finalesDeBarra } from './barraDeCorreo'
 import type { Story } from '../../hooks/useStoryEngine'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
 import type { Senal } from '../../components/ui/PanelVeredicto'
+import { ENLACES_PIE } from '../../components/ui/armazonSitio'
 import { CUENTA_FICTICIA, IDENTIDAD_FICTICIA } from '../../lib/identidadFicticia'
 
 /**
@@ -61,6 +62,7 @@ const RECLAMO: ScreenView = {
   secure: false,
   senalUrl: 'url-insegura',
   brand: 'Lotería del Pacífico',
+  menu: ['Sorteos', 'Resultados', 'Ganadores', 'Ayuda'],
   title: 'Liberación de premio',
   subtitle: 'Complete sus datos para recibir la transferencia de USD 48.500,00.',
   // Los campos vienen ya rellenos con los datos que el participante vio en el
@@ -71,6 +73,10 @@ const RECLAMO: ScreenView = {
     { label: 'Cédula', placeholder: '', valor: 'cedula' },
     { label: 'Banco y número de cuenta', placeholder: '', valor: 'cuenta', senal: 'campo-cuenta' },
   ],
+  aviso:
+    'El pago del impuesto es un requisito de ley y no puede descontarse del monto premiado. Los datos que registre se usan únicamente para acreditar la transferencia.',
+  footer: 'Lotería del Pacífico · Departamento de Premios y Reclamos',
+  pie: ENLACES_PIE,
   button: 'Pagar $85 y liberar mi premio',
   botonGoto: 'e_paga',
   botonLabel: 'Pagó los $85 para liberar el premio',

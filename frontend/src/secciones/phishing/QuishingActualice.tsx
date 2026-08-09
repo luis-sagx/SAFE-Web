@@ -8,6 +8,7 @@ import {
   type AccionCorreo,
   type CarpetaCorreo,
 } from '../../components/ui/DesktopChrome'
+import { AvisoSitio, CabeceraSitio, ENLACES_PIE, PieSitio } from '../../components/ui/armazonSitio'
 import styles from '../../components/ui/DeviceScreen.module.css'
 import Instrucciones from '../../components/ui/Instrucciones'
 import { BotonHotspot, manejarClicHotspot } from '../../components/ui/interactivo'
@@ -257,7 +258,10 @@ function ContenidoCorreo({ recibido, carpetas }: { recibido: string; carpetas: C
 function ContenidoPortalFalso() {
   return (
     <div className={styles.page}>
-      <p className={styles.brand}>Banco del Litoral</p>
+      <CabeceraSitio
+        marca="Banco del Litoral"
+        menu={['Cuentas', 'Transferencias', 'Pagos', 'Ayuda']}
+      />
       <h2 className={styles.pageTitle}>Actualización de datos</h2>
       <p className={styles.pageSub}>
         Confirme su información para evitar la limitación de su cuenta.
@@ -286,6 +290,13 @@ function ContenidoPortalFalso() {
           Confirmar datos
         </BotonHotspot>
       </div>
+
+      <AvisoSitio>
+        La actualización es obligatoria para mantener activa su cuenta. Sus datos viajan cifrados y
+        no se comparten con terceros.
+      </AvisoSitio>
+
+      <PieSitio texto="Banco del Litoral · Entidad supervisada" enlaces={ENLACES_PIE} />
     </div>
   )
 }

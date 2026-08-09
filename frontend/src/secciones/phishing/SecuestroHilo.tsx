@@ -1,6 +1,7 @@
 import { Landmark, School } from 'lucide-react'
 import StoryEscenario, { type ScreenNode } from '../../components/StoryEscenario'
 import type { Contexto } from '../../components/ui/ContextoEscenario'
+import { ENLACES_PIE } from '../../components/ui/armazonSitio'
 import type { MarcadorNavegador } from '../../components/ui/Navegador'
 import { ACCIONES_BARRA, finalesDeBarra } from './barraDeCorreo'
 import type { Story } from '../../hooks/useStoryEngine'
@@ -60,6 +61,7 @@ const BANCA: ScreenView = {
   url: 'https://banca.bancodellitoral.ec/transferencias',
   secure: true,
   brand: 'Banco del Litoral · Banca en línea',
+  menu: ['Cuentas', 'Transferencias', 'Pagos', 'Ayuda'],
   title: 'Transferencia a terceros',
   subtitle: 'Revise los datos antes de confirmar la transferencia.',
   fields: [
@@ -75,6 +77,10 @@ const BANCA: ScreenView = {
     },
     { label: 'Monto', placeholder: '$145,00' },
   ],
+  aviso:
+    'Verifique el número de cuenta antes de confirmar. Las transferencias a terceros no pueden revertirse una vez procesadas.',
+  footer: 'Banco del Litoral · Entidad supervisada',
+  pie: ENLACES_PIE,
   button: 'Transferir $145',
   botonGoto: 'e_transfiere',
   botonLabel: 'Transfirió los $145 a la cuenta nueva',
@@ -89,6 +95,7 @@ const COLEGIO: ScreenView = {
   url: 'https://www.unidadsanrafael.edu.ec/contacto',
   secure: true,
   brand: 'Unidad Educativa San Rafael',
+  menu: ['Inicio', 'Admisiones', 'Pensiones', 'Contacto'],
   title: 'Contacto',
   subtitle: 'Secretaría · atención de 07:30 a 15:00',
   datos: [
@@ -97,6 +104,10 @@ const COLEGIO: ScreenView = {
     { etiqueta: 'Correo', valor: 'secretaria@unidadsanrafael.edu.ec' },
   ],
   fields: [],
+  aviso:
+    'Cualquier cambio en las cuentas de pago se comunica por la agenda escolar y se confirma en secretaría. Ante la duda, llámenos antes de transferir.',
+  footer: 'Unidad Educativa San Rafael · Quito',
+  pie: ENLACES_PIE,
   button: '📞 Llamar al (02) 244 1180',
   botonGoto: 'e_llama',
   botonLabel: 'Llamó al colegio al número de su sitio oficial',

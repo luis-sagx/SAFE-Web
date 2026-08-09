@@ -1,6 +1,7 @@
 import { Newspaper, ShoppingBag, Store } from 'lucide-react'
 import StoryEscenario, { type ScreenNode } from '../../components/StoryEscenario'
 import type { Contexto } from '../../components/ui/ContextoEscenario'
+import { ENLACES_PIE } from '../../components/ui/armazonSitio'
 import type { MarcadorNavegador } from '../../components/ui/Navegador'
 import { ACCIONES_BARRA, finalesDeBarra } from './barraDeCorreo'
 import type { Story } from '../../hooks/useStoryEngine'
@@ -52,12 +53,17 @@ const SITIO_OFICIAL: ScreenView = {
   secure: true,
   senalUrl: 'dominio-real',
   brand: 'TiendaExpress',
+  menu: ['Inicio', 'Mis pedidos', 'Mi cuenta', 'Ayuda'],
   title: 'Cambiar contraseña',
   subtitle: 'Elige una contraseña nueva para tu cuenta.',
   fields: [
     { label: 'Contraseña actual', placeholder: '••••••••' },
     { label: 'Contraseña nueva', placeholder: '••••••••' },
   ],
+  aviso:
+    'Usa una contraseña que no tengas en ningún otro sitio. Nunca te pediremos la contraseña por correo ni por teléfono.',
+  footer: 'TiendaExpress · Seguridad de la información',
+  pie: ENLACES_PIE,
   button: 'Guardar contraseña',
   botonGoto: 'n3',
   botonLabel: 'Cambió su contraseña en el sitio real de TiendaExpress',
@@ -72,10 +78,15 @@ const REPETIDA: ScreenView = {
   url: 'https://www.tiendaexpress.com.ec/mi-cuenta/seguridad',
   secure: true,
   brand: 'TiendaExpress',
+  menu: ['Inicio', 'Mis pedidos', 'Mi cuenta', 'Ayuda'],
   title: 'Contraseña actualizada',
   subtitle:
     'Tu navegador tiene guardada esa misma contraseña en otros dos sitios: tu correo personal y tu red social.',
   fields: [],
+  aviso:
+    'Reutilizar la misma contraseña es lo que convierte la filtración de una tienda en un problema en todas tus cuentas.',
+  footer: 'TiendaExpress · Seguridad de la información',
+  pie: ENLACES_PIE,
   button: 'Cambiarla también en esos dos sitios',
   botonGoto: 'e_todos_lados',
   botonLabel: 'Cambió también la contraseña repetida en los otros sitios',
@@ -182,8 +193,7 @@ const RESUMEN = 'TiendaExpress avisa que un incidente de seguridad expuso tus da
 const CONTEXTO: Contexto = {
   antes: (
     <>
-      Compras seguido en <strong>TiendaExpress</strong> y tienes cuenta con ellos desde hace
-      tiempo.
+      Compras seguido en <strong>TiendaExpress</strong> y tienes cuenta con ellos desde hace tiempo.
     </>
   ),
   ahora: (
