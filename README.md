@@ -7,7 +7,7 @@ Software, Departamento de Ciencias de la Computación.
 El participante se registra con su nombre, apellido, correo y cédula —esta
 última nunca se almacena, solo su huella, y solo sirve para que nadie se
 registre dos veces—, juega escenarios simulados de fraude que registran cada
-decisión, y el investigador exporta esos resultados —identificados solo por un
+decisión, y el supervisor exporta esos resultados —identificados solo por un
 seudónimo— para compararlos con un pre-test y un post-test aplicados aparte.
 
 ## Estructura

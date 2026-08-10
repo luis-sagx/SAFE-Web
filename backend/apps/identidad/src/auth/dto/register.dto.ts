@@ -37,5 +37,5 @@ export class RegisterDto {
   // Sin `cohort`: el registro es abierto y no pide grupo de muestra.
   // `whitelist`/`forbidNonWhitelisted` rechazan el campo si alguien lo manda,
   // así que un participante no puede auto-asignarse una cohorte. Si el estudio
-  // llega a agruparlos, lo fija el investigador aparte, no el registro público.
+  // llega a agruparlos, lo fija el supervisor aparte, no el registro público.
 }

@@ -1,16 +1,8 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Header,
-  Param,
-  Post,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
 import {
   CurrentParticipant,
   JwtAuthGuard,
-  ResearcherGuard,
+  SupervisorGuard,
   type JwtPayload,
 } from '@comun';
 import { CreateRunDto } from './dto/create-run.dto';
@@ -44,11 +36,12 @@ export class RunsController {
     return this.runs.progreso(participant.sub, modulo);
   }
 
-  @UseGuards(ResearcherGuard)
-  @Get('export.csv')
-  @Header('Content-Type', 'text/csv; charset=utf-8')
-  @Header('Content-Disposition', 'attachment; filename="corridas.csv"')
-  exportCsv() {
-    return this.runs.exportCsv();
+  /// Resultados del estudio para el supervisor: se ven dentro de la app, no se
+  /// descargan. Solo sale el seudónimo (P001), nunca un dato personal — este
+  /// servicio no tiene la tabla de participantes ni permiso para alcanzarla.
+  @UseGuards(SupervisorGuard)
+  @Get('resultados')
+  resultados() {
+    return this.runs.resultados();
   }
 }

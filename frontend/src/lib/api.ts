@@ -14,7 +14,7 @@ export interface Participant {
   nombre: string | null
   apellido: string | null
   email: string | null
-  role: 'PARTICIPANT' | 'RESEARCHER'
+  role: 'PARTICIPANT' | 'SUPERVISOR'
   cohort: string | null
   /** Si ya vio la pantalla de bienvenida y no pidió que volviera a aparecer. */
   onboardingVisto: boolean
@@ -176,4 +176,57 @@ export function fetchMyRuns(): Promise<RunSummary[]> {
 /** 404 si `modulo` no tiene gating configurado en el backend. */
 export function fetchProgreso(modulo: string): Promise<Progreso> {
   return request<Progreso>(`/runs/progreso/${modulo}`)
+}
+
+// --- Supervisión (solo rol SUPERVISOR) ---
+
+export interface AdminParticipante {
+  id: string
+  nombre: string | null
+  apellido: string | null
+  email: string | null
+  activo: boolean
+  createdAt: string
+}
+
+/** Una corrida del estudio, seudonimizada. Sin ningún dato personal. */
+export interface ResultadoCorrida {
+  seudonimo: string
+  cohort: string | null
+  scenarioId: string
+  version: number
+  outcome: RunOutcome
+  score: number
+  endingId: string
+  durationMs: number
+  startedAt: string
+  finishedAt: string
+}
+
+export function fetchParticipantes(): Promise<AdminParticipante[]> {
+  return request<AdminParticipante[]>('/admin/participantes')
+}
+
+export function cambiarEstadoParticipante(
+  id: string,
+  activo: boolean,
+): Promise<AdminParticipante> {
+  return request<AdminParticipante>(`/admin/participantes/${id}/estado`, {
+    method: 'PATCH',
+    body: { activo },
+  })
+}
+
+export function restablecerPasswordParticipante(id: string): Promise<{ password: string }> {
+  return request<{ password: string }>(`/admin/participantes/${id}/restablecer-password`, {
+    method: 'POST',
+  })
+}
+
+export function eliminarParticipante(id: string): Promise<null> {
+  return request<null>(`/admin/participantes/${id}`, { method: 'DELETE' })
+}
+
+export function fetchResultados(): Promise<ResultadoCorrida[]> {
+  return request<ResultadoCorrida[]>('/runs/resultados')
 }

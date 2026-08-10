@@ -23,7 +23,10 @@ datasource db {
 
 enum Role {
   PARTICIPANT
-  RESEARCHER
+  // Gestiona cuentas y ve los resultados seudonimizados dentro de la app. No
+  // se llama ADMIN/ADMINISTRATOR a propósito: es el nombre que un atacante
+  // busca primero.
+  SUPERVISOR
 }
 
 model Participant {
@@ -68,6 +71,11 @@ model Participant {
   /// Marca de cuándo se borraron los datos personales. Deja constancia de que
   /// la anonimización se aplicó, sin guardar qué se borró.
   anonymizedAt DateTime?
+
+  /// Cuenta desactivada por un supervisor. Null = activa. Una cuenta desactivada
+  /// no puede iniciar sesión; un token ya emitido caduca por su cuenta (JWT
+  /// corto), no se revoca al instante entre servicios.
+  disabledAt DateTime?
 
   createdAt DateTime @default(now())
 }

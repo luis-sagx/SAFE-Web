@@ -167,7 +167,7 @@ describe('Autenticación (e2e)', () => {
     it('rechaza campos que no están en el DTO', async () => {
       await server()
         .post('/api/auth/register')
-        .send({ ...registro('escalada'), role: 'RESEARCHER' })
+        .send({ ...registro('escalada'), role: 'SUPERVISOR' })
         .expect(400);
     });
   });
@@ -307,7 +307,7 @@ describe('Autenticación (e2e)', () => {
       ['un campo que no es onboardingVisto', { nombre: 'Otro Nombre' }],
       [
         'un campo de más junto al válido',
-        { onboardingVisto: true, role: 'RESEARCHER' },
+        { onboardingVisto: true, role: 'SUPERVISOR' },
       ],
       ['un valor que no es booleano', { onboardingVisto: 'si' }],
       ['el cuerpo vacío', {}],

@@ -1,6 +1,7 @@
 /**
- * Crea la cuenta de investigador, la única que puede exportar resultados.
- * Los participantes se registran solos desde la plataforma.
+ * Crea la cuenta de supervisor: la única que gestiona participantes y ve los
+ * resultados del estudio dentro de la app. Los participantes se registran solos
+ * desde la plataforma.
  *
  *   pnpm seed -- --email tu.correo@espe.edu.ec
  */
@@ -36,7 +37,7 @@ function makePassword(): string {
 }
 
 async function main() {
-  const email = arg('email', 'investigador@espe.edu.ec').toLowerCase();
+  const email = arg('email', 'supervisor@espe.edu.ec').toLowerCase();
   const reset = process.argv.includes('--reset');
 
   const existente = await prisma.participant.findUnique({ where: { email } });
@@ -44,7 +45,7 @@ async function main() {
   // Solo se imprime una contraseña que quedó guardada de verdad.
   if (existente && !reset) {
     console.log(`
-La cuenta de investigador ${email} ya existe; su contraseña no se tocó.
+La cuenta de supervisor ${email} ya existe; su contraseña no se tocó.
 Para generar una nueva:  pnpm seed -- --email ${email} --reset
 `);
     return;
@@ -59,22 +60,23 @@ Para generar una nueva:  pnpm seed -- --email ${email} --reset
     await prisma.participant.create({
       data: {
         email,
-        nombre: 'Investigador',
+        nombre: 'Supervisor',
         apellido: 'del estudio',
-        // Sin cédula: no es participante, solo exporta resultados.
+        // Sin cédula: no es participante, gestiona el estudio.
         passwordHash,
-        role: 'RESEARCHER',
+        role: 'SUPERVISOR',
       },
     });
   }
 
   console.log(`
-=== Cuenta de investigador (guardar fuera del repositorio) ===
+=== Cuenta de supervisor (guardar fuera del repositorio) ===
 
   Correo:     ${email}
   Contraseña: ${password}
 
-Con ella se descarga la exportación en /api/runs/export.csv
+Con ella se gestionan las cuentas de participante y se ven los resultados del
+estudio (seudonimizados) dentro de la app.
 `);
 }
 

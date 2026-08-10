@@ -15,6 +15,8 @@ interface AuthValue {
   participant: Participant | null
   loading: boolean
   isAuthenticated: boolean
+  /** El supervisor gestiona cuentas y ve resultados; no hace escenarios. */
+  isSupervisor: boolean
   login: (email: string, password: string) => Promise<Participant>
   register: (credentials: Credentials) => Promise<Participant>
   logout: () => void
@@ -59,8 +61,8 @@ function normalizar(texto: string | null | undefined): string {
 }
 
 /// nombreapellido@safeweb.com, con la primera palabra de cada uno. Si la cuenta
-/// no tiene nombre —la del investigador, o una ya anonimizada— cae a
-/// "participante", para que la dirección nunca quede vacía ni a medias.
+/// no tiene nombre —una ya anonimizada— cae a "participante", para que la
+/// dirección nunca quede vacía ni a medias.
 function usuarioSimuladoDe(participant: Participant | null): string {
   const nombre = normalizar(participant?.nombre?.trim().split(/\s+/)[0])
   const apellido = normalizar(participant?.apellido?.trim().split(/\s+/)[0])
@@ -68,9 +70,9 @@ function usuarioSimuladoDe(participant: Participant | null): string {
   return `${nombre}${apellido}` || 'participante'
 }
 
-/// Inicial del nombre + inicial del apellido. Si falta el apellido —la cuenta
-/// de investigador, o una ya anonimizada— cae a las dos primeras palabras del
-/// nombre, que es lo que hacía antes de que el apellido existiera.
+/// Inicial del nombre + inicial del apellido. Si falta el apellido —una cuenta
+/// ya anonimizada— cae a las dos primeras palabras del nombre, que es lo que
+/// hacía antes de que el apellido existiera.
 function initialsOf(participant: Participant | null): string {
   const nombre = participant?.nombre?.trim().split(/\s+/) ?? []
   const apellido = participant?.apellido?.trim().split(/\s+/) ?? []
@@ -154,6 +156,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       participant,
       loading,
       isAuthenticated: Boolean(participant),
+      isSupervisor: participant?.role === 'SUPERVISOR',
       login,
       register,
       logout,

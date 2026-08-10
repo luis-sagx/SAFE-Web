@@ -2,7 +2,9 @@ import { Suspense } from 'react'
 import { Navigate, Route, Routes } from 'react-router'
 import RequireEscenarioDisponible from './components/RequireEscenarioDisponible'
 import RequireAuth from './components/RequireAuth'
+import RequireSupervisor from './components/RequireSupervisor'
 import { ESCENARIOS } from './data/catalogo'
+import Admin from './pages/Admin'
 import Bienvenida from './pages/Bienvenida'
 import Dashboard from './pages/Dashboard'
 import Login from './pages/Login'
@@ -15,6 +17,10 @@ function App() {
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/registro" element={<Registro />} />
+
+        <Route element={<RequireSupervisor />}>
+          <Route path="/admin" element={<Admin />} />
+        </Route>
 
         <Route element={<RequireAuth />}>
           <Route path="/bienvenida" element={<Bienvenida />} />
