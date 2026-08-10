@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { KeyRound, Loader2, Trash2 } from "lucide-react";
+import { KeyRound, Loader2, Trash2, UserCheck, UserX } from "lucide-react";
 import AppHeader from "../components/AppHeader";
 import { useAuth } from "../context/AuthContext";
 import {
@@ -215,8 +215,13 @@ function Participantes() {
                         type="button"
                         disabled={ocupado === p.id}
                         onClick={() => alternarEstado(p)}
-                        className="h-8 rounded-md border border-hairline-strong bg-surface px-2.5 text-xs font-medium text-ink transition hover:bg-surface-strong disabled:opacity-50"
+                        className="inline-flex h-8 items-center gap-1 rounded-md border border-hairline-strong bg-surface px-2.5 text-xs font-medium text-ink transition hover:bg-surface-strong disabled:opacity-50"
                       >
+                        {p.activo ? (
+                          <UserX aria-hidden className="size-3.5" strokeWidth={1.75} />
+                        ) : (
+                          <UserCheck aria-hidden className="size-3.5" strokeWidth={1.75} />
+                        )}
                         {p.activo ? "Desactivar" : "Activar"}
                       </button>
                       <button
