@@ -425,7 +425,7 @@ function RolDePagos() {
       contexto={CONTEXTO}
       nota={NOTA}
       pantalla={pantalla}
-      identidad={['clave']}
+      identidad={['usuario', 'clave']}
       decision={decision}
       resultado={engine.resultado}
       onEmpezar={engine.restart}

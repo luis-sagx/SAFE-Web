@@ -1,10 +1,10 @@
-import { CreditCard, FileText, IdCard, KeyRound, Mail } from 'lucide-react'
+import { AtSign, CreditCard, FileText, IdCard, KeyRound, Mail } from 'lucide-react'
 import { CUENTA_FICTICIA, IDENTIDAD_FICTICIA } from '../../lib/identidadFicticia'
 
 /** Qué datos prestados necesita ver el participante antes de entrar. El correo
  *  va siempre; los demás solo donde el escenario los pide, porque una cuenta
  *  bancaria en un escenario donde no aparece dinero es ruido. */
-export type DatoIdentidad = 'cedula' | 'ruc' | 'clave' | 'cuenta'
+export type DatoIdentidad = 'cedula' | 'ruc' | 'usuario' | 'clave' | 'cuenta'
 
 /**
  * Los datos que el participante "tiene" dentro del escenario, antes de empezar.
@@ -21,6 +21,10 @@ function TarjetaIdentidad({ correo, datos }: { correo: string; datos: DatoIdenti
   const filas = [
     { clave: 'correo', Icono: Mail, etiqueta: 'Correo', valor: correo },
     { clave: 'cedula', Icono: IdCard, etiqueta: 'Cédula', valor: IDENTIDAD_FICTICIA.cedula },
+    // Se saca del correo, que es de donde sale también dentro del escenario.
+    // Va como fila propia porque deducirlo quitándole el dominio al correo es
+    // un salto que este público no tiene por qué dar.
+    { clave: 'usuario', Icono: AtSign, etiqueta: 'Usuario', valor: correo.split('@')[0] ?? correo },
     { clave: 'ruc', Icono: FileText, etiqueta: 'RUC', valor: IDENTIDAD_FICTICIA.ruc },
     { clave: 'cuenta', Icono: CreditCard, etiqueta: 'Cuenta bancaria', valor: CUENTA_FICTICIA },
     // La contraseña va al final: es el dato que más pesa cuando se pierde, y
