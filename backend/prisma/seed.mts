@@ -60,7 +60,7 @@ Para generar una nueva:  pnpm seed -- --email ${email} --reset
     await prisma.participant.create({
       data: {
         email,
-        nombre: 'Investigador',
+        nombre: 'Supervisor',
         apellido: 'del estudio',
         // Sin cédula: no es participante, gestiona el estudio.
         passwordHash,

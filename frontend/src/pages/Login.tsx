@@ -5,7 +5,7 @@ import Campo from '../components/Campo'
 import { useAuth } from '../context/AuthContext'
 
 function Login() {
-  const { isAuthenticated, loading, login } = useAuth()
+  const { isAuthenticated, loading, isSupervisor, login } = useAuth()
   const navigate = useNavigate()
 
   const [email, setEmail] = useState('')
@@ -18,7 +18,7 @@ function Login() {
   }
 
   if (isAuthenticated) {
-    return <Navigate to="/dashboard" replace />
+    return <Navigate to={isSupervisor ? '/admin' : '/dashboard'} replace />
   }
 
   async function handleSubmit(event: FormEvent) {
@@ -27,8 +27,8 @@ function Login() {
     setSubmitting(true)
 
     try {
-      await login(email, password)
-      navigate('/dashboard')
+      const perfil = await login(email, password)
+      navigate(perfil.role === 'SUPERVISOR' ? '/admin' : '/dashboard')
     } catch (submitError) {
       setError((submitError as Error).message)
     } finally {
