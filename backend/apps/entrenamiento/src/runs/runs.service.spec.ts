@@ -75,6 +75,28 @@ describe('RunsService.exportCsv', () => {
     expect(row).toContain('"dijo ""no"""');
   });
 
+  // endingId y cohort los controla el participante. Sin este escape, un valor
+  // que empieza con `=`/`+`/`-`/`@` se ejecuta como fórmula cuando el
+  // investigador abre el CSV en una hoja de cálculo (inyección de fórmulas).
+  it('neutraliza valores que parecen fórmula anteponiendo una comilla', async () => {
+    const csv = await serviceWith([
+      runFixture({
+        participantSeq: 10,
+        participantCohort: '=HYPERLINK("http://x",1)',
+        endingId: '+cmd',
+      }),
+    ]).exportCsv();
+
+    const row = csv.split('\n')[1];
+
+    // La comilla inicial evita la fórmula; las comillas internas y la coma
+    // obligan a citar toda la celda, con las comillas duplicadas.
+    expect(row).toContain('"\'=HYPERLINK(""http://x"",1)"');
+    expect(row).toContain("'+cmd");
+    expect(row).not.toMatch(/,=HYPERLINK/);
+    expect(row).not.toContain(',+cmd');
+  });
+
   it('deja la cohorte vacía cuando el participante no tiene grupo', async () => {
     const csv = await serviceWith([
       runFixture({ participantSeq: 9, participantCohort: null }),

@@ -5,6 +5,13 @@ import { INestApplication, ValidationPipe } from '@nestjs/common';
 export function configurarApp(app: INestApplication): INestApplication {
   app.setGlobalPrefix('api');
 
+  // Un solo salto de proxy (nginx) delante. Sin esto Express ignora
+  // X-Forwarded-For y `req.ip` es la IP del contenedor de nginx: el límite de
+  // 5 logins/min por IP colapsa a un único cubo global —un atacante bloquea el
+  // login de todos— en vez de aislar por origen. El backend no está expuesto
+  // fuera de nginx, así que confiar en 1 salto no permite falsear la IP.
+  app.getHttpAdapter().getInstance().set('trust proxy', 1);
+
   // forbidNonWhitelisted rechaza cualquier campo fuera del DTO: es lo que
   // impide que un cliente escriba datos arbitrarios en la tabla del estudio.
   app.useGlobalPipes(
