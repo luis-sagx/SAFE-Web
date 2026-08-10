@@ -80,10 +80,28 @@ const STORY: Story<ScreenNode> = {
 }
 
 const SENALES: Senal[] = [
-  { id: 's1', texto: 'El correo trae tu <b>nombre completo y parte de tu cédula</b>, datos de una filtración, no prueba de que sean ellos.' },
-  { id: 's2', targetId: 'monto', pantalla: 'n1', texto: 'El monto es <b>diminuto a propósito</b>, calculado para no despertar sospecha.' },
-  { id: 's3', texto: 'Los couriers cobran aranceles <b>al entregar</b>, nunca por un enlace de correo.' },
-  { id: 's4', targetId: 'remitente', pantalla: 'n1', texto: 'El correo llega desde <b>enviosrapido-ec.shop</b>. Ese nombre se parece al del courier, pero no es el que aparece en su sitio oficial: es otra dirección, comprada por otra persona para este correo.' },
+  {
+    id: 's1',
+    texto:
+      'El correo trae tu <b>nombre completo y parte de tu cédula</b>, datos de una filtración, no prueba de que sean ellos.',
+  },
+  {
+    id: 's2',
+    targetId: 'monto',
+    pantalla: 'n1',
+    texto: 'El monto es <b>diminuto a propósito</b>, calculado para no despertar sospecha.',
+  },
+  {
+    id: 's3',
+    texto: 'Los couriers cobran aranceles <b>al entregar</b>, nunca por un enlace de correo.',
+  },
+  {
+    id: 's4',
+    targetId: 'remitente',
+    pantalla: 'n1',
+    texto:
+      'El correo llega desde <b>enviosrapido-ec.shop</b>. Ese nombre se parece al del courier, pero no es el que aparece en su sitio oficial: es otra dirección, comprada por otra persona para este correo.',
+  },
 ]
 const RULE =
   'Regla de oro: que alguien conozca tus datos no prueba que sea quien dice ser. Los datos personales confirman que hubo una filtración en algún lado, no que el mensaje sea legítimo.'

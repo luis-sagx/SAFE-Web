@@ -47,7 +47,7 @@ describe('SesionBogota', () => {
   it('completar clave y luego el código de un tirón cae en la trampa', () => {
     renderEscenario()
 
-    fireEvent.click(screen.getByRole('link', { name: "No fui yo (proteger mi cuenta)" }))
+    fireEvent.click(screen.getByRole('link', { name: 'No fui yo (proteger mi cuenta)' }))
     fireEvent.click(screen.getByRole('button', { name: 'Cerrar acceso no reconocido' }))
     fireEvent.click(screen.getByRole('button', { name: 'Confirmar y cerrar sesión' }))
 
@@ -57,7 +57,7 @@ describe('SesionBogota', () => {
   it('pasar de la página de clave al OTP no abre una pestaña nueva: sigue habiendo solo dos', () => {
     renderEscenario()
 
-    fireEvent.click(screen.getByRole('link', { name: "No fui yo (proteger mi cuenta)" }))
+    fireEvent.click(screen.getByRole('link', { name: 'No fui yo (proteger mi cuenta)' }))
     expect(screen.getAllByRole('tab')).toHaveLength(2)
 
     fireEvent.click(screen.getByRole('button', { name: 'Cerrar acceso no reconocido' }))

@@ -214,6 +214,7 @@ function AvisoFiltracion() {
       contexto={CONTEXTO}
       story={STORY}
       accionesCorreo={ACCIONES_BARRA}
+      identidad={['clave']}
       marcadores={MARCADORES}
       instruccion={INSTRUCCION}
       pista={PISTA}

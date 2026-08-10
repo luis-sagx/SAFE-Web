@@ -14,6 +14,13 @@ describe('identidad ficticia de los escenarios', () => {
     expect(IDENTIDAD_FICTICIA.ruc).toBe(`${IDENTIDAD_FICTICIA.cedula}001`)
   })
 
+  // La contraseña se enseña en pantalla. Si alguien la cambia por algo corto o
+  // plausible, deja de ser la del ejercicio y empieza a parecerse a una real.
+  it('la contraseña se reconoce como del ejercicio', () => {
+    expect(IDENTIDAD_FICTICIA.clave).toMatch(/practica/i)
+    expect(IDENTIDAD_FICTICIA.clave.length).toBeGreaterThan(15)
+  })
+
   it('la cuenta se lee con su banco', () => {
     expect(CUENTA_FICTICIA).toContain(IDENTIDAD_FICTICIA.cuenta)
     expect(CUENTA_FICTICIA).toContain(IDENTIDAD_FICTICIA.banco)

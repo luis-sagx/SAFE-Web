@@ -113,7 +113,9 @@ const BASE: EscenarioBase[] = [
     // devuelve al correo, y la decisión es lo que se haga con el mensaje.
     // v8: las páginas del escenario llevan cabecera, aviso y pie de
     // sitio, la falsa igual que la real.
-    version: 8,
+    // v9: el participante ve los datos que este escenario le pide, y los
+    // finales nombran lo que se entregó.
+    version: 9,
     naturaleza: 'fraude',
     dificultad: 2,
     espeja: 'phishing/rol-de-pagos',
@@ -137,7 +139,9 @@ const BASE: EscenarioBase[] = [
     // devuelve al correo, y la decisión es lo que se haga con el mensaje.
     // v7: las páginas del escenario llevan cabecera y pie de sitio, la
     // falsa igual que la real (prueba del issue #25).
-    version: 7,
+    // v8: el participante ve los datos que este escenario le pide, y los
+    // finales nombran lo que se entregó.
+    version: 8,
     naturaleza: 'fraude',
     dificultad: 3,
     espeja: 'phishing/rol-de-pagos',
@@ -159,7 +163,9 @@ const BASE: EscenarioBase[] = [
     // sitio, la falsa igual que la real.
     // v7: responder o reenviar un correo real deja de leerse como un
     // reproche; sigue siendo parcial porque el mensaje pedía algo.
-    version: 7,
+    // v8: el participante ve los datos que este escenario le pide, y los
+    // finales nombran lo que se entregó.
+    version: 8,
     naturaleza: 'legitimo',
     dificultad: 3,
     espeja: 'phishing/clave-caducada',
@@ -204,7 +210,9 @@ const BASE: EscenarioBase[] = [
     // devuelve al correo, y la decisión es lo que se haga con el mensaje.
     // v6: las páginas del escenario llevan cabecera, aviso y pie de
     // sitio, la falsa igual que la real.
-    version: 6,
+    // v7: el participante ve los datos que este escenario le pide, y los
+    // finales nombran lo que se entregó.
+    version: 7,
     naturaleza: 'fraude',
     dificultad: 4,
     espeja: 'phishing/aviso-filtracion',
@@ -245,7 +253,9 @@ const BASE: EscenarioBase[] = [
     // devuelve al correo, y la decisión es lo que se haga con el mensaje.
     // v6: las páginas del escenario llevan cabecera, aviso y pie de
     // sitio, la falsa igual que la real.
-    version: 6,
+    // v7: el participante ve los datos que este escenario le pide, y los
+    // finales nombran lo que se entregó.
+    version: 7,
     naturaleza: 'fraude',
     dificultad: 5,
     espeja: 'phishing/aviso-filtracion',
@@ -264,7 +274,9 @@ const BASE: EscenarioBase[] = [
     // sitio, la falsa igual que la real.
     // v7: responder o reenviar un correo real deja de leerse como un
     // reproche; sigue siendo parcial porque el mensaje pedía algo.
-    version: 7,
+    // v8: el participante ve los datos que este escenario le pide, y los
+    // finales nombran lo que se entregó.
+    version: 8,
     naturaleza: 'legitimo',
     dificultad: 4,
     espeja: 'phishing/sesion-bogota',

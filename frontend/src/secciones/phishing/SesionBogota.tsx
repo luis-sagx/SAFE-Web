@@ -29,7 +29,7 @@ const STORY: Story<StoryNode> = {
     kind: 'bad',
     verdict: 'Caíste en la trampa',
     outcome:
-      'Mientras escribías el código, el atacante lo usaba en vivo para entrar a tu cuenta real. Cuando terminaste, tu cuenta ya estaba vacía.',
+      'Mientras escribías el código 418 902, el atacante lo usaba en vivo para entrar a tu cuenta real. Un código de un solo uso no es un trámite: es la última puerta, y la abriste tú. Cuando terminaste, tu cuenta ya estaba vacía.',
   },
   e_app: {
     kind: 'good',
@@ -290,7 +290,7 @@ function ContenidoPaginaOtp() {
           <span>Código de verificación</span>
           <span className={styles.input}>
             <span className="sr-only">El código, ya completado: </span>
-            000000
+            418 902
           </span>
         </label>
         <BotonHotspot
@@ -459,6 +459,7 @@ function SesionBogota() {
       contexto={CONTEXTO}
       nota={NOTA}
       pantalla={pantalla}
+      identidad={['clave']}
       decision={decision}
       resultado={engine.resultado}
       onEmpezar={engine.restart}

@@ -10,6 +10,8 @@ import {
 } from '../../components/ui/DesktopChrome'
 import { AvisoSitio, CabeceraSitio, ENLACES_PIE, PieSitio } from '../../components/ui/armazonSitio'
 import styles from '../../components/ui/DeviceScreen.module.css'
+import { useAuth } from '../../context/AuthContext'
+import { IDENTIDAD_FICTICIA } from '../../lib/identidadFicticia'
 import Instrucciones from '../../components/ui/Instrucciones'
 import { BotonHotspot, manejarClicHotspot } from '../../components/ui/interactivo'
 import {
@@ -38,8 +40,7 @@ const STORY: Story<StoryNode> = {
   e_credenciales: {
     kind: 'bad',
     verdict: 'Correo legítimo, reacción peligrosa',
-    outcome:
-      'El remitente era real, pero tu contraseña quedó escrita en un correo. Cualquiera que lea ese buzón (o que lo intercepte) la tiene, y el propio mensaje avisaba que Talento Humano nunca la pide.',
+    outcome: `El remitente era real, pero tu contraseña ${IDENTIDAD_FICTICIA.clave} quedó escrita en un correo. Cualquiera que lea ese buzón (o que lo intercepte) la tiene, y el propio mensaje avisaba que Talento Humano nunca la pide.`,
     score: 0,
   },
   e_borra: {
@@ -240,6 +241,8 @@ function ContenidoCorreo({ recibido, carpetas }: { recibido: string; carpetas: C
 }
 
 function ContenidoPortal() {
+  const { usuarioSimulado } = useAuth()
+
   return (
     <div className={styles.page}>
       <CabeceraSitio
@@ -256,7 +259,7 @@ function ContenidoPortal() {
           <span>Usuario</span>
           <span className={styles.input}>
             <span className="sr-only">Tu usuario, ya completado: </span>
-            daniela.mora
+            {usuarioSimulado}
           </span>
         </label>
         <label className={styles.field}>
@@ -422,6 +425,7 @@ function RolDePagos() {
       contexto={CONTEXTO}
       nota={NOTA}
       pantalla={pantalla}
+      identidad={['usuario', 'clave']}
       decision={decision}
       resultado={engine.resultado}
       onEmpezar={engine.restart}

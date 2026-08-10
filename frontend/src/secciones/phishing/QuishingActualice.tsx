@@ -10,6 +10,7 @@ import {
 } from '../../components/ui/DesktopChrome'
 import { AvisoSitio, CabeceraSitio, ENLACES_PIE, PieSitio } from '../../components/ui/armazonSitio'
 import styles from '../../components/ui/DeviceScreen.module.css'
+import { IDENTIDAD_FICTICIA } from '../../lib/identidadFicticia'
 import Instrucciones from '../../components/ui/Instrucciones'
 import { BotonHotspot, manejarClicHotspot } from '../../components/ui/interactivo'
 import {
@@ -47,8 +48,7 @@ const STORY: Story<StoryNode> = {
   e_datos: {
     kind: 'bad',
     verdict: 'Caíste en la trampa',
-    outcome:
-      'Entregaste tu cédula y tu clave en litoral-actualiza.web.app, un sitio que no es del banco. Con esos datos entraron a tu cuenta esa misma noche.',
+    outcome: `Entregaste tu cédula ${IDENTIDAD_FICTICIA.cedula} y tu clave ${IDENTIDAD_FICTICIA.clave} en litoral-actualiza.web.app, un sitio que no es del banco. Con esos datos entraron a tu cuenta esa misma noche.`,
   },
   // Absorbe el antiguo final "vista previa antes de escanear": un QR no tiene
   // href, así que no existe una vista previa real — escanear ya abre la
@@ -274,7 +274,7 @@ function ContenidoPortalFalso() {
           <span>Cédula</span>
           <span className={styles.input}>
             <span className="sr-only">Tu cédula, ya completada: </span>
-            0000000000
+            {IDENTIDAD_FICTICIA.cedula}
           </span>
         </label>
         <label className={styles.field} data-signal="campo-clave">
@@ -439,6 +439,7 @@ function QuishingActualice() {
       contexto={CONTEXTO}
       nota={NOTA}
       pantalla={pantalla}
+      identidad={['cedula', 'clave']}
       decision={decision}
       resultado={engine.resultado}
       onEmpezar={engine.restart}
