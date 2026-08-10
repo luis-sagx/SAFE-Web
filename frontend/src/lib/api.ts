@@ -1,5 +1,12 @@
 // Único punto de contacto con el backend: ningún componente llama a fetch.
 const BASE_URL = import.meta.env.VITE_API_URL ?? '/api'
+
+// El token va en localStorage, no en una cookie httpOnly. La sesión dura
+// minutos (JWT de 2h) y solo da acceso a los datos del propio participante,
+// nunca a un dato personal de otro. El riesgo de un XSS que lo robara queda
+// acotado por la CSP de nginx: `script-src 'self'` no ejecuta script inyectado
+// y `connect-src 'self'` impide enviarlo a otro origen. Migrar a cookie
+// httpOnly (con su manejo de CSRF) queda como endurecimiento posterior.
 const TOKEN_KEY = 'mic-access-token'
 
 export interface Participant {

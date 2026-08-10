@@ -46,6 +46,23 @@ describe('Límite de peticiones (e2e)', () => {
     expect(codigos[5]).toBe(429);
   });
 
+  // El límite es por IP, no un cubo global. Depende de `trust proxy` (app.setup):
+  // sin él Express ignora X-Forwarded-For y todo cae en el mismo cubo, con lo
+  // que un atacante bloquearía el login de todos.
+  it('aísla el límite por IP de X-Forwarded-For', async () => {
+    const login = (ip: string) =>
+      server()
+        .post('/api/auth/login')
+        .set('X-Forwarded-For', ip)
+        .send({ email: 'otro@ejemplo.com', password: 'adivinando' });
+
+    // Agota el cubo de una IP.
+    for (let i = 0; i < 6; i++) await login('203.0.113.10');
+
+    // Otra IP sigue teniendo sus intentos: 401 (credenciales), no 429 (límite).
+    expect((await login('203.0.113.20')).status).toBe(401);
+  });
+
   // Docker consulta el health check cada 30 s con su propia sonda.
   it('no aplica el límite estricto al health check', async () => {
     for (let i = 0; i < 10; i++) {

@@ -1,4 +1,6 @@
 import {
+  ArrayMaxSize,
+  IsArray,
   IsDateString,
   IsIn,
   IsInt,
@@ -47,7 +49,11 @@ export class CreateRunDto {
   @IsDateString()
   startedAt: string;
 
-  /// Traza de la corrida; se guarda tal cual en JSONB.
+  /// Traza de la corrida (lista de nodos/decisiones); se guarda en JSONB. Se
+  /// valida que sea un arreglo acotado: sin esto el cliente podía escribir
+  /// cualquier JSON de forma y tamaño arbitrarios en la tabla del estudio.
   @IsOptional()
-  decisions?: unknown;
+  @IsArray()
+  @ArrayMaxSize(500)
+  decisions?: unknown[];
 }

@@ -122,7 +122,6 @@ export class AuthService {
           apellido: dto.apellido,
           email: dto.email,
           cedulaHash,
-          cohort: dto.cohort ?? null,
           passwordHash: await hash(dto.password, BCRYPT_ROUNDS),
         },
         select: CAMPOS_SESION,
