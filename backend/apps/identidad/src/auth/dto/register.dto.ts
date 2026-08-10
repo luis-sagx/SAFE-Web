@@ -40,7 +40,7 @@ export class RegisterDto {
   @MaxLength(128)
   password: string;
 
-  /// Grupo de la muestra; lo fija el investigador.
+  /// Grupo de la muestra; lo fija el supervisor.
   @IsOptional()
   @IsString()
   @MaxLength(60)

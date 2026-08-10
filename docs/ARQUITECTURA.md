@@ -18,7 +18,7 @@ Documentos relacionados:
 
 Una aplicación web donde un participante **se registra con su nombre, apellido,
 correo y cédula**, juega **escenarios simulados de fraude** que registran cada
-decisión, y el investigador exporta esos resultados —**identificados solo por un
+decisión, y el supervisor exporta esos resultados —**identificados solo por un
 seudónimo**— para compararlos con un pre-test y un post-test aplicados aparte en
 Google Forms.
 
@@ -145,7 +145,7 @@ safe-web/
 │   ├── prisma/
 │   │   ├── identidad/{schema.prisma,migrations/}
 │   │   ├── entrenamiento/{schema.prisma,migrations/}
-│   │   ├── seed.mts          # crea la cuenta de investigador
+│   │   ├── seed.mts          # crea la cuenta de supervisor
 │   │   └── anonimizar.mts    # ← cierra la recolección de datos
 │   ├── prisma.identidad.config.ts
 │   ├── prisma.entrenamiento.config.ts
@@ -473,7 +473,7 @@ Reglas que **no se negocian**:
    alcanzarlos. Hay una prueba unitaria, una e2e y un paso de CI que lo
    verifican contra la base real.
 2. **El seudónimo se deriva de `seq`, no se guarda.** El participante nunca lo
-   ve; es solo la llave con la que el investigador cruza estos resultados con
+   ve; es solo la llave con la que el supervisor cruza estos resultados con
    las respuestas de Forms.
 3. **Al cerrar la recolección se ejecuta `pnpm anonimizar -- --confirmar`.**
    Borra nombre, apellido, correo y la huella de la cédula, invalida el acceso y
@@ -519,7 +519,7 @@ docker compose up -d --build
 docker compose exec identidad node prisma/seed.mts --email tu.correo@espe.edu.ec
 ```
 
-El `seed` solo crea la cuenta de investigador e imprime su contraseña una vez.
+El `seed` solo crea la cuenta de supervisor e imprime su contraseña una vez.
 Los participantes se registran solos desde la plataforma.
 
 Los dos servicios de aplicación salen de **una sola imagen**: comparten
@@ -573,7 +573,7 @@ pnpm start:identidad                         # http://localhost:3001/api
 pnpm start:entrenamiento                     # http://localhost:3002/api
 pnpm build && pnpm lint:ci
 pnpm test && pnpm test:e2e
-pnpm seed -- --email tu.correo@espe.edu.ec   # cuenta de investigador
+pnpm seed -- --email tu.correo@espe.edu.ec   # cuenta de supervisor
 pnpm anonimizar                              # al cerrar la recolección
 
 # Todo junto

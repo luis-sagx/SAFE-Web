@@ -171,7 +171,7 @@ backend/
 └── prisma/
     ├── identidad/schema.prisma
     ├── entrenamiento/schema.prisma
-    ├── seed.mts                # cuenta de investigador (identidad)
+    ├── seed.mts                # cuenta de supervisor (identidad)
     └── anonimizar.mts          # cierre de recolección (identidad)
 ```
 
