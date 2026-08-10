@@ -1,10 +1,10 @@
-import { CreditCard, IdCard, Mail } from 'lucide-react'
+import { CreditCard, FileText, IdCard, KeyRound, Mail } from 'lucide-react'
 import { CUENTA_FICTICIA, IDENTIDAD_FICTICIA } from '../../lib/identidadFicticia'
 
 /** Qué datos prestados necesita ver el participante antes de entrar. El correo
  *  va siempre; los demás solo donde el escenario los pide, porque una cuenta
  *  bancaria en un escenario donde no aparece dinero es ruido. */
-export type DatoIdentidad = 'cedula' | 'cuenta'
+export type DatoIdentidad = 'cedula' | 'ruc' | 'clave' | 'cuenta'
 
 /**
  * Los datos que el participante "tiene" dentro del escenario, antes de empezar.
@@ -21,7 +21,13 @@ function TarjetaIdentidad({ correo, datos }: { correo: string; datos: DatoIdenti
   const filas = [
     { clave: 'correo', Icono: Mail, etiqueta: 'Correo', valor: correo },
     { clave: 'cedula', Icono: IdCard, etiqueta: 'Cédula', valor: IDENTIDAD_FICTICIA.cedula },
+    { clave: 'ruc', Icono: FileText, etiqueta: 'RUC', valor: IDENTIDAD_FICTICIA.ruc },
     { clave: 'cuenta', Icono: CreditCard, etiqueta: 'Cuenta bancaria', valor: CUENTA_FICTICIA },
+    // La contraseña va al final: es el dato que más pesa cuando se pierde, y
+    // el único que un formulario de verdad no enseña. En pantalla los campos
+    // la siguen tapando con puntos, como haría cualquier sitio; esto es lo que
+    // esos puntos significan.
+    { clave: 'clave', Icono: KeyRound, etiqueta: 'Contraseña', valor: IDENTIDAD_FICTICIA.clave },
   ].filter((fila) => fila.clave === 'correo' || datos.includes(fila.clave as DatoIdentidad))
 
   return (
@@ -32,7 +38,8 @@ function TarjetaIdentidad({ correo, datos }: { correo: string; datos: DatoIdenti
       <h2 className="text-base font-semibold text-ink">Tus datos en este escenario</h2>
       <p className="mt-1 text-base leading-relaxed text-body">
         Son inventados y no existen fuera de este entrenamiento. Te los enseñamos para que
-        reconozcas lo que estarías entregando si un formulario te los pide.
+        reconozcas lo que estarías entregando si un formulario te los pide. Los campos que piden la
+        contraseña la taparán con puntos, como en cualquier sitio: esta es la que esconden.
       </p>
 
       <dl className="mt-4 grid gap-3">

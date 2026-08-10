@@ -21,6 +21,7 @@ import {
 import { carpetasCorreo } from '../../components/ui/carpetasCorreo'
 import { AvisoSitio, CabeceraSitio, ENLACES_PIE, PieSitio } from '../../components/ui/armazonSitio'
 import styles from '../../components/ui/DeviceScreen.module.css'
+import { IDENTIDAD_FICTICIA } from '../../lib/identidadFicticia'
 import {
   BotonHotspot,
   EnlaceHotspot,
@@ -68,8 +69,7 @@ const STORY: Story<StoryNode> = {
   e_datos: {
     kind: 'bad',
     verdict: 'Caíste en la trampa',
-    outcome:
-      'Entregaste tu RUC y tu clave del portal en un sitio que no es del SRI. Con esos datos pueden emitir comprobantes a tu nombre y ver tu información tributaria.',
+    outcome: `Entregaste tu RUC ${IDENTIDAD_FICTICIA.ruc} y tu clave ${IDENTIDAD_FICTICIA.clave} en un sitio que no es del SRI. Con esos datos pueden emitir comprobantes a tu nombre y ver tu información tributaria.`,
   },
 
   // Los cinco finales de la barra de acciones del cliente. Ninguno entrega la
@@ -372,7 +372,7 @@ function ContenidoPortalFalso() {
                 reales en ella. */}
             <span className={styles.input}>
               <span className="sr-only">Tu RUC, ya completado: </span>
-              0000000000001
+              {IDENTIDAD_FICTICIA.ruc}
             </span>
           </label>
           <label className={styles.field} data-signal="campo-clave">
@@ -499,7 +499,7 @@ function ContenidoPortalReal() {
         />
         <h2 className={styles.pageTitle}>Comprobantes electrónicos</h2>
         <p className={styles.portalSesion}>
-          Sesión iniciada · RUC 0000000000001 · último ingreso hoy
+          Sesión iniciada · RUC {IDENTIDAD_FICTICIA.ruc} · último ingreso hoy
         </p>
 
         <table className={styles.portalTabla}>
@@ -667,6 +667,7 @@ function FacturaSri() {
       contexto={CONTEXTO}
       nota={NOTA}
       pantalla={pantalla}
+      identidad={['ruc', 'clave']}
       decision={decision}
       resultado={engine.resultado}
       onEmpezar={engine.restart}

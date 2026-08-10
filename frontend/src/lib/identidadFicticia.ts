@@ -22,6 +22,14 @@ import { esCedulaEcuatoriana } from './cedula'
  */
 export const IDENTIDAD_FICTICIA = {
   cedula: '1799999999',
+  /// La contraseña del ejercicio. Se enseña en la tarjeta y se nombra en los
+  /// finales —"entregaste tu clave X"— porque en puntitos la pérdida no se
+  /// entiende: hay que poder ver qué se fue.
+  ///
+  /// Deliberadamente larga y con el ejercicio en su propio texto: no puede
+  /// parecerse a una que alguien use de verdad, ni sugerir un patrón para
+  /// inventarse la suya.
+  clave: 'Clave-de-practica-2026',
   /// El mismo número con el sufijo de persona natural, para las facturas.
   ruc: '1799999999001',
   banco: 'Banco del Litoral',

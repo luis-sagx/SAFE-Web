@@ -4,6 +4,7 @@ import type { Contexto } from '../../components/ui/ContextoEscenario'
 import type { MarcadorNavegador } from '../../components/ui/Navegador'
 import { ACCIONES_BARRA, finalesDeBarra } from './barraDeCorreo'
 import type { Story } from '../../hooks/useStoryEngine'
+import { IDENTIDAD_FICTICIA } from '../../lib/identidadFicticia'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
 import type { Senal } from '../../components/ui/PanelVeredicto'
 
@@ -101,8 +102,7 @@ const STORY: Story<ScreenNode> = {
     kind: 'bad',
     view: PAGINA,
     verdict: 'Caíste en la trampa',
-    outcome:
-      'La página era una copia alojada en andes-ec.net. Con tu contraseña entraron a tu buzón y desde ahí escribieron a contabilidad pidiendo una transferencia a tu nombre.',
+    outcome: `La página era una copia alojada en andes-ec.net. Con tu contraseña ${IDENTIDAD_FICTICIA.clave} entraron a tu buzón y desde ahí escribieron a contabilidad pidiendo una transferencia a tu nombre.`,
   },
 }
 
@@ -218,6 +218,7 @@ function ClaveCaducada() {
       contexto={CONTEXTO}
       story={STORY}
       accionesCorreo={ACCIONES_BARRA}
+      identidad={['clave']}
       marcadores={MARCADORES}
       instruccion={INSTRUCCION}
       pista={PISTA}
