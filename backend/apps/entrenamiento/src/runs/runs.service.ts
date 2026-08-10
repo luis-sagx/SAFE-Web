@@ -103,9 +103,14 @@ export class RunsService {
       ]
         .map((cell) => {
           const value = String(cell);
-          return /[",\n]/.test(value)
-            ? `"${value.replace(/"/g, '""')}"`
-            : value;
+          // Anteponer una comilla a lo que empiece con un carácter de fórmula:
+          // `endingId` y `cohort` los controla el participante, y sin esto un
+          // valor como `=HYPERLINK(...)` se ejecuta cuando el investigador abre
+          // el CSV en Excel/LibreOffice/Sheets (inyección de fórmulas CSV).
+          const seguro = /^[=+\-@\t\r]/.test(value) ? `'${value}` : value;
+          return /[",\n]/.test(seguro)
+            ? `"${seguro.replace(/"/g, '""')}"`
+            : seguro;
         })
         .join(','),
     );
