@@ -1,5 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { KeyRound, Loader2, Trash2, UserCheck, UserX } from "lucide-react";
+import {
+  KeyRound,
+  Loader2,
+  Trash2,
+  UserCheck,
+  UserX,
+  type LucideIcon,
+} from "lucide-react";
 import AppHeader from "../components/AppHeader";
 import { useAuth } from "../context/AuthContext";
 import {
@@ -17,7 +24,9 @@ type Pestana = "participantes" | "resultados";
 interface Confirmacion {
   titulo: string;
   mensaje: string;
+  /// Texto del botón que confirma ("Sí, desactivar").
   etiqueta: string;
+  Icono: LucideIcon;
   /// true pinta el botón de confirmar en rojo (acción destructiva).
   peligro?: boolean;
   accion: () => void | Promise<void>;
@@ -106,11 +115,12 @@ function Participantes() {
 
   const alternarEstado = (p: AdminParticipante) =>
     pedirConfirmacion({
-      titulo: p.activo ? "Desactivar cuenta" : "Activar cuenta",
+      titulo: p.activo ? "¿Desactivar esta cuenta?" : "¿Activar esta cuenta?",
       mensaje: p.activo
         ? `${nombreCompleto(p)} no podrá iniciar sesión hasta que la reactives.`
         : `${nombreCompleto(p)} podrá volver a iniciar sesión.`,
-      etiqueta: p.activo ? "Desactivar" : "Activar",
+      etiqueta: p.activo ? "Sí, desactivar" : "Sí, activar",
+      Icono: p.activo ? UserX : UserCheck,
       accion: () =>
         conBloqueo(p.id, async () => {
           const actualizado = await cambiarEstadoParticipante(p.id, !p.activo);
@@ -120,9 +130,10 @@ function Participantes() {
 
   const restablecer = (p: AdminParticipante) =>
     pedirConfirmacion({
-      titulo: "Restablecer contraseña",
+      titulo: "¿Restablecer la contraseña?",
       mensaje: `Se generará una contraseña nueva para ${nombreCompleto(p)} y la actual dejará de funcionar.`,
-      etiqueta: "Restablecer",
+      etiqueta: "Sí, restablecer",
+      Icono: KeyRound,
       accion: () =>
         conBloqueo(p.id, async () => {
           const { password } = await restablecerPasswordParticipante(p.id);
@@ -132,9 +143,10 @@ function Participantes() {
 
   const eliminar = (p: AdminParticipante) =>
     pedirConfirmacion({
-      titulo: "Eliminar cuenta",
-      mensaje: `Se borrará la cuenta de ${nombreCompleto(p)}. No se puede deshacer.`,
-      etiqueta: "Eliminar",
+      titulo: "¿Eliminar esta cuenta?",
+      mensaje: `Se borrará la cuenta de ${nombreCompleto(p)}. Esta acción no se puede deshacer.`,
+      etiqueta: "Sí, eliminar",
+      Icono: Trash2,
       peligro: true,
       accion: () =>
         conBloqueo(p.id, async () => {
@@ -270,28 +282,50 @@ function Participantes() {
       >
         {confirmacion && (
           <>
-            <h2 className="text-lg font-semibold text-ink">
-              {confirmacion.titulo}
-            </h2>
-            <p className="mt-2 text-sm leading-relaxed text-body">
-              {confirmacion.mensaje}
-            </p>
+            <div className="flex items-start gap-3">
+              <span
+                aria-hidden
+                className={`flex size-10 shrink-0 items-center justify-center rounded-full ${
+                  confirmacion.peligro
+                    ? "bg-danger/10 text-danger"
+                    : "bg-surface-strong text-ink"
+                }`}
+              >
+                <confirmacion.Icono className="size-5" strokeWidth={1.75} />
+              </span>
+              <div className="min-w-0">
+                <h2 className="text-lg font-semibold text-ink">
+                  {confirmacion.titulo}
+                </h2>
+                <p className="mt-1 text-sm leading-relaxed text-body">
+                  {confirmacion.mensaje}
+                </p>
+              </div>
+            </div>
             <form method="dialog" className="mt-6 flex justify-end gap-2">
+              {/* El foco arranca en Cancelar: la acción destructiva no se
+                  confirma con un Enter reflejo. */}
               <button
                 value="cancel"
+                autoFocus
                 className="h-9 rounded-md border border-hairline-strong bg-surface px-3 text-sm font-medium text-ink transition hover:bg-surface-strong"
               >
-                Cancelar
+                No, cancelar
               </button>
               <button
                 value="confirm"
                 onClick={() => void confirmacion.accion()}
-                className={`h-9 rounded-md px-3 text-sm font-medium text-on-primary transition ${
+                className={`inline-flex h-9 items-center gap-1.5 rounded-md px-3 text-sm font-medium text-on-primary transition ${
                   confirmacion.peligro
                     ? "bg-danger hover:opacity-90"
                     : "bg-primary hover:bg-primary-active"
                 }`}
               >
+                <confirmacion.Icono
+                  aria-hidden
+                  className="size-4"
+                  strokeWidth={1.75}
+                />
                 {confirmacion.etiqueta}
               </button>
             </form>
