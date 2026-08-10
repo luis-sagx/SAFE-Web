@@ -5,18 +5,18 @@ import { CreateRunDto } from './dto/create-run.dto';
 import { calcularProgreso, UMBRALES } from './progreso';
 import { seudonimo } from './seudonimo';
 
-const CSV_COLUMNS = [
-  'seudonimo',
-  'cohort',
-  'scenarioId',
-  'version',
-  'outcome',
-  'score',
-  'endingId',
-  'durationMs',
-  'startedAt',
-  'finishedAt',
-] as const;
+export interface ResultadoCorrida {
+  seudonimo: string;
+  cohort: string | null;
+  scenarioId: string;
+  version: number;
+  outcome: string;
+  score: number;
+  endingId: string;
+  durationMs: number;
+  startedAt: string;
+  finishedAt: string;
+}
 
 @Injectable()
 export class RunsService {
@@ -76,40 +76,29 @@ export class RunsService {
     return calcularProgreso(modulo, requeridos, corridas);
   }
 
-  /// Exporta todas las corridas en CSV para el análisis pre/post-test. Sale el
-  /// código pseudónimo, nunca un dato personal: es la llave con la que el
-  /// investigador cruza estos resultados con las respuestas de Forms.
+  /// Todas las corridas del estudio para el supervisor, seudonimizadas. Se
+  /// devuelven como JSON para verlas dentro de la app; no se descargan.
   ///
-  /// Ya no hay `join` con el participante ni forma de hacerlo: los datos
-  /// personales viven en otro servicio, en otro schema, bajo otro rol de
-  /// Postgres. Este método no podría filtrarlos aunque se escribiera mal.
-  async exportCsv(): Promise<string> {
+  /// Sale el código pseudónimo (P001), nunca un dato personal: no hay `join`
+  /// con el participante ni forma de hacerlo. Los datos personales viven en
+  /// otro servicio, en otro schema, bajo otro rol de Postgres — este método no
+  /// podría filtrarlos aunque se escribiera mal.
+  async resultados(): Promise<ResultadoCorrida[]> {
     const runs = await this.prisma.scenarioRun.findMany({
       orderBy: [{ participantSeq: 'asc' }, { finishedAt: 'asc' }],
     });
 
-    const rows = runs.map((run) =>
-      [
-        seudonimo(run.participantSeq),
-        run.participantCohort ?? '',
-        run.scenarioId,
-        run.version,
-        run.outcome,
-        run.score,
-        run.endingId,
-        run.durationMs,
-        run.startedAt.toISOString(),
-        run.finishedAt.toISOString(),
-      ]
-        .map((cell) => {
-          const value = String(cell);
-          return /[",\n]/.test(value)
-            ? `"${value.replace(/"/g, '""')}"`
-            : value;
-        })
-        .join(','),
-    );
-
-    return [CSV_COLUMNS.join(','), ...rows].join('\n');
+    return runs.map((run) => ({
+      seudonimo: seudonimo(run.participantSeq),
+      cohort: run.participantCohort,
+      scenarioId: run.scenarioId,
+      version: run.version,
+      outcome: run.outcome,
+      score: run.score,
+      endingId: run.endingId,
+      durationMs: run.durationMs,
+      startedAt: run.startedAt.toISOString(),
+      finishedAt: run.finishedAt.toISOString(),
+    }));
   }
 }

@@ -7,7 +7,7 @@ export interface Participant {
   nombre: string | null
   apellido: string | null
   email: string | null
-  role: 'PARTICIPANT' | 'RESEARCHER'
+  role: 'PARTICIPANT' | 'SUPERVISOR'
   cohort: string | null
   /** Si ya vio la pantalla de bienvenida y no pidió que volviera a aparecer. */
   onboardingVisto: boolean

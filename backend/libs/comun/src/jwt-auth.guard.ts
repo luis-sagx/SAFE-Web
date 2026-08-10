@@ -36,14 +36,15 @@ export class JwtAuthGuard implements CanActivate {
   }
 }
 
-/// Un participante nunca puede leer los datos de los demás.
+/// Solo un supervisor gestiona cuentas y ve los resultados del estudio. Un
+/// participante nunca alcanza estas rutas.
 @Injectable()
-export class ResearcherGuard implements CanActivate {
+export class SupervisorGuard implements CanActivate {
   canActivate(context: ExecutionContext): boolean {
     const request = context.switchToHttp().getRequest<AuthedRequest>();
 
-    if (request.participant?.role !== 'RESEARCHER') {
-      throw new ForbiddenException('Requiere rol de investigador.');
+    if (request.participant?.role !== 'SUPERVISOR') {
+      throw new ForbiddenException('Requiere rol de supervisor.');
     }
 
     return true;

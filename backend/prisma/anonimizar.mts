@@ -33,7 +33,7 @@ en el servicio de entrenamiento y ya están identificadas solo por seudónimo.
 
 Esto borra nombre, correo y teléfono de forma IRREVERSIBLE. Nadie podrá
 volver a iniciar sesión. Hazlo solo cuando la recolección de datos haya
-terminado y ya tengas el CSV exportado.
+terminado y ya tengas los resultados del estudio.
 
 Para ejecutarlo de verdad:  pnpm anonimizar -- --confirmar
 `);

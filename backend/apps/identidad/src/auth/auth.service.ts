@@ -1,5 +1,6 @@
 import {
   ConflictException,
+  ForbiddenException,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -144,7 +145,7 @@ export class AuthService {
       where: { email: dto.email },
       // `select` explícito, no el registro entero: sin esto el passwordHash
       // viaja hasta `sesion()` y termina en la respuesta al cliente.
-      select: { ...CAMPOS_SESION, passwordHash: true },
+      select: { ...CAMPOS_SESION, passwordHash: true, disabledAt: true },
     });
 
     const ok = await compare(
@@ -158,17 +159,33 @@ export class AuthService {
       throw new UnauthorizedException('Correo o contraseña incorrectos.');
     }
 
+    // La cuenta desactivada por un supervisor no entra. Se comprueba solo tras
+    // validar la contraseña: sin credenciales correctas no se puede averiguar
+    // si una cuenta existe y está desactivada.
+    if (participant.disabledAt) {
+      throw new ForbiddenException(
+        'Tu cuenta está desactivada. Contacta al supervisor del estudio.',
+      );
+    }
+
     return this.sesion(participant);
   }
 
   async me(participantId: string) {
     const participant = await this.prisma.participant.findUnique({
       where: { id: participantId },
-      select: CAMPOS_PERFIL,
+      select: { ...CAMPOS_PERFIL, disabledAt: true },
     });
 
     if (!participant) {
       throw new UnauthorizedException();
+    }
+
+    // Si un supervisor desactivó la cuenta mientras la sesión seguía viva, el
+    // siguiente /auth/me la echa: el token vale hasta caducar, pero la app
+    // consulta este endpoint y ahí se corta.
+    if (participant.disabledAt) {
+      throw new UnauthorizedException('Tu cuenta está desactivada.');
     }
 
     return perfilPublico(participant);

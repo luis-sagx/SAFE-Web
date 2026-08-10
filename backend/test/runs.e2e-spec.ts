@@ -59,7 +59,7 @@ describe('Corridas (e2e)', () => {
   });
 
   // El seudónimo y la cohorte se copian del token, no del cuerpo: es lo que
-  // permite exportar el CSV sin consultar jamás al servicio de identidad.
+  // permite mostrar los resultados sin consultar jamás al servicio de identidad.
   it('etiqueta la corrida con el seudónimo y la cohorte del token', async () => {
     const res = await server()
       .post('/api/runs')
@@ -132,38 +132,42 @@ describe('Corridas (e2e)', () => {
     }
   });
 
-  describe('GET /api/runs/export.csv', () => {
+  describe('GET /api/runs/resultados', () => {
     it('responde 403 a un participante', async () => {
       await server()
-        .get('/api/runs/export.csv')
+        .get('/api/runs/resultados')
         .set('Authorization', `Bearer ${deMaria}`)
         .expect(403);
     });
 
     it('responde 401 sin token', async () => {
-      await server().get('/api/runs/export.csv').expect(401);
+      await server().get('/api/runs/resultados').expect(401);
     });
 
-    it('entrega el CSV pseudonimizado al investigador', async () => {
-      const investigador = await token({ role: 'RESEARCHER' });
+    it('entrega las corridas seudonimizadas al supervisor', async () => {
+      const supervisor = await token({ role: 'SUPERVISOR' });
 
       const res = await server()
-        .get('/api/runs/export.csv')
-        .set('Authorization', `Bearer ${investigador}`)
+        .get('/api/runs/resultados')
+        .set('Authorization', `Bearer ${supervisor}`)
         .expect(200);
 
-      expect(res.headers['content-type']).toContain('text/csv');
-      expect(res.text.split('\n')[0]).toBe(
-        'seudonimo,cohort,scenarioId,version,outcome,score,endingId,durationMs,startedAt,finishedAt',
-      );
-      expect(res.text).toContain('\nP007,comerciantes,');
+      expect(res.headers['content-type']).toContain('application/json');
+
+      const filas = cuerpo<Array<Record<string, unknown>>>(res);
+      const deSiete = filas.find((f) => f.seudonimo === 'P007');
+      expect(deSiete).toMatchObject({
+        seudonimo: 'P007',
+        cohort: 'comerciantes',
+      });
 
       // La garantía de privacidad, contra la base real. Este servicio no tiene
       // ninguna tabla con datos personales ni permiso sobre el schema que las
       // tiene: no hay forma de que salgan.
-      expect(res.text).not.toContain('María');
-      expect(res.text).not.toContain('@ejemplo.com');
-      expect(res.text).not.toContain('0991234567');
+      const texto = res.text;
+      expect(texto).not.toContain('María');
+      expect(texto).not.toContain('@ejemplo.com');
+      expect(texto).not.toContain('0991234567');
     });
   });
 
