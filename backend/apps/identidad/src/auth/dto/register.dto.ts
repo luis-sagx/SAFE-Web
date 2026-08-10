@@ -1,10 +1,4 @@
-import {
-  IsEmail,
-  IsOptional,
-  IsString,
-  MaxLength,
-  MinLength,
-} from 'class-validator';
+import { IsEmail, IsString, MaxLength, MinLength } from 'class-validator';
 import { NormalizarEmail, TransformarTexto } from '@comun';
 import { EsCedulaEcuatoriana } from '../../cedula/cedula';
 
@@ -40,9 +34,8 @@ export class RegisterDto {
   @MaxLength(128)
   password: string;
 
-  /// Grupo de la muestra; lo fija el investigador.
-  @IsOptional()
-  @IsString()
-  @MaxLength(60)
-  cohort?: string;
+  // Sin `cohort`: el registro es abierto y no pide grupo de muestra.
+  // `whitelist`/`forbidNonWhitelisted` rechazan el campo si alguien lo manda,
+  // así que un participante no puede auto-asignarse una cohorte. Si el estudio
+  // llega a agruparlos, lo fija el investigador aparte, no el registro público.
 }

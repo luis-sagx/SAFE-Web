@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import type { JwtPayload } from '@comun';
+import { Prisma } from '../../../../generated/entrenamiento/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateRunDto } from './dto/create-run.dto';
 import { calcularProgreso, UMBRALES } from './progreso';
@@ -35,7 +36,7 @@ export class RunsService {
         endingId: dto.endingId,
         durationMs: dto.durationMs,
         startedAt: new Date(dto.startedAt),
-        decisions: dto.decisions ?? [],
+        decisions: (dto.decisions ?? []) as Prisma.InputJsonValue,
       },
       select: { id: true, scenarioId: true, outcome: true, score: true },
     });
