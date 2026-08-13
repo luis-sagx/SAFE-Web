@@ -60,7 +60,9 @@ services:
       JWT_SECRET: "${JWT_SECRET:?falta JWT_SECRET en .env, generar con openssl rand -base64 48}"
       # Solo este servicio lo recibe: es el único que ve una cédula.
       CEDULA_PEPPER: "${CEDULA_PEPPER:?falta CEDULA_PEPPER en .env, generar con openssl rand -base64 48}"
-      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-2h}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-15m}
+      # Solo este servicio firma y verifica refresh tokens (POST /api/auth/refresh).
+      REFRESH_TOKEN_EXPIRES_IN: ${REFRESH_TOKEN_EXPIRES_IN:-12h}
       PORT: 3001
       NODE_ENV: production
     depends_on:
@@ -89,7 +91,10 @@ services:
     environment:
       ENTRENAMIENTO_DATABASE_URL: postgresql://entrenamiento:${ENTRENAMIENTO_DB_PASSWORD}@db:5432/${POSTGRES_DB}?schema=entrenamiento
       JWT_SECRET: "${JWT_SECRET:?falta JWT_SECRET en .env, generar con openssl rand -base64 48}"
-      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-2h}
+      # Sin efecto real: este servicio nunca firma tokens, solo verifica. Se
+      # fija igual que en `identidad` por si algún día un endpoint propio
+      # necesitara emitir uno.
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-15m}
       PORT: 3002
       NODE_ENV: production
     depends_on:

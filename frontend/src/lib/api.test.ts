@@ -1,5 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { ApiError, createRun, fetchMe, getToken, login, setToken } from './api'
+import {
+  ApiError,
+  createRun,
+  fetchMe,
+  getRefreshToken,
+  getToken,
+  login,
+  setRefreshToken,
+  setToken,
+} from './api'
 
 function mockFetch(response: Partial<Response> & { json?: () => Promise<unknown> }) {
   const fetchMock = vi.fn().mockResolvedValue({
@@ -71,6 +80,56 @@ describe('api', () => {
 
     await expect(fetchMe()).rejects.toMatchObject({ status: 500 })
     expect(getToken()).toBe('valido')
+  })
+
+  it('renueva la sesión con el refresh token y reintenta la petición original', async () => {
+    setToken('vencido')
+    setRefreshToken('refresh-valido')
+
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 401,
+        json: () => Promise.resolve({ message: 'Token inválido o expirado.' }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: () =>
+          Promise.resolve({ accessToken: 'nuevo', refreshToken: 'refresh-nuevo', participant: {} }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve({ id: 'p1' }),
+      })
+    vi.stubGlobal('fetch', fetchMock)
+
+    await expect(fetchMe()).resolves.toEqual({ id: 'p1' })
+
+    expect(fetchMock).toHaveBeenCalledTimes(3)
+    expect(getToken()).toBe('nuevo')
+    expect(getRefreshToken()).toBe('refresh-nuevo')
+
+    const [refreshUrl, refreshInit] = fetchMock.mock.calls[1] as [string, RequestInit]
+    expect(refreshUrl).toContain('/auth/refresh')
+    expect(JSON.parse(refreshInit.body as string)).toEqual({ refreshToken: 'refresh-valido' })
+  })
+
+  it('descarta los dos tokens si el refresh también falla', async () => {
+    setToken('vencido')
+    setRefreshToken('refresh-vencido')
+
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce({ ok: false, status: 401, json: () => Promise.resolve({}) })
+      .mockResolvedValueOnce({ ok: false, status: 401, json: () => Promise.resolve({}) })
+    vi.stubGlobal('fetch', fetchMock)
+
+    await expect(fetchMe()).rejects.toBeInstanceOf(ApiError)
+    expect(getToken()).toBeNull()
+    expect(getRefreshToken()).toBeNull()
   })
 
   // Nest manda `message` como arreglo cuando falla la validación del DTO.

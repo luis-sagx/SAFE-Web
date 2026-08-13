@@ -123,6 +123,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = useCallback(async (email: string, password: string) => {
     const session = await api.login(email, password)
     api.setToken(session.accessToken)
+    api.setRefreshToken(session.refreshToken)
     setParticipant(session.participant)
     setOnboardingDismissed(false)
     return session.participant
@@ -131,6 +132,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const register = useCallback(async (credentials: Credentials) => {
     const session = await api.register(credentials)
     api.setToken(session.accessToken)
+    api.setRefreshToken(session.refreshToken)
     setParticipant(session.participant)
     setOnboardingDismissed(false)
     return session.participant
@@ -138,6 +140,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = useCallback(() => {
     api.setToken(null)
+    api.setRefreshToken(null)
     setParticipant(null)
     setOnboardingDismissed(false)
   }, [])

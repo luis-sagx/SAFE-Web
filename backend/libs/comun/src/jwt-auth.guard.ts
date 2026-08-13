@@ -27,7 +27,15 @@ export class JwtAuthGuard implements CanActivate {
     }
 
     try {
-      request.participant = await this.jwt.verifyAsync<JwtPayload>(token);
+      const payload = await this.jwt.verifyAsync<JwtPayload>(token);
+
+      // Firmados con el mismo secreto: sin esto, un refresh token (vida
+      // larga) serviría como token de acceso en cualquier ruta protegida.
+      if (payload.typ !== 'access') {
+        throw new UnauthorizedException('Token inválido o expirado.');
+      }
+
+      request.participant = payload;
     } catch {
       throw new UnauthorizedException('Token inválido o expirado.');
     }

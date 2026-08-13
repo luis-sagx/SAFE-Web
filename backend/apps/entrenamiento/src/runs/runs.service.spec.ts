@@ -60,5 +60,4 @@ describe('RunsService.resultados', () => {
     expect(texto).not.toContain('0991234567');
     expect(fila.seudonimo).toBe('P007');
   });
-
 });

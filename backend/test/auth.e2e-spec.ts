@@ -319,4 +319,90 @@ describe('Autenticación (e2e)', () => {
         .expect(400);
     });
   });
+
+  describe('POST /api/auth/refresh', () => {
+    it('entrega un access token y un refresh token nuevos', async () => {
+      const registrado = await server()
+        .post('/api/auth/register')
+        .send(registro('refresh'))
+        .expect(201);
+      const original = cuerpo<SesionBody>(registrado);
+
+      const res = await server()
+        .post('/api/auth/refresh')
+        .send({ refreshToken: original.refreshToken })
+        .expect(200);
+
+      const renovado = cuerpo<SesionBody>(res);
+      expect(typeof renovado.accessToken).toBe('string');
+      expect(typeof renovado.refreshToken).toBe('string');
+
+      // El access token nuevo sirve de verdad en una ruta protegida.
+      await server()
+        .get('/api/auth/me')
+        .set('Authorization', `Bearer ${renovado.accessToken}`)
+        .expect(200);
+    });
+
+    it('rechaza un refresh token inventado', async () => {
+      await server()
+        .post('/api/auth/refresh')
+        .send({ refreshToken: 'no.es.un.token' })
+        .expect(401);
+    });
+
+    // La garantía que sostiene todo el diseño: sin la marca `typ`, un access
+    // token (vida corta, pero el único que un atacante suele conseguir robar)
+    // podría reutilizarse aquí para sacar un refresh token de vida larga.
+    it('rechaza un access token usado como refresh token', async () => {
+      const res = await server()
+        .post('/api/auth/register')
+        .send(registro('refresh-typ'))
+        .expect(201);
+      const { accessToken } = cuerpo<SesionBody>(res);
+
+      await server()
+        .post('/api/auth/refresh')
+        .send({ refreshToken: accessToken })
+        .expect(401);
+    });
+
+    // Y a la inversa: el refresh token nunca debe abrir una ruta protegida
+    // como si fuera un access token.
+    it('rechaza un refresh token usado como access token', async () => {
+      const res = await server()
+        .post('/api/auth/register')
+        .send(registro('refresh-typ-2'))
+        .expect(201);
+      const { refreshToken } = cuerpo<SesionBody>(res);
+
+      await server()
+        .get('/api/auth/me')
+        .set('Authorization', `Bearer ${refreshToken}`)
+        .expect(401);
+    });
+
+    it('rechaza el refresh de una cuenta desactivada', async () => {
+      const datos = registro('refresh-desactivada');
+      const res = await server()
+        .post('/api/auth/register')
+        .send(datos)
+        .expect(201);
+      const { refreshToken } = cuerpo<SesionBody>(res);
+
+      await prisma.participant.update({
+        where: { email: datos.email },
+        data: { disabledAt: new Date() },
+      });
+
+      await server()
+        .post('/api/auth/refresh')
+        .send({ refreshToken })
+        .expect(401);
+    });
+
+    it('rechaza el cuerpo sin refreshToken', async () => {
+      await server().post('/api/auth/refresh').send({}).expect(400);
+    });
+  });
 });

@@ -12,6 +12,7 @@ import { CurrentParticipant, JwtAuthGuard, type JwtPayload } from '@comun';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { PatchMeDto } from './dto/patch-me.dto';
+import { RefreshDto } from './dto/refresh.dto';
 import { RegisterDto } from './dto/register.dto';
 
 @Controller('auth')
@@ -32,6 +33,17 @@ export class AuthController {
   @Post('login')
   login(@Body() dto: LoginDto) {
     return this.auth.login(dto);
+  }
+
+  /// No lleva JwtAuthGuard: es la ruta que se usa precisamente cuando el
+  /// access token ya venció. Límite más alto que login: el frontend lo llama
+  /// solo automáticamente cuando un access token expira, no a golpe de teclado
+  /// de un usuario, pero varias pestañas abiertas pueden refrescar a la vez.
+  @Throttle({ default: { limit: 20, ttl: 60_000 } })
+  @HttpCode(200)
+  @Post('refresh')
+  refresh(@Body() dto: RefreshDto) {
+    return this.auth.refrescar(dto.refreshToken);
   }
 
   @UseGuards(JwtAuthGuard)

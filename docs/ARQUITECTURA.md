@@ -337,8 +337,9 @@ Nginx enruta por prefijo: `/api/auth/*` y `/api/admin/*` a `identidad`,
 | Método | Ruta | Servicio | Auth | Qué hace |
 |---|---|---|---|---|
 | `GET` | `/api/health` | ambos | — | Health check (Docker y CI). Nginx expone el de `identidad`. |
-| `POST` | `/api/auth/register` | identidad | — | `{ nombre, apellido, email, cedula, password }` → `{ accessToken, participant }`. Máx. 5/min por IP. |
-| `POST` | `/api/auth/login` | identidad | — | `{ email, password }` → `{ accessToken, participant }`. Máx. 5 intentos/min por IP. |
+| `POST` | `/api/auth/register` | identidad | — | `{ nombre, apellido, email, cedula, password }` → `{ accessToken, refreshToken, participant }`. Máx. 5/min por IP. |
+| `POST` | `/api/auth/login` | identidad | — | `{ email, password }` → `{ accessToken, refreshToken, participant }`. Máx. 5 intentos/min por IP. |
+| `POST` | `/api/auth/refresh` | identidad | — | `{ refreshToken }` → nuevo par `{ accessToken, refreshToken, participant }`. Relee la cuenta de la base (rechaza si está desactivada). Máx. 20/min por IP. |
 | `GET` | `/api/auth/me` | identidad | JWT | Devuelve el participante del token. |
 | `PATCH` | `/api/auth/me` | identidad | JWT | Actualiza `onboardingVisto`. |
 | `GET` | `/api/admin/participantes` | identidad | JWT + rol `SUPERVISOR` | Lista cuentas de participante. |
@@ -352,13 +353,30 @@ Nginx enruta por prefijo: `/api/auth/*` y `/api/admin/*` a `identidad`,
 
 ### 5.1 Contrato del token
 
+Dos tokens, ambos firmados con `JWT_SECRET`, distinguidos por `typ` — sin esa
+marca, un refresh token (vida larga) serviría como access token en cualquier
+ruta protegida, y viceversa. `JwtAuthGuard` rechaza cualquiera cuyo `typ` no
+sea `'access'`.
+
 ```json
-{ "sub": "<uuid>", "seq": 42, "role": "PARTICIPANT" }
+// Access token — JWT_EXPIRES_IN, por defecto 15 min. Viaja en cada petición.
+{ "sub": "<uuid>", "seq": 42, "role": "PARTICIPANT", "typ": "access" }
+
+// Refresh token — REFRESH_TOKEN_EXPIRES_IN, por defecto 12 h. Solo lo ve
+// `identidad`, únicamente en POST /api/auth/refresh.
+{ "sub": "<uuid>", "typ": "refresh" }
 ```
 
-`seq` viaja en el token porque es el único campo del participante que el
-análisis necesita, y no lo identifica. Es lo que permite a `entrenamiento`
+`seq` viaja en el access token porque es el único campo del participante que
+el análisis necesita, y no lo identifica. Es lo que permite a `entrenamiento`
 etiquetar cada corrida sin consultar jamás a `identidad`.
+
+El refresh token deliberadamente **no** lleva `seq` ni `role`: al refrescar,
+`identidad` relee el participante de la base para armar el access token
+nuevo. Es lo que hace que una cuenta desactivada, o un cambio de rol, se
+refleje en como máximo la vida del access token (15 min) en vez de la del
+refresh (12 h) — el mismo mecanismo cierra la brecha de revocación que tenía
+un JWT de una sola vida larga.
 
 Las cabeceras de proxy de Nginx (`X-Real-IP`, `X-Forwarded-For`) van en
 `frontend/proxy-comun.inc` y se incluyen en **cada** `location`: nginx no hereda
@@ -485,8 +503,12 @@ Reglas que **no se negocian**:
 4. **Login y registro con límite de 5/min por IP.** El login responde el mismo
    error para correo inexistente y contraseña incorrecta, y compara siempre
    contra un hash señuelo, para no revelar quién está registrado.
-5. **JWT de expiración corta** (2 h) y sin datos personales en el payload: solo
-   el id, el seudónimo y el rol.
+5. **Access token de expiración corta** (15 min por defecto) y sin datos
+   personales en el payload: solo el id, el seudónimo, el rol y `typ`. El
+   refresh token (12 h) solo lleva el id, y `identidad` relee rol y estado de
+   la cuenta en la base cada vez que se usa (§5.1) — así el estudio puede
+   durar varias horas sin pedir login de nuevo, sin alargar la ventana en la
+   que un access token robado sigue sirviendo.
 6. **HTTPS obligatorio en producción.** El servidor propio debe terminar TLS
    delante de Nginx (Let's Encrypt). Un registro sobre HTTP no es aceptable.
 7. **`CEDULA_PEPPER` solo lo recibe `identidad`.** `entrenamiento` no lo tiene y
@@ -652,8 +674,9 @@ Antes de escribir código en este repositorio:
 Implementado: el corte en dos microservicios con un rol de Postgres por
 servicio, registro y login por correo, seudonimización, registro y consulta de
 resultados sin datos personales, gestión de cuentas por el supervisor
-(`/api/admin/participantes`), catálogo con rutas generadas, sistema de diseño
-en Tailwind (marca verde `#006837`),
+(`/api/admin/participantes`), access + refresh token (`/api/auth/refresh`,
+§5.1), catálogo con rutas generadas, sistema de diseño en Tailwind (marca
+verde `#006837`),
 contenerización y CI. Registro con nombre, apellido, correo y cédula validada
 por módulo 10 y guardada solo como HMAC. El MVP de solo phishing completo:
 catálogo recortado a 3 escenarios activos (las otras cinco secciones quedan

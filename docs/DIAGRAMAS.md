@@ -40,7 +40,7 @@ flowchart TB
     ID_API -- "SQL (rol identidad)" --> SCH_ID
     ENT_API -- "SQL (rol entrenamiento)" --> SCH_ENT
 
-    ID_API -. "JWT { sub, seq, role }<br/>NO llamada de red" .-> ENT_API
+    ID_API -. "access token { sub, seq, role, typ:access }<br/>NO llamada de red" .-> ENT_API
 
     style SCH_ID fill:#fce4e4,stroke:#c0392b
     style SCH_ENT fill:#e4f3e4,stroke:#2e7d32
@@ -48,10 +48,12 @@ flowchart TB
 
 **Qué hace cada microservicio**
 
-- **`identidad`** (`/api/auth/*`, `/api/admin/*`): registro, login, `me`, y
-  gestión de cuentas de participante por el supervisor (listar, activar/
-  desactivar, restablecer contraseña, eliminar). Es el único que conoce
-  nombre, apellido, correo, cédula (hasheada) y contraseña.
+- **`identidad`** (`/api/auth/*`, `/api/admin/*`): registro, login, refresco de
+  sesión (`POST /auth/refresh`), `me`, y gestión de cuentas de participante
+  por el supervisor (listar, activar/desactivar, restablecer contraseña,
+  eliminar). Es el único que conoce nombre, apellido, correo, cédula
+  (hasheada) y contraseña, y el único que ve un refresh token —
+  `entrenamiento` solo verifica access tokens.
 - **`entrenamiento`** (`/api/runs/*`): no es "entrenamiento" de un modelo de
   IA — es el módulo de *práctica/entrenamiento del participante* dentro del
   estudio. Registra cada corrida de escenario (`POST /runs`), calcula el
@@ -119,15 +121,23 @@ sequenceDiagram
     N->>I: proxy /api/auth/*
     I->>I: valida cédula (módulo 10), hashea (bcrypt/HMAC)
     I->>DI: INSERT Participant
-    I-->>P: { accessToken (JWT: sub, seq, role: PARTICIPANT), participant }
+    I-->>P: { accessToken (15 min, typ:access), refreshToken (12h, typ:refresh), participant }
 
-    P->>N: POST /api/runs {scenarioId, outcome, decisions...} + JWT
+    P->>N: POST /api/runs {scenarioId, outcome, decisions...} + accessToken
     N->>E: proxy /api/runs/*
     E->>E: extrae participantId/seq del JWT (no del body)
     E->>DE: INSERT ScenarioRun
     E-->>P: 201 Created
 
-    Note over I,E: Ninguna llamada de red entre I y E.<br/>Todo lo necesario viaja en el JWT.
+    Note over I,E: Ninguna llamada de red entre I y E.<br/>Todo lo necesario viaja en el access token.
+
+    Note over P,I: --- 15 min después: el access token vence ---
+    P->>N: POST /api/auth/refresh {refreshToken}
+    N->>I: proxy /api/auth/*
+    I->>I: verifica typ:refresh (typ:access aquí → 401)
+    I->>DI: SELECT Participant (relee role, disabledAt)
+    I-->>P: nuevo { accessToken, refreshToken }
+    Note over I,P: Cuenta desactivada mientras tanto → 401.<br/>El cambio de rol/estado tarda como máximo lo que dura un access token.
 
     S->>N: GET /api/runs/resultados + JWT (role: SUPERVISOR)
     N->>E: proxy /api/runs/*, SupervisorGuard

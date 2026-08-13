@@ -5,9 +5,9 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { JwtService } from '@nestjs/jwt';
+import { JwtService, type JwtSignOptions } from '@nestjs/jwt';
 import { compare, hash } from 'bcryptjs';
-import type { JwtPayload } from '@comun';
+import type { JwtPayload, RefreshTokenPayload } from '@comun';
 import { huellaCedula } from '../cedula/cedula';
 import { PrismaService } from '../prisma/prisma.service';
 import { LoginDto } from './dto/login.dto';
@@ -87,6 +87,7 @@ function esColisionDeUnicidad(error: unknown): boolean {
 @Injectable()
 export class AuthService {
   private readonly cedulaPepper: string;
+  private readonly refreshExpiresIn: string;
 
   constructor(
     private readonly prisma: PrismaService,
@@ -96,6 +97,7 @@ export class AuthService {
     // getOrThrow y no get: sin pepper, las huellas de cédula serían
     // reversibles por fuerza bruta. Mejor que el servicio no arranque.
     this.cedulaPepper = config.getOrThrow<string>('CEDULA_PEPPER');
+    this.refreshExpiresIn = config.get('REFRESH_TOKEN_EXPIRES_IN', '12h');
   }
 
   async register(dto: RegisterDto) {
@@ -199,6 +201,34 @@ export class AuthService {
     return perfilPublico(participant);
   }
 
+  /// Cambia el access token (vida corta) por uno nuevo, junto con un refresh
+  /// token nuevo. Relee el participante de la base en vez de confiar en lo que
+  /// traía el refresh token: así una cuenta desactivada, o un cambio de rol,
+  /// se refleja de inmediato en vez de esperar a que expire el refresh.
+  async refrescar(refreshToken: string) {
+    let payload: RefreshTokenPayload;
+    try {
+      payload = await this.jwt.verifyAsync<RefreshTokenPayload>(refreshToken);
+    } catch {
+      throw new UnauthorizedException('Refresh token inválido o expirado.');
+    }
+
+    if (payload.typ !== 'refresh') {
+      throw new UnauthorizedException('Refresh token inválido o expirado.');
+    }
+
+    const participant = await this.prisma.participant.findUnique({
+      where: { id: payload.sub },
+      select: { ...CAMPOS_SESION, disabledAt: true },
+    });
+
+    if (!participant || participant.disabledAt) {
+      throw new UnauthorizedException('Refresh token inválido o expirado.');
+    }
+
+    return this.sesion(participant);
+  }
+
   private async sesion(
     participant: ParticipantConOnboarding & { seq: number },
   ) {
@@ -206,10 +236,26 @@ export class AuthService {
       sub: participant.id,
       seq: participant.seq,
       role: participant.role,
+      typ: 'access',
     };
 
+    const refreshPayload: RefreshTokenPayload = {
+      sub: participant.id,
+      typ: 'refresh',
+    };
+
+    const [accessToken, refreshToken] = await Promise.all([
+      this.jwt.signAsync(payload),
+      this.jwt.signAsync(refreshPayload, {
+        // `expiresIn` viene de la config como string plano; el tipo de la
+        // librería `ms` lo quiere como template literal, no como `string`.
+        expiresIn: this.refreshExpiresIn,
+      } as JwtSignOptions),
+    ]);
+
     return {
-      accessToken: await this.jwt.signAsync(payload),
+      accessToken,
+      refreshToken,
       participant: perfilPublico(participant),
     };
   }

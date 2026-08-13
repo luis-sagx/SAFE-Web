@@ -1,13 +1,16 @@
 // Único punto de contacto con el backend: ningún componente llama a fetch.
 const BASE_URL = import.meta.env.VITE_API_URL ?? '/api'
 
-// El token va en localStorage, no en una cookie httpOnly. La sesión dura
-// minutos (JWT de 2h) y solo da acceso a los datos del propio participante,
-// nunca a un dato personal de otro. El riesgo de un XSS que lo robara queda
+// Los tokens van en localStorage, no en una cookie httpOnly. El access token
+// vive minutos (15 min) y solo da acceso a los datos del propio participante,
+// nunca a un dato personal de otro. El riesgo de un XSS que los robara queda
 // acotado por la CSP de nginx: `script-src 'self'` no ejecuta script inyectado
 // y `connect-src 'self'` impide enviarlo a otro origen. Migrar a cookie
-// httpOnly (con su manejo de CSRF) queda como endurecimiento posterior.
+// httpOnly (con su manejo de CSRF) queda como endurecimiento posterior — el
+// refresh token queda con el mismo perfil de riesgo que el access token
+// mientras eso no se haga.
 const TOKEN_KEY = 'mic-access-token'
+const REFRESH_TOKEN_KEY = 'mic-refresh-token'
 
 export interface Participant {
   id: string
@@ -21,6 +24,7 @@ export interface Participant {
 
 export interface Session {
   accessToken: string
+  refreshToken: string
   participant: Participant
 }
 
@@ -96,13 +100,64 @@ export function setToken(token: string | null): void {
   }
 }
 
+export function getRefreshToken(): string | null {
+  return localStorage.getItem(REFRESH_TOKEN_KEY)
+}
+
+export function setRefreshToken(token: string | null): void {
+  if (token) {
+    localStorage.setItem(REFRESH_TOKEN_KEY, token)
+  } else {
+    localStorage.removeItem(REFRESH_TOKEN_KEY)
+  }
+}
+
 interface RequestOptions {
   method?: string
   body?: unknown
   auth?: boolean
 }
 
-async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
+/// Varias peticiones pueden vencer a la vez (varias pestañas, varias llamadas
+/// en paralelo): sin esto cada una dispararía su propio POST /auth/refresh.
+/// Comparten esta promesa y solo se llama al backend una vez.
+let renovacionEnCurso: Promise<boolean> | null = null
+
+function renovarSesion(): Promise<boolean> {
+  if (renovacionEnCurso) {
+    return renovacionEnCurso
+  }
+
+  renovacionEnCurso = (async () => {
+    const refreshToken = getRefreshToken()
+    if (!refreshToken) {
+      return false
+    }
+
+    try {
+      const session = await request<Session>('/auth/refresh', {
+        method: 'POST',
+        body: { refreshToken },
+        auth: false,
+      })
+      setToken(session.accessToken)
+      setRefreshToken(session.refreshToken)
+      return true
+    } catch {
+      return false
+    }
+  })().finally(() => {
+    renovacionEnCurso = null
+  })
+
+  return renovacionEnCurso
+}
+
+async function request<T>(
+  path: string,
+  options: RequestOptions = {},
+  reintentado = false,
+): Promise<T> {
   const { method = 'GET', body, auth = true } = options
   const headers: Record<string, string> = {}
 
@@ -124,9 +179,18 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
   })
 
   if (!response.ok) {
-    // Token vencido: se descarta para que el siguiente render mande al login.
+    // Access token vencido: se intenta renovar UNA vez con el refresh token
+    // antes de rendirse. `auth` excluye la propia llamada a /auth/refresh, que
+    // nunca debe reintentarse a sí misma.
+    if (response.status === 401 && auth && !reintentado && (await renovarSesion())) {
+      return request<T>(path, options, true)
+    }
+
+    // Sigue sin autorizar (o ya se reintentó): se descartan los tokens para
+    // que el siguiente render mande al login.
     if (response.status === 401) {
       setToken(null)
+      setRefreshToken(null)
     }
 
     const detail = (await response.json().catch(() => null)) as {

@@ -42,6 +42,7 @@ export async function crearApp(): Promise<Entorno> {
         sub: 'p-1',
         seq: 1,
         role: 'PARTICIPANT',
+        typ: 'access',
         ...payload,
       } satisfies JwtPayload),
   };

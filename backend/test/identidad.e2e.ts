@@ -54,6 +54,7 @@ export interface PerfilBody {
 
 export interface SesionBody {
   accessToken: string;
+  refreshToken: string;
   participant: PerfilBody;
 }
 
