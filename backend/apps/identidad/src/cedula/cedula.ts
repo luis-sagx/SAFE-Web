@@ -76,10 +76,6 @@ export function EsCedulaEcuatoriana(options?: ValidationOptions) {
  * Y se usa HMAC y no bcrypt porque el valor tiene que ser DETERMINISTA para
  * servir de índice único — no es una contraseña que se verifique, es una llave
  * que se compara.
- *
- * Al cerrar la recolección, `pnpm anonimizar` destruye el pepper: sin él estos
- * hashes dejan de ser reversibles ni siquiera por fuerza bruta, y la
- * pseudonimización pasa a ser anonimización real (NIST SP 800-188).
  */
 export function huellaCedula(cedula: string, pepper: string): string {
   return createHmac('sha256', pepper).update(cedula).digest('hex');

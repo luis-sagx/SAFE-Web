@@ -8,7 +8,6 @@ import { seudonimo } from './seudonimo';
 
 export interface ResultadoCorrida {
   seudonimo: string;
-  cohort: string | null;
   scenarioId: string;
   version: number;
   outcome: string;
@@ -28,7 +27,6 @@ export class RunsService {
       data: {
         participantId: participante.sub,
         participantSeq: participante.seq,
-        participantCohort: participante.cohort,
         scenarioId: dto.scenarioId,
         version: dto.version,
         outcome: dto.outcome,
@@ -91,7 +89,6 @@ export class RunsService {
 
     return runs.map((run) => ({
       seudonimo: seudonimo(run.participantSeq),
-      cohort: run.participantCohort,
       scenarioId: run.scenarioId,
       version: run.version,
       outcome: run.outcome,

@@ -1,14 +1,11 @@
 // Servicio de IDENTIDAD: el único que conoce datos personales.
 //
-// Regla de privacidad (NIST SP 800-188): nombre, correo y teléfono sirven
-// ÚNICAMENTE para que el participante entre a la plataforma con algo familiar.
-// Nunca salen hacia el análisis — de hecho ya no pueden: las corridas viven en
-// otro schema, con otro rol de base de datos, en un servicio que no tiene
-// ningún modelo ni ningún permiso para leer esta tabla.
-//
-// Al cerrar la recolección se ejecuta `pnpm anonimizar`, que borra los datos
-// personales dejando intactas las corridas. Ahí la pseudonimización pasa a ser
-// anonimización real e irreversible.
+// Regla de privacidad: nombre, correo y cédula sirven ÚNICAMENTE para que el
+// participante entre a la plataforma con algo familiar. Nunca salen hacia el
+// análisis — de hecho ya no pueden: las corridas viven en otro schema, con
+// otro rol de base de datos, en un servicio que no tiene ningún modelo ni
+// ningún permiso para leer esta tabla. Esa separación estructural es la que
+// garantiza el anonimato del dato de análisis, no un borrado posterior.
 
 generator client {
   provider = "prisma-client-js"
@@ -38,11 +35,9 @@ model Participant {
   seq Int @unique @default(autoincrement())
 
   // --- Datos personales: solo para el acceso. Nunca se exportan. ---
-  // Son nullables porque `pnpm anonimizar` los pone en null al cerrar la
-  // recolección de datos.
-  nombre   String?
-  apellido String?
-  email    String  @unique
+  nombre   String
+  apellido String
+  email    String @unique
 
   /// HMAC-SHA256(cédula, CEDULA_PEPPER). La cédula EN CLARO NUNCA SE GUARDA:
   /// no entra a la base, no sale en ninguna respuesta y no va a los logs.
@@ -53,24 +48,17 @@ model Participant {
   /// lo hace irreversible. Y no bcrypt, porque para servir de índice único
   /// tiene que ser determinista.
   ///
-  /// `pnpm anonimizar` destruye el pepper: sin él estos valores dejan de ser
-  /// reproducibles y la pseudonimización pasa a ser anonimización real.
+  /// Nullable: la cuenta de supervisor (creada por `pnpm seed`) no tiene
+  /// cédula, no es participante del estudio.
   cedulaHash String? @unique
 
   passwordHash String
   role         Role   @default(PARTICIPANT)
 
-  /// Grupo de la muestra (ej. "adultos-mayores", "comerciantes"). Opcional.
-  cohort String?
-
   /// Si ya vio la pantalla de bienvenida y no quiere que vuelva a aparecer.
   /// Null = nunca la vio, o pidió verla de nuevo; con fecha = la vio y la
   /// cerró marcando "no volver a mostrar".
   onboardingVistoAt DateTime?
-
-  /// Marca de cuándo se borraron los datos personales. Deja constancia de que
-  /// la anonimización se aplicó, sin guardar qué se borró.
-  anonymizedAt DateTime?
 
   /// Cuenta desactivada por un supervisor. Null = activa. Una cuenta desactivada
   /// no puede iniciar sesión; un token ya emitido caduca por su cuenta (JWT

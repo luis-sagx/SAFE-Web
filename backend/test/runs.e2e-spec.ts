@@ -25,7 +25,7 @@ describe('Corridas (e2e)', () => {
     ({ app, prisma, token } = await crearApp());
     await limpiar(prisma);
 
-    deMaria = await token({ sub: 'maria', seq: 7, cohort: 'comerciantes' });
+    deMaria = await token({ sub: 'maria', seq: 7 });
     deOtro = await token({ sub: 'otro', seq: 8 });
   });
 
@@ -58,9 +58,9 @@ describe('Corridas (e2e)', () => {
     expect(guardada?.decisions).toEqual([{ desde: 'n1', hacia: 'n2' }]);
   });
 
-  // El seudónimo y la cohorte se copian del token, no del cuerpo: es lo que
-  // permite mostrar los resultados sin consultar jamás al servicio de identidad.
-  it('etiqueta la corrida con el seudónimo y la cohorte del token', async () => {
+  // El seudónimo se copia del token, no del cuerpo: es lo que permite mostrar
+  // los resultados sin consultar jamás al servicio de identidad.
+  it('etiqueta la corrida con el seudónimo del token', async () => {
     const res = await server()
       .post('/api/runs')
       .set('Authorization', `Bearer ${deMaria}`)
@@ -71,7 +71,6 @@ describe('Corridas (e2e)', () => {
       where: { id: cuerpo<CorridaBody>(res).id },
     });
     expect(guardada?.participantSeq).toBe(7);
-    expect(guardada?.participantCohort).toBe('comerciantes');
   });
 
   it('exige token para escribir', async () => {
@@ -83,7 +82,6 @@ describe('Corridas (e2e)', () => {
   it.each([
     ['participantId', { participantId: 'otro-id' }],
     ['participantSeq', { participantSeq: 999 }],
-    ['participantCohort', { participantCohort: 'inventada' }],
   ])('rechaza %s enviado en el cuerpo', async (_caso, override) => {
     await server()
       .post('/api/runs')
@@ -158,7 +156,6 @@ describe('Corridas (e2e)', () => {
       const deSiete = filas.find((f) => f.seudonimo === 'P007');
       expect(deSiete).toMatchObject({
         seudonimo: 'P007',
-        cohort: 'comerciantes',
       });
 
       // La garantía de privacidad, contra la base real. Este servicio no tiene

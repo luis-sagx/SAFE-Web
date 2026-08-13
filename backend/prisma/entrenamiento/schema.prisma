@@ -34,10 +34,6 @@ model ScenarioRun {
   /// Número de orden del que se deriva el seudónimo del análisis (P001).
   /// También viene del JWT, para no tener que consultar a `identidad`.
   participantSeq Int
-  /// Grupo de la muestra al momento de la corrida ("adultos-mayores"). Es
-  /// metadato de análisis, no un identificador. Se guarda por corrida porque
-  /// eso es justamente lo que el análisis necesita saber.
-  participantCohort String?
 
   /// Identificador del escenario en el catálogo del frontend, con el formato
   /// "<seccionId>/<escenarioId>" (ej. "phishing/factura-sri").

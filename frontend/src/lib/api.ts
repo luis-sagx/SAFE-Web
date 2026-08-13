@@ -15,7 +15,6 @@ export interface Participant {
   apellido: string | null
   email: string | null
   role: 'PARTICIPANT' | 'SUPERVISOR'
-  cohort: string | null
   /** Si ya vio la pantalla de bienvenida y no pidió que volviera a aparecer. */
   onboardingVisto: boolean
 }
@@ -192,7 +191,6 @@ export interface AdminParticipante {
 /** Una corrida del estudio, seudonimizada. Sin ningún dato personal. */
 export interface ResultadoCorrida {
   seudonimo: string
-  cohort: string | null
   scenarioId: string
   version: number
   outcome: RunOutcome

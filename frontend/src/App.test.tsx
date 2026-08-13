@@ -26,7 +26,6 @@ function participante() {
     apellido: 'Pérez',
     email: 'maria@ejemplo.com',
     role: 'PARTICIPANT',
-    cohort: null,
     onboardingVisto: true,
   }
 }

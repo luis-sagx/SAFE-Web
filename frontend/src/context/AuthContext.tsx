@@ -163,7 +163,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       marcarOnboardingVisto,
       onboardingDismissed,
       displayName: firstName(participant),
-      roleLabel: participant?.cohort ?? 'Participante',
+      roleLabel: 'Participante',
       initials: initialsOf(participant),
       correoSimulado: `${usuarioSimuladoDe(participant)}@${DOMINIO_SIMULADO}`,
       usuarioSimulado: usuarioSimuladoDe(participant),

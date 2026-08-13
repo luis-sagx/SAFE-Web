@@ -33,7 +33,6 @@ export interface Perfil {
   apellido: string | null;
   email: string | null;
   role: string;
-  cohort: string | null;
   onboardingVisto: boolean;
 }
 
@@ -43,7 +42,6 @@ interface ParticipantConOnboarding {
   apellido: string | null;
   email: string | null;
   role: string;
-  cohort: string | null;
   onboardingVistoAt: Date | null;
 }
 
@@ -56,7 +54,6 @@ const CAMPOS_PERFIL = {
   apellido: true,
   email: true,
   role: true,
-  cohort: true,
   onboardingVistoAt: true,
 } as const;
 
@@ -74,7 +71,6 @@ function perfilPublico(participant: ParticipantConOnboarding): Perfil {
     apellido: participant.apellido,
     email: participant.email,
     role: participant.role,
-    cohort: participant.cohort,
     onboardingVisto: participant.onboardingVistoAt !== null,
   };
 }
@@ -209,7 +205,6 @@ export class AuthService {
     const payload: JwtPayload = {
       sub: participant.id,
       seq: participant.seq,
-      cohort: participant.cohort,
       role: participant.role,
     };
 

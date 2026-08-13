@@ -45,7 +45,6 @@ export interface PerfilBody {
   apellido: string | null;
   email: string | null;
   role: string;
-  cohort: string | null;
   onboardingVisto: boolean;
   passwordHash?: never;
   seq?: never;

@@ -18,9 +18,9 @@ Documentos relacionados:
 
 Una aplicación web donde un participante **se registra con su nombre, apellido,
 correo y cédula**, juega **escenarios simulados de fraude** que registran cada
-decisión, y el supervisor exporta esos resultados —**identificados solo por un
+decisión, y el supervisor consulta esos resultados —**identificados solo por un
 seudónimo**— para compararlos con un pre-test y un post-test aplicados aparte en
-Google Forms.
+Moodle.
 
 De ahí salen las tres restricciones que gobiernan todo lo demás:
 
@@ -28,9 +28,9 @@ De ahí salen las tres restricciones que gobiernan todo lo demás:
    un dato perdido del estudio. La validación y el registro de corridas no son
    negociables.
 2. **Los datos personales no llegan al análisis.** Sirven para dar acceso y
-   nada más: la exportación identifica cada fila con un seudónimo (`P001`), la
-   cédula ni siquiera se almacena (§7.1), y al cerrar la recolección un comando
-   borra el resto.
+   nada más: los resultados identifican cada fila con un seudónimo (`P001`) y
+   la cédula ni siquiera se almacena (§7.1). La separación estructural entre
+   servicios (§2.1) es lo que lo garantiza, no un borrado posterior.
 3. **La usan personas no técnicas.** La interfaz se mantiene simple y en
    lenguaje claro; los escenarios simulan, nunca conectan con sistemas reales.
 
@@ -54,7 +54,7 @@ servidor propio mediante contenedores.
              ┌──────▼──────┐    ┌───────▼────────┐
              │  identidad  │    │  entrenamiento │
              │    :3001    │    │     :3002      │
-             │ PII · JWT   │    │ corridas · CSV │
+             │ PII · JWT   │    │ corridas       │
              └──────┬──────┘    └───────┬────────┘
                     │                   │
              ┌──────▼───────────────────▼────────┐
@@ -77,16 +77,18 @@ Decisiones estructurales que **no** se cambian sin actualizar este documento:
 ### 2.1 El corte es por sensibilidad del dato
 
 - **`identidad`** es el único que conoce nombre, apellido, correo y contraseña.
-- **`entrenamiento`** conoce `participantId` (un uuid opaco), `participantSeq`
-  (el seudónimo del análisis) y `participantCohort` (el grupo de la muestra).
-  Los tres llegan **dentro del JWT**, no de una consulta.
+- **`entrenamiento`** conoce `participantId` (un uuid opaco) y `participantSeq`
+  (el seudónimo del análisis). Los dos llegan **dentro del JWT**, no de una
+  consulta.
 
-Consecuencia: `GET /api/runs/export.csv` **no puede** filtrar un dato personal.
-No hay tabla que consultar, no hay llave foránea que seguir, y el rol de
-Postgres del servicio recibe `permission denied for schema identidad` si lo
-intenta con SQL crudo. Antes esto lo sostenía un `select` bien escrito más una
-prueba unitaria; ahora lo sostiene la arquitectura, y hay un paso de CI que lo
-verifica contra la base real.
+Consecuencia: `GET /api/runs/resultados` **no puede** filtrar un dato
+personal. No hay tabla que consultar, no hay llave foránea que seguir, y el
+rol de Postgres del servicio recibe `permission denied for schema identidad`
+si lo intenta con SQL crudo. Antes esto lo sostenía un `select` bien escrito
+más una prueba unitaria; ahora lo sostiene la arquitectura, y hay un paso de
+CI que lo verifica contra la base real. Esta separación estructural es la
+garantía de anonimato del dato de análisis; no depende de un borrado
+posterior sobre `identidad`.
 
 ### 2.2 Lo que este corte cuesta
 
@@ -95,9 +97,7 @@ Se declara para que no aparezca como sorpresa:
 1. **No hay `ON DELETE CASCADE`** de `Participant` a `ScenarioRun`. Para el
    estudio es lo correcto —borrar la identidad no debe borrar el dato que la
    persona aportó— pero deja de haber integridad referencial entre servicios.
-2. **`pnpm anonimizar` solo toca `identidad`.** Ya no cuenta corridas ni podría
-   borrarlas: no las alcanza. Que es justamente lo que se quiere.
-3. **Dos servicios que operar**: dos health checks, dos imágenes, dos juegos de
+2. **Dos servicios que operar**: dos health checks, dos imágenes, dos juegos de
    migraciones.
 
 ---
@@ -134,10 +134,10 @@ safe-web/
 │
 ├── backend/                  # Monorepo NestJS con los dos servicios (pnpm)
 │   ├── apps/
-│   │   ├── identidad/        # ← registro, login, JWT, datos personales
-│   │   │   ├── src/{auth,prisma}/
+│   │   ├── identidad/        # ← registro, login, JWT, admin de cuentas
+│   │   │   ├── src/{auth,admin,prisma}/
 │   │   │   └── tsconfig.app.json
-│   │   └── entrenamiento/    # ← corridas del estudio + exportación CSV
+│   │   └── entrenamiento/    # ← corridas del estudio + resultados (JSON)
 │   │       ├── src/{runs,prisma}/
 │   │       └── tsconfig.app.json
 │   ├── libs/
@@ -145,8 +145,7 @@ safe-web/
 │   ├── prisma/
 │   │   ├── identidad/{schema.prisma,migrations/}
 │   │   ├── entrenamiento/{schema.prisma,migrations/}
-│   │   ├── seed.mts          # crea la cuenta de supervisor
-│   │   └── anonimizar.mts    # ← cierra la recolección de datos
+│   │   └── seed.mts          # crea la cuenta de supervisor
 │   ├── prisma.identidad.config.ts
 │   ├── prisma.entrenamiento.config.ts
 │   ├── nest-cli.json         # modo monorepo
@@ -331,8 +330,8 @@ como error**.
 
 ## 5. Contrato del API
 
-Prefijo global `/api` en ambos servicios. Todas las respuestas son JSON salvo
-la exportación CSV. Nginx enruta por prefijo: `/api/auth/*` a `identidad`,
+Prefijo global `/api` en ambos servicios. Todas las respuestas son JSON.
+Nginx enruta por prefijo: `/api/auth/*` y `/api/admin/*` a `identidad`,
 `/api/runs/*` a `entrenamiento`.
 
 | Método | Ruta | Servicio | Auth | Qué hace |
@@ -341,20 +340,25 @@ la exportación CSV. Nginx enruta por prefijo: `/api/auth/*` a `identidad`,
 | `POST` | `/api/auth/register` | identidad | — | `{ nombre, apellido, email, cedula, password }` → `{ accessToken, participant }`. Máx. 5/min por IP. |
 | `POST` | `/api/auth/login` | identidad | — | `{ email, password }` → `{ accessToken, participant }`. Máx. 5 intentos/min por IP. |
 | `GET` | `/api/auth/me` | identidad | JWT | Devuelve el participante del token. |
+| `PATCH` | `/api/auth/me` | identidad | JWT | Actualiza `onboardingVisto`. |
+| `GET` | `/api/admin/participantes` | identidad | JWT + rol `SUPERVISOR` | Lista cuentas de participante. |
+| `PATCH` | `/api/admin/participantes/:id/estado` | identidad | JWT + rol `SUPERVISOR` | Activa/desactiva una cuenta. |
+| `POST` | `/api/admin/participantes/:id/restablecer-password` | identidad | JWT + rol `SUPERVISOR` | Genera y guarda una contraseña nueva. |
+| `DELETE` | `/api/admin/participantes/:id` | identidad | JWT + rol `SUPERVISOR` | Elimina la cuenta. |
 | `POST` | `/api/runs` | entrenamiento | JWT | Registra una corrida. |
 | `GET` | `/api/runs/me` | entrenamiento | JWT | Corridas del participante autenticado. |
-| `GET` | `/api/runs/export.csv` | entrenamiento | JWT + rol `RESEARCHER` | Exporta todas las corridas para el análisis. |
+| `GET` | `/api/runs/progreso/:modulo` | entrenamiento | JWT | Gating: progreso del participante en un módulo. |
+| `GET` | `/api/runs/resultados` | entrenamiento | JWT + rol `SUPERVISOR` | Todas las corridas, seudonimizadas (JSON, se ve dentro de la app, no se descarga). |
 
 ### 5.1 Contrato del token
 
 ```json
-{ "sub": "<uuid>", "seq": 42, "cohort": "comerciantes", "role": "PARTICIPANT" }
+{ "sub": "<uuid>", "seq": 42, "role": "PARTICIPANT" }
 ```
 
-`seq` y `cohort` viajan en el token porque son los dos únicos campos del
-participante que el análisis necesita, y ninguno lo identifica. Es lo que
-permite a `entrenamiento` etiquetar cada corrida y exportar el CSV sin consultar
-jamás a `identidad`.
+`seq` viaja en el token porque es el único campo del participante que el
+análisis necesita, y no lo identifica. Es lo que permite a `entrenamiento`
+etiquetar cada corrida sin consultar jamás a `identidad`.
 
 Las cabeceras de proxy de Nginx (`X-Real-IP`, `X-Forwarded-For`) van en
 `frontend/proxy-comun.inc` y se incluyen en **cada** `location`: nginx no hereda
@@ -395,13 +399,13 @@ Un schema de Prisma por servicio, y **una tabla en cada uno**:
 
 - `backend/prisma/identidad/schema.prisma` → **`Participant`**: `seq`
   (autoincremental, del que se deriva el seudónimo), `nombre`, `apellido`,
-  `email` (único, es el usuario de login), `cedulaHash` (único, §7.1),
-  `passwordHash`, `role`, `cohort`, `anonymizedAt`. Los campos personales son
-  *nullable* porque `pnpm anonimizar` los pone en null.
+  `email` (único, es el usuario de login), `cedulaHash` (único, nullable —solo
+  la cuenta de supervisor no tiene cédula—, §7.1), `passwordHash`, `role`,
+  `onboardingVistoAt`, `disabledAt`.
 - `backend/prisma/entrenamiento/schema.prisma` → **`ScenarioRun`**: una fila por
-  escenario terminado, con `participantId`, `participantSeq`,
-  `participantCohort`, `scenarioId`, `version`, `outcome`, `score`, `endingId`,
-  `durationMs`, `startedAt`, `finishedAt` y `decisions` (JSONB).
+  escenario terminado, con `participantId`, `participantSeq`, `scenarioId`,
+  `version`, `outcome`, `score`, `endingId`, `durationMs`, `startedAt`,
+  `finishedAt` y `decisions` (JSONB).
 
 **No hay llave foránea entre ellas y no debe haberla.** `participantId` es un
 uuid opaco: el servicio que lo guarda no tiene la tabla que lo resolvería.
@@ -434,9 +438,9 @@ confunde a un público no técnico. Eso obliga a una separación estricta entre
 ```
 REGISTRO                  identidad                    entrenamiento
 nombre, apellido,  ───▶   Participant                  ScenarioRun
-correo, cédula            nombre, apellido, email      participantSeq  ──▶ CSV
-                          cedulaHash (HMAC)            participantCohort   P001
-                          seq, cohort ──── JWT ──────▶ scenarioId, outcome…
+correo, cédula            nombre, apellido, email      participantSeq ──▶ resultados
+                          cedulaHash (HMAC)                                 P001
+                          seq ──────────── JWT ───────▶ scenarioId, outcome…
                                                        (sin PII, y sin acceso
                                                         posible a ella)
 ```
@@ -467,32 +471,25 @@ Cómo se trata:
 
 Reglas que **no se negocian**:
 
-1. **La exportación nunca incluye datos personales.** Ya no es una regla de
-   disciplina: el servicio que exporta el CSV vive en otro schema, con otro rol
-   de Postgres, y no tiene ninguna tabla con datos personales ni permiso para
-   alcanzarlos. Hay una prueba unitaria, una e2e y un paso de CI que lo
-   verifican contra la base real.
+1. **Los resultados nunca incluyen datos personales.** Ya no es una regla de
+   disciplina: el servicio que sirve `GET /api/runs/resultados` vive en otro
+   schema, con otro rol de Postgres, y no tiene ninguna tabla con datos
+   personales ni permiso para alcanzarlos. Hay una prueba unitaria, una e2e y
+   un paso de CI que lo verifican contra la base real. Es esta separación
+   estructural —no un borrado posterior— la que garantiza el anonimato del
+   dato de análisis.
 2. **El seudónimo se deriva de `seq`, no se guarda.** El participante nunca lo
    ve; es solo la llave con la que el supervisor cruza estos resultados con
-   las respuestas de Forms.
-3. **Al cerrar la recolección se ejecuta `pnpm anonimizar -- --confirmar`.**
-   Borra nombre, apellido, correo y la huella de la cédula, invalida el acceso y
-   conserva las corridas. Ahí la pseudonimización pasa a ser anonimización real
-   (NIST SP 800-188) y es irreversible.
-
-   **Ese comando deja un paso manual, y hay que hacerlo:** borrar
-   `CEDULA_PEPPER` del `.env` del servidor y de cualquier respaldo. Mientras ese
-   secreto exista, una huella que se hubiera copiado antes seguiría siendo
-   reproducible. Sin él, no.
-4. **Contraseñas con bcrypt** (factor 12). Nunca en texto plano ni en logs.
-5. **Login y registro con límite de 5/min por IP.** El login responde el mismo
+   las respuestas del pre-test y post-test.
+3. **Contraseñas con bcrypt** (factor 12). Nunca en texto plano ni en logs.
+4. **Login y registro con límite de 5/min por IP.** El login responde el mismo
    error para correo inexistente y contraseña incorrecta, y compara siempre
    contra un hash señuelo, para no revelar quién está registrado.
-6. **JWT de expiración corta** (2 h) y sin datos personales en el payload: solo
-   el id, el seudónimo, la cohorte y el rol.
-7. **HTTPS obligatorio en producción.** El servidor propio debe terminar TLS
+5. **JWT de expiración corta** (2 h) y sin datos personales en el payload: solo
+   el id, el seudónimo y el rol.
+6. **HTTPS obligatorio en producción.** El servidor propio debe terminar TLS
    delante de Nginx (Let's Encrypt). Un registro sobre HTTP no es aceptable.
-8. **`CEDULA_PEPPER` solo lo recibe `identidad`.** `entrenamiento` no lo tiene y
+7. **`CEDULA_PEPPER` solo lo recibe `identidad`.** `entrenamiento` no lo tiene y
    no lo necesita: es el único servicio que llega a ver una cédula.
 
 El consentimiento informado debe decir explícitamente:
@@ -500,11 +497,11 @@ El consentimiento informado debe decir explícitamente:
 - que se recogen **nombre, apellido, correo y cédula** para dar acceso;
 - que **la cédula no se almacena**: se guarda solo un código derivado del que no
   se puede reconstruir, y su único fin es evitar registros duplicados;
-- que ninguno de esos datos se usa en el análisis;
-- que todos se borran al terminar el estudio, de forma irreversible.
+- que los datos usados para el análisis se tratan de forma **anonimizada**
+  (el seudónimo `P001`, nunca nombre, correo ni cédula).
 
-Los pre-test y post-test se aplican **fuera** de la plataforma (Google Forms).
-La plataforma no envía nada a Forms ni consume su API.
+Los pre-test y post-test se aplican **fuera** de la plataforma (Moodle). La
+plataforma no envía nada a Moodle ni consume su API.
 
 ---
 
@@ -574,7 +571,6 @@ pnpm start:entrenamiento                     # http://localhost:3002/api
 pnpm build && pnpm lint:ci
 pnpm test && pnpm test:e2e
 pnpm seed -- --email tu.correo@espe.edu.ec   # cuenta de supervisor
-pnpm anonimizar                              # al cerrar la recolección
 
 # Todo junto
 docker compose up -d --build
@@ -645,8 +641,8 @@ Antes de escribir código en este repositorio:
 | Comunicación entre servicios | Ninguna: todo lo que necesitan viaja en el JWT | Evita acoplamiento en tiempo de ejecución y una cadena de fallos donde un servicio caído tumba al otro. |
 | Base de datos | Un Postgres, un schema y un rol por servicio | Dos contenedores de base complicarían la operación de una sesión presencial sin añadir aislamiento que los roles no den ya. |
 | Contenido de escenarios | En el repositorio, no en la base | No es dato del estudio ni varía por usuario. |
-| Pre/post-test | Google Forms, fuera de la plataforma | Ya resuelto y validado; construirlo dentro no aportaría al objetivo. |
-| Analítica dentro de la app | Fuera de alcance | El análisis se hace sobre el CSV exportado. |
+| Pre/post-test | Moodle, fuera de la plataforma | Ya resuelto y validado; construirlo dentro no aportaría al objetivo. |
+| Analítica dentro de la app | Fuera de alcance | El análisis se hace sobre los resultados que el supervisor consulta en `/api/runs/resultados`. |
 | Multi-idioma | Fuera de alcance | El estudio es en Ecuador, en español. |
 
 ---
@@ -654,9 +650,10 @@ Antes de escribir código en este repositorio:
 ## 12. Estado actual
 
 Implementado: el corte en dos microservicios con un rol de Postgres por
-servicio, registro y login por correo, seudonimización, registro y exportación
-de corridas sin datos personales, comando de anonimización, catálogo con rutas
-generadas, sistema de diseño en Tailwind (marca verde `#006837`),
+servicio, registro y login por correo, seudonimización, registro y consulta de
+resultados sin datos personales, gestión de cuentas por el supervisor
+(`/api/admin/participantes`), catálogo con rutas generadas, sistema de diseño
+en Tailwind (marca verde `#006837`),
 contenerización y CI. Registro con nombre, apellido, correo y cédula validada
 por módulo 10 y guardada solo como HMAC. El MVP de solo phishing completo:
 catálogo recortado a 3 escenarios activos (las otras cinco secciones quedan

@@ -12,7 +12,6 @@ function serviceWith(runs: unknown[]) {
 function runFixture(overrides: Record<string, unknown> = {}) {
   return {
     participantSeq: 7,
-    participantCohort: 'comerciantes',
     scenarioId: 'phishing/factura-sri',
     version: 1,
     outcome: 'CORRECTO',
@@ -31,7 +30,6 @@ describe('RunsService.resultados', () => {
 
     expect(fila).toEqual({
       seudonimo: 'P007',
-      cohort: 'comerciantes',
       scenarioId: 'phishing/factura-sri',
       version: 1,
       outcome: 'CORRECTO',
@@ -63,12 +61,4 @@ describe('RunsService.resultados', () => {
     expect(fila.seudonimo).toBe('P007');
   });
 
-  it('deja la cohorte en null cuando el participante no tiene grupo', async () => {
-    const [fila] = await serviceWith([
-      runFixture({ participantSeq: 9, participantCohort: null }),
-    ]).resultados();
-
-    expect(fila.seudonimo).toBe('P009');
-    expect(fila.cohort).toBeNull();
-  });
 });

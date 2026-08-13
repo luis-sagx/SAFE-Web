@@ -41,7 +41,6 @@ export async function crearApp(): Promise<Entorno> {
       jwt.signAsync({
         sub: 'p-1',
         seq: 1,
-        cohort: null,
         role: 'PARTICIPANT',
         ...payload,
       } satisfies JwtPayload),

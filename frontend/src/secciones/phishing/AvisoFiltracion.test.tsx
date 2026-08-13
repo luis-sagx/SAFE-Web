@@ -11,7 +11,6 @@ vi.mock('../../context/AuthContext', () => ({
       apellido: 'Pérez',
       email: 'maria@ejemplo.com',
       role: 'PARTICIPANT',
-      cohort: null,
       onboardingVisto: true,
     },
     loading: false,
