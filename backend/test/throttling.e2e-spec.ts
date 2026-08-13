@@ -5,7 +5,7 @@ import type { App } from 'supertest/types';
 import { AppModule } from '../apps/identidad/src/app.module';
 import { configurarApp } from '@comun';
 import { PrismaService } from '../apps/identidad/src/prisma/prisma.service';
-import { limpiar } from './identidad.e2e';
+import { cuerpo, limpiar, type ErrorBody } from './identidad.e2e';
 
 /// Única suite con el límite activo: es lo que protege el login contra fuerza
 /// bruta (OWASP Authentication).
@@ -37,13 +37,21 @@ describe('Límite de peticiones (e2e)', () => {
         .post('/api/auth/login')
         .send({ email: 'atacante@ejemplo.com', password: 'adivinando' });
 
-    const codigos: number[] = [];
+    const respuestas: Awaited<ReturnType<typeof intento>>[] = [];
     for (let i = 0; i < 6; i++) {
-      codigos.push((await intento()).status);
+      respuestas.push(await intento());
     }
 
-    expect(codigos.slice(0, 5)).toEqual([401, 401, 401, 401, 401]);
-    expect(codigos[5]).toBe(429);
+    expect(respuestas.slice(0, 5).map((r) => r.status)).toEqual([
+      401, 401, 401, 401, 401,
+    ]);
+    expect(respuestas[5].status).toBe(429);
+
+    // Toda la app está en español; el 429 no puede llegar con el mensaje en
+    // inglés que trae @nestjs/throttler por defecto.
+    expect(cuerpo<ErrorBody>(respuestas[5]).message).toBe(
+      'Demasiadas solicitudes. Espera un momento e inténtalo de nuevo.',
+    );
   });
 
   // El límite es por IP, no un cubo global. Depende de `trust proxy` (app.setup):
