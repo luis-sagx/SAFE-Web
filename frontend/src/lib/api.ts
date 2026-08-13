@@ -1,16 +1,20 @@
 // Único punto de contacto con el backend: ningún componente llama a fetch.
 const BASE_URL = import.meta.env.VITE_API_URL ?? '/api'
 
-// Los tokens van en localStorage, no en una cookie httpOnly. El access token
-// vive minutos (15 min) y solo da acceso a los datos del propio participante,
-// nunca a un dato personal de otro. El riesgo de un XSS que los robara queda
-// acotado por la CSP de nginx: `script-src 'self'` no ejecuta script inyectado
-// y `connect-src 'self'` impide enviarlo a otro origen. Migrar a cookie
-// httpOnly (con su manejo de CSRF) queda como endurecimiento posterior — el
-// refresh token queda con el mismo perfil de riesgo que el access token
-// mientras eso no se haga.
+// El access token va en localStorage: vive minutos (15 min) y solo da acceso
+// a los datos del propio participante, nunca a un dato personal de otro. El
+// riesgo de un XSS que lo robara queda acotado por la CSP de nginx:
+// `script-src 'self'` no ejecuta script inyectado y `connect-src 'self'`
+// impide enviarlo a otro origen.
+//
+// El refresh token NO pasa por aquí: `identidad` lo pone en una cookie
+// `httpOnly` (`Set-Cookie`, ver `auth.controller.ts`). Ni este archivo ni
+// ningún otro código de la SPA lo ve nunca — un XSS que lea `localStorage` o
+// `document.cookie` no lo alcanza. El navegador la adjunta solo en
+// `POST /auth/refresh` (`credentials: 'same-origin'` abajo) y solo la propia
+// petición del navegador a ese origen; `SameSite=Strict` reemplaza al CSRF
+// token porque nunca viaja en una petición de otro sitio.
 const TOKEN_KEY = 'mic-access-token'
-const REFRESH_TOKEN_KEY = 'mic-refresh-token'
 
 export interface Participant {
   id: string
@@ -24,7 +28,6 @@ export interface Participant {
 
 export interface Session {
   accessToken: string
-  refreshToken: string
   participant: Participant
 }
 
@@ -100,18 +103,6 @@ export function setToken(token: string | null): void {
   }
 }
 
-export function getRefreshToken(): string | null {
-  return localStorage.getItem(REFRESH_TOKEN_KEY)
-}
-
-export function setRefreshToken(token: string | null): void {
-  if (token) {
-    localStorage.setItem(REFRESH_TOKEN_KEY, token)
-  } else {
-    localStorage.removeItem(REFRESH_TOKEN_KEY)
-  }
-}
-
 interface RequestOptions {
   method?: string
   body?: unknown
@@ -129,19 +120,13 @@ function renovarSesion(): Promise<boolean> {
   }
 
   renovacionEnCurso = (async () => {
-    const refreshToken = getRefreshToken()
-    if (!refreshToken) {
-      return false
-    }
-
     try {
+      // Sin body: el refresh token va en la cookie httpOnly, no lo toca JS.
       const session = await request<Session>('/auth/refresh', {
         method: 'POST',
-        body: { refreshToken },
         auth: false,
       })
       setToken(session.accessToken)
-      setRefreshToken(session.refreshToken)
       return true
     } catch {
       return false
@@ -151,6 +136,14 @@ function renovarSesion(): Promise<boolean> {
   })
 
   return renovacionEnCurso
+}
+
+/// `POST /auth/logout` borra la cookie httpOnly del refresh token en el
+/// servidor: es lo único que la app no puede hacer por su cuenta (no es
+/// legible ni borrable desde JS). Sin esto, "cerrar sesión" en un equipo
+/// compartido dejaría la cookie viva para la siguiente persona.
+export function logout(): Promise<null> {
+  return request<null>('/auth/logout', { method: 'POST', auth: false })
 }
 
 async function request<T>(
@@ -175,22 +168,26 @@ async function request<T>(
   const response = await fetch(`${BASE_URL}${path}`, {
     method,
     headers,
+    // Sin esto el navegador no manda (ni guarda) la cookie httpOnly del
+    // refresh token en /auth/refresh. Mismo origen siempre (gateway único),
+    // así que no hace falta 'include' ni CORS con credenciales.
+    credentials: 'same-origin',
     body: body === undefined ? undefined : JSON.stringify(body),
   })
 
   if (!response.ok) {
-    // Access token vencido: se intenta renovar UNA vez con el refresh token
-    // antes de rendirse. `auth` excluye la propia llamada a /auth/refresh, que
-    // nunca debe reintentarse a sí misma.
+    // Access token vencido: se intenta renovar UNA vez con la cookie del
+    // refresh token antes de rendirse. `auth` excluye la propia llamada a
+    // /auth/refresh, que nunca debe reintentarse a sí misma.
     if (response.status === 401 && auth && !reintentado && (await renovarSesion())) {
       return request<T>(path, options, true)
     }
 
-    // Sigue sin autorizar (o ya se reintentó): se descartan los tokens para
-    // que el siguiente render mande al login.
+    // Sigue sin autorizar (o ya se reintentó): se descarta el access token
+    // para que el siguiente render mande al login. La cookie del refresh la
+    // limpia el propio backend cuando el refresh falla (ver auth.controller).
     if (response.status === 401) {
       setToken(null)
-      setRefreshToken(null)
     }
 
     const detail = (await response.json().catch(() => null)) as {

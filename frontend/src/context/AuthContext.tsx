@@ -123,7 +123,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = useCallback(async (email: string, password: string) => {
     const session = await api.login(email, password)
     api.setToken(session.accessToken)
-    api.setRefreshToken(session.refreshToken)
     setParticipant(session.participant)
     setOnboardingDismissed(false)
     return session.participant
@@ -132,15 +131,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const register = useCallback(async (credentials: Credentials) => {
     const session = await api.register(credentials)
     api.setToken(session.accessToken)
-    api.setRefreshToken(session.refreshToken)
     setParticipant(session.participant)
     setOnboardingDismissed(false)
     return session.participant
   }, [])
 
+  // La cookie httpOnly del refresh token no la puede borrar este código —no
+  // es legible ni escribible desde JS—, así que hay que pedírselo al
+  // servidor. Se dispara sin esperar: la UI cierra sesión de inmediato pase
+  // lo que pase con la red, y si la llamada falla la cookie igual expira sola.
   const logout = useCallback(() => {
+    void api.logout().catch(() => {})
     api.setToken(null)
-    api.setRefreshToken(null)
     setParticipant(null)
     setOnboardingDismissed(false)
   }, [])

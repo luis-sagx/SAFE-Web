@@ -1,10 +1,17 @@
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import type { NestExpressApplication } from '@nestjs/platform-express';
+import cookieParser from 'cookie-parser';
 
 /// Aparte de main.ts para que las pruebas end-to-end levanten la misma app que
 /// corre en el servidor, y para que los dos servicios se configuren igual.
 export function configurarApp(app: INestApplication): INestApplication {
   app.setGlobalPrefix('api');
+
+  // Solo `identidad` lee una cookie (el refresh token, en POST /auth/refresh),
+  // pero se activa en los dos servicios para que compartan la misma
+  // configuración. Sin `secret`: no se firman cookies aparte, el refresh token
+  // ya viaja firmado como JWT.
+  app.use(cookieParser());
 
   // Un solo salto de proxy (nginx) delante. Sin esto Express ignora
   // X-Forwarded-For y `req.ip` es la IP del contenedor de nginx: el límite de

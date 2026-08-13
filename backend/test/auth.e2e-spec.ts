@@ -3,6 +3,7 @@ import request from 'supertest';
 import type { App } from 'supertest/types';
 import { PrismaService } from '../apps/identidad/src/prisma/prisma.service';
 import {
+  cookieRefresh,
   crearApp,
   cuerpo,
   limpiar,
@@ -321,21 +322,45 @@ describe('Autenticación (e2e)', () => {
   });
 
   describe('POST /api/auth/refresh', () => {
-    it('entrega un access token y un refresh token nuevos', async () => {
+    // El refresh token nunca aparece en el JSON: viaja solo en una cookie
+    // httpOnly que puso register/login. `cookieRefresh` la extrae de
+    // `Set-Cookie`, tal como haría el navegador solo, sin que JS la toque.
+    it('pone la cookie del refresh token, httpOnly y restringida a esta ruta', async () => {
+      const res = await server()
+        .post('/api/auth/register')
+        .send(registro('refresh-cookie'))
+        .expect(201);
+
+      const cookie = (res.headers['set-cookie'] as unknown as string[]).find(
+        (c) => c.startsWith('mic-refresh-token='),
+      );
+
+      expect(cookie).toBeDefined();
+      expect(cookie).toContain('HttpOnly');
+      expect(cookie).toContain('SameSite=Strict');
+      expect(cookie).toContain('Path=/api/auth/refresh');
+      expect(cuerpo<SesionBody>(res)).not.toHaveProperty('refreshToken');
+    });
+
+    it('entrega un access token nuevo y rota la cookie', async () => {
       const registrado = await server()
         .post('/api/auth/register')
         .send(registro('refresh'))
         .expect(201);
-      const original = cuerpo<SesionBody>(registrado);
+      const cookieOriginal = cookieRefresh(registrado);
 
       const res = await server()
         .post('/api/auth/refresh')
-        .send({ refreshToken: original.refreshToken })
+        .set('Cookie', cookieOriginal)
         .expect(200);
 
       const renovado = cuerpo<SesionBody>(res);
       expect(typeof renovado.accessToken).toBe('string');
-      expect(typeof renovado.refreshToken).toBe('string');
+      expect(renovado).not.toHaveProperty('refreshToken');
+      // Rotación: el refresh también pone una cookie nueva (mismo nombre,
+      // mismo `sub` — puede coincidir byte a byte con la original si cae en
+      // el mismo segundo de `iat`, así que no se compara el valor).
+      expect(cookieRefresh(res)).toBeDefined();
 
       // El access token nuevo sirve de verdad en una ruta protegida.
       await server()
@@ -344,16 +369,21 @@ describe('Autenticación (e2e)', () => {
         .expect(200);
     });
 
-    it('rechaza un refresh token inventado', async () => {
+    it('rechaza cuando no hay cookie', async () => {
+      await server().post('/api/auth/refresh').expect(401);
+    });
+
+    it('rechaza una cookie con un token inventado', async () => {
       await server()
         .post('/api/auth/refresh')
-        .send({ refreshToken: 'no.es.un.token' })
+        .set('Cookie', 'mic-refresh-token=no.es.un.token')
         .expect(401);
     });
 
     // La garantía que sostiene todo el diseño: sin la marca `typ`, un access
-    // token (vida corta, pero el único que un atacante suele conseguir robar)
-    // podría reutilizarse aquí para sacar un refresh token de vida larga.
+    // token (vida corta, pero el único que un atacante suele conseguir robar
+    // vía XSS, ya que el refresh es httpOnly) podría reutilizarse aquí para
+    // sacar un refresh token de vida larga.
     it('rechaza un access token usado como refresh token', async () => {
       const res = await server()
         .post('/api/auth/register')
@@ -363,7 +393,7 @@ describe('Autenticación (e2e)', () => {
 
       await server()
         .post('/api/auth/refresh')
-        .send({ refreshToken: accessToken })
+        .set('Cookie', `mic-refresh-token=${accessToken}`)
         .expect(401);
     });
 
@@ -374,7 +404,7 @@ describe('Autenticación (e2e)', () => {
         .post('/api/auth/register')
         .send(registro('refresh-typ-2'))
         .expect(201);
-      const { refreshToken } = cuerpo<SesionBody>(res);
+      const refreshToken = cookieRefresh(res).split('=')[1];
 
       await server()
         .get('/api/auth/me')
@@ -388,7 +418,7 @@ describe('Autenticación (e2e)', () => {
         .post('/api/auth/register')
         .send(datos)
         .expect(201);
-      const { refreshToken } = cuerpo<SesionBody>(res);
+      const cookie = cookieRefresh(res);
 
       await prisma.participant.update({
         where: { email: datos.email },
@@ -397,12 +427,22 @@ describe('Autenticación (e2e)', () => {
 
       await server()
         .post('/api/auth/refresh')
-        .send({ refreshToken })
+        .set('Cookie', cookie)
         .expect(401);
     });
+  });
 
-    it('rechaza el cuerpo sin refreshToken', async () => {
-      await server().post('/api/auth/refresh').send({}).expect(400);
+  describe('POST /api/auth/logout', () => {
+    it('borra la cookie del refresh token', async () => {
+      const res = await server().post('/api/auth/logout').expect(204);
+
+      const cookie = (res.headers['set-cookie'] as unknown as string[]).find(
+        (c) => c.startsWith('mic-refresh-token='),
+      );
+
+      // Borrar una cookie es ponerla vacía con fecha de expiración pasada.
+      expect(cookie).toBeDefined();
+      expect(cookie).toMatch(/mic-refresh-token=;/);
     });
   });
 });

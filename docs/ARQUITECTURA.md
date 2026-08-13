@@ -337,9 +337,10 @@ Nginx enruta por prefijo: `/api/auth/*` y `/api/admin/*` a `identidad`,
 | Método | Ruta | Servicio | Auth | Qué hace |
 |---|---|---|---|---|
 | `GET` | `/api/health` | ambos | — | Health check (Docker y CI). Nginx expone el de `identidad`. |
-| `POST` | `/api/auth/register` | identidad | — | `{ nombre, apellido, email, cedula, password }` → `{ accessToken, refreshToken, participant }`. Máx. 5/min por IP. |
-| `POST` | `/api/auth/login` | identidad | — | `{ email, password }` → `{ accessToken, refreshToken, participant }`. Máx. 5 intentos/min por IP. |
-| `POST` | `/api/auth/refresh` | identidad | — | `{ refreshToken }` → nuevo par `{ accessToken, refreshToken, participant }`. Relee la cuenta de la base (rechaza si está desactivada). Máx. 20/min por IP. |
+| `POST` | `/api/auth/register` | identidad | — | `{ nombre, apellido, email, cedula, password }` → `{ accessToken, participant }` + cookie `Set-Cookie` con el refresh token. Máx. 5/min por IP. |
+| `POST` | `/api/auth/login` | identidad | — | `{ email, password }` → `{ accessToken, participant }` + cookie con el refresh token. Máx. 5 intentos/min por IP. |
+| `POST` | `/api/auth/refresh` | identidad | cookie `mic-refresh-token` | Sin body: lee el refresh token de la cookie httpOnly. → nuevo `{ accessToken, participant }` + cookie rotada. Relee la cuenta de la base (rechaza si está desactivada). Máx. 20/min por IP. |
+| `POST` | `/api/auth/logout` | identidad | — | Borra la cookie del refresh token. `204`. |
 | `GET` | `/api/auth/me` | identidad | JWT | Devuelve el participante del token. |
 | `PATCH` | `/api/auth/me` | identidad | JWT | Actualiza `onboardingVisto`. |
 | `GET` | `/api/admin/participantes` | identidad | JWT + rol `SUPERVISOR` | Lista cuentas de participante. |
@@ -359,7 +360,8 @@ ruta protegida, y viceversa. `JwtAuthGuard` rechaza cualquiera cuyo `typ` no
 sea `'access'`.
 
 ```json
-// Access token — JWT_EXPIRES_IN, por defecto 15 min. Viaja en cada petición.
+// Access token — JWT_EXPIRES_IN, por defecto 15 min. Viaja en cada petición,
+// en la cabecera Authorization. Vive en localStorage del lado del cliente.
 { "sub": "<uuid>", "seq": 42, "role": "PARTICIPANT", "typ": "access" }
 
 // Refresh token — REFRESH_TOKEN_EXPIRES_IN, por defecto 12 h. Solo lo ve
@@ -376,6 +378,24 @@ El refresh token deliberadamente **no** lleva `seq` ni `role`: al refrescar,
 nuevo. Es lo que hace que una cuenta desactivada, o un cambio de rol, se
 refleje en como máximo la vida del access token (15 min) en vez de la del
 refresh (12 h) — el mismo mecanismo cierra la brecha de revocación que tenía
+
+**El refresh token nunca lo toca JavaScript.** A diferencia del access token,
+viaja en una cookie `httpOnly` (`mic-refresh-token`, `auth.controller.ts`) que
+pone `Set-Cookie` en register/login/refresh — el frontend nunca lo lee ni lo
+guarda. Eso es lo que hace que valga la pena que sea de vida larga:
+
+- **`httpOnly`**: un XSS que lea `localStorage`/`document.cookie` no lo
+  alcanza. El access token sí sigue expuesto a ese vector, pero dura 15 min.
+- **`path: /api/auth/refresh`**: el navegador no la adjunta en ninguna otra
+  petición, ni siquiera a `/api/auth/login`.
+- **`sameSite: strict`**: el navegador nunca la manda en una petición que no
+  haya salido de este mismo sitio — reemplaza al token CSRF sin necesitar uno.
+- **`secure`** en producción: solo viaja sobre HTTPS.
+- Al fallar el refresh (inválido, vencido, cuenta desactivada) el propio
+  `POST /api/auth/refresh` borra la cookie.
+- `POST /api/auth/logout` existe solo para esto: el frontend no puede borrar
+  una cookie `httpOnly` por su cuenta, así que se lo pide al servidor. Sin
+  este paso, cerrar sesión en un equipo compartido no bastaría.
 un JWT de una sola vida larga.
 
 Las cabeceras de proxy de Nginx (`X-Real-IP`, `X-Forwarded-For`) van en

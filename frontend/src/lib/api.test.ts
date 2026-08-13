@@ -1,14 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import {
-  ApiError,
-  createRun,
-  fetchMe,
-  getRefreshToken,
-  getToken,
-  login,
-  setRefreshToken,
-  setToken,
-} from './api'
+import { ApiError, createRun, fetchMe, getToken, login, setToken } from './api'
 
 function mockFetch(response: Partial<Response> & { json?: () => Promise<unknown> }) {
   const fetchMock = vi.fn().mockResolvedValue({
@@ -82,9 +73,8 @@ describe('api', () => {
     expect(getToken()).toBe('valido')
   })
 
-  it('renueva la sesión con el refresh token y reintenta la petición original', async () => {
+  it('renueva la sesión con la cookie del refresh y reintenta la petición original', async () => {
     setToken('vencido')
-    setRefreshToken('refresh-valido')
 
     const fetchMock = vi
       .fn()
@@ -96,8 +86,7 @@ describe('api', () => {
       .mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () =>
-          Promise.resolve({ accessToken: 'nuevo', refreshToken: 'refresh-nuevo', participant: {} }),
+        json: () => Promise.resolve({ accessToken: 'nuevo', participant: {} }),
       })
       .mockResolvedValueOnce({
         ok: true,
@@ -110,16 +99,17 @@ describe('api', () => {
 
     expect(fetchMock).toHaveBeenCalledTimes(3)
     expect(getToken()).toBe('nuevo')
-    expect(getRefreshToken()).toBe('refresh-nuevo')
 
+    // Sin body: el refresh token va en la cookie httpOnly que manda el propio
+    // navegador, `credentials: 'same-origin'` es lo único que lo adjunta.
     const [refreshUrl, refreshInit] = fetchMock.mock.calls[1] as [string, RequestInit]
     expect(refreshUrl).toContain('/auth/refresh')
-    expect(JSON.parse(refreshInit.body as string)).toEqual({ refreshToken: 'refresh-valido' })
+    expect(refreshInit.body).toBeUndefined()
+    expect(refreshInit.credentials).toBe('same-origin')
   })
 
-  it('descarta los dos tokens si el refresh también falla', async () => {
+  it('descarta el access token si el refresh también falla', async () => {
     setToken('vencido')
-    setRefreshToken('refresh-vencido')
 
     const fetchMock = vi
       .fn()
@@ -129,7 +119,6 @@ describe('api', () => {
 
     await expect(fetchMe()).rejects.toBeInstanceOf(ApiError)
     expect(getToken()).toBeNull()
-    expect(getRefreshToken()).toBeNull()
   })
 
   // Nest manda `message` como arreglo cuando falla la validación del DTO.

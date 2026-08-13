@@ -121,7 +121,8 @@ sequenceDiagram
     N->>I: proxy /api/auth/*
     I->>I: valida cédula (módulo 10), hashea (bcrypt/HMAC)
     I->>DI: INSERT Participant
-    I-->>P: { accessToken (15 min, typ:access), refreshToken (12h, typ:refresh), participant }
+    I-->>P: { accessToken (15 min, typ:access), participant }<br/>+ Set-Cookie: mic-refresh-token (httpOnly, 12h, typ:refresh)
+    Note over P,I: El refresh token nunca llega a JS: accessToken se guarda<br/>en localStorage, la cookie la maneja el navegador solo.
 
     P->>N: POST /api/runs {scenarioId, outcome, decisions...} + accessToken
     N->>E: proxy /api/runs/*
@@ -132,12 +133,17 @@ sequenceDiagram
     Note over I,E: Ninguna llamada de red entre I y E.<br/>Todo lo necesario viaja en el access token.
 
     Note over P,I: --- 15 min después: el access token vence ---
-    P->>N: POST /api/auth/refresh {refreshToken}
+    P->>N: POST /api/auth/refresh (sin body, cookie automática)
     N->>I: proxy /api/auth/*
-    I->>I: verifica typ:refresh (typ:access aquí → 401)
+    I->>I: verifica typ:refresh de la cookie (typ:access aquí → 401)
     I->>DI: SELECT Participant (relee role, disabledAt)
-    I-->>P: nuevo { accessToken, refreshToken }
-    Note over I,P: Cuenta desactivada mientras tanto → 401.<br/>El cambio de rol/estado tarda como máximo lo que dura un access token.
+    I-->>P: nuevo { accessToken, participant } + Set-Cookie rotada
+    Note over I,P: Falla (inválido/vencido/cuenta desactivada) → 401 y borra la cookie.<br/>El cambio de rol/estado tarda como máximo lo que dura un access token.
+
+    P->>N: POST /api/auth/logout (al cerrar sesión)
+    N->>I: proxy /api/auth/*
+    I-->>P: 204 + Set-Cookie vacía (borra mic-refresh-token)
+    Note over P,I: JS no puede borrar una cookie httpOnly por su cuenta;<br/>por eso existe esta ruta.
 
     S->>N: GET /api/runs/resultados + JWT (role: SUPERVISOR)
     N->>E: proxy /api/runs/*, SupervisorGuard

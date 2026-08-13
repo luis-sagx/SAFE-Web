@@ -54,8 +54,27 @@ export interface PerfilBody {
 
 export interface SesionBody {
   accessToken: string;
-  refreshToken: string;
   participant: PerfilBody;
+}
+
+/// El refresh token no viaja en el body: llega en una cookie httpOnly
+/// (`mic-refresh-token`) que `Set-Cookie` pone en la respuesta de
+/// register/login/refresh. Se extrae así para reenviarla a mano en las
+/// pruebas, que es justo lo que un navegador haría solo.
+export function cookieRefresh(res: {
+  headers: Record<string, unknown>;
+}): string {
+  const crudas = res.headers['set-cookie'];
+  const lista = Array.isArray(crudas) ? crudas : [crudas].filter(Boolean);
+  const cookie = (lista as string[]).find((c) =>
+    c.startsWith('mic-refresh-token='),
+  );
+
+  if (!cookie) {
+    throw new Error('La respuesta no puso la cookie mic-refresh-token.');
+  }
+
+  return cookie.split(';')[0];
 }
 
 export interface ErrorBody {

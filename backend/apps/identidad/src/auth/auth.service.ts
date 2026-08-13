@@ -205,7 +205,14 @@ export class AuthService {
   /// token nuevo. Relee el participante de la base en vez de confiar en lo que
   /// traía el refresh token: así una cuenta desactivada, o un cambio de rol,
   /// se refleja de inmediato en vez de esperar a que expire el refresh.
-  async refrescar(refreshToken: string) {
+  ///
+  /// `refreshToken` puede venir vacío: es lo que llega cuando la cookie
+  /// httpOnly nunca se puso (primera visita) o ya la borró el navegador.
+  async refrescar(refreshToken: string | undefined) {
+    if (!refreshToken) {
+      throw new UnauthorizedException('Refresh token inválido o expirado.');
+    }
+
     let payload: RefreshTokenPayload;
     try {
       payload = await this.jwt.verifyAsync<RefreshTokenPayload>(refreshToken);
@@ -253,9 +260,15 @@ export class AuthService {
       } as JwtSignOptions),
     ]);
 
+    // Se decodifica en vez de volver a parsear `refreshExpiresIn`: así la
+    // cookie expira exactamente cuando expira el JWT que contiene, sin
+    // mantener la duración por dos caminos que se puedan desincronizar.
+    const { exp } = this.jwt.decode<{ exp: number }>(refreshToken);
+
     return {
       accessToken,
       refreshToken,
+      refreshTokenExpiresAt: new Date(exp * 1000),
       participant: perfilPublico(participant),
     };
   }
