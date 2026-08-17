@@ -136,6 +136,7 @@ function CitacionTransito() {
       senales={SENALES}
       rule={RULE}
       restartLabel="↻ Repetir el escenario"
+      accionesEnPantalla
     />
   )
 }

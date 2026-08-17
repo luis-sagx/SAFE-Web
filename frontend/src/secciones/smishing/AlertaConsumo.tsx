@@ -119,6 +119,7 @@ function AlertaConsumo() {
       senales={SENALES}
       rule={RULE}
       restartLabel="↻ Repetir el escenario"
+      accionesEnPantalla
     />
   )
 }

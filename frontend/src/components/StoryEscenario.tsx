@@ -12,6 +12,7 @@ import type { DatoIdentidad } from './ui/TarjetaIdentidad'
 import PanelVeredicto, { type Senal } from './ui/PanelVeredicto'
 import { useAuth } from '../context/AuthContext'
 import { useStoryEngine, type Story, type StoryNode } from '../hooks/useStoryEngine'
+import styles from './ui/DeviceScreen.module.css'
 
 /** Cada nodo declara qué muestra la pantalla simulada, incluidos los finales:
  *  el resultado se lee al lado de la pantalla que lo provocó. */
@@ -49,6 +50,8 @@ interface StoryEscenarioProps {
   pista?: ReactNode
   /** Datos prestados que el escenario pone en juego (ver TarjetaIdentidad). */
   identidad?: DatoIdentidad[]
+  /** Mueve las decisiones al interior del celular y evita el cambio a escritorio. */
+  accionesEnPantalla?: boolean
 }
 
 /// Cómo se ve cada pantalla en la barra de direcciones. El correo va en el
@@ -93,6 +96,7 @@ function StoryEscenario({
   instruccion,
   pista,
   identidad,
+  accionesEnPantalla = false,
 }: StoryEscenarioProps) {
   const engine = useStoryEngine(story, 'n1', escenarioId)
   const { usuarioSimulado } = useAuth()
@@ -251,6 +255,44 @@ function StoryEscenario({
     </div>
   )
 
+  const accionesDelTelefono =
+    accionesEnPantalla && !engine.isEnding && engine.node.choices ? (
+      <div className={styles.phoneActions} aria-label={pregunta}>
+        {engine.node.choices.map((choice) => (
+          <button
+            key={`${choice.goto}-${choice.label}`}
+            type="button"
+            className={styles.phoneAction}
+            data-hotspot-goto={choice.goto}
+            data-hotspot-label={choice.label}
+          >
+            {choice.label}
+          </button>
+        ))}
+      </div>
+    ) : null
+
+  const pantallaTelefono = (
+    <div className={styles.phoneStage} onClick={onHotspot}>
+      {vista.kind === 'web' && (
+        <div className={styles.phoneBrowserBar} data-signal={vista.senalUrl}>
+          <span className={styles.phoneBrowserLock}>{vista.secure ? 'https' : 'no seguro'}</span>
+          <span className={styles.phoneBrowserUrl}>{vista.url}</span>
+        </div>
+      )}
+      <div className={styles.phoneViewport}>
+        <DeviceScreen
+          view={vista}
+          acciones={accionesCorreo}
+          carpetas={carpetas}
+          destinatario={destinatario}
+          carpetaForzada={pantallaRepaso ? 'Recibidos' : undefined}
+        />
+      </div>
+      {accionesDelTelefono}
+    </div>
+  )
+
   return (
     <EscenarioLayout
       escenarioId={escenarioId}
@@ -259,7 +301,9 @@ function StoryEscenario({
       nota={nota}
       dominioCorreo={dominioCorreo}
       pantalla={
-        vista.kind === 'sms' ? (
+        accionesEnPantalla ? (
+          pantallaTelefono
+        ) : vista.kind === 'sms' ? (
           <DeviceScreen
             view={vista}
             acciones={accionesCorreo}
@@ -287,11 +331,12 @@ function StoryEscenario({
       }
       identidad={identidad}
       decision={decision}
+      ocultarDecision={accionesEnPantalla && !engine.isEnding}
       resultado={engine.resultado}
       onEmpezar={engine.restart}
       // El correo y la web se abren más en computador que en celular; el SMS
       // se queda en celular, que es donde de verdad llegan los mensajes.
-      dispositivo={vista.kind === 'sms' ? 'telefono' : 'escritorio'}
+      dispositivo={accionesEnPantalla || vista.kind === 'sms' ? 'telefono' : 'escritorio'}
     />
   )
 }

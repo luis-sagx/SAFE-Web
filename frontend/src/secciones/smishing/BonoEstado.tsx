@@ -123,6 +123,7 @@ function BonoEstado() {
       senales={SENALES}
       rule={RULE}
       restartLabel="↻ Repetir el escenario"
+      accionesEnPantalla
     />
   )
 }
