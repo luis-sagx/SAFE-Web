@@ -282,46 +282,56 @@ const BASE: EscenarioBase[] = [
     espeja: 'phishing/sesion-bogota',
     Component: lazy(() => import('../secciones/phishing/AvisoFiltracion')),
   },
-  // Las otras cinco amenazas quedan fuera del MVP (ver spec
-  // docs/superpowers/specs/2026-08-03-safe-web-mvp-phishing-design.md §9.1).
-  // Sus componentes .tsx siguen en el repositorio intactos: se reactivan
-  // descomentando la entrada correspondiente. Las secciones se quedan
-  // declaradas en SECCIONES arriba; Dashboard.tsx ya pinta "Pronto" cuando
-  // escenariosDeSeccion() da vacío, así que no hace falta tocar nada más.
+  {
+    seccionId: 'smishing',
+    escenarioId: 'bono-estado',
+    titulo: 'Bono preseleccionado',
+    descripcion: 'Un SMS anuncia una ayuda económica y pide registrar la cuenta antes de un plazo.',
+    version: 1,
+    naturaleza: 'fraude',
+    dificultad: 2,
+    espeja: 'smishing/alerta-consumo',
+    Component: lazy(() => import('../secciones/smishing/BonoEstado')),
+  },
+  {
+    seccionId: 'smishing',
+    escenarioId: 'citacion-transito',
+    titulo: 'Citación de tránsito',
+    descripcion: 'Un SMS amenaza con duplicar una multa si no pagas desde el enlace enviado.',
+    version: 1,
+    naturaleza: 'fraude',
+    dificultad: 3,
+    espeja: 'smishing/alerta-consumo',
+    Component: lazy(() => import('../secciones/smishing/CitacionTransito')),
+  },
+  {
+    seccionId: 'smishing',
+    escenarioId: 'paquete-retenido',
+    titulo: 'Paquete retenido',
+    descripcion: 'Un mensaje pide un pago pequeño para liberar un envío que sí estás esperando.',
+    version: 1,
+    naturaleza: 'fraude',
+    dificultad: 4,
+    espeja: 'smishing/alerta-consumo',
+    Component: lazy(() => import('../secciones/smishing/PaqueteRetenido')),
+  },
+  {
+    seccionId: 'smishing',
+    escenarioId: 'alerta-consumo',
+    titulo: 'Alerta de consumo',
+    descripcion: 'Una notificación de tu banco informa un consumo hecho con tu tarjeta.',
+    version: 1,
+    naturaleza: 'legitimo',
+    dificultad: 3,
+    espeja: 'smishing/citacion-transito',
+    Component: lazy(() => import('../secciones/smishing/AlertaConsumo')),
+  },
+  // Las otras cuatro amenazas quedan fuera del MVP ampliado. Sus componentes
+  // .tsx siguen en el repositorio intactos: se reactivan descomentando la
+  // entrada correspondiente. Las secciones se quedan declaradas en SECCIONES
+  // arriba; Dashboard.tsx ya pinta "Pronto" cuando escenariosDeSeccion() da
+  // vacío, así que no hace falta tocar nada más.
   //
-  // {
-  //   seccionId: 'smishing',
-  //   escenarioId: 'paquete-retenido',
-  //   titulo: 'Paquete retenido',
-  //   descripcion: 'Un mensaje pide un pago pequeño para liberar un envío que sí estás esperando.',
-  //   version: 1,
-  //   naturaleza: 'fraude',
-  //   dificultad: 1,
-  //   espeja: 'smishing/alerta-consumo',
-  //   Component: lazy(() => import('../secciones/smishing/PaqueteRetenido')),
-  // },
-  // {
-  //   seccionId: 'smishing',
-  //   escenarioId: 'bono-estado',
-  //   titulo: 'Bono preseleccionado',
-  //   descripcion: 'Un SMS anuncia una ayuda económica y pide registrar la cuenta antes de un plazo.',
-  //   version: 1,
-  //   naturaleza: 'fraude',
-  //   dificultad: 2,
-  //   espeja: 'smishing/alerta-consumo',
-  //   Component: lazy(() => import('../secciones/smishing/BonoEstado')),
-  // },
-  // {
-  //   seccionId: 'smishing',
-  //   escenarioId: 'alerta-consumo',
-  //   titulo: 'Alerta de consumo',
-  //   descripcion: 'Una notificación de tu banco informa un consumo hecho con tu tarjeta.',
-  //   version: 1,
-  //   naturaleza: 'legitimo',
-  //   dificultad: 2,
-  //   espeja: 'smishing/bono-estado',
-  //   Component: lazy(() => import('../secciones/smishing/AlertaConsumo')),
-  // },
   // {
   //   seccionId: 'estafa',
   //   escenarioId: 'saldo-contable',
