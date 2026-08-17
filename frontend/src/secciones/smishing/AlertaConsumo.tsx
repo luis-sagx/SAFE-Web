@@ -18,6 +18,7 @@ const HISTORIAL = [
 const NUEVO = {
   text: 'Banco del Litoral: consumo aprobado $42,90 SUPERMERCADO LA UNIÓN 02/08 19:14, tarjeta *4417. Si no lo reconoces, bloquéala desde la app o llama al número impreso en tu tarjeta.',
   time: '19:14',
+  senal: 'aviso',
 }
 
 const SMS: ScreenView = {
@@ -32,7 +33,7 @@ const SMS_RESPONDIDO: ScreenView = {
   msgs: [
     ...HISTORIAL,
     NUEVO,
-    { text: 'No reconozco ese consumo, mi tarjeta es la 4539 0011 8842 4417', time: '19:16', mine: true },
+    { text: 'No reconozco ese consumo, mi tarjeta es la 4539 0011 8842 4417', time: '19:16', mine: true, senal: 'respuesta' },
   ],
 }
 
@@ -83,11 +84,11 @@ const STORY: Story<ScreenNode> = {
 }
 
 const SENALES: Senal[] = [
-  { id: 's1', texto: 'Llega en el <b>mismo hilo</b> de los mensajes anteriores del banco, no de un número nuevo.' },
-  { id: 's2', texto: '<b>No trae enlaces</b> ni te pide responder nada.' },
-  { id: 's3', texto: 'Muestra <b>solo los últimos dígitos</b> de la tarjeta, nunca el número completo.' },
-  { id: 's4', texto: 'Te manda a <b>tus canales</b>: la app o el número impreso en la tarjeta.' },
-  { id: 's5', texto: 'Informa un hecho concreto y verificable, sin urgencia ni amenaza.' },
+  { id: 's1', targetId: 'aviso', pantalla: 'n1', texto: 'Llega en el <b>mismo hilo</b> de los mensajes anteriores del banco, no de un número nuevo.' },
+  { id: 's2', targetId: 'aviso', pantalla: 'n1', texto: '<b>No trae enlaces</b> ni te pide responder nada.' },
+  { id: 's3', targetId: 'aviso', pantalla: 'n1', texto: 'Muestra <b>solo los últimos dígitos</b> de la tarjeta, nunca el número completo.' },
+  { id: 's4', targetId: 'aviso', pantalla: 'n1', texto: 'Te manda a <b>tus canales</b>: la app o el número impreso en la tarjeta.' },
+  { id: 's5', targetId: 'aviso', pantalla: 'n1', texto: 'Informa un hecho concreto y verificable, sin urgencia ni amenaza.' },
 ]
 const RULE =
   'Regla de oro: un aviso real del banco <b>informa, no pide</b>. Verifica siempre en la app o llamando al número impreso en tu tarjeta, y nunca escribas datos de tarjeta en un SMS, aunque el mensaje sea auténtico.'

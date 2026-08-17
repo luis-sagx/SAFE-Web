@@ -7,6 +7,7 @@ import type { Senal } from '../../components/ui/PanelVeredicto'
 const PRIMER_SMS = {
   text: 'ENVIAEXPRESS: su paquete 4471-EC está RETENIDO en aduana por un valor pendiente de $1,20. Regularice hoy para evitar la devolución: http://envia-express.info/pago',
   time: '10:12',
+  senal: 'mensaje',
 }
 
 const SMS: ScreenView = {
@@ -24,6 +25,7 @@ const SMS_RESPONDIDO: ScreenView = {
     {
       text: 'Estimado cliente, su envío será devuelto en 2 horas. Complete el pago en el enlace enviado.',
       time: '10:15',
+      senal: 'respuesta',
     },
   ],
 }
@@ -32,13 +34,14 @@ const PAGINA: ScreenView = {
   kind: 'web',
   url: 'http://envia-express.info/pago',
   secure: false,
+  senalUrl: 'url',
   brand: 'EnvíaExpress',
   title: 'Pago de valor aduanero',
   subtitle: 'Guía 4471-EC · Valor pendiente: $1,20',
   fields: [
-    { label: 'Número de tarjeta', placeholder: '0000 0000 0000 0000' },
+    { label: 'Número de tarjeta', placeholder: '0000 0000 0000 0000', senal: 'tarjeta' },
     { label: 'Fecha de caducidad', placeholder: 'MM/AA' },
-    { label: 'Código de seguridad (CVV)', placeholder: '123' },
+    { label: 'Código de seguridad (CVV)', placeholder: '123', senal: 'tarjeta' },
     { label: 'Cédula del titular', placeholder: '0000000000' },
   ],
   button: 'Pagar $1,20',
@@ -100,11 +103,11 @@ const STORY: Story<ScreenNode> = {
 }
 
 const SENALES: Senal[] = [
-  { id: 's1', texto: 'Llega de un <b>número de celular</b>, no del canal habitual del courier.' },
-  { id: 's2', texto: 'El enlace lleva a <b>envia-express.info</b>, que lleva el nombre del courier adentro pero no es la dirección de su sitio. Además empieza por http y no por https, así que no muestra el candado y lo que escribas viaja sin proteger.' },
-  { id: 's3', texto: 'Un monto <b>diminuto</b> baja tu guardia: lo que buscan es la tarjeta, no el dólar.' },
-  { id: 's4', texto: 'Pide <b>número completo, caducidad y CVV</b>: eso alcanza para comprar en tu nombre.' },
-  { id: 's5', texto: 'Al responder, la <b>urgencia aumenta</b> en vez de darte información concreta.' },
+  { id: 's1', targetId: 'mensaje', pantalla: 'n1', texto: 'Llega de un <b>número de celular</b>, no del canal habitual del courier.' },
+  { id: 's2', targetId: 'url', pantalla: 'n2', texto: 'El enlace lleva a <b>envia-express.info</b>, que lleva el nombre del courier adentro pero no es la dirección de su sitio. Además empieza por http y no por https, así que no muestra el candado y lo que escribas viaja sin proteger.' },
+  { id: 's3', targetId: 'mensaje', pantalla: 'n1', texto: 'Un monto <b>diminuto</b> baja tu guardia: lo que buscan es la tarjeta, no el dólar.' },
+  { id: 's4', targetId: 'tarjeta', pantalla: 'n2', texto: 'Pide <b>número completo, caducidad y CVV</b>: eso alcanza para comprar en tu nombre.' },
+  { id: 's5', targetId: 'respuesta', pantalla: 'n1b', texto: 'Al responder, la <b>urgencia aumenta</b> en vez de darte información concreta.' },
 ]
 const RULE =
   'Regla de oro: un aviso de paquete se comprueba <b>en la app o la web del courier con tu número de guía</b>, nunca por el enlace del mensaje. Nadie necesita tu CVV para cobrarte un dólar.'

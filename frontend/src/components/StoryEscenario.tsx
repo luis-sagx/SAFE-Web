@@ -74,6 +74,10 @@ function pestanaDeVista(view: ScreenView, dominio: string): PestanaConfig | null
   return null
 }
 
+function urlMovil(url: string): string {
+  return url.replace(/^https?:\/\//, '')
+}
+
 /**
  * Escenario de correo o SMS: grafo de decisiones sobre una pantalla simulada.
  * El escenario solo aporta datos; el recorrido, el registro de la corrida y el
@@ -255,41 +259,53 @@ function StoryEscenario({
     </div>
   )
 
-  const accionesDelTelefono =
-    accionesEnPantalla && !engine.isEnding && engine.node.choices ? (
-      <div className={styles.phoneActions} aria-label={pregunta}>
-        {engine.node.choices.map((choice) => (
-          <button
-            key={`${choice.goto}-${choice.label}`}
-            type="button"
-            className={styles.phoneAction}
-            data-hotspot-goto={choice.goto}
-            data-hotspot-label={choice.label}
-          >
-            {choice.label}
-          </button>
-        ))}
-      </div>
-    ) : null
-
   const pantallaTelefono = (
     <div className={styles.phoneStage} onClick={onHotspot}>
-      {vista.kind === 'web' && (
-        <div className={styles.phoneBrowserBar} data-signal={vista.senalUrl}>
-          <span className={styles.phoneBrowserLock}>{vista.secure ? 'https' : 'no seguro'}</span>
-          <span className={styles.phoneBrowserUrl}>{vista.url}</span>
-        </div>
-      )}
-      <div className={styles.phoneViewport}>
-        <DeviceScreen
-          view={vista}
-          acciones={accionesCorreo}
-          carpetas={carpetas}
-          destinatario={destinatario}
-          carpetaForzada={pantallaRepaso ? 'Recibidos' : undefined}
-        />
+      <div className={styles.phoneStatusBar} aria-hidden>
+        <span>09:41</span>
+        <span className={styles.phoneSensors}>
+          <span className={styles.phoneSignal}>▮▮▮</span>
+          <span>5G</span>
+          <span className={styles.phoneBattery}></span>
+        </span>
       </div>
-      {accionesDelTelefono}
+      <div className={styles.phoneBody}>
+        <div className={styles.phoneApp}>
+          {vista.kind === 'web' && (
+            <div className={styles.phoneBrowserBar} data-signal={vista.senalUrl}>
+              <span className={styles.phoneBrowserControl} aria-hidden>
+                ‹
+              </span>
+              <span className={styles.phoneBrowserUrl}>
+                <span
+                  aria-label={vista.secure ? 'Conexión segura' : 'Conexión no segura'}
+                  className={`${styles.phoneBrowserSecurity} ${
+                    vista.secure ? styles.phoneBrowserSafe : styles.phoneBrowserUnsafe
+                  }`}
+                >
+                  {vista.secure ? '✓' : '!'}
+                </span>
+                <span className={styles.phoneBrowserAddress}>{urlMovil(vista.url)}</span>
+              </span>
+              <span className={styles.phoneBrowserControl} aria-hidden>
+                ⋮
+              </span>
+            </div>
+          )}
+          <div className={styles.phoneViewport}>
+            <DeviceScreen
+              view={vista}
+              acciones={accionesCorreo}
+              carpetas={carpetas}
+              destinatario={destinatario}
+              carpetaForzada={pantallaRepaso ? 'Recibidos' : undefined}
+            />
+          </div>
+        </div>
+      </div>
+      <div className={styles.phoneSystemBar} aria-hidden>
+        <span></span>
+      </div>
     </div>
   )
 
@@ -331,7 +347,6 @@ function StoryEscenario({
       }
       identidad={identidad}
       decision={decision}
-      ocultarDecision={accionesEnPantalla && !engine.isEnding}
       resultado={engine.resultado}
       onEmpezar={engine.restart}
       // El correo y la web se abren más en computador que en celular; el SMS

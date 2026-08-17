@@ -106,7 +106,7 @@ export type ScreenView =
       kind: 'sms'
       sender: string
       sub: string
-      msgs: { text: string; time: string; mine?: boolean }[]
+      msgs: { text: string; time: string; mine?: boolean; senal?: string }[]
     }
 
 /// De dónde sale lo que se ve escrito en un campo. Un formulario que ya trae
@@ -279,7 +279,7 @@ function DeviceScreen({
             className={`${styles.smsRow} ${msg.mine ? styles.mine : styles.theirs}`}
           >
             <div className={styles.smsBubble}>
-              <span dangerouslySetInnerHTML={{ __html: msg.text }} />
+              <span data-signal={msg.senal} dangerouslySetInnerHTML={{ __html: msg.text }} />
               <span className={styles.smsTime}>{msg.time}</span>
             </div>
           </div>

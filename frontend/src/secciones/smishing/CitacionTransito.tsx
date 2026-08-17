@@ -12,6 +12,7 @@ const SMS: ScreenView = {
     {
       text: 'TRANSITO EC: tiene una citación pendiente. Cancele antes del viernes o el valor se duplica. Consulte y pague aquí: https://transito-ec-pagos.com/citacion',
       time: '08:27',
+      senal: 'mensaje',
     },
   ],
 }
@@ -24,6 +25,7 @@ const SMS_RESPONDIDO: ScreenView = {
     {
       text: 'Para consultar debe ingresar placa y cédula en el enlace. Último plazo viernes 17h00.',
       time: '08:32',
+      senal: 'respuesta',
     },
   ],
 }
@@ -32,15 +34,16 @@ const PAGINA: ScreenView = {
   kind: 'web',
   url: 'https://transito-ec-pagos.com/citacion',
   secure: true,
+  senalUrl: 'url',
   brand: 'Tránsito EC',
   title: 'Consulta y pago de citaciones',
   subtitle: 'Ingrese sus datos para verificar valores pendientes.',
   fields: [
-    { label: 'Placa del vehículo', placeholder: 'ABC-1234' },
+    { label: 'Placa del vehículo', placeholder: 'ABC-1234', senal: 'datos' },
     { label: 'Cédula del propietario', placeholder: '0000000000' },
-    { label: 'Número de tarjeta', placeholder: '0000 0000 0000 0000' },
+    { label: 'Número de tarjeta', placeholder: '0000 0000 0000 0000', senal: 'tarjeta' },
     { label: 'Fecha de caducidad', placeholder: 'MM/AA' },
-    { label: 'Código de seguridad (CVV)', placeholder: '123' },
+    { label: 'Código de seguridad (CVV)', placeholder: '123', senal: 'tarjeta' },
   ],
   button: 'Pagar citación',
 }
@@ -98,11 +101,11 @@ const STORY: Story<ScreenNode> = {
 }
 
 const SENALES: Senal[] = [
-  { id: 's1', texto: 'El mensaje <b>no trae tu placa</b>; te pide escribirla porque no la sabe.' },
-  { id: 's2', texto: 'El plazo "antes del viernes" crea presión, pero no explica artículo, fecha ni lugar de la supuesta infracción.' },
-  { id: 's3', texto: 'El dominio <b>transito-ec-pagos.com</b> suena oficial, pero no es un portal público ecuatoriano.' },
-  { id: 's4', texto: 'La página pide <b>tarjeta completa y CVV</b> antes de demostrar que la deuda existe.' },
-  { id: 's5', texto: 'Al responder, no dan datos concretos: solo empujan de nuevo al mismo enlace.' },
+  { id: 's1', targetId: 'mensaje', pantalla: 'n1', texto: 'El mensaje <b>no trae tu placa</b>; te pide escribirla porque no la sabe.' },
+  { id: 's2', targetId: 'mensaje', pantalla: 'n1', texto: 'El plazo "antes del viernes" crea presión, pero no explica artículo, fecha ni lugar de la supuesta infracción.' },
+  { id: 's3', targetId: 'url', pantalla: 'n2', texto: 'El dominio <b>transito-ec-pagos.com</b> suena oficial, pero no es un portal público ecuatoriano.' },
+  { id: 's4', targetId: 'tarjeta', pantalla: 'n2', texto: 'La página pide <b>tarjeta completa y CVV</b> antes de demostrar que la deuda existe.' },
+  { id: 's5', targetId: 'respuesta', pantalla: 'n1b', texto: 'Al responder, no dan datos concretos: solo empujan de nuevo al mismo enlace.' },
 ]
 
 const RULE =
