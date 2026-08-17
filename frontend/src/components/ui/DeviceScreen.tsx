@@ -1,4 +1,4 @@
-import { Paperclip, Search } from 'lucide-react'
+import { Paperclip, Search, SendHorizontal, type LucideIcon } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { CUENTA_FICTICIA, IDENTIDAD_FICTICIA } from '../../lib/identidadFicticia'
 import { AvisoSitio, CabeceraSitio, PieSitio } from './armazonSitio'
@@ -106,7 +106,33 @@ export type ScreenView =
       kind: 'sms'
       sender: string
       sub: string
+      /** El `text` es HTML fijo del escenario: el enlace del mensaje va como
+       *  `<a href>` con `data-hotspot-goto`, para que tocarlo sea la decisión y
+       *  el navegador revele el destino al pasar el cursor. */
       msgs: { text: string; time: string; mine?: boolean; senal?: string }[]
+      /** `data-signal` de la cabecera del hilo: el número o el nombre corto del
+       *  remitente es la primera señal de un SMS, antes que el texto. */
+      senalRemitente?: string
+      /** Nodo al que lleva salir del hilo con la flecha de la cabecera. Sin
+       *  esto la flecha se pinta apagada: volver a la lista de mensajes tiene
+       *  que significar algo (dejarlo pasar) o no ser una salida. */
+      volverGoto?: string
+      volverLabel?: string
+      /** Acciones del hilo, a la derecha de la cabecera. El equivalente de la
+       *  barra del cliente de correo: reenviar, bloquear, eliminar. */
+      acciones?: { texto: string; Icono: LucideIcon; goto: string; label?: string }[]
+      /** Nodo al que lleva tocar el campo de escribir. Lleva a una pantalla del
+       *  mismo hilo que ya trae el `borrador` puesto: escribir y enviar son dos
+       *  gestos distintos, y separarlos deja ver qué se iba a mandar. */
+      composerGoto?: string
+      composerLabel?: string
+      /** Texto ya escrito y sin enviar. Con él, el campo deja de ser marcador
+       *  de posición y aparece el botón de enviar. No es editable, como los
+       *  campos de los formularios simulados. */
+      borrador?: string
+      senalBorrador?: string
+      enviarGoto?: string
+      enviarLabel?: string
     }
 
 /// De dónde sale lo que se ve escrito en un campo. Un formulario que ya trae
@@ -266,9 +292,45 @@ function DeviceScreen({
   return (
     <section className={`${styles.screen} ${styles.sms}`} aria-label="Mensajes de texto">
       <div className={styles.smsbar}>
-        <div className={styles.smsId}>
+        {view.volverGoto ? (
+          <button
+            type="button"
+            className={`${styles.hotspot} ${styles.smsVolver}`}
+            aria-label="Volver a la lista de mensajes"
+            data-hotspot-goto={view.volverGoto}
+            data-hotspot-label={view.volverLabel}
+          >
+            ‹
+          </button>
+        ) : (
+          <span className={`${styles.smsVolver} ${styles.smsVolverApagado}`} aria-hidden>
+            ‹
+          </span>
+        )}
+
+        <div className={styles.smsId} data-signal={view.senalRemitente}>
           <p className={styles.smsName}>{view.sender}</p>
           <p className={styles.smsSub}>{view.sub}</p>
+        </div>
+
+        {/* La barra del cliente de correo, en versión teléfono. Va siempre
+            visible y con su nombre debajo del icono: en un móvil de verdad
+            varias de estas viven detrás de un menú o de una pulsación larga,
+            gestos que no todo participante conoce y que aquí solo servirían
+            para esconder caminos que el escenario sí quiere ofrecer. */}
+        <div className={styles.smsAcciones}>
+          {view.acciones?.map(({ texto, Icono, goto, label }) => (
+            <button
+              key={texto}
+              type="button"
+              className={`${styles.hotspot} ${styles.smsAccion}`}
+              data-hotspot-goto={goto}
+              data-hotspot-label={label}
+            >
+              <Icono aria-hidden className={styles.smsAccionIcono} strokeWidth={1.75} />
+              {texto}
+            </button>
+          ))}
         </div>
       </div>
 
@@ -287,7 +349,36 @@ function DeviceScreen({
       </div>
 
       <div className={styles.smsComposer}>
-        <div className={styles.smsField}>Mensaje de texto</div>
+        {view.borrador ? (
+          <>
+            <span
+              className={`${styles.smsField} ${styles.smsFieldEscrito}`}
+              data-signal={view.senalBorrador}
+            >
+              {view.borrador}
+            </span>
+            <button
+              type="button"
+              className={`${styles.hotspot} ${styles.smsEnviar}`}
+              aria-label="Enviar el mensaje"
+              data-hotspot-goto={view.enviarGoto}
+              data-hotspot-label={view.enviarLabel}
+            >
+              <SendHorizontal aria-hidden className={styles.smsEnviarIcono} strokeWidth={2} />
+            </button>
+          </>
+        ) : view.composerGoto ? (
+          <button
+            type="button"
+            className={`${styles.hotspot} ${styles.smsField} ${styles.smsFieldBoton}`}
+            data-hotspot-goto={view.composerGoto}
+            data-hotspot-label={view.composerLabel}
+          >
+            Mensaje de texto
+          </button>
+        ) : (
+          <div className={styles.smsField}>Mensaje de texto</div>
+        )}
       </div>
     </section>
   )

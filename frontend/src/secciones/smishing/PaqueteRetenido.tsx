@@ -1,11 +1,15 @@
-import StoryEscenario, { type ScreenNode } from '../../components/StoryEscenario'
+import { Camera, MessageSquareText, Package, Wallet } from 'lucide-react'
+import StoryEscenario, { type AppTelefono, type ScreenNode } from '../../components/StoryEscenario'
 import type { Contexto } from '../../components/ui/ContextoEscenario'
 import type { Story } from '../../hooks/useStoryEngine'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
 import type { Senal } from '../../components/ui/PanelVeredicto'
 
+const ENLACE =
+  '<a href="http://envia-express.info/pago" data-hotspot-goto="n2" data-hotspot-label="Abrió el enlace del mensaje">http://envia-express.info/pago</a>'
+
 const PRIMER_SMS = {
-  text: 'ENVIAEXPRESS: su paquete 4471-EC está RETENIDO en aduana por un valor pendiente de $1,20. Regularice hoy para evitar la devolución: http://envia-express.info/pago',
+  text: `ENVIAEXPRESS: su paquete 4471-EC está RETENIDO en aduana por un valor pendiente de $1,20. Regularice hoy para evitar la devolución: ${ENLACE}`,
   time: '10:12',
   senal: 'mensaje',
 }
@@ -14,11 +18,15 @@ const SMS: ScreenView = {
   kind: 'sms',
   sender: '+593 98 774 2210',
   sub: 'Número no guardado · SMS',
+  senalRemitente: 'remitente',
   msgs: [PRIMER_SMS],
+  composerGoto: 'n1b',
+  composerLabel: 'Respondió el mensaje preguntando de qué paquete se trata',
 }
 
 const SMS_RESPONDIDO: ScreenView = {
   ...SMS,
+  composerGoto: undefined,
   msgs: [
     PRIMER_SMS,
     { text: '¿De qué paquete se trata?', time: '10:14', mine: true },
@@ -45,40 +53,31 @@ const PAGINA: ScreenView = {
     { label: 'Cédula del titular', placeholder: '0000000000' },
   ],
   button: 'Pagar $1,20',
+  botonGoto: 'e_pago',
+  botonLabel: 'Pagó el valor con los datos de su tarjeta',
+  cerrarGoto: 'e_cierra',
+  cerrarLabel: 'Salió de la página sin enviar los datos',
 }
 
+/// Solo la del courier lleva a algún lado: las otras tres son las apps que
+/// cualquiera tiene en el teléfono. Un dock con un único icono accionable
+/// señalaría la respuesta antes de que el participante decida.
+const APPS: AppTelefono[] = [
+  { Icono: MessageSquareText, texto: 'Mensajes' },
+  {
+    Icono: Package,
+    texto: 'EnvíaExpress',
+    goto: 'e_app',
+    label: 'Abrió la app del courier para consultar su guía',
+  },
+  { Icono: Wallet, texto: 'Banco' },
+  { Icono: Camera, texto: 'Cámara' },
+]
+
 const STORY: Story<ScreenNode> = {
-  n1: {
-    kind: 'scene',
-    view: SMS,
-    choices: [
-      { label: 'Abrir el enlace: son solo $1,20 y espero un paquete.', goto: 'n2' },
-      {
-        label: 'Buscar el número de guía en la app oficial del courier.',
-        goto: 'e_app',
-      },
-      { label: 'Responder el mensaje preguntando de qué paquete se trata.', goto: 'n1b' },
-    ],
-  },
-  n1b: {
-    kind: 'scene',
-    view: SMS_RESPONDIDO,
-    choices: [
-      { label: 'Abrir el enlace para que no devuelvan el paquete.', goto: 'n2' },
-      { label: 'Dejar el chat y revisar en la app oficial del courier.', goto: 'e_app' },
-    ],
-  },
-  n2: {
-    kind: 'scene',
-    view: PAGINA,
-    choices: [
-      { label: 'Llenar los datos de mi tarjeta y pagar el $1,20.', goto: 'e_pago' },
-      {
-        label: 'Piden tarjeta completa y CVV por $1,20: cerrar la página.',
-        goto: 'e_cierra',
-      },
-    ],
-  },
+  n1: { kind: 'scene', view: SMS },
+  n1b: { kind: 'scene', view: SMS_RESPONDIDO },
+  n2: { kind: 'scene', view: PAGINA },
   e_pago: {
     kind: 'bad',
     view: PAGINA,
@@ -91,7 +90,7 @@ const STORY: Story<ScreenNode> = {
     view: PAGINA,
     verdict: 'No caíste · el monto no justificaba los datos',
     outcome:
-      'Cerraste la página. Un cobro de un dólar no necesita tu tarjeta completa con CVV, y la dirección ni siquiera era del courier.',
+      'Saliste de la página. Un cobro de un dólar no necesita tu tarjeta completa con CVV, y la dirección ni siquiera era del courier.',
   },
   e_app: {
     kind: 'good',
@@ -103,7 +102,7 @@ const STORY: Story<ScreenNode> = {
 }
 
 const SENALES: Senal[] = [
-  { id: 's1', targetId: 'mensaje', pantalla: 'n1', texto: 'Llega de un <b>número de celular</b>, no del canal habitual del courier.' },
+  { id: 's1', targetId: 'remitente', pantalla: 'n1', texto: 'Llega de un <b>número de celular</b> que no tienes guardado, no del canal habitual del courier.' },
   { id: 's2', targetId: 'url', pantalla: 'n2', texto: 'El enlace lleva a <b>envia-express.info</b>, que lleva el nombre del courier adentro pero no es la dirección de su sitio. Además empieza por http y no por https, así que no muestra el candado y lo que escribas viaja sin proteger.' },
   { id: 's3', targetId: 'mensaje', pantalla: 'n1', texto: 'Un monto <b>diminuto</b> baja tu guardia: lo que buscan es la tarjeta, no el dólar.' },
   { id: 's4', targetId: 'tarjeta', pantalla: 'n2', texto: 'Pide <b>número completo, caducidad y CVV</b>: eso alcanza para comprar en tu nombre.' },
@@ -141,6 +140,21 @@ function PaqueteRetenido() {
       rule={RULE}
       restartLabel="↻ Repetir el escenario"
       accionesEnPantalla
+      apps={APPS}
+      instruccion={
+        <p className="text-lg leading-relaxed text-body">
+          Actúa sobre el teléfono como lo harías con el tuyo: puedes usar{' '}
+          <strong>cualquier parte de él</strong>, incluidas las apps de abajo. Antes de tocar un
+          enlace, mantén el cursor encima para ver a dónde lleva.
+        </p>
+      }
+      pista={
+        <p>
+          Tienes varios caminos posibles: hacer lo que el mensaje te pide, responderlo para
+          preguntar, o dejarlo de lado y comprobar el envío por tu cuenta desde el teléfono. Cuál de
+          ellos es el acertado es justamente lo que decides tú.
+        </p>
+      }
     />
   )
 }

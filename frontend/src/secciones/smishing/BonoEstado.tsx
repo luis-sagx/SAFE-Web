@@ -1,18 +1,46 @@
-import StoryEscenario, { type ScreenNode } from '../../components/StoryEscenario'
+import { Camera, Compass, Forward, MessageSquareText, Wallet } from 'lucide-react'
+import StoryEscenario, { type AppTelefono, type ScreenNode } from '../../components/StoryEscenario'
 import type { Contexto } from '../../components/ui/ContextoEscenario'
 import type { Story } from '../../hooks/useStoryEngine'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
 import type { Senal } from '../../components/ui/PanelVeredicto'
 
+/// El acortador se ve como texto y no como dirección: eso es justo lo que la
+/// señal s2 enseña, así que el enlace se pinta tal cual llega, sin desplegar.
+const ENLACE =
+  '<a href="https://bit.ly/bono-ec-2026" data-hotspot-goto="n2" data-hotspot-label="Abrió el enlace acortado del mensaje">bit.ly/bono-ec-2026</a>'
+
+const TEXTO_BONO = `MIES INFORMA: usted fue PRESELECCIONADO para el bono de $180. Registre su cuenta bancaria antes de las 18h00 de hoy o el cupo pasa a otro beneficiario: ${ENLACE}`
+
 const SMS: ScreenView = {
   kind: 'sms',
   sender: 'MIES-BONO',
   sub: 'Remitente sin verificar · SMS',
-  msgs: [
+  senalRemitente: 'remitente',
+  msgs: [{ text: TEXTO_BONO, time: '09:41', senal: 'mensaje' }],
+  acciones: [
     {
-      text: 'MIES INFORMA: usted fue PRESELECCIONADO para el bono de $180. Registre su cuenta bancaria antes de las 18h00 de hoy o el cupo pasa a otro beneficiario: bit.ly/bono-ec-2026',
-      time: '09:41',
-      senal: 'mensaje',
+      texto: 'Reenviar',
+      Icono: Forward,
+      goto: 'n1b',
+      label: 'Reenvió el mensaje al grupo de su familia',
+    },
+  ],
+}
+
+/// Reenviar no deja el hilo igual: abre otra conversación, la del grupo, con el
+/// mensaje ya repetido. Sin esa pantalla, pulsar "Reenviar" no cambiaba nada a
+/// la vista y se leía como que el teléfono no había respondido.
+const GRUPO: ScreenView = {
+  kind: 'sms',
+  sender: 'Familia ❤️',
+  sub: 'Grupo · 6 participantes',
+  msgs: [
+    { text: TEXTO_BONO, time: '09:43', mine: true },
+    {
+      text: '¡Gracias! Ya lo pasé al grupo del barrio. ¿Vos ya te registraste?',
+      time: '09:45',
+      senal: 'reenvio',
     },
   ],
 }
@@ -32,43 +60,28 @@ const PAGINA: ScreenView = {
     { label: 'Código que te llegó por SMS', placeholder: '000000', senal: 'codigo' },
   ],
   button: 'Acreditar mi bono',
+  botonGoto: 'e_datos',
+  botonLabel: 'Envió cédula, usuario, clave y código de verificación',
+  cerrarGoto: 'e_cierra',
+  cerrarLabel: 'Salió de la página sin enviar los datos',
 }
 
+const APPS: AppTelefono[] = [
+  { Icono: MessageSquareText, texto: 'Mensajes' },
+  {
+    Icono: Compass,
+    texto: 'Navegador',
+    goto: 'e_verifica',
+    label: 'Buscó por su cuenta si el registro existía en la web oficial',
+  },
+  { Icono: Wallet, texto: 'Banco' },
+  { Icono: Camera, texto: 'Cámara' },
+]
+
 const STORY: Story<ScreenNode> = {
-  n1: {
-    kind: 'scene',
-    view: SMS,
-    choices: [
-      { label: 'Abrir el enlace antes de que se venza el plazo.', goto: 'n2' },
-      {
-        label: 'Verificar en la página oficial del MIES si existe ese registro.',
-        goto: 'e_verifica',
-      },
-      { label: 'Reenviar el mensaje a mi familia para que también apliquen.', goto: 'n1b' },
-    ],
-  },
-  n1b: {
-    kind: 'scene',
-    view: SMS,
-    choices: [
-      { label: 'Abrir el enlace y registrar mi cuenta.', goto: 'n2' },
-      {
-        label: 'Pensarlo mejor: nunca postulé a ningún bono. Buscar en la web oficial.',
-        goto: 'e_verifica',
-      },
-    ],
-  },
-  n2: {
-    kind: 'scene',
-    view: PAGINA,
-    choices: [
-      { label: 'Llenar el formulario: piden datos que ya conozco.', goto: 'e_datos' },
-      {
-        label: 'Un trámite del Estado no pide la clave de mi banco: cerrar.',
-        goto: 'e_cierra',
-      },
-    ],
-  },
+  n1: { kind: 'scene', view: SMS },
+  n1b: { kind: 'scene', view: GRUPO },
+  n2: { kind: 'scene', view: PAGINA },
   e_datos: {
     kind: 'bad',
     view: PAGINA,
@@ -81,7 +94,7 @@ const STORY: Story<ScreenNode> = {
     view: PAGINA,
     verdict: 'No caíste · el formulario te delató',
     outcome:
-      'Ninguna institución pública necesita tu clave de banca en línea para depositarte. Cerraste la página y reportaste el mensaje.',
+      'Ninguna institución pública necesita tu clave de banca en línea para depositarte. Saliste de la página y reportaste el mensaje.',
   },
   e_verifica: {
     kind: 'good',
@@ -98,6 +111,7 @@ const SENALES: Senal[] = [
   { id: 's3', targetId: 'url', pantalla: 'n2', texto: 'La página está en <b>bono-social-ec.online</b>, y las páginas del Estado ecuatoriano terminan en <b>.gob.ec</b>. El nombre suena oficial, pero el final delata que no lo es. Tampoco empieza por https: ni siquiera protege lo que escribes.' },
   { id: 's4', targetId: 'clave', pantalla: 'n2', texto: 'Pide tu <b>clave de banca en línea</b> para "recibir" un depósito. Para que te depositen basta tu número de cuenta: la clave solo sirve para sacar dinero, nunca para meterlo.' },
   { id: 's5', targetId: 'codigo', pantalla: 'n2', texto: 'Pide el <b>código que te llega por SMS</b>. Ese código es la última puerta de tu banco: con tu clave y con él ya entran a tu cuenta desde su propio teléfono.' },
+  { id: 's6', targetId: 'reenvio', pantalla: 'n1b', texto: 'Reenviarlo <b>no lo verifica, lo multiplica</b>: el mensaje llega a gente que confía en ti, y por eso lo abre sin dudar.' },
 ]
 const RULE =
   'Regla de oro: para <b>recibir</b> dinero nadie necesita tu clave ni tu código de verificación; solo tu número de cuenta. Cualquier bono o subsidio se confirma en el sitio oficial <b>.gob.ec</b>, escrito por ti.'
@@ -126,6 +140,21 @@ function BonoEstado() {
       rule={RULE}
       restartLabel="↻ Repetir el escenario"
       accionesEnPantalla
+      apps={APPS}
+      instruccion={
+        <p className="text-lg leading-relaxed text-body">
+          Actúa sobre el teléfono como lo harías con el tuyo: puedes usar{' '}
+          <strong>cualquier parte de él</strong>, incluidas las apps de abajo. Antes de tocar un
+          enlace, mantén el cursor encima para ver a dónde lleva.
+        </p>
+      }
+      pista={
+        <p>
+          Tienes varios caminos posibles: hacer lo que el mensaje te pide, pasárselo a alguien más,
+          o dejarlo de lado y comprobar por tu cuenta si ese bono existe. Cuál de ellos es el
+          acertado es justamente lo que decides tú.
+        </p>
+      }
     />
   )
 }

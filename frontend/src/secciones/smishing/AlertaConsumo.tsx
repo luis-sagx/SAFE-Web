@@ -1,4 +1,5 @@
-import StoryEscenario, { type ScreenNode } from '../../components/StoryEscenario'
+import { Camera, Images, Landmark, MessageSquareText } from 'lucide-react'
+import StoryEscenario, { type AppTelefono, type ScreenNode } from '../../components/StoryEscenario'
 import type { Contexto } from '../../components/ui/ContextoEscenario'
 import type { Story } from '../../hooks/useStoryEngine'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
@@ -21,43 +22,56 @@ const NUEVO = {
   senal: 'aviso',
 }
 
+const BORRADOR = 'No reconozco ese consumo, mi tarjeta es la 4539 0011 8842 4417'
+
 const SMS: ScreenView = {
   kind: 'sms',
   sender: 'BancoLitoral',
   sub: 'Remitente verificado · mismo hilo de siempre',
   msgs: [...HISTORIAL, NUEVO],
+  composerGoto: 'n1b',
+  composerLabel: 'Escribió una respuesta al SMS del banco',
+  // Salir del hilo es el gesto real de "lo dejo pasar": sin él, no verificar
+  // no tendría forma de expresarse en la pantalla y el escenario obligaría a
+  // actuar, que es justo lo contrario de lo que este caso mide.
+  volverGoto: 'e_ignora',
+  volverLabel: 'Salió del hilo sin verificar el consumo',
+}
+
+/// Lo escrito y todavía sin enviar. Que el número completo esté a la vista
+/// antes de pulsar enviar es media lección del escenario: el error no es el
+/// aviso, es lo que uno está a punto de mandar por el mismo canal.
+const SMS_BORRADOR: ScreenView = {
+  ...SMS,
+  composerGoto: undefined,
+  borrador: BORRADOR,
+  senalBorrador: 'respuesta',
+  enviarGoto: 'e_responde',
+  enviarLabel: 'Envió por SMS el número completo de su tarjeta',
 }
 
 const SMS_RESPONDIDO: ScreenView = {
   ...SMS,
-  msgs: [
-    ...HISTORIAL,
-    NUEVO,
-    { text: 'No reconozco ese consumo, mi tarjeta es la 4539 0011 8842 4417', time: '19:16', mine: true, senal: 'respuesta' },
-  ],
+  composerGoto: undefined,
+  volverGoto: undefined,
+  msgs: [...HISTORIAL, NUEVO, { text: BORRADOR, time: '19:16', mine: true, senal: 'respuesta' }],
 }
 
+const APPS: AppTelefono[] = [
+  { Icono: MessageSquareText, texto: 'Mensajes' },
+  {
+    Icono: Landmark,
+    texto: 'Banco del Litoral',
+    goto: 'e_app',
+    label: 'Abrió la app del banco para revisar el movimiento',
+  },
+  { Icono: Camera, texto: 'Cámara' },
+  { Icono: Images, texto: 'Galería' },
+]
+
 const STORY: Story<ScreenNode> = {
-  n1: {
-    kind: 'scene',
-    view: SMS,
-    choices: [
-      { label: 'Abrir la app del banco y revisar el movimiento.', goto: 'e_app' },
-      { label: 'Responder el SMS con los datos de mi tarjeta para reclamar.', goto: 'n1b' },
-      { label: 'Ignorarlo: cualquier mensaje del banco puede ser falso.', goto: 'e_ignora' },
-    ],
-  },
-  n1b: {
-    kind: 'scene',
-    view: SMS_RESPONDIDO,
-    choices: [
-      { label: 'Esperar la respuesta con mis datos ya enviados.', goto: 'e_responde' },
-      {
-        label: 'Borrar lo escrito antes de enviarlo y entrar mejor a la app.',
-        goto: 'e_app',
-      },
-    ],
-  },
+  n1: { kind: 'scene', view: SMS },
+  n1b: { kind: 'scene', view: SMS_BORRADOR },
   e_app: {
     kind: 'good',
     view: SMS,
@@ -121,6 +135,20 @@ function AlertaConsumo() {
       rule={RULE}
       restartLabel="↻ Repetir el escenario"
       accionesEnPantalla
+      apps={APPS}
+      instruccion={
+        <p className="text-lg leading-relaxed text-body">
+          Actúa sobre el teléfono como lo harías con el tuyo: puedes usar{' '}
+          <strong>cualquier parte de él</strong>, incluidas las apps de abajo.
+        </p>
+      }
+      pista={
+        <p>
+          Tienes varios caminos posibles: responder el mensaje, salir del hilo y seguir con tu día,
+          o comprobar el consumo por tu cuenta desde el teléfono. Cuál de ellos es el acertado es
+          justamente lo que decides tú.
+        </p>
+      }
     />
   )
 }

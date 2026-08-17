@@ -45,33 +45,52 @@ function empezar() {
 }
 
 describe('BonoEstado', () => {
-  it('decide desde la pantalla del celular y no desde opciones laterales', () => {
+  it('se decide tocando el propio teléfono, sin lista de opciones', () => {
     const container = empezar()
-    const telefono = container.querySelector('#pantalla-escenario')
+    const telefono = container.querySelector('#pantalla-escenario') as HTMLElement
 
     expect(telefono).not.toBeNull()
     expect(screen.getByText('¿Qué haces?')).toBeDefined()
     expect(screen.getByRole('button', { name: 'Ver contexto y mis datos' })).toBeDefined()
 
-    const abrirEnlace = screen.getByRole('button', {
-      name: /Abrir el enlace antes de que se venza el plazo\./,
-    })
-    expect((telefono as HTMLElement).contains(abrirEnlace)).toBe(false)
-    fireEvent.click(abrirEnlace)
+    // El enlace del SMS es el punto interactivo: no hay ningún botón fuera del
+    // teléfono que describa la acción.
+    const enlace = within(telefono).getByText('bit.ly/bono-ec-2026')
+    fireEvent.click(enlace)
 
-    expect(within(telefono as HTMLElement).getByText('Acreditación del bono de $180')).toBeDefined()
-    expect(within(telefono as HTMLElement).queryByText('No seguro')).toBeNull()
-    expect(within(telefono as HTMLElement).getByText('bono-social-ec.online/registro')).toBeDefined()
-    expect(within(telefono as HTMLElement).queryByText('HTTP')).toBeNull()
-    expect(screen.getByRole('button', { name: /Llenar el formulario: piden datos que ya conozco\./ })).toBeDefined()
+    expect(within(telefono).getByText('Acreditación del bono de $180')).toBeDefined()
+    expect(within(telefono).getByText('bono-social-ec.online/registro')).toBeDefined()
+
+    fireEvent.click(within(telefono).getByRole('button', { name: 'Acreditar mi bono' }))
+    expect(screen.getByText('Caíste en la trampa')).toBeDefined()
+  })
+
+  it('reenviar abre el hilo del grupo y salir de la página no entrega datos', () => {
+    const container = empezar()
+    const telefono = container.querySelector('#pantalla-escenario') as HTMLElement
+
+    fireEvent.click(within(telefono).getByRole('button', { name: /Reenviar/ }))
+    expect(within(telefono).getByText('Familia ❤️')).toBeDefined()
+
+    fireEvent.click(within(telefono).getByText('bit.ly/bono-ec-2026'))
+    fireEvent.click(within(telefono).getByRole('button', { name: 'Volver atrás' }))
+    expect(screen.getByText('No caíste · el formulario te delató')).toBeDefined()
+  })
+
+  it('la app del navegador lleva a comprobarlo por cuenta propia', () => {
+    const container = empezar()
+    const telefono = container.querySelector('#pantalla-escenario') as HTMLElement
+
+    fireEvent.click(within(telefono).getByRole('button', { name: /Navegador/ }))
+    expect(screen.getByText('No caíste · buscaste la fuente oficial')).toBeDefined()
   })
 
   it('el repaso de señales resalta elementos dentro del celular', async () => {
     const container = empezar()
     const telefono = container.querySelector('#pantalla-escenario') as HTMLElement
 
-    fireEvent.click(screen.getByRole('button', { name: /Abrir el enlace antes de que se venza el plazo\./ }))
-    fireEvent.click(screen.getByRole('button', { name: /Llenar el formulario: piden datos que ya conozco\./ }))
+    fireEvent.click(within(telefono).getByText('bit.ly/bono-ec-2026'))
+    fireEvent.click(within(telefono).getByRole('button', { name: 'Acreditar mi bono' }))
     fireEvent.click(screen.getByRole('button', { name: 'Ver las señales' }))
 
     await waitFor(() => {

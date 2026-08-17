@@ -52,7 +52,15 @@ interface StoryEscenarioProps {
   identidad?: DatoIdentidad[]
   /** Mueve las decisiones al interior del celular y evita el cambio a escritorio. */
   accionesEnPantalla?: boolean
+  /** Apps del teléfono, en la barra inferior. Es el equivalente móvil de los
+   *  marcadores del navegador: el camino para comprobar algo por tu cuenta sin
+   *  pasar por el mensaje. Sin ellas la barra no se pinta. */
+  apps?: AppTelefono[]
 }
+
+/** Un icono del dock. Mismo contrato que un marcador del navegador: sin `goto`
+ *  la app se ve pero no responde, como las de relleno de un teléfono real. */
+export type AppTelefono = MarcadorNavegador
 
 /// Cómo se ve cada pantalla en la barra de direcciones. El correo va en el
 /// dominio del participante, para que la dirección de la pestaña y la del
@@ -101,6 +109,7 @@ function StoryEscenario({
   pista,
   identidad,
   accionesEnPantalla = false,
+  apps,
 }: StoryEscenarioProps) {
   const engine = useStoryEngine(story, 'n1', escenarioId)
   const { usuarioSimulado } = useAuth()
@@ -273,9 +282,24 @@ function StoryEscenario({
         <div className={styles.phoneApp}>
           {vista.kind === 'web' && (
             <div className={styles.phoneBrowserBar} data-signal={vista.senalUrl}>
-              <span className={styles.phoneBrowserControl} aria-hidden>
-                ‹
-              </span>
+              {/* En el teléfono no hay pestaña que cerrar: salir de una página
+                  es la flecha de atrás. Toma el mismo `cerrarGoto` que en
+                  escritorio dibuja la ✕ de la pestaña. */}
+              {vista.cerrarGoto ? (
+                <button
+                  type="button"
+                  className={`${styles.hotspot} ${styles.phoneBrowserControl}`}
+                  aria-label="Volver atrás"
+                  data-hotspot-goto={vista.cerrarGoto}
+                  data-hotspot-label={vista.cerrarLabel}
+                >
+                  ‹
+                </button>
+              ) : (
+                <span className={styles.phoneBrowserControl} aria-hidden>
+                  ‹
+                </span>
+              )}
               <span className={styles.phoneBrowserUrl}>
                 <span
                   aria-label={vista.secure ? 'Conexión segura' : 'Conexión no segura'}
@@ -303,6 +327,32 @@ function StoryEscenario({
           </div>
         </div>
       </div>
+
+      {/* El dock va siempre visible y con el nombre bajo cada icono, por lo
+          mismo que la barra de marcadores lleva la palabra "Marcadores": en
+          varios escenarios entrar por tu cuenta a la app del banco o del
+          courier es el único camino al acierto, y esconderlo tras el gesto de
+          ir al inicio mediría si el participante conoce ese gesto, no si
+          reconoce el engaño. */}
+      {apps && apps.length > 0 && (
+        <div className={styles.phoneDock} aria-label="Apps del teléfono">
+          {apps.map(({ Icono, texto, goto, label }) => (
+            <button
+              key={texto}
+              type="button"
+              className={styles.phoneDockApp}
+              data-hotspot-goto={goto}
+              data-hotspot-label={label}
+            >
+              <span className={styles.phoneDockIcono}>
+                <Icono aria-hidden className={styles.phoneDockGlifo} strokeWidth={1.75} />
+              </span>
+              <span className={styles.phoneDockNombre}>{texto}</span>
+            </button>
+          ))}
+        </div>
+      )}
+
       <div className={styles.phoneSystemBar} aria-hidden>
         <span></span>
       </div>
