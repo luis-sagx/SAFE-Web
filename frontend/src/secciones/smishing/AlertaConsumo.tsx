@@ -57,24 +57,90 @@ const SMS_RESPONDIDO: ScreenView = {
   msgs: [...HISTORIAL, NUEVO, { text: BORRADOR, time: '19:16', mine: true, senal: 'respuesta' }],
 }
 
+/// El inicio de la banca móvil. Abrir la app no es todavía haber verificado:
+/// desde aquí se puede mirar los movimientos o bloquear la tarjeta a ciegas,
+/// que es el error que este escenario mide de verdad.
+const APP_INICIO: ScreenView = {
+  kind: 'web',
+  app: 'Banco del Litoral',
+  url: 'bancolitoral.ec',
+  secure: true,
+  brand: 'Banca móvil',
+  title: 'Tarjeta *4417',
+  subtitle: 'Cupo disponible $1.240,00',
+  opciones: [
+    { texto: 'Transferir', detalle: 'A cuentas propias o de terceros' },
+    {
+      texto: 'Movimientos',
+      detalle: 'Consumos y débitos de los últimos 30 días',
+      goto: 'e_app',
+      label: 'Revisó los movimientos de la tarjeta en la app',
+    },
+    {
+      texto: 'Bloquear tarjeta',
+      detalle: 'Anula la tarjeta de forma inmediata',
+      goto: 'e_bloquea',
+      label: 'Bloqueó la tarjeta sin revisar antes el movimiento',
+    },
+    { texto: 'Pagar servicios', detalle: 'Luz, agua, teléfono e internet' },
+  ],
+  fields: [],
+  button: '',
+}
+
+/// La app del banco con los mismos movimientos del hilo. El acierto de este
+/// escenario es comprobar, y comprobar significa ver el consumo listado: el
+/// veredicto lo cuenta, pero la pantalla es la que lo prueba.
+const APP_BANCO: ScreenView = {
+  kind: 'web',
+  app: 'Banco del Litoral',
+  url: 'bancolitoral.ec',
+  secure: true,
+  brand: 'Movimientos · Tarjeta *4417',
+  title: 'Últimos consumos',
+  subtitle: 'Actualizado hace un minuto.',
+  datos: [
+    { etiqueta: '02/08 19:14 · SUPERMERCADO LA UNIÓN', valor: '$42,90' },
+    { etiqueta: '30/07 · Transferencia recibida', valor: '+$820,00' },
+    { etiqueta: '28/07 11:02 · FARMACIA SANA', valor: '$12,40' },
+  ],
+  aviso:
+    '¿No reconoces un consumo? Bloquea la tarjeta desde aquí o llama al número impreso en ella.',
+  fields: [],
+  button: '',
+}
+
 const APPS: AppTelefono[] = [
   { Icono: MessageSquareText, texto: 'Mensajes' },
   {
+    Icono: Camera,
+    texto: 'Cámara',
+    vacia: 'La cámara está lista. No hay nada que fotografiar en este momento.',
+  },
+  {
     Icono: Landmark,
     texto: 'Banco del Litoral',
-    goto: 'e_app',
-    label: 'Abrió la app del banco para revisar el movimiento',
+    goto: 'n2',
+    label: 'Abrió la app del banco',
   },
-  { Icono: Camera, texto: 'Cámara' },
-  { Icono: Images, texto: 'Galería' },
+  { Icono: Images, texto: 'Galería', vacia: 'Tus fotos recientes · 248 elementos.' },
 ]
 
 const STORY: Story<ScreenNode> = {
   n1: { kind: 'scene', view: SMS },
   n1b: { kind: 'scene', view: SMS_BORRADOR },
+  n2: { kind: 'scene', view: APP_INICIO },
+  e_bloquea: {
+    kind: 'partial',
+    view: APP_INICIO,
+    verdict: 'Reaccionaste sin comprobar',
+    outcome:
+      'Bloqueaste la tarjeta por una compra que habías hecho tú. No perdiste nada, pero te quedaste sin tarjeta hasta que el banco emita otra, y los movimientos estaban a un toque de distancia en esta misma app.',
+    score: 50,
+  },
   e_app: {
     kind: 'good',
-    view: SMS,
+    view: APP_BANCO,
     verdict: 'Acertaste · el aviso era legítimo',
     outcome:
       'En la app apareció el mismo consumo de $42,90: era tu compra del supermercado. El SMS venía del hilo de siempre del banco, no pedía nada y solo te avisaba.',

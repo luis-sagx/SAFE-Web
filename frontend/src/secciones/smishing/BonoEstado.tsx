@@ -66,22 +66,77 @@ const PAGINA: ScreenView = {
   cerrarLabel: 'Salió de la página sin enviar los datos',
 }
 
+/// El navegador abre en sus sitios frecuentes. Abrirlo no comprueba nada: la
+/// dirección oficial la eliges tú, y esa elección es la lección.
+const NAVEGADOR: ScreenView = {
+  kind: 'web',
+  app: 'Navegador',
+  url: 'inicio',
+  secure: true,
+  brand: 'Sitios frecuentes',
+  title: 'Nueva pestaña',
+  opciones: [
+    { texto: 'elcomercio.com', detalle: 'Noticias del Ecuador' },
+    { texto: 'bancolitoral.ec', detalle: 'Banca en línea' },
+    {
+      texto: 'inclusion.gob.ec',
+      detalle: 'Ministerio de Inclusión Económica y Social',
+      goto: 'e_verifica',
+      label: 'Entró al sitio oficial del MIES desde sus sitios frecuentes',
+    },
+    { texto: 'sri.gob.ec', detalle: 'Servicio de Rentas Internas' },
+  ],
+  fields: [],
+  button: '',
+}
+
+/// Lo que el participante ve al comprobarlo por su cuenta. El acierto tiene
+/// que enseñarse en pantalla, no solo contarse en el veredicto: la lección es
+/// que la fuente oficial *da una respuesta*, y una pantalla que no cambia no
+/// lo demuestra.
+const PORTAL_MIES: ScreenView = {
+  kind: 'web',
+  url: 'https://www.inclusion.gob.ec/consulta-de-beneficiarios',
+  secure: true,
+  brand: 'MIES · Ministerio de Inclusión Económica y Social',
+  title: 'Consulta de beneficiarios',
+  subtitle: 'Resultado para la cédula registrada a tu nombre.',
+  datos: [
+    { etiqueta: 'Bonos o subsidios activos', valor: 'Ninguno' },
+    { etiqueta: 'Procesos de preselección', valor: 'Ninguno' },
+    { etiqueta: 'Registros pendientes', valor: 'Ninguno' },
+  ],
+  aviso:
+    'El MIES no preselecciona beneficiarios por mensajes de texto ni solicita claves de banca en línea. Los trámites se realizan únicamente en este portal o en las oficinas del Ministerio.',
+  fields: [],
+  button: '',
+}
+
 const APPS: AppTelefono[] = [
-  { Icono: MessageSquareText, texto: 'Mensajes' },
   {
     Icono: Compass,
     texto: 'Navegador',
-    goto: 'e_verifica',
-    label: 'Buscó por su cuenta si el registro existía en la web oficial',
+    goto: 'n3',
+    label: 'Abrió el navegador para comprobarlo por su cuenta',
   },
-  { Icono: Wallet, texto: 'Banco' },
-  { Icono: Camera, texto: 'Cámara' },
+  { Icono: MessageSquareText, texto: 'Mensajes' },
+  {
+    Icono: Wallet,
+    texto: 'Banco',
+    vacia: 'Banca móvil · Saldo disponible $312,45. Sin notificaciones nuevas.',
+  },
+  {
+    Icono: Camera,
+    texto: 'Cámara',
+    vacia: 'La cámara está lista. No hay nada que fotografiar en este momento.',
+  },
 ]
 
 const STORY: Story<ScreenNode> = {
   n1: { kind: 'scene', view: SMS },
   n1b: { kind: 'scene', view: GRUPO },
   n2: { kind: 'scene', view: PAGINA },
+  n3: { kind: 'scene', view: NAVEGADOR },
   e_datos: {
     kind: 'bad',
     view: PAGINA,
@@ -98,10 +153,10 @@ const STORY: Story<ScreenNode> = {
   },
   e_verifica: {
     kind: 'good',
-    view: SMS,
+    view: PORTAL_MIES,
     verdict: 'No caíste · buscaste la fuente oficial',
     outcome:
-      'En la web del MIES no existía ningún registro exprés ni preselección por SMS. El mensaje circulaba masivamente ese día.',
+      'En el portal del MIES no constaba ningún bono a tu nombre ni ninguna preselección: no existía el registro exprés que anunciaba el SMS. El mensaje circulaba masivamente ese día.',
   },
 }
 

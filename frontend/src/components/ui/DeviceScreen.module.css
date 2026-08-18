@@ -747,6 +747,68 @@ button.mailNavItem {
   color: #16202c;
 }
 
+/* ---------- Menú de app / sitios frecuentes ---------- */
+.opciones {
+  margin: 1.25rem 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--line);
+}
+
+.opcion {
+  appearance: none;
+  border: none;
+  border-bottom: 1px solid var(--line);
+  background: transparent;
+  font: inherit;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.875rem 0.25rem;
+  text-align: left;
+  cursor: pointer;
+  color: #16202c;
+}
+
+/* El realce va en todas las filas, respondan o no: marcar solo la que lleva a
+   algún sitio convertiría el menú en una lista de opciones señalizada, que es
+   justo lo que la pantalla interactiva reemplaza. */
+.opcion:hover,
+.opcion:focus-visible {
+  outline: 2px solid rgb(0 104 55 / 45%);
+  outline-offset: -2px;
+  filter: brightness(0.97);
+}
+
+.opcionTextos {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.opcionTexto {
+  font-size: 1.0625rem;
+  line-height: 1.3;
+}
+
+.opcionDetalle {
+  font-size: 0.875rem;
+  line-height: 1.35;
+  color: var(--dim);
+}
+
+.opcionFlecha {
+  flex-shrink: 0;
+  font-size: 1.25rem;
+  line-height: 1;
+  color: #97a1ad;
+}
+
 /* ---------- Resultados de búsqueda ----------
    Un buscador no se lee como una ficha de datos: se lee como una lista de
    títulos azules con su dirección debajo. La forma importa tanto como el texto,
@@ -1373,8 +1435,19 @@ button.mailNavItem {
   color: #fff;
   border-bottom-right-radius: 5px;
 }
+/* Azul y subrayado: en un SMS el enlace es texto plano y se pierde dentro del
+   párrafo. Marcarlo no delata nada —el escenario no dice si es bueno o malo—
+   pero deja ver que ahí hay algo que se puede tocar, que es la decisión. */
 .smsBubble a {
-  color: inherit;
+  color: #1558d6;
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+  overflow-wrap: anywhere;
+}
+.smsRow.mine .smsBubble a {
+  color: #fff;
 }
 .smsTime {
   display: block;
@@ -1547,23 +1620,82 @@ button.mailNavItem {
 
 .phoneBrowserSecurity {
   flex-shrink: 0;
+  width: 0.875rem;
+  height: 0.875rem;
+}
+
+.phoneBrowserUnsafe {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.1875rem;
   border-radius: 999px;
-  padding: 0.1875rem 0.4375rem;
+  padding: 0.125rem 0.375rem 0.125rem 0.3125rem;
+  background: #fff1f2;
+  color: #b42318;
+  border: 1px solid #fecdd3;
   font-size: 0.6875rem;
   font-weight: 800;
   line-height: 1;
 }
 
-.phoneBrowserUnsafe {
-  background: #fff1f2;
-  color: #b42318;
-  border: 1px solid #fecdd3;
+.phoneBrowserSafe {
+  color: #067647;
 }
 
-.phoneBrowserSafe {
-  background: #ecfdf3;
-  color: #067647;
-  border: 1px solid #bbf7d0;
+/* Cabecera de una app del teléfono: sin dirección ni candado, porque una app
+   no tiene ninguna de las dos cosas. */
+.phoneAppBar {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.5rem 0.625rem;
+  background: #0f2f4f;
+  color: #fff;
+}
+
+.phoneAppBarNombre {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: center;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.phoneAppVolver {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 14%);
+  color: #fff;
+  font-size: 1.125rem;
+  line-height: 1;
+}
+
+/* Una app abierta que no tiene nada que ver con el escenario. Existe para que
+   el dock no sea una lista de opciones con un solo elemento vivo. */
+.appVacia {
+  margin: 0;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1.5rem;
+  text-align: center;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: #6b7684;
+  background: #f2f4f7;
 }
 
 .phoneBrowserUrl {
@@ -1611,13 +1743,13 @@ button.mailNavItem {
   flex-shrink: 0;
   display: flex;
   align-items: flex-start;
-  justify-content: center;
-  gap: 0.375rem;
-  margin-top: 0.5rem;
-  padding: 0.5rem 0.375rem;
-  border-radius: 1.125rem;
-  background: rgb(255 255 255 / 10%);
-  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 12%);
+  justify-content: space-around;
+  gap: 0.125rem;
+  margin-top: 0.4375rem;
+  padding: 0.4375rem 0.25rem 0.375rem;
+  border-radius: 1rem;
+  background: rgb(148 163 184 / 14%);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 8%);
 }
 
 .phoneDockApp {
@@ -1630,37 +1762,56 @@ button.mailNavItem {
   min-width: 0;
   flex-direction: column;
   align-items: center;
-  gap: 0.25rem;
-  padding: 0.125rem;
+  gap: 0.1875rem;
+  padding: 0.125rem 0.0625rem;
   cursor: pointer;
-  color: #e5e7eb;
+  color: #cbd5e1;
+}
+
+/* El realce va en todo el dock y no solo en lo accionable: el realce por
+   defecto marca `[data-hotspot-goto]`, y con una sola app viva bastaba pasar
+   el cursor por los cuatro iconos para saber la respuesta. */
+.phoneDockApp:hover .phoneDockIcono,
+.phoneDockApp:focus-visible .phoneDockIcono {
+  outline: 2px solid rgb(0 104 55 / 45%);
+  outline-offset: 2px;
+  filter: brightness(0.97);
+}
+
+.phoneDockApp:hover,
+.phoneDockApp:focus-visible {
+  outline: none;
 }
 
 .phoneDockIcono {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 2.25rem;
-  height: 2.25rem;
-  border-radius: 0.75rem;
-  background: linear-gradient(160deg, #f8fafc 0%, #dbe3ec 100%);
-  color: #1f2937;
-  box-shadow: 0 1px 2px rgb(0 0 0 / 35%);
+  width: 1.875rem;
+  height: 1.875rem;
+  border-radius: 0.5625rem;
+  background: linear-gradient(160deg, #fdfefe 0%, #cfd8e3 100%);
+  color: #223046;
+  box-shadow: 0 1px 1px rgb(0 0 0 / 30%);
 }
 
 .phoneDockGlifo {
-  width: 1.25rem;
-  height: 1.25rem;
+  width: 1rem;
+  height: 1rem;
 }
 
+/* Los nombres se recortan antes de empujar el ancho del dock: "Banco del
+   Litoral" no cabe entero, pero un icono que ocupa el doble que los demás
+   apunta a la respuesta antes de que el participante decida. */
 .phoneDockNombre {
   max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 0.625rem;
-  font-weight: 600;
-  line-height: 1.2;
+  font-size: 0.5625rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  line-height: 1.25;
 }
 
 .phoneSystemBar {
@@ -1708,6 +1859,49 @@ button.mailNavItem {
 
 .phoneStage .submit {
   padding: 0.875rem;
+  font-size: 1.0625rem;
+}
+
+/* Fichas y buscador dentro del teléfono: la etiqueta fija de 9.5rem del
+   escritorio deja el valor contra el borde y parte cada descripción en cuatro
+   líneas. En pantalla estrecha la fila se comporta como un extracto: concepto
+   a la izquierda, importe a la derecha. */
+.phoneStage .datos {
+  margin-top: 1.125rem;
+  gap: 0.75rem;
+}
+
+.phoneStage .dato {
+  gap: 0.75rem;
+  justify-content: space-between;
+  padding-bottom: 0.6875rem;
+}
+
+.phoneStage .datoEtiqueta {
+  flex: 1;
+  width: auto;
+  min-width: 0;
+  font-size: 0.875rem;
+  line-height: 1.35;
+}
+
+.phoneStage .datoValor {
+  flex-shrink: 0;
+  font-size: 1.0625rem;
+  font-weight: 600;
+}
+
+.phoneStage .cajaBusqueda {
+  margin-top: 0.5rem;
+  padding: 0.5rem 0.75rem;
+}
+
+.phoneStage .resultados {
+  margin-top: 1rem;
+  gap: 1rem;
+}
+
+.phoneStage .resultadoTitulo {
   font-size: 1.0625rem;
 }
 

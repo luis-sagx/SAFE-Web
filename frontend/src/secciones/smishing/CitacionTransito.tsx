@@ -60,24 +60,79 @@ const PAGINA: ScreenView = {
   cerrarLabel: 'Salió de la página sin enviar los datos',
 }
 
+/// El navegador abre en sus sitios frecuentes, no en el portal. Es el
+/// equivalente móvil de la barra de marcadores: entrar por tu cuenta sigue
+/// siendo una decisión con dirección, no un icono que resuelve el escenario.
+const NAVEGADOR: ScreenView = {
+  kind: 'web',
+  app: 'Navegador',
+  url: 'inicio',
+  secure: true,
+  brand: 'Sitios frecuentes',
+  title: 'Nueva pestaña',
+  opciones: [
+    { texto: 'elcomercio.com', detalle: 'Noticias del Ecuador' },
+    {
+      texto: 'ant.gob.ec',
+      detalle: 'Agencia Nacional de Tránsito · consultas y trámites',
+      goto: 'e_portal',
+      label: 'Entró al portal oficial de la ANT desde sus sitios frecuentes',
+    },
+    { texto: 'sri.gob.ec', detalle: 'Servicio de Rentas Internas' },
+    { texto: 'bancolitoral.ec', detalle: 'Banca en línea' },
+  ],
+  fields: [],
+  button: '',
+}
+
+/// El portal de verdad, abierto escribiendo tú la dirección. Que la consulta
+/// devuelva cero citaciones tiene que verse en pantalla: es la prueba de que
+/// el SMS mentía, y contarla solo en el veredicto la deja en promesa.
+const PORTAL: ScreenView = {
+  kind: 'web',
+  url: 'https://www.ant.gob.ec/consulta-de-citaciones',
+  secure: true,
+  brand: 'ANT · Agencia Nacional de Tránsito',
+  title: 'Consulta de citaciones',
+  subtitle: 'Resultado para la cédula registrada a tu nombre.',
+  datos: [
+    { etiqueta: 'Citaciones pendientes', valor: '0' },
+    { etiqueta: 'Valores por pagar', valor: '$0,00' },
+    { etiqueta: 'Última consulta', valor: 'hoy, 08:34' },
+  ],
+  aviso:
+    'Los valores por infracciones se pagan en ventanilla o desde este portal. La ANT no envía enlaces de pago por mensaje de texto.',
+  fields: [],
+  button: '',
+}
+
 /// El navegador es aquí lo que el marcador del portal era en phishing: el
 /// camino para consultar la multa escribiendo tú la dirección oficial.
 const APPS: AppTelefono[] = [
   { Icono: MessageSquareText, texto: 'Mensajes' },
   {
+    Icono: Wallet,
+    texto: 'Banco',
+    vacia: 'Banca móvil · Saldo disponible $312,45. Sin notificaciones nuevas.',
+  },
+  {
+    Icono: Camera,
+    texto: 'Cámara',
+    vacia: 'La cámara está lista. No hay nada que fotografiar en este momento.',
+  },
+  {
     Icono: Compass,
     texto: 'Navegador',
-    goto: 'e_portal',
-    label: 'Consultó sus multas entrando por su cuenta al portal oficial',
+    goto: 'n3',
+    label: 'Abrió el navegador para consultar por su cuenta',
   },
-  { Icono: Wallet, texto: 'Banco' },
-  { Icono: Camera, texto: 'Cámara' },
 ]
 
 const STORY: Story<ScreenNode> = {
   n1: { kind: 'scene', view: SMS },
   n1b: { kind: 'scene', view: SMS_RESPONDIDO },
   n2: { kind: 'scene', view: PAGINA },
+  n3: { kind: 'scene', view: NAVEGADOR },
   e_pago: {
     kind: 'bad',
     view: PAGINA,
@@ -94,7 +149,7 @@ const STORY: Story<ScreenNode> = {
   },
   e_portal: {
     kind: 'good',
-    view: SMS,
+    view: PORTAL,
     verdict: 'No caíste · verificaste por tu canal',
     outcome:
       'Al consultar en el portal oficial no apareció ninguna citación pendiente. El SMS usaba el miedo al recargo para llevarte a una página falsa.',

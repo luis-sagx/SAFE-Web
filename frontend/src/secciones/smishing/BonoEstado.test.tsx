@@ -77,11 +77,22 @@ describe('BonoEstado', () => {
     expect(screen.getByText('No caíste · el formulario te delató')).toBeDefined()
   })
 
-  it('la app del navegador lleva a comprobarlo por cuenta propia', () => {
+  it('abrir el navegador no comprueba nada: la dirección la eliges tú', () => {
     const container = empezar()
     const telefono = container.querySelector('#pantalla-escenario') as HTMLElement
 
     fireEvent.click(within(telefono).getByRole('button', { name: /Navegador/ }))
+
+    // El navegador abre en sus sitios frecuentes, no en el portal, y la
+    // corrida sigue abierta: tocar el icono todavía no es un veredicto.
+    expect(within(telefono).getByText('Nueva pestaña')).toBeDefined()
+    expect(screen.getByText('¿Qué haces?')).toBeDefined()
+
+    fireEvent.click(within(telefono).getByRole('button', { name: /inclusion\.gob\.ec/ }))
+
+    // Y el acierto se ve en pantalla, no solo en el veredicto.
+    expect(within(telefono).getByText('Consulta de beneficiarios')).toBeDefined()
+    expect(within(telefono).getByText('Procesos de preselección')).toBeDefined()
     expect(screen.getByText('No caíste · buscaste la fuente oficial')).toBeDefined()
   })
 

@@ -59,25 +59,81 @@ const PAGINA: ScreenView = {
   cerrarLabel: 'Salió de la página sin enviar los datos',
 }
 
-/// Solo la del courier lleva a algún lado: las otras tres son las apps que
-/// cualquiera tiene en el teléfono. Un dock con un único icono accionable
-/// señalaría la respuesta antes de que el participante decida.
+/// El inicio de la app, que es donde te deja abrirla. La consulta la haces tú:
+/// tocar el icono no es haber comprobado nada todavía.
+const APP_INICIO: ScreenView = {
+  kind: 'web',
+  app: 'EnvíaExpress',
+  url: 'envia-express.ec',
+  secure: true,
+  brand: 'Mis envíos',
+  title: 'Hola de nuevo',
+  subtitle: 'Tienes 1 envío en curso.',
+  opciones: [
+    {
+      texto: 'Rastrear una guía',
+      detalle: 'Consulta el estado con tu número de guía',
+      goto: 'e_app',
+      label: 'Rastreó la guía dentro de la app del courier',
+    },
+    { texto: 'Puntos de retiro', detalle: 'Encuentra la agencia más cercana' },
+    { texto: 'Cotizar un envío', detalle: 'Calcula el costo por peso y destino' },
+    { texto: 'Mi cuenta', detalle: 'Datos, direcciones y notificaciones' },
+  ],
+  fields: [],
+  button: '',
+}
+
+/// La app del courier, con el seguimiento de la guía. Va sin barra de
+/// direcciones (`app`) a propósito: en una app no hay dominio que comprobar
+/// porque no se llegó por un enlace, y esa es media lección del escenario.
+const APP_COURIER: ScreenView = {
+  kind: 'web',
+  app: 'EnvíaExpress',
+  url: 'envia-express.ec',
+  secure: true,
+  brand: 'Seguimiento de envíos',
+  title: 'Guía 4471-EC',
+  subtitle: 'Tu compra del 26 de julio.',
+  datos: [
+    { etiqueta: 'Estado', valor: 'En reparto' },
+    { etiqueta: 'Entrega estimada', valor: 'hoy, antes de las 18:00' },
+    { etiqueta: 'Valores pendientes', valor: '$0,00' },
+  ],
+  aviso:
+    'Los envíos con valores aduaneros se notifican dentro de la app y se pagan aquí mismo. Nunca por enlaces enviados por mensaje.',
+  fields: [],
+  button: '',
+}
+
+/// Las cuatro se abren; solo la del courier decide. Las otras muestran su
+/// estado normal y se vuelve con la flecha, para que abrir apps sea explorar
+/// el teléfono y no descartar opciones de una lista.
 const APPS: AppTelefono[] = [
   { Icono: MessageSquareText, texto: 'Mensajes' },
   {
     Icono: Package,
     texto: 'EnvíaExpress',
-    goto: 'e_app',
-    label: 'Abrió la app del courier para consultar su guía',
+    goto: 'n3',
+    label: 'Abrió la app del courier',
   },
-  { Icono: Wallet, texto: 'Banco' },
-  { Icono: Camera, texto: 'Cámara' },
+  {
+    Icono: Wallet,
+    texto: 'Banco',
+    vacia: 'Banca móvil · Saldo disponible $312,45. Sin notificaciones nuevas.',
+  },
+  {
+    Icono: Camera,
+    texto: 'Cámara',
+    vacia: 'La cámara está lista. No hay nada que fotografiar en este momento.',
+  },
 ]
 
 const STORY: Story<ScreenNode> = {
   n1: { kind: 'scene', view: SMS },
   n1b: { kind: 'scene', view: SMS_RESPONDIDO },
   n2: { kind: 'scene', view: PAGINA },
+  n3: { kind: 'scene', view: APP_INICIO },
   e_pago: {
     kind: 'bad',
     view: PAGINA,
@@ -94,7 +150,7 @@ const STORY: Story<ScreenNode> = {
   },
   e_app: {
     kind: 'good',
-    view: SMS,
+    view: APP_COURIER,
     verdict: 'No caíste · verificaste en el canal oficial',
     outcome:
       'Entraste a la app del courier con tu número de guía: el envío estaba en reparto normal, sin valores pendientes. El SMS era falso.',

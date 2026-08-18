@@ -46,6 +46,12 @@ export type ScreenView =
   | {
       kind: 'web'
       url: string
+      /** Nombre de la app cuando esta pantalla no es una página del navegador
+       *  sino una app del teléfono (la del banco, la del courier). El marco
+       *  cambia la barra de direcciones por la cabecera de la app: una app no
+       *  tiene URL, y pintarle una enseñaría a buscar el candado donde no lo
+       *  hay. Solo lo usa el marco de celular. */
+      app?: string
       /** Candado del navegador. Falso pinta la advertencia "No seguro". */
       secure: boolean
       /** Archivo abierto desde el disco (un adjunto descargado, p. ej.). No
@@ -84,6 +90,19 @@ export type ScreenView =
       /** Datos de una página informativa. Cuando los hay, sustituyen al
        *  formulario: un directorio no se rellena, se lee. */
       datos?: { etiqueta: string; valor: string; senal?: string }[]
+      /** Menú de una app o lista de sitios frecuentes del navegador. Manda
+       *  sobre todo lo demás.
+       *
+       *  Existe para que llegar al canal propio cueste lo que cuesta de
+       *  verdad: abrir la app te deja en su inicio, y la consulta la haces tú.
+       *  Un icono que resuelve el escenario de un toque premia haber
+       *  encontrado el icono, no haber sabido qué hacer.
+       *
+       *  Las entradas sin `goto` se pulsan igual pero no llevan a ningún lado
+       *  —el menú de una app real tampoco es todo accionable— y por eso el
+       *  realce al pasar el cursor va en todas por igual: si solo se marcara
+       *  la viva, la lista volvería a ser un cuestionario. */
+      opciones?: { texto: string; detalle?: string; goto?: string; label?: string }[]
       /** Resultados de una búsqueda. Mandan sobre `datos` y sobre el
        *  formulario: comprobar algo por tu cuenta es media lección del módulo,
        *  y una lista de pares etiqueta/valor no se lee como un buscador. */
@@ -246,7 +265,30 @@ function DeviceScreen({
         )}
         {view.subtitle && <p className={styles.pageSub}>{view.subtitle}</p>}
 
-        {view.resultados ? (
+        {view.opciones ? (
+          <ul className={styles.opciones}>
+            {view.opciones.map((opcion) => (
+              <li key={opcion.texto}>
+                <button
+                  type="button"
+                  className={styles.opcion}
+                  data-hotspot-goto={opcion.goto}
+                  data-hotspot-label={opcion.label}
+                >
+                  <span className={styles.opcionTextos}>
+                    <span className={styles.opcionTexto}>{opcion.texto}</span>
+                    {opcion.detalle && (
+                      <span className={styles.opcionDetalle}>{opcion.detalle}</span>
+                    )}
+                  </span>
+                  <span className={styles.opcionFlecha} aria-hidden>
+                    ›
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        ) : view.resultados ? (
           <div className={styles.resultados}>
             {view.resultados.map((resultado) => (
               <div key={resultado.url} data-signal={resultado.senal}>
