@@ -80,8 +80,8 @@ describe('catálogo de escenarios', () => {
   // puede pasar es que crezca sin que nadie repase la proporción.
   it('smishing va sumando escenarios, con más fraude que legítimos', () => {
     const smishing = escenariosDeSeccion('smishing')
-    expect(smishing).toHaveLength(5)
-    expect(smishing.filter((e) => e.naturaleza === 'fraude')).toHaveLength(4)
+    expect(smishing).toHaveLength(6)
+    expect(smishing.filter((e) => e.naturaleza === 'fraude')).toHaveLength(5)
     expect(smishing.filter((e) => e.naturaleza === 'legitimo')).toHaveLength(1)
   })
 

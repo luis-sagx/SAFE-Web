@@ -308,6 +308,20 @@ const BASE: EscenarioBase[] = [
     Component: lazy(() => import('../secciones/smishing/BonoEstado')),
   },
   {
+    // El único del módulo cuyo anzuelo no es una dirección sino un número de
+    // teléfono. Tiende el puente hacia vishing: el engaño se termina de contar
+    // dentro de la llamada.
+    seccionId: 'smishing',
+    escenarioId: 'tarjeta-bloqueada',
+    titulo: 'Tarjeta bloqueada',
+    descripcion: 'Un SMS avisa de un bloqueo y da un número al que llamar para reactivar.',
+    version: 1,
+    naturaleza: 'fraude',
+    dificultad: 3,
+    espeja: 'smishing/alerta-consumo',
+    Component: lazy(() => import('../secciones/smishing/TarjetaBloqueada')),
+  },
+  {
     seccionId: 'smishing',
     escenarioId: 'citacion-transito',
     titulo: 'Citación de tránsito',

@@ -33,6 +33,10 @@ export const IDENTIDAD_FICTICIA = {
   /// El mismo número con el sufijo de persona natural, para las facturas.
   ruc: '1799999999001',
   banco: 'Banco del Litoral',
+  /// Los cuatro últimos de la tarjeta, que es lo único que un aviso real
+  /// enseña de ella. Nunca hay un número completo en el módulo: no hace falta
+  /// para ninguna lección y sí sería un dato de más en pantalla.
+  tarjeta: '4417',
   cuenta: '2100-0000-99',
 } as const
 
