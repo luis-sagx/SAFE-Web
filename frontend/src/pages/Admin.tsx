@@ -182,6 +182,7 @@ function Participantes() {
           <table className="w-full min-w-[720px] border-collapse text-left text-sm">
             <thead>
               <tr className="border-b border-hairline bg-canvas-soft text-muted">
+                <th className="px-4 py-3 font-semibold">Seudónimo</th>
                 <th className="px-4 py-3 font-semibold">Nombre</th>
                 <th className="px-4 py-3 font-semibold">Correo</th>
                 <th className="px-4 py-3 font-semibold">Estado</th>
@@ -195,6 +196,9 @@ function Participantes() {
                   key={p.id}
                   className="border-b border-hairline last:border-0"
                 >
+                  <td className="px-4 py-3 font-medium text-ink tabular-nums">
+                    {p.seudonimo}
+                  </td>
                   <td className="px-4 py-3 text-ink">{nombreCompleto(p)}</td>
                   <td className="px-4 py-3 text-body">{p.email ?? "—"}</td>
                   <td className="px-4 py-3">

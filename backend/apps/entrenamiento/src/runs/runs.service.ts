@@ -1,10 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import type { JwtPayload } from '@comun';
+import { seudonimo, type JwtPayload } from '@comun';
 import { Prisma } from '../../../../generated/entrenamiento/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateRunDto } from './dto/create-run.dto';
 import { calcularProgreso, UMBRALES } from './progreso';
-import { seudonimo } from './seudonimo';
 
 export interface ResultadoCorrida {
   seudonimo: string;

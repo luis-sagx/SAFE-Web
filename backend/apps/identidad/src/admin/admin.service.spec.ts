@@ -6,6 +6,7 @@ import type { PrismaService } from '../prisma/prisma.service';
 function fila(overrides: Record<string, unknown> = {}) {
   return {
     id: 'p1',
+    seq: 7,
     nombre: 'Ana',
     apellido: 'Pérez',
     email: 'ana@ejemplo.com',
@@ -37,6 +38,9 @@ describe('AdminService.listar', () => {
 
     expect(whereRecibido).toEqual({ role: 'PARTICIPANT' });
     expect(lista[0]).toMatchObject({ id: 'p1', activo: true });
+    // El seudónimo es la llave de pareo con el pre/post-test, y tiene que ser
+    // el mismo código que emite `entrenamiento` para esa misma `seq`.
+    expect(lista[0].seudonimo).toBe('P007');
     expect(lista[1]).toMatchObject({ id: 'p2', activo: false });
     // Nunca sale cédula ni hash.
     expect(JSON.stringify(lista)).not.toContain('passwordHash');

@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { randomBytes } from 'node:crypto';
 import { hash } from 'bcryptjs';
+import { seudonimo } from '@comun';
 import { PrismaService } from '../prisma/prisma.service';
 
 /// Mismo factor que el registro (OWASP Password Storage >= 10).
@@ -8,6 +9,11 @@ const BCRYPT_ROUNDS = 12;
 
 export interface ParticipanteAdmin {
   id: string;
+  /// El mismo código con el que salen los resultados en `entrenamiento`
+  /// (P001). Es la única llave para parear cada corrida con el pre/post-test
+  /// que el participante responde fuera de la plataforma; sin él el estudio
+  /// no se puede analizar. Solo lo ve el supervisor, nunca el participante.
+  seudonimo: string;
   nombre: string | null;
   apellido: string | null;
   email: string | null;
@@ -19,6 +25,7 @@ export interface ParticipanteAdmin {
 /// no tienen por qué salir del servidor. La cédula en claro no existe.
 const CAMPOS_ADMIN = {
   id: true,
+  seq: true,
   nombre: true,
   apellido: true,
   email: true,
@@ -28,6 +35,7 @@ const CAMPOS_ADMIN = {
 
 interface FilaAdmin {
   id: string;
+  seq: number;
   nombre: string | null;
   apellido: string | null;
   email: string | null;
@@ -38,6 +46,7 @@ interface FilaAdmin {
 function vista(p: FilaAdmin): ParticipanteAdmin {
   return {
     id: p.id,
+    seudonimo: seudonimo(p.seq),
     nombre: p.nombre,
     apellido: p.apellido,
     email: p.email,
