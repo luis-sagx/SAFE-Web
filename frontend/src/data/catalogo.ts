@@ -344,6 +344,21 @@ const BASE: EscenarioBase[] = [
     Component: lazy(() => import('../secciones/smishing/PaqueteRetenido')),
   },
   {
+    // El más difícil del módulo: el código que llega es auténtico, así que todo
+    // lo que los otros enseñan a mirar sale bien en ese mensaje. Lo falso es el
+    // que pide reenviarlo.
+    seccionId: 'smishing',
+    escenarioId: 'codigo-reenviado',
+    titulo: 'Código que piden reenviar',
+    descripcion:
+      'Alguien dice ser del banco y pide el código de verificación que acaba de llegarte.',
+    version: 1,
+    naturaleza: 'fraude',
+    dificultad: 5,
+    espeja: 'smishing/alerta-consumo',
+    Component: lazy(() => import('../secciones/smishing/CodigoReenviado')),
+  },
+  {
     seccionId: 'smishing',
     escenarioId: 'alerta-consumo',
     titulo: 'Alerta de consumo',
