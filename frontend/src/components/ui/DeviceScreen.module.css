@@ -730,21 +730,31 @@ button.mailNavItem {
   gap: 1rem;
 }
 .dato {
-  display: flex;
-  gap: 1.25rem;
+  /* Rejilla y no flex: con flex, una etiqueta larga que parte en tres líneas
+     dejaba el valor sin sitio y el texto acababa pisando al de al lado. Aquí
+     cada columna tiene su ancho máximo declarado y el contenido parte donde
+     toca en vez de desbordarse. */
+  display: grid;
+  grid-template-columns: minmax(0, 9.5rem) minmax(0, 1fr);
+  gap: 0.25rem 1.25rem;
   align-items: baseline;
   padding-bottom: 1rem;
   border-bottom: 1px solid var(--line);
 }
 .datoEtiqueta {
-  flex-shrink: 0;
-  width: 9.5rem;
   font-size: 1rem;
   color: var(--dim);
 }
 .datoValor {
   font-size: 1.1875rem;
   color: #16202c;
+}
+
+/* En el teléfono no caben dos columnas: la etiqueta se comería un tercio del
+   ancho y el valor quedaría partido en un hilo de dos palabras por línea. Se
+   apilan, que es como lo muestra cualquier app de móvil. */
+.phoneApp .dato {
+  grid-template-columns: minmax(0, 1fr);
 }
 
 /* ---------- Menú de app / sitios frecuentes ---------- */
