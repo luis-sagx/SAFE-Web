@@ -1,4 +1,4 @@
-import { Paperclip, Search, SendHorizontal, type LucideIcon } from 'lucide-react'
+import { Paperclip, Search, SendHorizontal } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { CUENTA_FICTICIA, IDENTIDAD_FICTICIA } from '../../lib/identidadFicticia'
 import { AvisoSitio, CabeceraSitio, PieSitio } from './armazonSitio'
@@ -137,9 +137,6 @@ export type ScreenView =
        *  que significar algo (dejarlo pasar) o no ser una salida. */
       volverGoto?: string
       volverLabel?: string
-      /** Acciones del hilo, a la derecha de la cabecera. El equivalente de la
-       *  barra del cliente de correo: reenviar, bloquear, eliminar. */
-      acciones?: { texto: string; Icono: LucideIcon; goto: string; label?: string }[]
       /** Nodo al que lleva tocar el campo de escribir. Lleva a una pantalla del
        *  mismo hilo que ya trae el `borrador` puesto: escribir y enviar son dos
        *  gestos distintos, y separarlos deja ver qué se iba a mandar. */
@@ -355,25 +352,9 @@ function DeviceScreen({
           <p className={styles.smsSub}>{view.sub}</p>
         </div>
 
-        {/* La barra del cliente de correo, en versión teléfono. Va siempre
-            visible y con su nombre debajo del icono: en un móvil de verdad
-            varias de estas viven detrás de un menú o de una pulsación larga,
-            gestos que no todo participante conoce y que aquí solo servirían
-            para esconder caminos que el escenario sí quiere ofrecer. */}
-        <div className={styles.smsAcciones}>
-          {view.acciones?.map(({ texto, Icono, goto, label }) => (
-            <button
-              key={texto}
-              type="button"
-              className={`${styles.hotspot} ${styles.smsAccion}`}
-              data-hotspot-goto={goto}
-              data-hotspot-label={label}
-            >
-              <Icono aria-hidden className={styles.smsAccionIcono} strokeWidth={1.75} />
-              {texto}
-            </button>
-          ))}
-        </div>
+        {/* Contrapeso de la flecha, para que el nombre del remitente quede
+            centrado en la cabecera y no corrido hacia la derecha. */}
+        <span className={styles.smsVolver} aria-hidden />
       </div>
 
       <div className={styles.smsThread}>

@@ -1366,28 +1366,6 @@ button.mailNavItem {
   color: #b8c0ca;
 }
 
-.smsAcciones {
-  flex-shrink: 0;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-}
-.smsAccion {
-  display: inline-flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.125rem;
-  padding: 0.1875rem 0.3125rem;
-  border-radius: 0.5rem;
-  background: transparent;
-  font-size: 0.625rem;
-  font-weight: 600;
-  color: #47525f;
-}
-.smsAccionIcono {
-  width: 1.125rem;
-  height: 1.125rem;
-}
 .smsName {
   margin: 0;
   font-size: 1.125rem;

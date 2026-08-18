@@ -1,4 +1,4 @@
-import { Camera, Compass, Forward, MessageSquareText, Wallet } from 'lucide-react'
+import { Camera, Compass, MessageSquareText, Wallet } from 'lucide-react'
 import StoryEscenario, { type AppTelefono, type ScreenNode } from '../../components/StoryEscenario'
 import type { Contexto } from '../../components/ui/ContextoEscenario'
 import type { Story } from '../../hooks/useStoryEngine'
@@ -18,31 +18,6 @@ const SMS: ScreenView = {
   sub: 'Remitente sin verificar · SMS',
   senalRemitente: 'remitente',
   msgs: [{ text: TEXTO_BONO, time: '09:41', senal: 'mensaje' }],
-  acciones: [
-    {
-      texto: 'Reenviar',
-      Icono: Forward,
-      goto: 'n1b',
-      label: 'Reenvió el mensaje al grupo de su familia',
-    },
-  ],
-}
-
-/// Reenviar no deja el hilo igual: abre otra conversación, la del grupo, con el
-/// mensaje ya repetido. Sin esa pantalla, pulsar "Reenviar" no cambiaba nada a
-/// la vista y se leía como que el teléfono no había respondido.
-const GRUPO: ScreenView = {
-  kind: 'sms',
-  sender: 'Familia ❤️',
-  sub: 'Grupo · 6 participantes',
-  msgs: [
-    { text: TEXTO_BONO, time: '09:43', mine: true },
-    {
-      text: '¡Gracias! Ya lo pasé al grupo del barrio. ¿Vos ya te registraste?',
-      time: '09:45',
-      senal: 'reenvio',
-    },
-  ],
 }
 
 const PAGINA: ScreenView = {
@@ -137,7 +112,6 @@ const APPS: AppTelefono[] = [
 
 const STORY: Story<ScreenNode> = {
   n1: { kind: 'scene', view: SMS },
-  n1b: { kind: 'scene', view: GRUPO },
   n2: { kind: 'scene', view: PAGINA },
   n3: { kind: 'scene', view: NAVEGADOR },
   e_datos: {
@@ -169,7 +143,6 @@ const SENALES: Senal[] = [
   { id: 's3', targetId: 'url', pantalla: 'n2', texto: 'La página está en <b>bono-social-ec.online</b>, y las páginas del Estado ecuatoriano terminan en <b>.gob.ec</b>. El nombre suena oficial, pero el final delata que no lo es. Tampoco empieza por https: ni siquiera protege lo que escribes.' },
   { id: 's4', targetId: 'clave', pantalla: 'n2', texto: 'Pide tu <b>clave de banca en línea</b> para "recibir" un depósito. Para que te depositen basta tu número de cuenta: la clave solo sirve para sacar dinero, nunca para meterlo.' },
   { id: 's5', targetId: 'codigo', pantalla: 'n2', texto: 'Pide el <b>código que te llega por SMS</b>. Ese código es la última puerta de tu banco: con tu clave y con él ya entran a tu cuenta desde su propio teléfono.' },
-  { id: 's6', targetId: 'reenvio', pantalla: 'n1b', texto: 'Reenviarlo <b>no lo verifica, lo multiplica</b>: el mensaje llega a gente que confía en ti, y por eso lo abre sin dudar.' },
 ]
 const RULE =
   'Regla de oro: para <b>recibir</b> dinero nadie necesita tu clave ni tu código de verificación; solo tu número de cuenta. Cualquier bono o subsidio se confirma en el sitio oficial <b>.gob.ec</b>, escrito por ti.'
@@ -208,9 +181,9 @@ function BonoEstado() {
       }
       pista={
         <p>
-          Tienes varios caminos posibles: hacer lo que el mensaje te pide, pasárselo a alguien más,
-          o dejarlo de lado y comprobar por tu cuenta si ese bono existe. Cuál de ellos es el
-          acertado es justamente lo que decides tú.
+          Tienes varios caminos posibles: hacer lo que el mensaje te pide, o dejarlo de lado y
+          comprobar por tu cuenta si ese bono existe. Cuál de ellos es el acertado es justamente lo
+          que decides tú.
         </p>
       }
     />

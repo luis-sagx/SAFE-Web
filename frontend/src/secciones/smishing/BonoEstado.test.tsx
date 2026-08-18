@@ -65,12 +65,9 @@ describe('BonoEstado', () => {
     expect(screen.getByText('Caíste en la trampa')).toBeDefined()
   })
 
-  it('reenviar abre el hilo del grupo y salir de la página no entrega datos', () => {
+  it('salir de la página falsa no entrega datos', () => {
     const container = empezar()
     const telefono = container.querySelector('#pantalla-escenario') as HTMLElement
-
-    fireEvent.click(within(telefono).getByRole('button', { name: /Reenviar/ }))
-    expect(within(telefono).getByText('Familia ❤️')).toBeDefined()
 
     fireEvent.click(within(telefono).getByText('bit.ly/bono-ec-2026'))
     fireEvent.click(within(telefono).getByRole('button', { name: 'Volver atrás' }))
