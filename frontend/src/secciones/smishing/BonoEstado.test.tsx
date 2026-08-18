@@ -77,6 +77,22 @@ describe('BonoEstado', () => {
     expect(screen.getByText('No caíste · el formulario te delató')).toBeDefined()
   })
 
+  it('desde la página falsa se puede volver al hilo a releer el SMS', () => {
+    const container = empezar()
+    const telefono = container.querySelector('#pantalla-escenario') as HTMLElement
+
+    fireEvent.click(within(telefono).getByText('bit.ly/bono-ec-2026'))
+    expect(within(telefono).getByText('Acreditación del bono de $180')).toBeDefined()
+
+    fireEvent.click(within(telefono).getByRole('button', { name: /Mensajes/ }))
+    expect(within(telefono).getByText(/MIES INFORMA/)).toBeDefined()
+    // Volver a leer no decide: la corrida sigue en la página falsa.
+    expect(screen.getByText('¿Qué haces?')).toBeDefined()
+
+    fireEvent.click(within(telefono).getByRole('button', { name: /Mensajes/ }))
+    expect(within(telefono).getByText('Acreditación del bono de $180')).toBeDefined()
+  })
+
   it('abrir el navegador no comprueba nada: la dirección la eliges tú', () => {
     const container = empezar()
     const telefono = container.querySelector('#pantalla-escenario') as HTMLElement

@@ -164,6 +164,10 @@ function StoryEscenario({
   const [appAbierta, setAppAbierta] = useState<
     { nombre: string; vacia: string } | undefined
   >();
+  /// Último hilo de mensajes que se vio. La app de Mensajes vuelve a él sin
+  /// tocar el grafo: estando en la página falsa hay que poder releer el SMS
+  /// que la abrió, igual que en el teléfono de uno.
+  const [hiloSms, setHiloSms] = useState("n1");
   const nodoVisible = pantallaRepaso ?? pestanaMirada ?? engine.current;
   const vista = story[nodoVisible]?.view ?? engine.node.view;
 
@@ -184,6 +188,12 @@ function StoryEscenario({
     );
     setPestanaMirada(undefined);
   }, [engine.current, engine.isEnding, engine.node.view, dominio]);
+
+  useEffect(() => {
+    // Cuál es "Mensajes" cambia durante la corrida: tras responder, el hilo al
+    // que hay que volver es el que lleva el borrador, no el original.
+    if (engine.node.view.kind === "sms") setHiloSms(engine.current);
+  }, [engine.current, engine.node.view]);
 
   // Una pestaña por escena con pantalla. Se indexan por nodo, como pide su
   // Navegador, y las que comparten dirección se pliegan en una sola.
@@ -286,9 +296,18 @@ function StoryEscenario({
       return;
     }
 
-    // Abrir o cerrar una app que no decide nada. Sin `data-app-vacia` el botón
-    // devuelve al hilo: es la app de Mensajes y también la flecha de atrás de
-    // cualquier app abierta.
+    // La app de Mensajes: cierra lo que hubiera encima y muestra el hilo, sin
+    // que el grafo avance. Es el botón para releer el SMS mientras se está en
+    // la página que abrió, y pulsarlo otra vez devuelve a esa página.
+    if ((event.target as HTMLElement).closest("[data-app-hilo]")) {
+      if (!engine.isEnding) {
+        setAppAbierta(undefined);
+        setPestanaMirada((mirando) => (mirando ? undefined : hiloSms));
+      }
+      return;
+    }
+
+    // Abrir una app que no decide nada, o cerrarla con su flecha de atrás.
     const app = (event.target as HTMLElement).closest<HTMLElement>("[data-app]")
       ?.dataset;
     if (app) {
@@ -465,8 +484,9 @@ function StoryEscenario({
               // Las que no deciden se abren igual. Ver AppTelefono: si solo
               // reaccionara la que decide, el realce del cursor delataría cuál
               // es sin haber leído el mensaje.
-              data-app={goto ? undefined : texto}
+              data-app={goto || !vacia ? undefined : texto}
               data-app-vacia={goto ? undefined : vacia}
+              data-app-hilo={goto || vacia ? undefined : ""}
             >
               <span className={styles.phoneDockIcono}>
                 <Icono

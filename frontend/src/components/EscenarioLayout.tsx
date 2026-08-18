@@ -60,7 +60,7 @@ interface EscenarioLayoutProps {
  */
 /** Alto y angosto, como se sostiene un celular. */
 const MARCO_TELEFONO =
-  "sm:max-h-[40rem] sm:w-[28.75rem] sm:rounded-[1.75rem] sm:border sm:border-hairline-strong sm:shadow-[0_30px_70px_rgba(0,0,0,0.22)] lg:h-[40rem] lg:max-h-full lg:flex-none lg:self-center";
+  "sm:max-h-[44rem] sm:w-[31.25rem] sm:rounded-[1.75rem] sm:border sm:border-hairline-strong sm:shadow-[0_30px_70px_rgba(0,0,0,0.22)] lg:h-[44rem] lg:max-h-full lg:flex-none lg:self-center";
 
 /** Ancho y bajo, como una ventana de escritorio. Los anchos con vw + min/max
  *
