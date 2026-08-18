@@ -110,21 +110,24 @@ const APP_COURIER: ScreenView = {
 /// estado normal y se vuelve con la flecha, para que abrir apps sea explorar
 /// el teléfono y no descartar opciones de una lista.
 const APPS: AppTelefono[] = [
-  { Icono: MessageSquareText, texto: 'Mensajes' },
+  { Icono: MessageSquareText, texto: 'Mensajes', color: '#2f9e44' },
   {
     Icono: Package,
     texto: 'EnvíaExpress',
+    color: '#d9480f',
     goto: 'n3',
     label: 'Abrió la app del courier',
   },
   {
     Icono: Wallet,
     texto: 'Banco',
+    color: '#155e75',
     vacia: 'Banca móvil · Saldo disponible $312,45. Sin notificaciones nuevas.',
   },
   {
     Icono: Camera,
     texto: 'Cámara',
+    color: '#495057',
     vacia: 'La cámara está lista. No hay nada que fotografiar en este momento.',
   },
 ]

@@ -93,6 +93,42 @@ describe('BonoEstado', () => {
     expect(within(telefono).getByText('Acreditación del bono de $180')).toBeDefined()
   })
 
+  it('volver al navegador desde el hilo no deja la pantalla en Mensajes', () => {
+    const container = empezar()
+    const telefono = container.querySelector('#pantalla-escenario') as HTMLElement
+    const app = (nombre: RegExp) =>
+      within(telefono).getByRole('button', { name: nombre })
+
+    fireEvent.click(app(/Navegador/))
+    expect(within(telefono).getByText('Nueva pestaña')).toBeDefined()
+
+    // Releer el SMS, mirar otra app y volver al navegador: el destino es el
+    // nodo en el que ya estamos, así que el hilo tapaba la pantalla.
+    fireEvent.click(app(/Mensajes/))
+    expect(within(telefono).getByText(/MIES INFORMA/)).toBeDefined()
+
+    fireEvent.click(app(/Banco/))
+    expect(within(telefono).getByText(/Saldo disponible/)).toBeDefined()
+
+    fireEvent.click(app(/Navegador/))
+    expect(within(telefono).getByText('Nueva pestaña')).toBeDefined()
+    expect(within(telefono).queryByText(/MIES INFORMA/)).toBeNull()
+  })
+
+  it('mirar una app sobre el hilo y volver a Mensajes deja el hilo, no la pantalla del grafo', () => {
+    const container = empezar()
+    const telefono = container.querySelector('#pantalla-escenario') as HTMLElement
+    const app = (nombre: RegExp) =>
+      within(telefono).getByRole('button', { name: nombre })
+
+    fireEvent.click(within(telefono).getByText('bit.ly/bono-ec-2026'))
+    fireEvent.click(app(/Mensajes/))
+    fireEvent.click(app(/Cámara/))
+    fireEvent.click(app(/Mensajes/))
+
+    expect(within(telefono).getByText(/MIES INFORMA/)).toBeDefined()
+  })
+
   it('abrir el navegador no comprueba nada: la dirección la eliges tú', () => {
     const container = empezar()
     const telefono = container.querySelector('#pantalla-escenario') as HTMLElement

@@ -82,7 +82,13 @@ interface StoryEscenarioProps {
  *   en la traza y se vuelve con la flecha, igual que cambiar de pestaña.
  * - ninguno de los dos: vuelve al hilo de mensajes (la app de Mensajes).
  */
-export type AppTelefono = MarcadorNavegador & { vacia?: string };
+export type AppTelefono = MarcadorNavegador & {
+  vacia?: string;
+  /** Color del icono. Sin él queda el gris neutro del sistema. Va por app y no
+   *  por posición: el dock tiene que leerse como el teléfono del participante,
+   *  no como cuatro botones de esta aplicación. */
+  color?: string;
+};
 
 /// Cómo se ve cada pantalla en la barra de direcciones. El correo va en el
 /// dominio del participante, para que la dirección de la pestaña y la del
@@ -169,7 +175,17 @@ function StoryEscenario({
   /// que la abrió, igual que en el teléfono de uno.
   const [hiloSms, setHiloSms] = useState("n1");
   const nodoVisible = pantallaRepaso ?? pestanaMirada ?? engine.current;
-  const vista = story[nodoVisible]?.view ?? engine.node.view;
+  const vistaDelNodo = story[nodoVisible]?.view ?? engine.node.view;
+  /// Releer el hilo desde otra pantalla no puede terminar la corrida: la
+  /// flecha de la cabecera significa "salgo del hilo y sigo con mi día", y
+  /// quien está dentro de la app del banco solo vino a comprobar el mensaje.
+  /// Para volver están el propio botón de Mensajes y el resto del dock.
+  const vista =
+    vistaDelNodo.kind === "sms" &&
+    !pantallaRepaso &&
+    nodoVisible !== engine.current
+      ? { ...vistaDelNodo, volverGoto: undefined, volverLabel: undefined }
+      : vistaDelNodo;
 
   const dominio = dominioCorreo ?? "safeweb.com";
   /// Las pestañas se acumulan según el recorrido: cada pantalla nueva abre una,
@@ -301,8 +317,14 @@ function StoryEscenario({
     // la página que abrió, y pulsarlo otra vez devuelve a esa página.
     if ((event.target as HTMLElement).closest("[data-app-hilo]")) {
       if (!engine.isEnding) {
+        // Con una app encima el botón no alterna: lo que hace es cerrarla y
+        // dejar el hilo a la vista. Alternar ahí devolvía a la pantalla del
+        // grafo a quien solo había abierto la cámara sobre el hilo que estaba
+        // leyendo.
+        setPestanaMirada((mirando) =>
+          appAbierta ? hiloSms : mirando ? undefined : hiloSms,
+        );
         setAppAbierta(undefined);
-        setPestanaMirada((mirando) => (mirando ? undefined : hiloSms));
       }
       return;
     }
@@ -322,14 +344,32 @@ function StoryEscenario({
     }
 
     if (engine.isEnding) return;
+
+    const objetivo = (event.target as HTMLElement).closest<HTMLElement>(
+      "[data-hotspot-goto]",
+    );
     // Solo cuando la pantalla es el control: con lista de opciones, pulsar el
     // cuerpo del correo no tiene por qué responder a nada.
-    if (manejarClicHotspot(event, engine.choose)) {
-      // Decidir desde el dock con una app abierta encima dejaría la pantalla
-      // de la cámara tapando el resultado de la decisión.
-      setAppAbierta(undefined);
-    } else if (!engine.node.choices) {
-      setTocoEnVacio(true);
+    if (!objetivo) {
+      if (!engine.node.choices) setTocoEnVacio(true);
+      return;
+    }
+
+    // Cualquier punto que decida deshace lo que se estuviera mirando encima:
+    // la app abierta taparía el resultado, y el hilo que se estaba releyendo
+    // seguiría delante de la pantalla a la que lleva la decisión.
+    //
+    // Estas dos líneas no pueden dejarse al efecto que limpia `pestanaMirada`
+    // al cambiar de nodo: cuando el destino es el nodo actual —volver al
+    // navegador desde el hilo, estando ya en él— el nodo no cambia, el efecto
+    // no vuelve a correr y la pantalla se quedaba en Mensajes.
+    setAppAbierta(undefined);
+    setPestanaMirada(undefined);
+
+    // Y volver a la pantalla en la que ya estás no es una decisión: registrarla
+    // metía un paso `n3 → n3` en la traza de la corrida.
+    if (objetivo.dataset.hotspotGoto !== engine.current) {
+      manejarClicHotspot(event, engine.choose);
     }
   };
 
@@ -474,7 +514,7 @@ function StoryEscenario({
           reconoce el engaño. */}
       {apps && apps.length > 0 && (
         <div className={styles.phoneDock} aria-label="Apps del teléfono">
-          {apps.map(({ Icono, texto, goto, label, vacia }) => (
+          {apps.map(({ Icono, texto, goto, label, vacia, color }) => (
             <button
               key={texto}
               type="button"
@@ -488,11 +528,14 @@ function StoryEscenario({
               data-app-vacia={goto ? undefined : vacia}
               data-app-hilo={goto || vacia ? undefined : ""}
             >
-              <span className={styles.phoneDockIcono}>
+              <span
+                className={styles.phoneDockIcono}
+                style={color ? { background: color } : undefined}
+              >
                 <Icono
                   aria-hidden
                   className={styles.phoneDockGlifo}
-                  strokeWidth={1.75}
+                  strokeWidth={2}
                 />
               </span>
               <span className={styles.phoneDockNombre}>{texto}</span>

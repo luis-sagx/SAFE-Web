@@ -109,20 +109,23 @@ const PORTAL: ScreenView = {
 /// El navegador es aquí lo que el marcador del portal era en phishing: el
 /// camino para consultar la multa escribiendo tú la dirección oficial.
 const APPS: AppTelefono[] = [
-  { Icono: MessageSquareText, texto: 'Mensajes' },
+  { Icono: MessageSquareText, texto: 'Mensajes', color: '#2f9e44' },
   {
     Icono: Wallet,
     texto: 'Banco',
+    color: '#155e75',
     vacia: 'Banca móvil · Saldo disponible $312,45. Sin notificaciones nuevas.',
   },
   {
     Icono: Camera,
     texto: 'Cámara',
+    color: '#495057',
     vacia: 'La cámara está lista. No hay nada que fotografiar en este momento.',
   },
   {
     Icono: Compass,
     texto: 'Navegador',
+    color: '#1971c2',
     goto: 'n3',
     label: 'Abrió el navegador para consultar por su cuenta',
   },

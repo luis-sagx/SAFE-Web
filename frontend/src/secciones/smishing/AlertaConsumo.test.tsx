@@ -83,6 +83,21 @@ describe('AlertaConsumo', () => {
     expect(within(telefono).getByText(/SUPERMERCADO LA UNIÓN/)).toBeDefined()
   })
 
+  it('releer el hilo desde la app del banco no termina la corrida', () => {
+    const telefono = empezar()
+
+    fireEvent.click(within(telefono).getByRole('button', { name: /Banco del Litoral/ }))
+    fireEvent.click(within(telefono).getByRole('button', { name: /Mensajes/ }))
+
+    expect(within(telefono).getByText(/SUPERMERCADO LA UNIÓN/)).toBeDefined()
+    // La flecha de la cabecera vale "salgo del hilo y sigo con mi día". Vista
+    // desde dentro de la app no puede significar eso, así que no responde.
+    expect(
+      within(telefono).queryByRole('button', { name: 'Volver a la lista de mensajes' }),
+    ).toBeNull()
+    expect(screen.getByText('¿Qué haces?')).toBeDefined()
+  })
+
   it('verificar es usar la app, no abrirla', () => {
     const telefono = empezar()
 
