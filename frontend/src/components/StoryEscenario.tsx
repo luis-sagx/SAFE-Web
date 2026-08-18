@@ -1,70 +1,62 @@
-import { Lock, TriangleAlert } from "lucide-react";
-import { useEffect, useState, type ReactNode } from "react";
-import EscenarioLayout from "./EscenarioLayout";
-import Instrucciones from "./ui/Instrucciones";
-import { carpetasCorreo } from "./ui/carpetasCorreo";
-import type { Contexto } from "./ui/ContextoEscenario";
-import DeviceScreen, { type ScreenView } from "./ui/DeviceScreen";
-import { evitarNavegacion, manejarClicHotspot } from "./ui/interactivo";
-import type { AccionCorreo, Reloj } from "./ui/DesktopChrome";
-import {
-  Navegador,
-  type MarcadorNavegador,
-  type PestanaConfig,
-} from "./ui/Navegador";
-import StoryChoices from "./ui/StoryChoices";
-import type { DatoIdentidad } from "./ui/TarjetaIdentidad";
-import PanelVeredicto, { type Senal } from "./ui/PanelVeredicto";
-import { useAuth } from "../context/AuthContext";
-import {
-  useStoryEngine,
-  type Story,
-  type StoryNode,
-} from "../hooks/useStoryEngine";
-import styles from "./ui/DeviceScreen.module.css";
+import { Lock, TriangleAlert } from 'lucide-react'
+import { useEffect, useState, type ReactNode } from 'react'
+import EscenarioLayout from './EscenarioLayout'
+import Instrucciones from './ui/Instrucciones'
+import { carpetasCorreo } from './ui/carpetasCorreo'
+import type { Contexto } from './ui/ContextoEscenario'
+import DeviceScreen, { type ScreenView } from './ui/DeviceScreen'
+import { evitarNavegacion, manejarClicHotspot } from './ui/interactivo'
+import type { AccionCorreo, Reloj } from './ui/DesktopChrome'
+import { Navegador, type MarcadorNavegador, type PestanaConfig } from './ui/Navegador'
+import StoryChoices from './ui/StoryChoices'
+import type { DatoIdentidad } from './ui/TarjetaIdentidad'
+import PanelVeredicto, { type Senal } from './ui/PanelVeredicto'
+import { useAuth } from '../context/AuthContext'
+import { useStoryEngine, type Story, type StoryNode } from '../hooks/useStoryEngine'
+import styles from './ui/DeviceScreen.module.css'
 
 /** Cada nodo declara qué muestra la pantalla simulada, incluidos los finales:
  *  el resultado se lee al lado de la pantalla que lo provocó. */
 export interface ScreenNode extends StoryNode {
-  view: ScreenView;
+  view: ScreenView
 }
 
 interface StoryEscenarioProps {
-  escenarioId: string;
-  resumen: string;
-  contexto: Contexto;
+  escenarioId: string
+  resumen: string
+  contexto: Contexto
   /** Cómo se juega. Solo se muestra en el briefing. */
-  nota?: ReactNode;
-  story: Story<ScreenNode>;
+  nota?: ReactNode
+  story: Story<ScreenNode>
   /** Las pistas que había en la pantalla. El repaso las recorre una a una y
    *  resalta el elemento real de la simulación al que apunta cada una. */
-  senales: Senal[];
-  rule: string;
-  restartLabel: string;
-  pregunta?: string;
+  senales: Senal[]
+  rule: string
+  restartLabel: string
+  pregunta?: string
   /** Acciones del cliente de correo. El escenario que las pasa tiene que
    *  declarar también sus finales en el grafo (ver finalesDeBarra). */
-  accionesCorreo?: AccionCorreo[];
+  accionesCorreo?: AccionCorreo[]
   /** Dominio del participante en este escenario (ver EscenarioLayout). */
-  dominioCorreo?: string;
+  dominioCorreo?: string
   /** Hora del sistema. Debe cuadrar con la que cuenta el guion y con la fecha
    *  del mensaje: tres relojes distintos en la misma escena rompen la ilusión. */
-  reloj?: Reloj;
+  reloj?: Reloj
   /** Sitios de la barra de marcadores. Sin ellos la barra no se pinta. */
-  marcadores?: MarcadorNavegador[];
+  marcadores?: MarcadorNavegador[]
   /** Qué se le dice al participante cuando el nodo no ofrece lista de opciones
    *  y hay que actuar sobre la propia pantalla. */
-  instruccion?: ReactNode;
+  instruccion?: ReactNode
   /** Los caminos posibles, para quien se atasca. No dice cuál es el bueno. */
-  pista?: ReactNode;
+  pista?: ReactNode
   /** Datos prestados que el escenario pone en juego (ver TarjetaIdentidad). */
-  identidad?: DatoIdentidad[];
+  identidad?: DatoIdentidad[]
   /** Mueve las decisiones al interior del celular y evita el cambio a escritorio. */
-  accionesEnPantalla?: boolean;
+  accionesEnPantalla?: boolean
   /** Apps del teléfono, en la barra inferior. Es el equivalente móvil de los
    *  marcadores del navegador: el camino para comprobar algo por tu cuenta sin
    *  pasar por el mensaje. Sin ellas la barra no se pinta. */
-  apps?: AppTelefono[];
+  apps?: AppTelefono[]
 }
 
 /**
@@ -83,28 +75,25 @@ interface StoryEscenarioProps {
  * - ninguno de los dos: vuelve al hilo de mensajes (la app de Mensajes).
  */
 export type AppTelefono = MarcadorNavegador & {
-  vacia?: string;
+  vacia?: string
   /** Color del icono. Sin él queda el gris neutro del sistema. Va por app y no
    *  por posición: el dock tiene que leerse como el teléfono del participante,
    *  no como cuatro botones de esta aplicación. */
-  color?: string;
-};
+  color?: string
+}
 
 /// Cómo se ve cada pantalla en la barra de direcciones. El correo va en el
 /// dominio del participante, para que la dirección de la pestaña y la del
 /// mensaje cuenten lo mismo.
-function pestanaDeVista(
-  view: ScreenView,
-  dominio: string,
-): PestanaConfig | null {
-  if (view.kind === "mail") {
+function pestanaDeVista(view: ScreenView, dominio: string): PestanaConfig | null {
+  if (view.kind === 'mail') {
     return {
-      titulo: "Correo",
+      titulo: 'Correo',
       url: `https://correo.${dominio}/recibidos`,
       segura: true,
-    };
+    }
   }
-  if (view.kind === "web") {
+  if (view.kind === 'web') {
     return {
       titulo: view.title,
       url: view.url,
@@ -112,13 +101,13 @@ function pestanaDeVista(
       local: view.local,
       senalUrl: view.senalUrl,
       cierra: view.cerrarGoto,
-    };
+    }
   }
-  return null;
+  return null
 }
 
 function urlMovil(url: string): string {
-  return url.replace(/^https?:\/\//, "");
+  return url.replace(/^https?:\/\//, '')
 }
 
 /**
@@ -135,7 +124,7 @@ function StoryEscenario({
   senales,
   rule,
   restartLabel,
-  pregunta = "¿Qué haces?",
+  pregunta = '¿Qué haces?',
   accionesCorreo,
   dominioCorreo,
   reloj,
@@ -146,111 +135,99 @@ function StoryEscenario({
   accionesEnPantalla = false,
   apps,
 }: StoryEscenarioProps) {
-  const engine = useStoryEngine(story, "n1", escenarioId);
-  const { usuarioSimulado } = useAuth();
-  const destinatario = dominioCorreo
-    ? `${usuarioSimulado}@${dominioCorreo}`
-    : undefined;
+  const engine = useStoryEngine(story, 'n1', escenarioId)
+  const { usuarioSimulado } = useAuth()
+  const destinatario = dominioCorreo ? `${usuarioSimulado}@${dominioCorreo}` : undefined
 
   // Durante el repaso la pantalla vuelve a la que contiene cada señal: un
   // escenario que termina en la página falsa no puede resaltar lo que estaba
   // en el correo.
-  const [pantallaRepaso, setPantallaRepaso] = useState<string | undefined>();
+  const [pantallaRepaso, setPantallaRepaso] = useState<string | undefined>()
   /// Pestaña que el participante eligió mirar. Cambiar de pestaña no es una
   /// decisión del escenario —es mirar, como abrir otra carpeta del correo— así
   /// que no entra en la traza; la siguiente decisión la deshace.
-  const [pestanaMirada, setPestanaMirada] = useState<string | undefined>();
+  const [pestanaMirada, setPestanaMirada] = useState<string | undefined>()
   /// Se enciende con el primer clic que no cae en ningún punto interactivo y ya
   /// no se apaga: quien exploró a ciegas una vez agradece tener la pista a la
   /// vista el resto del escenario.
-  const [tocoEnVacio, setTocoEnVacio] = useState(false);
+  const [tocoEnVacio, setTocoEnVacio] = useState(false)
   /// App del dock que se está mirando y que no decide nada (la cámara, la
   /// galería). Vive fuera del grafo por lo mismo que `pestanaMirada`: abrirla
   /// es mirar, y la corrida no debería registrarlo ni terminar por ello.
-  const [appAbierta, setAppAbierta] = useState<
-    { nombre: string; vacia: string } | undefined
-  >();
+  const [appAbierta, setAppAbierta] = useState<{ nombre: string; vacia: string } | undefined>()
   /// Último hilo de mensajes que se vio. La app de Mensajes vuelve a él sin
   /// tocar el grafo: estando en la página falsa hay que poder releer el SMS
   /// que la abrió, igual que en el teléfono de uno.
-  const [hiloSms, setHiloSms] = useState("n1");
-  const nodoVisible = pantallaRepaso ?? pestanaMirada ?? engine.current;
-  const vistaDelNodo = story[nodoVisible]?.view ?? engine.node.view;
+  const [hiloSms, setHiloSms] = useState('n1')
+  const nodoVisible = pantallaRepaso ?? pestanaMirada ?? engine.current
+  const vistaDelNodo = story[nodoVisible]?.view ?? engine.node.view
   /// Releer el hilo desde otra pantalla no puede terminar la corrida: la
   /// flecha de la cabecera significa "salgo del hilo y sigo con mi día", y
   /// quien está dentro de la app del banco solo vino a comprobar el mensaje.
   /// Para volver están el propio botón de Mensajes y el resto del dock.
   const vista =
-    vistaDelNodo.kind === "sms" &&
-    !pantallaRepaso &&
-    nodoVisible !== engine.current
+    vistaDelNodo.kind === 'sms' && !pantallaRepaso && nodoVisible !== engine.current
       ? { ...vistaDelNodo, volverGoto: undefined, volverLabel: undefined }
-      : vistaDelNodo;
+      : vistaDelNodo
 
-  const dominio = dominioCorreo ?? "safeweb.com";
+  const dominio = dominioCorreo ?? 'safeweb.com'
   /// Las pestañas se acumulan según el recorrido: cada pantalla nueva abre una,
   /// como haría un enlace en un navegador de verdad. Se indexan por dirección
   /// para que dos nodos con la misma página compartan pestaña.
-  const [abiertas, setAbiertas] = useState<string[]>(["n1"]);
+  const [abiertas, setAbiertas] = useState<string[]>(['n1'])
 
   useEffect(() => {
     // Un final no abre pantalla: llega sobre la que ya estaba. Y cuando lo
     // dispara *cerrar* esa pestaña, abrirla otra vez dejaba el veredicto sobre
     // una página que ya no está en la barra (issue #26).
-    if (engine.isEnding) return;
-    if (!pestanaDeVista(engine.node.view, dominio)) return;
-    setAbiertas((ids) =>
-      ids.includes(engine.current) ? ids : [...ids, engine.current],
-    );
-    setPestanaMirada(undefined);
-  }, [engine.current, engine.isEnding, engine.node.view, dominio]);
+    if (engine.isEnding) return
+    if (!pestanaDeVista(engine.node.view, dominio)) return
+    setAbiertas((ids) => (ids.includes(engine.current) ? ids : [...ids, engine.current]))
+    setPestanaMirada(undefined)
+  }, [engine.current, engine.isEnding, engine.node.view, dominio])
 
   useEffect(() => {
     // Cuál es "Mensajes" cambia durante la corrida: tras responder, el hilo al
     // que hay que volver es el que lleva el borrador, no el original.
-    if (engine.node.view.kind === "sms") setHiloSms(engine.current);
-  }, [engine.current, engine.node.view]);
+    if (engine.node.view.kind === 'sms') setHiloSms(engine.current)
+  }, [engine.current, engine.node.view])
 
   // Una pestaña por escena con pantalla. Se indexan por nodo, como pide su
   // Navegador, y las que comparten dirección se pliegan en una sola.
-  const pestanas: Record<string, PestanaConfig> = {};
-  const porUrl = new Map<string, string>();
-  const visibles: string[] = [];
+  const pestanas: Record<string, PestanaConfig> = {}
+  const porUrl = new Map<string, string>()
+  const visibles: string[] = []
   // Durante el repaso también entra la pantalla que se está explicando, aunque
   // el participante no llegara a abrirla. Desde que cerrar una pestaña dejó de
   // terminar la corrida (issue #24), se puede acabar por la barra del cliente
   // sin haber visitado la página falsa — y entonces la señal que vive en su
   // barra de direcciones no tenía dónde resaltarse.
   const paraPestanas =
-    pantallaRepaso && !abiertas.includes(pantallaRepaso)
-      ? [...abiertas, pantallaRepaso]
-      : abiertas;
+    pantallaRepaso && !abiertas.includes(pantallaRepaso) ? [...abiertas, pantallaRepaso] : abiertas
 
   for (const id of paraPestanas) {
-    const meta = story[id] && pestanaDeVista(story[id]!.view, dominio);
-    if (!meta) continue;
+    const meta = story[id] && pestanaDeVista(story[id]!.view, dominio)
+    if (!meta) continue
     // Dos pantallas del mismo sitio comparten pestaña, pero no significan lo
     // mismo: en aviso-filtracion, cerrar tras guardar la contraseña no es lo
     // mismo que cerrar sin guardarla. La pestaña conserva su sitio y su
     // identidad, y toma el título y el cierre de la última pantalla que se
     // abrió en ella, que es la que se está viendo.
-    const yaAbierta = porUrl.get(meta.url);
+    const yaAbierta = porUrl.get(meta.url)
     if (yaAbierta) {
-      pestanas[yaAbierta] = meta;
-      continue;
+      pestanas[yaAbierta] = meta
+      continue
     }
-    porUrl.set(meta.url, id);
-    pestanas[id] = meta;
-    visibles.push(id);
+    porUrl.set(meta.url, id)
+    pestanas[id] = meta
+    visibles.push(id)
   }
 
   // El mensaje que las carpetas muestran cuando una acción lo mueve. Sale de la
   // primera pantalla de correo del guion, que es la del mensaje del escenario.
-  const correo = Object.values(story).find(
-    (nodo) => nodo.view.kind === "mail",
-  )?.view;
+  const correo = Object.values(story).find((nodo) => nodo.view.kind === 'mail')?.view
   const carpetas =
-    correo?.kind === "mail"
+    correo?.kind === 'mail'
       ? carpetasCorreo(
           {
             nombre: correo.from,
@@ -261,98 +238,86 @@ function StoryEscenario({
           // señales se explicarían sobre una pantalla donde ya no está.
           engine.isEnding && !pantallaRepaso ? engine.current : undefined,
         )
-      : undefined;
+      : undefined
 
   // Y durante el repaso manda la pantalla que se está explicando: si no, la
   // señal que vive en la barra de direcciones no tendría dónde resaltarse.
-  const metaVisible = pestanaDeVista(vista, dominio);
-  const pestanaVisible = metaVisible && porUrl.get(metaVisible.url);
+  const metaVisible = pestanaDeVista(vista, dominio)
+  const pestanaVisible = metaVisible && porUrl.get(metaVisible.url)
   if (pestanaVisible && pestanas[pestanaVisible]) {
-    pestanas[pestanaVisible] = metaVisible;
+    pestanas[pestanaVisible] = metaVisible
   }
 
-  const urlVisible = pestanaDeVista(vista, dominio)?.url;
-  const activa = (urlVisible && porUrl.get(urlVisible)) ?? visibles[0] ?? "n1";
+  const urlVisible = pestanaDeVista(vista, dominio)?.url
+  const activa = (urlVisible && porUrl.get(urlVisible)) ?? visibles[0] ?? 'n1'
 
   // Un clic en la barra del cliente vale lo mismo que elegir de la lista: los
   // botones llevan su destino en `data-hotspot-goto` y este manejador único lo
   // traduce en una decisión del grafo.
   const onHotspot = (event: React.MouseEvent) => {
-    evitarNavegacion(event);
+    evitarNavegacion(event)
 
     // Cambiar de pestaña se resuelve aquí y no llega al grafo: en este motor la
     // decisión es la que se elige de la lista, no la pantalla que se mira.
-    const cerrada = (event.target as HTMLElement).closest<HTMLElement>(
-      "[data-cierra]",
-    )?.dataset.cierra;
+    const cerrada = (event.target as HTMLElement).closest<HTMLElement>('[data-cierra]')?.dataset
+      .cierra
     if (cerrada) {
       // Una pestaña puede plegar varias pantallas del mismo sitio: se cierran
       // todas con ella, o quedarían abiertas sin pestaña que las muestre.
-      const url = pestanas[cerrada]?.url;
+      const url = pestanas[cerrada]?.url
       const quedan = abiertas.filter(
         (id) =>
-          id !== cerrada &&
-          (!story[id] || pestanaDeVista(story[id]!.view, dominio)?.url !== url),
-      );
-      setAbiertas(quedan);
+          id !== cerrada && (!story[id] || pestanaDeVista(story[id]!.view, dominio)?.url !== url),
+      )
+      setAbiertas(quedan)
       // El navegador pasa a la pestaña que sigue abierta —normalmente el
       // correo—, como al cerrar una pestaña de verdad. Sin esto, la barra de
       // direcciones y el contenido se quedaban en la pestaña que acaba de
       // desaparecer de la barra.
-      setPestanaMirada(quedan.at(-1));
-      if (!engine.isEnding) manejarClicHotspot(event, engine.choose);
-      return;
+      setPestanaMirada(quedan.at(-1))
+      if (!engine.isEnding) manejarClicHotspot(event, engine.choose)
+      return
     }
 
-    const pestana = (event.target as HTMLElement).closest<HTMLElement>(
-      "[data-pestana]",
-    )?.dataset.pestana;
+    const pestana = (event.target as HTMLElement).closest<HTMLElement>('[data-pestana]')?.dataset
+      .pestana
     if (pestana) {
-      setPestanaMirada(pestana);
-      return;
+      setPestanaMirada(pestana)
+      return
     }
 
     // La app de Mensajes: cierra lo que hubiera encima y muestra el hilo, sin
     // que el grafo avance. Es el botón para releer el SMS mientras se está en
     // la página que abrió, y pulsarlo otra vez devuelve a esa página.
-    if ((event.target as HTMLElement).closest("[data-app-hilo]")) {
+    if ((event.target as HTMLElement).closest('[data-app-hilo]')) {
       if (!engine.isEnding) {
         // Con una app encima el botón no alterna: lo que hace es cerrarla y
         // dejar el hilo a la vista. Alternar ahí devolvía a la pantalla del
         // grafo a quien solo había abierto la cámara sobre el hilo que estaba
         // leyendo.
-        setPestanaMirada((mirando) =>
-          appAbierta ? hiloSms : mirando ? undefined : hiloSms,
-        );
-        setAppAbierta(undefined);
+        setPestanaMirada((mirando) => (appAbierta ? hiloSms : mirando ? undefined : hiloSms))
+        setAppAbierta(undefined)
       }
-      return;
+      return
     }
 
     // Abrir una app que no decide nada, o cerrarla con su flecha de atrás.
-    const app = (event.target as HTMLElement).closest<HTMLElement>("[data-app]")
-      ?.dataset;
+    const app = (event.target as HTMLElement).closest<HTMLElement>('[data-app]')?.dataset
     if (app) {
       if (!engine.isEnding) {
-        setAppAbierta(
-          app.appVacia
-            ? { nombre: app.app ?? "", vacia: app.appVacia }
-            : undefined,
-        );
+        setAppAbierta(app.appVacia ? { nombre: app.app ?? '', vacia: app.appVacia } : undefined)
       }
-      return;
+      return
     }
 
-    if (engine.isEnding) return;
+    if (engine.isEnding) return
 
-    const objetivo = (event.target as HTMLElement).closest<HTMLElement>(
-      "[data-hotspot-goto]",
-    );
+    const objetivo = (event.target as HTMLElement).closest<HTMLElement>('[data-hotspot-goto]')
     // Solo cuando la pantalla es el control: con lista de opciones, pulsar el
     // cuerpo del correo no tiene por qué responder a nada.
     if (!objetivo) {
-      if (!engine.node.choices) setTocoEnVacio(true);
-      return;
+      if (!engine.node.choices) setTocoEnVacio(true)
+      return
     }
 
     // Cualquier punto que decida deshace lo que se estuviera mirando encima:
@@ -363,15 +328,15 @@ function StoryEscenario({
     // al cambiar de nodo: cuando el destino es el nodo actual —volver al
     // navegador desde el hilo, estando ya en él— el nodo no cambia, el efecto
     // no vuelve a correr y la pantalla se quedaba en Mensajes.
-    setAppAbierta(undefined);
-    setPestanaMirada(undefined);
+    setAppAbierta(undefined)
+    setPestanaMirada(undefined)
 
     // Y volver a la pantalla en la que ya estás no es una decisión: registrarla
     // metía un paso `n3 → n3` en la traza de la corrida.
     if (objetivo.dataset.hotspotGoto !== engine.current) {
-      manejarClicHotspot(event, engine.choose);
+      manejarClicHotspot(event, engine.choose)
     }
-  };
+  }
 
   const decision = engine.isEnding ? (
     <PanelVeredicto
@@ -395,7 +360,7 @@ function StoryEscenario({
         </Instrucciones>
       )}
     </div>
-  );
+  )
 
   const pantallaTelefono = (
     <div className={styles.phoneStage} onClick={onHotspot}>
@@ -420,9 +385,7 @@ function StoryEscenario({
                 >
                   ‹
                 </button>
-                <span className={styles.phoneAppBarNombre}>
-                  {appAbierta.nombre}
-                </span>
+                <span className={styles.phoneAppBarNombre}>{appAbierta.nombre}</span>
                 <span className={styles.phoneAppVolver} aria-hidden />
               </div>
               <div className={styles.phoneViewport}>
@@ -431,74 +394,89 @@ function StoryEscenario({
             </>
           ) : (
             <>
-              {vista.kind === "web" &&
-            (vista.app ? (
-              /* Una app no tiene barra de direcciones: su cabecera lleva el
+              {vista.kind === 'web' &&
+                (vista.app ? (
+                  /* Una app no tiene barra de direcciones: su cabecera lleva el
                  nombre y nada más. Es también la diferencia que el módulo
                  enseña — en la app no hay dominio que comprobar porque no se
                  llegó por un enlace. */
-              <div className={styles.phoneAppBar}>
-                <span className={styles.phoneAppBarNombre}>{vista.app}</span>
-              </div>
-            ) : (
-              <div
-                className={styles.phoneBrowserBar}
-                data-signal={vista.senalUrl}
-              >
-                {/* En el teléfono no hay pestaña que cerrar: salir de una
+                  <div className={styles.phoneAppBar}>
+                    {/* Una app abierta desde el dock también se abandona, y a
+                    veces salir es la decisión: colgar una llamada es lo
+                    contrario de seguir en ella. Sin esta flecha, una pantalla
+                    de app con `cerrarGoto` declaraba una salida que no tenía
+                    control en pantalla. */}
+                    {vista.cerrarGoto ? (
+                      <button
+                        type="button"
+                        className={`${styles.hotspot} ${styles.phoneBrowserControl}`}
+                        aria-label="Salir de la aplicación"
+                        data-hotspot-goto={vista.cerrarGoto}
+                        data-hotspot-label={vista.cerrarLabel}
+                      >
+                        ‹
+                      </button>
+                    ) : (
+                      <span className={styles.phoneBrowserControl} aria-hidden>
+                        ‹
+                      </span>
+                    )}
+                    <span className={styles.phoneAppBarNombre}>{vista.app}</span>
+                  </div>
+                ) : (
+                  <div className={styles.phoneBrowserBar} data-signal={vista.senalUrl}>
+                    {/* En el teléfono no hay pestaña que cerrar: salir de una
                     página es la flecha de atrás. Toma el mismo `cerrarGoto`
                     que en escritorio dibuja la ✕ de la pestaña. */}
-                {vista.cerrarGoto ? (
-                  <button
-                    type="button"
-                    className={`${styles.hotspot} ${styles.phoneBrowserControl}`}
-                    aria-label="Volver atrás"
-                    data-hotspot-goto={vista.cerrarGoto}
-                    data-hotspot-label={vista.cerrarLabel}
-                  >
-                    ‹
-                  </button>
-                ) : (
-                  <span className={styles.phoneBrowserControl} aria-hidden>
-                    ‹
-                  </span>
-                )}
-                <span className={styles.phoneBrowserUrl}>
-                  {/* Iconos de trazo y no signos de texto, por lo mismo que en
+                    {vista.cerrarGoto ? (
+                      <button
+                        type="button"
+                        className={`${styles.hotspot} ${styles.phoneBrowserControl}`}
+                        aria-label="Volver atrás"
+                        data-hotspot-goto={vista.cerrarGoto}
+                        data-hotspot-label={vista.cerrarLabel}
+                      >
+                        ‹
+                      </button>
+                    ) : (
+                      <span className={styles.phoneBrowserControl} aria-hidden>
+                        ‹
+                      </span>
+                    )}
+                    <span className={styles.phoneBrowserUrl}>
+                      {/* Iconos de trazo y no signos de texto, por lo mismo que en
                       la barra del navegador de escritorio: el indicador de
                       seguridad es justo lo que este módulo enseña a leer, y un
                       "!" suelto no se lee como advertencia. */}
-                  {vista.secure ? (
-                    <Lock
-                      aria-label="Conexión segura"
-                      className={`${styles.phoneBrowserSecurity} ${styles.phoneBrowserSafe}`}
-                      strokeWidth={2.25}
-                    />
-                  ) : (
-                    <span className={styles.phoneBrowserUnsafe}>
-                      <TriangleAlert
-                        aria-hidden
-                        className={styles.phoneBrowserSecurity}
-                        strokeWidth={2.25}
-                      />
+                      {vista.secure ? (
+                        <Lock
+                          aria-label="Conexión segura"
+                          className={`${styles.phoneBrowserSecurity} ${styles.phoneBrowserSafe}`}
+                          strokeWidth={2.25}
+                        />
+                      ) : (
+                        <span className={styles.phoneBrowserUnsafe}>
+                          <TriangleAlert
+                            aria-hidden
+                            className={styles.phoneBrowserSecurity}
+                            strokeWidth={2.25}
+                          />
+                        </span>
+                      )}
+                      <span className={styles.phoneBrowserAddress}>{urlMovil(vista.url)}</span>
                     </span>
-                  )}
-                  <span className={styles.phoneBrowserAddress}>
-                    {urlMovil(vista.url)}
-                  </span>
-                </span>
-                <span className={styles.phoneBrowserControl} aria-hidden>
-                  ⋮
-                </span>
-              </div>
-            ))}
+                    <span className={styles.phoneBrowserControl} aria-hidden>
+                      ⋮
+                    </span>
+                  </div>
+                ))}
               <div className={styles.phoneViewport}>
                 <DeviceScreen
                   view={vista}
                   acciones={accionesCorreo}
                   carpetas={carpetas}
                   destinatario={destinatario}
-                  carpetaForzada={pantallaRepaso ? "Recibidos" : undefined}
+                  carpetaForzada={pantallaRepaso ? 'Recibidos' : undefined}
                 />
               </div>
             </>
@@ -526,17 +504,13 @@ function StoryEscenario({
               // es sin haber leído el mensaje.
               data-app={goto || !vacia ? undefined : texto}
               data-app-vacia={goto ? undefined : vacia}
-              data-app-hilo={goto || vacia ? undefined : ""}
+              data-app-hilo={goto || vacia ? undefined : ''}
             >
               <span
                 className={styles.phoneDockIcono}
                 style={color ? { background: color } : undefined}
               >
-                <Icono
-                  aria-hidden
-                  className={styles.phoneDockGlifo}
-                  strokeWidth={2}
-                />
+                <Icono aria-hidden className={styles.phoneDockGlifo} strokeWidth={2} />
               </span>
               <span className={styles.phoneDockNombre}>{texto}</span>
             </button>
@@ -548,7 +522,7 @@ function StoryEscenario({
         <span></span>
       </div>
     </div>
-  );
+  )
 
   return (
     <EscenarioLayout
@@ -560,7 +534,7 @@ function StoryEscenario({
       pantalla={
         accionesEnPantalla ? (
           pantallaTelefono
-        ) : vista.kind === "sms" ? (
+        ) : vista.kind === 'sms' ? (
           <DeviceScreen
             view={vista}
             acciones={accionesCorreo}
@@ -581,7 +555,7 @@ function StoryEscenario({
               acciones={accionesCorreo}
               carpetas={carpetas}
               destinatario={destinatario}
-              carpetaForzada={pantallaRepaso ? "Recibidos" : undefined}
+              carpetaForzada={pantallaRepaso ? 'Recibidos' : undefined}
             />
           </Navegador>
         )
@@ -592,11 +566,9 @@ function StoryEscenario({
       onEmpezar={engine.restart}
       // El correo y la web se abren más en computador que en celular; el SMS
       // se queda en celular, que es donde de verdad llegan los mensajes.
-      dispositivo={
-        accionesEnPantalla || vista.kind === "sms" ? "telefono" : "escritorio"
-      }
+      dispositivo={accionesEnPantalla || vista.kind === 'sms' ? 'telefono' : 'escritorio'}
     />
-  );
+  )
 }
 
-export default StoryEscenario;
+export default StoryEscenario

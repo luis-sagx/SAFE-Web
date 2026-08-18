@@ -283,6 +283,20 @@ const BASE: EscenarioBase[] = [
     Component: lazy(() => import('../secciones/phishing/AvisoFiltracion')),
   },
   {
+    // Puerta de entrada del módulo: el único SMS sin enlace ni formulario. La
+    // decisión es si contestar, y eso se entiende sin haber mirado nunca una
+    // dirección web.
+    seccionId: 'smishing',
+    escenarioId: 'baja-suscripcion',
+    titulo: 'Suscripción que no contrataste',
+    descripcion: 'Un SMS cobra un servicio que nunca pediste y ofrece cancelarlo respondiendo.',
+    version: 1,
+    naturaleza: 'fraude',
+    dificultad: 1,
+    espeja: 'smishing/alerta-consumo',
+    Component: lazy(() => import('../secciones/smishing/BajaSuscripcion')),
+  },
+  {
     seccionId: 'smishing',
     escenarioId: 'bono-estado',
     titulo: 'Bono preseleccionado',
@@ -292,6 +306,20 @@ const BASE: EscenarioBase[] = [
     dificultad: 2,
     espeja: 'smishing/alerta-consumo',
     Component: lazy(() => import('../secciones/smishing/BonoEstado')),
+  },
+  {
+    // El único del módulo cuyo anzuelo no es una dirección sino un número de
+    // teléfono. Tiende el puente hacia vishing: el engaño se termina de contar
+    // dentro de la llamada.
+    seccionId: 'smishing',
+    escenarioId: 'tarjeta-bloqueada',
+    titulo: 'Tarjeta bloqueada',
+    descripcion: 'Un SMS avisa de un bloqueo y da un número al que llamar para reactivar.',
+    version: 1,
+    naturaleza: 'fraude',
+    dificultad: 3,
+    espeja: 'smishing/alerta-consumo',
+    Component: lazy(() => import('../secciones/smishing/TarjetaBloqueada')),
   },
   {
     seccionId: 'smishing',
@@ -314,6 +342,34 @@ const BASE: EscenarioBase[] = [
     dificultad: 4,
     espeja: 'smishing/alerta-consumo',
     Component: lazy(() => import('../secciones/smishing/PaqueteRetenido')),
+  },
+  {
+    // El más difícil del módulo: el código que llega es auténtico, así que todo
+    // lo que los otros enseñan a mirar sale bien en ese mensaje. Lo falso es el
+    // que pide reenviarlo.
+    seccionId: 'smishing',
+    escenarioId: 'codigo-reenviado',
+    titulo: 'Código que piden reenviar',
+    descripcion:
+      'Alguien dice ser del banco y pide el código de verificación que acaba de llegarte.',
+    version: 1,
+    naturaleza: 'fraude',
+    dificultad: 5,
+    espeja: 'smishing/alerta-consumo',
+    Component: lazy(() => import('../secciones/smishing/CodigoReenviado')),
+  },
+  {
+    // El segundo legítimo, y el que cierra el módulo: mismo courier y mismo
+    // envío que paquete-retenido, contados por quien de verdad los maneja.
+    seccionId: 'smishing',
+    escenarioId: 'entrega-programada',
+    titulo: 'Entrega programada',
+    descripcion: 'El courier avisa la entrega de tu paquete para mañana, sin pedirte nada.',
+    version: 1,
+    naturaleza: 'legitimo',
+    dificultad: 2,
+    espeja: 'smishing/paquete-retenido',
+    Component: lazy(() => import('../secciones/smishing/EntregaProgramada')),
   },
   {
     seccionId: 'smishing',

@@ -13,7 +13,7 @@ const SCENARIO_ID = /^[a-z0-9-]+\/[a-z0-9-]+$/
 // falla en vez de que el bug salga a producción.
 const UMBRALES_ESPERADOS: Record<string, number> = {
   phishing: 6,
-  smishing: 3,
+  smishing: 6,
 }
 
 describe('catálogo de escenarios', () => {
@@ -75,11 +75,12 @@ describe('catálogo de escenarios', () => {
     expect(phishing.filter((e) => e.naturaleza === 'legitimo')).toHaveLength(2)
   })
 
-  it('smishing tiene 4 escenarios: 3 de fraude y 1 legítimo', () => {
+  // Misma forma que phishing, y por lo mismo (issue #72).
+  it('smishing tiene 8 escenarios: 6 de fraude y 2 legítimos', () => {
     const smishing = escenariosDeSeccion('smishing')
-    expect(smishing).toHaveLength(4)
-    expect(smishing.filter((e) => e.naturaleza === 'fraude')).toHaveLength(3)
-    expect(smishing.filter((e) => e.naturaleza === 'legitimo')).toHaveLength(1)
+    expect(smishing).toHaveLength(8)
+    expect(smishing.filter((e) => e.naturaleza === 'fraude')).toHaveLength(6)
+    expect(smishing.filter((e) => e.naturaleza === 'legitimo')).toHaveLength(2)
   })
 
   // Guarda contra la regresión que tuvo la pantalla: el catálogo se redujo a 3

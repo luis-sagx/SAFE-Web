@@ -4,7 +4,7 @@ import { CUENTA_FICTICIA, IDENTIDAD_FICTICIA } from '../../lib/identidadFicticia
 /** Qué datos prestados necesita ver el participante antes de entrar. El correo
  *  va siempre; los demás solo donde el escenario los pide, porque una cuenta
  *  bancaria en un escenario donde no aparece dinero es ruido. */
-export type DatoIdentidad = 'cedula' | 'ruc' | 'usuario' | 'clave' | 'cuenta'
+export type DatoIdentidad = 'cedula' | 'ruc' | 'usuario' | 'clave' | 'cuenta' | 'tarjeta'
 
 /**
  * Los datos que el participante "tiene" dentro del escenario, antes de empezar.
@@ -27,6 +27,12 @@ function TarjetaIdentidad({ correo, datos }: { correo: string; datos: DatoIdenti
     { clave: 'usuario', Icono: AtSign, etiqueta: 'Usuario', valor: correo.split('@')[0] ?? correo },
     { clave: 'ruc', Icono: FileText, etiqueta: 'RUC', valor: IDENTIDAD_FICTICIA.ruc },
     { clave: 'cuenta', Icono: CreditCard, etiqueta: 'Cuenta bancaria', valor: CUENTA_FICTICIA },
+    {
+      clave: 'tarjeta',
+      Icono: CreditCard,
+      etiqueta: 'Tarjeta',
+      valor: `${IDENTIDAD_FICTICIA.banco} · terminada en ${IDENTIDAD_FICTICIA.tarjeta}`,
+    },
     // La contraseña va al final: es el dato que más pesa cuando se pierde, y
     // el único que un formulario de verdad no enseña. En pantalla los campos
     // la siguen tapando con puntos, como haría cualquier sitio; esto es lo que
