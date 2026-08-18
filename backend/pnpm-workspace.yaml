@@ -9,3 +9,6 @@ allowBuilds:
 # store y no se alcanza; hoistearlo es lo que hace funcionar al cliente.
 publicHoistPattern:
   - '@prisma/*'
+
+overrides:
+  deepmerge-ts: ^8.0.1
