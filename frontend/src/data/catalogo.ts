@@ -283,6 +283,20 @@ const BASE: EscenarioBase[] = [
     Component: lazy(() => import('../secciones/phishing/AvisoFiltracion')),
   },
   {
+    // Puerta de entrada del módulo: el único SMS sin enlace ni formulario. La
+    // decisión es si contestar, y eso se entiende sin haber mirado nunca una
+    // dirección web.
+    seccionId: 'smishing',
+    escenarioId: 'baja-suscripcion',
+    titulo: 'Suscripción que no contrataste',
+    descripcion: 'Un SMS cobra un servicio que nunca pediste y ofrece cancelarlo respondiendo.',
+    version: 1,
+    naturaleza: 'fraude',
+    dificultad: 1,
+    espeja: 'smishing/alerta-consumo',
+    Component: lazy(() => import('../secciones/smishing/BajaSuscripcion')),
+  },
+  {
     seccionId: 'smishing',
     escenarioId: 'bono-estado',
     titulo: 'Bono preseleccionado',

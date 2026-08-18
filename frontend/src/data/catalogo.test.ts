@@ -75,10 +75,13 @@ describe('catálogo de escenarios', () => {
     expect(phishing.filter((e) => e.naturaleza === 'legitimo')).toHaveLength(2)
   })
 
-  it('smishing tiene 4 escenarios: 3 de fraude y 1 legítimo', () => {
+  // Smishing va camino de los mismos 8 = 6 + 2 (issue #72). Mientras se
+  // completa, el test acompaña la cuenta real en vez de fijarla: lo que no
+  // puede pasar es que crezca sin que nadie repase la proporción.
+  it('smishing va sumando escenarios, con más fraude que legítimos', () => {
     const smishing = escenariosDeSeccion('smishing')
-    expect(smishing).toHaveLength(4)
-    expect(smishing.filter((e) => e.naturaleza === 'fraude')).toHaveLength(3)
+    expect(smishing).toHaveLength(5)
+    expect(smishing.filter((e) => e.naturaleza === 'fraude')).toHaveLength(4)
     expect(smishing.filter((e) => e.naturaleza === 'legitimo')).toHaveLength(1)
   })
 
