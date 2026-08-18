@@ -359,6 +359,19 @@ const BASE: EscenarioBase[] = [
     Component: lazy(() => import('../secciones/smishing/CodigoReenviado')),
   },
   {
+    // El segundo legítimo, y el que cierra el módulo: mismo courier y mismo
+    // envío que paquete-retenido, contados por quien de verdad los maneja.
+    seccionId: 'smishing',
+    escenarioId: 'entrega-programada',
+    titulo: 'Entrega programada',
+    descripcion: 'El courier avisa la entrega de tu paquete para mañana, sin pedirte nada.',
+    version: 1,
+    naturaleza: 'legitimo',
+    dificultad: 2,
+    espeja: 'smishing/paquete-retenido',
+    Component: lazy(() => import('../secciones/smishing/EntregaProgramada')),
+  },
+  {
     seccionId: 'smishing',
     escenarioId: 'alerta-consumo',
     titulo: 'Alerta de consumo',
