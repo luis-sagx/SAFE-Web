@@ -8,6 +8,7 @@ import type { RunOutcomeValue } from './dto/create-run.dto';
 /// falseando un denominador que el servidor tampoco tiene.
 export const UMBRALES: Record<string, number> = {
   phishing: 6,
+  smishing: 3,
 };
 
 export interface CorridaMinima {

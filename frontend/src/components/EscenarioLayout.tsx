@@ -37,6 +37,8 @@ interface EscenarioLayoutProps {
   pantalla: ReactNode;
   /** Va debajo del marco: pregunta, opciones, feedback, resultado. */
   decision: ReactNode;
+  /** Oculta la columna lateral cuando la interacción vive dentro de la pantalla. */
+  ocultarDecision?: boolean;
   /** Con qué resultado cerró la corrida, o nada mientras siga abierta.
    *
    *  El layout lo usa para el diálogo de fin: el resultado sale al costado, y
@@ -58,7 +60,7 @@ interface EscenarioLayoutProps {
  */
 /** Alto y angosto, como se sostiene un celular. */
 const MARCO_TELEFONO =
-  "sm:max-h-[40rem] sm:w-[28.75rem] sm:rounded-[1.75rem] sm:border sm:border-hairline-strong sm:shadow-[0_30px_70px_rgba(0,0,0,0.22)] lg:h-[40rem] lg:max-h-full lg:flex-none lg:self-center";
+  "sm:max-h-[44rem] sm:w-[31.25rem] sm:rounded-[1.75rem] sm:border sm:border-hairline-strong sm:shadow-[0_30px_70px_rgba(0,0,0,0.22)] lg:h-[44rem] lg:max-h-full lg:flex-none lg:self-center";
 
 /** Ancho y bajo, como una ventana de escritorio. Los anchos con vw + min/max
  *
@@ -91,6 +93,7 @@ function EscenarioLayout({
   dominioCorreo,
   pantalla,
   decision,
+  ocultarDecision = false,
   resultado,
   onEmpezar,
   dispositivo = "telefono",
@@ -264,32 +267,34 @@ function EscenarioLayout({
           <AvisoFinEscenario resultado={resultado} />
         </div>
 
-        {/* Apilado, el bloque nunca pasa de media pantalla: si no cabe, se
-            desplaza él, no la página. Al costado puede usar todo el alto. */}
-        <div className="max-h-[45%] w-full shrink-0 overflow-y-auto border-t border-hairline bg-canvas px-4 py-4 sm:w-[28.75rem] sm:border-0 sm:bg-transparent sm:px-0 sm:py-0 lg:w-[23.75rem] lg:max-h-full lg:self-center xl:w-[28.75rem]">
-          {/* La historia queda a un clic, no ocupando espacio permanente. Vive
-              en un diálogo y no en un bloque fijo porque se consulta poco: casi
-              siempre se recuerda, y cuando no, se abre.
+        {!ocultarDecision && (
+          /* Apilado, el bloque nunca pasa de media pantalla: si no cabe, se
+              desplaza él, no la página. Al costado puede usar todo el alto. */
+          <div className="max-h-[45%] w-full shrink-0 overflow-y-auto border-t border-hairline bg-canvas px-4 py-4 sm:w-[28.75rem] sm:border-0 sm:bg-transparent sm:px-0 sm:py-0 lg:w-[23.75rem] lg:max-h-full lg:self-center xl:w-[28.75rem]">
+            {/* La historia queda a un clic, no ocupando espacio permanente. Vive
+                en un diálogo y no en un bloque fijo porque se consulta poco: casi
+                siempre se recuerda, y cuando no, se abre.
 
-              Va encima de la decisión y con aspecto de enlace, no de botón: es
-              una consulta de apoyo, no una acción del ejercicio, y compitiendo
-              en peso con "¿Qué haces?" desviaba la atención de lo único que hay
-              que hacer aquí. Sigue siendo un <button> porque abre un diálogo;
-              solo se viste de enlace. */}
-          <button
-            type="button"
-            onClick={() => dialogoRef.current?.showModal()}
-            className="mb-4 inline-flex items-center gap-1.5 text-base font-medium text-link underline decoration-dotted underline-offset-4 transition hover:decoration-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link"
-          >
-            <Info aria-hidden className="size-3.5" strokeWidth={2} />
-            {/* El nombre dice lo que hay dentro: quien se olvidó de su cédula
-                ficticia no va a buscarla detrás de una palabra que promete
-                otra cosa. */}
-            Ver contexto y mis datos
-          </button>
+                Va encima de la decisión y con aspecto de enlace, no de botón: es
+                una consulta de apoyo, no una acción del ejercicio, y compitiendo
+                en peso con "¿Qué haces?" desviaba la atención de lo único que hay
+                que hacer aquí. Sigue siendo un <button> porque abre un diálogo;
+                solo se viste de enlace. */}
+            <button
+              type="button"
+              onClick={() => dialogoRef.current?.showModal()}
+              className="mb-4 inline-flex items-center gap-1.5 text-base font-medium text-link underline decoration-dotted underline-offset-4 transition hover:decoration-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link"
+            >
+              <Info aria-hidden className="size-3.5" strokeWidth={2} />
+              {/* El nombre dice lo que hay dentro: quien se olvidó de su cédula
+                  ficticia no va a buscarla detrás de una palabra que promete
+                  otra cosa. */}
+              Ver contexto y mis datos
+            </button>
 
-          {decision}
-        </div>
+            {decision}
+          </div>
+        )}
       </main>
 
       {/* <dialog> nativo: el navegador ya resuelve el foco atrapado, el cierre

@@ -13,6 +13,7 @@ const SCENARIO_ID = /^[a-z0-9-]+\/[a-z0-9-]+$/
 // falla en vez de que el bug salga a producción.
 const UMBRALES_ESPERADOS: Record<string, number> = {
   phishing: 6,
+  smishing: 3,
 }
 
 describe('catálogo de escenarios', () => {
@@ -51,12 +52,12 @@ describe('catálogo de escenarios', () => {
     }
   })
 
-  // El MVP es solo phishing (ver spec 2026-08-03): las otras cinco secciones
-  // se quedan declaradas pero sin escenarios, y Dashboard.tsx las marca
-  // "Pronto". Es un estado deliberado, no un olvido.
-  it('phishing es la única sección con escenarios activos en el MVP', () => {
+  // El MVP empieza con phishing y suma smishing como segundo módulo activo. Las
+  // otras secciones se quedan declaradas pero sin escenarios, y Dashboard.tsx
+  // las marca "Pronto". Es un estado deliberado, no un olvido.
+  it('phishing y smishing son las únicas secciones con escenarios activos', () => {
     const activas = SECCIONES.filter((seccion) => escenariosDeSeccion(seccion.id).length > 0)
-    expect(activas.map((seccion) => seccion.id)).toEqual(['phishing'])
+    expect(activas.map((seccion) => seccion.id)).toEqual(['phishing', 'smishing'])
   })
 
   // La forma del módulo completo: 8 escenarios, 6 de fraude y 2 legítimos. Los
@@ -72,6 +73,13 @@ describe('catálogo de escenarios', () => {
     expect(phishing).toHaveLength(8)
     expect(phishing.filter((e) => e.naturaleza === 'fraude')).toHaveLength(6)
     expect(phishing.filter((e) => e.naturaleza === 'legitimo')).toHaveLength(2)
+  })
+
+  it('smishing tiene 4 escenarios: 3 de fraude y 1 legítimo', () => {
+    const smishing = escenariosDeSeccion('smishing')
+    expect(smishing).toHaveLength(4)
+    expect(smishing.filter((e) => e.naturaleza === 'fraude')).toHaveLength(3)
+    expect(smishing.filter((e) => e.naturaleza === 'legitimo')).toHaveLength(1)
   })
 
   // Guarda contra la regresión que tuvo la pantalla: el catálogo se redujo a 3

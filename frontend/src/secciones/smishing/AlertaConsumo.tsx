@@ -1,4 +1,5 @@
-import StoryEscenario, { type ScreenNode } from '../../components/StoryEscenario'
+import { Camera, Images, Landmark, MessageSquareText } from 'lucide-react'
+import StoryEscenario, { type AppTelefono, type ScreenNode } from '../../components/StoryEscenario'
 import type { Contexto } from '../../components/ui/ContextoEscenario'
 import type { Story } from '../../hooks/useStoryEngine'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
@@ -18,48 +19,135 @@ const HISTORIAL = [
 const NUEVO = {
   text: 'Banco del Litoral: consumo aprobado $42,90 SUPERMERCADO LA UNIÓN 02/08 19:14, tarjeta *4417. Si no lo reconoces, bloquéala desde la app o llama al número impreso en tu tarjeta.',
   time: '19:14',
+  senal: 'aviso',
 }
+
+const BORRADOR = 'No reconozco ese consumo, mi tarjeta es la 4539 0011 8842 4417'
 
 const SMS: ScreenView = {
   kind: 'sms',
   sender: 'BancoLitoral',
   sub: 'Remitente verificado · mismo hilo de siempre',
   msgs: [...HISTORIAL, NUEVO],
+  composerGoto: 'n1b',
+  composerLabel: 'Escribió una respuesta al SMS del banco',
+  // Salir del hilo es el gesto real de "lo dejo pasar": sin él, no verificar
+  // no tendría forma de expresarse en la pantalla y el escenario obligaría a
+  // actuar, que es justo lo contrario de lo que este caso mide.
+  volverGoto: 'e_ignora',
+  volverLabel: 'Salió del hilo sin verificar el consumo',
+}
+
+/// Lo escrito y todavía sin enviar. Que el número completo esté a la vista
+/// antes de pulsar enviar es media lección del escenario: el error no es el
+/// aviso, es lo que uno está a punto de mandar por el mismo canal.
+const SMS_BORRADOR: ScreenView = {
+  ...SMS,
+  composerGoto: undefined,
+  borrador: BORRADOR,
+  senalBorrador: 'respuesta',
+  enviarGoto: 'e_responde',
+  enviarLabel: 'Envió por SMS el número completo de su tarjeta',
 }
 
 const SMS_RESPONDIDO: ScreenView = {
   ...SMS,
-  msgs: [
-    ...HISTORIAL,
-    NUEVO,
-    { text: 'No reconozco ese consumo, mi tarjeta es la 4539 0011 8842 4417', time: '19:16', mine: true },
-  ],
+  composerGoto: undefined,
+  volverGoto: undefined,
+  msgs: [...HISTORIAL, NUEVO, { text: BORRADOR, time: '19:16', mine: true, senal: 'respuesta' }],
 }
 
-const STORY: Story<ScreenNode> = {
-  n1: {
-    kind: 'scene',
-    view: SMS,
-    choices: [
-      { label: 'Abrir la app del banco y revisar el movimiento.', goto: 'e_app' },
-      { label: 'Responder el SMS con los datos de mi tarjeta para reclamar.', goto: 'n1b' },
-      { label: 'Ignorarlo: cualquier mensaje del banco puede ser falso.', goto: 'e_ignora' },
-    ],
+/// El inicio de la banca móvil. Abrir la app no es todavía haber verificado:
+/// desde aquí se puede mirar los movimientos o bloquear la tarjeta a ciegas,
+/// que es el error que este escenario mide de verdad.
+const APP_INICIO: ScreenView = {
+  kind: 'web',
+  app: 'Banco del Litoral',
+  url: 'bancolitoral.ec',
+  secure: true,
+  brand: 'Banca móvil',
+  title: 'Tarjeta *4417',
+  subtitle: 'Cupo disponible $1.240,00',
+  opciones: [
+    { texto: 'Transferir', detalle: 'A cuentas propias o de terceros' },
+    {
+      texto: 'Movimientos',
+      detalle: 'Consumos y débitos de los últimos 30 días',
+      goto: 'e_app',
+      label: 'Revisó los movimientos de la tarjeta en la app',
+    },
+    {
+      texto: 'Bloquear tarjeta',
+      detalle: 'Anula la tarjeta de forma inmediata',
+      goto: 'e_bloquea',
+      label: 'Bloqueó la tarjeta sin revisar antes el movimiento',
+    },
+    { texto: 'Pagar servicios', detalle: 'Luz, agua, teléfono e internet' },
+  ],
+  fields: [],
+  button: '',
+}
+
+/// La app del banco con los mismos movimientos del hilo. El acierto de este
+/// escenario es comprobar, y comprobar significa ver el consumo listado: el
+/// veredicto lo cuenta, pero la pantalla es la que lo prueba.
+const APP_BANCO: ScreenView = {
+  kind: 'web',
+  app: 'Banco del Litoral',
+  url: 'bancolitoral.ec',
+  secure: true,
+  brand: 'Movimientos · Tarjeta *4417',
+  title: 'Últimos consumos',
+  subtitle: 'Actualizado hace un minuto.',
+  datos: [
+    { etiqueta: '02/08 19:14 · SUPERMERCADO LA UNIÓN', valor: '$42,90' },
+    { etiqueta: '30/07 · Transferencia recibida', valor: '+$820,00' },
+    { etiqueta: '28/07 11:02 · FARMACIA SANA', valor: '$12,40' },
+  ],
+  aviso:
+    '¿No reconoces un consumo? Bloquea la tarjeta desde aquí o llama al número impreso en ella.',
+  fields: [],
+  button: '',
+}
+
+const APPS: AppTelefono[] = [
+  { Icono: MessageSquareText, texto: 'Mensajes', color: '#2f9e44' },
+  {
+    Icono: Camera,
+    texto: 'Cámara',
+    color: '#495057',
+    vacia: 'La cámara está lista. No hay nada que fotografiar en este momento.',
   },
-  n1b: {
-    kind: 'scene',
-    view: SMS_RESPONDIDO,
-    choices: [
-      { label: 'Esperar la respuesta con mis datos ya enviados.', goto: 'e_responde' },
-      {
-        label: 'Borrar lo escrito antes de enviarlo y entrar mejor a la app.',
-        goto: 'e_app',
-      },
-    ],
+  {
+    Icono: Landmark,
+    texto: 'Banco del Litoral',
+    color: '#0f3d6e',
+    goto: 'n2',
+    label: 'Abrió la app del banco',
+  },
+  {
+    Icono: Images,
+    texto: 'Galería',
+    color: '#c2410c',
+    vacia: 'Tus fotos recientes · 248 elementos.',
+  },
+]
+
+const STORY: Story<ScreenNode> = {
+  n1: { kind: 'scene', view: SMS },
+  n1b: { kind: 'scene', view: SMS_BORRADOR },
+  n2: { kind: 'scene', view: APP_INICIO },
+  e_bloquea: {
+    kind: 'partial',
+    view: APP_INICIO,
+    verdict: 'Reaccionaste sin comprobar',
+    outcome:
+      'Bloqueaste la tarjeta por una compra que habías hecho tú. No perdiste nada, pero te quedaste sin tarjeta hasta que el banco emita otra, y los movimientos estaban a un toque de distancia en esta misma app.',
+    score: 50,
   },
   e_app: {
     kind: 'good',
-    view: SMS,
+    view: APP_BANCO,
     verdict: 'Acertaste · el aviso era legítimo',
     outcome:
       'En la app apareció el mismo consumo de $42,90: era tu compra del supermercado. El SMS venía del hilo de siempre del banco, no pedía nada y solo te avisaba.',
@@ -83,11 +171,11 @@ const STORY: Story<ScreenNode> = {
 }
 
 const SENALES: Senal[] = [
-  { id: 's1', texto: 'Llega en el <b>mismo hilo</b> de los mensajes anteriores del banco, no de un número nuevo.' },
-  { id: 's2', texto: '<b>No trae enlaces</b> ni te pide responder nada.' },
-  { id: 's3', texto: 'Muestra <b>solo los últimos dígitos</b> de la tarjeta, nunca el número completo.' },
-  { id: 's4', texto: 'Te manda a <b>tus canales</b>: la app o el número impreso en la tarjeta.' },
-  { id: 's5', texto: 'Informa un hecho concreto y verificable, sin urgencia ni amenaza.' },
+  { id: 's1', targetId: 'aviso', pantalla: 'n1', texto: 'Llega en el <b>mismo hilo</b> de los mensajes anteriores del banco, no de un número nuevo.' },
+  { id: 's2', targetId: 'aviso', pantalla: 'n1', texto: '<b>No trae enlaces</b> ni te pide responder nada.' },
+  { id: 's3', targetId: 'aviso', pantalla: 'n1', texto: 'Muestra <b>solo los últimos dígitos</b> de la tarjeta, nunca el número completo.' },
+  { id: 's4', targetId: 'aviso', pantalla: 'n1', texto: 'Te manda a <b>tus canales</b>: la app o el número impreso en la tarjeta.' },
+  { id: 's5', targetId: 'aviso', pantalla: 'n1', texto: 'Informa un hecho concreto y verificable, sin urgencia ni amenaza.' },
 ]
 const RULE =
   'Regla de oro: un aviso real del banco <b>informa, no pide</b>. Verifica siempre en la app o llamando al número impreso en tu tarjeta, y nunca escribas datos de tarjeta en un SMS, aunque el mensaje sea auténtico.'
@@ -119,6 +207,21 @@ function AlertaConsumo() {
       senales={SENALES}
       rule={RULE}
       restartLabel="↻ Repetir el escenario"
+      accionesEnPantalla
+      apps={APPS}
+      instruccion={
+        <p className="text-lg leading-relaxed text-body">
+          Actúa sobre el teléfono como lo harías con el tuyo: puedes usar{' '}
+          <strong>cualquier parte de él</strong>, incluidas las apps de abajo.
+        </p>
+      }
+      pista={
+        <p>
+          Tienes varios caminos posibles: responder el mensaje, salir del hilo y seguir con tu día,
+          o comprobar el consumo por tu cuenta desde el teléfono. Cuál de ellos es el acertado es
+          justamente lo que decides tú.
+        </p>
+      }
     />
   )
 }

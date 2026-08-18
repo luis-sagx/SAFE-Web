@@ -1,4 +1,4 @@
-import { Paperclip, Search } from 'lucide-react'
+import { Paperclip, Search, SendHorizontal } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { CUENTA_FICTICIA, IDENTIDAD_FICTICIA } from '../../lib/identidadFicticia'
 import { AvisoSitio, CabeceraSitio, PieSitio } from './armazonSitio'
@@ -46,6 +46,12 @@ export type ScreenView =
   | {
       kind: 'web'
       url: string
+      /** Nombre de la app cuando esta pantalla no es una página del navegador
+       *  sino una app del teléfono (la del banco, la del courier). El marco
+       *  cambia la barra de direcciones por la cabecera de la app: una app no
+       *  tiene URL, y pintarle una enseñaría a buscar el candado donde no lo
+       *  hay. Solo lo usa el marco de celular. */
+      app?: string
       /** Candado del navegador. Falso pinta la advertencia "No seguro". */
       secure: boolean
       /** Archivo abierto desde el disco (un adjunto descargado, p. ej.). No
@@ -84,6 +90,19 @@ export type ScreenView =
       /** Datos de una página informativa. Cuando los hay, sustituyen al
        *  formulario: un directorio no se rellena, se lee. */
       datos?: { etiqueta: string; valor: string; senal?: string }[]
+      /** Menú de una app o lista de sitios frecuentes del navegador. Manda
+       *  sobre todo lo demás.
+       *
+       *  Existe para que llegar al canal propio cueste lo que cuesta de
+       *  verdad: abrir la app te deja en su inicio, y la consulta la haces tú.
+       *  Un icono que resuelve el escenario de un toque premia haber
+       *  encontrado el icono, no haber sabido qué hacer.
+       *
+       *  Las entradas sin `goto` se pulsan igual pero no llevan a ningún lado
+       *  —el menú de una app real tampoco es todo accionable— y por eso el
+       *  realce al pasar el cursor va en todas por igual: si solo se marcara
+       *  la viva, la lista volvería a ser un cuestionario. */
+      opciones?: { texto: string; detalle?: string; goto?: string; label?: string }[]
       /** Resultados de una búsqueda. Mandan sobre `datos` y sobre el
        *  formulario: comprobar algo por tu cuenta es media lección del módulo,
        *  y una lista de pares etiqueta/valor no se lee como un buscador. */
@@ -106,7 +125,30 @@ export type ScreenView =
       kind: 'sms'
       sender: string
       sub: string
-      msgs: { text: string; time: string; mine?: boolean }[]
+      /** El `text` es HTML fijo del escenario: el enlace del mensaje va como
+       *  `<a href>` con `data-hotspot-goto`, para que tocarlo sea la decisión y
+       *  el navegador revele el destino al pasar el cursor. */
+      msgs: { text: string; time: string; mine?: boolean; senal?: string }[]
+      /** `data-signal` de la cabecera del hilo: el número o el nombre corto del
+       *  remitente es la primera señal de un SMS, antes que el texto. */
+      senalRemitente?: string
+      /** Nodo al que lleva salir del hilo con la flecha de la cabecera. Sin
+       *  esto la flecha se pinta apagada: volver a la lista de mensajes tiene
+       *  que significar algo (dejarlo pasar) o no ser una salida. */
+      volverGoto?: string
+      volverLabel?: string
+      /** Nodo al que lleva tocar el campo de escribir. Lleva a una pantalla del
+       *  mismo hilo que ya trae el `borrador` puesto: escribir y enviar son dos
+       *  gestos distintos, y separarlos deja ver qué se iba a mandar. */
+      composerGoto?: string
+      composerLabel?: string
+      /** Texto ya escrito y sin enviar. Con él, el campo deja de ser marcador
+       *  de posición y aparece el botón de enviar. No es editable, como los
+       *  campos de los formularios simulados. */
+      borrador?: string
+      senalBorrador?: string
+      enviarGoto?: string
+      enviarLabel?: string
     }
 
 /// De dónde sale lo que se ve escrito en un campo. Un formulario que ya trae
@@ -220,7 +262,30 @@ function DeviceScreen({
         )}
         {view.subtitle && <p className={styles.pageSub}>{view.subtitle}</p>}
 
-        {view.resultados ? (
+        {view.opciones ? (
+          <ul className={styles.opciones}>
+            {view.opciones.map((opcion) => (
+              <li key={opcion.texto}>
+                <button
+                  type="button"
+                  className={styles.opcion}
+                  data-hotspot-goto={opcion.goto}
+                  data-hotspot-label={opcion.label}
+                >
+                  <span className={styles.opcionTextos}>
+                    <span className={styles.opcionTexto}>{opcion.texto}</span>
+                    {opcion.detalle && (
+                      <span className={styles.opcionDetalle}>{opcion.detalle}</span>
+                    )}
+                  </span>
+                  <span className={styles.opcionFlecha} aria-hidden>
+                    ›
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        ) : view.resultados ? (
           <div className={styles.resultados}>
             {view.resultados.map((resultado) => (
               <div key={resultado.url} data-signal={resultado.senal}>
@@ -266,10 +331,30 @@ function DeviceScreen({
   return (
     <section className={`${styles.screen} ${styles.sms}`} aria-label="Mensajes de texto">
       <div className={styles.smsbar}>
-        <div className={styles.smsId}>
+        {view.volverGoto ? (
+          <button
+            type="button"
+            className={`${styles.hotspot} ${styles.smsVolver}`}
+            aria-label="Volver a la lista de mensajes"
+            data-hotspot-goto={view.volverGoto}
+            data-hotspot-label={view.volverLabel}
+          >
+            ‹
+          </button>
+        ) : (
+          <span className={`${styles.smsVolver} ${styles.smsVolverApagado}`} aria-hidden>
+            ‹
+          </span>
+        )}
+
+        <div className={styles.smsId} data-signal={view.senalRemitente}>
           <p className={styles.smsName}>{view.sender}</p>
           <p className={styles.smsSub}>{view.sub}</p>
         </div>
+
+        {/* Contrapeso de la flecha, para que el nombre del remitente quede
+            centrado en la cabecera y no corrido hacia la derecha. */}
+        <span className={styles.smsVolver} aria-hidden />
       </div>
 
       <div className={styles.smsThread}>
@@ -279,7 +364,7 @@ function DeviceScreen({
             className={`${styles.smsRow} ${msg.mine ? styles.mine : styles.theirs}`}
           >
             <div className={styles.smsBubble}>
-              <span dangerouslySetInnerHTML={{ __html: msg.text }} />
+              <span data-signal={msg.senal} dangerouslySetInnerHTML={{ __html: msg.text }} />
               <span className={styles.smsTime}>{msg.time}</span>
             </div>
           </div>
@@ -287,7 +372,36 @@ function DeviceScreen({
       </div>
 
       <div className={styles.smsComposer}>
-        <div className={styles.smsField}>Mensaje de texto</div>
+        {view.borrador ? (
+          <>
+            <span
+              className={`${styles.smsField} ${styles.smsFieldEscrito}`}
+              data-signal={view.senalBorrador}
+            >
+              {view.borrador}
+            </span>
+            <button
+              type="button"
+              className={`${styles.hotspot} ${styles.smsEnviar}`}
+              aria-label="Enviar el mensaje"
+              data-hotspot-goto={view.enviarGoto}
+              data-hotspot-label={view.enviarLabel}
+            >
+              <SendHorizontal aria-hidden className={styles.smsEnviarIcono} strokeWidth={2} />
+            </button>
+          </>
+        ) : view.composerGoto ? (
+          <button
+            type="button"
+            className={`${styles.hotspot} ${styles.smsField} ${styles.smsFieldBoton}`}
+            data-hotspot-goto={view.composerGoto}
+            data-hotspot-label={view.composerLabel}
+          >
+            Mensaje de texto
+          </button>
+        ) : (
+          <div className={styles.smsField}>Mensaje de texto</div>
+        )}
       </div>
     </section>
   )
