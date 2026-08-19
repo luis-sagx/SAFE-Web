@@ -57,7 +57,7 @@ describe('AntifraudeBanco', () => {
     expect(within(telefono).getByText(/nunca le pedirá este código/)).toBeDefined()
 
     fireEvent.click(within(telefono).getByRole('button', { name: /Teléfono/ }))
-    expect(within(telefono).getByText(/no cuelgue, señora/i)).toBeDefined()
+    expect(within(telefono).getByText(/Y no cuelgue: si corta la llamada/i)).toBeDefined()
     // Ir y volver es mirar, no decidir: la corrida sigue en curso.
     expect(screen.getByText('¿Qué haces?')).toBeDefined()
   })

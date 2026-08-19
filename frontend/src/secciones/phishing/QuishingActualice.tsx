@@ -234,7 +234,7 @@ function ContenidoCorreo({ recibido, carpetas }: { recibido: string; carpetas: C
       recibido={recibido}
       pie={<p className="fine">Banco del Litoral · Este es un mensaje automático.</p>}
     >
-      <p>Estimado cliente:</p>
+      <p>Estimado(a) cliente:</p>
       <p>
         Según nuestra política de actualización de datos, necesitamos que confirme su información
         antes de{' '}

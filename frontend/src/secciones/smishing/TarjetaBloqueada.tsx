@@ -66,7 +66,7 @@ const LLAMADA: ScreenView = {
     },
     {
       etiqueta: 'Y añaden',
-      valor: '"No corte, señor, si corta la tarjeta queda anulada y hay que emitir una nueva."',
+      valor: '"No corte: si corta la tarjeta queda anulada y hay que emitir una nueva."',
       senal: 'no-cuelgue',
     },
   ],

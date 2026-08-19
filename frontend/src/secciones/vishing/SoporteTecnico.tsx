@@ -118,7 +118,7 @@ const PREGUNTA_COMO = pidiendoApp([
   { texto: COMO_SABEN, mio: true },
   {
     texto:
-      'Lo vemos desde la central, señora, porque su router pasa por nuestra red. Nosotros no entramos a nada suyo, solo miramos el tráfico.',
+      'Lo vemos desde la central, porque su router pasa por nuestra red. Nosotros no entramos a nada suyo, solo miramos el tráfico.',
   },
 ])
 

@@ -31,7 +31,7 @@ const SMS_RESPONDIDO: ScreenView = {
     PRIMER_SMS,
     { text: '¿De qué paquete se trata?', time: '10:14', mine: true },
     {
-      text: 'Estimado cliente, su envío será devuelto en 2 horas. Complete el pago en el enlace enviado.',
+      text: 'Estimado(a) cliente, su envío será devuelto en 2 horas. Complete el pago en el enlace enviado.',
       time: '10:15',
       senal: 'respuesta',
     },

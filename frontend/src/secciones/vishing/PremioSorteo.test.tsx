@@ -78,7 +78,7 @@ describe('PremioSorteo', () => {
     fireEvent.click(within(telefono).getByRole('button', { name: /¿Por qué tengo que pagar/ }))
 
     // Contestan a lo que se preguntó, no una frase de guion cualquiera…
-    expect(within(telefono).getByText(/el premio es gratis, señora/)).toBeDefined()
+    expect(within(telefono).getByText(/el premio es gratis/)).toBeDefined()
     // …y aun así terminan pidiendo el depósito.
     expect(within(telefono).getByText(/Deposite a la cuenta de mi compañera/)).toBeDefined()
     expect(screen.getByText('¿Qué haces?')).toBeDefined()
@@ -90,7 +90,7 @@ describe('PremioSorteo', () => {
     fireEvent.click(within(telefono).getByRole('button', { name: 'Contestar la llamada' }))
     fireEvent.click(within(telefono).getByRole('button', { name: /¿A qué cuenta deposito/ }))
 
-    expect(within(telefono).queryByText(/el premio es gratis, señora/)).toBeNull()
+    expect(within(telefono).queryByText(/el premio es gratis/)).toBeNull()
     expect(within(telefono).getByText(/Deposite a la cuenta de mi compañera/)).toBeDefined()
   })
 

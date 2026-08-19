@@ -16,33 +16,63 @@ import type { Story } from '../../hooks/useStoryEngine'
 
 const NUMERO = '+225 07 55 21 88'
 
-/// El registro de llamadas es la pantalla de partida. Devolver la llamada es
-/// una entrada más de la lista, como en cualquier teléfono: no un botón que el
-/// ejercicio ponga aparte.
+/// El registro de llamadas, y nada más que eso: llamadas. Antes traía además
+/// la opción de bloquear metida entre dos entradas, y una acción disfrazada de
+/// llamada en la misma lista se lee mal — en un teléfono de verdad la lista
+/// solo enumera lo que pasó, y lo que se puede hacer con una llamada aparece
+/// al abrirla.
 const REGISTRO: ScreenView = {
   kind: 'web',
   app: 'Teléfono',
   url: 'recientes',
   secure: true,
   brand: 'Recientes',
-  title: 'Llamadas',
-  subtitle: 'Hoy',
+  title: 'Hoy',
   opciones: [
     {
       texto: `${NUMERO} · Llamada perdida`,
       detalle: '03:12 · sonó una sola vez',
+      goto: 'n1b',
+      label: 'Abrió el detalle de la llamada perdida',
+    },
+    { texto: 'Mamá · Saliente', detalle: 'Ayer, 19:40 · 12 min' },
+    { texto: 'Farmacia La Espiga · Entrante', detalle: 'Lunes, 11:05 · 2 min' },
+    { texto: 'Buzón de voz', detalle: 'Sin mensajes nuevos' },
+  ],
+  fields: [],
+  button: '',
+}
+
+/// La ficha de esa llamada: lo que se puede hacer con ella está aquí, que es
+/// donde lo pone cualquier teléfono. Devolverla y bloquearla son las dos
+/// decisiones del escenario, y ahora se eligen una al lado de la otra en vez
+/// de a dos alturas distintas de una lista revuelta.
+const FICHA: ScreenView = {
+  kind: 'web',
+  app: 'Teléfono',
+  url: 'recientes',
+  secure: true,
+  brand: 'Detalle de la llamada',
+  title: NUMERO,
+  subtitle: 'Llamada perdida · hoy a las 03:12 · sonó una sola vez',
+  opciones: [
+    {
+      texto: 'Devolver la llamada',
+      detalle: 'Marcar este número',
       goto: 'n2',
       label: 'Devolvió la llamada al número desconocido',
     },
     {
-      texto: 'Bloquear y reportar este número',
+      texto: 'Bloquear y reportar',
       detalle: 'No volverás a recibir llamadas suyas',
       goto: 'e_bloquea',
       label: 'Bloqueó el número sin devolver la llamada',
     },
-    { texto: 'Mamá · Saliente', detalle: 'Ayer, 19:40 · 12 min' },
-    { texto: 'Buzón de voz', detalle: 'Sin mensajes nuevos' },
+    { texto: 'Enviar un mensaje', detalle: 'Escribir por SMS a este número' },
+    { texto: 'Guardar en contactos', detalle: 'Añadir a tu agenda' },
   ],
+  cerrarGoto: 'n1',
+  cerrarLabel: 'Volvió al registro de llamadas',
   fields: [],
   button: '',
 }
@@ -175,12 +205,13 @@ const APPS: AppTelefono[] = [
 
 export const STORY: Story<ScreenNode> = {
   n1: { kind: 'scene', view: REGISTRO },
+  n1b: { kind: 'scene', view: FICHA },
   n2: { kind: 'scene', view: LLAMANDO },
   n3: { kind: 'scene', view: SIGUE_ESPERANDO },
   n4: { kind: 'scene', view: NAVEGADOR },
   e_bloquea: {
     kind: 'good',
-    view: REGISTRO,
+    view: FICHA,
     verdict: 'No caíste · no devolviste la llamada',
     outcome:
       'Bloqueaste el número y seguiste con tu día. Quien de verdad necesita hablar contigo vuelve a llamar, deja un mensaje o te escribe: nadie importante se comunica con un timbrazo a las tres de la mañana.',

@@ -41,7 +41,7 @@ const ANUNCIO = [
   },
   {
     texto:
-      'El sistema la eligió al azar, no se preocupe. Solo tiene que cubrir el impuesto de entrega: cuarenta dólares, y hoy mismo le llevamos la cocina a su casa.',
+      'El sistema eligió su número al azar, no se preocupe. Solo tiene que cubrir el impuesto de entrega: cuarenta dólares, y hoy mismo le llevamos la cocina a su casa.',
     senal: 'pago',
   },
 ]
@@ -57,12 +57,12 @@ const CONTRA_ENTREGA = '¿Y no puedo pagar cuando me entreguen la cocina?'
 /// tiene para enseñar.
 const EXCUSA = {
   texto:
-    'No, el premio es gratis, señora. Lo que se cobra es el impuesto de entrega, que lo pone la transportadora, no nosotros.',
+    'No, el premio es gratis. Lo que se cobra es el impuesto de entrega, que lo pone la transportadora, no nosotros.',
 }
 
 const CUENTA = {
   texto:
-    'Es el impuesto de entrega, señora, todos los ganadores lo pagan. Deposite a la cuenta de mi compañera María: veintidós, cero cero setenta y cuatro, once ochenta y ocho.',
+    'Es el impuesto de entrega, y todos los ganadores lo pagan. Deposite a la cuenta de mi compañera María: veintidós, cero cero setenta y cuatro, once ochenta y ocho.',
   senal: 'cuenta',
 }
 
@@ -76,7 +76,7 @@ const PRISA = {
 /// así que no hay versión del guion en la que acepten cobrar al entregar.
 const ADELANTADO = {
   texto:
-    'No, señora, el sistema no libera el despacho sin el pago del impuesto. Es una norma de la promoción, yo no la puedo saltar.',
+    'No, el sistema no libera el despacho sin el pago del impuesto. Es una norma de la promoción, yo no la puedo saltar.',
   senal: 'adelantado',
 }
 
@@ -283,7 +283,7 @@ export const STORY: Story<ScreenNode> = {
     view: pidenDeposito(HILO_PREGUNTA, 'n3c'),
     verdict: 'No caíste · colgaste',
     outcome:
-      'Colgaste. Nunca estás obligado a seguir escuchando, y colgar es la única defensa que funciona siempre: sin llamada no hay prisa, y sin prisa el engaño no se sostiene.',
+      'Colgaste. Nunca tienes obligación de seguir escuchando, y colgar es la única defensa que funciona siempre: sin llamada no hay prisa, y sin prisa el engaño no se sostiene.',
   },
   e_niega: {
     kind: 'good',

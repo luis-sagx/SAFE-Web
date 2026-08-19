@@ -147,7 +147,7 @@ const SENALES: Senal[] = [
 const RULE =
   'Regla de oro: para <b>recibir</b> dinero nadie necesita tu clave ni tu código de verificación; solo tu número de cuenta. Cualquier bono o subsidio se confirma en el sitio oficial <b>.gob.ec</b>, escrito por ti.'
 
-const RESUMEN = 'Un SMS anuncia que fuiste preseleccionado para un bono de $180.'
+const RESUMEN = 'Un SMS anuncia que tu cédula quedó preseleccionada para un bono de $180.'
 
 const CONTEXTO: Contexto = {
   antes: 'Nunca postulaste a ningún bono, pero el dinero haría falta este mes.',

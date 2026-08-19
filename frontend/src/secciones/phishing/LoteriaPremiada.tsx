@@ -35,7 +35,7 @@ const CORREO: ScreenView = {
   subject: '¡Felicidades! Su número resultó ganador, reclamo pendiente',
   date: 'hoy 07:14',
   body: `
-    <p><span data-signal="saludo">Estimado ganador:</span></p>
+    <p><span data-signal="saludo">Estimado(a) ganador(a):</span></p>
     <p>
       Nos complace informarle que su correo electrónico resultó
       <b>preseleccionado</b> en el sorteo internacional del mes y le corresponde un premio de
@@ -52,7 +52,7 @@ const CORREO: ScreenView = {
   `,
   footer: `
     <p>Lotería del Pacífico · Departamento de Premios y Reclamos</p>
-    <p>Este mensaje es confidencial y está dirigido únicamente al ganador seleccionado.</p>
+    <p>Este mensaje es confidencial y está dirigido únicamente a la persona ganadora.</p>
   `,
 }
 

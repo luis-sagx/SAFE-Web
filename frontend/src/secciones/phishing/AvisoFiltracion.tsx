@@ -29,7 +29,7 @@ const CORREO: ScreenView = {
   subject: 'Aviso importante de seguridad',
   date: 'hoy 08:15',
   body: `
-    <p>Estimado cliente:</p>
+    <p>Estimado(a) cliente:</p>
     <p>
       El pasado 2 de agosto detectamos un <b>incidente de seguridad</b> que expuso los correos,
       teléfonos e historial de pedidos de un grupo de clientes, incluido el suyo.

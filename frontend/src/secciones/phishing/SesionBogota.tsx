@@ -217,7 +217,7 @@ function ContenidoCorreo({ recibido, carpetas }: { recibido: string; carpetas: C
       recibido={recibido}
       pie={<p>Banco del Litoral · Departamento de Seguridad</p>}
     >
-      <p>Estimado cliente:</p>
+      <p>Estimado(a) cliente:</p>
       <p>
         Detectamos un inicio de sesión en su cuenta desde <b>Bogotá, Colombia</b>, un dispositivo
         que no reconocemos.
