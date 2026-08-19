@@ -3,6 +3,7 @@ import { useAuth } from '../../context/AuthContext'
 import { CUENTA_FICTICIA, IDENTIDAD_FICTICIA } from '../../lib/identidadFicticia'
 import { AvisoSitio, CabeceraSitio, PieSitio } from './armazonSitio'
 import { CuerpoCorreo, type AccionCorreo, type CarpetaCorreo } from './DesktopChrome'
+import NotaDeVoz from './NotaDeVoz'
 import PantallaLlamada from './PantallaLlamada'
 import styles from './DeviceScreen.module.css'
 
@@ -129,10 +130,28 @@ export type ScreenView =
       /** El `text` es HTML fijo del escenario: el enlace del mensaje va como
        *  `<a href>` con `data-hotspot-goto`, para que tocarlo sea la decisión y
        *  el navegador revele el destino al pasar el cursor. */
-      msgs: { text: string; time: string; mine?: boolean; senal?: string }[]
+      msgs: {
+        text: string
+        time: string
+        mine?: boolean
+        senal?: string
+        /** Duración de la nota de voz ("0:11"). Con ella el mensaje deja de ser
+         *  texto y pasa a oírse: en suplantación la voz *es* el ataque, y
+         *  leerla escrita quita lo que hay que aprender a dudar. El `text` pasa
+         *  a ser su transcripción, y también la clave de su audio. */
+        voz?: string
+        /** Quién manda la nota, si no es la voz por defecto del escenario. */
+        rol?: string
+      }[]
       /** `data-signal` de la cabecera del hilo: el número o el nombre corto del
        *  remitente es la primera señal de un SMS, antes que el texto. */
       senalRemitente?: string
+      /** Nodo al que lleva tocar el nombre de la cabecera. En mensajería eso
+       *  abre la ficha del contacto, que es donde se ve el número de verdad y
+       *  desde cuándo existe esa cuenta: la comprobación entera del módulo de
+       *  suplantación cabe ahí. Sin esto la cabecera no responde. */
+      perfilGoto?: string
+      perfilLabel?: string
       /** Nodo al que lleva salir del hilo con la flecha de la cabecera. Sin
        *  esto la flecha se pinta apagada: volver a la lista de mensajes tiene
        *  que significar algo (dejarlo pasar) o no ser una salida. */
@@ -143,6 +162,14 @@ export type ScreenView =
        *  gestos distintos, y separarlos deja ver qué se iba a mandar. */
       composerGoto?: string
       composerLabel?: string
+      /** Lo que puedes escribirle ahora, cuando la conversación tiene varias
+       *  salidas. Es el equivalente en mensajería de lo que se dice en una
+       *  llamada: va como burbujas del propio hilo, encima del campo de
+       *  escribir, y nunca como lista de opciones al lado de la pantalla.
+       *
+       *  Con `respuestas` el campo de escribir queda de adorno: escribir a mano
+       *  y elegir una frase serían dos formas de hacer lo mismo. */
+      respuestas?: { texto: string; goto: string; label?: string }[]
       /** Texto ya escrito y sin enviar. Con él, el campo deja de ser marcador
        *  de posición y aparece el botón de enviar. No es editable, como los
        *  campos de los formularios simulados. */
@@ -172,7 +199,16 @@ export type ScreenView =
       /** La conversación hasta este punto, con las líneas propias marcadas.
        *  Cada nodo la trae entera, como el hilo de un SMS trae los mensajes
        *  anteriores: lo que se dijo antes sigue siendo parte de la escena. */
-      dialogo?: { texto: string; mio?: boolean; senal?: string }[]
+      dialogo?: {
+        texto: string
+        mio?: boolean
+        senal?: string
+        /** Quién dice esta línea, cuando en la llamada habla más de una
+         *  persona. Solo lo usa el generador de voces (scripts/voces.py) para
+         *  darle a cada personaje la suya: una llamada donde la hija y el
+         *  supuesto policía suenan igual no engaña a nadie. */
+        rol?: string
+      }[]
       /** Lo que puedes contestar ahora. Es lo único de la llamada que no
        *  puede ser un gesto del aparato —hablar es hablar—, así que va como
        *  burbujas del propio hilo y nunca como lista de opciones al lado. */
@@ -387,10 +423,23 @@ function DeviceScreen({
           </span>
         )}
 
-        <div className={styles.smsId} data-signal={view.senalRemitente}>
-          <p className={styles.smsName}>{view.sender}</p>
-          <p className={styles.smsSub}>{view.sub}</p>
-        </div>
+        {view.perfilGoto ? (
+          <button
+            type="button"
+            className={`${styles.hotspot} ${styles.smsId} ${styles.smsIdBoton}`}
+            data-signal={view.senalRemitente}
+            data-hotspot-goto={view.perfilGoto}
+            data-hotspot-label={view.perfilLabel}
+          >
+            <span className={styles.smsName}>{view.sender}</span>
+            <span className={styles.smsSub}>{view.sub}</span>
+          </button>
+        ) : (
+          <div className={styles.smsId} data-signal={view.senalRemitente}>
+            <p className={styles.smsName}>{view.sender}</p>
+            <p className={styles.smsSub}>{view.sub}</p>
+          </div>
+        )}
 
         {/* Contrapeso de la flecha, para que el nombre del remitente quede
             centrado en la cabecera y no corrido hacia la derecha. */}
@@ -404,12 +453,33 @@ function DeviceScreen({
             className={`${styles.smsRow} ${msg.mine ? styles.mine : styles.theirs}`}
           >
             <div className={styles.smsBubble}>
-              <span data-signal={msg.senal} dangerouslySetInnerHTML={{ __html: msg.text }} />
+              {msg.voz ? (
+                <NotaDeVoz texto={msg.text} duracion={msg.voz} senal={msg.senal} />
+              ) : (
+                <span data-signal={msg.senal} dangerouslySetInnerHTML={{ __html: msg.text }} />
+              )}
               <span className={styles.smsTime}>{msg.time}</span>
             </div>
           </div>
         ))}
       </div>
+
+      {view.respuestas && view.respuestas.length > 0 && (
+        <div className={styles.smsRespuestas}>
+          <span className={styles.smsRespuestasTag}>Tú escribes</span>
+          {view.respuestas.map((respuesta) => (
+            <button
+              key={respuesta.texto}
+              type="button"
+              className={styles.smsRespuesta}
+              data-hotspot-goto={respuesta.goto}
+              data-hotspot-label={respuesta.label}
+            >
+              {respuesta.texto}
+            </button>
+          ))}
+        </div>
+      )}
 
       <div className={styles.smsComposer}>
         {view.borrador ? (

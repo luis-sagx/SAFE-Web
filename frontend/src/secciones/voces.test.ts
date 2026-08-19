@@ -1,19 +1,28 @@
 import { describe, expect, it } from 'vitest'
-import { VOCES } from '../../data/voces'
-import type { ScreenNode } from '../../components/StoryEscenario'
-import type { Story } from '../../hooks/useStoryEngine'
-import { STORY as antifraudeBanco } from './AntifraudeBanco'
-import { STORY as bancoConfirma } from './BancoConfirma'
-import { STORY as devolucionSri } from './DevolucionSri'
-import { STORY as encuestaDatos } from './EncuestaDatos'
-import { STORY as entregaCourier } from './EntregaCourier'
-import { STORY as llamadaPerdida } from './LlamadaPerdida'
-import { STORY as premioSorteo } from './PremioSorteo'
-import { STORY as soporteTecnico } from './SoporteTecnico'
+import { VOCES } from '../data/voces'
+import type { ScreenNode } from '../components/StoryEscenario'
+import type { Story } from '../hooks/useStoryEngine'
+import { STORY as antifraudeBanco } from './vishing/AntifraudeBanco'
+import { STORY as bancoConfirma } from './vishing/BancoConfirma'
+import { STORY as devolucionSri } from './vishing/DevolucionSri'
+import { STORY as encuestaDatos } from './vishing/EncuestaDatos'
+import { STORY as entregaCourier } from './vishing/EntregaCourier'
+import { STORY as llamadaPerdida } from './vishing/LlamadaPerdida'
+import { STORY as premioSorteo } from './vishing/PremioSorteo'
+import { STORY as soporteTecnico } from './vishing/SoporteTecnico'
+import { STORY as cambioNumero } from './suplantacion/CambioNumero'
+import { STORY as clonaronTuPerfil } from './suplantacion/ClonaronTuPerfil'
+import { STORY as codigoPrestado } from './suplantacion/CodigoPrestado'
+import { STORY as cuentaHackeada } from './suplantacion/CuentaHackeada'
+import { STORY as jefeUrgente } from './suplantacion/JefeUrgente'
+import { STORY as numeroNuevoReal } from './suplantacion/NumeroNuevoReal'
+import { STORY as perfilClonado } from './suplantacion/PerfilClonado'
+import { STORY as vozClonada } from './suplantacion/VozClonada'
 
-/// Todos los guiones del módulo. Cualquier escenario nuevo de vishing entra
-/// aquí, y los tests de abajo se encargan de recordar que le faltan las voces.
-/// Van con nombre porque cada escenario se sintetiza con una voz distinta.
+/// Todos los guiones que suenan: las llamadas de vishing y los chats con nota
+/// de voz de suplantación. Cualquier escenario nuevo con audio entra aquí, y
+/// los tests de abajo se encargan de recordar que le faltan las voces. Van con
+/// nombre porque cada escenario se sintetiza con una voz distinta.
 const GUIONES: Record<string, Story<ScreenNode>> = {
   AntifraudeBanco: antifraudeBanco,
   BancoConfirma: bancoConfirma,
@@ -23,20 +32,38 @@ const GUIONES: Record<string, Story<ScreenNode>> = {
   LlamadaPerdida: llamadaPerdida,
   PremioSorteo: premioSorteo,
   SoporteTecnico: soporteTecnico,
+  CambioNumero: cambioNumero,
+  ClonaronTuPerfil: clonaronTuPerfil,
+  CodigoPrestado: codigoPrestado,
+  CuentaHackeada: cuentaHackeada,
+  JefeUrgente: jefeUrgente,
+  NumeroNuevoReal: numeroNuevoReal,
+  PerfilClonado: perfilClonado,
+  VozClonada: vozClonada,
 }
 
-/// Lo que dice quien llama. Las líneas propias no se sintetizan: en una
-/// llamada de verdad tampoco te oyes a ti mismo por el altavoz.
+/// Lo que se oye: lo que dice quien llama y las notas de voz que manda. Las
+/// líneas propias no se sintetizan —en una llamada de verdad tampoco te oyes a
+/// ti mismo por el altavoz— y las notas propias tampoco: nadie se escucha los
+/// audios que acaba de mandar.
 const dichas = new Set<string>()
 const LINEAS = Object.entries(GUIONES).flatMap(([escenario, story]) =>
   Object.values(story)
-    .flatMap((nodo) =>
-      nodo.view.kind === 'call'
-        ? (nodo.view.dialogo ?? []).filter((linea) => !linea.mio).map((linea) => linea.texto)
-        : [],
-    )
-    .filter((texto) => !dichas.has(texto) && dichas.add(texto))
-    .map((texto) => ({ escenario, texto })),
+    .flatMap((nodo) => {
+      if (nodo.view.kind === 'call') {
+        return (nodo.view.dialogo ?? [])
+          .filter((linea) => !linea.mio)
+          .map((linea) => ({ texto: linea.texto, rol: linea.rol }))
+      }
+      if (nodo.view.kind === 'sms') {
+        return nodo.view.msgs
+          .filter((msg) => msg.voz && !msg.mine)
+          .map((msg) => ({ texto: msg.text, rol: msg.rol }))
+      }
+      return []
+    })
+    .filter(({ texto }) => !dichas.has(texto) && dichas.add(texto))
+    .map((linea) => ({ escenario, ...linea })),
 )
 
 describe('guiones de las llamadas', () => {
@@ -85,7 +112,7 @@ describe('voces de las llamadas', () => {
   // proyecto: una lista de frases mantenida a mano se desincronizaría del
   // guion, y entonces el audio diría una cosa y la transcripción otra.
   //
-  //   VITE_VOCES=1 npx vitest run --reporter=verbose src/secciones/vishing/voces \
+  //   VITE_VOCES=1 npx vitest run --reporter=verbose src/secciones/voces \
   //     | python3 scripts/voces.py -
   //
   // La lista sale por la salida estándar entre marcas, que scripts/voces.py

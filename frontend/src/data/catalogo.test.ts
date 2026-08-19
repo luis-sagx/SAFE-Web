@@ -15,6 +15,7 @@ const UMBRALES_ESPERADOS: Record<string, number> = {
   phishing: 6,
   smishing: 6,
   vishing: 6,
+  suplantacion: 6,
 }
 
 describe('catálogo de escenarios', () => {
@@ -56,9 +57,14 @@ describe('catálogo de escenarios', () => {
   // El MVP empieza con phishing y suma smishing y vishing. Las otras secciones
   // se quedan declaradas pero sin escenarios, y Dashboard.tsx las marca
   // "Pronto". Es un estado deliberado, no un olvido.
-  it('phishing, smishing y vishing son las únicas secciones con escenarios activos', () => {
+  it('phishing, smishing, vishing y suplantación son las secciones activas', () => {
     const activas = SECCIONES.filter((seccion) => escenariosDeSeccion(seccion.id).length > 0)
-    expect(activas.map((seccion) => seccion.id)).toEqual(['phishing', 'smishing', 'vishing'])
+    expect(activas.map((seccion) => seccion.id)).toEqual([
+      'phishing',
+      'smishing',
+      'vishing',
+      'suplantacion',
+    ])
   })
 
   // La forma del módulo completo: 8 escenarios, 6 de fraude y 2 legítimos. Los
@@ -92,6 +98,16 @@ describe('catálogo de escenarios', () => {
     expect(vishing).toHaveLength(8)
     expect(vishing.filter((e) => e.naturaleza === 'fraude')).toHaveLength(6)
     expect(vishing.filter((e) => e.naturaleza === 'legitimo')).toHaveLength(2)
+  })
+
+  // Y suplantación. Sus dos legítimos son de tipos distintos a propósito: uno
+  // es el mismo mensaje de un fraude siendo verdad, y el otro pone al
+  // participante del lado de quien está siendo suplantado.
+  it('suplantación tiene 8 escenarios: 6 de fraude y 2 legítimos', () => {
+    const suplantacion = escenariosDeSeccion('suplantacion')
+    expect(suplantacion).toHaveLength(8)
+    expect(suplantacion.filter((e) => e.naturaleza === 'fraude')).toHaveLength(6)
+    expect(suplantacion.filter((e) => e.naturaleza === 'legitimo')).toHaveLength(2)
   })
 
   // Guarda contra la regresión que tuvo la pantalla: el catálogo se redujo a 3

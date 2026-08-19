@@ -339,7 +339,11 @@ function StoryEscenario({
     // Solo cuando la pantalla es el control: con lista de opciones, pulsar el
     // cuerpo del correo no tiene por qué responder a nada.
     if (!objetivo) {
-      if (!engine.node.choices) setTocoEnVacio(true)
+      // Los controles del propio aparato —reproducir una nota de voz, silenciar
+      // la llamada— sí responden, aunque no decidan nada: avisar ahí de que "no
+      // hay nada que hacer" desmentía a la pantalla.
+      const control = (event.target as HTMLElement).closest('[data-control]')
+      if (!engine.node.choices && !control) setTocoEnVacio(true)
       return
     }
 

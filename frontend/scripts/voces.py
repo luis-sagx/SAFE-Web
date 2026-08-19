@@ -19,7 +19,7 @@ se queda muda y el test lo dice— en vez de seguir sonando con el texto viejo.
 
 Uso, desde frontend/ (con un entorno que tenga edge-tts instalado):
 
-    VITE_VOCES=1 npx vitest run --reporter=verbose src/secciones/vishing/voces \\
+    VITE_VOCES=1 npx vitest run --reporter=verbose src/secciones/voces \\
       | python3 scripts/voces.py -
 
 También acepta la ruta de un JSON con la misma lista de {escenario, texto}.
@@ -48,6 +48,10 @@ HOMBRE = ("es-EC-LuisNeural", "+10%", "+8Hz")
 # La única que se queda plana a propósito: es una grabación de centralita, y
 # que suene a máquina es parte de lo que hay que reconocer.
 CENTRALITA = ("es-MX-DaliaNeural", "+0%", "+0Hz")
+# Un chico de veintipocos, para las suplantaciones de un hijo: la misma voz que
+# oye quien llama al número de verdad, porque el ataque justamente consiste en
+# que suene igual.
+HIJO = ("es-EC-LuisNeural", "+14%", "+25Hz")
 
 # Quién habla en cada escenario. Las dos del banco comparten la voz de Luis a
 # propósito: antifraude-banco y banco-confirma son la misma llamada contada por
@@ -63,8 +67,25 @@ VOZ_POR_ESCENARIO = {
     "LlamadaPerdida": CENTRALITA,
     "PremioSorteo": MUJER,
     "SoporteTecnico": HOMBRE,
+    "CambioNumero": HIJO,
+    "CodigoPrestado": MUJER,
+    "CuentaHackeada": HOMBRE,
+    "JefeUrgente": MUJER,
+    "NumeroNuevoReal": MUJER,
+    "VozClonada": HOMBRE,
 }
 VOZ_POR_DEFECTO = HOMBRE
+
+# Y cuando en una misma escena habla más de una persona, la línea dice quién es.
+# Una llamada donde la hija secuestrada y el supuesto policía suenan con la
+# misma voz no engaña a nadie, y el escenario dejaría de medir lo que mide.
+VOZ_POR_ROL = {
+    "hija": ("es-EC-AndreaNeural", "+18%", "+40Hz"),
+    "hijo": HIJO,
+    "policia": ("es-EC-LuisNeural", "+4%", "-15Hz"),
+    "mujer": MUJER,
+    "hombre": HOMBRE,
+}
 
 CABECERA = '''/**
  * Generado por scripts/voces.py — no editar a mano.
@@ -120,7 +141,9 @@ async def main() -> int:
     vivos = set()
     for i, linea in enumerate(lineas, 1):
         texto = linea["texto"]
-        voz = VOZ_POR_ESCENARIO.get(linea["escenario"], VOZ_POR_DEFECTO)
+        voz = VOZ_POR_ROL.get(linea.get("rol") or "") or VOZ_POR_ESCENARIO.get(
+            linea["escenario"], VOZ_POR_DEFECTO
+        )
         archivo = AUDIOS / nombre(voz, texto)
         indice[texto] = f"/voz/{archivo.name}"
         vivos.add(archivo.name)

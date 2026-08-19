@@ -494,7 +494,116 @@ const BASE: EscenarioBase[] = [
     espeja: 'vishing/banco-confirma',
     Component: lazy(() => import('../secciones/vishing/EncuestaDatos')),
   },
-  // Las otras tres amenazas quedan fuera del MVP ampliado. Sus componentes
+  {
+    // La puerta de entrada del módulo y el fraude más común del país: el
+    // número nuevo que dice ser de alguien de tu familia. Espeja con
+    // numero-nuevo-real, que es exactamente el mismo mensaje siendo verdad.
+    seccionId: 'suplantacion',
+    escenarioId: 'cambio-numero',
+    titulo: 'Cambio de número',
+    descripcion: 'Un número desconocido dice ser un familiar tuyo que perdió el celular.',
+    // v2: el escenario se juega sobre el teléfono —chat, perfil del contacto,
+    // agenda y app del banco— en vez de con una lista de opciones, y la nota
+    // de voz suena de verdad. Las corridas de la v1 no son comparables: nadie
+    // llegó a jugarla, porque el escenario nunca estuvo activo.
+    version: 2,
+    naturaleza: 'fraude',
+    dificultad: 1,
+    espeja: 'suplantacion/numero-nuevo-real',
+    Component: lazy(() => import('../secciones/suplantacion/CambioNumero')),
+  },
+  {
+    seccionId: 'suplantacion',
+    escenarioId: 'perfil-clonado',
+    titulo: 'Perfil clonado',
+    descripcion: 'Una amiga escribe desde una cuenta nueva y termina pidiendo dinero prestado.',
+    version: 1,
+    naturaleza: 'fraude',
+    dificultad: 2,
+    espeja: 'suplantacion/clonaron-tu-perfil',
+    Component: lazy(() => import('../secciones/suplantacion/PerfilClonado')),
+  },
+  {
+    // El primer legítimo, y el único del proyecto donde el ataque no va
+    // dirigido al participante sino que se hace *con* su identidad. Mide qué
+    // hace, no si reconoce algo.
+    seccionId: 'suplantacion',
+    escenarioId: 'clonaron-tu-perfil',
+    titulo: 'Alguien usa tu nombre',
+    descripcion: 'Una amiga avisa de que hay una cuenta con tus fotos pidiendo dinero.',
+    version: 1,
+    naturaleza: 'legitimo',
+    dificultad: 2,
+    espeja: 'suplantacion/perfil-clonado',
+    Component: lazy(() => import('../secciones/suplantacion/ClonaronTuPerfil')),
+  },
+  {
+    // La suplantación en el trabajo, que no se apoya en la tecnología sino en
+    // la jerarquía: a la gerencia no se le pregunta dos veces.
+    seccionId: 'suplantacion',
+    escenarioId: 'jefe-urgente',
+    titulo: 'Encargo de la gerencia',
+    descripcion: 'Tu jefa escribe desde otro número y pide comprar tarjetas de regalo.',
+    version: 1,
+    naturaleza: 'fraude',
+    dificultad: 3,
+    espeja: 'suplantacion/numero-nuevo-real',
+    Component: lazy(() => import('../secciones/suplantacion/JefeUrgente')),
+  },
+  {
+    // El segundo legítimo: el mismo mensaje de cambio-numero, esta vez cierto.
+    // Sin él el módulo enseñaría "desconfía de todo número nuevo", que no es
+    // criterio sino miedo. Y aun siendo auténtico, mide qué se acaba mandando.
+    seccionId: 'suplantacion',
+    escenarioId: 'numero-nuevo-real',
+    titulo: 'Número nuevo de la familia',
+    descripcion: 'Tu tía avisa desde otro número que perdió el celular, con una nota de voz.',
+    version: 1,
+    naturaleza: 'legitimo',
+    dificultad: 3,
+    espeja: 'suplantacion/cambio-numero',
+    Component: lazy(() => import('../secciones/suplantacion/NumeroNuevoReal')),
+  },
+  {
+    // Aquí no está en juego el dinero sino la cuenta del propio participante,
+    // y el favor que piden parece diminuto.
+    seccionId: 'suplantacion',
+    escenarioId: 'codigo-prestado',
+    titulo: 'Código pedido por un familiar',
+    descripcion: 'Tu prima pide que le pases un código de seis dígitos que te llegó por error.',
+    version: 1,
+    naturaleza: 'fraude',
+    dificultad: 4,
+    espeja: 'suplantacion/numero-nuevo-real',
+    Component: lazy(() => import('../secciones/suplantacion/CodigoPrestado')),
+  },
+  {
+    // La cuenta es auténtica y quien escribe no: todo lo que enseñan los otros
+    // escenarios —número guardado, foto, historial— sale bien aquí.
+    seccionId: 'suplantacion',
+    escenarioId: 'cuenta-hackeada',
+    titulo: 'Un amigo pide prestado',
+    descripcion: 'Un amigo escribe desde su chat de siempre pidiendo dinero por una urgencia.',
+    version: 1,
+    naturaleza: 'fraude',
+    dificultad: 4,
+    espeja: 'suplantacion/clonaron-tu-perfil',
+    Component: lazy(() => import('../secciones/suplantacion/CuentaHackeada')),
+  },
+  {
+    // El más difícil del proyecto entero: la voz es la suya, y contra eso no
+    // sirve nada de lo que enseñan los demás. Solo funciona colgar y marcar.
+    seccionId: 'suplantacion',
+    escenarioId: 'voz-clonada',
+    titulo: 'La voz de un familiar',
+    descripcion: 'Una llamada trae la voz de tu hija diciendo que tuvo un accidente.',
+    version: 1,
+    naturaleza: 'fraude',
+    dificultad: 5,
+    espeja: 'suplantacion/numero-nuevo-real',
+    Component: lazy(() => import('../secciones/suplantacion/VozClonada')),
+  },
+  // Las otras dos amenazas quedan fuera del MVP ampliado. Sus componentes
   // .tsx siguen en el repositorio intactos: se reactivan descomentando la
   // entrada correspondiente. Las secciones se quedan declaradas en SECCIONES
   // arriba; Dashboard.tsx ya pinta "Pronto" cuando escenariosDeSeccion() da
@@ -511,18 +620,6 @@ const BASE: EscenarioBase[] = [
   //   dificultad: 2,
   //   espeja: null,
   //   Component: lazy(() => import('../secciones/estafa/SaldoContable')),
-  // },
-  // {
-  //   seccionId: 'suplantacion',
-  //   escenarioId: 'cambio-numero',
-  //   titulo: 'Cambio de número',
-  //   descripcion:
-  //     'Un contacto conocido escribe desde otro número y trata de acelerar una transferencia.',
-  //   version: 1,
-  //   naturaleza: 'fraude',
-  //   dificultad: 1,
-  //   espeja: null,
-  //   Component: lazy(() => import('../secciones/suplantacion/CambioNumero')),
   // },
   // {
   //   seccionId: 'fisico',

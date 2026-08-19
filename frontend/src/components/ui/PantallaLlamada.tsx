@@ -221,6 +221,7 @@ function PantallaLlamada({ view, terminada }: { view: Llamada; terminada?: boole
         <button
           type="button"
           className={styles.callRepetir}
+          data-control=""
           onClick={() => {
             if (ultimas.current.length) setCola(ultimas.current)
           }}
@@ -279,6 +280,7 @@ function PantallaLlamada({ view, terminada }: { view: Llamada; terminada?: boole
           type="button"
           className={`${styles.callControl} ${silencio ? styles.callControlActivo : ''}`}
           aria-pressed={silencio}
+          data-control=""
           onClick={alternarSilencio}
         >
           <span className={styles.callControlIcono}>
