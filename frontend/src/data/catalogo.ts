@@ -520,23 +520,30 @@ const BASE: EscenarioBase[] = [
     version: 1,
     naturaleza: 'fraude',
     dificultad: 2,
-    espeja: 'suplantacion/clonaron-tu-perfil',
+    espeja: 'suplantacion/numero-nuevo-real',
     Component: lazy(() => import('../secciones/suplantacion/PerfilClonado')),
   },
-  {
-    // El primer legítimo, y el único del proyecto donde el ataque no va
-    // dirigido al participante sino que se hace *con* su identidad. Mide qué
-    // hace, no si reconoce algo.
-    seccionId: 'suplantacion',
-    escenarioId: 'clonaron-tu-perfil',
-    titulo: 'Alguien usa tu nombre',
-    descripcion: 'Una amiga avisa de que hay una cuenta con tus fotos pidiendo dinero.',
-    version: 1,
-    naturaleza: 'legitimo',
-    dificultad: 2,
-    espeja: 'suplantacion/perfil-clonado',
-    Component: lazy(() => import('../secciones/suplantacion/ClonaronTuPerfil')),
-  },
+  // Fuera del módulo hasta que esté terminado. Es el único escenario del
+  // proyecto donde el ataque no va dirigido al participante sino que se hace
+  // *con* su identidad, y la pieza que lo cuenta —la captura del perfil
+  // suplantado, con tu nombre encabezándola— todavía está por resolver: escrita
+  // como texto entre corchetes no se lee como una foto. Su .tsx sigue completo
+  // en el repositorio; se reactiva descomentando esta entrada.
+  //
+  // Mientras tanto suplantación va con 7 escenarios (5 de fraude y 2 legítimos
+  // menos uno), por encima del umbral de 6 que exige el backend.
+  //
+  // {
+  //   seccionId: 'suplantacion',
+  //   escenarioId: 'clonaron-tu-perfil',
+  //   titulo: 'Alguien usa tu nombre',
+  //   descripcion: 'Una amiga avisa de que hay una cuenta con tus fotos pidiendo dinero.',
+  //   version: 1,
+  //   naturaleza: 'legitimo',
+  //   dificultad: 2,
+  //   espeja: 'suplantacion/perfil-clonado',
+  //   Component: lazy(() => import('../secciones/suplantacion/ClonaronTuPerfil')),
+  // },
   {
     // La suplantación en el trabajo, que no se apoya en la tecnología sino en
     // la jerarquía: a la gerencia no se le pregunta dos veces.
@@ -587,7 +594,7 @@ const BASE: EscenarioBase[] = [
     version: 1,
     naturaleza: 'fraude',
     dificultad: 4,
-    espeja: 'suplantacion/clonaron-tu-perfil',
+    espeja: 'suplantacion/numero-nuevo-real',
     Component: lazy(() => import('../secciones/suplantacion/CuentaHackeada')),
   },
   {

@@ -41,11 +41,6 @@ const CHAT: ScreenView = {
       goto: 'n2',
       label: 'Confirmó a su amiga que esa cuenta no era suya',
     },
-    {
-      texto: '¿Me mandas una captura?',
-      goto: 'n2b',
-      label: 'Pidió una captura de la conversación',
-    },
   ],
   volverGoto: 'e_ignora',
   volverLabel: 'Salió del chat sin hacer nada',
@@ -76,6 +71,17 @@ const GRACIAS: ScreenView = {
   ],
 }
 
+/*
+ * Pedirle la captura a Verónica queda fuera de la interfaz hasta que la
+ * captura se vea como lo que es: una imagen pegada en el chat, con el nombre
+ * suplantado encabezándola. Escrita como "[Captura] ..." no se lee como una
+ * foto sino como notación de guion, y delante de alguien que no es técnico
+ * eso es ruido: un corchete en mitad de un chat parece un error de la app.
+ *
+ * Para reactivarla hace falta un campo `captura` en los mensajes del hilo que
+ * dibuje esa tarjeta, devolver la respuesta "¿Me mandas una captura?" al nodo
+ * n1, este nodo como n2b y su señal al repaso.
+ *
 const CAPTURA: ScreenView = {
   ...CHAT,
   msgs: [
@@ -100,6 +106,7 @@ const CAPTURA: ScreenView = {
     },
   ],
 }
+*/
 
 const RED: ScreenView = {
   kind: 'web',
@@ -264,7 +271,6 @@ const APPS: AppTelefono[] = [
 export const STORY: Story<ScreenNode> = {
   n1: { kind: 'scene', view: CHAT },
   n2: { kind: 'scene', view: GRACIAS },
-  n2b: { kind: 'scene', view: CAPTURA },
   n3: { kind: 'scene', view: RED },
   n4: { kind: 'scene', view: RESULTADOS },
   n5: { kind: 'scene', view: CLON },
@@ -311,27 +317,20 @@ const SENALES: Senal[] = [
   },
   {
     id: 's2',
-    targetId: 'captura',
-    pantalla: 'n2b',
-    texto:
-      'El mensaje de la copia usa <b>tu nombre y tus fotos</b> para pedir una cantidad pequeña con plazo corto. Es el mismo guion que verías desde el otro lado.',
-  },
-  {
-    id: 's3',
     targetId: 'copia',
     pantalla: 'n5',
     texto:
       'La cuenta tiene <b>cuatro días y dieciocho amigos</b>, todos conocidos tuyos: fueron sacados de tu lista pública. Tus fotos son las mismas, descargadas de tu perfil.',
   },
   {
-    id: 's4',
+    id: 's3',
     targetId: 'provoca',
     pantalla: 'n7',
     texto:
       'Si le escribes, te <b>provoca para que "demuestres" quién eres</b>. No busca discutir: busca que le mandes un documento tuyo.',
   },
   {
-    id: 's5',
+    id: 's4',
     targetId: 'mas-gente',
     pantalla: 'n2',
     texto:
