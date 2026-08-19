@@ -111,6 +111,11 @@ const MONTO: ScreenView = {
       goto: 'n3c',
       label: 'Dijo que iba a llamar a su hija',
     },
+    {
+      texto: 'Deme un momento, entro al banco.',
+      goto: 'n5',
+      label: 'Fue a la app del banco a hacer la transferencia',
+    },
   ],
 }
 
@@ -132,6 +137,11 @@ const AMENAZA: ScreenView = {
       texto: 'La voy a llamar igual. Cuelgo.',
       goto: 'e_cuelga_llama',
       label: 'Colgó para llamar a su hija',
+    },
+    {
+      texto: 'Está bien, no llamo. ¿A dónde deposito?',
+      goto: 'n3b',
+      label: 'Aceptó no llamar y preguntó dónde depositar',
     },
   ],
 }

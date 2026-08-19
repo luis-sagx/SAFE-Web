@@ -99,6 +99,11 @@ const CUENTA: ScreenView = {
       goto: 'n2b',
       label: 'Preguntó por la cuenta de otra persona y quiso llamar',
     },
+    {
+      texto: 'Listo bro, ya te mando.',
+      goto: 'n5',
+      label: 'Fue a transferir el dinero a la cuenta que le pasaron',
+    },
   ],
 }
 
@@ -145,6 +150,11 @@ const SIN_AUDIO: ScreenView = {
       texto: 'Voy a llamarte de todas formas.',
       goto: 'e_llama',
       label: 'Decidió llamarle en vez de seguir escribiendo',
+    },
+    {
+      texto: 'Ya bro, tranquilo, te mando la plata.',
+      goto: 'n2',
+      label: 'Aceptó mandar el dinero sin haber podido oírle',
     },
   ],
 }

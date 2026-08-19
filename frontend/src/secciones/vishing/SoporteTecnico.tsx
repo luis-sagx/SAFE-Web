@@ -100,6 +100,11 @@ function pidiendoApp(respuesta: { texto: string; mio?: boolean }[]): ScreenView 
         goto: 'e_niega',
         label: 'Se negó a instalar la aplicación',
       },
+      {
+        texto: 'Ya, deme un momento que abro la tienda.',
+        goto: 'n4',
+        label: 'Fue a la tienda a instalar la aplicación',
+      },
     ],
     colgarGoto: 'e_cuelga',
     colgarLabel: 'Colgó cuando le pidieron instalar una aplicación',

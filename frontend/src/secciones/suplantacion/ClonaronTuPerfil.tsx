@@ -68,6 +68,11 @@ const GRACIAS: ScreenView = {
       goto: 'n3',
       label: 'Fue a buscar la cuenta falsa en la red social',
     },
+    {
+      texto: 'Déjalo, ya se cansarán.',
+      goto: 'e_ignora',
+      label: 'Decidió no hacer nada al respecto',
+    },
   ],
 }
 
@@ -87,6 +92,11 @@ const CAPTURA: ScreenView = {
       texto: 'Esa cuenta no es mía. Voy a verla.',
       goto: 'n3',
       label: 'Fue a buscar la cuenta falsa en la red social',
+    },
+    {
+      texto: 'Qué fastidio. Bueno, avísame si te escribe otra vez.',
+      goto: 'e_ignora',
+      label: 'Lo dejó pasar sin reportar ni avisar a nadie',
     },
   ],
 }

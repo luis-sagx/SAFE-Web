@@ -110,6 +110,11 @@ const CUENTA: ScreenView = {
       goto: 'n3c',
       label: 'Hizo notar que la cuenta era de otra persona',
     },
+    {
+      texto: 'Ya voy a transferir, dame un minuto.',
+      goto: 'n6',
+      label: 'Fue a transferir el dinero a la cuenta que le pasaron',
+    },
   ],
 }
 
@@ -130,6 +135,11 @@ const EXCUSA_CUENTA: ScreenView = {
       goto: 'e_corta',
       label: 'Se negó a transferir sin hablar antes',
     },
+    {
+      texto: 'Está bien, ya te mando los 350.',
+      goto: 'n6',
+      label: 'Cedió y fue a transferir el dinero',
+    },
   ],
 }
 
@@ -149,6 +159,11 @@ const EXCUSA_LLAMADA: ScreenView = {
       texto: '¿Cómo se llamaba la perra que teníamos cuando eras chico?',
       goto: 'n4',
       label: 'Preguntó algo que solo su hijo sabría',
+    },
+    {
+      texto: 'Bueno hijo, dame la cuenta y te mando.',
+      goto: 'n3',
+      label: 'Aceptó transferir sin haber podido hablar con él',
     },
   ],
 }
@@ -176,6 +191,11 @@ const PRUEBA: ScreenView = {
       texto: 'No te voy a mandar nada hasta hablar contigo.',
       goto: 'e_corta',
       label: 'Se negó a transferir sin hablar antes',
+    },
+    {
+      texto: 'Ya, perdón hijo. Dame la cuenta.',
+      goto: 'n3',
+      label: 'Se disculpó y aceptó transferir',
     },
   ],
 }

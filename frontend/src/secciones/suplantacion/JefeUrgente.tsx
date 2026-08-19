@@ -143,6 +143,11 @@ const VOY: ScreenView = {
       goto: 'n3b',
       label: 'Se echó atrás y quiso confirmarlo',
     },
+    {
+      texto: 'En eso estoy, ingeniera.',
+      goto: 'n5',
+      label: 'Siguió con el encargo y fue a la tienda',
+    },
   ],
 }
 
@@ -164,6 +169,11 @@ const NO_LLAMA: ScreenView = {
       texto: 'Cuando pueda hablar lo vemos.',
       goto: 'e_niega',
       label: 'No hizo el encargo sin poder confirmarlo',
+    },
+    {
+      texto: 'Disculpe, ingeniera. Voy a comprarlas.',
+      goto: 'n5',
+      label: 'Cedió a la presión y fue a comprar las tarjetas',
     },
   ],
 }

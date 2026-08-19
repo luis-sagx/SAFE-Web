@@ -142,6 +142,11 @@ function seNiegan(hilo: Linea[]): ScreenView {
         goto: 'e_niega',
         label: 'Rechazó el premio al saber que había que pagar por adelantado',
       },
+      {
+        texto: 'Bueno, deme un momento que entro al banco.',
+        goto: 'n5',
+        label: 'Aceptó pagar por adelantado y abrió el banco',
+      },
     ],
     'Colgó al saber que había que pagar por adelantado',
   )

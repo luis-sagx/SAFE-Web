@@ -126,6 +126,11 @@ const CUENTA: ScreenView = {
       goto: 'n3b',
       label: 'Hizo notar que la cuenta era de otra persona',
     },
+    {
+      texto: 'Ya te mando los 220.',
+      goto: 'n6',
+      label: 'Fue a transferir el dinero a la cuenta que le pasaron',
+    },
   ],
 }
 
@@ -145,6 +150,11 @@ const NO_LLAMA: ScreenView = {
       texto: 'Entonces hablamos otro día.',
       goto: 'e_corta',
       label: 'Cortó la conversación sin mandar dinero',
+    },
+    {
+      texto: 'Bueno, igual te presto. Pásame la cuenta.',
+      goto: 'n3',
+      label: 'Aceptó prestar el dinero sin haber podido hablar',
     },
   ],
 }

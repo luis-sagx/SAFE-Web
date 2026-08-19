@@ -89,6 +89,28 @@ describe('guiones de las llamadas', () => {
   // te escuchó: dices una cosa u otra y quien llama contesta lo mismo. Quien
   // llama puede acabar pidiendo lo mismo por los dos caminos, pero el hilo
   // tiene que contestar a lo que se dijo.
+  // Y ninguna puede ofrecer solo la salida correcta: si lo único que se puede
+  // decir es lo prudente, el escenario deja de medir criterio y se convierte en
+  // un pasillo. Ceder tiene que estar siempre a la vista, igual que en la
+  // pantalla del teléfono siguen estando la app del banco y la agenda.
+  it('ninguna pantalla ofrece solo la respuesta correcta', () => {
+    const encarriladas = Object.entries(GUIONES).flatMap(([escenario, story]) =>
+      Object.entries(story).flatMap(([id, nodo]) => {
+        if (nodo.kind !== 'scene') return []
+        const frases =
+          nodo.view.kind === 'call'
+            ? (nodo.view.decir ?? [])
+            : nodo.view.kind === 'sms'
+              ? (nodo.view.respuestas ?? [])
+              : []
+        if (frases.length === 0) return []
+        const todasAciertan = frases.every((frase) => story[frase.goto]?.kind === 'good')
+        return todasAciertan ? [`${escenario}:${id}`] : []
+      }),
+    )
+    expect(encarriladas).toEqual([])
+  })
+
   it('cada respuesta lleva a una pantalla distinta', () => {
     const repetidas = Object.entries(GUIONES).flatMap(([escenario, story]) =>
       Object.entries(story).flatMap(([id, nodo]) => {
