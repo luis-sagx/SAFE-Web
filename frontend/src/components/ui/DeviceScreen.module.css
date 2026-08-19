@@ -1917,3 +1917,465 @@ button.mailNavItem {
   background: #c9d0d9;
   border-radius: 0.375rem;
 }
+
+/* ---------- Llamada ----------
+   Vishing dentro del mismo teléfono que smishing: la pantalla de llamada ocupa
+   el hueco de la app y el dock sigue debajo, así que salir a comprobar algo
+   mientras el otro habla cuesta lo mismo que en un teléfono de verdad.
+
+   Va en claro y no en el negro de la app de teléfono real: la pantalla es
+   material de estudio antes que decorado, y con el resto de escenarios en
+   claro el salto a oscuro se leía como que algo se había roto. */
+.call {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  padding: 0.75rem;
+  overflow: hidden;
+  color: #16202c;
+  background: linear-gradient(180deg, #eef2f7 0%, #f6f8fb 40%);
+}
+
+.callEntrante {
+  justify-content: space-between;
+  padding: 1.75rem 1rem 1.5rem;
+}
+
+.callBarra {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #5b6675;
+}
+
+.callEnCurso {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.callPunto {
+  width: 0.4375rem;
+  height: 0.4375rem;
+  border-radius: 50%;
+  background: #12a150;
+  box-shadow: 0 0 0 0.1875rem rgb(18 161 80 / 18%);
+}
+
+.callReloj {
+  font-variant-numeric: tabular-nums;
+  color: #16202c;
+}
+
+.callEstado {
+  margin: 0;
+  text-align: center;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: #5b6675;
+}
+
+.callQuien {
+  flex-shrink: 0;
+  text-align: center;
+}
+
+/* Con la llamada ya contestada, la identidad se pliega en una fila: el nombre
+   sigue siendo lo primero que se lee, pero el número y su aviso ocupan una
+   línea en vez de tres. El alto de la pantalla es para lo que se dice. */
+.callQuienFila {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding-bottom: 0.125rem;
+}
+
+.callQuienTextos {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  min-width: 0;
+}
+
+.callQuienFila .callAvatar {
+  margin-bottom: 0;
+  width: 2.25rem;
+  height: 2.25rem;
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.callQuienFila .callNombre {
+  font-size: 1.0625rem;
+  line-height: 1.2;
+}
+
+.callNumeroFila {
+  display: flex;
+  align-items: center;
+  gap: 0.4375rem;
+  flex-wrap: wrap;
+  font-size: 0.875rem;
+  color: #5b6675;
+}
+
+.callNumeroFila .callEtiqueta {
+  margin-top: 0;
+}
+
+.callPuntoApagado {
+  background: #94a3b8;
+  box-shadow: none;
+}
+
+.callAvatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  margin-bottom: 0.375rem;
+  border-radius: 50%;
+  background: #dbe3ec;
+  border: 1px solid #c8d3e0;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #3c4a5c;
+}
+
+.callAvatarGrande {
+  width: 5rem;
+  height: 5rem;
+  margin-bottom: 0.75rem;
+  font-size: 2rem;
+}
+
+.callNombre {
+  margin: 0;
+  font-size: 1.1875rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.callNumero {
+  margin: 0.125rem 0 0;
+  font-size: 0.9375rem;
+  color: #5b6675;
+}
+
+.callEtiqueta {
+  display: inline-block;
+  margin-top: 0.375rem;
+  padding: 0.1875rem 0.5rem;
+  border-radius: 999px;
+  border: 1px solid #d7dee8;
+  background: #fff;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #475569;
+}
+
+/* La barra del audio, que es lo que de verdad manda en esta pantalla. */
+.callVoz {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.625rem;
+  border-radius: 0.875rem;
+  border: 1px solid #d7dee8;
+  background: #fff;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 5%);
+}
+
+.callOnda {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.125rem;
+  height: 1.125rem;
+  flex-shrink: 0;
+}
+
+.callOnda i {
+  display: block;
+  width: 0.1875rem;
+  height: 0.3125rem;
+  border-radius: 999px;
+  background: #9aa7b8;
+}
+
+.callOndaActiva i {
+  background: #12a150;
+  animation: callOnda 0.9s ease-in-out infinite;
+}
+
+.callOndaActiva i:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.callOndaActiva i:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.callOndaActiva i:nth-child(4) {
+  animation-delay: 0.45s;
+}
+
+@keyframes callOnda {
+  0%,
+  100% {
+    height: 0.3125rem;
+  }
+  50% {
+    height: 1.125rem;
+  }
+}
+
+.callVozTexto {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #16202c;
+}
+
+.callRepetir {
+  appearance: none;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.3125rem 0.5625rem;
+  border-radius: 999px;
+  border: 1px solid #d7dee8;
+  background: #f2f4f7;
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #334155;
+  cursor: pointer;
+}
+
+.callRepetir:hover,
+.callRepetir:focus-visible {
+  outline: 2px solid #1a73e8;
+  outline-offset: 2px;
+}
+
+.callRepetirIcono {
+  width: 0.8125rem;
+  height: 0.8125rem;
+}
+
+/* Apoyo, no protagonista: en letra pequeña y en gris, para quien no puede oír
+   el audio o quiere releer una frase. */
+.callTranscripcion {
+  flex: 1;
+  min-height: 2.5rem;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.625rem 0.75rem;
+  border-radius: 0.75rem;
+  border: 1px solid #e2e8f0;
+  background: rgb(255 255 255 / 55%);
+}
+
+.callTag {
+  font-size: 0.6875rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #8b96a5;
+}
+
+.callLinea {
+  margin: 0;
+  padding-left: 0.625rem;
+  border-left: 3px solid #cbd5e1;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  color: #475569;
+}
+
+.callLineaMia {
+  border-left-color: #1a73e8;
+  color: #1a73e8;
+  font-style: italic;
+}
+
+.callDecir {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3125rem;
+}
+
+/* Burbujas del propio hilo, no botones de un cuestionario: lo que se dice en
+   una llamada es la respuesta, y tiene que leerse como algo que dice el
+   participante. El realce va igual en todas. */
+.callFrase {
+  appearance: none;
+  text-align: left;
+  padding: 0.625rem 0.8125rem;
+  border-radius: 0.875rem 0.875rem 0.25rem 0.875rem;
+  border: 1px solid #bcd3f5;
+  background: #e8f0fe;
+  color: #16202c;
+  font: inherit;
+  font-size: 1rem;
+  line-height: 1.4;
+  cursor: pointer;
+}
+
+.callFrase:hover,
+.callFrase:focus-visible {
+  outline: 2px solid #1a73e8;
+  outline-offset: 2px;
+  background: #d9e6fd;
+}
+
+.callControles {
+  flex-shrink: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-around;
+  gap: 0.25rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid #e2e8f0;
+}
+
+.callControl {
+  appearance: none;
+  border: none;
+  background: transparent;
+  font: inherit;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.125rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #475569;
+  cursor: pointer;
+}
+
+.callControlIcono {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.375rem;
+  height: 2.375rem;
+  border-radius: 50%;
+  background: #fff;
+  border: 1px solid #d7dee8;
+  color: #334155;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 6%);
+}
+
+.callControl:hover .callControlIcono,
+.callControl:focus-visible .callControlIcono {
+  outline: 2px solid #1a73e8;
+  outline-offset: 2px;
+}
+
+.callControl:hover,
+.callControl:focus-visible {
+  outline: none;
+}
+
+.callControlActivo .callControlIcono {
+  background: #16202c;
+  border-color: #16202c;
+  color: #fff;
+}
+
+.callColgar .callControlIcono {
+  background: #d92d20;
+  border-color: #d92d20;
+  color: #fff;
+  box-shadow: 0 0.25rem 0.75rem rgb(217 45 32 / 30%);
+}
+
+.callControlGlifo {
+  width: 1.1875rem;
+  height: 1.1875rem;
+}
+
+.callEntranteAcciones {
+  flex-shrink: 0;
+  display: flex;
+  justify-content: space-around;
+  gap: 1rem;
+}
+
+.callBotonRedondo {
+  appearance: none;
+  border: none;
+  background: transparent;
+  font: inherit;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4375rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #475569;
+  cursor: pointer;
+}
+
+.callBotonIcono {
+  width: 1.5rem;
+  height: 1.5rem;
+  padding: 0.9375rem;
+  box-sizing: content-box;
+  border-radius: 50%;
+  color: #fff;
+}
+
+.callRechazar .callBotonIcono {
+  background: #d92d20;
+  box-shadow: 0 0.5rem 1.25rem rgb(217 45 32 / 32%);
+}
+
+.callContestar .callBotonIcono {
+  background: #12a150;
+  box-shadow: 0 0.5rem 1.25rem rgb(18 161 80 / 32%);
+}
+
+.callBotonRedondo:hover .callBotonIcono,
+.callBotonRedondo:focus-visible .callBotonIcono {
+  outline: 2px solid #16202c;
+  outline-offset: 3px;
+}
+
+.callBotonRedondo:hover,
+.callBotonRedondo:focus-visible {
+  outline: none;
+}
+
+.callTranscripcion::-webkit-scrollbar {
+  width: 0.375rem;
+}
+
+.callTranscripcion::-webkit-scrollbar-thumb {
+  background: #c9d0d9;
+  border-radius: 0.375rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .callOndaActiva i {
+    animation: none;
+    height: 0.75rem;
+  }
+}

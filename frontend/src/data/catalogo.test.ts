@@ -14,6 +14,7 @@ const SCENARIO_ID = /^[a-z0-9-]+\/[a-z0-9-]+$/
 const UMBRALES_ESPERADOS: Record<string, number> = {
   phishing: 6,
   smishing: 6,
+  vishing: 6,
 }
 
 describe('catálogo de escenarios', () => {
@@ -52,12 +53,12 @@ describe('catálogo de escenarios', () => {
     }
   })
 
-  // El MVP empieza con phishing y suma smishing como segundo módulo activo. Las
-  // otras secciones se quedan declaradas pero sin escenarios, y Dashboard.tsx
-  // las marca "Pronto". Es un estado deliberado, no un olvido.
-  it('phishing y smishing son las únicas secciones con escenarios activos', () => {
+  // El MVP empieza con phishing y suma smishing y vishing. Las otras secciones
+  // se quedan declaradas pero sin escenarios, y Dashboard.tsx las marca
+  // "Pronto". Es un estado deliberado, no un olvido.
+  it('phishing, smishing y vishing son las únicas secciones con escenarios activos', () => {
     const activas = SECCIONES.filter((seccion) => escenariosDeSeccion(seccion.id).length > 0)
-    expect(activas.map((seccion) => seccion.id)).toEqual(['phishing', 'smishing'])
+    expect(activas.map((seccion) => seccion.id)).toEqual(['phishing', 'smishing', 'vishing'])
   })
 
   // La forma del módulo completo: 8 escenarios, 6 de fraude y 2 legítimos. Los
@@ -81,6 +82,16 @@ describe('catálogo de escenarios', () => {
     expect(smishing).toHaveLength(8)
     expect(smishing.filter((e) => e.naturaleza === 'fraude')).toHaveLength(6)
     expect(smishing.filter((e) => e.naturaleza === 'legitimo')).toHaveLength(2)
+  })
+
+  // Y vishing igual. Los dos legítimos pesan más aquí que en ningún otro
+  // módulo: en una llamada la tentación es enseñar "cuelga siempre", y sin un
+  // caso verdadero eso es lo único que quedaría aprendido.
+  it('vishing tiene 8 escenarios: 6 de fraude y 2 legítimos', () => {
+    const vishing = escenariosDeSeccion('vishing')
+    expect(vishing).toHaveLength(8)
+    expect(vishing.filter((e) => e.naturaleza === 'fraude')).toHaveLength(6)
+    expect(vishing.filter((e) => e.naturaleza === 'legitimo')).toHaveLength(2)
   })
 
   // Guarda contra la regresión que tuvo la pantalla: el catálogo se redujo a 3

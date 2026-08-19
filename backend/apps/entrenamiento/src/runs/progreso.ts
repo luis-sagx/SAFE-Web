@@ -9,6 +9,7 @@ import type { RunOutcomeValue } from './dto/create-run.dto';
 export const UMBRALES: Record<string, number> = {
   phishing: 6,
   smishing: 6,
+  vishing: 6,
 };
 
 export interface CorridaMinima {

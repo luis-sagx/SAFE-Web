@@ -382,7 +382,119 @@ const BASE: EscenarioBase[] = [
     espeja: 'smishing/citacion-transito',
     Component: lazy(() => import('../secciones/smishing/AlertaConsumo')),
   },
-  // Las otras cuatro amenazas quedan fuera del MVP ampliado. Sus componentes
+  {
+    // La puerta de entrada del módulo, y la única señal que no está en la
+    // pantalla: se responde con "¿yo participé?". Espeja con entrega-courier,
+    // que es la otra llamada de alguien que dice traerte algo — solo que esa
+    // es verdad.
+    seccionId: 'vishing',
+    escenarioId: 'premio-sorteo',
+    titulo: 'Premio de un sorteo',
+    descripcion: 'Una llamada anuncia que ganaste un electrodoméstico y pide cubrir la entrega.',
+    // v1 del módulo inmersivo: la llamada se juega sobre el teléfono —contestar,
+    // colgar, salir a comprobar en otra app— en vez de con una lista de
+    // opciones al lado. Sustituye a llamada-antiestafas, que nunca llegó a
+    // estar activa y por eso no deja corridas huérfanas.
+    version: 1,
+    naturaleza: 'fraude',
+    dificultad: 1,
+    espeja: 'vishing/entrega-courier',
+    Component: lazy(() => import('../secciones/vishing/PremioSorteo')),
+  },
+  {
+    // El único que no empieza con el teléfono sonando: la llamada ya pasó y lo
+    // que queda es el registro. La decisión —marcar o no— la toma el
+    // participante sin nadie apurándole, que es lo que lo hace distinto.
+    seccionId: 'vishing',
+    escenarioId: 'llamada-perdida',
+    titulo: 'Llamada perdida de madrugada',
+    descripcion: 'Un número extranjero llamó a las 03:12 y colgó al primer timbre.',
+    version: 1,
+    naturaleza: 'fraude',
+    dificultad: 2,
+    espeja: 'vishing/entrega-courier',
+    Component: lazy(() => import('../secciones/vishing/LlamadaPerdida')),
+  },
+  {
+    // El primer legítimo, y el más sencillo: nadie pide nada. Mide dónde está
+    // el límite, no cuánto se desconfía — atender la entrega está bien, dictar
+    // la tarjeta no, aunque quien llame sea de verdad.
+    seccionId: 'vishing',
+    escenarioId: 'entrega-courier',
+    titulo: 'Entrega en la puerta',
+    descripcion: 'Un repartidor llama desde abajo con el paquete que estabas esperando.',
+    version: 1,
+    naturaleza: 'legitimo',
+    dificultad: 2,
+    espeja: 'vishing/premio-sorteo',
+    Component: lazy(() => import('../secciones/vishing/EntregaCourier')),
+  },
+  {
+    seccionId: 'vishing',
+    escenarioId: 'devolucion-sri',
+    titulo: 'Devolución de impuestos',
+    descripcion: 'Una llamada institucional ofrece acreditarte dinero a favor y pide confirmar datos.',
+    version: 1,
+    naturaleza: 'fraude',
+    dificultad: 3,
+    espeja: 'vishing/banco-confirma',
+    Component: lazy(() => import('../secciones/vishing/DevolucionSri')),
+  },
+  {
+    // No pide dinero ni códigos: pide permiso. Toda la estafa cabe en un botón
+    // que dice "Permitir", y por eso el escenario obliga a pasar por la
+    // pantalla que lo explica.
+    seccionId: 'vishing',
+    escenarioId: 'soporte-tecnico',
+    titulo: 'Soporte técnico del internet',
+    descripcion: 'Un técnico avisa de que tu router está infectado y se ofrece a limpiarlo.',
+    version: 1,
+    naturaleza: 'fraude',
+    dificultad: 3,
+    espeja: 'vishing/banco-confirma',
+    Component: lazy(() => import('../secciones/vishing/SoporteTecnico')),
+  },
+  {
+    // La pareja de tarjeta-bloqueada, al revés: allí el SMS empujaba a llamar;
+    // aquí la llamada empuja a leer un SMS que sí es del banco.
+    seccionId: 'vishing',
+    escenarioId: 'antifraude-banco',
+    titulo: 'Aviso de consumo por teléfono',
+    descripcion: 'Quien llama dice ser del banco y quiere anular un consumo que no reconoces.',
+    version: 1,
+    naturaleza: 'fraude',
+    dificultad: 4,
+    espeja: 'vishing/banco-confirma',
+    Component: lazy(() => import('../secciones/vishing/AntifraudeBanco')),
+  },
+  {
+    // El segundo legítimo, y el que da sentido al módulo: mismo consumo y mismo
+    // código que antifraude-banco, contados por quien de verdad los maneja. Sin
+    // él el módulo enseñaría "cuelga siempre", que es miedo y no criterio.
+    seccionId: 'vishing',
+    escenarioId: 'banco-confirma',
+    titulo: 'Consumo retenido',
+    descripcion: 'El banco pregunta si una compra grande hecha con tu tarjeta es tuya.',
+    version: 1,
+    naturaleza: 'legitimo',
+    dificultad: 4,
+    espeja: 'vishing/antifraude-banco',
+    Component: lazy(() => import('../secciones/vishing/BancoConfirma')),
+  },
+  {
+    // El más difícil: no hay urgencia, ni amenaza, ni dinero, ni claves. Solo
+    // preguntas que parecen inofensivas y son las de seguridad del banco.
+    seccionId: 'vishing',
+    escenarioId: 'encuesta-datos',
+    titulo: 'Encuesta de satisfacción',
+    descripcion: 'Una encuesta amable del banco hace preguntas para validar que eres el titular.',
+    version: 1,
+    naturaleza: 'fraude',
+    dificultad: 5,
+    espeja: 'vishing/banco-confirma',
+    Component: lazy(() => import('../secciones/vishing/EncuestaDatos')),
+  },
+  // Las otras tres amenazas quedan fuera del MVP ampliado. Sus componentes
   // .tsx siguen en el repositorio intactos: se reactivan descomentando la
   // entrada correspondiente. Las secciones se quedan declaradas en SECCIONES
   // arriba; Dashboard.tsx ya pinta "Pronto" cuando escenariosDeSeccion() da
@@ -411,18 +523,6 @@ const BASE: EscenarioBase[] = [
   //   dificultad: 1,
   //   espeja: null,
   //   Component: lazy(() => import('../secciones/suplantacion/CambioNumero')),
-  // },
-  // {
-  //   seccionId: 'vishing',
-  //   escenarioId: 'llamada-antiestafas',
-  //   titulo: 'Llamada antiestafas',
-  //   descripcion:
-  //     'Una llamada urgente busca que tomes decisiones bajo presión y sin verificación suficiente.',
-  //   version: 1,
-  //   naturaleza: 'fraude',
-  //   dificultad: 1,
-  //   espeja: null,
-  //   Component: lazy(() => import('../secciones/vishing/LlamadaAntiestafas')),
   // },
   // {
   //   seccionId: 'fisico',

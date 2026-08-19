@@ -3,6 +3,7 @@ import { useAuth } from '../../context/AuthContext'
 import { CUENTA_FICTICIA, IDENTIDAD_FICTICIA } from '../../lib/identidadFicticia'
 import { AvisoSitio, CabeceraSitio, PieSitio } from './armazonSitio'
 import { CuerpoCorreo, type AccionCorreo, type CarpetaCorreo } from './DesktopChrome'
+import PantallaLlamada from './PantallaLlamada'
 import styles from './DeviceScreen.module.css'
 
 /**
@@ -150,6 +151,37 @@ export type ScreenView =
       enviarGoto?: string
       enviarLabel?: string
     }
+  | {
+      kind: 'call'
+      /** Todavía sonando: la pantalla solo enseña contestar y rechazar. No
+       *  contestar es una decisión legítima y tiene que poder tomarse antes de
+       *  oír nada, igual que en el teléfono de uno. */
+      entrante?: boolean
+      /** Lo que el teléfono dice que llama: el nombre del contacto si lo
+       *  tienes guardado, y si no, el número tal cual. */
+      quien: string
+      numero: string
+      /** Chip bajo el número: "No está en tus contactos". Es la primera señal
+       *  de una llamada, antes que nada de lo que se diga dentro. */
+      etiqueta?: string
+      senalQuien?: string
+      contestarGoto?: string
+      contestarLabel?: string
+      rechazarGoto?: string
+      rechazarLabel?: string
+      /** La conversación hasta este punto, con las líneas propias marcadas.
+       *  Cada nodo la trae entera, como el hilo de un SMS trae los mensajes
+       *  anteriores: lo que se dijo antes sigue siendo parte de la escena. */
+      dialogo?: { texto: string; mio?: boolean; senal?: string }[]
+      /** Lo que puedes contestar ahora. Es lo único de la llamada que no
+       *  puede ser un gesto del aparato —hablar es hablar—, así que va como
+       *  burbujas del propio hilo y nunca como lista de opciones al lado. */
+      decir?: { texto: string; goto: string; label?: string }[]
+      /** Nodo al que lleva colgar. Sin esto el botón rojo se pinta igual pero
+       *  no responde, y colgar es la salida que este módulo entero enseña. */
+      colgarGoto?: string
+      colgarLabel?: string
+    }
 
 /// De dónde sale lo que se ve escrito en un campo. Un formulario que ya trae
 /// *tus* datos se lee como el de un sitio que te conoce, que es media trampa, y
@@ -185,6 +217,7 @@ function DeviceScreen({
   carpetas,
   destinatario,
   carpetaForzada,
+  terminada,
 }: {
   view: ScreenView
   /** Barra de acciones del cliente. Solo se pinta si el escenario declara sus
@@ -193,6 +226,9 @@ function DeviceScreen({
   carpetas?: CarpetaCorreo[]
   destinatario?: string
   carpetaForzada?: string
+  /** La corrida ya terminó. Solo lo mira la pantalla de llamada: una llamada
+   *  colgada tiene que dejar de contar minutos y de hablar. */
+  terminada?: boolean
 }) {
   const { correoSimulado } = useAuth()
   const correo = destinatario ?? correoSimulado
@@ -326,6 +362,10 @@ function DeviceScreen({
         <PieSitio texto={view.footer} enlaces={view.pie} />
       </div>
     )
+  }
+
+  if (view.kind === 'call') {
+    return <PantallaLlamada view={view} terminada={terminada} />
   }
 
   return (

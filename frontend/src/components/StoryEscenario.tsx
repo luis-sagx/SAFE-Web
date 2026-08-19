@@ -76,6 +76,10 @@ interface StoryEscenarioProps {
  */
 export type AppTelefono = MarcadorNavegador & {
   vacia?: string
+  /** A qué pantalla vuelve, cuando no lleva `goto` ni `vacia`. Solo hace falta
+   *  declararlo en los escenarios que tienen mensajes y llamada a la vez: sin
+   *  esto, "Teléfono" y "Mensajes" volverían los dos a lo último que se vio. */
+  hilo?: 'sms' | 'call'
   /** Color del icono. Sin él queda el gris neutro del sistema. Va por app y no
    *  por posición: el dock tiene que leerse como el teléfono del participante,
    *  no como cuatro botones de esta aplicación. */
@@ -155,10 +159,16 @@ function StoryEscenario({
   /// galería). Vive fuera del grafo por lo mismo que `pestanaMirada`: abrirla
   /// es mirar, y la corrida no debería registrarlo ni terminar por ello.
   const [appAbierta, setAppAbierta] = useState<{ nombre: string; vacia: string } | undefined>()
-  /// Último hilo de mensajes que se vio. La app de Mensajes vuelve a él sin
-  /// tocar el grafo: estando en la página falsa hay que poder releer el SMS
-  /// que la abrió, igual que en el teléfono de uno.
-  const [hiloSms, setHiloSms] = useState('n1')
+  /// Última pantalla de cada app de comunicación: el hilo de mensajes y la
+  /// llamada en curso. Su icono del dock vuelve a ella sin tocar el grafo:
+  /// estando en la página falsa hay que poder releer el SMS que la abrió, y
+  /// estando en la app del banco hay que poder volver a la llamada que sigue
+  /// abierta, igual que en el teléfono de uno.
+  ///
+  /// Son dos y no una porque hay escenarios con las dos cosas —una llamada que
+  /// te manda un código por mensaje— y ahí "volver" significa una pantalla
+  /// distinta según el icono que se pulse.
+  const [hilos, setHilos] = useState<{ sms?: string; call?: string }>({})
   const nodoVisible = pantallaRepaso ?? pestanaMirada ?? engine.current
   const vistaDelNodo = story[nodoVisible]?.view ?? engine.node.view
   /// Releer el hilo desde otra pantalla no puede terminar la corrida: la
@@ -188,8 +198,12 @@ function StoryEscenario({
 
   useEffect(() => {
     // Cuál es "Mensajes" cambia durante la corrida: tras responder, el hilo al
-    // que hay que volver es el que lleva el borrador, no el original.
-    if (engine.node.view.kind === 'sms') setHiloSms(engine.current)
+    // que hay que volver es el que lleva el borrador, no el original. En una
+    // llamada pasa lo mismo con lo que se lleve dicho hasta ese punto.
+    const kind = engine.node.view.kind
+    if (kind === 'sms' || kind === 'call') {
+      setHilos((previos) => ({ ...previos, [kind]: engine.current }))
+    }
   }, [engine.current, engine.node.view])
 
   // Una pestaña por escena con pantalla. Se indexan por nodo, como pide su
@@ -289,13 +303,22 @@ function StoryEscenario({
     // La app de Mensajes: cierra lo que hubiera encima y muestra el hilo, sin
     // que el grafo avance. Es el botón para releer el SMS mientras se está en
     // la página que abrió, y pulsarlo otra vez devuelve a esa página.
-    if ((event.target as HTMLElement).closest('[data-app-hilo]')) {
+    const hilo = (event.target as HTMLElement).closest<HTMLElement>('[data-app-hilo]')?.dataset
+      .appHilo
+    if (hilo !== undefined) {
       if (!engine.isEnding) {
+        // Cada icono vuelve a lo suyo; si esa app todavía no se ha visto en la
+        // corrida, a lo último que hubo.
+        const destino =
+          (hilo === 'sms' || hilo === 'call' ? hilos[hilo] : undefined) ??
+          hilos.call ??
+          hilos.sms ??
+          'n1'
         // Con una app encima el botón no alterna: lo que hace es cerrarla y
         // dejar el hilo a la vista. Alternar ahí devolvía a la pantalla del
         // grafo a quien solo había abierto la cámara sobre el hilo que estaba
         // leyendo.
-        setPestanaMirada((mirando) => (appAbierta ? hiloSms : mirando ? undefined : hiloSms))
+        setPestanaMirada((mirando) => (appAbierta ? destino : mirando ? undefined : destino))
         setAppAbierta(undefined)
       }
       return
@@ -380,7 +403,9 @@ function StoryEscenario({
                 <button
                   type="button"
                   className={`${styles.hotspot} ${styles.phoneAppVolver}`}
-                  aria-label="Volver al hilo de mensajes"
+                  aria-label={
+                    vista.kind === 'call' ? 'Volver a la llamada' : 'Volver al hilo de mensajes'
+                  }
                   data-app=""
                 >
                   ‹
@@ -477,6 +502,7 @@ function StoryEscenario({
                   carpetas={carpetas}
                   destinatario={destinatario}
                   carpetaForzada={pantallaRepaso ? 'Recibidos' : undefined}
+                  terminada={engine.isEnding}
                 />
               </div>
             </>
@@ -492,7 +518,7 @@ function StoryEscenario({
           reconoce el engaño. */}
       {apps && apps.length > 0 && (
         <div className={styles.phoneDock} aria-label="Apps del teléfono">
-          {apps.map(({ Icono, texto, goto, label, vacia, color }) => (
+          {apps.map(({ Icono, texto, goto, label, vacia, color, hilo }) => (
             <button
               key={texto}
               type="button"
@@ -504,7 +530,7 @@ function StoryEscenario({
               // es sin haber leído el mensaje.
               data-app={goto || !vacia ? undefined : texto}
               data-app-vacia={goto ? undefined : vacia}
-              data-app-hilo={goto || vacia ? undefined : ''}
+              data-app-hilo={goto || vacia ? undefined : (hilo ?? '')}
             >
               <span
                 className={styles.phoneDockIcono}
