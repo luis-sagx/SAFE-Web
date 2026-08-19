@@ -233,7 +233,7 @@ export const STORY: Story<ScreenNode> = {
     view: RETENIDO,
     verdict: 'Acertaste · lo resolviste en tu canal',
     outcome:
-      'En la app estaba el consumo retenido, igual que te contaban por teléfono: lo rechazaste desde ahí y la tarjeta quedó bloqueada. Comprobar en tu propio canal resuelve las dos cosas a la vez — confirma que la llamada era real y arregla el problema.',
+      'En la app estaba el consumo retenido, igual que te contaban por teléfono: lo rechazaste desde ahí y la tarjeta quedó bloqueada. Comprobar en tu propio canal resuelve las dos cosas a la vez: confirma que la llamada era real y arregla el problema.',
   },
 }
 

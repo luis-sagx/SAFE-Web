@@ -141,7 +141,7 @@ export const STORY: Story<ScreenNode> = {
     view: ENTRANTE,
     verdict: 'No perdiste nada, pero tampoco resolviste',
     outcome:
-      'No contestaste. No perdiste ni un centavo —y no contestar a un desconocido nunca está mal—, pero era el repartidor con el paquete que sí estabas esperando: se fue, el envío volvió a bodega y ahora te toca ir a retirarlo a la agencia.',
+      'No contestaste. No perdiste ni un centavo (y no contestar a un desconocido nunca está mal), pero era el repartidor con el paquete que sí estabas esperando: se fue, el envío volvió a bodega y ahora te toca ir a retirarlo a la agencia.',
     score: 50,
   },
   e_cuelga: {

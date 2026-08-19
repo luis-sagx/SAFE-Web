@@ -266,7 +266,7 @@ export const STORY: Story<ScreenNode> = {
     view: BANCO,
     verdict: "Reaccionaste sin comprobar",
     outcome:
-      "Bloqueaste la tarjeta por un consumo que nunca existió. No perdiste dinero —y ante la duda es preferible eso a dictar un código—, pero te quedaste sin tarjeta hasta que emitan otra, y los movimientos estaban a un toque en esa misma pantalla.",
+      "Bloqueaste la tarjeta por un consumo que nunca existió. No perdiste dinero (y ante la duda es preferible eso a dictar un código), pero te quedaste sin tarjeta hasta que emitan otra, y los movimientos estaban a un toque en esa misma pantalla.",
     score: 50,
   },
 };

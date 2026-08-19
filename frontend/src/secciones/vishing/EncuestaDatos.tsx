@@ -198,7 +198,7 @@ const BUZON: ScreenView = {
     { etiqueta: "Último aviso", valor: "Estado de cuenta de julio, 01/08" },
   ],
   aviso:
-    "El Banco del Litoral no hace encuestas telefónicas ni te pide datos personales por teléfono. Tus datos de seguridad —fecha de nacimiento, apellidos familiares, agencia y dígitos de tu tarjeta— son los que usamos para identificarte: no los compartas con nadie que te llame.",
+    "El Banco del Litoral no hace encuestas telefónicas ni te pide datos personales por teléfono. Tus datos de seguridad (fecha de nacimiento, apellidos familiares, agencia y dígitos de tu tarjeta) son los que usamos para identificarte: no los compartas con nadie que te llame.",
   fields: [],
   button: "",
 };
@@ -315,7 +315,7 @@ const SENALES: Senal[] = [
 ];
 
 const RULE =
-  "Regla de oro: los datos que <b>no parecen secretos</b> —tu fecha de nacimiento, el apellido de tu madre, tu agencia, los últimos dígitos de tu tarjeta— son los que usan para hacerse pasar por ti. No hace falta que te pidan una clave para robarte: cuelga y llama tú.";
+  "Regla de oro: los datos que <b>no parecen secretos</b> (tu fecha de nacimiento, el apellido de tu madre, tu agencia, los últimos dígitos de tu tarjeta) son los que usan para hacerse pasar por ti. No hace falta que te pidan una clave para robarte: cuelga y llama tú.";
 
 const RESUMEN =
   'Una encuesta de satisfacción de tu banco te hace unas preguntas para "validarte".';
