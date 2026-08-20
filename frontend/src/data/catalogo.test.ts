@@ -100,15 +100,14 @@ describe('catálogo de escenarios', () => {
     expect(vishing.filter((e) => e.naturaleza === 'legitimo')).toHaveLength(2)
   })
 
-  // Suplantación va todavía con 7: su segundo legítimo (clonaron-tu-perfil)
-  // está fuera hasta que se resuelva cómo enseñar la captura del perfil
-  // suplantado. Sigue por encima del umbral de 6, así que el módulo se puede
-  // aprobar; cuando entre, este test vuelve a 8 y a 2 legítimos.
-  it('suplantación tiene 7 escenarios: 6 de fraude y 1 legítimo', () => {
+  // Y suplantación. Sus dos legítimos son de tipos distintos a propósito: uno
+  // es el mismo mensaje de un fraude siendo verdad, y el otro pone al
+  // participante del lado de quien está siendo suplantado.
+  it('suplantación tiene 8 escenarios: 6 de fraude y 2 legítimos', () => {
     const suplantacion = escenariosDeSeccion('suplantacion')
-    expect(suplantacion).toHaveLength(7)
+    expect(suplantacion).toHaveLength(8)
     expect(suplantacion.filter((e) => e.naturaleza === 'fraude')).toHaveLength(6)
-    expect(suplantacion.filter((e) => e.naturaleza === 'legitimo')).toHaveLength(1)
+    expect(suplantacion.filter((e) => e.naturaleza === 'legitimo')).toHaveLength(2)
   })
 
   // Guarda contra la regresión que tuvo la pantalla: el catálogo se redujo a 3

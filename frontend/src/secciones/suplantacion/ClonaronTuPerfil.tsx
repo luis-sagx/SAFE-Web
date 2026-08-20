@@ -41,6 +41,11 @@ const CHAT: ScreenView = {
       goto: 'n2',
       label: 'Confirmó a su amiga que esa cuenta no era suya',
     },
+    {
+      texto: '¿Me mandas una captura?',
+      goto: 'n2b',
+      label: 'Pidió una captura de la conversación',
+    },
   ],
   volverGoto: 'e_ignora',
   volverLabel: 'Salió del chat sin hacer nada',
@@ -50,7 +55,11 @@ const GRACIAS: ScreenView = {
   ...CHAT,
   msgs: [
     AVISO,
-    { text: 'No, esa no soy yo. Gracias por avisar 🙏', time: '19:34', mine: true },
+    {
+      text: 'No, esa no soy yo. Gracias por avisar 🙏',
+      time: '19:34',
+      mine: true,
+    },
     {
       text: 'Uf, menos mal pregunté. Le iba a mandar la plata porque la foto era tuya tal cual 😅 avísale a los demás, que a Karina también le escribió.',
       time: '19:35',
@@ -72,25 +81,29 @@ const GRACIAS: ScreenView = {
 }
 
 /*
- * Pedirle la captura a Verónica queda fuera de la interfaz hasta que la
- * captura se vea como lo que es: una imagen pegada en el chat, con el nombre
- * suplantado encabezándola. Escrita como "[Captura] ..." no se lee como una
- * foto sino como notación de guion, y delante de alguien que no es técnico
- * eso es ruido: un corchete en mitad de un chat parece un error de la app.
- *
- * Para reactivarla hace falta un campo `captura` en los mensajes del hilo que
- * dibuje esa tarjeta, devolver la respuesta "¿Me mandas una captura?" al nodo
- * n1, este nodo como n2b y su señal al repaso.
- *
+ * La captura es la única pantalla del proyecto que enseña la suplantación desde
+ * fuera: lo que Verónica ve en su teléfono es tu nombre y tu foto pidiéndole
+ * plata. Por eso va dibujada como una captura de verdad y no contada en texto,
+ * y por eso el nombre que la encabeza es el mismo que aparecerá luego en los
+ * resultados de la red social.
+ */
 const CAPTURA: ScreenView = {
   ...CHAT,
   msgs: [
     AVISO,
     { text: '¿Me mandas una captura?', time: '19:34', mine: true },
     {
-      text: '[Captura] Tu nombre completo, tu foto de la playa y un mensaje: "amiga, ando en un apuro, ¿me prestas 150 hasta el viernes? te devuelvo el lunes" 😳',
+      text: 'Mira, esto es lo que me llegó 😳',
       time: '19:35',
       senal: 'captura',
+      captura: {
+        quien: '{nombre}',
+        sub: 'en línea',
+        mensajes: [
+          'amiga, ando en un apuro',
+          '¿me prestas 150 hasta el viernes? te devuelvo el lunes 🙏',
+        ],
+      },
     },
   ],
   respuestas: [
@@ -106,7 +119,6 @@ const CAPTURA: ScreenView = {
     },
   ],
 }
-*/
 
 const RED: ScreenView = {
   kind: 'web',
@@ -136,17 +148,19 @@ const RESULTADOS: ScreenView = {
   url: 'buscar',
   secure: true,
   brand: 'Resultados',
-  title: 'Tu nombre',
+  title: '{nombre}',
+  // Las dos salen con el mismo nombre, que es justo el problema: lo que las
+  // separa no es cómo se llaman sino desde cuándo existen y quién las sigue.
   subtitle: 'Dos cuentas coinciden.',
   opciones: [
     {
-      texto: 'Tu cuenta · desde 2014',
-      detalle: 'La tuya de siempre, con todos tus amigos',
+      texto: '{nombre} · desde 2014',
+      detalle: 'Tu cuenta de siempre, con todos tus amigos',
       goto: 'n6',
       label: 'Entró a su propio perfil',
     },
     {
-      texto: 'Tu nombre · desde hace 4 días',
+      texto: '{nombre} · desde hace 4 días',
       detalle: '18 amigos, todos conocidos tuyos · 6 fotos copiadas de tu perfil',
       goto: 'n5',
       label: 'Entró al perfil que estaba copiando el suyo',
@@ -162,10 +176,14 @@ const CLON: ScreenView = {
   url: 'perfil',
   secure: true,
   brand: 'Perfil',
-  title: 'Tu nombre',
+  title: '{nombre}',
   subtitle: 'Cuenta creada hace 4 días.',
   datos: [
-    { etiqueta: 'Fotos', valor: 'Seis, todas descargadas de tu perfil público', senal: 'copia' },
+    {
+      etiqueta: 'Fotos',
+      valor: 'Seis, todas descargadas de tu perfil público',
+      senal: 'copia',
+    },
     {
       etiqueta: 'Amigos',
       valor: '18, y son gente tuya: tus primas, dos compañeros de trabajo',
@@ -200,7 +218,7 @@ const TU_PERFIL: ScreenView = {
   url: 'perfil',
   secure: true,
   brand: 'Tu perfil',
-  title: 'Tu cuenta',
+  title: '{nombre}',
   subtitle: 'Desde 2014 · 312 amigos',
   opciones: [
     {
@@ -210,7 +228,10 @@ const TU_PERFIL: ScreenView = {
       label: 'Avisó a sus contactos de la cuenta falsa',
     },
     { texto: 'Editar tu información', detalle: 'Nombre, ciudad, trabajo' },
-    { texto: 'Quién puede ver tus fotos', detalle: 'Configuración de privacidad' },
+    {
+      texto: 'Quién puede ver tus fotos',
+      detalle: 'Configuración de privacidad',
+    },
     { texto: 'Tus publicaciones', detalle: '128 desde 2014' },
   ],
   cerrarGoto: 'n4',
@@ -221,7 +242,7 @@ const TU_PERFIL: ScreenView = {
 
 const CHAT_CLON: ScreenView = {
   kind: 'sms',
-  sender: 'Tu nombre (cuenta falsa)',
+  sender: '{nombre} (cuenta falsa)',
   sub: 'Cuenta creada hace 4 días',
   msgs: [
     { text: 'Deja de usar mis fotos y mi nombre.', time: '19:44', mine: true },
@@ -271,6 +292,7 @@ const APPS: AppTelefono[] = [
 export const STORY: Story<ScreenNode> = {
   n1: { kind: 'scene', view: CHAT },
   n2: { kind: 'scene', view: GRACIAS },
+  n2b: { kind: 'scene', view: CAPTURA },
   n3: { kind: 'scene', view: RED },
   n4: { kind: 'scene', view: RESULTADOS },
   n5: { kind: 'scene', view: CLON },
@@ -317,20 +339,27 @@ const SENALES: Senal[] = [
   },
   {
     id: 's2',
+    targetId: 'captura',
+    pantalla: 'n2b',
+    texto:
+      'En la captura, quien le escribe a Verónica lleva <b>tu nombre y tu foto</b> en la cabecera, y pide una cantidad pequeña con plazo corto. Así te ve tu gente cuando la copia les habla.',
+  },
+  {
+    id: 's3',
     targetId: 'copia',
     pantalla: 'n5',
     texto:
       'La cuenta tiene <b>cuatro días y dieciocho amigos</b>, todos conocidos tuyos: fueron sacados de tu lista pública. Tus fotos son las mismas, descargadas de tu perfil.',
   },
   {
-    id: 's3',
+    id: 's4',
     targetId: 'provoca',
     pantalla: 'n7',
     texto:
       'Si le escribes, te <b>provoca para que "demuestres" quién eres</b>. No busca discutir: busca que le mandes un documento tuyo.',
   },
   {
-    id: 's4',
+    id: 's5',
     targetId: 'mas-gente',
     pantalla: 'n2',
     texto:

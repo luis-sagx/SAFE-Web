@@ -1,4 +1,5 @@
-import { Paperclip, Search, SendHorizontal } from 'lucide-react'
+import { Paperclip, Search, SendHorizontal, UserRound } from 'lucide-react'
+import { useMemo } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import { CUENTA_FICTICIA, IDENTIDAD_FICTICIA } from '../../lib/identidadFicticia'
 import { AvisoSitio, CabeceraSitio, PieSitio } from './armazonSitio'
@@ -104,11 +105,21 @@ export type ScreenView =
        *  —el menú de una app real tampoco es todo accionable— y por eso el
        *  realce al pasar el cursor va en todas por igual: si solo se marcara
        *  la viva, la lista volvería a ser un cuestionario. */
-      opciones?: { texto: string; detalle?: string; goto?: string; label?: string }[]
+      opciones?: {
+        texto: string
+        detalle?: string
+        goto?: string
+        label?: string
+      }[]
       /** Resultados de una búsqueda. Mandan sobre `datos` y sobre el
        *  formulario: comprobar algo por tu cuenta es media lección del módulo,
        *  y una lista de pares etiqueta/valor no se lee como un buscador. */
-      resultados?: { titulo: string; url: string; fragmento: string; senal?: string }[]
+      resultados?: {
+        titulo: string
+        url: string
+        fragmento: string
+        senal?: string
+      }[]
       button: string
       footer?: string
       /** `data-signal` de la barra de direcciones. */
@@ -142,6 +153,25 @@ export type ScreenView =
         voz?: string
         /** Quién manda la nota, si no es la voz por defecto del escenario. */
         rol?: string
+        /** Una captura de pantalla pegada en el chat, dibujada como lo que es:
+         *  un trozo de otra conversación, con su cabecera y sus burbujas,
+         *  enmarcado dentro del mensaje. Escrita como "[Captura] ..." se lee
+         *  como notación de guion, y delante de alguien que no es técnico un
+         *  corchete en mitad de un chat parece un error de la app.
+         *
+         *  Va dibujada y no como imagen porque el nombre que la encabeza es la
+         *  prueba —hay que poder cambiarlo desde el escenario—, porque tiene
+         *  que llevar el `data-signal` de la señal, y porque un .png ni escala
+         *  en el marco del teléfono ni lo lee un lector de pantalla. */
+        captura?: {
+          /** Quién aparece escribiendo en la captura: en suplantación, el
+           *  nombre y la foto que copiaron. */
+          quien: string
+          sub?: string
+          /** Lo que se ve escrito, en orden. Son mensajes recibidos por quien
+           *  sacó la captura, así que van todos del lado de quien escribe. */
+          mensajes: string[]
+        }
       }[]
       /** `data-signal` de la cabecera del hilo: el número o el nombre corto del
        *  remitente es la primera señal de un SMS, antes que el texto. */
@@ -219,6 +249,26 @@ export type ScreenView =
       colgarLabel?: string
     }
 
+/// El nombre del participante, allí donde la pantalla simulada lo diría.
+///
+/// Existe por el escenario del perfil clonado: una cuenta que te suplanta lleva
+/// *tu* nombre en la cabecera, y escrito "Tu nombre" se lee como una etiqueta
+/// del ejercicio y no como lo que tu gente ve en su teléfono. Los escenarios lo
+/// escriben `{nombre}` en cualquier texto de la vista y aquí se cambia por el
+/// de verdad, igual que el correo y la cédula prestados.
+const TOKEN_NOMBRE = /\{nombre\}/g
+
+function conNombre<T>(valor: T, nombre: string): T {
+  if (typeof valor === 'string') return valor.replace(TOKEN_NOMBRE, nombre) as T
+  if (Array.isArray(valor)) return valor.map((parte) => conNombre(parte, nombre)) as T
+  if (valor !== null && typeof valor === 'object') {
+    return Object.fromEntries(
+      Object.entries(valor).map(([clave, parte]) => [clave, conNombre(parte, nombre)]),
+    ) as T
+  }
+  return valor
+}
+
 /// De dónde sale lo que se ve escrito en un campo. Un formulario que ya trae
 /// *tus* datos se lee como el de un sitio que te conoce, que es media trampa, y
 /// hace que enviarlo sea entregar algo tuyo y no rellenar casillas vacías.
@@ -248,7 +298,7 @@ function Accion({ view }: { view: Extract<ScreenView, { kind: 'web' }> }) {
 }
 
 function DeviceScreen({
-  view,
+  view: vista,
   acciones,
   carpetas,
   destinatario,
@@ -266,9 +316,13 @@ function DeviceScreen({
    *  colgada tiene que dejar de contar minutos y de hablar. */
   terminada?: boolean
 }) {
-  const { correoSimulado } = useAuth()
+  const { correoSimulado, displayName } = useAuth()
   const correo = destinatario ?? correoSimulado
   const usuario = correo.split('@')[0] ?? correo
+
+  // Si la cuenta ya está anonimizada no queda nombre que poner, y "tu nombre"
+  // en minúscula sigue leyéndose dentro de la frase.
+  const view = useMemo(() => conNombre(vista, displayName || 'tu nombre'), [vista, displayName])
 
   if (view.kind === 'mail') {
     return (
@@ -456,8 +510,40 @@ function DeviceScreen({
               {msg.voz ? (
                 <NotaDeVoz texto={msg.text} duracion={msg.voz} senal={msg.senal} />
               ) : (
-                <span data-signal={msg.senal} dangerouslySetInnerHTML={{ __html: msg.text }} />
+                <span
+                  data-signal={msg.captura ? undefined : msg.senal}
+                  dangerouslySetInnerHTML={{ __html: msg.text }}
+                />
               )}
+
+              {msg.captura && (
+                /* La señal va en la captura y no en el texto que la acompaña:
+                   lo que hay que mirar es el nombre de la cabecera. */
+                <figure className={styles.captura} data-signal={msg.senal}>
+                  <div className={styles.capturaBarra}>
+                    <span className={styles.capturaFoto} aria-hidden>
+                      <UserRound className={styles.capturaFotoIcono} strokeWidth={2} />
+                    </span>
+                    <span className={styles.capturaId}>
+                      <span className={styles.capturaQuien}>{msg.captura.quien}</span>
+                      {msg.captura.sub && (
+                        <span className={styles.capturaSub}>{msg.captura.sub}</span>
+                      )}
+                    </span>
+                  </div>
+
+                  <div className={styles.capturaHilo}>
+                    {msg.captura.mensajes.map((linea) => (
+                      <span key={linea} className={styles.capturaBurbuja}>
+                        {linea}
+                      </span>
+                    ))}
+                  </div>
+
+                  <figcaption className={styles.capturaPie}>Captura de pantalla</figcaption>
+                </figure>
+              )}
+
               <span className={styles.smsTime}>{msg.time}</span>
             </div>
           </div>
