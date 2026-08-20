@@ -1,4 +1,4 @@
-import { Paperclip, Search, SendHorizontal, UserRound } from 'lucide-react'
+import { Landmark, Paperclip, Search, SendHorizontal, UserRound } from 'lucide-react'
 import { useMemo } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import { CUENTA_FICTICIA, IDENTIDAD_FICTICIA } from '../../lib/identidadFicticia'
@@ -164,13 +164,22 @@ export type ScreenView =
          *  que llevar el `data-signal` de la señal, y porque un .png ni escala
          *  en el marco del teléfono ni lo lee un lector de pantalla. */
         captura?: {
-          /** Quién aparece escribiendo en la captura: en suplantación, el
-           *  nombre y la foto que copiaron. */
+          /** Quién encabeza la captura: en suplantación, el nombre y la foto
+           *  que copiaron; en estafa, el banco que supuestamente emitió el
+           *  comprobante. */
           quien: string
           sub?: string
+          /** Icono de la cabecera. Una captura de un chat lleva la foto de
+           *  perfil; una de un comprobante, el sello del banco. */
+          icono?: 'persona' | 'banco'
           /** Lo que se ve escrito, en orden. Son mensajes recibidos por quien
            *  sacó la captura, así que van todos del lado de quien escribe. */
-          mensajes: string[]
+          mensajes?: string[]
+          /** Un comprobante en vez de un chat: el papel que manda quien dice
+           *  que ya pagó. Se dibuja igual de bien que uno de verdad porque
+           *  falsificarlo es igual de fácil, y esa es la lección entera del
+           *  módulo de estafa: el comprobante no es el dinero. */
+          datos?: { etiqueta: string; valor: string }[]
         }
       }[]
       /** `data-signal` de la cabecera del hilo: el número o el nombre corto del
@@ -522,7 +531,11 @@ function DeviceScreen({
                 <figure className={styles.captura} data-signal={msg.senal}>
                   <div className={styles.capturaBarra}>
                     <span className={styles.capturaFoto} aria-hidden>
-                      <UserRound className={styles.capturaFotoIcono} strokeWidth={2} />
+                      {msg.captura.icono === 'banco' ? (
+                        <Landmark className={styles.capturaFotoIcono} strokeWidth={2} />
+                      ) : (
+                        <UserRound className={styles.capturaFotoIcono} strokeWidth={2} />
+                      )}
                     </span>
                     <span className={styles.capturaId}>
                       <span className={styles.capturaQuien}>{msg.captura.quien}</span>
@@ -532,13 +545,26 @@ function DeviceScreen({
                     </span>
                   </div>
 
-                  <div className={styles.capturaHilo}>
-                    {msg.captura.mensajes.map((linea) => (
-                      <span key={linea} className={styles.capturaBurbuja}>
-                        {linea}
-                      </span>
-                    ))}
-                  </div>
+                  {msg.captura.mensajes && (
+                    <div className={styles.capturaHilo}>
+                      {msg.captura.mensajes.map((linea) => (
+                        <span key={linea} className={styles.capturaBurbuja}>
+                          {linea}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
+                  {msg.captura.datos && (
+                    <dl className={styles.capturaDatos}>
+                      {msg.captura.datos.map((dato) => (
+                        <div key={dato.etiqueta} className={styles.capturaDato}>
+                          <dt className={styles.capturaEtiqueta}>{dato.etiqueta}</dt>
+                          <dd className={styles.capturaValor}>{dato.valor}</dd>
+                        </div>
+                      ))}
+                    </dl>
+                  )}
 
                   <figcaption className={styles.capturaPie}>Captura de pantalla</figcaption>
                 </figure>
