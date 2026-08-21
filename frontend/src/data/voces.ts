@@ -35,6 +35,7 @@ export const VOCES: Record<string, string> = {
   "Le tengo una buena noticia: le corresponde una devolución de ciento ochenta y cuatro dólares con sesenta. Para acreditarla necesito confirmar su número de cédula.": "/voz/b349e8fcde92.mp3",
   "Le timbré y no me contestó nadie. ¿Le dejo con el conserje o baja usted? Son tres cincuenta contra entrega, en efectivo o con tarjeta en el datáfono que traigo.": "/voz/cb2f52ab3830.mp3",
   "Le va a llegar un mensaje con un código de constancia. Ese código no me lo dé a mí ni a nadie que le llame, ni siquiera diciendo que es del banco: es solo su comprobante.": "/voz/44deffcd2c75.mp3",
+  "Lo registro como depósito no reconocido. No devuelva nada usted, por favor: si el origen resulta fraudulento nosotros reversamos el valor completo, y lo que usted envíe por fuera lo pierde. Le queda el caso abierto y le avisamos.": "/voz/37ef5fceec1d.mp3",
   "Lo vemos desde la central, porque su router pasa por nuestra red. Nosotros no entramos a nada suyo, solo miramos el tráfico.": "/voz/025dc2f90719.mp3",
   "Mijo, no te asustes, es tu tía Rocío. Nada grave, solo que perdí el celular en el bus el sábado y recién pude sacar otro chip. Cuando puedas me guardas este número, y salúdame a tu mamá.": "/voz/a05b40475cc2.mp3",
   "No lo haga. Si llama, la línea de ella se bloquea y esto pasa a fiscalía. Quédese conmigo y lo resolvemos en cinco minutos.": "/voz/56f454601525.mp3",

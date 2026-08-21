@@ -16,6 +16,7 @@ const UMBRALES_ESPERADOS: Record<string, number> = {
   smishing: 6,
   vishing: 6,
   suplantacion: 6,
+  estafa: 6,
 }
 
 describe('catálogo de escenarios', () => {
@@ -57,13 +58,14 @@ describe('catálogo de escenarios', () => {
   // El MVP empieza con phishing y suma smishing y vishing. Las otras secciones
   // se quedan declaradas pero sin escenarios, y Dashboard.tsx las marca
   // "Pronto". Es un estado deliberado, no un olvido.
-  it('phishing, smishing, vishing y suplantación son las secciones activas', () => {
+  it('phishing, smishing, vishing, suplantación y estafa son las secciones activas', () => {
     const activas = SECCIONES.filter((seccion) => escenariosDeSeccion(seccion.id).length > 0)
     expect(activas.map((seccion) => seccion.id)).toEqual([
       'phishing',
       'smishing',
       'vishing',
       'suplantacion',
+      'estafa',
     ])
   })
 
@@ -108,6 +110,15 @@ describe('catálogo de escenarios', () => {
     expect(suplantacion).toHaveLength(8)
     expect(suplantacion.filter((e) => e.naturaleza === 'fraude')).toHaveLength(6)
     expect(suplantacion.filter((e) => e.naturaleza === 'legitimo')).toHaveLength(2)
+  })
+
+  // Y estafa electrónica. Sus dos legítimos espejan a los dos frentes del
+  // módulo: una venta que sí se cierra y un arriendo que sí era.
+  it('estafa tiene 8 escenarios: 6 de fraude y 2 legítimos', () => {
+    const estafa = escenariosDeSeccion('estafa')
+    expect(estafa).toHaveLength(8)
+    expect(estafa.filter((e) => e.naturaleza === 'fraude')).toHaveLength(6)
+    expect(estafa.filter((e) => e.naturaleza === 'legitimo')).toHaveLength(2)
   })
 
   // Guarda contra la regresión que tuvo la pantalla: el catálogo se redujo a 3

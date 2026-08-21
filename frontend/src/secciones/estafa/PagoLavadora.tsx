@@ -7,7 +7,7 @@ import type { Story } from '../../hooks/useStoryEngine'
 import { CUENTA_FICTICIA, IDENTIDAD_FICTICIA } from '../../lib/identidadFicticia'
 
 /**
- * La venta que sí se cierra.
+ * El espejo legítimo de "Saldo contable".
  *
  * Espeja a "Saldo contable" y a "Celular a mitad de precio" con la misma
  * escena y las señales al revés: el dinero está en el saldo disponible, el
@@ -299,10 +299,10 @@ const CONTEXTO: Contexto = {
   detalle: 'La lavadora sigue en tu casa y tienes la app del banco en el teléfono.',
 }
 
-function VentaQueSiSale() {
+function PagoLavadora() {
   return (
     <StoryEscenario
-      escenarioId="estafa/venta-que-si-sale"
+      escenarioId="estafa/pago-lavadora"
       resumen={RESUMEN}
       contexto={CONTEXTO}
       story={STORY}
@@ -328,4 +328,4 @@ function VentaQueSiSale() {
   )
 }
 
-export default VentaQueSiSale
+export default PagoLavadora

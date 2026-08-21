@@ -73,6 +73,7 @@ VOZ_POR_ESCENARIO = {
     "JefeUrgente": MUJER,
     "NumeroNuevoReal": MUJER,
     "VozClonada": HOMBRE,
+    "VueltoDeMas": MUJER,
 }
 VOZ_POR_DEFECTO = HOMBRE
 

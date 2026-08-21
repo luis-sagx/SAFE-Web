@@ -18,6 +18,14 @@ import { STORY as jefeUrgente } from './suplantacion/JefeUrgente'
 import { STORY as numeroNuevoReal } from './suplantacion/NumeroNuevoReal'
 import { STORY as perfilClonado } from './suplantacion/PerfilClonado'
 import { STORY as vozClonada } from './suplantacion/VozClonada'
+import { STORY as arriendoAnticipado } from './estafa/ArriendoAnticipado'
+import { STORY as visitaDepartamento } from './estafa/VisitaDepartamento'
+import { STORY as gananciaGarantizada } from './estafa/GananciaGarantizada'
+import { STORY as mitadDePrecio } from './estafa/MitadDePrecio'
+import { STORY as saldoContable } from './estafa/SaldoContable'
+import { STORY as tareasPagadas } from './estafa/TareasPagadas'
+import { STORY as pagoLavadora } from './estafa/PagoLavadora'
+import { STORY as vueltoDeMas } from './estafa/VueltoDeMas'
 
 /// Todos los guiones que suenan: las llamadas de vishing y los chats con nota
 /// de voz de suplantación. Cualquier escenario nuevo con audio entra aquí, y
@@ -40,6 +48,14 @@ const GUIONES: Record<string, Story<ScreenNode>> = {
   NumeroNuevoReal: numeroNuevoReal,
   PerfilClonado: perfilClonado,
   VozClonada: vozClonada,
+  ArriendoAnticipado: arriendoAnticipado,
+  PagoLavadora: pagoLavadora,
+  GananciaGarantizada: gananciaGarantizada,
+  MitadDePrecio: mitadDePrecio,
+  SaldoContable: saldoContable,
+  TareasPagadas: tareasPagadas,
+  VisitaDepartamento: visitaDepartamento,
+  VueltoDeMas: vueltoDeMas,
 }
 
 /// Lo que se oye: lo que dice quien llama y las notas de voz que manda. Las

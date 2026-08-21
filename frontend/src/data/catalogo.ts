@@ -433,7 +433,8 @@ const BASE: EscenarioBase[] = [
     seccionId: 'vishing',
     escenarioId: 'devolucion-sri',
     titulo: 'Devolución de impuestos',
-    descripcion: 'Una llamada institucional ofrece acreditarte dinero a favor y pide confirmar datos.',
+    descripcion:
+      'Una llamada institucional ofrece acreditarte dinero a favor y pide confirmar datos.',
     version: 1,
     naturaleza: 'fraude',
     dificultad: 3,
@@ -603,24 +604,126 @@ const BASE: EscenarioBase[] = [
     espeja: 'suplantacion/numero-nuevo-real',
     Component: lazy(() => import('../secciones/suplantacion/VozClonada')),
   },
-  // Las otras dos amenazas quedan fuera del MVP ampliado. Sus componentes
+  {
+    // La puerta de entrada del módulo. La señal decisiva no está en el mensaje
+    // sino en la propia app del banco del participante, en dos líneas que casi
+    // nadie distingue: saldo contable y saldo disponible.
+    seccionId: 'estafa',
+    escenarioId: 'saldo-contable',
+    titulo: 'Saldo contable',
+    descripcion: 'Vendes una laptop y el comprador manda un comprobante pidiendo que despaches ya.',
+    // v2: se juega sobre la pantalla, sin lista de opciones. El comprobante
+    // pasó de contarse en texto a dibujarse como la captura que es.
+    version: 2,
+    naturaleza: 'fraude',
+    dificultad: 2,
+    espeja: 'estafa/pago-lavadora',
+    Component: lazy(() => import('../secciones/estafa/SaldoContable')),
+  },
+  {
+    // El lado del comprador. Cuando el que arriesga eres tú, el precio bajo
+    // deja de leerse como alarma y pasa a sentirse como suerte.
+    seccionId: 'estafa',
+    escenarioId: 'mitad-de-precio',
+    titulo: 'Celular a mitad de precio',
+    descripcion: 'Un celular a mitad de precio, pero solo se paga por adelantado y sin verlo.',
+    version: 1,
+    naturaleza: 'fraude',
+    dificultad: 2,
+    espeja: 'estafa/pago-lavadora',
+    Component: lazy(() => import('../secciones/estafa/MitadDePrecio')),
+  },
+  {
+    // El primero de los dos legítimos. Espeja a saldo-contable con la misma
+    // escena y las señales al revés: un módulo que solo enseña fraudes enseña
+    // a desconfiar de todo, y eso también hace daño.
+    //
+    // Ni el título ni el id dicen que sea el bueno, y va tercero y no último:
+    // un legítimo que se anuncia deja de medir nada, y dos legítimos seguidos
+    // al final del menú se reconocen por su posición.
+    seccionId: 'estafa',
+    escenarioId: 'pago-lavadora',
+    titulo: 'Pago por la lavadora',
+    descripcion: 'Vendes una lavadora y la compradora dice que ya te transfirió.',
+    version: 1,
+    naturaleza: 'legitimo',
+    dificultad: 3,
+    espeja: 'estafa/saldo-contable',
+    Component: lazy(() => import('../secciones/estafa/PagoLavadora')),
+  },
+  {
+    seccionId: 'estafa',
+    escenarioId: 'arriendo-anticipado',
+    titulo: 'Departamento en arriendo',
+    descripcion: 'Un departamento barato cuya garantía hay que depositar antes de poder verlo.',
+    version: 1,
+    naturaleza: 'fraude',
+    dificultad: 3,
+    espeja: 'estafa/visita-departamento',
+    Component: lazy(() => import('../secciones/estafa/ArriendoAnticipado')),
+  },
+  {
+    // El único del proyecto donde el dinero entra de verdad antes de perderse:
+    // lo que se pierde es lo que devuelves tú.
+    seccionId: 'estafa',
+    escenarioId: 'vuelto-de-mas',
+    titulo: 'Un pago de más',
+    descripcion:
+      'Un comprador te transfiere de más "por error" y pide que le devuelvas la diferencia.',
+    version: 1,
+    naturaleza: 'fraude',
+    dificultad: 3,
+    espeja: 'estafa/pago-lavadora',
+    Component: lazy(() => import('../secciones/estafa/VueltoDeMas')),
+  },
+  {
+    // El segundo legítimo: el mismo trato de arriendo-anticipado con el orden
+    // puesto del derecho (ver, firmar, pagar). Va sexto, separado del otro
+    // legítimo y con dos fraudes detrás.
+    seccionId: 'estafa',
+    escenarioId: 'visita-departamento',
+    titulo: 'Visita al departamento',
+    descripcion:
+      'Una agente inmobiliaria te da la dirección y tres horarios para ver un departamento.',
+    version: 1,
+    naturaleza: 'legitimo',
+    dificultad: 2,
+    espeja: 'estafa/arriendo-anticipado',
+    Component: lazy(() => import('../secciones/estafa/VisitaDepartamento')),
+  },
+  {
+    // El más difícil: el primer retiro sí llega, y esa es toda la inversión
+    // que hace el estafador.
+    seccionId: 'estafa',
+    escenarioId: 'ganancia-garantizada',
+    titulo: 'Ganancia garantizada',
+    descripcion: 'Una plataforma garantiza 30% mensual, y tu primer retiro pequeño sí llegó.',
+    version: 1,
+    naturaleza: 'fraude',
+    dificultad: 4,
+    espeja: 'estafa/visita-departamento',
+    Component: lazy(() => import('../secciones/estafa/GananciaGarantizada')),
+  },
+  {
+    // La misma vuelta de tuerca que ganancia-garantizada, pero entra por la
+    // falta de trabajo y no por los ahorros: toca a otra gente.
+    seccionId: 'estafa',
+    escenarioId: 'tareas-pagadas',
+    titulo: 'Trabajo desde casa',
+    descripcion:
+      'Un trabajo desde casa que sí te pagó las primeras tareas y ahora pide un depósito.',
+    version: 1,
+    naturaleza: 'fraude',
+    dificultad: 4,
+    espeja: 'estafa/pago-lavadora',
+    Component: lazy(() => import('../secciones/estafa/TareasPagadas')),
+  },
+  // La última amenaza queda fuera del MVP ampliado. Sus componentes
   // .tsx siguen en el repositorio intactos: se reactivan descomentando la
   // entrada correspondiente. Las secciones se quedan declaradas en SECCIONES
   // arriba; Dashboard.tsx ya pinta "Pronto" cuando escenariosDeSeccion() da
   // vacío, así que no hace falta tocar nada más.
   //
-  // {
-  //   seccionId: 'estafa',
-  //   escenarioId: 'saldo-contable',
-  //   titulo: 'Saldo contable',
-  //   descripcion:
-  //     'Venta en línea, comprobante enviado y presión para entregar antes de confirmar fondos.',
-  //   version: 1,
-  //   naturaleza: 'fraude',
-  //   dificultad: 2,
-  //   espeja: null,
-  //   Component: lazy(() => import('../secciones/estafa/SaldoContable')),
-  // },
   // {
   //   seccionId: 'fisico',
   //   escenarioId: 'foto',

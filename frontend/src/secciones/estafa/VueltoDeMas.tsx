@@ -331,7 +331,8 @@ const SENALES: Senal[] = [
 const RULE =
   'Regla de oro: un dinero que te llega por error <b>se devuelve por el banco, nunca de mano a mano</b>. Si el depósito venía de una cuenta robada, el banco te lo va a quitar igual, y lo que hayas devuelto tú sale de tu bolsillo. Llama al número de tu tarjeta y repórtalo el mismo día.'
 
-const RESUMEN = 'Un comprador te transfiere de más "por error" y te pide que le devuelvas la diferencia.'
+const RESUMEN =
+  'Un comprador te transfiere de más "por error" y te pide que le devuelvas la diferencia.'
 
 const CONTEXTO: Contexto = {
   antes: (

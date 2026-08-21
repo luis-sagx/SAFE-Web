@@ -163,9 +163,17 @@ const PANEL: ScreenView = {
   subtitle: 'Capital invertido: $200,00',
   datos: [
     { etiqueta: 'Rendimiento acumulado', valor: '+$50,00 este mes (25%)', senal: 'panel' },
-    { etiqueta: 'Proyección con $1.000', valor: '+$300,00 mensuales · garantizado', senal: 'garantiza' },
+    {
+      etiqueta: 'Proyección con $1.000',
+      valor: '+$300,00 mensuales · garantizado',
+      senal: 'garantiza',
+    },
     { etiqueta: 'Inversionistas activos', valor: '4.812' },
-    { etiqueta: 'Retiro mínimo', valor: '$500,00 · comisión de liberación del 8%', senal: 'comision' },
+    {
+      etiqueta: 'Retiro mínimo',
+      valor: '$500,00 · comisión de liberación del 8%',
+      senal: 'comision',
+    },
   ],
   aviso:
     'Rentabilidad garantizada del 30% mensual. Sin riesgo. Respaldado por nuestro algoritmo de arbitraje.',

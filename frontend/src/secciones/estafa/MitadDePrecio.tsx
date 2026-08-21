@@ -145,7 +145,11 @@ const ANUNCIO: ScreenView = {
     },
     { etiqueta: 'Vendedor', valor: `${VENDEDOR} · cuenta creada hace 3 días`, senal: 'perfil' },
     { etiqueta: 'Calificaciones', valor: 'Ninguna todavía', senal: 'perfil' },
-    { etiqueta: 'Fotos', valor: 'Tres, y son las mismas del catálogo del fabricante', senal: 'fotos' },
+    {
+      etiqueta: 'Fotos',
+      valor: 'Tres, y son las mismas del catálogo del fabricante',
+      senal: 'fotos',
+    },
     { etiqueta: 'Entrega', valor: 'Solo por encomienda, pago por adelantado' },
   ],
   opciones: [

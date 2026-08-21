@@ -11,6 +11,7 @@ export const UMBRALES: Record<string, number> = {
   smishing: 6,
   vishing: 6,
   suplantacion: 6,
+  estafa: 6,
 };
 
 export interface CorridaMinima {
