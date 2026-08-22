@@ -29,8 +29,22 @@ const SMS: ScreenView = {
   sender: 'BancoLitoral',
   sub: 'Remitente verificado · mismo hilo de siempre',
   msgs: [...HISTORIAL, NUEVO],
-  composerGoto: 'n1b',
-  composerLabel: 'Escribió una respuesta al SMS del banco',
+  // Las dos contestan al mismo hilo, y solo una entrega algo. Que la peligrosa
+  // se anuncie ("les paso el número") y no se escriba entera aquí es
+  // deliberado: el número completo aparece después, ya puesto en el campo, que
+  // es donde tiene que verse antes de salir.
+  respuestas: [
+    {
+      texto: 'No reconozco ese consumo, les paso el número de mi tarjeta.',
+      goto: 'n1b',
+      label: 'Fue a mandarle al banco el número completo de su tarjeta',
+    },
+    {
+      texto: 'No reconozco ese consumo.',
+      goto: 'e_pregunta',
+      label: 'Contestó al hilo de avisos preguntando por el consumo',
+    },
+  ],
   // Salir del hilo es el gesto real de "lo dejo pasar": sin él, no verificar
   // no tendría forma de expresarse en la pantalla y el escenario obligaría a
   // actuar, que es justo lo contrario de lo que este caso mide.
@@ -43,7 +57,7 @@ const SMS: ScreenView = {
 /// aviso, es lo que uno está a punto de mandar por el mismo canal.
 const SMS_BORRADOR: ScreenView = {
   ...SMS,
-  composerGoto: undefined,
+  respuestas: undefined,
   borrador: BORRADOR,
   senalBorrador: 'respuesta',
   enviarGoto: 'e_responde',
@@ -52,7 +66,7 @@ const SMS_BORRADOR: ScreenView = {
 
 const SMS_RESPONDIDO: ScreenView = {
   ...SMS,
-  composerGoto: undefined,
+  respuestas: undefined,
   volverGoto: undefined,
   msgs: [...HISTORIAL, NUEVO, { text: BORRADOR, time: '19:16', mine: true, senal: 'respuesta' }],
 }
@@ -159,6 +173,14 @@ const STORY: Story<ScreenNode> = {
     outcome:
       'El aviso era real, pero enviaste el número completo de tu tarjeta por SMS. Ese canal no lo lee tu banco: quien controle ese número (o tu teléfono) ya tiene tus datos.',
     score: 0,
+  },
+  e_pregunta: {
+    kind: 'partial',
+    view: SMS,
+    verdict: 'Contestaste a un número que no lee',
+    outcome:
+      'No entregaste ningún dato, y eso es lo que importa. Pero los avisos de consumo salen de un número automático que no recibe respuestas: tu mensaje no llegó a nadie y el consumo siguió sin comprobar. La app tenía la respuesta a un toque.',
+    score: 50,
   },
   e_ignora: {
     kind: 'partial',

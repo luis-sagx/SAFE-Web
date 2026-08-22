@@ -21,6 +21,7 @@ import { IDENTIDAD_FICTICIA } from '../../lib/identidadFicticia'
  */
 
 const NUMERO_FALSO = '09 87 654 321'
+const PREGUNTA = '¿Qué consumo fue? No reconozco ningún bloqueo.'
 
 /// El número va como enlace porque en un teléfono lo es: el sistema los
 /// detecta y los vuelve pulsables. Que se toque sin pensar es parte del ataque.
@@ -32,18 +33,31 @@ const SMS: ScreenView = {
   sub: 'Remitente sin verificar · SMS',
   senalRemitente: 'remitente',
   msgs: [{ text: TEXTO, time: '20:36', senal: 'mensaje' }],
-  composerGoto: 'n3',
-  composerLabel: 'Fue a escribir una respuesta al mensaje',
+  // Ninguna de las dos entrega un dato, y aun así ninguna es gratis: contestar
+  // ya confirma que la línea existe. La segunda además encadena con la prisa
+  // que el mensaje intenta meter, y por eso lleva a la llamada.
+  respuestas: [
+    { texto: PREGUNTA, goto: 'e_responde', label: 'Contestó el mensaje preguntando por el consumo' },
+    {
+      texto: 'No me anulen la tarjeta, ya los llamo.',
+      goto: 'n2',
+      label: 'Contestó el mensaje y marcó el número que le daban',
+    },
+  ],
   volverGoto: 'e_ignora',
   volverLabel: 'Salió del hilo sin hacer nada',
 }
 
-const SMS_BORRADOR: ScreenView = {
+/// El hilo con la pregunta ya enviada. El final se ve sobre lo que de verdad
+/// salió del teléfono, no sobre un borrador que nunca se mandó.
+const SMS_RESPONDIDO: ScreenView = {
   ...SMS,
-  borrador: '¿Qué consumo fue? No reconozco ningún bloqueo.',
-  composerGoto: undefined,
-  enviarGoto: 'e_responde',
-  enviarLabel: 'Contestó el mensaje preguntando por el consumo',
+  respuestas: undefined,
+  volverGoto: undefined,
+  msgs: [
+    { text: TEXTO, time: '20:36', senal: 'mensaje' },
+    { text: PREGUNTA, time: '20:38', mine: true },
+  ],
 }
 
 /// La llamada. El escenario no termina al marcar: termina en lo que se dice
@@ -78,8 +92,41 @@ const LLAMADA: ScreenView = {
   cerrarLabel: 'Colgó sin dictar el código',
 }
 
-/// La app del banco: la tarjeta nunca estuvo bloqueada, y el número de verdad
-/// está ahí escrito. El acierto se enseña, no se cuenta.
+/// El inicio de la banca móvil. Abrir la app todavía no es haber comprobado
+/// nada: desde aquí se puede mirar el estado de la tarjeta o anularla a ciegas,
+/// que es el gesto precipitado que este escenario mide. Un icono que resuelve
+/// el escenario de un toque premia haber encontrado el icono, no haber sabido
+/// qué hacer con él.
+const BANCO_INICIO: ScreenView = {
+  kind: 'web',
+  app: 'Banco',
+  url: 'inicio',
+  secure: true,
+  brand: 'Banco del Litoral · Banca móvil',
+  title: `Tarjeta ${IDENTIDAD_FICTICIA.tarjeta}`,
+  subtitle: 'Cupo disponible $1.240,00',
+  opciones: [
+    { texto: 'Transferir', detalle: 'A cuentas propias o de terceros' },
+    {
+      texto: 'Mis tarjetas',
+      detalle: 'Estado, bloqueos e intentos rechazados',
+      goto: 'e_app',
+      label: 'Revisó el estado de sus tarjetas en la app del banco',
+    },
+    { texto: 'Movimientos', detalle: 'Consumos y débitos de los últimos 30 días' },
+    {
+      texto: 'Bloquear tarjeta',
+      detalle: 'Anula la tarjeta de forma inmediata',
+      goto: 'e_bloquea',
+      label: 'Anuló la tarjeta sin comprobar antes si el bloqueo era cierto',
+    },
+  ],
+  fields: [],
+  button: '',
+}
+
+/// Lo que se ve al mirar las tarjetas: nunca estuvo bloqueada, y el número de
+/// verdad está ahí escrito. El acierto se enseña, no se cuenta.
 const APP_BANCO: ScreenView = {
   kind: 'web',
   app: 'Banco',
@@ -108,7 +155,7 @@ const APPS: AppTelefono[] = [
     Icono: Wallet,
     texto: 'Banco',
     color: '#155e75',
-    goto: 'e_app',
+    goto: 'n3',
     label: 'Abrió la app del banco para comprobar el bloqueo',
   },
   { Icono: MessageSquareText, texto: 'Mensajes', color: '#2f9e44' },
@@ -129,7 +176,7 @@ const APPS: AppTelefono[] = [
 const STORY: Story<ScreenNode> = {
   n1: { kind: 'scene', view: SMS },
   n2: { kind: 'scene', view: LLAMADA },
-  n3: { kind: 'scene', view: SMS_BORRADOR },
+  n3: { kind: 'scene', view: BANCO_INICIO },
   e_dicta: {
     kind: 'bad',
     view: LLAMADA,
@@ -144,9 +191,16 @@ const STORY: Story<ScreenNode> = {
     outcome:
       'Colgaste al oír que te pedían el código. Ningún banco lo pide por teléfono, y la insistencia en que no cortaras era la señal más clara de todas. Llamar ya les confirmó que tu línea está activa, así que espera más intentos: la próxima vez, comprueba antes de marcar.',
   },
+  e_bloquea: {
+    kind: 'partial',
+    view: BANCO_INICIO,
+    verdict: 'Anulaste una tarjeta que estaba sana',
+    outcome:
+      'No entregaste nada y no llamaste, que es lo que evita el daño. Pero la tarjeta no tenía ningún bloqueo: la anulaste tú. Te quedas sin ella hasta que llegue la nueva, con las domiciliaciones caídas, y el mensaje consiguió igual lo que buscaba, que era que actuaras a su ritmo. El estado estaba a un toque, en "Mis tarjetas".',
+  },
   e_responde: {
     kind: 'partial',
-    view: SMS_BORRADOR,
+    view: SMS_RESPONDIDO,
     verdict: 'No entregaste nada, pero contestaste',
     outcome:
       'No diste ningún dato, pero confirmaste que el número está activo y que alguien lee los mensajes. Es lo que buscan para insistir con algo mejor preparado, y ahora tienen una conversación abierta contigo.',

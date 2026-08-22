@@ -20,13 +20,26 @@ const SMS: ScreenView = {
   sub: 'Número no guardado · SMS',
   senalRemitente: 'remitente',
   msgs: [PRIMER_SMS],
-  composerGoto: 'n1b',
-  composerLabel: 'Respondió el mensaje preguntando de qué paquete se trata',
+  // Preguntar sigue la conversación y deja ver que la urgencia sube en vez de
+  // llegar el dato; negarlo la cierra. Ninguna de las dos es gratis: contestar
+  // ya confirma que la línea existe y que alguien la lee.
+  respuestas: [
+    {
+      texto: '¿De qué paquete se trata?',
+      goto: 'n1b',
+      label: 'Respondió el mensaje preguntando de qué paquete se trata',
+    },
+    {
+      texto: 'No espero ningún paquete.',
+      goto: 'e_responde',
+      label: 'Contestó diciendo que no espera ningún paquete',
+    },
+  ],
 }
 
 const SMS_RESPONDIDO: ScreenView = {
   ...SMS,
-  composerGoto: undefined,
+  respuestas: undefined,
   msgs: [
     PRIMER_SMS,
     { text: '¿De qué paquete se trata?', time: '10:14', mine: true },
@@ -150,6 +163,13 @@ const STORY: Story<ScreenNode> = {
     verdict: 'No caíste · el monto no justificaba los datos',
     outcome:
       'Saliste de la página. Un cobro de un dólar no necesita tu tarjeta completa con CVV, y la dirección ni siquiera era del courier.',
+  },
+  e_responde: {
+    kind: 'partial',
+    view: SMS,
+    verdict: 'No entregaste nada, pero contestaste',
+    outcome:
+      'No diste ningún dato ni abriste el enlace, que es lo que evita el daño. Pero contestar confirma que la línea está activa y que alguien la lee, y eso es lo que buscan para insistir con algo mejor preparado. Y si el envío hubiera sido tuyo de verdad, seguirías sin saberlo.',
   },
   e_app: {
     kind: 'good',

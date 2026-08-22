@@ -28,27 +28,72 @@ const SMS: ScreenView = {
   sub: 'Número corto · SMS',
   senalRemitente: 'remitente',
   msgs: [{ text: TEXTO, time: '07:52', senal: 'mensaje' }],
-  composerGoto: 'n2',
-  composerLabel: 'Fue a escribir una respuesta al mensaje',
+  // Las dos son respuestas, y las dos pierden. No hay frase prudente que
+  // mandar: en un SMS que no esperabas, lo que confirma que la línea existe no
+  // es lo que escribes sino que escribas. Ofrecer una salida buena en el
+  // composer enseñaría lo contrario.
+  respuestas: [
+    { texto: 'BAJA', goto: 'n2', label: 'Escogió responder BAJA, como pedía el mensaje' },
+    {
+      texto: 'Yo no contraté nada, dejen de cobrarme.',
+      goto: 'e_reclama',
+      label: 'Contestó reclamando que nunca contrató la suscripción',
+    },
+  ],
   // Salir del hilo es dejarlo pasar: no entrega nada, pero tampoco comprueba
   // si el cobro existe.
   volverGoto: 'e_ignora',
   volverLabel: 'Salió del hilo sin hacer nada',
 }
 
-/// Escribir y enviar se separan a propósito: deja ver qué se iba a mandar
-/// antes de que salga, que es justo el instante en el que uno se lo repiensa.
+/// Elegir la frase y mandarla se separan a propósito: la palabra queda escrita
+/// en el campo, todavía sin salir, que es justo el instante en el que uno se lo
+/// repiensa. Las burbujas se quitan aquí porque ya elegiste: dejarlas dejaría
+/// cambiar de frase con una a medio escribir, que ningún teléfono hace.
 const SMS_BORRADOR: ScreenView = {
   ...SMS,
+  respuestas: undefined,
   borrador: 'BAJA',
   senalBorrador: 'respuesta',
-  composerGoto: undefined,
   enviarGoto: 'e_responde',
   enviarLabel: 'Envió "BAJA" al número del mensaje',
 }
 
-/// La app de la operadora: aquí es donde se ve que la suscripción no existe.
-/// El acierto tiene que enseñarse, no solo contarse.
+/// El inicio de la app. Abrir la app todavía no es haber comprobado nada: desde
+/// aquí se puede mirar las suscripciones o taparse el oído bloqueando los
+/// números cortos, que es el gesto precipitado que este escenario mide. Un
+/// icono que resuelve el escenario de un toque premia haber encontrado el
+/// icono, no haber sabido qué hacer con él.
+const OPERADORA_INICIO: ScreenView = {
+  kind: 'web',
+  app: 'Mi Operadora',
+  url: 'inicio',
+  secure: true,
+  brand: 'Mi Operadora',
+  title: 'Línea 09 8 123 4567',
+  subtitle: 'Prepago · Saldo $4,80',
+  opciones: [
+    { texto: 'Recargar saldo', detalle: 'Con tarjeta o en puntos autorizados' },
+    {
+      texto: 'Paquetes y suscripciones',
+      detalle: 'Lo que tienes contratado y sus cargos',
+      goto: 'e_verifica',
+      label: 'Revisó sus paquetes y suscripciones en la app de la operadora',
+    },
+    { texto: 'Consumo de datos', detalle: '1,2 GB de 3 GB usados este mes' },
+    {
+      texto: 'Bloquear mensajes de números cortos',
+      detalle: 'No volverás a recibir SMS de servicios',
+      goto: 'e_bloquea',
+      label: 'Bloqueó los números cortos sin comprobar antes si el cobro existía',
+    },
+  ],
+  fields: [],
+  button: '',
+}
+
+/// Lo que se ve al mirar las suscripciones: no hay ninguna. El acierto tiene
+/// que enseñarse, no solo contarse.
 const OPERADORA: ScreenView = {
   kind: 'web',
   app: 'Mi Operadora',
@@ -73,7 +118,7 @@ const APPS: AppTelefono[] = [
     Icono: Signal,
     texto: 'Mi Operadora',
     color: '#c2255c',
-    goto: 'e_verifica',
+    goto: 'n4',
     label: 'Abrió la app de la operadora para comprobar el cobro',
   },
   { Icono: MessageSquareText, texto: 'Mensajes', color: '#2f9e44' },
@@ -94,12 +139,27 @@ const APPS: AppTelefono[] = [
 const STORY: Story<ScreenNode> = {
   n1: { kind: 'scene', view: SMS },
   n2: { kind: 'scene', view: SMS_BORRADOR },
+  n4: { kind: 'scene', view: OPERADORA_INICIO },
   e_responde: {
     kind: 'bad',
     view: SMS_BORRADOR,
     verdict: 'Caíste en la trampa',
     outcome:
       'No había ninguna suscripción que cancelar: el mensaje solo buscaba que contestaras. Tu respuesta confirmó que la línea está activa y en uso, tu número pasó a una lista que se revende, y esa misma semana empezaron a llegar tres o cuatro mensajes parecidos al día. El "BAJA" además se cobró como mensaje de tarificación adicional.',
+  },
+  e_reclama: {
+    kind: 'bad',
+    view: SMS,
+    verdict: 'Caíste en la trampa',
+    outcome:
+      'Reclamar es contestar, y contestar era todo lo que el mensaje necesitaba. Da igual que no escribieras "BAJA": tu respuesta confirmó que la línea está activa y que alguien la lee. El número pasó a la lista que se revende y esa misma semana empezaron a llegar tres o cuatro mensajes parecidos al día. Y el cobro que reclamabas nunca existió: seguiste sin comprobarlo.',
+  },
+  e_bloquea: {
+    kind: 'partial',
+    view: OPERADORA_INICIO,
+    verdict: 'Te tapaste el oído, pero no comprobaste nada',
+    outcome:
+      'Bloquear los números cortos evita el próximo mensaje, y no contestar fue lo que impidió el daño. Pero sigues sin saber si ese cargo de $2,99 existía: si hubiera sido real, se te seguiría cobrando y ahora además no te llegaría el aviso. El bloqueo silencia el mensaje, no el cobro.',
   },
   e_ignora: {
     kind: 'partial',

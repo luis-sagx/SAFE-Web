@@ -20,13 +20,26 @@ const SMS: ScreenView = {
   sub: 'Remitente sin verificar · SMS',
   senalRemitente: 'remitente',
   msgs: [PRIMER_SMS],
-  composerGoto: 'n1b',
-  composerLabel: 'Respondió el mensaje preguntando qué placa tiene la multa',
+  // Preguntar sigue la conversación y deja ver que no tienen ningún dato que
+  // dar; exigir que paren la cierra. Ninguna de las dos es gratis: contestar
+  // ya confirma que la línea existe y que alguien la lee.
+  respuestas: [
+    {
+      texto: '¿Cuál es la placa?',
+      goto: 'n1b',
+      label: 'Respondió el mensaje preguntando qué placa tiene la multa',
+    },
+    {
+      texto: 'No tengo ninguna multa, no me escriban más.',
+      goto: 'e_responde',
+      label: 'Contestó exigiendo que no le vuelvan a escribir',
+    },
+  ],
 }
 
 const SMS_RESPONDIDO: ScreenView = {
   ...SMS,
-  composerGoto: undefined,
+  respuestas: undefined,
   msgs: [
     PRIMER_SMS,
     { text: '¿Cuál es la placa?', time: '08:31', mine: true },
@@ -149,6 +162,13 @@ const STORY: Story<ScreenNode> = {
     verdict: 'No caíste · el formulario pedía lo que debía saber',
     outcome:
       'Saliste de la página antes de enviar datos. Una institución que registra una multa no necesita pescar tu placa por un enlace.',
+  },
+  e_responde: {
+    kind: 'partial',
+    view: SMS,
+    verdict: 'No entregaste nada, pero contestaste',
+    outcome:
+      'No diste ningún dato ni abriste el enlace, que es lo que evita el daño. Pero exigirles que paren es contestar, y contestar confirma que la línea está activa y que alguien la lee: es lo que buscan para insistir con algo mejor preparado. Y sigues sin saber si tienes alguna citación de verdad.',
   },
   e_portal: {
     kind: 'good',

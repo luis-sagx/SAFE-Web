@@ -1,57 +1,25 @@
-import { fireEvent, render, screen, within } from '@testing-library/react'
-import { MemoryRouter } from 'react-router'
+import { fireEvent, screen, within } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
+import { empezar } from '../../test/escenario'
 import AlertaConsumo from './AlertaConsumo'
 
-vi.mock('../../context/AuthContext', () => ({
-  useAuth: () => ({
-    participant: {
-      id: 'p1',
-      nombre: 'María',
-      apellido: 'Pérez',
-      email: 'maria@ejemplo.com',
-      role: 'PARTICIPANT',
-      onboardingVisto: true,
-    },
-    loading: false,
-    isAuthenticated: true,
-    login: vi.fn(),
-    register: vi.fn(),
-    logout: vi.fn(),
-    marcarOnboardingVisto: vi.fn(),
-    onboardingDismissed: true,
-    displayName: 'María',
-    roleLabel: 'Participante',
-    initials: 'MP',
-    correoSimulado: 'mariaperez@safeweb.com',
-    usuarioSimulado: 'mariaperez',
-  }),
-}))
-
-vi.mock('../../lib/api', async () => {
-  const actual = await vi.importActual<typeof import('../../lib/api')>('../../lib/api')
-  return { ...actual, createRun: vi.fn().mockResolvedValue(undefined) }
-})
-
-function empezar() {
-  const { container } = render(
-    <MemoryRouter>
-      <AlertaConsumo />
-    </MemoryRouter>,
-  )
-
-  fireEvent.click(screen.getByRole('button', { name: 'Empezar' }))
-  return container.querySelector('#pantalla-escenario') as HTMLElement
-}
+// Las fábricas se importan dentro y no arriba: vitest eleva los `vi.mock` por
+// encima de los imports del archivo, así que un símbolo importado todavía no
+// existe cuando se registran.
+vi.mock('../../context/AuthContext', async () => (await import('../../test/escenario')).authFalso())
+vi.mock('../../lib/api', async () => (await import('../../test/escenario')).apiSinRed())
 
 describe('AlertaConsumo', () => {
-  it('escribir y enviar son dos gestos: el borrador se ve antes de mandarlo', () => {
-    const telefono = empezar()
+  it('elegir la frase y enviarla son dos gestos: el borrador se ve antes de mandarlo', () => {
+    const telefono = empezar(<AlertaConsumo />)
 
-    // Sin borrador todavía: el campo es el marcador de posición del teclado.
+    // Sin borrador todavía: el campo es el marcador de posición del teclado, y
+    // la burbuja anuncia lo que se va a mandar sin escribir el número.
     expect(within(telefono).queryByText(/mi tarjeta es la 4539/)).toBeNull()
 
-    fireEvent.click(within(telefono).getByRole('button', { name: 'Mensaje de texto' }))
+    fireEvent.click(
+      within(telefono).getByRole('button', { name: /les paso el número de mi tarjeta/ }),
+    )
 
     const borrador = within(telefono).getByText(/mi tarjeta es la 4539 0011 8842 4417/)
     expect(borrador).toBeDefined()
@@ -63,14 +31,14 @@ describe('AlertaConsumo', () => {
   })
 
   it('salir del hilo cuenta como dejarlo pasar sin verificar', () => {
-    const telefono = empezar()
+    const telefono = empezar(<AlertaConsumo />)
 
     fireEvent.click(within(telefono).getByRole('button', { name: 'Volver a la lista de mensajes' }))
     expect(screen.getByText('Prudente, pero incompleto')).toBeDefined()
   })
 
   it('las apps que no deciden se abren igual y se vuelve con la flecha', () => {
-    const telefono = empezar()
+    const telefono = empezar(<AlertaConsumo />)
 
     fireEvent.click(within(telefono).getByRole('button', { name: /Cámara/ }))
 
@@ -84,7 +52,7 @@ describe('AlertaConsumo', () => {
   })
 
   it('releer el hilo desde la app del banco no termina la corrida', () => {
-    const telefono = empezar()
+    const telefono = empezar(<AlertaConsumo />)
 
     fireEvent.click(within(telefono).getByRole('button', { name: /Banco del Litoral/ }))
     fireEvent.click(within(telefono).getByRole('button', { name: /Mensajes/ }))
@@ -99,7 +67,7 @@ describe('AlertaConsumo', () => {
   })
 
   it('verificar es usar la app, no abrirla', () => {
-    const telefono = empezar()
+    const telefono = empezar(<AlertaConsumo />)
 
     fireEvent.click(within(telefono).getByRole('button', { name: /Banco del Litoral/ }))
 
@@ -117,7 +85,7 @@ describe('AlertaConsumo', () => {
   })
 
   it('bloquear la tarjeta sin mirar los movimientos no es el acierto', () => {
-    const telefono = empezar()
+    const telefono = empezar(<AlertaConsumo />)
 
     fireEvent.click(within(telefono).getByRole('button', { name: /Banco del Litoral/ }))
     fireEvent.click(within(telefono).getByRole('button', { name: /Bloquear tarjeta/ }))

@@ -34,18 +34,23 @@ const SMS: ScreenView = {
       senal: 'mensaje',
     },
   ],
-  composerGoto: 'n2',
-  composerLabel: 'Fue a escribir una respuesta al aviso',
+  // Ninguna entrega un dato: el aviso era auténtico y no pedía nada. Lo que
+  // cambia entre las dos es el precio de contestarle a un número automático,
+  // y ese precio lo pone la prisa de la segunda.
+  respuestas: [
+    {
+      texto: '¿A qué hora exactamente? No voy a estar en la mañana.',
+      goto: 'e_responde',
+      label: 'Contestó al número del aviso preguntando por la hora',
+    },
+    {
+      texto: 'Yo no pedí nada, no me lo traigan.',
+      goto: 'e_rechaza',
+      label: 'Contestó al aviso rechazando el envío',
+    },
+  ],
   volverGoto: 'e_ignora',
   volverLabel: 'Salió del hilo sin hacer nada',
-}
-
-const SMS_BORRADOR: ScreenView = {
-  ...SMS,
-  borrador: '¿A qué hora exactamente? No voy a estar en la mañana.',
-  composerGoto: undefined,
-  enviarGoto: 'e_responde',
-  enviarLabel: 'Contestó al número del aviso preguntando por la hora',
 }
 
 /// El inicio de la app. Abrirla no es todavía haber comprobado: desde aquí se
@@ -131,7 +136,6 @@ const APPS: AppTelefono[] = [
 
 const STORY: Story<ScreenNode> = {
   n1: { kind: 'scene', view: SMS },
-  n2: { kind: 'scene', view: SMS_BORRADOR },
   n3: { kind: 'scene', view: APP_INICIO },
   e_app: {
     kind: 'good',
@@ -149,10 +153,17 @@ const STORY: Story<ScreenNode> = {
   },
   e_responde: {
     kind: 'partial',
-    view: SMS_BORRADOR,
+    view: SMS,
     verdict: 'Contestaste a un número que no lee',
     outcome:
-      'No pasó nada malo: el remitente era el de siempre. Pero los avisos automáticos salen de un número que no recibe respuestas, así que tu pregunta no llegó a ninguna parte. La franja horaria estaba en la app, a un toque de distancia.',
+      'No pasó nada malo: el remitente era el de siempre. Pero los avisos automáticos salen de un número que no recibe respuestas, así que tu pregunta no llegó a ninguna parte. Y la hora ya venía escrita en el propio mensaje, entre las nueve y la una; el detalle completo estaba en la app, a un toque.',
+  },
+  e_rechaza: {
+    kind: 'partial',
+    view: SMS,
+    verdict: 'Rechazaste un envío que sí era tuyo',
+    outcome:
+      'Nadie leyó ese mensaje, así que por suerte el paquete salió igual a reparto: era el que sí habías comprado. Pero saliste convencido de que no venía, no estabas en casa al día siguiente y el envío volvió a bodega. El aviso no pedía nada, no traía enlace y no metía prisa; mirarlo en la app costaba diez segundos.',
   },
   e_ignora: {
     kind: 'partial',
