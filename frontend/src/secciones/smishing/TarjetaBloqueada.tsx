@@ -25,7 +25,7 @@ const PREGUNTA = '¿Qué consumo fue? No reconozco ningún bloqueo.'
 
 /// El número va como enlace porque en un teléfono lo es: el sistema los
 /// detecta y los vuelve pulsables. Que se toque sin pensar es parte del ataque.
-const TEXTO = `BANCO DEL LITORAL: su tarjeta terminada en ${IDENTIDAD_FICTICIA.tarjeta} fue BLOQUEADA por un intento de consumo no reconocido. Para reactivarla comuniquese de inmediato al <a href="tel:0987654321" data-hotspot-goto="n2" data-hotspot-label="Llamó al número que venía en el mensaje">${NUMERO_FALSO}</a>.`
+const TEXTO = `BANCO DEL LITORAL: su tarjeta terminada en ${IDENTIDAD_FICTICIA.tarjeta} fue BLOQUEADA por un intento de consumo no reconocido. Para reactivarla comuniquese de inmediato al <a href="tel:0987654321" data-hotspot-goto="n2" data-hotspot-label="Tocó el número que venía en el mensaje">${NUMERO_FALSO}</a>.`
 
 const SMS: ScreenView = {
   kind: 'sms',
@@ -78,6 +78,27 @@ const APERTURA = [
   },
 ]
 
+/// El marcador, con el número puesto y todavía sin llamar. Tocar un número en
+/// un mensaje abre esto, no la conversación: sin el paso intermedio el
+/// escenario metía en la llamada de golpe, como si hubiera llamado alguien más,
+/// y marcar dejaba de ser una decisión del participante.
+///
+/// Salir del marcador no termina la corrida. Es lo correcto y no es suficiente:
+/// no llamaste, pero sigues sin saber si tu tarjeta tenía algún bloqueo, y eso
+/// se resuelve en la app.
+const MARCADOR: ScreenView = {
+  kind: 'call',
+  marcando: true,
+  quien: NUMERO_FALSO,
+  numero: 'Copiado del mensaje',
+  etiqueta: 'No está en tus contactos',
+  senalQuien: 'marcado',
+  contestarGoto: 'n3',
+  contestarLabel: 'Marcó el número que venía en el mensaje',
+  rechazarGoto: 'n1',
+  rechazarLabel: 'Salió del marcador sin llamar',
+}
+
 const LLAMADA: ScreenView = {
   kind: 'call',
   quien: NUMERO_FALSO,
@@ -86,7 +107,11 @@ const LLAMADA: ScreenView = {
   senalQuien: 'marcado',
   dialogo: APERTURA,
   decir: [
-    { texto: 'Sí, soy yo. ¿Qué consumo fue?', goto: 'n3', label: 'Confirmó su identidad y siguió la llamada' },
+    {
+      texto: 'Sí, soy yo. ¿Qué consumo fue?',
+      goto: 'n4',
+      label: 'Confirmó su identidad y siguió la llamada',
+    },
     {
       texto: 'Prefiero colgar y llamar al número del reverso de mi tarjeta.',
       goto: 'e_devuelve',
@@ -188,7 +213,7 @@ const APPS: AppTelefono[] = [
     Icono: Wallet,
     texto: 'Banco',
     color: '#155e75',
-    goto: 'n4',
+    goto: 'n5',
     label: 'Abrió la app del banco para comprobar el bloqueo',
   },
   { Icono: MessageSquareText, texto: 'Mensajes', color: '#2f9e44', hilo: 'sms' },
@@ -205,9 +230,10 @@ const APPS: AppTelefono[] = [
 
 export const STORY: Story<ScreenNode> = {
   n1: { kind: 'scene', view: SMS },
-  n2: { kind: 'scene', view: LLAMADA },
-  n3: { kind: 'scene', view: PIDEN_CODIGO },
-  n4: { kind: 'scene', view: BANCO_INICIO },
+  n2: { kind: 'scene', view: MARCADOR },
+  n3: { kind: 'scene', view: LLAMADA },
+  n4: { kind: 'scene', view: PIDEN_CODIGO },
+  n5: { kind: 'scene', view: BANCO_INICIO },
   e_dicta: {
     kind: 'bad',
     view: PIDEN_CODIGO,
@@ -282,14 +308,14 @@ const SENALES: Senal[] = [
   {
     id: 's3',
     targetId: 'piden-codigo',
-    pantalla: 'n3',
+    pantalla: 'n4',
     texto:
       'Te piden el <b>código que te acaba de llegar</b>. Ese código autoriza operaciones: dictarlo es firmar lo que hagan al otro lado.',
   },
   {
     id: 's4',
     targetId: 'no-cuelgue',
-    pantalla: 'n3',
+    pantalla: 'n4',
     texto:
       '<b>Insisten en que no cuelgues.</b> Colgar y llamar tú rompe el engaño, y por eso es lo primero que impiden.',
   },
@@ -340,9 +366,9 @@ function TarjetaBloqueada() {
       }
       pista={
         <p>
-          Este mensaje no trae enlace, trae un número. Puedes llamarlo, contestar el mensaje, salir
-          del hilo, o comprobar el estado de tu tarjeta por tu cuenta. Cuál de ellos es el acertado
-          es justamente lo que decides tú.
+          Este mensaje no trae enlace, trae un número. Tocarlo lo pone en el marcador, y desde ahí
+          decides si llamas. También puedes contestar el mensaje, salir del hilo, o comprobar el
+          estado de tu tarjeta por tu cuenta.
         </p>
       }
     />

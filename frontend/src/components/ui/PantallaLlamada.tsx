@@ -1,4 +1,4 @@
-import { Mic, MicOff, Phone, PhoneOff, RotateCcw } from 'lucide-react'
+import { ArrowLeft, Mic, MicOff, Phone, PhoneOff, RotateCcw } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { VOCES } from '../../data/voces'
 import type { ScreenView } from './DeviceScreen'
@@ -58,7 +58,7 @@ function PantallaLlamada({ view, terminada }: { view: Llamada; terminada?: boole
   const ultimas = useRef<string[]>([])
 
   useEffect(() => {
-    if (view.entrante) {
+    if (view.entrante || view.marcando) {
       setSegundos(0)
       return undefined
     }
@@ -67,7 +67,7 @@ function PantallaLlamada({ view, terminada }: { view: Llamada; terminada?: boole
     if (terminada) return undefined
     const t = setInterval(() => setSegundos((s) => s + 1), 1000)
     return () => clearInterval(t)
-  }, [view.entrante, terminada])
+  }, [view.entrante, view.marcando, terminada])
 
   useEffect(() => {
     const lineas = view.dialogo ?? []
@@ -133,10 +133,35 @@ function PantallaLlamada({ view, terminada }: { view: Llamada; terminada?: boole
   const inicial = view.quien.trim().charAt(0).toUpperCase()
 
 
-  if (view.entrante) {
+  if (view.entrante || view.marcando) {
+    // El marcador y la llamada entrante son la misma pantalla —quién es, su
+    // número y dos botones— y solo cambia qué significan. Marcar es salir a
+    // buscar a alguien; contestar es dejar entrar a quien ya está llamando.
+    const rotulos = view.marcando
+      ? {
+          region: 'Marcador',
+          estado: 'Marcar',
+          no: 'Volver',
+          noAria: 'Salir del marcador sin llamar',
+          NoIcono: ArrowLeft,
+          claseNo: styles.callVolver,
+          si: 'Llamar',
+          siAria: 'Llamar a este número',
+        }
+      : {
+          region: 'Llamada entrante',
+          estado: 'Llamada entrante',
+          no: 'Rechazar',
+          noAria: 'Rechazar la llamada',
+          NoIcono: PhoneOff,
+          claseNo: styles.callRechazar,
+          si: 'Contestar',
+          siAria: 'Contestar la llamada',
+        }
+
     return (
-      <section className={`${styles.call} ${styles.callEntrante}`} aria-label="Llamada entrante">
-        <p className={styles.callEstado}>Llamada entrante</p>
+      <section className={`${styles.call} ${styles.callEntrante}`} aria-label={rotulos.region}>
+        <p className={styles.callEstado}>{rotulos.estado}</p>
         <div className={styles.callQuien} data-signal={view.senalQuien}>
           <span className={`${styles.callAvatar} ${styles.callAvatarGrande}`} aria-hidden>
             {inicial}
@@ -149,23 +174,23 @@ function PantallaLlamada({ view, terminada }: { view: Llamada; terminada?: boole
         <div className={styles.callEntranteAcciones}>
           <button
             type="button"
-            className={`${styles.callBotonRedondo} ${styles.callRechazar}`}
-            aria-label="Rechazar la llamada"
+            className={`${styles.callBotonRedondo} ${rotulos.claseNo}`}
+            aria-label={rotulos.noAria}
             data-hotspot-goto={view.rechazarGoto}
             data-hotspot-label={view.rechazarLabel}
           >
-            <PhoneOff aria-hidden className={styles.callBotonIcono} strokeWidth={2} />
-            <span className={styles.callBotonTexto}>Rechazar</span>
+            <rotulos.NoIcono aria-hidden className={styles.callBotonIcono} strokeWidth={2} />
+            <span className={styles.callBotonTexto}>{rotulos.no}</span>
           </button>
           <button
             type="button"
             className={`${styles.callBotonRedondo} ${styles.callContestar}`}
-            aria-label="Contestar la llamada"
+            aria-label={rotulos.siAria}
             data-hotspot-goto={view.contestarGoto}
             data-hotspot-label={view.contestarLabel}
           >
             <Phone aria-hidden className={styles.callBotonIcono} strokeWidth={2} />
-            <span className={styles.callBotonTexto}>Contestar</span>
+            <span className={styles.callBotonTexto}>{rotulos.si}</span>
           </button>
         </div>
       </section>

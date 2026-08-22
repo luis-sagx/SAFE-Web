@@ -20,16 +20,42 @@ describe('TarjetaBloqueada', () => {
     expect(screen.getByText('No entregaste nada, pero contestaste')).toBeDefined()
   })
 
-  // El puente hacia vishing: marcar el número del SMS abre la pantalla de
-  // llamada de verdad, la misma del otro módulo, y quien marcó todavía puede
-  // colgar. Marcar no puede ser por sí solo el final del escenario.
-  it('marcar el número abre la llamada, y dentro todavía se puede colgar', () => {
+  // Tocar el número lo pone en el marcador, no en la llamada. Marcar tiene que
+  // ser una decisión del participante: sin ese paso, tocar el número metía en
+  // la conversación de golpe, como si hubiera llamado alguien más.
+  it('tocar el número abre el marcador, no la llamada', () => {
     const telefono = empezar(<TarjetaBloqueada />)
 
     fireEvent.click(within(telefono).getByRole('link', { name: '09 87 654 321' }))
 
-    expect(within(telefono).getByLabelText('Llamada en curso')).toBeDefined()
+    expect(within(telefono).getByLabelText('Marcador')).toBeDefined()
+    expect(within(telefono).getByRole('button', { name: 'Llamar a este número' })).toBeDefined()
     expect(screen.getByText('¿Qué haces?')).toBeDefined()
+  })
+
+  // Salir del marcador es lo correcto y no es suficiente: la corrida sigue
+  // abierta, porque el estado de la tarjeta sigue sin comprobarse.
+  it('no llamar devuelve al hilo con el escenario todavía por resolver', () => {
+    const telefono = empezar(<TarjetaBloqueada />)
+
+    fireEvent.click(within(telefono).getByRole('link', { name: '09 87 654 321' }))
+    fireEvent.click(within(telefono).getByRole('button', { name: 'Salir del marcador sin llamar' }))
+
+    expect(within(telefono).getByText(/fue BLOQUEADA/)).toBeDefined()
+    expect(screen.getByText('¿Qué haces?')).toBeDefined()
+
+    fireEvent.click(within(telefono).getByRole('button', { name: /Banco/ }))
+    fireEvent.click(within(telefono).getByRole('button', { name: /Mis tarjetas/ }))
+    expect(screen.getByText('No caíste · lo comprobaste donde consta')).toBeDefined()
+  })
+
+  it('llamar y colgar no entrega nada, pero ya marcaste', () => {
+    const telefono = empezar(<TarjetaBloqueada />)
+
+    fireEvent.click(within(telefono).getByRole('link', { name: '09 87 654 321' }))
+    fireEvent.click(within(telefono).getByRole('button', { name: 'Llamar a este número' }))
+
+    expect(within(telefono).getByLabelText('Llamada en curso')).toBeDefined()
 
     fireEvent.click(within(telefono).getByRole('button', { name: 'Colgar la llamada' }))
     expect(screen.getByText('Colgaste bien, pero ya habías marcado')).toBeDefined()
@@ -39,6 +65,7 @@ describe('TarjetaBloqueada', () => {
     const telefono = empezar(<TarjetaBloqueada />)
 
     fireEvent.click(within(telefono).getByRole('link', { name: '09 87 654 321' }))
+    fireEvent.click(within(telefono).getByRole('button', { name: 'Llamar a este número' }))
     fireEvent.click(within(telefono).getByRole('button', { name: /¿Qué consumo fue\?/ }))
     fireEvent.click(within(telefono).getByRole('button', { name: 'Se lo dicto.' }))
 

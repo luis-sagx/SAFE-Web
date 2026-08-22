@@ -2461,6 +2461,14 @@ button.mailNavItem {
   box-shadow: 0 0.5rem 1.25rem rgb(217 45 32 / 32%);
 }
 
+/* Salir del marcador no cuelga nada ni rechaza a nadie: no hay llamada
+   todavía. En rojo se leía como el botón de colgar, y el gris del sistema es
+   lo que un teléfono pone en un "atrás". */
+.callVolver .callBotonIcono {
+  background: #52606d;
+  box-shadow: 0 0.5rem 1.25rem rgb(82 96 109 / 28%);
+}
+
 .callContestar .callBotonIcono {
   background: #12a150;
   box-shadow: 0 0.5rem 1.25rem rgb(18 161 80 / 32%);

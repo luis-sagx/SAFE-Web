@@ -223,6 +223,17 @@ export type ScreenView =
        *  contestar es una decisión legítima y tiene que poder tomarse antes de
        *  oír nada, igual que en el teléfono de uno. */
       entrante?: boolean
+      /** El marcador, con el número puesto y todavía sin llamar. Es el paso que
+       *  falta cuando la llamada la hace el participante: tocar un número en un
+       *  mensaje abre el marcador, no la llamada, y decidir marcarlo es una
+       *  decisión suya que tiene que quedar en la traza. Sin esto, tocar el
+       *  número metía en la conversación de golpe, como si hubiera llamado
+       *  alguien más.
+       *
+       *  Reutiliza `contestarGoto` (marcar) y `rechazarGoto` (salir del
+       *  marcador) porque la pantalla es la misma: quién es, su número, y dos
+       *  botones. Solo cambian los rótulos. */
+      marcando?: boolean
       /** Lo que el teléfono dice que llama: el nombre del contacto si lo
        *  tienes guardado, y si no, el número tal cual. */
       quien: string

@@ -87,7 +87,9 @@ const LINEAS = Object.entries(GUIONES).flatMap(([escenario, story]) =>
 describe('guiones de las llamadas', () => {
   // Una llamada donde no se puede decir nada solo se puede colgar, y entonces
   // el escenario deja de medir criterio para medir paciencia. Toda pantalla de
-  // llamada en curso tiene que ofrecer algo que contestar.
+  // llamada en curso tiene que ofrecer algo que contestar. El marcador y la
+  // llamada entrante quedan fuera: en ninguna de las dos hay nadie al otro
+  // lado todavía, y sus dos botones ya son la decisión.
   it('en toda llamada en curso se puede contestar algo', () => {
     const mudas = Object.entries(GUIONES).flatMap(([escenario, story]) =>
       Object.entries(story)
@@ -96,6 +98,7 @@ describe('guiones de las llamadas', () => {
             nodo.kind === 'scene' &&
             nodo.view.kind === 'call' &&
             !nodo.view.entrante &&
+            !nodo.view.marcando &&
             !nodo.view.decir?.length,
         )
         .map(([id]) => `${escenario}:${id}`),

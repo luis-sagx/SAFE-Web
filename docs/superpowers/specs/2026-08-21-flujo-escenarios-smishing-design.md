@@ -177,7 +177,18 @@ Es una llamada **saliente** —la marcas tú desde el número del SMS—, y ese
 detalle sostiene el desenlace: ni siquiera queda un número extraño en tu
 registro. En vishing solo `LlamadaPerdida` es saliente; las otras siete entran.
 
-Tres nodos: `n2` la apertura, `n3` donde piden el código, `n4` la app del banco.
+**Tocar el número abre el marcador, no la llamada.** Sin ese paso el escenario
+metía en la conversación de golpe, como si hubiera llamado alguien más, y marcar
+—que es justo lo que la regla prohíbe— dejaba de ser una decisión del
+participante. `PantallaLlamada` gana un estado `marcando`: la misma pantalla que
+la llamada entrante —quién es, su número, dos botones— con los rótulos
+cambiados a *Volver* y *Llamar*, reutilizando `rechazarGoto` y `contestarGoto`.
+
+Salir del marcador **no** termina la corrida: es lo correcto y no es suficiente,
+porque el estado de la tarjeta sigue sin comprobarse. Devuelve al hilo.
+
+Cuatro nodos: `n2` el marcador, `n3` la apertura de la llamada, `n4` donde piden
+el código, `n5` la app del banco.
 La opción de dictar dice `Se lo dicto.` y no cita seis dígitos que el
 participante nunca vio; el desenlace explica qué era ese código. Se añade
 `e_devuelve` (acierto): colgar y marcar el número del reverso de la tarjeta, la
