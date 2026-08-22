@@ -10,6 +10,7 @@ import { STORY as entregaCourier } from './vishing/EntregaCourier'
 import { STORY as llamadaPerdida } from './vishing/LlamadaPerdida'
 import { STORY as premioSorteo } from './vishing/PremioSorteo'
 import { STORY as soporteTecnico } from './vishing/SoporteTecnico'
+import { STORY as tarjetaBloqueada } from './smishing/TarjetaBloqueada'
 import { STORY as cambioNumero } from './suplantacion/CambioNumero'
 import { STORY as clonaronTuPerfil } from './suplantacion/ClonaronTuPerfil'
 import { STORY as codigoPrestado } from './suplantacion/CodigoPrestado'
@@ -40,6 +41,7 @@ const GUIONES: Record<string, Story<ScreenNode>> = {
   LlamadaPerdida: llamadaPerdida,
   PremioSorteo: premioSorteo,
   SoporteTecnico: soporteTecnico,
+  TarjetaBloqueada: tarjetaBloqueada,
   CambioNumero: cambioNumero,
   ClonaronTuPerfil: clonaronTuPerfil,
   CodigoPrestado: codigoPrestado,

@@ -22,27 +22,29 @@ const NUEVO = {
   senal: 'aviso',
 }
 
-const RESPUESTA_CON_TARJETA = 'No reconozco ese consumo, mi tarjeta es la 4539 0011 8842 4417'
+const CON_TARJETA = 'Bloquéenme la tarjeta: 4539 0011 8842 4417'
+const QUE_LLAMEN = 'Llámenme por favor, no reconozco ese consumo.'
 
 const SMS: Extract<ScreenView, { kind: 'sms' }> = {
   kind: 'sms',
   sender: 'BancoLitoral',
   sub: 'Remitente verificado · mismo hilo de siempre',
   msgs: [...HISTORIAL, NUEVO],
-  // Las dos contestan al mismo hilo, y solo una entrega algo. Que la peligrosa
-  // se anuncie ("les paso el número") y no se escriba entera aquí es
-  // deliberado: el número completo aparece después, ya puesto en el campo, que
-  // es donde tiene que verse antes de salir.
+  // Las dos piden algo por un canal que no lee, y cada una falla distinto.
+  // Nadie regala sus datos porque sí: los da para que le hagan algo, y ese
+  // "para que" es lo que vuelve creíble el error de la primera. La segunda no
+  // entrega nada y aun así deja al participante peor de lo que estaba, que es
+  // lo que ningún otro escenario del módulo enseña.
   respuestas: [
     {
-      texto: 'No reconozco ese consumo, les paso el número de mi tarjeta.',
+      texto: CON_TARJETA,
       goto: 'e_responde',
-      label: 'Le mandó al banco el número completo de su tarjeta',
+      label: 'Pidió el bloqueo por SMS con el número completo de su tarjeta',
     },
     {
-      texto: 'No reconozco ese consumo.',
-      goto: 'e_pregunta',
-      label: 'Contestó al hilo de avisos preguntando por el consumo',
+      texto: QUE_LLAMEN,
+      goto: 'e_pide',
+      label: 'Pidió por SMS que el banco lo llamara',
     },
   ],
   // Salir del hilo es el gesto real de "lo dejo pasar": sin él, no verificar
@@ -64,8 +66,8 @@ function conRespuesta(texto: string): Extract<ScreenView, { kind: 'sms' }> {
   }
 }
 
-const SMS_RESPONDIDO = conRespuesta(RESPUESTA_CON_TARJETA)
-const SMS_PREGUNTADO = conRespuesta('No reconozco ese consumo.')
+const SMS_RESPONDIDO = conRespuesta(CON_TARJETA)
+const SMS_PEDIDO = conRespuesta(QUE_LLAMEN)
 
 /// El inicio de la banca móvil. Abrir la app no es todavía haber verificado:
 /// desde aquí se puede mirar los movimientos o bloquear la tarjeta a ciegas,
@@ -166,15 +168,15 @@ const STORY: Story<ScreenNode> = {
     view: SMS_RESPONDIDO,
     verdict: 'Aviso legítimo, reacción peligrosa',
     outcome:
-      'El aviso era real, pero enviaste el número completo de tu tarjeta por SMS. Ese canal no lo lee tu banco: quien controle ese número (o tu teléfono) ya tiene tus datos.',
+      'El aviso era real y el consumo también: fue tu compra del súper. Pero escribiste el número completo de tu tarjeta por SMS, y ese hilo no lo lee tu banco. La tarjeta no se bloqueó, y quien controle ese número o tu teléfono ya tiene tus datos.',
     score: 0,
   },
-  e_pregunta: {
+  e_pide: {
     kind: 'partial',
-    view: SMS_PREGUNTADO,
-    verdict: 'Contestaste a un número que no lee',
+    view: SMS_PEDIDO,
+    verdict: 'Pediste una llamada que el banco nunca hará',
     outcome:
-      'No entregaste ningún dato, y eso es lo que importa. Pero los avisos salen de un número automático que no lee respuestas: el consumo siguió sin comprobar.',
+      'No entregaste ningún dato. Pero nadie leyó ese mensaje —el número es automático— y ahora esperas una llamada del banco: si mañana te llama alguien diciendo que lo es, vas a creerle porque tú la pediste.',
     score: 50,
   },
   e_ignora: {

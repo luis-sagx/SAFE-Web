@@ -60,36 +60,69 @@ const SMS_RESPONDIDO: ScreenView = {
   ],
 }
 
-/// La llamada. El escenario no termina al marcar: termina en lo que se dice
-/// dentro, que es donde está la lección. Quien marca todavía puede colgar.
+/// La llamada, con la pantalla de llamada de verdad —la misma de vishing— y no
+/// con una ficha que la imita. Marcar no termina el escenario: termina lo que
+/// se dice dentro, y quien marcó todavía puede colgar. El dock sigue debajo,
+/// así que salir a mirar la app del banco mientras el otro habla cuesta lo
+/// mismo que en un teléfono de verdad.
+///
+/// Es una llamada **saliente**: la hiciste tú, y por eso ni siquiera queda un
+/// número extraño en tu registro. Ese detalle es la mitad del desenlace.
+const APERTURA = [
+  {
+    texto: `Banco del Litoral, departamento de seguridad, buenas noches. Le confirmo: hablo con el titular de la tarjeta terminada en ${IDENTIDAD_FICTICIA.tarjeta}, ¿verdad?`,
+  },
+  {
+    texto:
+      'Le llamo por el bloqueo de esta noche. Intentaron un consumo de mil doscientos dólares en una tienda de electrónica y lo detuvimos a tiempo.',
+  },
+]
+
 const LLAMADA: ScreenView = {
-  kind: 'web',
-  app: 'Teléfono',
-  url: 'llamada',
-  secure: true,
-  brand: `En llamada · ${NUMERO_FALSO}`,
-  title: '"Departamento de seguridad"',
-  subtitle:
-    'Contesta un hombre con voz tranquila y ruido de central telefónica de fondo. Confirma tu nombre y los cuatro últimos dígitos de tu tarjeta antes de que preguntes nada.',
-  datos: [
+  kind: 'call',
+  quien: NUMERO_FALSO,
+  numero: 'Marcado desde el mensaje',
+  etiqueta: 'No está en tus contactos',
+  senalQuien: 'marcado',
+  dialogo: APERTURA,
+  decir: [
+    { texto: 'Sí, soy yo. ¿Qué consumo fue?', goto: 'n3', label: 'Confirmó su identidad y siguió la llamada' },
     {
-      etiqueta: 'Le dicen',
-      valor:
-        '"Para levantar el bloqueo necesito el código de seis dígitos que le acaba de llegar por mensaje."',
+      texto: 'Prefiero colgar y llamar al número del reverso de mi tarjeta.',
+      goto: 'e_devuelve',
+      label: 'Colgó para llamar al número impreso en su tarjeta',
+    },
+  ],
+  colgarGoto: 'e_cuelga',
+  colgarLabel: 'Colgó la llamada',
+}
+
+const PIDEN_CODIGO: ScreenView = {
+  ...LLAMADA,
+  dialogo: [
+    ...APERTURA,
+    { texto: 'Sí, soy yo. ¿Qué consumo fue?', mio: true },
+    {
+      texto:
+        'Para levantar el bloqueo le acabo de enviar un código de seis dígitos. Dictémelo y le dejo la tarjeta activa en un minuto.',
       senal: 'piden-codigo',
     },
     {
-      etiqueta: 'Y añaden',
-      valor: '"No corte: si corta la tarjeta queda anulada y hay que emitir una nueva."',
+      texto:
+        'Y no me corte, por favor: si corta, la tarjeta queda anulada y hay que emitir una nueva.',
       senal: 'no-cuelgue',
     },
   ],
-  fields: [],
-  button: 'Dictar el código',
-  botonGoto: 'e_dicta',
-  botonLabel: 'Dictó por teléfono el código que le llegó',
-  cerrarGoto: 'e_cuelga',
-  cerrarLabel: 'Colgó sin dictar el código',
+  decir: [
+    { texto: 'Se lo dicto.', goto: 'e_dicta', label: 'Dictó por teléfono el código que le llegó' },
+    {
+      texto: 'Ningún banco pide ese código. Voy a colgar.',
+      goto: 'e_cuelga',
+      label: 'Se negó a dictar el código y colgó',
+    },
+  ],
+  colgarGoto: 'e_cuelga',
+  colgarLabel: 'Colgó sin dictar el código',
 }
 
 /// El inicio de la banca móvil. Abrir la app todavía no es haber comprobado
@@ -155,16 +188,13 @@ const APPS: AppTelefono[] = [
     Icono: Wallet,
     texto: 'Banco',
     color: '#155e75',
-    goto: 'n3',
+    goto: 'n4',
     label: 'Abrió la app del banco para comprobar el bloqueo',
   },
-  { Icono: MessageSquareText, texto: 'Mensajes', color: '#2f9e44' },
-  {
-    Icono: Phone,
-    texto: 'Teléfono',
-    color: '#495057',
-    vacia: 'Sin llamadas recientes. Puedes marcar un número desde aquí.',
-  },
+  { Icono: MessageSquareText, texto: 'Mensajes', color: '#2f9e44', hilo: 'sms' },
+  // Con llamada y mensajes a la vez, cada icono tiene que volver a lo suyo: sin
+  // el `hilo` los dos devolverían a lo último que se vio.
+  { Icono: Phone, texto: 'Teléfono', color: '#495057', hilo: 'call' },
   {
     Icono: Compass,
     texto: 'Navegador',
@@ -173,23 +203,36 @@ const APPS: AppTelefono[] = [
   },
 ]
 
-const STORY: Story<ScreenNode> = {
+export const STORY: Story<ScreenNode> = {
   n1: { kind: 'scene', view: SMS },
   n2: { kind: 'scene', view: LLAMADA },
-  n3: { kind: 'scene', view: BANCO_INICIO },
+  n3: { kind: 'scene', view: PIDEN_CODIGO },
+  n4: { kind: 'scene', view: BANCO_INICIO },
   e_dicta: {
     kind: 'bad',
-    view: LLAMADA,
+    view: PIDEN_CODIGO,
     verdict: 'Caíste en la trampa',
     outcome:
       'Tu tarjeta nunca estuvo bloqueada. El código que dictaste autorizaba una compra que ellos hacían mientras hablabas: mil doscientos dólares en electrónica. Y la llamada la hiciste tú.',
   },
+  // Colgar no puede valer lo mismo que no haber marcado: la regla de este
+  // escenario es que al número del mensaje no se llama, y marcarlo les confirma
+  // la línea más fuerte que un SMS. Colgaste bien, pero llegaste tarde. Mismo
+  // reparto que banco-confirma en vishing.
   e_cuelga: {
+    kind: 'partial',
+    view: PIDEN_CODIGO,
+    verdict: 'Colgaste bien, pero ya habías marcado',
+    outcome:
+      'Colgar es lo único que rompe el engaño, y no diste nada. Pero marcaste el número del mensaje, y eso les confirmó tu línea mejor que cualquier respuesta: espera más intentos. Y sigues sin saber si la tarjeta tenía algún bloqueo.',
+    score: 50,
+  },
+  e_devuelve: {
     kind: 'good',
     view: LLAMADA,
-    verdict: 'No caíste · no dictaste el código',
+    verdict: 'Acertaste · colgaste y llamaste tú',
     outcome:
-      'Colgaste al oír que te pedían el código. Ningún banco lo pide por teléfono, y la insistencia en no cortar era la señal más clara. Llamar ya confirmó tu línea: espera más intentos.',
+      'Marcaste el número impreso en el reverso de tu tarjeta. Era el banco de verdad y no había ningún bloqueo: nada que levantar. Esta respuesta funciona siempre, sin tener que adivinar quién habla.',
   },
   e_bloquea: {
     kind: 'partial',
@@ -239,14 +282,14 @@ const SENALES: Senal[] = [
   {
     id: 's3',
     targetId: 'piden-codigo',
-    pantalla: 'n2',
+    pantalla: 'n3',
     texto:
       'Te piden el <b>código que te acaba de llegar</b>. Ese código autoriza operaciones: dictarlo es firmar lo que hagan al otro lado.',
   },
   {
     id: 's4',
     targetId: 'no-cuelgue',
-    pantalla: 'n2',
+    pantalla: 'n3',
     texto:
       '<b>Insisten en que no cuelgues.</b> Colgar y llamar tú rompe el engaño, y por eso es lo primero que impiden.',
   },

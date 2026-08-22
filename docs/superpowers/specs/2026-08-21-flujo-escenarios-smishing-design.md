@@ -164,6 +164,58 @@ relativos del historial ("ayer", "28 jul") se descartan, y un escenario sin hilo
 Es el único cambio fuera de `secciones/smishing/`, y alcanza a todos los
 escenarios con marco de celular, no solo a este módulo: el defecto era del marco.
 
+### 3.7 `TarjetaBloqueada`: la llamada usa el componente de vishing
+
+La pantalla de la llamada era un `kind: 'web'` disfrazado —una ficha con filas
+etiqueta/valor y un botón "Dictar el código"—. Pasa a `kind: 'call'`, el
+componente `PantallaLlamada` que ya usan los ocho escenarios de vishing:
+cronómetro, silenciar, colgar en rojo, burbujas de "lo que dices", y **audio**
+`es-EC` generado por `scripts/voces.py`. Una llamada que solo se lee entrena a
+leer, que es lo contrario de lo que hay que aprender aquí.
+
+Es una llamada **saliente** —la marcas tú desde el número del SMS—, y ese
+detalle sostiene el desenlace: ni siquiera queda un número extraño en tu
+registro. En vishing solo `LlamadaPerdida` es saliente; las otras siete entran.
+
+Tres nodos: `n2` la apertura, `n3` donde piden el código, `n4` la app del banco.
+La opción de dictar dice `Se lo dicto.` y no cita seis dígitos que el
+participante nunca vio; el desenlace explica qué era ese código. Se añade
+`e_devuelve` (acierto): colgar y marcar el número del reverso de la tarjeta, la
+respuesta que funciona sin tener que adivinar quién habla.
+
+**Marcar el número del mensaje no puede ser el acierto.** Colgar puntuaba como
+acierto pleno, por encima de no haber llamado — y la regla de oro del escenario
+es justamente que a ese número no se llama. Marcarlo confirma la línea más
+fuerte que un SMS: les suena tu número. `e_cuelga` pasa a parcial ("colgaste
+bien, pero ya habías marcado"), como el `e_cuelga` de `BancoConfirma` en
+vishing. Quedan dos aciertos, los dos por comprobar: `e_devuelve` (colgar y
+marcar el reverso de la tarjeta) y `e_app` (mirarlo en la banca móvil).
+
+El escenario entra en `GUIONES` (`voces.test.ts`) y en `VOZ_POR_ESCENARIO`
+(`voces.py`) con la misma voz que las dos llamadas de banco de vishing: si
+sonara distinto, se distinguiría por el timbre en vez de por lo que pide.
+
+### 3.8 Los dos escenarios legítimos: qué se contesta a un aviso que no pide nada
+
+Las burbujas preguntaban algo que el propio aviso ya respondía —`EntregaProgramada`
+preguntaba la hora, que venía escrita en el mensaje— y dejaban al participante
+como si no supiera leer. En un aviso legítimo la reacción natural no es
+preguntar: es **pedir que hagan algo**. Y la lección es que el canal para pedir
+no es contestarle al número.
+
+| Escenario | Frases |
+|---|---|
+| `AlertaConsumo` | "Bloquéenme la tarjeta: 4539 0011 8842 4417" (fallo) · "Llámenme por favor, no reconozco ese consumo" (parcial) |
+| `EntregaProgramada` | "¿Pueden dejarlo con el portero si no estoy?" (parcial) · "Yo no pedí nada, no me lo traigan" (parcial) |
+
+Las dos de `AlertaConsumo` piden algo a un número que no lee, y cada una falla
+distinto. La primera escribe la tarjeta entera, que es su regla de oro — y ya
+nadie regala datos porque sí: los da para que le bloqueen la tarjeta, que es un
+motivo real. La segunda no entrega nada y aun así deja al participante peor de
+lo que estaba: queda esperando una llamada del banco, así que la próxima vez que
+alguien llame diciendo que lo es, va a creerle porque él la pidió. Ningún otro
+escenario del módulo enseña eso, y es el puente a vishing desde un legítimo.
+
 ## 4. Alcance
 
 Seis archivos, todos en `frontend/src/secciones/smishing/`:
@@ -172,7 +224,7 @@ Seis archivos, todos en `frontend/src/secciones/smishing/`:
 |---|---|---|---|---|
 | `AlertaConsumo.tsx` | ✓ | | | |
 | `BajaSuscripcion.tsx` | ✓ | ✓ | | |
-| `TarjetaBloqueada.tsx` | ✓ | ✓ | ✓ | |
+| `TarjetaBloqueada.tsx` | ✓ | ✓ | ✓ | | §3.7 |
 | `CodigoReenviado.tsx` | ✓ | ✓ | ✓ | ✓ |
 | `CitacionTransito.tsx` | ✓ | | | |
 | `PaqueteRetenido.tsx` | ✓ | | | |

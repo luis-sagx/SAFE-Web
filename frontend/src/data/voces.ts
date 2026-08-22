@@ -13,6 +13,7 @@
  */
 export const VOCES: Record<string, string> = {
   "Anotado. Y para registrarle el beneficio necesito dos datos más: los cuatro últimos dígitos de su tarjeta y la agencia donde abrió la cuenta.": "/voz/7decbb8ebf3b.mp3",
+  "Banco del Litoral, departamento de seguridad, buenas noches. Le confirmo: hablo con el titular de la tarjeta terminada en 4417, ¿verdad?": "/voz/8e64d6bde001.mp3",
   "Buenas noches, le habla Andrés Villamar del departamento de seguridad del Banco del Litoral. ¿Hablo con el titular de la tarjeta terminada en 4417?": "/voz/4f662bd609b6.mp3",
   "Buenas noches, le llamo del monitoreo antifraude del Banco del Litoral. No le voy a pedir claves, códigos ni datos suyos en toda la llamada.": "/voz/1c812acd6c81.mp3",
   "Buenas tardes, le habla Katherine del área de calidad del Banco del Litoral. Estamos haciendo una encuesta de dos minutos sobre la atención en su agencia, ¿me regala un momentito?": "/voz/fbb2dd463d3f.mp3",
@@ -30,6 +31,7 @@ export const VOCES: Record<string, string> = {
   "Es una pregunta muy sensata. Puede comprobar que este número aparece en la página del banco. Vamos a anular el cargo ahora mismo desde aquí.": "/voz/0b994d1664b6.mp3",
   "Eso sí, la promoción vence en una hora. Si no deposita ahora mismo pierde la cocina y se la entregamos a la siguiente persona de la lista.": "/voz/64e09e5d3fd9.mp3",
   "Gracias. Por participar le exoneramos la comisión de manejo de este mes. Antes de empezar valido que hablo con el titular: ¿me confirma su fecha de nacimiento y el nombre completo de su mamá?": "/voz/108a36e4e27b.mp3",
+  "Le llamo por el bloqueo de esta noche. Intentaron un consumo de mil doscientos dólares en una tienda de electrónica y lo detuvimos a tiempo.": "/voz/7d7ba6e2ed70.mp3",
   "Le llamo porque detectamos un consumo de ochocientos noventa dólares en una tienda de electrónica de Guayaquil, hecho hace ocho minutos. ¿Ese consumo lo reconoce usted?": "/voz/65fcebeac3e8.mp3",
   "Le paso el proceso: abra la tienda de aplicaciones de su teléfono e instale AsistenciaMóvil, que es la herramienta oficial de soporte.": "/voz/1e9bb94a3536.mp3",
   "Le tengo una buena noticia: le corresponde una devolución de ciento ochenta y cuatro dólares con sesenta. Para acreditarla necesito confirmar su número de cédula.": "/voz/b349e8fcde92.mp3",
@@ -44,6 +46,7 @@ export const VOCES: Record<string, string> = {
   "No, el sistema no libera el despacho sin el pago del impuesto. Es una norma de la promoción, yo no la puedo saltar.": "/voz/fb18efaf5f72.mp3",
   "Papi, tuve un problema: choqué el carro que me prestó un amigo y necesito depositar trescientos cincuenta dólares ahorita mismo para no meterme en un lío legal. No puedo hablar, estoy usando el celular de alguien.": "/voz/a913331bade4.mp3",
   "Para autorizar la anulación le acabo de enviar un código de seis dígitos por mensaje. Léamelo, por favor.": "/voz/0f46aeeaf3b0.mp3",
+  "Para levantar el bloqueo le acabo de enviar un código de seis dígitos. Dictémelo y le dejo la tarjeta activa en un minuto.": "/voz/bcfbe4d332a6.mp3",
   "Para liberar el depósito su banco le va a enviar un código de seis dígitos. Léamelo en cuanto le llegue y en veinticuatro horas tiene el dinero.": "/voz/73dd19a0a807.mp3",
   "Perfecto, entonces es lo que veíamos: el equipo está saturado por ese tráfico. No se preocupe, lo dejamos limpio en un momento.": "/voz/6868972113b5.mp3",
   "Perfecto, entonces lo rechazamos y bloqueo la tarjeta ahora mismo. La nueva le llega a su agencia en tres días hábiles.": "/voz/302fd2877088.mp3",
@@ -54,6 +57,7 @@ export const VOCES: Record<string, string> = {
   "Tenemos retenido un consumo de ochocientos noventa dólares en una tienda de Guayaquil con su tarjeta terminada en 4417. Solo necesito que me diga si fue usted.": "/voz/d931ec3934f5.mp3",
   "Todos nuestros operadores están ocupados. No cuelgue, su llamada es importante para nosotros. Su tiempo de espera estimado es de dos minutos.": "/voz/756ed7bf27b4.mp3",
   "Y no cuelgue: si corta la llamada el cargo se ejecuta y ya no lo podemos detener.": "/voz/89115df983fe.mp3",
+  "Y no me corte, por favor: si corta, la tarjeta queda anulada y hay que emitir una nueva.": "/voz/225ff0d5780c.mp3",
   "Y si prefiere no seguir por aquí, cuelgue y llámenos al número del reverso de su tarjeta: la gestión queda igual de abierta y le atiende cualquier compañero.": "/voz/4bdd86d9521b.mp3",
   "¡Aló, buenas! Le habla Jonathan, de EnvíaExpress. Estoy abajo en la puerta con su paquete, la guía cuatro cuatro siete uno EC.": "/voz/c27cddfb4ee7.mp3",
   "¡Aló, mijo! Sí, soy yo. Qué bueno que me llamas, así te queda grabado el número. No, no necesito nada, solo avisarte. Salúdame a tu mamá y nos vemos el domingo.": "/voz/5e87c64a5cb8.mp3",

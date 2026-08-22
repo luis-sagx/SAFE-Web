@@ -34,14 +34,15 @@ const SMS: ScreenView = {
   sub: 'Remitente habitual · SMS',
   senalRemitente: 'remitente',
   msgs: [AVISO],
-  // Ninguna entrega un dato: el aviso era auténtico y no pedía nada. Lo que
-  // cambia entre las dos es el precio de contestarle a un número automático,
-  // y ese precio lo pone la prisa de la segunda.
+  // Ninguna pregunta nada que el aviso ya diga —la franja viene escrita—, que
+  // es lo que hacía quedar tonto al participante. Lo que se escribe de verdad
+  // es una petición: la primera intenta arreglar la entrega, la segunda la
+  // rechaza. Las dos se pierden en un número que no lee.
   respuestas: [
     {
-      texto: '¿A qué hora exactamente? No voy a estar en la mañana.',
+      texto: '¿Pueden dejarlo con el portero si no estoy?',
       goto: 'e_responde',
-      label: 'Contestó al número del aviso preguntando por la hora',
+      label: 'Pidió por SMS que le dejen el paquete con el portero',
     },
     {
       texto: 'Yo no pedí nada, no me lo traigan.',
@@ -62,7 +63,7 @@ const SMS_PREGUNTADO: ScreenView = {
   volverGoto: undefined,
   msgs: [
     AVISO,
-    { text: '¿A qué hora exactamente? No voy a estar en la mañana.', time: '18:07', mine: true },
+    { text: '¿Pueden dejarlo con el portero si no estoy?', time: '18:07', mine: true },
   ],
 }
 
@@ -174,9 +175,9 @@ const STORY: Story<ScreenNode> = {
   e_responde: {
     kind: 'partial',
     view: SMS_PREGUNTADO,
-    verdict: 'Contestaste a un número que no lee',
+    verdict: 'Pediste el arreglo donde nadie lo lee',
     outcome:
-      'El remitente era el de siempre, así que no pasó nada. Pero los avisos automáticos salen de un número que no lee respuestas, y la hora ya venía en el mensaje.',
+      'El remitente era el de siempre, así que no pasó nada malo. Pero los avisos automáticos salen de un número que no recibe respuestas: nadie leyó tu petición. Dejar instrucciones al repartidor se hace en la app, la que el propio aviso te señalaba.',
   },
   e_rechaza: {
     kind: 'partial',

@@ -20,6 +20,31 @@ describe('TarjetaBloqueada', () => {
     expect(screen.getByText('No entregaste nada, pero contestaste')).toBeDefined()
   })
 
+  // El puente hacia vishing: marcar el número del SMS abre la pantalla de
+  // llamada de verdad, la misma del otro módulo, y quien marcó todavía puede
+  // colgar. Marcar no puede ser por sí solo el final del escenario.
+  it('marcar el número abre la llamada, y dentro todavía se puede colgar', () => {
+    const telefono = empezar(<TarjetaBloqueada />)
+
+    fireEvent.click(within(telefono).getByRole('link', { name: '09 87 654 321' }))
+
+    expect(within(telefono).getByLabelText('Llamada en curso')).toBeDefined()
+    expect(screen.getByText('¿Qué haces?')).toBeDefined()
+
+    fireEvent.click(within(telefono).getByRole('button', { name: 'Colgar la llamada' }))
+    expect(screen.getByText('Colgaste bien, pero ya habías marcado')).toBeDefined()
+  })
+
+  it('dictar el código dentro de la llamada es el fallo', () => {
+    const telefono = empezar(<TarjetaBloqueada />)
+
+    fireEvent.click(within(telefono).getByRole('link', { name: '09 87 654 321' }))
+    fireEvent.click(within(telefono).getByRole('button', { name: /¿Qué consumo fue\?/ }))
+    fireEvent.click(within(telefono).getByRole('button', { name: 'Se lo dicto.' }))
+
+    expect(screen.getByText('Caíste en la trampa')).toBeDefined()
+  })
+
   it('abrir la app del banco no termina la corrida', () => {
     const telefono = empezar(<TarjetaBloqueada />)
 

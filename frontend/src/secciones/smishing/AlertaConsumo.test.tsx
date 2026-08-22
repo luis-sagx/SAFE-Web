@@ -10,19 +10,26 @@ vi.mock('../../context/AuthContext', async () => (await import('../../test/escen
 vi.mock('../../lib/api', async () => (await import('../../test/escenario')).apiSinRed())
 
 describe('AlertaConsumo', () => {
-  it('la burbuja anuncia la intención y el hilo enseña lo que de verdad salió', () => {
+  // Las dos frases piden algo a un número que no lee, y cada una falla
+  // distinto: una escribe la tarjeta entera, la otra deja al participante
+  // esperando una llamada del banco que nunca va a llegar.
+  it('pedir el bloqueo con el número de la tarjeta es el fallo', () => {
     const telefono = empezar(<AlertaConsumo />)
 
-    // La burbuja no escribe el número: dice qué vas a hacer. El número aparece
-    // en el hilo, ya mandado, que es donde duele verlo.
-    expect(within(telefono).queryByText(/mi tarjeta es la 4539/)).toBeNull()
+    fireEvent.click(within(telefono).getByRole('button', { name: /Bloquéenme la tarjeta/ }))
 
-    fireEvent.click(
-      within(telefono).getByRole('button', { name: /les paso el número de mi tarjeta/ }),
-    )
-
-    expect(within(telefono).getByText(/mi tarjeta es la 4539 0011 8842 4417/)).toBeDefined()
+    // Ya no es una burbuja para elegir: es un mensaje mandado, con el número.
+    expect(within(telefono).queryByRole('button', { name: /Bloquéenme la tarjeta/ })).toBeNull()
+    expect(within(telefono).getByText(/4539 0011 8842 4417/)).toBeDefined()
     expect(screen.getByText('Aviso legítimo, reacción peligrosa')).toBeDefined()
+  })
+
+  it('pedir que te llamen no entrega nada, pero te deja esperando una llamada', () => {
+    const telefono = empezar(<AlertaConsumo />)
+
+    fireEvent.click(within(telefono).getByRole('button', { name: /Llámenme por favor/ }))
+
+    expect(screen.getByText('Pediste una llamada que el banco nunca hará')).toBeDefined()
   })
 
   it('salir del hilo cuenta como dejarlo pasar sin verificar', () => {

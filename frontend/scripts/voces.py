@@ -67,6 +67,9 @@ VOZ_POR_ESCENARIO = {
     "LlamadaPerdida": CENTRALITA,
     "PremioSorteo": MUJER,
     "SoporteTecnico": HOMBRE,
+    # El puente de smishing a vishing: el impostor que contesta cuando marcas el
+    # número del SMS. Comparte la voz de las otras dos del banco por lo mismo.
+    "TarjetaBloqueada": HOMBRE,
     "CambioNumero": HIJO,
     "CodigoPrestado": MUJER,
     "CuentaHackeada": HOMBRE,
