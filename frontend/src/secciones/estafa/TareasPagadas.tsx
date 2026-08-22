@@ -341,8 +341,7 @@ const SENALES: Senal[] = [
     id: 's6',
     targetId: 'cuenta',
     pantalla: 'n3',
-    texto:
-      'El depósito va a la <b>cuenta personal de una señora</b>, no a la de una empresa.',
+    texto: 'El depósito va a la <b>cuenta personal de una señora</b>, no a la de una empresa.',
   },
 ]
 

@@ -332,8 +332,7 @@ const SENALES: Senal[] = [
     id: 's1',
     targetId: 'garantiza',
     pantalla: 'n2',
-    texto:
-      'La palabra es <b>garantizado</b>. Ninguna inversión garantiza una ganancia fija.',
+    texto: 'La palabra es <b>garantizado</b>. Ninguna inversión garantiza una ganancia fija.',
   },
   {
     id: 's2',
