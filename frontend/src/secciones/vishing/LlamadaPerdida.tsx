@@ -35,8 +35,6 @@ const REGISTRO: ScreenView = {
       goto: 'n1b',
       label: 'Abrió el detalle de la llamada perdida',
     },
-    { texto: 'Mamá · Saliente', detalle: 'Ayer, 19:40 · 12 min' },
-    { texto: 'Farmacia La Espiga · Entrante', detalle: 'Lunes, 11:05 · 2 min' },
     { texto: 'Buzón de voz', detalle: 'Sin mensajes nuevos' },
   ],
   fields: [],
@@ -157,7 +155,6 @@ const BUSQUEDA: ScreenView = {
       url: 'arcotel.gob.ec › avisos',
       fragmento:
         'Números internacionales llaman de madrugada y cortan al primer timbre. Al devolver la llamada, el minuto se factura a tarifa especial y una grabación te mantiene esperando.',
-      senal: 'timbrazo',
     },
     {
       titulo: '+225 es el prefijo de Costa de Marfil',
@@ -243,31 +240,30 @@ export const STORY: Story<ScreenNode> = {
 const SENALES: Senal[] = [
   {
     id: 's1',
-    targetId: 'timbrazo',
-    pantalla: 'e_busca',
+    pantalla: 'n1',
     texto:
-      '<b>Sonó una sola vez.</b> Nadie que quiera hablar contigo cuelga al primer timbre: el timbrazo está calculado para que veas la perdida y devuelvas la llamada.',
+      '<b>Sonó una sola vez.</b> Nadie que quiera hablarte cuelga al primer timbre: buscan que veas la perdida y devuelvas la llamada.',
   },
   {
     id: 's2',
     targetId: 'tarifa',
     pantalla: 'n2',
     texto:
-      'El número empieza por <b>+225</b>, un prefijo internacional. Devolver la llamada no es gratis: se factura por minuto y a tarifa especial.',
+      'El número empieza por <b>+225</b>, prefijo internacional: devolver la llamada se factura por minuto a tarifa especial.',
   },
   {
     id: 's3',
     targetId: 'grabacion',
     pantalla: 'n2',
     texto:
-      'Contesta una <b>grabación</b>, no una persona. Si quien llamó tuviera algo que decirte, habría alguien al otro lado.',
+      'Contesta una <b>grabación</b>, no una persona. Si de verdad quisieran decirte algo, habría alguien al otro lado.',
   },
   {
     id: 's4',
     targetId: 'nadie',
     pantalla: 'n3',
     texto:
-      '"Su llamada es importante para nosotros", pero <b>no atiende nadie nunca</b>. Todo el negocio es el tiempo que te quedes escuchando.',
+      '"Su llamada es importante", pero <b>nunca atiende nadie</b>. El negocio es que sigas escuchando.',
   },
 ]
 

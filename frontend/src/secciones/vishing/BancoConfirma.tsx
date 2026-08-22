@@ -243,42 +243,42 @@ const SENALES: Senal[] = [
     targetId: 'no-pide',
     pantalla: 'n2',
     texto:
-      '<b>No te piden nada.</b> Ni claves, ni códigos, ni tu cédula: solo un sí o un no sobre algo que ellos ya saben.',
+      '<b>No te piden nada.</b> Ni claves ni códigos: solo un sí o un no sobre algo que ya saben.',
   },
   {
     id: 's2',
     targetId: 'invita',
     pantalla: 'n2',
     texto:
-      'Te <b>invitan a colgar y llamar tú</b>. Quien está estafando necesita que sigas en la línea; a un banco de verdad le da igual por dónde le llegues.',
+      'Te <b>invitan a colgar y llamar tú</b>. Un estafador necesita que sigas en línea; a tu banco le da igual por dónde le llegues.',
   },
   {
     id: 's3',
     targetId: 'retenido',
     pantalla: 'n2',
     texto:
-      'El consumo está <b>retenido, no cobrado</b>: te avisan antes de que pase nada. El fraude te apura porque "ya se ejecutó"; tu banco lo detiene y luego pregunta.',
+      'El consumo está <b>retenido, no cobrado</b>: te avisan antes de que pase nada. El fraude apura diciendo "ya se hizo"; tu banco detiene y pregunta.',
   },
   {
     id: 's4',
     targetId: 'no-lo-de',
     pantalla: 'n3',
     texto:
-      'Ellos mismos te dicen que <b>no dictes el código a nadie</b>, ni siquiera a quien diga ser del banco. Un estafador jamás te diría eso.',
+      'Te dicen que <b>no dictes el código a nadie</b>, ni al que diga ser del banco. Un estafador jamás lo diría.',
   },
   {
     id: 's5',
     targetId: 'texto-codigo',
     pantalla: 'n4',
     texto:
-      'El mensaje lo repite por escrito: el código es tu <b>constancia</b>, y nunca te lo van a pedir por teléfono.',
+      'El mensaje lo repite: el código es tu <b>constancia</b>, nunca te lo pedirán por teléfono.',
   },
   {
     id: 's6',
     targetId: 'consta',
     pantalla: 'e_app',
     texto:
-      'El consumo <b>consta en la app</b>. Cuando lo que te cuentan por teléfono aparece igual en tu canal, la llamada era real; cuando no aparece, no lo era.',
+      'El consumo <b>consta en la app</b>. Si lo que te cuentan por teléfono aparece igual en tu canal, la llamada era real.',
   },
 ]
 
