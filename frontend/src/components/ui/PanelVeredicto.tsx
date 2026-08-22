@@ -61,6 +61,14 @@ function PanelVeredicto({
   // cierre para que siempre haya un botón visible que avance algo.
   const [paso, setPaso] = useState(haySenales ? -1 : 0)
 
+  // Para reservar el alto del recorrido (ver más abajo). Se compara sin las
+  // etiquetas: <b> ocupa en el texto pero no en la pantalla.
+  const largo = (texto: string) => texto.replace(/<[^>]+>/g, '').length
+  const masLarga = senales.reduce(
+    (mayor, senal) => (largo(senal.texto) > largo(mayor) ? senal.texto : mayor),
+    '',
+  )
+
   const enVeredicto = paso === -1
   const enSenal = haySenales && paso >= 0 && paso < senales.length
   const enCierre = !enVeredicto && !enSenal
@@ -159,16 +167,24 @@ function PanelVeredicto({
               Saltar
             </button>
           </div>
-          {/* Alto reservado para la señal más larga del catálogo: seis líneas en
-              la columna estrecha (11rem). Sin él, los textos van de una a seis
-              líneas y la fila de botones sube y baja hasta 87px entre paso y
-              paso, obligando a buscar el botón de nuevo cada vez. Subió desde
-              9.125rem al reescribir las señales en lenguaje llano (issue #32):
-              explicar por qué algo es sospechoso ocupa más que nombrarlo. */}
-          <p
-            className="mt-3 min-h-[11rem] text-lg leading-relaxed text-body"
-            dangerouslySetInnerHTML={{ __html: senales[paso]?.texto ?? '' }}
-          />
+          {/* Alto reservado: sin él los textos van de una a seis líneas y la
+              fila de botones sube y baja entre paso y paso, obligando a buscar
+              el botón de nuevo cada vez. Lo reserva la señal más larga de este
+              escenario, dibujada invisible debajo, y no una medida fija: con
+              un número fijo el panel de un escenario de señales cortas mide lo
+              mismo que el del más largo del catálogo y hay que hacer scroll
+              para ver los botones. */}
+          <div className="relative mt-3">
+            <p
+              aria-hidden
+              className="invisible text-lg leading-relaxed"
+              dangerouslySetInnerHTML={{ __html: masLarga }}
+            />
+            <p
+              className="absolute inset-0 text-lg leading-relaxed text-body"
+              dangerouslySetInnerHTML={{ __html: senales[paso]?.texto ?? '' }}
+            />
+          </div>
           {/* "Anterior" se renderiza siempre, deshabilitado en el primer paso.
               Antes aparecía a partir del segundo, así que "Siguiente" pasaba de
               ocupar toda la fila a la mitad y se desplazaba casi 200px justo

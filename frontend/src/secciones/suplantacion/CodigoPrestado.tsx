@@ -223,42 +223,42 @@ const SENALES: Senal[] = [
     targetId: 'pide-codigo',
     pantalla: 'n1',
     texto:
-      'Te pide un <b>código de verificación</b>. No existe ningún motivo por el que el código de otra persona llegue a tu teléfono: si llegó al tuyo, es tuyo.',
+      'Te pide un <b>código de verificación</b>. Si llegó a tu teléfono, es tuyo: nadie más lo necesita.',
   },
   {
     id: 's2',
     targetId: 'texto-codigo',
     pantalla: 'n2',
     texto:
-      'El propio mensaje lo dice: <b>no lo compartas</b>, y si no lo pediste es que alguien está intentando entrar a tu cuenta. La advertencia viene escrita al lado del número.',
+      'El mensaje lo advierte: <b>no lo compartas</b>. Si no lo pediste, alguien quiere entrar a tu cuenta.',
   },
   {
     id: 's3',
     targetId: 'excusa',
     pantalla: 'n2b',
     texto:
-      '"Me equivoqué en un dígito" <b>no es posible</b>: el código se manda al número que se escribió, y ese número es el tuyo. La excusa existe porque la pregunta era buena.',
+      '"Me equivoqué en un dígito" <b>no es posible</b>: el código llega al número que se escribió.',
   },
   {
     id: 's4',
     targetId: 'prisa',
     pantalla: 'n3',
     texto:
-      'Mete <b>prisa con el vencimiento</b>. El código dura pocos minutos, así que quien lo pide necesita que no te dé tiempo de leer el mensaje entero ni de llamar.',
+      'Mete <b>prisa con el vencimiento</b> para que no te dé tiempo de leer el mensaje ni de llamar.',
   },
   {
     id: 's5',
     targetId: 'remitente',
     pantalla: 'n1',
     texto:
-      'Escribe desde el <b>chat de siempre de tu prima</b>, con su número y su foto: su cuenta ya estaba robada. Que el remitente sea auténtico no dice quién está escribiendo.',
+      'Escribe desde el <b>chat de siempre de tu prima</b>: le robaron la cuenta. El remitente auténtico no dice quién escribe.',
   },
   {
     id: 's6',
     targetId: 'contesta',
     pantalla: 'e_llama',
     texto:
-      'Una <b>llamada</b> lo aclaró todo en diez segundos, y de paso Gaby se enteró de lo que estaban haciendo con su cuenta.',
+      'Una <b>llamada</b> lo aclaró en diez segundos, y Gaby se enteró del robo de su cuenta.',
   },
 ]
 

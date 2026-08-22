@@ -306,35 +306,35 @@ const SENALES: Senal[] = [
     targetId: 'voz',
     pantalla: 'n2',
     texto:
-      'La voz <b>es la suya y aun así no prueba nada</b>: hoy se clona con unos segundos de cualquier video público. Fíjate en que llora y grita, para que no distingas el detalle ni pienses en preguntar.',
+      'La voz <b>es la suya y aun así no prueba nada</b>: se clona con unos segundos de cualquier video. Llora y grita para que no dudes.',
   },
   {
     id: 's2',
     targetId: 'autoridad',
     pantalla: 'n2',
     texto:
-      'Aparece enseguida <b>una autoridad</b> que toma el control de la llamada. Un policía de verdad no arregla un choque cobrando por teléfono.',
+      'Aparece enseguida <b>una autoridad</b> que toma el control. Un policía real no cobra un choque por teléfono.',
   },
   {
     id: 's3',
     targetId: 'no-cuelgue',
     pantalla: 'n3',
     texto:
-      '<b>No cuelgue y no llame a nadie.</b> Es la señal más clara de todas: lo único que puede romper el engaño es que hables con tu hija, así que hay que impedirlo.',
+      '<b>No cuelgue y no llame a nadie.</b> Lo único que rompe el engaño es que hables con tu hija.',
   },
   {
     id: 's4',
     targetId: 'cuenta',
     pantalla: 'n3b',
     texto:
-      'El dinero va a una <b>cuenta personal</b> y hay que mandarlo ya, sin papeles, sin parte policial y sin poder hablar con nadie más.',
+      'El dinero va a una <b>cuenta personal</b> y hay que mandarlo ya, sin papeles ni parte policial.',
   },
   {
     id: 's5',
     targetId: 'contesta',
     pantalla: 'e_verifica',
     texto:
-      'Tu hija <b>contestó a la primera</b> desde su número de siempre. Treinta segundos de llamada contra cuatrocientos dólares.',
+      'Tu hija <b>contestó a la primera</b> desde su número de siempre. Treinta segundos contra $400.',
   },
 ]
 

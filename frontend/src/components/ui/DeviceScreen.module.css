@@ -1403,6 +1403,24 @@ button.mailNavItem {
 .smsRow.theirs {
   justify-content: flex-start;
 }
+/* Las burbujas que aún no habías visto entran escalonadas (el retardo lo pone
+   DeviceScreen según su posición en la tanda). `backwards` las mantiene
+   invisibles hasta que les toca: sin eso aparecerían todas y luego se
+   animarían. */
+.smsNuevo {
+  animation: smsEntra 0.3s ease-out backwards;
+}
+@keyframes smsEntra {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .smsNuevo {
+    animation: none;
+  }
+}
 .smsRow.mine {
   justify-content: flex-end;
 }

@@ -276,42 +276,42 @@ const SENALES: Senal[] = [
     targetId: 'saludo',
     pantalla: 'n1',
     texto:
-      '<b>No pide nada.</b> Avisa de un cambio y ya. Los mensajes falsos llegan siempre a lo mismo —dinero, un código, un dato— y este no llega a ninguna parte.',
+      '<b>No pide nada.</b> Avisa de un cambio y ya; un mensaje falso siempre acaba pidiendo algo.',
   },
   {
     id: 's2',
     targetId: 'audio',
     pantalla: 'n1',
     texto:
-      'La nota de voz es suya y <b>no mete prisa</b>: cuenta lo que pasó con calma. Una voz clonada tampoco sonaría rara, así que esta señal sola no basta.',
+      'La nota de voz <b>no mete prisa</b>. Sola no basta: una voz clonada tampoco sonaría rara.',
   },
   {
     id: 's3',
     targetId: 'antiguedad',
     pantalla: 'n1b',
     texto:
-      'La cuenta es <b>nueva</b>, igual que en una suplantación. Quien cambia de chip empieza de cero: por sí solo, este dato no acusa a nadie.',
+      'La cuenta es <b>nueva</b>, igual que en una suplantación. Quien cambia de chip empieza de cero.',
   },
   {
     id: 's4',
     targetId: 'responde',
     pantalla: 'n2b',
     texto:
-      'Contesta <b>lo que solo ella sabría</b>, y con detalles. Es la prueba que ninguna suplantación pasa, y la más fácil de hacer sin que nadie se ofenda.',
+      'Contesta <b>lo que solo ella sabría</b>, con detalles. Ninguna suplantación pasa esa prueba.',
   },
   {
     id: 's5',
     targetId: 'contesta',
     pantalla: 'n2',
     texto:
-      '<b>Contesta la llamada</b> al primer timbre y no tiene prisa. Quien suplanta siempre tiene un motivo para no hablar; ella no.',
+      '<b>Contesta la llamada</b> al primer timbre y sin prisa. Quien suplanta nunca puede hablar.',
   },
   {
     id: 's6',
     targetId: 'cedula',
     pantalla: 'n3',
     texto:
-      'Aunque el mensaje sea auténtico, <b>la foto de la cédula no se manda por chat</b>. Ese archivo se queda en un teléfono que no controlas, y con él se abren cuentas a tu nombre.',
+      'Aunque el mensaje sea real, <b>la cédula no se manda por chat</b>: con esa foto se abren cuentas a tu nombre.',
   },
 ]
 

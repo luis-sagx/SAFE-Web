@@ -23,7 +23,7 @@ const DESCONOCIDO = '+593 98 776 5510'
 const INTERNO = '+593 99 501 2244'
 
 const APERTURA = {
-  text: `Buenos días. Habla la Ing. ${JEFA}, gerencia. Estoy en una reunión con auditoría y no puedo atender llamadas. ¿Está disponible para un encargo rápido?`,
+  text: `Buenos días. Habla la Ing. ${JEFA}, de gerencia. Estoy en una reunión con auditoría y no puedo hablar. ¿Me ayuda con un encargo?`,
   time: '09:12',
   senal: 'apertura',
 }
@@ -72,13 +72,13 @@ const PERFIL: ScreenView = {
 }
 
 const ENCARGO = {
-  text: 'Necesito que compre 4 tarjetas de regalo de $100 para un cliente que viene al mediodía. Cómprelas, envíeme una foto de los códigos por aquí y hoy mismo se le reembolsa con el rol.',
+  text: 'Compre 4 tarjetas de regalo de $100 para un cliente que llega al mediodía. Hoy mismo se le reembolsa con el rol.',
   time: '09:14',
   senal: 'tarjetas',
 }
 
 const RESERVA = {
-  text: 'Y por favor no comente esto con el área todavía, es una cortesía que está fuera de presupuesto y prefiero manejarlo yo.',
+  text: 'Mándeme la foto de los códigos por aquí. Y no lo comente con el área: es una cortesía fuera de presupuesto.',
   time: '09:14',
   senal: 'secreto',
 }
@@ -107,7 +107,7 @@ const EXCUSA_NUMERO: ScreenView = {
     APERTURA,
     { text: '¿De qué número me escribe? El suyo lo tengo guardado.', time: '09:13', mine: true },
     {
-      text: 'Es mi línea personal, la corporativa está en el equipo que dejé en la oficina. Vamos al punto, que salgo de la reunión en veinte minutos.',
+      text: 'Es mi línea personal, la corporativa se quedó en la oficina. Salgo de la reunión en veinte minutos.',
       time: '09:13',
       senal: 'apura',
     },
@@ -132,7 +132,7 @@ const VOY: ScreenView = {
     RESERVA,
     { text: 'Voy saliendo a comprarlas.', time: '09:16', mine: true },
     {
-      text: 'Perfecto, gracias. Apenas las tenga me manda la foto de los códigos raspados, que el cliente llega al mediodía.',
+      text: 'Perfecto. Mándeme la foto de los códigos raspados apenas las tenga.',
       time: '09:16',
       senal: 'codigos',
     },
@@ -159,7 +159,7 @@ const NO_LLAMA: ScreenView = {
     RESERVA,
     { text: 'Prefiero confirmarlo con usted por teléfono.', time: '09:16', mine: true },
     {
-      text: 'Ya le dije que estoy en reunión, no puedo atender. Si no puede con el encargo dígamelo y se lo pido a otra persona.',
+      text: 'Ya le dije que estoy en reunión. Si no puede con el encargo, se lo pido a otra persona.',
       time: '09:17',
       senal: 'presiona',
     },

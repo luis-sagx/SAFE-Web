@@ -478,6 +478,12 @@ function DeviceScreen({
     return <PantallaLlamada view={view} terminada={terminada} />
   }
 
+  // Los mensajes que llegan después de lo último que escribiste entran uno
+  // detrás de otro. Dos o tres burbujas apareciendo a la vez se leen como un
+  // bloque de texto, y así se pierde lo que hace un chat: que cada frase llega
+  // sola y hay un momento para pensarla antes de la siguiente.
+  const ultimoMio = view.msgs.map((msg) => Boolean(msg.mine)).lastIndexOf(true)
+
   return (
     <section className={`${styles.screen} ${styles.sms}`} aria-label="Mensajes de texto">
       <div className={styles.smsbar}>
@@ -521,10 +527,13 @@ function DeviceScreen({
       </div>
 
       <div className={styles.smsThread}>
-        {view.msgs.map((msg) => (
+        {view.msgs.map((msg, i) => (
           <div
             key={msg.text}
-            className={`${styles.smsRow} ${msg.mine ? styles.mine : styles.theirs}`}
+            className={`${styles.smsRow} ${msg.mine ? styles.mine : styles.theirs} ${
+              i > ultimoMio ? styles.smsNuevo : ''
+            }`}
+            style={i > ultimoMio ? { animationDelay: `${(i - ultimoMio - 1) * 0.6}s` } : undefined}
           >
             <div className={styles.smsBubble}>
               {msg.voz ? (

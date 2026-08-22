@@ -356,49 +356,49 @@ const SENALES: Senal[] = [
     targetId: 'remitente',
     pantalla: 'n1',
     texto:
-      'Escribe un <b>número que no tienes guardado</b>. Que diga ser tu hijo es justo lo que hay que comprobar, no lo que se da por hecho.',
+      'Escribe un <b>número que no tienes guardado</b>. Que diga ser tu hijo es justo lo que hay que comprobar.',
   },
   {
     id: 's2',
     targetId: 'foto',
     pantalla: 'n1b',
     texto:
-      'La <b>foto de perfil es la de Andrés</b>, y no prueba nada: está pública en sus redes y cualquiera la descarga en dos segundos.',
+      'La <b>foto de perfil es la de Andrés</b>, y está pública en sus redes: cualquiera la descarga.',
   },
   {
     id: 's3',
     targetId: 'antiguedad',
     pantalla: 'n1b',
     texto:
-      'Esa cuenta <b>se creó hace dos días</b> y no comparte contigo ningún grupo. La de tu hijo tiene años de conversación detrás.',
+      'Esa cuenta <b>se creó hace dos días</b> y no comparte contigo ningún grupo.',
   },
   {
     id: 's4',
     targetId: 'audio',
     pantalla: 'n2',
     texto:
-      'La voz suena a la suya, y hoy eso <b>ya no prueba nada</b>: con unos segundos de audio de cualquier video suyo se clona. Fíjate en que la nota llega grabada y no llama.',
+      'La voz suena a la suya, y hoy eso <b>ya no prueba nada</b>: se clona con unos segundos de audio.',
   },
   {
     id: 's5',
     targetId: 'no-llama',
     pantalla: 'n3b',
     texto:
-      'Siempre hay una razón para <b>no poder hablar</b>. Es la parte que no pueden improvisar: una conversación en vivo se les cae.',
+      'Siempre hay una razón para <b>no poder hablar</b>. Una conversación en vivo se les cae.',
   },
   {
     id: 's6',
     targetId: 'cuenta',
     pantalla: 'n3',
     texto:
-      'La cuenta está <b>a nombre de otra persona</b>. El dinero nunca va a la cuenta de quien dice necesitarlo.',
+      'La cuenta está <b>a nombre de otra persona</b>, nunca de quien dice necesitar el dinero.',
   },
   {
     id: 's7',
     targetId: 'esquiva',
     pantalla: 'n4',
     texto:
-      'Ante una pregunta que <b>solo tu hijo sabría</b>, se enfada y vuelve a la prisa. No la contesta porque no puede.',
+      'Ante una pregunta que <b>solo tu hijo sabría</b>, se enfada y vuelve a la prisa. No puede contestarla.',
   },
 ]
 
