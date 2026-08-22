@@ -1,0 +1,34 @@
+# Base de datos local para desarrollo.
+#
+#   docker compose -f docker-compose.db.yml up -d
+#
+# Expone Postgres en localhost:5432 para que los servicios Nest puedan correr
+# fuera de Docker con `pnpm start:* --watch`.
+
+name: safe-web-db
+
+services:
+  db:
+    image: postgres:18-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: "${POSTGRES_USER:?falta el archivo .env, copiar de .env.example}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:?falta POSTGRES_PASSWORD en .env}"
+      POSTGRES_DB: "${POSTGRES_DB:?falta POSTGRES_DB en .env}"
+      IDENTIDAD_DB_PASSWORD: "${IDENTIDAD_DB_PASSWORD:?falta IDENTIDAD_DB_PASSWORD en .env}"
+      ENTRENAMIENTO_DB_PASSWORD: "${ENTRENAMIENTO_DB_PASSWORD:?falta ENTRENAMIENTO_DB_PASSWORD en .env}"
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql
+      - ./db-init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    security_opt:
+      - no-new-privileges:true
+
+volumes:
+  pgdata:
