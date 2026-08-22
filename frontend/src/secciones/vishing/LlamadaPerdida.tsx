@@ -285,7 +285,6 @@ const CONTEXTO: Contexto = {
       <strong>03:12</strong>, de un número que empieza por +225.
     </>
   ),
-  detalle: 'Sonó una sola vez y no dejaron mensaje en el buzón.',
 }
 
 function LlamadaPerdida() {

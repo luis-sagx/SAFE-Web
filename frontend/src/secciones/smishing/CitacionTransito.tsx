@@ -216,7 +216,6 @@ const CONTEXTO: Contexto = {
       cercano para pagar.
     </>
   ),
-  detalle: 'El mensaje llega con tono institucional, pero no incluye placa ni lugar de la infracción.',
 }
 
 function CitacionTransito() {

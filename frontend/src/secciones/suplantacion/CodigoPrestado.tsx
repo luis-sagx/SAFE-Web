@@ -280,7 +280,6 @@ const CONTEXTO: Contexto = {
       llegó a tu teléfono por equivocación.
     </>
   ),
-  detalle: 'Justo antes te llegó un mensaje de texto con un código de seis dígitos.',
 }
 
 function CodigoPrestado() {

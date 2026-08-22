@@ -166,7 +166,6 @@ const CONTEXTO: Contexto = {
       <strong>Antes de que cierre el plazo de reclamos</strong> llega el correo del rol de este mes.
     </>
   ),
-  detalle: 'Este mes trabajaste horas extra y quieres confirmar que estén incluidas.',
 }
 
 const NOTA = (

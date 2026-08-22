@@ -239,7 +239,6 @@ const CONTEXTO: Contexto = {
       <strong>mañana por la mañana</strong>.
     </>
   ),
-  detalle: 'Hace poco te llegó otro mensaje parecido que resultó ser falso, y quedaste escaldado.',
 }
 
 function EntregaProgramada() {

@@ -301,7 +301,6 @@ const CONTEXTO: Contexto = {
       cuando a ti te quede bien.
     </>
   ),
-  detalle: 'La lavadora sigue en tu casa y tienes la app del banco en el teléfono.',
 }
 
 function PagoLavadora() {

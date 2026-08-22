@@ -318,7 +318,6 @@ const CONTEXTO: Contexto = {
       completa y tres horarios para que vayas a verlo.
     </>
   ),
-  detalle: 'Tienes los $640 de la garantía en tu cuenta y la app del banco en el teléfono.',
 }
 
 function VisitaDepartamento() {

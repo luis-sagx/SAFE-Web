@@ -207,7 +207,6 @@ const CONTEXTO: Contexto = {
       sobre tu contraseña, con un <strong>plazo que vence en dos horas</strong>.
     </>
   ),
-  detalle: 'Sí has recibido antes avisos de Sistemas por cambios de contraseña.',
 }
 
 function ClaveCaducada() {

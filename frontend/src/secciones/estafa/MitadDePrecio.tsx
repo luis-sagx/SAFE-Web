@@ -335,7 +335,6 @@ const CONTEXTO: Contexto = {
       tiendas, y le escribiste al vendedor.
     </>
   ),
-  detalle: 'Tienes el anuncio abierto en la app y el dinero en tu cuenta.',
 }
 
 function MitadDePrecio() {

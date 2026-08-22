@@ -342,7 +342,6 @@ const CONTEXTO: Contexto = {
       <strong>bloqueada por un consumo no reconocido</strong>.
     </>
   ),
-  detalle: 'Trae los cuatro últimos dígitos de tu tarjeta, y son los tuyos.',
 }
 
 function TarjetaBloqueada() {

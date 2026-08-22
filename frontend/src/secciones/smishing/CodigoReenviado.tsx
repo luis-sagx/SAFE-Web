@@ -310,7 +310,6 @@ const CONTEXTO: Contexto = {
       <strong>código de verificación</strong> y otro de alguien que dice ser del banco.
     </>
   ),
-  detalle: 'No estabas haciendo ninguna operación ni pediste ningún código.',
 }
 
 function CodigoReenviado() {

@@ -340,7 +340,6 @@ const CONTEXTO: Contexto = {
       comprobante. Quiere que despaches hoy mismo.
     </>
   ),
-  detalle: 'La laptop sigue en tu casa y el courier no ha pasado todavía.',
 }
 
 function SaldoContable() {

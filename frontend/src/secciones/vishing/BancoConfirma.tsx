@@ -300,7 +300,6 @@ const CONTEXTO: Contexto = {
       la vez vibra un <strong>mensaje del banco</strong>.
     </>
   ),
-  detalle: 'Quien llama dice los cuatro últimos dígitos de tu tarjeta, y son los tuyos.',
 }
 
 function BancoConfirma() {

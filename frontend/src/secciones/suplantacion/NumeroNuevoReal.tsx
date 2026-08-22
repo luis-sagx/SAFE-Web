@@ -333,7 +333,6 @@ const CONTEXTO: Contexto = {
       ella, con una nota de voz.
     </>
   ),
-  detalle: 'No te pide nada: solo que le guardes el número nuevo.',
 }
 
 function NumeroNuevoReal() {

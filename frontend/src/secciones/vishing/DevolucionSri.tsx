@@ -314,7 +314,6 @@ const CONTEXTO: Contexto = {
       diciendo que es del SRI y que tienes dinero a tu favor.
     </>
   ),
-  detalle: "La cifra es pequeña y creíble: $184,60, no un premio millonario.",
 };
 
 function DevolucionSri() {

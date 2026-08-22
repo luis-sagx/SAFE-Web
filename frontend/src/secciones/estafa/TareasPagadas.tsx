@@ -363,7 +363,6 @@ const CONTEXTO: Contexto = {
       prometidos, puntuales, a tu cuenta.
     </>
   ),
-  detalle: 'El pago llegó de verdad, y lo puedes ver en tu banco.',
 }
 
 function TareasPagadas() {

@@ -157,7 +157,6 @@ const CONTEXTO: Contexto = {
       <strong>bono de $180</strong> a tu nombre.
     </>
   ),
-  detalle: 'Has escuchado que a varios conocidos les llegó algo parecido.',
 }
 
 function BonoEstado() {

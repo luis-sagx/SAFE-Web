@@ -116,12 +116,6 @@ const CONTEXTO: Contexto = {
       envío.
     </>
   ),
-  detalle: (
-    <>
-      Trae tu <strong>nombre completo</strong> y parte de tu <strong>número de cédula</strong>,
-      datos que vos nunca les diste a un courier.
-    </>
-  ),
 }
 
 function CobroDirigido() {

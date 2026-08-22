@@ -385,7 +385,6 @@ const CONTEXTO: Contexto = {
       siempre, desde su chat de siempre.
     </>
   ),
-  detalle: 'Ella no te pide nada: te está avisando de algo que le pareció raro.',
 }
 
 function ClonaronTuPerfil() {
