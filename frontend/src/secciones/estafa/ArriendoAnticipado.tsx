@@ -14,7 +14,7 @@ import { CUENTA_FICTICIA, IDENTIDAD_FICTICIA } from '../../lib/identidadFicticia
  * barato, la parte de ti que quiere creer trabaja gratis para el otro lado.
  *
  * La señal decisiva no está escrita en ningún mensaje. Está en el orden: te
- * piden pagar antes de ver, y todo lo demás (el dueño en el extranjero, las
+ * piden pagar antes de ver, y todo lo demás (el dueño que está fuera, las
  * fotos preciosas, el contrato que llega por correo) existe para justificar ese
  * orden invertido.
  */
@@ -26,7 +26,7 @@ const DEPARTAMENTO = 'Departamento amoblado, 2 dormitorios, La Floresta'
 const DEPOSITO = '$700'
 
 const OFRECE = {
-  text: `Buenas noches. Sí, el departamento sigue disponible: $350 mensuales, amoblado, incluye alícuota. Para reservarlo necesito el depósito de garantía de ${DEPOSITO} (dos meses), y le entrego las llaves apenas llegue al país.`,
+  text: `Buenas noches. Sí, el departamento sigue disponible: $350 mensuales, amoblado, incluye alícuota. Para reservarlo necesito el depósito de garantía de ${DEPOSITO} (dos meses), y le entrego las llaves apenas llegue a Quito.`,
   time: '20:38',
   senal: 'paga-primero',
 }
@@ -58,7 +58,7 @@ const NO_SE_PUEDE_VER: ScreenView = {
     OFRECE,
     { text: 'Quisiera verlo antes. ¿Cuándo puedo pasar?', time: '20:41', mine: true },
     {
-      text: 'Ese es el problema: yo estoy en Madrid trabajando y el departamento está cerrado, no hay quien le abra hasta que yo vuelva el 12. Por eso lo doy tan barato, para no tenerlo vacío. Le mando más fotos y el contrato si quiere 📄',
+      text: 'Ese es el problema: yo estoy trabajando en Lago Agrio y bajo recién el 12. El departamento está cerrado y no hay quien le abra hasta que yo vuelva. Por eso lo doy tan barato, para no tenerlo vacío. Le mando más fotos y el contrato si quiere 📄',
       time: '20:42',
       senal: 'no-se-ve',
     },
@@ -83,7 +83,7 @@ const CUENTA: ScreenView = {
     OFRECE,
     { text: 'Me interesa. ¿A qué cuenta deposito la garantía?', time: '20:41', mine: true },
     {
-      text: `Deposite a esta cuenta: ${CUENTA_DUENO}. Está a nombre de mi hermana, que es la que me maneja las cosas aquí en Ecuador. Mándeme el comprobante y le paso el contrato firmado por correo esta misma noche.`,
+      text: `Deposite a esta cuenta: ${CUENTA_DUENO}. Está a nombre de mi hermana, que es la que me maneja las cosas mientras estoy fuera. Mándeme el comprobante y le paso el contrato firmado por correo esta misma noche.`,
       time: '20:43',
       senal: 'cuenta',
     },
@@ -286,7 +286,7 @@ const SENALES: Senal[] = [
     targetId: 'no-se-ve',
     pantalla: 'n2',
     texto:
-      'El dueño <b>está fuera del país</b> y nadie más puede abrir. Es la excusa que sostiene el orden invertido: si el lugar no existe o no es suyo, no hay nada que enseñar.',
+      'El dueño <b>está fuera de la ciudad</b> y nadie más puede abrir. Es la excusa que sostiene el orden invertido: si el lugar no existe o no es suyo, no hay nada que enseñar.',
   },
   {
     id: 's3',
