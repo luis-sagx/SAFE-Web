@@ -162,35 +162,35 @@ const STORY: Story<ScreenNode> = {
     view: APP_DETALLE,
     verdict: 'Acertaste · el aviso era legítimo',
     outcome:
-      'El envío era el que estabas esperando, salía a reparto al día siguiente y no había ningún valor pendiente. Comprobarlo en la app te tomó diez segundos y te dejó con la información que el mensaje anunciaba: a qué hora estar en casa.',
+      'El envío era el que esperabas, salía a reparto al día siguiente y sin ningún valor pendiente. Diez segundos en la app y ya sabías a qué hora estar en casa.',
   },
   e_devuelve: {
     kind: 'bad',
     view: APP_INICIO,
     verdict: 'Aviso legítimo, reacción peligrosa',
     outcome:
-      'Devolviste al remitente un paquete que sí habías comprado, sin mirar antes de qué se trataba. El envío se fue de vuelta, el reembolso tarda semanas y el aviso no tenía nada de raro: ni pedía pago, ni traía enlace, ni metía prisa. Desconfiar de todo cuesta tanto como confiar de más.',
+      'Devolviste un paquete que sí habías comprado, sin mirar de qué se trataba. El reembolso tarda semanas, y el aviso no pedía pago, ni traía enlace, ni metía prisa.',
   },
   e_responde: {
     kind: 'partial',
     view: SMS_PREGUNTADO,
     verdict: 'Contestaste a un número que no lee',
     outcome:
-      'No pasó nada malo: el remitente era el de siempre. Pero los avisos automáticos salen de un número que no recibe respuestas, así que tu pregunta no llegó a ninguna parte. Y la hora ya venía escrita en el propio mensaje, entre las nueve y la una; el detalle completo estaba en la app, a un toque.',
+      'El remitente era el de siempre, así que no pasó nada. Pero los avisos automáticos salen de un número que no lee respuestas, y la hora ya venía en el mensaje.',
   },
   e_rechaza: {
     kind: 'partial',
     view: SMS_RECHAZADO,
     verdict: 'Rechazaste un envío que sí era tuyo',
     outcome:
-      'Nadie leyó ese mensaje, así que por suerte el paquete salió igual a reparto: era el que sí habías comprado. Pero saliste convencido de que no venía, no estabas en casa al día siguiente y el envío volvió a bodega. El aviso no pedía nada, no traía enlace y no metía prisa; mirarlo en la app costaba diez segundos.',
+      'Nadie leyó ese mensaje, así que el paquete salió igual: era el tuyo. Pero no estabas en casa y volvió a bodega. Mirarlo en la app costaba diez segundos.',
   },
   e_ignora: {
     kind: 'partial',
     view: SMS,
     verdict: 'Lo dejaste pasar',
     outcome:
-      'No perdiste nada grave, porque el mensaje era auténtico y el paquete llegó igual. Pero al día siguiente no había nadie en casa a las diez de la mañana, y el envío volvió a bodega: el aviso servía justamente para eso.',
+      'El mensaje era auténtico y el paquete llegó igual. Pero no había nadie en casa a las diez y volvió a bodega: el aviso servía justamente para eso.',
   },
 }
 
@@ -200,28 +200,28 @@ const SENALES: Senal[] = [
     targetId: 'mensaje',
     pantalla: 'n1',
     texto:
-      '<b>No pide nada.</b> No hay enlace, ni pago, ni plazo, ni un dato que darles. Un aviso de verdad informa y se queda quieto; el engaño necesita que hagas algo.',
+      '<b>No pide nada.</b> Ni enlace, ni pago, ni plazo. Un aviso de verdad informa y se queda quieto; el engaño necesita que hagas algo.',
   },
   {
     id: 's2',
     targetId: 'remitente',
     pantalla: 'n1',
     texto:
-      'Llega del <b>remitente por el que el courier te escribe siempre</b>, no de un celular. Compáralo con el del paquete retenido y verás la diferencia.',
+      'Llega del <b>remitente por el que el courier te escribe siempre</b>, no de un celular cualquiera.',
   },
   {
     id: 's3',
     targetId: 'sin-pago',
     pantalla: 'e_app',
     texto:
-      'En la app <b>no hay ningún valor pendiente</b>. Cuando de verdad hay que pagar algo, se cobra al entregar y con comprobante, nunca por un enlace.',
+      'En la app <b>no hay ningún valor pendiente</b>. Cuando hay que pagar de verdad se cobra al entregar, nunca por un enlace.',
   },
   {
     id: 's4',
     targetId: 'coincide',
     pantalla: 'e_app',
     texto:
-      'El envío <b>coincide con lo que estabas esperando</b>. Ese es el segundo dato: no basta con que el mensaje parezca correcto, tiene que cuadrar con algo tuyo.',
+      'El envío <b>coincide con lo que esperabas</b>. No basta con que el mensaje parezca correcto: tiene que cuadrar con algo tuyo.',
   },
 ]
 

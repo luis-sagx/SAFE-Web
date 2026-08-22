@@ -150,35 +150,35 @@ const STORY: Story<ScreenNode> = {
     view: SMS_BAJA,
     verdict: 'Caíste en la trampa',
     outcome:
-      'No había ninguna suscripción que cancelar: el mensaje solo buscaba que contestaras. Tu respuesta confirmó que la línea está activa y en uso, tu número pasó a una lista que se revende, y esa misma semana empezaron a llegar tres o cuatro mensajes parecidos al día. El "BAJA" además se cobró como mensaje de tarificación adicional.',
+      'No había ninguna suscripción que cancelar: el mensaje solo buscaba que contestaras. Tu número pasó a una lista que se revende, y el "BAJA" se cobró como mensaje de tarificación adicional.',
   },
   e_reclama: {
     kind: 'bad',
     view: SMS_RECLAMO,
     verdict: 'Caíste en la trampa',
     outcome:
-      'Reclamar es contestar, y contestar era todo lo que el mensaje necesitaba. Da igual que no escribieras "BAJA": tu respuesta confirmó que la línea está activa y que alguien la lee. El número pasó a la lista que se revende y esa misma semana empezaron a llegar tres o cuatro mensajes parecidos al día. Y el cobro que reclamabas nunca existió: seguiste sin comprobarlo.',
+      'Reclamar también es contestar, y eso era todo lo que buscaban: confirmaste que alguien lee esa línea. Tu número pasó a la lista que se revende, y el cobro que reclamabas nunca existió.',
   },
   e_bloquea: {
     kind: 'partial',
     view: OPERADORA_INICIO,
     verdict: 'Te tapaste el oído, pero no comprobaste nada',
     outcome:
-      'Bloquear los números cortos evita el próximo mensaje, y no contestar fue lo que impidió el daño. Pero sigues sin saber si ese cargo de $2,99 existía: si hubiera sido real, se te seguiría cobrando y ahora además no te llegaría el aviso. El bloqueo silencia el mensaje, no el cobro.',
+      'No contestar fue lo que impidió el daño. Pero sigues sin saber si el cargo de $2,99 existía: el bloqueo silencia el mensaje, no el cobro.',
   },
   e_ignora: {
     kind: 'partial',
     view: SMS,
     verdict: 'No contestaste, pero quedaste con la duda',
     outcome:
-      'Saliste del hilo sin responder, que es lo que evita el daño: nadie confirmó que tu número esté activo. Pero te quedaste sin saber si ese cobro de $2,99 existía de verdad, y esa duda es la que hace que mucha gente termine contestando al tercer mensaje.',
+      'Saliste sin responder, que es lo que evita el daño. Pero te quedaste sin saber si ese cobro existía, y esa duda es la que hace contestar al tercer mensaje.',
   },
   e_verifica: {
     kind: 'good',
     view: OPERADORA,
     verdict: 'No caíste · lo comprobaste con tu operadora',
     outcome:
-      'En tu línea no había ninguna suscripción activa ni ningún cargo por ese servicio: el mensaje era falso de principio a fin. Lo comprobaste donde de verdad consta, sin contestarle a nadie.',
+      'En tu línea no había ninguna suscripción ni ningún cargo por ese servicio: el mensaje era falso. Lo comprobaste donde consta, sin contestarle a nadie.',
   },
 }
 
@@ -188,28 +188,28 @@ const SENALES: Senal[] = [
     targetId: 'mensaje',
     pantalla: 'n1',
     texto:
-      'Anuncia un cobro por algo que <b>nunca contrataste</b>. Antes de cancelar nada, la pregunta es si ese cargo existe: casi siempre no existe.',
+      'Anuncia un cobro por algo que <b>nunca contrataste</b>. Antes de cancelar nada: ¿ese cargo existe? Casi siempre no.',
   },
   {
     id: 's2',
     targetId: 'respuesta',
     pantalla: 'e_responde',
     texto:
-      'La única acción que te ofrece es <b>responder</b>. Ahí está la trampa: no hay enlace que inspeccionar ni formulario que delate nada, solo una respuesta que ellos necesitan.',
+      'Lo único que te ofrece es <b>responder</b>. Ahí está la trampa: no hay enlace ni formulario, solo la respuesta que ellos necesitan.',
   },
   {
     id: 's3',
     targetId: 'remitente',
     pantalla: 'n1',
     texto:
-      'Llega de un <b>número corto</b> que no tienes guardado. Un número corto no prueba nada: se contratan por campaña y cambian cada semana.',
+      'Llega de un <b>número corto</b> que no tienes guardado. No prueba nada: se contratan por campaña y cambian cada semana.',
   },
   {
     id: 's4',
     targetId: 'sin-suscripcion',
     pantalla: 'e_verifica',
     texto:
-      'En tu operadora <b>no consta ninguna suscripción</b>. Las altas y bajas de verdad se ven y se gestionan ahí, no por mensaje.',
+      'En tu operadora <b>no consta ninguna suscripción</b>. Las altas y bajas se gestionan ahí, no por mensaje.',
   },
 ]
 

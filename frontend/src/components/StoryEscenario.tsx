@@ -114,6 +114,21 @@ function urlMovil(url: string): string {
   return url.replace(/^https?:\/\//, '')
 }
 
+/// La hora de la barra de estado sale del propio hilo, no de una constante.
+///
+/// Un teléfono que marca las 09:41 encima de un mensaje de las 20:36 se delata
+/// solo, y en un escenario que arranca diciendo "ya de noche" contradice además
+/// al enunciado. La saca del último mensaje del hilo, que es el "ahora" de la
+/// escena, y descarta los sellos relativos del historial ("ayer", "28 jul"):
+/// esos no son una hora que un reloj pueda mostrar.
+const HORA_DEL_DIA = /^\d{1,2}:\d{2}$/
+
+function horaDeVista(view: ScreenView): string | undefined {
+  if (view.kind !== 'sms') return undefined
+  const ultima = view.msgs.at(-1)?.time
+  return ultima && HORA_DEL_DIA.test(ultima) ? ultima : undefined
+}
+
 /**
  * Escenario de correo o SMS: grafo de decisiones sobre una pantalla simulada.
  * El escenario solo aporta datos; el recorrido, el registro de la corrida y el
@@ -179,6 +194,23 @@ function StoryEscenario({
     vistaDelNodo.kind === 'sms' && !pantallaRepaso && nodoVisible !== engine.current
       ? { ...vistaDelNodo, volverGoto: undefined, volverLabel: undefined }
       : vistaDelNodo
+
+  /// El reloj se queda en la última hora que enseñó un hilo: abrir la app del
+  /// banco no puede hacerlo retroceder ni devolverlo a una hora inventada. El
+  /// valor inicial sale del primer hilo del grafo, que puede no ser la pantalla
+  /// de entrada —hay escenarios que empiezan en la lista de conversaciones—; si
+  /// el escenario no tiene ningún hilo (una llamada) se queda en la hora neutra.
+  const horaVista = horaDeVista(vista)
+  const [horaTelefono, setHoraTelefono] = useState(
+    () =>
+      Object.values(story)
+        .map((nodo) => horaDeVista(nodo.view))
+        .find(Boolean) ?? '09:41',
+  )
+
+  useEffect(() => {
+    if (horaVista) setHoraTelefono(horaVista)
+  }, [horaVista])
 
   const dominio = dominioCorreo ?? 'safeweb.com'
   /// Las pestañas se acumulan según el recorrido: cada pantalla nueva abre una,
@@ -392,7 +424,7 @@ function StoryEscenario({
   const pantallaTelefono = (
     <div className={styles.phoneStage} onClick={onHotspot}>
       <div className={styles.phoneStatusBar} aria-hidden>
-        <span>09:41</span>
+        <span>{horaTelefono}</span>
         <span className={styles.phoneSensors}>
           <span className={styles.phoneSignal}>▮▮▮</span>
           <span>5G</span>

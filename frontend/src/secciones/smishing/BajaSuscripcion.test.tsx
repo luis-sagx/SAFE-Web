@@ -38,6 +38,18 @@ describe('BajaSuscripcion', () => {
     expect(screen.getByText('Caíste en la trampa')).toBeDefined()
   })
 
+  // Un reloj clavado en una hora inventada encima de un mensaje de las 07:52
+  // delata la pantalla, y contradice al "al levantarte" del enunciado.
+  it('el reloj del teléfono va con el hilo, no con una hora fija', () => {
+    const telefono = empezar(<BajaSuscripcion />)
+    const reloj = () => telefono.querySelector('[class*="phoneStatusBar"] span')?.textContent
+
+    expect(reloj()).toBe('07:52')
+
+    fireEvent.click(within(telefono).getByRole('button', { name: 'BAJA' }))
+    expect(reloj()).toBe('07:53')
+  })
+
   it('abrir la app de la operadora no termina la corrida', () => {
     const telefono = empezar(<BajaSuscripcion />)
 

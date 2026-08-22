@@ -182,42 +182,42 @@ const STORY: Story<ScreenNode> = {
     view: LLAMADA,
     verdict: 'Caíste en la trampa',
     outcome:
-      'Tu tarjeta nunca estuvo bloqueada. El código que dictaste era el que tu banco te acababa de enviar para autorizar una compra que estaban haciendo ellos mientras hablabas: mil doscientos dólares en una tienda de electrónica. La llamada la habías hecho tú, así que ni siquiera hubo un número extraño en tu registro.',
+      'Tu tarjeta nunca estuvo bloqueada. El código que dictaste autorizaba una compra que ellos hacían mientras hablabas: mil doscientos dólares en electrónica. Y la llamada la hiciste tú.',
   },
   e_cuelga: {
     kind: 'good',
     view: LLAMADA,
     verdict: 'No caíste · no dictaste el código',
     outcome:
-      'Colgaste al oír que te pedían el código. Ningún banco lo pide por teléfono, y la insistencia en que no cortaras era la señal más clara de todas. Llamar ya les confirmó que tu línea está activa, así que espera más intentos: la próxima vez, comprueba antes de marcar.',
+      'Colgaste al oír que te pedían el código. Ningún banco lo pide por teléfono, y la insistencia en no cortar era la señal más clara. Llamar ya confirmó tu línea: espera más intentos.',
   },
   e_bloquea: {
     kind: 'partial',
     view: BANCO_INICIO,
     verdict: 'Anulaste una tarjeta que estaba sana',
     outcome:
-      'No entregaste nada y no llamaste, que es lo que evita el daño. Pero la tarjeta no tenía ningún bloqueo: la anulaste tú. Te quedas sin ella hasta que llegue la nueva, con las domiciliaciones caídas, y el mensaje consiguió igual lo que buscaba, que era que actuaras a su ritmo. El estado estaba a un toque, en "Mis tarjetas".',
+      'No entregaste nada, pero la tarjeta no tenía ningún bloqueo: la anulaste tú. Te quedas sin ella hasta que llegue la nueva. Su estado estaba a un toque, en "Mis tarjetas".',
   },
   e_responde: {
     kind: 'partial',
     view: SMS_RESPONDIDO,
     verdict: 'No entregaste nada, pero contestaste',
     outcome:
-      'No diste ningún dato, pero confirmaste que el número está activo y que alguien lee los mensajes. Es lo que buscan para insistir con algo mejor preparado, y ahora tienen una conversación abierta contigo.',
+      'No diste ningún dato, pero confirmaste que alguien lee esa línea. Ahora tienen una conversación abierta contigo para insistir mejor.',
   },
   e_ignora: {
     kind: 'partial',
     view: SMS,
     verdict: 'No caíste, pero te quedaste con la duda',
     outcome:
-      'Saliste del hilo sin llamar ni contestar, que es lo que evita el daño. Pero si el bloqueo hubiera sido real, seguirías sin tarjeta y sin saberlo: la duda se resuelve en la app o llamando al número de tu tarjeta, no dejándola pasar.',
+      'Saliste sin llamar ni contestar, que es lo que evita el daño. Pero si el bloqueo hubiera sido real, seguirías sin tarjeta y sin saberlo.',
   },
   e_app: {
     kind: 'good',
     view: APP_BANCO,
     verdict: 'No caíste · lo comprobaste donde consta',
     outcome:
-      'Tu tarjeta estaba activa y sin ningún intento rechazado: no había bloqueo que levantar. En la misma pantalla estaba el número de atención de verdad, el que también viene impreso en el reverso de la tarjeta.',
+      'Tu tarjeta estaba activa y sin intentos rechazados: no había bloqueo que levantar. En la misma pantalla estaba el número de atención de verdad.',
   },
 }
 
@@ -227,35 +227,35 @@ const SENALES: Senal[] = [
     targetId: 'mensaje',
     pantalla: 'n1',
     texto:
-      'No hay ningún enlace que mirar: la trampa es <b>un número de teléfono</b>. En un móvil basta tocarlo para marcar, y por eso cuesta menos llamar que comprobar.',
+      'No hay enlace que mirar: la trampa es <b>un número de teléfono</b>. En un móvil basta tocarlo, y por eso cuesta menos llamar que comprobar.',
   },
   {
     id: 's2',
     targetId: 'remitente',
     pantalla: 'n1',
     texto:
-      'El remitente es un <b>nombre corto sin verificar</b>. Cualquiera puede enviar mensajes con el nombre que quiera escrito arriba; que diga el de tu banco no prueba nada.',
+      'El remitente es un <b>nombre corto sin verificar</b>. Cualquiera manda mensajes con el nombre que quiera escrito arriba.',
   },
   {
     id: 's3',
     targetId: 'piden-codigo',
     pantalla: 'n2',
     texto:
-      'Te piden el <b>código que te acaba de llegar</b>. Ese código autoriza operaciones: dictarlo es firmar lo que estén haciendo al otro lado mientras hablas.',
+      'Te piden el <b>código que te acaba de llegar</b>. Ese código autoriza operaciones: dictarlo es firmar lo que hagan al otro lado.',
   },
   {
     id: 's4',
     targetId: 'no-cuelgue',
     pantalla: 'n2',
     texto:
-      '<b>Insisten en que no cuelgues.</b> Colgar y llamar tú es lo único que rompe el engaño, y por eso es lo primero que intentan impedir.',
+      '<b>Insisten en que no cuelgues.</b> Colgar y llamar tú rompe el engaño, y por eso es lo primero que impiden.',
   },
   {
     id: 's5',
     targetId: 'sin-bloqueo',
     pantalla: 'e_app',
     texto:
-      'En la app <b>no había ningún bloqueo</b>. El estado real de tu tarjeta está ahí y en el número impreso en su reverso: dos sitios que no dependen de quien te escribió.',
+      'En la app <b>no había ningún bloqueo</b>. El estado real está ahí y en el reverso de tu tarjeta: dos sitios que no dependen de quien te escribió.',
   },
 ]
 

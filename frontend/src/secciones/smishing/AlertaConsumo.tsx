@@ -22,7 +22,7 @@ const NUEVO = {
   senal: 'aviso',
 }
 
-const BORRADOR = 'No reconozco ese consumo, mi tarjeta es la 4539 0011 8842 4417'
+const RESPUESTA_CON_TARJETA = 'No reconozco ese consumo, mi tarjeta es la 4539 0011 8842 4417'
 
 const SMS: Extract<ScreenView, { kind: 'sms' }> = {
   kind: 'sms',
@@ -36,8 +36,8 @@ const SMS: Extract<ScreenView, { kind: 'sms' }> = {
   respuestas: [
     {
       texto: 'No reconozco ese consumo, les paso el número de mi tarjeta.',
-      goto: 'n1b',
-      label: 'Fue a mandarle al banco el número completo de su tarjeta',
+      goto: 'e_responde',
+      label: 'Le mandó al banco el número completo de su tarjeta',
     },
     {
       texto: 'No reconozco ese consumo.',
@@ -52,18 +52,6 @@ const SMS: Extract<ScreenView, { kind: 'sms' }> = {
   volverLabel: 'Salió del hilo sin verificar el consumo',
 }
 
-/// Lo escrito y todavía sin enviar. Que el número completo esté a la vista
-/// antes de pulsar enviar es media lección del escenario: el error no es el
-/// aviso, es lo que uno está a punto de mandar por el mismo canal.
-const SMS_BORRADOR: ScreenView = {
-  ...SMS,
-  respuestas: undefined,
-  borrador: BORRADOR,
-  senalBorrador: 'respuesta',
-  enviarGoto: 'e_responde',
-  enviarLabel: 'Envió por SMS el número completo de su tarjeta',
-}
-
 /// El hilo con la respuesta ya enviada. Todo final que nace de contestar se ve
 /// sobre la burbuja propia: sin ella el participante no sabe qué salió de su
 /// teléfono, solo que perdió.
@@ -76,7 +64,7 @@ function conRespuesta(texto: string): Extract<ScreenView, { kind: 'sms' }> {
   }
 }
 
-const SMS_RESPONDIDO = conRespuesta(BORRADOR)
+const SMS_RESPONDIDO = conRespuesta(RESPUESTA_CON_TARJETA)
 const SMS_PREGUNTADO = conRespuesta('No reconozco ese consumo.')
 
 /// El inicio de la banca móvil. Abrir la app no es todavía haber verificado:
@@ -157,14 +145,13 @@ const APPS: AppTelefono[] = [
 
 const STORY: Story<ScreenNode> = {
   n1: { kind: 'scene', view: SMS },
-  n1b: { kind: 'scene', view: SMS_BORRADOR },
   n2: { kind: 'scene', view: APP_INICIO },
   e_bloquea: {
     kind: 'partial',
     view: APP_INICIO,
     verdict: 'Reaccionaste sin comprobar',
     outcome:
-      'Bloqueaste la tarjeta por una compra que habías hecho tú. No perdiste nada, pero te quedaste sin tarjeta hasta que el banco emita otra, y los movimientos estaban a un toque de distancia en esta misma app.',
+      'Bloqueaste la tarjeta por una compra que habías hecho tú. Te quedas sin ella hasta que el banco emita otra, y los movimientos estaban a un toque.',
     score: 50,
   },
   e_app: {
@@ -187,7 +174,7 @@ const STORY: Story<ScreenNode> = {
     view: SMS_PREGUNTADO,
     verdict: 'Contestaste a un número que no lee',
     outcome:
-      'No entregaste ningún dato, y eso es lo que importa. Pero los avisos de consumo salen de un número automático que no recibe respuestas: tu mensaje no llegó a nadie y el consumo siguió sin comprobar. La app tenía la respuesta a un toque.',
+      'No entregaste ningún dato, y eso es lo que importa. Pero los avisos salen de un número automático que no lee respuestas: el consumo siguió sin comprobar.',
     score: 50,
   },
   e_ignora: {
@@ -195,7 +182,7 @@ const STORY: Story<ScreenNode> = {
     view: SMS,
     verdict: 'Prudente, pero incompleto',
     outcome:
-      'No entregaste nada, y eso está bien. Pero tampoco verificaste: si el consumo hubiera sido de otra persona, tendrías horas para bloquear la tarjeta y las dejaste pasar.',
+      'No entregaste nada, y eso está bien. Pero tampoco verificaste: si el consumo hubiera sido de otro, tenías horas para bloquear y las dejaste pasar.',
     score: 50,
   },
 }

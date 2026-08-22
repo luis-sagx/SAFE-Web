@@ -10,23 +10,18 @@ vi.mock('../../context/AuthContext', async () => (await import('../../test/escen
 vi.mock('../../lib/api', async () => (await import('../../test/escenario')).apiSinRed())
 
 describe('AlertaConsumo', () => {
-  it('elegir la frase y enviarla son dos gestos: el borrador se ve antes de mandarlo', () => {
+  it('la burbuja anuncia la intención y el hilo enseña lo que de verdad salió', () => {
     const telefono = empezar(<AlertaConsumo />)
 
-    // Sin borrador todavía: el campo es el marcador de posición del teclado, y
-    // la burbuja anuncia lo que se va a mandar sin escribir el número.
+    // La burbuja no escribe el número: dice qué vas a hacer. El número aparece
+    // en el hilo, ya mandado, que es donde duele verlo.
     expect(within(telefono).queryByText(/mi tarjeta es la 4539/)).toBeNull()
 
     fireEvent.click(
       within(telefono).getByRole('button', { name: /les paso el número de mi tarjeta/ }),
     )
 
-    const borrador = within(telefono).getByText(/mi tarjeta es la 4539 0011 8842 4417/)
-    expect(borrador).toBeDefined()
-    // Sigue siendo un borrador: la corrida no ha terminado.
-    expect(screen.queryByText('Aviso legítimo, reacción peligrosa')).toBeNull()
-
-    fireEvent.click(within(telefono).getByRole('button', { name: 'Enviar el mensaje' }))
+    expect(within(telefono).getByText(/mi tarjeta es la 4539 0011 8842 4417/)).toBeDefined()
     expect(screen.getByText('Aviso legítimo, reacción peligrosa')).toBeDefined()
   })
 

@@ -10,27 +10,32 @@ vi.mock('../../context/AuthContext', async () => (await import('../../test/escen
 vi.mock('../../lib/api', async () => (await import('../../test/escenario')).apiSinRed())
 
 describe('CodigoReenviado', () => {
-  it('abre en la lista, con las dos conversaciones y el código a la vista', () => {
+  it('abre en el hilo del impostor, como cualquier otro escenario', () => {
     const telefono = empezar(<CodigoReenviado />)
 
-    // El código no sale de la nada: la vista previa del banco lo enseña antes
-    // de tocar nada, y los dos remitentes quedan uno debajo del otro.
-    expect(within(telefono).getByText(/Su código de verificación es 731 640/)).toBeDefined()
-    expect(within(telefono).getByText('BANCO LITORAL')).toBeDefined()
     expect(within(telefono).getByText('+593 99 412 8867')).toBeDefined()
+    expect(within(telefono).getByText(/reenvíeme el código de seis dígitos/)).toBeDefined()
   })
 
-  it('reenviar el código pasa por el campo antes de salir', () => {
+  // El código no puede salir de la nada. Sale del hilo con la flecha ‹, que es
+  // el gesto de un teléfono de verdad, y ahí la vista previa del banco lo
+  // enseña junto al remitente por el que escribe siempre.
+  it('la flecha de la cabecera lleva a la lista, donde está el código del banco', () => {
     const telefono = empezar(<CodigoReenviado />)
 
-    fireEvent.click(within(telefono).getByRole('button', { name: /\+593 99 412 8867/ }))
+    fireEvent.click(within(telefono).getByRole('button', { name: 'Volver a la lista de mensajes' }))
+
+    expect(within(telefono).getByText(/Su código de verificación es 731 640/)).toBeDefined()
+    expect(within(telefono).getByText('BANCO LITORAL')).toBeDefined()
+    expect(screen.getByText('¿Qué haces?')).toBeDefined()
+  })
+
+  it('reenviar el código sale de un solo gesto y se ve mandado en el hilo', () => {
+    const telefono = empezar(<CodigoReenviado />)
+
     fireEvent.click(within(telefono).getByRole('button', { name: 'Te reenvío el código.' }))
 
-    // Los seis dígitos quedan escritos y todavía sin enviar.
     expect(within(telefono).getByText('Te reenvío el código: 731 640')).toBeDefined()
-    expect(screen.queryByText('Caíste en la trampa')).toBeNull()
-
-    fireEvent.click(within(telefono).getByRole('button', { name: 'Enviar el mensaje' }))
     expect(screen.getByText('Caíste en la trampa')).toBeDefined()
   })
 

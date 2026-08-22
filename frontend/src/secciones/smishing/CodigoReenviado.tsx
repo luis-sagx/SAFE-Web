@@ -17,6 +17,12 @@ import type { Senal } from '../../components/ui/PanelVeredicto'
  * Por eso el escenario deja las dos conversaciones a mano: el mensaje bueno
  * lleva escrita la defensa ("nunca lo comparta") y leerlo es lo que arma la
  * decisión. Nada obliga a abrirlo, igual que en la vida real.
+ *
+ * Se entra por el hilo del impostor y no por la lista, como en cualquier otro
+ * escenario: quien recibe un mensaje lo abre desde la notificación, no desde
+ * la bandeja. El código del banco está a un gesto —la flecha ‹ de la cabecera
+ * lleva a la lista, y su vista previa lo enseña—, que es exactamente lo que
+ * cuesta en un teléfono de verdad.
  */
 
 const CODIGO = '731 640'
@@ -44,8 +50,8 @@ const HILO_FALSO: ScreenView = {
   respuestas: [
     {
       texto: 'Te reenvío el código.',
-      goto: 'n3',
-      label: 'Fue a reenviar el código al número desconocido',
+      goto: 'e_reenvia',
+      label: 'Reenvió el código al número desconocido',
     },
     {
       texto: 'Ese código no se lo puedo pasar a nadie.',
@@ -53,17 +59,8 @@ const HILO_FALSO: ScreenView = {
       label: 'Se negó a reenviar el código',
     },
   ],
-  volverGoto: 'n1',
-  volverLabel: 'Volvió a la lista de mensajes',
-}
-
-const HILO_BORRADOR: ScreenView = {
-  ...HILO_FALSO,
-  respuestas: undefined,
-  borrador: `Te reenvío el código: ${CODIGO}`,
-  senalBorrador: 'reenvio',
-  enviarGoto: 'e_reenvia',
-  enviarLabel: 'Reenvió el código al número desconocido',
+  volverGoto: 'n2',
+  volverLabel: 'Salió del hilo a la lista de mensajes',
 }
 
 /// El hilo con la respuesta ya enviada. Los dos finales que nacen de contestar
@@ -71,9 +68,8 @@ const HILO_BORRADOR: ScreenView = {
 /// sin llegar a salir deja sin enseñar lo único que importaba, que el código
 /// salió del teléfono.
 const HILO_ENVIADO: ScreenView = {
-  ...HILO_BORRADOR,
-  borrador: undefined,
-  enviarGoto: undefined,
+  ...HILO_FALSO,
+  respuestas: undefined,
   volverGoto: undefined,
   msgs: [
     ...(HILO_FALSO.kind === 'sms' ? HILO_FALSO.msgs : []),
@@ -89,11 +85,10 @@ const HILO_NEGADO: ScreenView = {
   ],
 }
 
-/// La lista de conversaciones, y la pantalla por la que se entra. Abrir
-/// Mensajes y ver los dos hilos uno debajo del otro es lo que hace que el
-/// código no salga de la nada: su vista previa lo enseña antes de tocar nada,
-/// y los dos remitentes quedan a la vista para compararlos. Leer el del banco
-/// sigue siendo decisión del participante, como lo sería en su teléfono.
+/// La lista de conversaciones, a la que se sale con la flecha de la cabecera.
+/// Aquí es donde el código deja de salir de la nada: la vista previa del banco
+/// lo enseña, y los dos remitentes quedan uno debajo del otro para compararlos.
+/// Salir del hilo a mirar es decisión del participante, como en su teléfono.
 const LISTA: ScreenView = {
   kind: 'web',
   app: 'Mensajes',
@@ -108,14 +103,14 @@ const LISTA: ScreenView = {
     {
       texto: 'BANCO LITORAL',
       detalle: `Su código de verificación es ${CODIGO}… · 20:40`,
-      goto: 'n4',
+      goto: 'n3',
       label: 'Abrió el mensaje que envió el banco',
     },
     {
       texto: '+593 99 412 8867',
       detalle: 'Para confirmar que es usted y cerrar el caso… · 20:42',
-      goto: 'n2',
-      label: 'Abrió la conversación del número desconocido',
+      goto: 'n1',
+      label: 'Volvió a la conversación del número desconocido',
     },
     { texto: 'Mamá', detalle: '¿Llegaste bien? · ayer' },
     { texto: 'ENVIAEXPRESS', detalle: 'Su envío fue entregado. Gracias por preferirnos. · lun' },
@@ -139,7 +134,7 @@ const HILO_BANCO: ScreenView = {
       senal: 'aviso-real',
     },
   ],
-  volverGoto: 'n1',
+  volverGoto: 'n2',
   volverLabel: 'Volvió a la lista de mensajes',
 }
 
@@ -204,7 +199,7 @@ const APPS: AppTelefono[] = [
     Icono: Wallet,
     texto: 'Banco',
     color: '#155e75',
-    goto: 'n5',
+    goto: 'n4',
     label: 'Abrió la app del banco para comprobar el intento de acceso',
   },
   { Icono: MessageSquareText, texto: 'Mensajes', color: '#2f9e44' },
@@ -223,45 +218,44 @@ const APPS: AppTelefono[] = [
 ]
 
 const STORY: Story<ScreenNode> = {
-  n1: { kind: 'scene', view: LISTA },
-  n2: { kind: 'scene', view: HILO_FALSO },
-  n3: { kind: 'scene', view: HILO_BORRADOR },
-  n4: { kind: 'scene', view: HILO_BANCO },
-  n5: { kind: 'scene', view: BANCO_INICIO },
+  n1: { kind: 'scene', view: HILO_FALSO },
+  n2: { kind: 'scene', view: LISTA },
+  n3: { kind: 'scene', view: HILO_BANCO },
+  n4: { kind: 'scene', view: BANCO_INICIO },
   e_reenvia: {
     kind: 'bad',
     view: HILO_ENVIADO,
     verdict: 'Caíste en la trampa',
     outcome:
-      'No había ningún intento de acceso: el que estaba entrando a tu banca era quien te escribía, y le faltaba ese código para terminar. Tu mensaje se lo dio. Transfirieron el saldo a tres cuentas distintas en menos de un minuto, y el código lo enviaste tú, así que la operación quedó registrada como autorizada por ti.',
+      'No había ningún intento de acceso: quien entraba a tu banca era quien te escribía, y le faltaba ese código. Vaciaron la cuenta en tres transferencias, y como el código lo enviaste tú, quedó autorizada.',
   },
   e_app: {
     kind: 'good',
     view: APP_BANCO,
     verdict: 'No caíste · lo comprobaste donde consta',
     outcome:
-      'No había ningún acceso desde otro dispositivo. Sí había una solicitud de código de hace dos minutos, todavía sin usar: la había pedido quien te escribía, esperando que se lo reenviaras para completarla.',
+      'No había ningún acceso desde otro dispositivo. Sí una solicitud de código de hace dos minutos, sin usar: la pidieron ellos, esperando que se la reenviaras.',
   },
   e_clave: {
     kind: 'partial',
     view: BANCO_INICIO,
     verdict: 'Cambiaste la clave, pero el código sigue vivo',
     outcome:
-      'No reenviaste el código, que es lo único que impedía que entraran. Pero cambiar la clave no cancela la solicitud que ya estaba hecha y sin usar: ese código sigue sirviendo hasta que venza, y tú sigues sin saber si hubo algún acceso. Estaba a un toque, en "Seguridad de la cuenta".',
+      'No reenviaste el código, que es lo que importaba. Pero cambiar la clave no cancela la solicitud ya hecha: ese código sirve hasta que venza. Los accesos estaban en "Seguridad de la cuenta".',
   },
   e_niega: {
     kind: 'partial',
     view: HILO_NEGADO,
     verdict: 'No lo diste, pero les seguiste contestando',
     outcome:
-      'No entregaste el código, que es lo que importaba. Pero le contestaste a un número desconocido, así que ahora saben que la línea está activa y que alguien la lee, y tienen una conversación abierta contigo para insistir mejor. Y no comprobaste nada: la solicitud de ese código sigue hecha y sin usar, esperando.',
+      'No entregaste el código, que es lo que importaba. Pero contestaste a un número desconocido: ahora saben que alguien lee esa línea. Y la solicitud de ese código sigue viva.',
   },
   e_ignora: {
     kind: 'partial',
     view: LISTA,
     verdict: 'No lo reenviaste, pero te quedaste con la duda',
     outcome:
-      'No diste el código, que es lo único que impedía que entraran. Pero saliste sin comprobar nada, y si el aviso hubiera sido cierto seguirías con alguien intentando entrar a tu cuenta. La duda se resuelve en la app, no dejándola pasar.',
+      'No diste el código, que es lo único que impedía que entraran. Pero saliste sin comprobar nada: si el aviso hubiera sido cierto, seguirían intentándolo.',
   },
 }
 
@@ -269,37 +263,37 @@ const SENALES: Senal[] = [
   {
     id: 's1',
     targetId: 'aviso-real',
-    pantalla: 'n4',
+    pantalla: 'n3',
     texto:
-      'El mensaje del banco es <b>auténtico</b>, y lleva la defensa escrita: <b>"nunca lo comparta, ni con personal del banco"</b>. Que el código sea de verdad es justo lo que hace creíble al otro mensaje.',
+      'El mensaje del banco es <b>auténtico</b> y lleva la defensa escrita: <b>"nunca lo comparta, ni con personal del banco"</b>.',
   },
   {
     id: 's2',
     targetId: 'piden-codigo',
-    pantalla: 'n2',
+    pantalla: 'n1',
     texto:
-      'Dice que el código <b>"es solo de verificación y no autoriza nada"</b>. Es exactamente al revés: ese código autoriza operaciones, y por eso lo quieren.',
+      'Dice que el código <b>"no autoriza ninguna operación"</b>. Es al revés: autoriza, y por eso lo quieren.',
   },
   {
     id: 's3',
     targetId: 'remitente',
-    pantalla: 'n2',
+    pantalla: 'n1',
     texto:
-      'Llega de un <b>número de celular cualquiera</b>, no del remitente por el que te escribe siempre tu banco. Compara las dos conversaciones y la diferencia salta.',
+      'Llega de un <b>número de celular cualquiera</b>, no del remitente por el que te escribe siempre tu banco.',
   },
   {
     id: 's4',
     targetId: 'reenvio',
     pantalla: 'e_reenvia',
     texto:
-      'Reenviar el código es <b>firmar la operación</b> que están haciendo al otro lado. No es identificarte: es autorizar.',
+      'Reenviar el código es <b>firmar la operación</b> que hacen al otro lado. No te identifica: autoriza.',
   },
   {
     id: 's5',
     targetId: 'sin-intento',
     pantalla: 'e_app',
     texto:
-      'En la app <b>no consta ningún intento de acceso</b>. Lo que sí consta es la solicitud del código, hecha dos minutos antes: la pidieron ellos.',
+      'En la app <b>no consta ningún intento de acceso</b>. Lo que sí consta es la solicitud del código: la pidieron ellos.',
   },
 ]
 
@@ -340,9 +334,9 @@ function CodigoReenviado() {
       }
       pista={
         <p>
-          Te llegaron dos mensajes, no uno. Puedes contestar al que te escribe, leer el otro, o
-          comprobar en la app si ese intento de acceso existe. Cuál de ellos es el acertado es
-          justamente lo que decides tú.
+          Te llegaron dos mensajes, no uno: el otro está en la lista de conversaciones, saliendo
+          del hilo con la flecha de arriba. Puedes contestar a quien te escribe, leer el otro, o
+          comprobar en la app si ese intento de acceso existe.
         </p>
       }
     />

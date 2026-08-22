@@ -53,28 +53,12 @@ Cada set trae al menos dos frases con desenlaces distintos. Elegir la frase
 prudente no siempre gana: en un SMS, contestar cualquier cosa ya confirma que la
 línea existe y que alguien la lee.
 
-Sobre eso, una regla de dos gestos:
-
-| Lo que manda la frase | Flujo |
-|---|---|
-| **Es el botín** (el código, el número de tarjeta) | burbuja → escena con esa frase de `borrador` → botón enviar |
-| **Es solo hablar** ("¿de qué paquete?") | burbuja → se envía y sigue la historia |
-
-El paso intermedio existe para el primer caso y solo para él: ver el dato propio
-escrito en el campo, todavía sin enviar, es el instante en el que uno se lo
-repiensa. Añadirlo a una pregunta cualquiera sería un toque vacío.
-
-El botín es un dato que el participante no tenía por qué escribir —el número
-completo de su tarjeta, el código de seis dígitos—, no la palabra que el propio
-mensaje le dictó. Por eso `BajaSuscripcion` **no** lleva borrador: "BAJA" viene
-escrito en el SMS, verlo un segundo en el campo no añade nada, y hacía que de
-dos frases que pierden igual una tardara dos gestos y la otra uno.
-
-Reparto:
-
-- Con borrador: `AlertaConsumo` (número de tarjeta), `CodigoReenviado` (el código).
-- Sin borrador: `BajaSuscripcion`, `CitacionTransito`, `PaqueteRetenido`,
-  `EntregaProgramada`, `TarjetaBloqueada`.
+**Un gesto, no dos.** Elegir la burbuja manda el mensaje. Se probó el paso
+intermedio —la frase cae en el campo como `borrador` y hace falta pulsar
+enviar— para las frases que entregan el botín, y se descartó: obligaba a buscar
+un segundo botón, y en un mismo escenario hacía que de dos frases que pierden
+igual una costara dos gestos y la otra uno. El instante de "lo estoy mandando"
+no lo da un borrador: lo da la burbuja saliendo hacia la derecha del hilo.
 
 **Todo final que nace de contestar se ve sobre la burbuja propia.** El nodo final
 no rinde el hilo tal como estaba ni el borrador sin enviar, sino el hilo con el
@@ -133,18 +117,52 @@ Con las primitivas existentes:
 
 Aplica a `TarjetaBloqueada` y `CodigoReenviado`, que hoy tienen solo el detalle.
 
-### 3.4 `CodigoReenviado` arranca en la lista de conversaciones
+### 3.4 De dónde sale el código en `CodigoReenviado`
 
-`n1` pasa a ser la lista. Las dos vistas previas se ven desde el primer segundo:
+El problema era que el participante nunca había visto los seis dígitos, así que
+el mensaje que los mandaba no significaba nada.
+
+Se probó arrancar el escenario en la lista de conversaciones, con las dos vistas
+previas visibles de entrada, y se descartó: era el único escenario del catálogo
+que no empieza en la pantalla del ataque, y entrar por una bandeja antes de ver
+el mensaje se lee como un paso administrativo del ejercicio. Quien recibe un
+mensaje lo abre desde la notificación, no desde la lista.
+
+Se entra por el hilo del impostor, como en todos los demás. El código está a un
+gesto: la flecha ‹ de la cabecera sale a la lista, y ahí la vista previa lo
+enseña junto al remitente por el que el banco escribe siempre.
 
 ```
-+593 99 412 8867   20:42   Para confirmar que es usted…
-BANCO LITORAL      20:40   Su código de verificación es 731 640…
-Mamá                ayer   ¿Llegaste bien?
+n1  hilo del impostor  ──‹──▶  n2  lista  ──▶  n3  hilo del banco
+                                              (Su código … es 731 640)
 ```
 
-El código deja de salir de la nada y comparar los dos remitentes es lo primero que
-se ve. Abrir el mensaje del banco sigue siendo opcional, como en la vida real.
+Eso es exactamente lo que cuesta en un teléfono de verdad, y la comparación de
+los dos remitentes sigue estando a mano sin que nadie obligue a hacerla.
+
+### 3.6 El veredicto tiene que caber sin desplazar
+
+El panel de resultado enseña, a la vez, el veredicto, su prosa, la nota de
+aprobación y una señal del repaso —cuyo hueco es de alto fijo (`min-h-[11rem]`,
+reservado para la señal más larga del catálogo)—. Con `outcome` de 300 a 365
+caracteres el conjunto no cabía en pantalla y había que desplazar para llegar a
+los botones de "Anterior / Siguiente".
+
+Techos que se aplican a los cinco escenarios señalados: **`outcome` ≤ 200
+caracteres** (dos o tres frases) y **cada señal ≤ 145**. Se recorta prosa, no
+contenido: cada final sigue diciendo qué pasó y por qué.
+
+### 3.5 El reloj del teléfono sale del hilo
+
+`StoryEscenario` pintaba `09:41` fijo en la barra de estado. Encima de un mensaje
+de las 20:36, y bajo un enunciado que dice "ya de noche", el reloj delataba la
+pantalla. Ahora la hora sale del último mensaje del hilo visible y se queda en la
+última que vio: abrir la app del banco no la hace retroceder. Los sellos
+relativos del historial ("ayer", "28 jul") se descartan, y un escenario sin hilo
+—una llamada— conserva la hora neutra.
+
+Es el único cambio fuera de `secciones/smishing/`, y alcanza a todos los
+escenarios con marco de celular, no solo a este módulo: el defecto era del marco.
 
 ## 4. Alcance
 
@@ -160,7 +178,8 @@ Seis archivos, todos en `frontend/src/secciones/smishing/`:
 | `PaqueteRetenido.tsx` | ✓ | | | |
 | `EntregaProgramada.tsx` | ✓ | | | |
 
-`BonoEstado.tsx` y todos los componentes compartidos quedan intactos.
+`BonoEstado.tsx` queda intacto. De los componentes compartidos solo cambia
+`StoryEscenario.tsx`, y solo por §3.5; `DeviceScreen` no se toca.
 
 ## 5. Verificación
 
