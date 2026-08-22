@@ -66,6 +66,29 @@ const HILO_BORRADOR: ScreenView = {
   enviarLabel: 'Reenvió el código al número desconocido',
 }
 
+/// El hilo con la respuesta ya enviada. Los dos finales que nacen de contestar
+/// se ven sobre la burbuja propia: un borrador que se convierte en veredicto
+/// sin llegar a salir deja sin enseñar lo único que importaba, que el código
+/// salió del teléfono.
+const HILO_ENVIADO: ScreenView = {
+  ...HILO_BORRADOR,
+  borrador: undefined,
+  enviarGoto: undefined,
+  volverGoto: undefined,
+  msgs: [
+    ...(HILO_FALSO.kind === 'sms' ? HILO_FALSO.msgs : []),
+    { text: `Te reenvío el código: ${CODIGO}`, time: '20:43', mine: true, senal: 'reenvio' },
+  ],
+}
+
+const HILO_NEGADO: ScreenView = {
+  ...HILO_ENVIADO,
+  msgs: [
+    ...(HILO_FALSO.kind === 'sms' ? HILO_FALSO.msgs : []),
+    { text: 'Ese código no se lo puedo pasar a nadie.', time: '20:43', mine: true },
+  ],
+}
+
 /// La lista de conversaciones, y la pantalla por la que se entra. Abrir
 /// Mensajes y ver los dos hilos uno debajo del otro es lo que hace que el
 /// código no salga de la nada: su vista previa lo enseña antes de tocar nada,
@@ -207,7 +230,7 @@ const STORY: Story<ScreenNode> = {
   n5: { kind: 'scene', view: BANCO_INICIO },
   e_reenvia: {
     kind: 'bad',
-    view: HILO_BORRADOR,
+    view: HILO_ENVIADO,
     verdict: 'Caíste en la trampa',
     outcome:
       'No había ningún intento de acceso: el que estaba entrando a tu banca era quien te escribía, y le faltaba ese código para terminar. Tu mensaje se lo dio. Transfirieron el saldo a tres cuentas distintas en menos de un minuto, y el código lo enviaste tú, así que la operación quedó registrada como autorizada por ti.',
@@ -228,7 +251,7 @@ const STORY: Story<ScreenNode> = {
   },
   e_niega: {
     kind: 'partial',
-    view: HILO_FALSO,
+    view: HILO_NEGADO,
     verdict: 'No lo diste, pero les seguiste contestando',
     outcome:
       'No entregaste el código, que es lo que importaba. Pero le contestaste a un número desconocido, así que ahora saben que la línea está activa y que alguien la lee, y tienen una conversación abierta contigo para insistir mejor. Y no comprobaste nada: la solicitud de ese código sigue hecha y sin usar, esperando.',
@@ -267,7 +290,7 @@ const SENALES: Senal[] = [
   {
     id: 's4',
     targetId: 'reenvio',
-    pantalla: 'n3',
+    pantalla: 'e_reenvia',
     texto:
       'Reenviar el código es <b>firmar la operación</b> que están haciendo al otro lado. No es identificarte: es autorizar.',
   },

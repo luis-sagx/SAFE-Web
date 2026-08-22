@@ -21,16 +21,20 @@ describe('BajaSuscripcion', () => {
     ).toBeDefined()
   })
 
-  it('elegir "BAJA" la deja escrita sin enviarla', () => {
+  // Las dos frases pierden, así que las dos tienen que terminar igual: la
+  // burbuja propia en el hilo y el veredicto encima de ella. Un final que se
+  // dispara sin enseñar lo que salió del teléfono no enseña nada.
+  it.each([
+    ['BAJA', 'BAJA'],
+    ['Yo no contraté nada, dejen de cobrarme.', /Yo no contraté nada/],
+  ])('contestar "%s" deja la burbuja enviada en el hilo y cierra en fallo', (frase, enviado) => {
     const telefono = empezar(<BajaSuscripcion />)
 
-    fireEvent.click(within(telefono).getByRole('button', { name: 'BAJA' }))
+    fireEvent.click(within(telefono).getByRole('button', { name: frase }))
 
-    // Sigue siendo un borrador: la corrida no ha terminado.
-    expect(within(telefono).getByRole('button', { name: 'Enviar el mensaje' })).toBeDefined()
-    expect(screen.queryByText('Caíste en la trampa')).toBeNull()
-
-    fireEvent.click(within(telefono).getByRole('button', { name: 'Enviar el mensaje' }))
+    // Ya no es una burbuja para elegir: es un mensaje mandado dentro del hilo.
+    expect(within(telefono).queryByRole('button', { name: frase })).toBeNull()
+    expect(within(telefono).getByText(enviado)).toBeDefined()
     expect(screen.getByText('Caíste en la trampa')).toBeDefined()
   })
 

@@ -57,19 +57,29 @@ Sobre eso, una regla de dos gestos:
 
 | Lo que manda la frase | Flujo |
 |---|---|
-| **Es el botín** (el código, el número de tarjeta, el "BAJA") | burbuja → escena con esa frase de `borrador` → botón enviar |
+| **Es el botín** (el código, el número de tarjeta) | burbuja → escena con esa frase de `borrador` → botón enviar |
 | **Es solo hablar** ("¿de qué paquete?") | burbuja → se envía y sigue la historia |
 
 El paso intermedio existe para el primer caso y solo para él: ver el dato propio
 escrito en el campo, todavía sin enviar, es el instante en el que uno se lo
 repiensa. Añadirlo a una pregunta cualquiera sería un toque vacío.
 
+El botín es un dato que el participante no tenía por qué escribir —el número
+completo de su tarjeta, el código de seis dígitos—, no la palabra que el propio
+mensaje le dictó. Por eso `BajaSuscripcion` **no** lleva borrador: "BAJA" viene
+escrito en el SMS, verlo un segundo en el campo no añade nada, y hacía que de
+dos frases que pierden igual una tardara dos gestos y la otra uno.
+
 Reparto:
 
-- Con borrador: `AlertaConsumo` (número de tarjeta), `BajaSuscripcion` ("BAJA"),
-  `CodigoReenviado` (el código).
-- Sin borrador: `CitacionTransito`, `PaqueteRetenido`, `EntregaProgramada`,
-  `TarjetaBloqueada`.
+- Con borrador: `AlertaConsumo` (número de tarjeta), `CodigoReenviado` (el código).
+- Sin borrador: `BajaSuscripcion`, `CitacionTransito`, `PaqueteRetenido`,
+  `EntregaProgramada`, `TarjetaBloqueada`.
+
+**Todo final que nace de contestar se ve sobre la burbuja propia.** El nodo final
+no rinde el hilo tal como estaba ni el borrador sin enviar, sino el hilo con el
+mensaje ya mandado. Sin eso el veredicto aparece sin que el participante llegue a
+ver qué salió de su teléfono: sabe que perdió, no por qué.
 
 ### 3.2 El icono de la app deja de resolver el escenario
 
@@ -163,4 +173,6 @@ las burbujas. Se añaden tests a `BajaSuscripcion`, `TarjetaBloqueada` y
 2. La opción precipitada del inicio de la app cierra en parcial, no en acierto.
 3. La burbuja del botín pasa por el borrador: el dato queda visible en el campo y
    hace falta un segundo gesto para enviarlo.
-4. `CodigoReenviado` abre en la lista, con las dos conversaciones a la vista.
+4. Las dos frases de `BajaSuscripcion` cierran igual: la burbuja deja de ser
+   pulsable, aparece mandada dentro del hilo y el veredicto va encima.
+5. `CodigoReenviado` abre en la lista, con las dos conversaciones a la vista.

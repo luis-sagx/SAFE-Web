@@ -22,18 +22,18 @@ import type { Senal } from '../../components/ui/PanelVeredicto'
 
 const GUIA = '8842-EC'
 
+const AVISO = {
+      text: `ENVIAEXPRESS: su envio ${GUIA} sale a reparto manana entre 09h00 y 13h00. No requiere ningun pago. Puede ver el detalle en nuestra app.`,
+      time: '18:05',
+      senal: 'mensaje',
+    }
+
 const SMS: ScreenView = {
   kind: 'sms',
   sender: 'ENVIAEXPRESS',
   sub: 'Remitente habitual · SMS',
   senalRemitente: 'remitente',
-  msgs: [
-    {
-      text: `ENVIAEXPRESS: su envio ${GUIA} sale a reparto manana entre 09h00 y 13h00. No requiere ningun pago. Puede ver el detalle en nuestra app.`,
-      time: '18:05',
-      senal: 'mensaje',
-    },
-  ],
+  msgs: [AVISO],
   // Ninguna entrega un dato: el aviso era auténtico y no pedía nada. Lo que
   // cambia entre las dos es el precio de contestarle a un número automático,
   // y ese precio lo pone la prisa de la segunda.
@@ -51,6 +51,26 @@ const SMS: ScreenView = {
   ],
   volverGoto: 'e_ignora',
   volverLabel: 'Salió del hilo sin hacer nada',
+}
+
+/// El hilo con la respuesta ya enviada. Los dos finales que nacen de contestar
+/// se ven sobre la burbuja propia: sin ella el participante no sabe qué salió
+/// de su teléfono, solo que el escenario se acabó.
+const SMS_PREGUNTADO: ScreenView = {
+  ...SMS,
+  respuestas: undefined,
+  volverGoto: undefined,
+  msgs: [
+    AVISO,
+    { text: '¿A qué hora exactamente? No voy a estar en la mañana.', time: '18:07', mine: true },
+  ],
+}
+
+const SMS_RECHAZADO: ScreenView = {
+  ...SMS,
+  respuestas: undefined,
+  volverGoto: undefined,
+  msgs: [AVISO, { text: 'Yo no pedí nada, no me lo traigan.', time: '18:07', mine: true }],
 }
 
 /// El inicio de la app. Abrirla no es todavía haber comprobado: desde aquí se
@@ -153,14 +173,14 @@ const STORY: Story<ScreenNode> = {
   },
   e_responde: {
     kind: 'partial',
-    view: SMS,
+    view: SMS_PREGUNTADO,
     verdict: 'Contestaste a un número que no lee',
     outcome:
       'No pasó nada malo: el remitente era el de siempre. Pero los avisos automáticos salen de un número que no recibe respuestas, así que tu pregunta no llegó a ninguna parte. Y la hora ya venía escrita en el propio mensaje, entre las nueve y la una; el detalle completo estaba en la app, a un toque.',
   },
   e_rechaza: {
     kind: 'partial',
-    view: SMS,
+    view: SMS_RECHAZADO,
     verdict: 'Rechazaste un envío que sí era tuyo',
     outcome:
       'Nadie leyó ese mensaje, así que por suerte el paquete salió igual a reparto: era el que sí habías comprado. Pero saliste convencido de que no venía, no estabas en casa al día siguiente y el envío volvió a bodega. El aviso no pedía nada, no traía enlace y no metía prisa; mirarlo en la app costaba diez segundos.',

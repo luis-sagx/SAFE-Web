@@ -22,7 +22,7 @@ import type { Senal } from '../../components/ui/PanelVeredicto'
 
 const TEXTO = `SUSCRIPCION ACTIVA: Tonos y Horoscopo Premium. Se renovo por $2,99 semanales con cargo a tu saldo. Si no deseas continuar responde BAJA a este mismo numero.`
 
-const SMS: ScreenView = {
+const SMS: Extract<ScreenView, { kind: 'sms' }> = {
   kind: 'sms',
   sender: '5050',
   sub: 'Número corto · SMS',
@@ -33,7 +33,7 @@ const SMS: ScreenView = {
   // es lo que escribes sino que escribas. Ofrecer una salida buena en el
   // composer enseñaría lo contrario.
   respuestas: [
-    { texto: 'BAJA', goto: 'n2', label: 'Escogió responder BAJA, como pedía el mensaje' },
+    { texto: 'BAJA', goto: 'e_responde', label: 'Escogió responder BAJA, como pedía el mensaje' },
     {
       texto: 'Yo no contraté nada, dejen de cobrarme.',
       goto: 'e_reclama',
@@ -46,18 +46,24 @@ const SMS: ScreenView = {
   volverLabel: 'Salió del hilo sin hacer nada',
 }
 
-/// Elegir la frase y mandarla se separan a propósito: la palabra queda escrita
-/// en el campo, todavía sin salir, que es justo el instante en el que uno se lo
-/// repiensa. Las burbujas se quitan aquí porque ya elegiste: dejarlas dejaría
-/// cambiar de frase con una a medio escribir, que ningún teléfono hace.
-const SMS_BORRADOR: ScreenView = {
-  ...SMS,
-  respuestas: undefined,
-  borrador: 'BAJA',
-  senalBorrador: 'respuesta',
-  enviarGoto: 'e_responde',
-  enviarLabel: 'Envió "BAJA" al número del mensaje',
+/// El hilo con la respuesta ya enviada. Las dos frases salen igual y las dos
+/// terminan igual de mal, así que las dos tienen que verse igual: la burbuja
+/// propia en el hilo, y el veredicto sobre ella. Un final que se dispara sin
+/// enseñar lo que salió del teléfono deja al participante sin saber qué mandó.
+function conRespuesta(texto: string): Extract<ScreenView, { kind: 'sms' }> {
+  return {
+    ...SMS,
+    respuestas: undefined,
+    volverGoto: undefined,
+    msgs: [
+      { text: TEXTO, time: '07:52', senal: 'mensaje' },
+      { text: texto, time: '07:53', mine: true, senal: 'respuesta' },
+    ],
+  }
 }
+
+const SMS_BAJA = conRespuesta('BAJA')
+const SMS_RECLAMO = conRespuesta('Yo no contraté nada, dejen de cobrarme.')
 
 /// El inicio de la app. Abrir la app todavía no es haber comprobado nada: desde
 /// aquí se puede mirar las suscripciones o taparse el oído bloqueando los
@@ -138,18 +144,17 @@ const APPS: AppTelefono[] = [
 
 const STORY: Story<ScreenNode> = {
   n1: { kind: 'scene', view: SMS },
-  n2: { kind: 'scene', view: SMS_BORRADOR },
   n4: { kind: 'scene', view: OPERADORA_INICIO },
   e_responde: {
     kind: 'bad',
-    view: SMS_BORRADOR,
+    view: SMS_BAJA,
     verdict: 'Caíste en la trampa',
     outcome:
       'No había ninguna suscripción que cancelar: el mensaje solo buscaba que contestaras. Tu respuesta confirmó que la línea está activa y en uso, tu número pasó a una lista que se revende, y esa misma semana empezaron a llegar tres o cuatro mensajes parecidos al día. El "BAJA" además se cobró como mensaje de tarificación adicional.',
   },
   e_reclama: {
     kind: 'bad',
-    view: SMS,
+    view: SMS_RECLAMO,
     verdict: 'Caíste en la trampa',
     outcome:
       'Reclamar es contestar, y contestar era todo lo que el mensaje necesitaba. Da igual que no escribieras "BAJA": tu respuesta confirmó que la línea está activa y que alguien la lee. El número pasó a la lista que se revende y esa misma semana empezaron a llegar tres o cuatro mensajes parecidos al día. Y el cobro que reclamabas nunca existió: seguiste sin comprobarlo.',
@@ -188,7 +193,7 @@ const SENALES: Senal[] = [
   {
     id: 's2',
     targetId: 'respuesta',
-    pantalla: 'n2',
+    pantalla: 'e_responde',
     texto:
       'La única acción que te ofrece es <b>responder</b>. Ahí está la trampa: no hay enlace que inspeccionar ni formulario que delate nada, solo una respuesta que ellos necesitan.',
   },

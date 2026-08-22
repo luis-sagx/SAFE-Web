@@ -51,6 +51,17 @@ const SMS_RESPONDIDO: ScreenView = {
   ],
 }
 
+/// El hilo con la exigencia ya enviada. Un final que nace de contestar se ve
+/// sobre la burbuja propia: sin ella no se sabe qué salió del teléfono.
+const SMS_CORTADO: ScreenView = {
+  ...SMS,
+  respuestas: undefined,
+  msgs: [
+    PRIMER_SMS,
+    { text: 'No tengo ninguna multa, no me escriban más.', time: '08:31', mine: true },
+  ],
+}
+
 const PAGINA: ScreenView = {
   kind: 'web',
   url: 'https://transito-ec-pagos.com/citacion',
@@ -165,7 +176,7 @@ const STORY: Story<ScreenNode> = {
   },
   e_responde: {
     kind: 'partial',
-    view: SMS,
+    view: SMS_CORTADO,
     verdict: 'No entregaste nada, pero contestaste',
     outcome:
       'No diste ningún dato ni abriste el enlace, que es lo que evita el daño. Pero exigirles que paren es contestar, y contestar confirma que la línea está activa y que alguien la lee: es lo que buscan para insistir con algo mejor preparado. Y sigues sin saber si tienes alguna citación de verdad.',

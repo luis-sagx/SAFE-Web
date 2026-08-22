@@ -24,7 +24,7 @@ const NUEVO = {
 
 const BORRADOR = 'No reconozco ese consumo, mi tarjeta es la 4539 0011 8842 4417'
 
-const SMS: ScreenView = {
+const SMS: Extract<ScreenView, { kind: 'sms' }> = {
   kind: 'sms',
   sender: 'BancoLitoral',
   sub: 'Remitente verificado · mismo hilo de siempre',
@@ -64,12 +64,20 @@ const SMS_BORRADOR: ScreenView = {
   enviarLabel: 'Envió por SMS el número completo de su tarjeta',
 }
 
-const SMS_RESPONDIDO: ScreenView = {
-  ...SMS,
-  respuestas: undefined,
-  volverGoto: undefined,
-  msgs: [...HISTORIAL, NUEVO, { text: BORRADOR, time: '19:16', mine: true, senal: 'respuesta' }],
+/// El hilo con la respuesta ya enviada. Todo final que nace de contestar se ve
+/// sobre la burbuja propia: sin ella el participante no sabe qué salió de su
+/// teléfono, solo que perdió.
+function conRespuesta(texto: string): Extract<ScreenView, { kind: 'sms' }> {
+  return {
+    ...SMS,
+    respuestas: undefined,
+    volverGoto: undefined,
+    msgs: [...HISTORIAL, NUEVO, { text: texto, time: '19:16', mine: true, senal: 'respuesta' }],
+  }
 }
+
+const SMS_RESPONDIDO = conRespuesta(BORRADOR)
+const SMS_PREGUNTADO = conRespuesta('No reconozco ese consumo.')
 
 /// El inicio de la banca móvil. Abrir la app no es todavía haber verificado:
 /// desde aquí se puede mirar los movimientos o bloquear la tarjeta a ciegas,
@@ -176,7 +184,7 @@ const STORY: Story<ScreenNode> = {
   },
   e_pregunta: {
     kind: 'partial',
-    view: SMS,
+    view: SMS_PREGUNTADO,
     verdict: 'Contestaste a un número que no lee',
     outcome:
       'No entregaste ningún dato, y eso es lo que importa. Pero los avisos de consumo salen de un número automático que no recibe respuestas: tu mensaje no llegó a nadie y el consumo siguió sin comprobar. La app tenía la respuesta a un toque.',

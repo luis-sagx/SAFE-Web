@@ -51,6 +51,14 @@ const SMS_RESPONDIDO: ScreenView = {
   ],
 }
 
+/// El hilo con la negativa ya enviada. Un final que nace de contestar se ve
+/// sobre la burbuja propia: sin ella no se sabe qué salió del teléfono.
+const SMS_NEGADO: ScreenView = {
+  ...SMS,
+  respuestas: undefined,
+  msgs: [PRIMER_SMS, { text: 'No espero ningún paquete.', time: '10:14', mine: true }],
+}
+
 const PAGINA: ScreenView = {
   kind: 'web',
   url: 'http://envia-express.info/pago',
@@ -166,7 +174,7 @@ const STORY: Story<ScreenNode> = {
   },
   e_responde: {
     kind: 'partial',
-    view: SMS,
+    view: SMS_NEGADO,
     verdict: 'No entregaste nada, pero contestaste',
     outcome:
       'No diste ningún dato ni abriste el enlace, que es lo que evita el daño. Pero contestar confirma que la línea está activa y que alguien la lee, y eso es lo que buscan para insistir con algo mejor preparado. Y si el envío hubiera sido tuyo de verdad, seguirías sin saberlo.',
