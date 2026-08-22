@@ -355,7 +355,6 @@ const CONTEXTO: Contexto = {
       <strong>A media tarde</strong> te llama un número que no conoces. Al contestar, oyes su voz.
     </>
   ),
-  detalle: 'Llora y habla atropellada, y enseguida otra persona toma el teléfono.',
 }
 
 function VozClonada() {

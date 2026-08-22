@@ -389,7 +389,6 @@ const CONTEXTO: Contexto = {
       $50 de rendimiento. El asesor te escribe para hablar del siguiente paso.
     </>
   ),
-  detalle: 'El dinero llegó de verdad, y lo puedes ver en tu banco.',
 }
 
 function GananciaGarantizada() {

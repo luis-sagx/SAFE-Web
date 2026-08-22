@@ -213,7 +213,6 @@ const CONTEXTO: Contexto = {
       no tienes guardado.
     </>
   ),
-  detalle: 'Trae el logo del courier en el texto y un número de guía.',
 }
 
 function PaqueteRetenido() {

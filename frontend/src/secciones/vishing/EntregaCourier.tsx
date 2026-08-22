@@ -225,7 +225,6 @@ const CONTEXTO: Contexto = {
       con tu envío.
     </>
   ),
-  detalle: 'Sabe tu número de guía y no te pide ningún dato.',
 }
 
 function EntregaCourier() {

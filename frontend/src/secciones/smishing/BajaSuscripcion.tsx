@@ -226,7 +226,6 @@ const CONTEXTO: Contexto = {
       <strong>suscripción de $2,99 semanales</strong>.
     </>
   ),
-  detalle: 'No recuerdas haber contratado nada parecido, y el saldo sí te ha bajado últimamente.',
 }
 
 function BajaSuscripcion() {

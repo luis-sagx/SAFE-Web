@@ -360,7 +360,6 @@ const CONTEXTO: Contexto = {
       urgencia médica.
     </>
   ),
-  detalle: 'El mensaje llega en la conversación de siempre, con su número y su foto.',
 }
 
 function CuentaHackeada() {

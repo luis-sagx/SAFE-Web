@@ -347,7 +347,6 @@ const CONTEXTO: Contexto = {
       y que te mandó $1.300 en vez de $130.
     </>
   ),
-  detalle: 'Los $1.300 aparecen en tu cuenta, y tienes la app del banco en el teléfono.',
 }
 
 function VueltoDeMas() {

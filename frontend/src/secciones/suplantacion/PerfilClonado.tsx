@@ -410,7 +410,6 @@ const CONTEXTO: Contexto = {
       es la de siempre.
     </>
   ),
-  detalle: 'Tiene su nombre completo y su misma foto de perfil.',
 }
 
 function PerfilClonado() {

@@ -336,7 +336,6 @@ const CONTEXTO: Contexto = {
       escribiste al dueño, que contestó enseguida.
     </>
   ),
-  detalle: 'Tienes el anuncio abierto en la app y los $700 de la garantía en tu cuenta.',
 }
 
 function ArriendoAnticipado() {

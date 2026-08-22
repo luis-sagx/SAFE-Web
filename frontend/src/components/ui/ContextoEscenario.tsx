@@ -20,9 +20,6 @@ export interface Contexto {
    *  suelto de la escena el dato no dice nada. Sin destripar la trampa: el
    *  bloque sitúa al participante, no decide por él. */
   ahora: ReactNode
-  /** El detalle que cambia cómo se lee todo lo anterior. Opcional porque no
-   *  todo escenario tiene uno, y rellenarlo por rellenar lo volvería ruido. */
-  detalle?: ReactNode
   /** Material que la historia enseña tal cual —los mensajes que ya te
    *  escribieron, por ejemplo—, debajo de las filas. */
   extra?: ReactNode
@@ -33,7 +30,6 @@ export interface Contexto {
 const FILAS = [
   ['antes', 'Antes de esto'],
   ['ahora', 'Lo que acaba de pasar'],
-  ['detalle', 'Ten en cuenta'],
 ] as const
 
 /**

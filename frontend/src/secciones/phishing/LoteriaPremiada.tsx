@@ -234,7 +234,6 @@ const CONTEXTO: Contexto = {
       dice que ganaste <strong>casi cincuenta mil dólares</strong> en un sorteo.
     </>
   ),
-  detalle: 'El correo insiste en que tu dirección salió preseleccionada.',
 }
 
 function LoteriaPremiada() {
