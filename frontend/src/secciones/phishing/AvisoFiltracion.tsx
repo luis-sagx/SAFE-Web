@@ -202,8 +202,6 @@ const CONTEXTO: Contexto = {
       <strong>incidente de seguridad</strong>.
     </>
   ),
-  detalle:
-    'No te pide nada raro: solo cuenta qué pasó y sugiere que cambies tu contraseña por tu cuenta.',
 }
 
 function AvisoFiltracion() {

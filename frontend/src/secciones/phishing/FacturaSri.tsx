@@ -212,7 +212,6 @@ const CONTEXTO: Contexto = {
       <strong>Servicio de Rentas Internas</strong> sobre una factura pendiente.
     </>
   ),
-  detalle: 'Nunca antes te habían escrito por este tema.',
 }
 
 /// Solo mecánica, y solo antes de entrar: dentro del escenario el bloque de

@@ -175,7 +175,6 @@ const CONTEXTO: Contexto = {
       grande.
     </>
   ),
-  detalle: 'No trae ningún enlace de texto que puedas revisar antes de escanear.',
 }
 
 const NOTA = (

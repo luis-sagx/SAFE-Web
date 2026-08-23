@@ -307,42 +307,41 @@ const SENALES: Senal[] = [
     targetId: 'recarga',
     pantalla: 'n2',
     texto:
-      'Para trabajar más hay que <b>poner dinero propio</b>. Ahí termina el trabajo y empieza la estafa: ningún empleo de verdad te cobra por dejarte trabajar, se llame activación, membresía o saldo.',
+      'Para trabajar más hay que <b>poner dinero propio</b>. Ningún empleo cobra por dejarte trabajar.',
   },
   {
     id: 's2',
     targetId: 'primer-pago',
     pantalla: 'n1',
     texto:
-      'Los <b>primeros $12 sí llegaron</b>, y son lo más caro que hace el estafador. No prueban que el trabajo exista: compran la certeza, vivida por ti, de que esto sí paga.',
+      'Los <b>primeros $12 sí llegaron</b>. No prueban que el trabajo exista: compran tu confianza.',
   },
   {
     id: 's3',
     targetId: 'letra-chica',
     pantalla: 'n6b',
     texto:
-      'Las condiciones lo dicen: el depósito <b>no se devuelve</b> y el cupo de tareas <b>se puede cambiar sin avisar</b>. Con esas dos frases el retiro nunca llega a habilitarse.',
+      'La letra chica lo dice: el depósito <b>no se devuelve</b> y el cupo <b>cambia sin avisar</b>.',
   },
   {
     id: 's4',
     targetId: 'grupo',
     pantalla: 'n4',
     texto:
-      'Doña Elsa y los <b>trescientos del grupo</b> son la presión que sustituye a la prueba. Que mucha gente haya entrado no dice que funcione: dice de dónde sale el dinero que se reparte.',
+      'Doña Elsa y los <b>trescientos del grupo</b> son presión, no prueba de que exista el trabajo.',
   },
   {
     id: 's5',
     targetId: 'sin-empresa',
     pantalla: 'n6b',
     texto:
-      'No consta <b>ninguna empresa responsable</b>, y las marcas que supuestamente pagan no aparecen por ningún lado. Sin empresa no hay contrato, ni reclamo, ni a quién buscar.',
+      'No consta <b>ninguna empresa responsable</b>. Sin empresa no hay contrato ni a quién buscar.',
   },
   {
     id: 's6',
     targetId: 'cuenta',
     pantalla: 'n3',
-    texto:
-      'El depósito va a la <b>cuenta personal de una señora</b>, no a la de una empresa. Ninguna compañía que contrata gente cobra a nombre propio.',
+    texto: 'El depósito va a la <b>cuenta personal de una señora</b>, no a la de una empresa.',
   },
 ]
 
@@ -364,7 +363,6 @@ const CONTEXTO: Contexto = {
       prometidos, puntuales, a tu cuenta.
     </>
   ),
-  detalle: 'El pago llegó de verdad, y lo puedes ver en tu banco.',
 }
 
 function TareasPagadas() {

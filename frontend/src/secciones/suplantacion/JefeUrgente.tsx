@@ -396,7 +396,6 @@ const CONTEXTO: Contexto = {
       <strong>Un martes por la mañana</strong> te llega un mensaje suyo desde un número distinto.
     </>
   ),
-  detalle: 'Tiene su foto corporativa y te trata de usted, como siempre.',
 }
 
 function JefeUrgente() {

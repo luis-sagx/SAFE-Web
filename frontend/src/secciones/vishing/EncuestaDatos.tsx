@@ -334,8 +334,6 @@ const CONTEXTO: Contexto = {
       tienes guardado.
     </>
   ),
-  detalle:
-    "Quien llama es amable, no te mete prisa, no te pide claves ni códigos y no menciona dinero en ningún momento.",
 };
 
 function EncuestaDatos() {

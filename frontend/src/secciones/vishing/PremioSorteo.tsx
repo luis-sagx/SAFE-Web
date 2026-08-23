@@ -383,7 +383,6 @@ const CONTEXTO: Contexto = {
       viste antes.
     </>
   ),
-  detalle: 'Quien llama dice el nombre de una cadena de electrodomésticos conocida.',
 }
 
 function PremioSorteo() {

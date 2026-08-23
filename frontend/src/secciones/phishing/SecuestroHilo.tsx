@@ -279,7 +279,6 @@ const CONTEXTO: Contexto = {
       dentro de ese mismo hilo y desde la dirección de siempre.
     </>
   ),
-  detalle: 'Ya habían quedado en que el pago iba a la cuenta de siempre.',
 }
 
 function SecuestroHilo() {

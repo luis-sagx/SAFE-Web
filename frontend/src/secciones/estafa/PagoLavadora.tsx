@@ -41,7 +41,7 @@ const CHAT: ScreenView = {
       label: 'Dijo que iba a revisar su cuenta antes de confirmar',
     },
     {
-      texto: 'Confirmado, venga cuando quiera.',
+      texto: 'Listo, venga cuando quiera.',
       goto: 'e_confia',
       label: 'Confirmó la venta sin revisar su cuenta',
     },
@@ -66,11 +66,6 @@ const ESPERA: ScreenView = {
       texto: 'Ya vi que entró. ¿Le queda bien esta tarde?',
       goto: 'n4',
       label: 'Confirmó que el dinero estaba y propuso la entrega',
-    },
-    {
-      texto: 'Mejor devuélvame el dinero, ya no la vendo.',
-      goto: 'e_deja',
-      label: 'Canceló la venta sin ningún motivo',
     },
   ],
 }
@@ -121,7 +116,10 @@ const MOVIMIENTOS: ScreenView = {
       valor: 'Transferencia recibida $180,00 · de Gabriela Ponce Salazar · ACREDITADA',
       senal: 'acreditada',
     },
-    { etiqueta: 'Ayer · 17:40', valor: 'Compra Supermercado La Favorita $32,80' },
+    {
+      etiqueta: 'Ayer · 17:40',
+      valor: 'Compra Supermercado La Favorita $32,80',
+    },
     { etiqueta: '12 ago', valor: 'Depósito de sueldo $780,00' },
   ],
   aviso: 'Un movimiento acreditado ya forma parte de tu saldo disponible.',
@@ -135,7 +133,11 @@ const ENTREGA: ScreenView = {
   ...CHAT,
   msgs: [
     AVISA,
-    { text: 'Ya vi que entró. ¿Le queda bien esta tarde?', time: '09:24', mine: true },
+    {
+      text: 'Ya vi que entró. ¿Le queda bien esta tarde?',
+      time: '09:24',
+      mine: true,
+    },
     {
       text: 'Perfecto. ¿Le parece que nos veamos a las 4 en el parqueadero del centro comercial, que ahí hay espacio para la camioneta? O si prefiere paso por su casa, como usted esté más cómodo.',
       time: '09:26',
@@ -146,12 +148,12 @@ const ENTREGA: ScreenView = {
     {
       texto: 'A las 4 en el centro comercial, perfecto.',
       goto: 'e_entrega',
-      label: 'Cerró la venta y quedó para entregar en persona',
+      label: 'Cerró la venta y quedó en el centro comercial',
     },
     {
-      texto: 'Mándeme mejor un courier, no quiero verme con nadie.',
-      goto: 'e_courier',
-      label: 'Se negó a la entrega en persona y despachó por courier',
+      texto: 'Sabe qué, mejor ya no. Le devuelvo su plata.',
+      goto: 'e_deja',
+      label: 'Se echó atrás con la venta ya cobrada',
     },
   ],
 }
@@ -165,10 +167,21 @@ const ANUNCIO: ScreenView = {
   title: 'Lavadora 12 kg, buen estado',
   subtitle: '$180 · publicado hace 9 días',
   datos: [
-    { etiqueta: 'Interesada', valor: `${COMPRADORA} · cuenta desde 2019`, senal: 'perfil' },
-    { etiqueta: 'Calificaciones', valor: '14 compras, todas valoradas bien', senal: 'perfil' },
+    {
+      etiqueta: 'Interesada',
+      valor: `${COMPRADORA} · cuenta desde 2019`,
+      senal: 'perfil',
+    },
+    {
+      etiqueta: 'Calificaciones',
+      valor: '14 compras, todas valoradas bien',
+      senal: 'perfil',
+    },
     { etiqueta: 'Precio de mercado', valor: '$170 a $210 por una parecida' },
-    { etiqueta: 'Otros interesados', valor: 'Dos, ninguno con oferta en firme' },
+    {
+      etiqueta: 'Otros interesados',
+      valor: 'Dos, ninguno con oferta en firme',
+    },
   ],
   cerrarGoto: 'n1b',
   cerrarLabel: 'Volvió al chat desde su anuncio',
@@ -212,7 +225,7 @@ export const STORY: Story<ScreenNode> = {
     view: ENTREGA,
     verdict: 'Acertaste · la venta era buena y la cerraste',
     outcome:
-      'Comprobaste antes de entregar y todo cuadraba: el dinero estaba en tu saldo disponible, acreditado y a nombre de quien te escribía. Entregaste la lavadora en un sitio público, a plena luz, y se acabó. Esto es lo que se ve cuando una venta es de verdad, y reconocerlo importa tanto como reconocer la otra.',
+      'Comprobaste antes de entregar y todo cuadraba: el dinero estaba en tu saldo disponible, acreditado y a nombre de quien te escribía. Quedaste con ella, entregaste la lavadora y se acabó. Dónde entregarla era cosa de comodidad, no de seguridad: lo que cerró bien esta venta fue haber mirado la cuenta antes. Esto es lo que se ve cuando una venta es de verdad, y reconocerlo importa tanto como reconocer la otra.',
   },
   e_confia: {
     kind: 'partial',
@@ -222,20 +235,12 @@ export const STORY: Story<ScreenNode> = {
       'Confirmaste sin mirar tu cuenta y esta vez no pasó nada, porque Gabriela había pagado de verdad. Pero decidiste igual que si el comprobante fuera el dinero: la misma frase de un estafador te habría encontrado igual. Mirar el saldo disponible cuesta dos toques y es lo único que separa esta venta de la otra.',
     score: 60,
   },
-  e_courier: {
-    kind: 'partial',
-    view: ENTREGA,
-    verdict: 'La venta salió, pero te complicaste sin motivo',
-    outcome:
-      'Despachaste por courier y llegó bien, aunque pagaste un flete que no hacía falta. Verse en un sitio público no es el riesgo: es la parte segura del trato, y era la compradora quien lo estaba proponiendo. Cuando el dinero ya está disponible y quien paga da la cara, entregar en persona es la opción más limpia.',
-    score: 70,
-  },
   e_deja: {
     kind: 'bad',
     view: CHAT,
     verdict: 'Dejaste caer una venta que estaba bien',
     outcome:
-      'Cancelaste sin que hubiera nada que cancelar: el dinero estaba acreditado en tu cuenta, a nombre de la compradora, y ella no te había pedido nada raro ni te había metido prisa. Desconfiar de todo también cuesta. Lo que hay que aprender no es a no vender, es a mirar el saldo disponible antes de entregar.',
+      'Dejaste caer el trato con todo a favor: el dinero estaba acreditado en tu cuenta, a nombre de la compradora, y ella no te pidió nada raro ni te metió prisa. Te quedaste con la lavadora que querías vender y ella tuvo que buscar otra. Desconfiar de todo también cuesta: lo que hay que aprender no es a no vender, es a mirar el saldo disponible antes de entregar.',
     score: 20,
   },
 }
@@ -246,35 +251,35 @@ const SENALES: Senal[] = [
     targetId: 'disponible',
     pantalla: 'n2',
     texto:
-      'El <b>saldo disponible coincide con el contable</b>: no hay nada en proceso. Ese dinero ya es tuyo y no se puede reversar.',
+      'El <b>saldo disponible coincide con el contable</b>: no hay nada pendiente. Ese dinero ya es tuyo.',
   },
   {
     id: 's2',
     targetId: 'acreditada',
     pantalla: 'n3',
     texto:
-      'El movimiento aparece <b>acreditado y a nombre de la compradora</b>, la misma persona que te escribe. Cuando quien paga y quien habla son la misma, no hay a quién no poder reclamarle.',
+      'El movimiento aparece <b>acreditado y a nombre de la compradora</b>. Quien paga y quien te escribe son la misma persona.',
   },
   {
     id: 's3',
     targetId: 'sin-prisa',
     pantalla: 'n1',
     texto:
-      'No hay <b>ninguna prisa</b>: te dice que revises con calma y que elijas el día. Quien necesita que entregues dentro de una ventana de tiempo es quien sabe que el dinero se va a caer.',
+      'No hay <b>ninguna prisa</b>: revisa con calma y elige el día. Quien te apura es quien sabe que el dinero se va a caer.',
   },
   {
     id: 's4',
     targetId: 'en-persona',
     pantalla: 'n4',
     texto:
-      'Propone <b>verse en un sitio público</b> y te deja elegir. Un estafador necesita justo lo contrario: encomienda, courier, cualquier cosa menos estar delante.',
+      'Propone <b>verse en persona</b> y te deja elegir sitio y hora. Un estafador hace lo contrario: cualquier cosa menos dar la cara.',
   },
   {
     id: 's5',
     targetId: 'perfil',
     pantalla: 'n5',
     texto:
-      'La cuenta de la compradora tiene <b>años y calificaciones</b>. No es prueba por sí sola, pero acompaña a todo lo demás en vez de contradecirlo.',
+      'La cuenta de la compradora tiene <b>años y calificaciones</b>. Sola no prueba nada, pero acompaña al resto.',
   },
 ]
 
@@ -296,7 +301,6 @@ const CONTEXTO: Contexto = {
       cuando a ti te quede bien.
     </>
   ),
-  detalle: 'La lavadora sigue en tu casa y tienes la app del banco en el teléfono.',
 }
 
 function PagoLavadora() {

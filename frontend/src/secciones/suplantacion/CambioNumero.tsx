@@ -420,7 +420,6 @@ const CONTEXTO: Contexto = {
       es él.
     </>
   ),
-  detalle: 'Tiene puesta la foto de perfil de Andrés y te habla como él, con "papi".',
 }
 
 function CambioNumero() {

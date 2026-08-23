@@ -14,38 +14,44 @@ import { CUENTA_FICTICIA, IDENTIDAD_FICTICIA } from '../../lib/identidadFicticia
  * único que hay que saber está escrito en tu propia app del banco, en dos
  * líneas que casi nadie distingue: saldo contable y saldo disponible.
  *
+ * El pago entra como depósito con cheque, que es donde esas dos líneas se
+ * separan de verdad en un banco ecuatoriano: el cheque se acredita "salvo buen
+ * cobro" y se queda en efectivización hasta que el banco lo cobra. Si la cuenta
+ * de quien lo firmó no tiene fondos, sale protestado y el banco anula el
+ * depósito.
+ *
  * Es el fraude de venta más común del país y el más barato de evitar: no hace
  * falta reconocer nada raro, solo esperar a que el dinero se pueda usar. Toda
  * la estafa consiste en que no esperes, y por eso el guion aprieta con el
- * courier, con la hora y con la amenaza de reportarte.
+ * courier y con la hora.
  */
 
 const COMPRADOR = 'Fernando Zurita'
 const NUMERO_COMPRADOR = '+593 98 447 1926'
 
 const AVISA = {
-  text: `Buenas, ya le hice la transferencia de los $1.000 por la laptop. Revise su cuenta que ya debe estar reflejado. Le mando el comprobante.`,
+  text: `Buenas, ya le deposité los $1.000 por la laptop, con cheque, en su cuenta. Revise que ya debe estar reflejado. Le mando el comprobante.`,
   time: '10:12',
   senal: 'avisa',
 }
 
-/// El comprobante. Va dibujado como una captura de verdad, con su banco y su
-/// número de aprobación, porque falsificarlo cuesta cinco minutos y creerlo es
-/// exactamente el error que mide el escenario.
+/// La papeleta del depósito. Va dibujada como una foto de verdad, con su banco
+/// y su número de transacción, porque falsificarla cuesta cinco minutos y
+/// creerla es exactamente el error que mide el escenario.
 const COMPROBANTE = {
   text: 'Ahí está, mire 👆',
   time: '10:13',
   senal: 'comprobante',
   captura: {
     quien: 'Banco Nacional del Pacífico',
-    sub: 'Transferencia realizada',
+    sub: 'Comprobante de depósito',
     icono: 'banco' as const,
     datos: [
       { etiqueta: 'Valor', valor: '$1.000,00' },
-      { etiqueta: 'Destino', valor: IDENTIDAD_FICTICIA.cuenta },
+      { etiqueta: 'Cuenta destino', valor: IDENTIDAD_FICTICIA.cuenta },
+      { etiqueta: 'Forma de pago', valor: 'Cheque otro banco n.º 0004821' },
       { etiqueta: 'Fecha', valor: 'Hoy · 10:09' },
-      { etiqueta: 'N.º de aprobación', valor: '884120397' },
-      { etiqueta: 'Estado', valor: 'Procesada' },
+      { etiqueta: 'N.º de transacción', valor: '884120397' },
     ],
   },
 }
@@ -113,7 +119,7 @@ const BANCO: ScreenView = {
     { etiqueta: 'Saldo disponible', valor: '$240,50', senal: 'disponible' },
   ],
   aviso:
-    'El saldo disponible es el dinero que puedes usar. El contable incluye valores que todavía están en proceso y que el banco puede reversar.',
+    'El saldo disponible es el dinero que puedes usar. El contable incluye valores en efectivización: depósitos que el banco anotó pero todavía no ha cobrado.',
   opciones: [
     {
       texto: 'Ver movimientos',
@@ -141,7 +147,7 @@ const MOVIMIENTOS: ScreenView = {
   datos: [
     {
       etiqueta: 'Hoy · 10:09',
-      valor: 'Depósito recibido $1.000,00 · EN PROCESO, no disponible hasta su confirmación',
+      valor: 'Depósito cheque otro banco $1.000,00 · EN EFECTIVIZACIÓN, salvo buen cobro',
       senal: 'proceso',
     },
     { etiqueta: 'Ayer · 18:22', valor: 'Compra Supermercado La Favorita $46,10' },
@@ -149,7 +155,7 @@ const MOVIMIENTOS: ScreenView = {
     { etiqueta: '12 ago', valor: 'Depósito de sueldo $780,00' },
   ],
   aviso:
-    'Un depósito en proceso todavía no es tuyo. Si el origen del dinero se cae o resulta ser fraudulento, el banco lo retira de tu cuenta.',
+    'Salvo buen cobro quiere decir que el dinero todavía no es tuyo. Si al cobrar el cheque la cuenta de quien lo firmó no tiene fondos, sale protestado y el banco anula el depósito.',
   cerrarGoto: 'n3',
   cerrarLabel: 'Volvió al resumen de la cuenta',
   fields: [],
@@ -167,9 +173,13 @@ const DESPUES_DE_VER: ScreenView = {
       time: '10:14',
       senal: 'prisa',
     },
-    { text: 'En mi banco el dinero aparece en proceso, no disponible.', time: '10:19', mine: true },
     {
-      text: 'Eso es normal, es porque somos de bancos distintos, siempre demora. El comprobante ya le dice que salió de mi cuenta. Yo ya cumplí, mándeme la laptop 🙏',
+      text: 'En mi banco aparece en efectivización, todavía no disponible.',
+      time: '10:19',
+      mine: true,
+    },
+    {
+      text: 'Eso es normal, el cheque es de otro banco y siempre demora un día. La papeleta ya le dice que el depósito se hizo. Yo ya cumplí, mándeme la laptop 🙏',
       time: '10:20',
       senal: 'excusa',
     },
@@ -247,14 +257,14 @@ export const STORY: Story<ScreenNode> = {
     view: COURIER,
     verdict: 'Caíste en la estafa',
     outcome:
-      'La laptop salió y el depósito se cayó dos días después: venía de una cuenta robada, y el banco te lo retiró del saldo tal como avisaba la pantalla. El comprobante era auténtico en la forma y falso en el fondo, porque una transferencia se puede iniciar y reversar. Te quedaste sin equipo y sin los mil dólares.',
+      'La laptop salió y al día siguiente el cheque volvió protestado por insuficiencia de fondos. El banco anuló el depósito y te descontó los $1.000 del saldo, tal como avisaba la pantalla. La papeleta era auténtica y no servía de nada: solo probaba que alguien dejó un cheque en la ventanilla, no que ese cheque tuviera fondos detrás. Te quedaste sin equipo y sin los mil dólares.',
   },
   e_espera: {
     kind: 'good',
     view: DESPUES_DE_VER,
     verdict: 'No caíste · esperaste el saldo disponible',
     outcome:
-      'No despachaste, y eso bastó. El depósito nunca llegó a confirmarse: se cayó al segundo día y desapareció del saldo contable. Fernando dejó de escribir esa misma tarde. Tú seguías con tu laptop.',
+      'No despachaste, y eso bastó. El cheque salió protestado al día siguiente y los mil dólares desaparecieron del saldo contable sin llegar nunca al disponible. Fernando dejó de escribir esa misma tarde. Tú seguías con tu laptop.',
   },
   e_ignora: {
     kind: 'partial',
@@ -279,21 +289,21 @@ const SENALES: Senal[] = [
     targetId: 'contable',
     pantalla: 'n3',
     texto:
-      'El <b>saldo contable</b> incluye lo que el banco anotó pero todavía no confirmó. Sube en cuanto alguien inicia una transferencia, y baja igual de rápido si se cae.',
+      'El <b>saldo contable</b> incluye lo que el banco anotó pero todavía no cobró. Sube en cuanto alguien deposita un cheque, y baja igual de rápido si ese cheque no tiene fondos.',
   },
   {
     id: 's3',
     targetId: 'proceso',
     pantalla: 'n4',
     texto:
-      'El movimiento lo dice con todas sus letras: <b>en proceso, no disponible</b>. Un depósito en proceso se puede reversar, y si el dinero venía de una cuenta robada, se reversa.',
+      'El movimiento lo dice con todas sus letras: <b>en efectivización, salvo buen cobro</b>. El banco te anota el valor, pero el cheque todavía no está cobrado: si sale protestado, te lo descuenta.',
   },
   {
     id: 's4',
     targetId: 'comprobante',
     pantalla: 'n1',
     texto:
-      'El <b>comprobante no es el dinero</b>. Se falsifica en cinco minutos, y aunque sea auténtico solo prueba que alguien inició una transferencia, no que llegara a tu cuenta para quedarse.',
+      'El <b>comprobante no es el dinero</b>. Se falsifica en cinco minutos, y aunque sea auténtico solo prueba que alguien dejó un cheque en la ventanilla, no que ese cheque tenga fondos.',
   },
   {
     id: 's5',
@@ -307,20 +317,21 @@ const SENALES: Senal[] = [
     targetId: 'excusa',
     pantalla: 'n2b',
     texto:
-      '"Es que somos de bancos distintos" <b>no cambia nada</b>. Puede que demore, y por eso mismo se espera: lo que se entrega es contra dinero disponible, no contra una explicación.',
+      '"Es de otro banco, por eso demora" <b>es verdad y no cambia nada</b>. Que demore es justo la razón para esperar: lo que se entrega es contra dinero disponible, no contra una explicación.',
   },
 ]
 
 const RULE =
   'Regla de oro: no entregues nada hasta que el dinero esté en tu <b>saldo disponible</b>. Ni el comprobante, ni la captura, ni el saldo contable son el pago; solo el disponible es tuyo, y esperar un día no le cuesta nada a un comprador de verdad.'
 
-const RESUMEN = 'Vendes una laptop y el comprador manda un comprobante pidiendo que despaches ya.'
+const RESUMEN =
+  'Vendes una laptop y el comprador manda un comprobante de depósito pidiendo que despaches ya.'
 
 const CONTEXTO: Contexto = {
   antes: (
     <>
       Pusiste en venta tu <strong>laptop en $1.000</strong> por una página de compraventa, y un
-      comprador de otra ciudad quedó en pagarte por transferencia.
+      comprador de otra ciudad quedó en depositarte el pago en tu cuenta.
     </>
   ),
   ahora: (
@@ -329,7 +340,6 @@ const CONTEXTO: Contexto = {
       comprobante. Quiere que despaches hoy mismo.
     </>
   ),
-  detalle: 'La laptop sigue en tu casa y el courier no ha pasado todavía.',
 }
 
 function SaldoContable() {
@@ -353,8 +363,8 @@ function SaldoContable() {
       pista={
         <p>
           Puedes seguirle la conversación, abrir tu banco a mirar la cuenta, entrar en los
-          movimientos o ir directo a despachar. Fíjate en qué dice tu banco y no en qué dice el
-          comprobante.
+          movimientos o ir directo a despachar. Fíjate en qué dice tu banco y no en qué dice la
+          papeleta.
         </p>
       }
     />

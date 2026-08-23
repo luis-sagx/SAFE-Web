@@ -332,43 +332,42 @@ const SENALES: Senal[] = [
     id: 's1',
     targetId: 'garantiza',
     pantalla: 'n2',
-    texto:
-      'La palabra es <b>garantizado</b>. Ninguna inversión real garantiza una rentabilidad, y menos un 30% mensual: quien lo promete no está invirtiendo, está pagando a los primeros con el dinero de los que llegan después.',
+    texto: 'La palabra es <b>garantizado</b>. Ninguna inversión garantiza una ganancia fija.',
   },
   {
     id: 's2',
     targetId: 'primer-pago',
     pantalla: 'n1',
     texto:
-      'El <b>primer retiro sí llega</b>, y es lo más caro que hace el estafador. No es una prueba de que funcione: es lo que compra tu confianza para la entrega grande.',
+      'El <b>primer retiro sí llega</b>. No prueba nada: compra tu confianza para la entrega grande.',
   },
   {
     id: 's3',
     targetId: 'comision',
     pantalla: 'n7',
     texto:
-      'Para sacar tu dinero te piden <b>dinero por adelantado</b>. Ninguna entidad de verdad te cobra por dejarte retirar lo tuyo: es la señal de que detrás del número del panel no hay fondos.',
+      'Te piden <b>dinero por adelantado para retirar</b>. Nadie cobra por dejarte sacar lo tuyo.',
   },
   {
     id: 's4',
     targetId: 'registro',
     pantalla: 'n6b',
     texto:
-      'La empresa <b>no está autorizada a captar dinero del público</b>, y la sociedad que cobra vende repuestos de carro. Sin registro no hay a quién reclamar cuando la plataforma cierre.',
+      'La empresa <b>no está autorizada a captar dinero del público</b>. No hay a quién reclamar.',
   },
   {
     id: 's5',
     targetId: 'panel',
     pantalla: 'n6',
     texto:
-      'Los números del panel los <b>escribe quien cobra</b>. Ver el saldo subir no prueba que haya dinero detrás, igual que un comprobante no prueba que la transferencia llegara.',
+      'Los números del panel los <b>escribe quien cobra</b>. Que suban no prueba que haya fondos.',
   },
   {
     id: 's6',
     targetId: 'desprecia',
     pantalla: 'n4',
     texto:
-      'Cuando dudas, cambia de tono: <b>te deja atrás y pone al grupo por delante</b>. Las señoras que ya se compraron carro y el cupo que vence son la misma prisa de siempre, vestida de oportunidad.',
+      'Cuando dudas, <b>cambia de tono y mete prisa</b>: el cupo que vence es la presión de siempre.',
   },
 ]
 
@@ -390,7 +389,6 @@ const CONTEXTO: Contexto = {
       $50 de rendimiento. El asesor te escribe para hablar del siguiente paso.
     </>
   ),
-  detalle: 'El dinero llegó de verdad, y lo puedes ver en tu banco.',
 }
 
 function GananciaGarantizada() {

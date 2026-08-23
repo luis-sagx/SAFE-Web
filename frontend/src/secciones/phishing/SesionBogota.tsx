@@ -154,7 +154,6 @@ const CONTEXTO: Contexto = {
       <strong>inicio de sesión desde Bogotá</strong> en tu cuenta.
     </>
   ),
-  detalle: 'Nunca viajaste a Colombia y no reconocés ningún acceso reciente desde ahí.',
 }
 
 const NOTA = (

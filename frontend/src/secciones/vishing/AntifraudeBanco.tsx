@@ -335,8 +335,6 @@ const CONTEXTO: Contexto = {
       vibra un <strong>mensaje nuevo</strong> del banco.
     </>
   ),
-  detalle:
-    "Quien llama sabe los cuatro últimos dígitos de tu tarjeta, y son los tuyos.",
 };
 
 function AntifraudeBanco() {

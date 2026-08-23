@@ -351,7 +351,6 @@ const CONTEXTO: Contexto = {
       servicio técnico.
     </>
   ),
-  detalle: 'Habla con calma, sabe tu nombre y no te pide dinero en ningún momento.',
 }
 
 function SoporteTecnico() {
