@@ -20,6 +20,14 @@ const SMS: ScreenView = {
   msgs: [{ text: TEXTO_BONO, time: '09:41', senal: 'mensaje' }],
 }
 
+/// El mismo hilo después de haber comprobado. Ahora salir de él sí decide: se
+/// deja el mensaje sabiendo lo que es, que es lo que se quería medir.
+const SMS_VERIFICADO: ScreenView = {
+  ...SMS,
+  volverGoto: 'e_verifica',
+  volverLabel: 'Dejó el mensaje después de comprobarlo en el portal oficial',
+}
+
 const PAGINA: ScreenView = {
   kind: 'web',
   url: 'http://bono-social-ec.online/registro',
@@ -56,7 +64,7 @@ const NAVEGADOR: ScreenView = {
     {
       texto: 'inclusion.gob.ec',
       detalle: 'Ministerio de Inclusión Económica y Social',
-      goto: 'e_verifica',
+      goto: 'n_portal',
       label: 'Entró al sitio oficial del MIES desde sus sitios frecuentes',
     },
     { texto: 'sri.gob.ec', detalle: 'Servicio de Rentas Internas' },
@@ -85,6 +93,11 @@ const PORTAL_MIES: ScreenView = {
     'El MIES no preselecciona beneficiarios por mensajes de texto ni solicita claves de banca en línea. Los trámites se realizan únicamente en este portal o en las oficinas del Ministerio.',
   fields: [],
   button: '',
+  // Comprobar es mirar: al cerrar, vuelve al SMS verificado para que
+  // el participante pueda tomar una decisión. La respuesta se lee aquí,
+  // la decisión se toma al salir del hilo.
+  cerrarGoto: 'n_sms_verificado',
+  cerrarLabel: 'Cerró el portal después de ver que no había ningún bono a su nombre',
 }
 
 const APPS: AppTelefono[] = [
@@ -111,6 +124,8 @@ const APPS: AppTelefono[] = [
 ]
 
 const STORY: Story<ScreenNode> = {
+  n_portal: { kind: 'scene', view: PORTAL_MIES },
+  n_sms_verificado: { kind: 'scene', view: SMS_VERIFICADO },
   n1: { kind: 'scene', view: SMS },
   n2: { kind: 'scene', view: PAGINA },
   n3: { kind: 'scene', view: NAVEGADOR },
@@ -138,11 +153,40 @@ const STORY: Story<ScreenNode> = {
 }
 
 const SENALES: Senal[] = [
-  { id: 's1', targetId: 'mensaje', pantalla: 'n1', texto: 'Te da un <b>premio que nunca pediste</b> y un plazo de horas para reclamarlo.' },
-  { id: 's2', targetId: 'mensaje', pantalla: 'n1', texto: 'El enlace está <b>acortado</b> (bit.ly): el texto que ves no dice a qué página te lleva, así que no puedes saber a dónde vas hasta que ya estás ahí.' },
-  { id: 's3', targetId: 'url', pantalla: 'n2', texto: 'La página está en <b>bono-social-ec.online</b>, y las páginas del Estado ecuatoriano terminan en <b>.gob.ec</b>. El nombre suena oficial, pero el final delata que no lo es. Tampoco empieza por https: ni siquiera protege lo que escribes.' },
-  { id: 's4', targetId: 'clave', pantalla: 'n2', texto: 'Pide tu <b>clave de banca en línea</b> para "recibir" un depósito. Para que te depositen basta tu número de cuenta: la clave solo sirve para sacar dinero, nunca para meterlo.' },
-  { id: 's5', targetId: 'codigo', pantalla: 'n2', texto: 'Pide el <b>código que te llega por SMS</b>. Ese código es la última puerta de tu banco: con tu clave y con él ya entran a tu cuenta desde su propio teléfono.' },
+  {
+    id: 's1',
+    targetId: 'mensaje',
+    pantalla: 'n1',
+    texto: 'Te da un <b>premio que nunca pediste</b> y un plazo de horas para reclamarlo.',
+  },
+  {
+    id: 's2',
+    targetId: 'mensaje',
+    pantalla: 'n1',
+    texto:
+      'El enlace está <b>acortado</b> (bit.ly): el texto que ves no dice a qué página te lleva, así que no puedes saber a dónde vas hasta que ya estás ahí.',
+  },
+  {
+    id: 's3',
+    targetId: 'url',
+    pantalla: 'n2',
+    texto:
+      'La página está en <b>bono-social-ec.online</b>, y las páginas del Estado ecuatoriano terminan en <b>.gob.ec</b>. El nombre suena oficial, pero el final delata que no lo es. Tampoco empieza por https: ni siquiera protege lo que escribes.',
+  },
+  {
+    id: 's4',
+    targetId: 'clave',
+    pantalla: 'n2',
+    texto:
+      'Pide tu <b>clave de banca en línea</b> para "recibir" un depósito. Para que te depositen basta tu número de cuenta: la clave solo sirve para sacar dinero, nunca para meterlo.',
+  },
+  {
+    id: 's5',
+    targetId: 'codigo',
+    pantalla: 'n2',
+    texto:
+      'Pide el <b>código que te llega por SMS</b>. Ese código es la última puerta de tu banco: con tu clave y con él ya entran a tu cuenta desde su propio teléfono.',
+  },
 ]
 const RULE =
   'Regla de oro: para <b>recibir</b> dinero nadie necesita tu clave ni tu código de verificación; solo tu número de cuenta. Cualquier bono o subsidio se confirma en el sitio oficial <b>.gob.ec</b>, escrito por ti.'
@@ -157,7 +201,6 @@ const CONTEXTO: Contexto = {
       <strong>bono de $180</strong> a tu nombre.
     </>
   ),
-  detalle: 'Has escuchado que a varios conocidos les llegó algo parecido.',
 }
 
 function BonoEstado() {

@@ -1,17 +1,53 @@
-import { fireEvent, screen, waitFor, within } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
+import { MemoryRouter } from 'react-router'
 import { describe, expect, it, vi } from 'vitest'
-import { empezar } from '../../test/escenario'
 import BonoEstado from './BonoEstado'
 
-// Las fábricas se importan dentro y no arriba: vitest eleva los `vi.mock` por
-// encima de los imports del archivo, así que un símbolo importado todavía no
-// existe cuando se registran.
-vi.mock('../../context/AuthContext', async () => (await import('../../test/escenario')).authFalso())
-vi.mock('../../lib/api', async () => (await import('../../test/escenario')).apiSinRed())
+vi.mock('../../context/AuthContext', () => ({
+  useAuth: () => ({
+    participant: {
+      id: 'p1',
+      nombre: 'María',
+      apellido: 'Pérez',
+      email: 'maria@ejemplo.com',
+      role: 'PARTICIPANT',
+      onboardingVisto: true,
+    },
+    loading: false,
+    isAuthenticated: true,
+    login: vi.fn(),
+    register: vi.fn(),
+    logout: vi.fn(),
+    marcarOnboardingVisto: vi.fn(),
+    onboardingDismissed: true,
+    displayName: 'María',
+    roleLabel: 'Participante',
+    initials: 'MP',
+    correoSimulado: 'mariaperez@safeweb.com',
+    usuarioSimulado: 'mariaperez',
+  }),
+}))
+
+vi.mock('../../lib/api', async () => {
+  const actual = await vi.importActual<typeof import('../../lib/api')>('../../lib/api')
+  return { ...actual, createRun: vi.fn().mockResolvedValue(undefined) }
+})
+
+function empezar() {
+  const { container } = render(
+    <MemoryRouter>
+      <BonoEstado />
+    </MemoryRouter>,
+  )
+
+  fireEvent.click(screen.getByRole('button', { name: 'Empezar' }))
+  return container
+}
 
 describe('BonoEstado', () => {
   it('se decide tocando el propio teléfono, sin lista de opciones', () => {
-    const telefono = empezar(<BonoEstado />)
+    const container = empezar()
+    const telefono = container.querySelector('#pantalla-escenario') as HTMLElement
 
     expect(telefono).not.toBeNull()
     expect(screen.getByText('¿Qué haces?')).toBeDefined()
@@ -30,7 +66,8 @@ describe('BonoEstado', () => {
   })
 
   it('salir de la página falsa no entrega datos', () => {
-    const telefono = empezar(<BonoEstado />)
+    const container = empezar()
+    const telefono = container.querySelector('#pantalla-escenario') as HTMLElement
 
     fireEvent.click(within(telefono).getByText('bit.ly/bono-ec-2026'))
     fireEvent.click(within(telefono).getByRole('button', { name: 'Volver atrás' }))
@@ -38,7 +75,8 @@ describe('BonoEstado', () => {
   })
 
   it('desde la página falsa se puede volver al hilo a releer el SMS', () => {
-    const telefono = empezar(<BonoEstado />)
+    const container = empezar()
+    const telefono = container.querySelector('#pantalla-escenario') as HTMLElement
 
     fireEvent.click(within(telefono).getByText('bit.ly/bono-ec-2026'))
     expect(within(telefono).getByText('Acreditación del bono de $180')).toBeDefined()
@@ -53,9 +91,9 @@ describe('BonoEstado', () => {
   })
 
   it('volver al navegador desde el hilo no deja la pantalla en Mensajes', () => {
-    const telefono = empezar(<BonoEstado />)
-    const app = (nombre: RegExp) =>
-      within(telefono).getByRole('button', { name: nombre })
+    const container = empezar()
+    const telefono = container.querySelector('#pantalla-escenario') as HTMLElement
+    const app = (nombre: RegExp) => within(telefono).getByRole('button', { name: nombre })
 
     fireEvent.click(app(/Navegador/))
     expect(within(telefono).getByText('Nueva pestaña')).toBeDefined()
@@ -74,9 +112,9 @@ describe('BonoEstado', () => {
   })
 
   it('mirar una app sobre el hilo y volver a Mensajes deja el hilo, no la pantalla del grafo', () => {
-    const telefono = empezar(<BonoEstado />)
-    const app = (nombre: RegExp) =>
-      within(telefono).getByRole('button', { name: nombre })
+    const container = empezar()
+    const telefono = container.querySelector('#pantalla-escenario') as HTMLElement
+    const app = (nombre: RegExp) => within(telefono).getByRole('button', { name: nombre })
 
     fireEvent.click(within(telefono).getByText('bit.ly/bono-ec-2026'))
     fireEvent.click(app(/Mensajes/))
@@ -87,7 +125,8 @@ describe('BonoEstado', () => {
   })
 
   it('abrir el navegador no comprueba nada: la dirección la eliges tú', () => {
-    const telefono = empezar(<BonoEstado />)
+    const container = empezar()
+    const telefono = container.querySelector('#pantalla-escenario') as HTMLElement
 
     fireEvent.click(within(telefono).getByRole('button', { name: /Navegador/ }))
 
@@ -98,14 +137,22 @@ describe('BonoEstado', () => {
 
     fireEvent.click(within(telefono).getByRole('button', { name: /inclusion\.gob\.ec/ }))
 
-    // Y el acierto se ve en pantalla, no solo en el veredicto.
+    // La respuesta se lee en pantalla y la corrida sigue abierta: comprobar es
+    // mirar, y la decisión es lo que se haga después con el mensaje (#74).
     expect(within(telefono).getByText('Consulta de beneficiarios')).toBeDefined()
     expect(within(telefono).getByText('Procesos de preselección')).toBeDefined()
+    expect(screen.getByText('¿Qué haces?')).toBeDefined()
+
+    // Volver al hilo y dejarlo ahí, ya sabiendo lo que es: eso sí acredita.
+    fireEvent.click(within(telefono).getByRole('button', { name: 'Salir de la aplicación' }))
+    fireEvent.click(within(telefono).getByRole('button', { name: /Volver a la lista de mensajes/ }))
+
     expect(screen.getByText('No caíste · buscaste la fuente oficial')).toBeDefined()
   })
 
   it('el repaso de señales resalta elementos dentro del celular', async () => {
-    const telefono = empezar(<BonoEstado />)
+    const container = empezar()
+    const telefono = container.querySelector('#pantalla-escenario') as HTMLElement
 
     fireEvent.click(within(telefono).getByText('bit.ly/bono-ec-2026'))
     fireEvent.click(within(telefono).getByRole('button', { name: 'Acreditar mi bono' }))
