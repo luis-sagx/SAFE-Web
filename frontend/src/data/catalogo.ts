@@ -627,7 +627,7 @@ const BASE: EscenarioBase[] = [
     seccionId: 'estafa',
     escenarioId: 'saldo-contable',
     titulo: 'Saldo contable',
-    descripcion: 'Vendes una laptop y el comprador manda un comprobante pidiendo que despaches ya.',
+    descripcion: 'Vendes una laptop y el comprador manda un comprobante de depósito pidiendo que despaches ya.',
     // v2: se juega sobre la pantalla, sin lista de opciones. El comprobante
     // pasó de contarse en texto a dibujarse como la captura que es.
     version: 2,
