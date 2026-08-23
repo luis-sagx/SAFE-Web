@@ -84,6 +84,12 @@ export type AppTelefono = MarcadorNavegador & {
    *  por posición: el dock tiene que leerse como el teléfono del participante,
    *  no como cuatro botones de esta aplicación. */
   color?: string
+  /** Destino cuando se abre con una llamada de verdad en curso (no el
+   *  marcador: ahí todavía no llamaste). Sin esto, comprobar algo mientras
+   *  hablas y comprobarlo antes de llamar llevarían al mismo sitio, y un
+   *  escenario donde llamar cuenta en contra no podría distinguir los dos
+   *  caminos. */
+  gotoEnLlamada?: string
 }
 
 /// Cómo se ve cada pantalla en la barra de direcciones. El correo va en el
@@ -554,19 +560,24 @@ function StoryEscenario({
           reconoce el engaño. */}
       {apps && apps.length > 0 && (
         <div className={styles.phoneDock} aria-label="Apps del teléfono">
-          {apps.map(({ Icono, texto, goto, label, vacia, color, hilo }) => (
+          {apps.map(({ Icono, texto, goto, gotoEnLlamada, label, vacia, color, hilo }) => {
+            // El marcador no cuenta como llamada: tocar un número todavía no
+            // es haber llamado, y salir de él vuelve al hilo sin coste.
+            const enLlamada = vista.kind === 'call' && !vista.marcando
+            const destino = (enLlamada && gotoEnLlamada) || goto
+            return (
             <button
               key={texto}
               type="button"
               className={styles.phoneDockApp}
-              data-hotspot-goto={goto}
+              data-hotspot-goto={destino}
               data-hotspot-label={label}
               // Las que no deciden se abren igual. Ver AppTelefono: si solo
               // reaccionara la que decide, el realce del cursor delataría cuál
               // es sin haber leído el mensaje.
-              data-app={goto || !vacia ? undefined : texto}
-              data-app-vacia={goto ? undefined : vacia}
-              data-app-hilo={goto || vacia ? undefined : (hilo ?? '')}
+              data-app={destino || !vacia ? undefined : texto}
+              data-app-vacia={destino ? undefined : vacia}
+              data-app-hilo={destino || vacia ? undefined : (hilo ?? '')}
             >
               <span
                 className={styles.phoneDockIcono}
@@ -576,7 +587,8 @@ function StoryEscenario({
               </span>
               <span className={styles.phoneDockNombre}>{texto}</span>
             </button>
-          ))}
+            )
+          })}
         </div>
       )}
 

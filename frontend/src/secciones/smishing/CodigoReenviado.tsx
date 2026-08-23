@@ -85,6 +85,26 @@ const HILO_NEGADO: ScreenView = {
   ],
 }
 
+/// El mismo hilo del impostor, después de haber comprobado en la app que no
+/// hay ningún intento de acceso. Comprobar no bastaba: seguían con una
+/// conversación abierta y el código todavía sin usar. Negarse ahora sí cierra
+/// el escenario, porque ya no queda nada pendiente.
+const HILO_COMPROBADO: ScreenView = {
+  ...HILO_FALSO,
+  respuestas: [
+    {
+      texto: 'Te reenvío el código.',
+      goto: 'e_reenvia',
+      label: 'Reenvió el código al número desconocido, después de comprobar que no hacía falta',
+    },
+    {
+      texto: 'Ese código no se lo puedo pasar a nadie.',
+      goto: 'e_app',
+      label: 'Se negó a reenviar el código después de comprobar que no había ningún acceso',
+    },
+  ],
+}
+
 /// La lista de conversaciones, a la que se sale con la flecha de la cabecera.
 /// Aquí es donde el código deja de salir de la nada: la vista previa del banco
 /// lo enseña, y los dos remitentes quedan uno debajo del otro para compararlos.
@@ -192,7 +212,9 @@ const APP_BANCO: ScreenView = {
     'El código que te enviamos autoriza operaciones en tu cuenta. Nadie del banco te lo pedirá nunca, ni por llamada, ni por mensaje, ni por correo. Si alguien te lo pide, es un intento de fraude.',
   fields: [],
   button: '',
-  cerrarGoto: 'n2',
+  // No a la lista: al hilo del impostor, ya comprobado. Sigue esperando una
+  // respuesta, y comprobar solo no cierra ese frente.
+  cerrarGoto: 'n1c',
   cerrarLabel: 'Cerró la app después de ver que no había accesos no autorizados',
 }
 
@@ -221,6 +243,7 @@ const APPS: AppTelefono[] = [
 
 const STORY: Story<ScreenNode> = {
   n1: { kind: 'scene', view: HILO_FALSO },
+  n1c: { kind: 'scene', view: HILO_COMPROBADO },
   n2: { kind: 'scene', view: LISTA },
   n3: { kind: 'scene', view: HILO_BANCO },
   n4: { kind: 'scene', view: BANCO_INICIO },
@@ -234,10 +257,13 @@ const STORY: Story<ScreenNode> = {
   },
   e_app: {
     kind: 'good',
-    view: APP_BANCO,
+    // La misma burbuja de negativa que e_niega: el mensaje que sale del
+    // teléfono es idéntico en los dos caminos, y lo único que cambia es que
+    // aquí ya habías comprobado antes de mandarlo.
+    view: HILO_NEGADO,
     verdict: 'No caíste · lo comprobaste donde consta',
     outcome:
-      'No había ningún acceso desde otro dispositivo. Sí una solicitud de código de hace dos minutos, sin usar: la pidieron ellos, esperando que se la reenviaras.',
+      'No había ningún acceso desde otro dispositivo. Sí una solicitud de código de hace dos minutos, sin usar: la pidieron ellos, esperando que se la reenviaras. Y encima, te negaste a dársela.',
   },
   e_clave: {
     kind: 'partial',

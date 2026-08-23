@@ -39,7 +39,7 @@ describe('CodigoReenviado', () => {
     expect(screen.getByText('Caíste en la trampa')).toBeDefined()
   })
 
-  it.skip('abrir la app del banco no termina la corrida', () => {
+  it('abrir la app del banco no termina la corrida, ni tampoco mirar la seguridad de la cuenta', () => {
     const telefono = empezar(<CodigoReenviado />)
 
     fireEvent.click(within(telefono).getByRole('button', { name: /Banco/ }))
@@ -49,14 +49,24 @@ describe('CodigoReenviado', () => {
 
     fireEvent.click(within(telefono).getByRole('button', { name: /Seguridad de la cuenta/ }))
 
-    // Mirar la seguridad de la cuenta no termina la corrida: el acierto se gana
-    // solo después de verificar y no entregar el código.
+    // Mirar la seguridad de la cuenta no termina la corrida: el impostor sigue
+    // esperando respuesta, así que comprobar solo no basta.
     expect(within(telefono).getByText('Ninguno desde otro dispositivo')).toBeDefined()
     expect(screen.getByText('¿Qué haces?')).toBeDefined()
 
+    // Salir de la app devuelve al hilo del impostor, ya comprobado: negarse
+    // ahora sí cierra el escenario, porque no queda nada pendiente.
     fireEvent.click(within(telefono).getByRole('button', { name: 'Salir de la aplicación' }))
     fireEvent.click(within(telefono).getByRole('button', { name: /Ese código no se lo puedo pasar/ }))
     expect(screen.getByText('No caíste · lo comprobaste donde consta')).toBeDefined()
+  })
+
+  it('negarse sin haber comprobado no es el acierto pleno', () => {
+    const telefono = empezar(<CodigoReenviado />)
+
+    fireEvent.click(within(telefono).getByRole('button', { name: /Ese código no se lo puedo pasar/ }))
+
+    expect(screen.getByText('No lo diste, pero les seguiste contestando')).toBeDefined()
   })
 
   it('cambiar la clave sin mirar los accesos no es el acierto', () => {

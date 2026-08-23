@@ -37,14 +37,6 @@ const SMS: ScreenView = {
   ],
 }
 
-/// El mismo hilo después de haber comprobado. Ahora salir de él sí decide: se
-/// deja el mensaje sabiendo lo que es, que es lo que se quería medir.
-const SMS_VERIFICADO: ScreenView = {
-  ...SMS,
-  volverGoto: 'e_app',
-  volverLabel: 'Dejó el mensaje después de comprobar el envío en la app',
-}
-
 const SMS_RESPONDIDO: ScreenView = {
   ...SMS,
   respuestas: undefined,
@@ -102,7 +94,7 @@ const APP_INICIO: ScreenView = {
     {
       texto: 'Rastrear una guía',
       detalle: 'Consulta el estado con tu número de guía',
-      goto: 'n_courier',
+      goto: 'e_app',
       label: 'Rastreó la guía dentro de la app del courier',
     },
     { texto: 'Puntos de retiro', detalle: 'Encuentra la agencia más cercana' },
@@ -133,11 +125,6 @@ const APP_COURIER: ScreenView = {
     'Los envíos con valores aduaneros se notifican dentro de la app y se pagan aquí mismo. Nunca por enlaces enviados por mensaje.',
   fields: [],
   button: '',
-  // Comprobar es mirar: la respuesta se lee aquí y se vuelve al mensaje,
-  // donde está la decisión. Antes esta pantalla solo se veía detrás del
-  // veredicto, así que la lección se contaba en vez de enseñarse.
-  cerrarGoto: 'n_sms_verificado',
-  cerrarLabel: 'Cerró la app después de ver el estado real del envío',
 }
 
 /// Las cuatro se abren; solo la del courier decide. Las otras muestran su
@@ -167,8 +154,6 @@ const APPS: AppTelefono[] = [
 ]
 
 const STORY: Story<ScreenNode> = {
-  n_courier: { kind: 'scene', view: APP_COURIER },
-  n_sms_verificado: { kind: 'scene', view: SMS_VERIFICADO },
   n1: { kind: 'scene', view: SMS },
   n1b: { kind: 'scene', view: SMS_RESPONDIDO },
   n2: { kind: 'scene', view: PAGINA },

@@ -124,7 +124,7 @@ describe('BonoEstado', () => {
     expect(within(telefono).getByText(/MIES INFORMA/)).toBeDefined()
   })
 
-  it.skip('abrir el navegador no comprueba nada: la dirección la eliges tú', () => {
+  it('abrir el navegador no comprueba nada, pero entrar al portal oficial sí', () => {
     const container = empezar()
     const telefono = container.querySelector('#pantalla-escenario') as HTMLElement
 
@@ -137,16 +137,10 @@ describe('BonoEstado', () => {
 
     fireEvent.click(within(telefono).getByRole('button', { name: /inclusion\.gob\.ec/ }))
 
-    // La respuesta se lee en pantalla y la corrida sigue abierta: comprobar es
-    // mirar, y la decisión es lo que se haga después con el mensaje (#74).
+    // La respuesta se lee en pantalla, y verla ya es la comprobación: no
+    // queda nada abierto después, así que la corrida termina aquí.
     expect(within(telefono).getByText('Consulta de beneficiarios')).toBeDefined()
     expect(within(telefono).getByText('Procesos de preselección')).toBeDefined()
-    expect(screen.getByText('¿Qué haces?')).toBeDefined()
-
-    // Volver al hilo y dejarlo ahí, ya sabiendo lo que es: eso sí acredita.
-    fireEvent.click(within(telefono).getByRole('button', { name: 'Salir de la aplicación' }))
-    fireEvent.click(within(telefono).getByRole('button', { name: /Volver a la lista de mensajes/ }))
-
     expect(screen.getByText('No caíste · buscaste la fuente oficial')).toBeDefined()
   })
 

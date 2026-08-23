@@ -40,14 +40,6 @@ const SMS: ScreenView = {
   volverLabel: 'Salió del hilo sin hacer nada',
 }
 
-/// El mismo hilo después de haber comprobado. Ahora salir de él sí decide: se
-/// deja el mensaje sabiendo lo que es, que es lo que se quería medir.
-const SMS_VERIFICADO: ScreenView = {
-  ...SMS,
-  volverGoto: 'e_app',
-  volverLabel: 'Dejó el aviso después de comprobar la entrega en la app',
-}
-
 const SMS_BORRADOR: ScreenView = {
   ...SMS,
   borrador: '¿A qué hora exactamente? No voy a estar en la mañana.',
@@ -71,7 +63,7 @@ const APP_INICIO: ScreenView = {
     {
       texto: 'Ver el detalle del envío',
       detalle: 'Estado, horario y datos del remitente',
-      goto: 'n_detalle',
+      goto: 'e_app',
       label: 'Revisó el detalle del envío en la app',
     },
     {
@@ -112,11 +104,6 @@ const APP_DETALLE: ScreenView = {
     'EnvíaExpress nunca solicita pagos por mensaje ni enlaces para liberar un envío. Los valores aduaneros, cuando existen, se cobran al momento de la entrega y con comprobante.',
   fields: [],
   button: '',
-  // Comprobar es mirar: la respuesta se lee aquí y se vuelve al mensaje,
-  // donde está la decisión. Antes esta pantalla solo se veía detrás del
-  // veredicto, así que la lección se contaba en vez de enseñarse.
-  cerrarGoto: 'n_sms_verificado',
-  cerrarLabel: 'Cerró la app después de ver el detalle del envío',
 }
 
 const APPS: AppTelefono[] = [
@@ -143,8 +130,6 @@ const APPS: AppTelefono[] = [
 ]
 
 const STORY: Story<ScreenNode> = {
-  n_detalle: { kind: 'scene', view: APP_DETALLE },
-  n_sms_verificado: { kind: 'scene', view: SMS_VERIFICADO },
   n1: { kind: 'scene', view: SMS },
   n2: { kind: 'scene', view: SMS_BORRADOR },
   n3: { kind: 'scene', view: APP_INICIO },

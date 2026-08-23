@@ -60,14 +60,6 @@ const SMS_RESPONDIDO: ScreenView = {
   ],
 }
 
-/// El mismo hilo después de haber comprobado. Ahora salir de él sí decide: se
-/// deja el mensaje sabiendo lo que es, que es lo que se quería medir.
-const SMS_VERIFICADO: ScreenView = {
-  ...SMS,
-  volverGoto: 'e_app',
-  volverLabel: 'Dejó el mensaje después de comprobar que la tarjeta no estaba bloqueada',
-}
-
 /// La llamada, con la pantalla de llamada de verdad —la misma de vishing— y no
 /// con una ficha que la imita. Marcar no termina el escenario: termina lo que
 /// se dice dentro, y quien marcó todavía puede colgar. El dock sigue debajo,
@@ -176,7 +168,7 @@ const BANCO_INICIO: ScreenView = {
     {
       texto: 'Mis tarjetas',
       detalle: 'Estado, bloqueos e intentos rechazados',
-      goto: 'n_tarjetas',
+      goto: 'e_app',
       label: 'Revisó el estado de sus tarjetas en la app del banco',
     },
     { texto: 'Movimientos', detalle: 'Consumos y débitos de los últimos 30 días' },
@@ -191,10 +183,35 @@ const BANCO_INICIO: ScreenView = {
   button: '',
 }
 
+/// El mismo inicio, visto mientras la llamada sigue en curso. Mirar las
+/// tarjetas aquí no cierra el escenario: colgar sigue pendiente, y eso se
+/// resuelve en la llamada, no en la app. Solo cambia a dónde lleva "Mis
+/// tarjetas"; el resto del menú es idéntico.
+const BANCO_INICIO_EN_LLAMADA: ScreenView = {
+  ...BANCO_INICIO,
+  opciones: [
+    { texto: 'Transferir', detalle: 'A cuentas propias o de terceros' },
+    {
+      texto: 'Mis tarjetas',
+      detalle: 'Estado, bloqueos e intentos rechazados',
+      goto: 'n_tarjetas_llamada',
+      label: 'Revisó el estado de sus tarjetas en la app del banco, sin haber colgado',
+    },
+    { texto: 'Movimientos', detalle: 'Consumos y débitos de los últimos 30 días' },
+    {
+      texto: 'Bloquear tarjeta',
+      detalle: 'Anula la tarjeta de forma inmediata',
+      goto: 'e_bloquea',
+      label: 'Anuló la tarjeta sin comprobar antes si el bloqueo era cierto',
+    },
+  ],
+}
+
 /// Lo que se ve al mirar las tarjetas: nunca estuvo bloqueada, y el número de
-/// verdad está ahí escrito. El acierto se enseña, no se cuenta. Comprobar es
-/// mirar: al cerrar, vuelve al SMS verificado para que el participante pueda
-/// tomar una decisión.
+/// verdad está ahí escrito. El acierto se enseña, no se cuenta, y no queda
+/// nada abierto después de verlo: la pantalla que lo prueba es la que cierra.
+/// Mismo contenido cuando se mira en plena llamada (`n_tarjetas_llamada`):
+/// sin `cerrarGoto`, porque ahí lo único que cierra el escenario es colgar.
 const APP_BANCO: ScreenView = {
   kind: 'web',
   app: 'Banco',
@@ -216,8 +233,6 @@ const APP_BANCO: ScreenView = {
     'El banco nunca te pide por teléfono el código que te envía por mensaje. Si dudas de una llamada, cuelga y marca tú el número impreso en el reverso de tu tarjeta.',
   fields: [],
   button: '',
-  cerrarGoto: 'n_sms_verificado',
-  cerrarLabel: 'Cerró la app después de ver que la tarjeta no estaba bloqueada',
 }
 
 const APPS: AppTelefono[] = [
@@ -226,6 +241,9 @@ const APPS: AppTelefono[] = [
     texto: 'Banco',
     color: '#155e75',
     goto: 'n5',
+    // Con la llamada en pantalla, comprobar no puede cerrar el escenario:
+    // colgar sigue pendiente. Por eso abre la variante que no termina nada.
+    gotoEnLlamada: 'n5c',
     label: 'Abrió la app del banco para comprobar el bloqueo',
   },
   { Icono: MessageSquareText, texto: 'Mensajes', color: '#2f9e44', hilo: 'sms' },
@@ -246,8 +264,8 @@ export const STORY: Story<ScreenNode> = {
   n3: { kind: 'scene', view: LLAMADA },
   n4: { kind: 'scene', view: PIDEN_CODIGO },
   n5: { kind: 'scene', view: BANCO_INICIO },
-  n_tarjetas: { kind: 'scene', view: APP_BANCO },
-  n_sms_verificado: { kind: 'scene', view: SMS_VERIFICADO },
+  n5c: { kind: 'scene', view: BANCO_INICIO_EN_LLAMADA },
+  n_tarjetas_llamada: { kind: 'scene', view: APP_BANCO },
   e_dicta: {
     kind: 'bad',
     view: PIDEN_CODIGO,

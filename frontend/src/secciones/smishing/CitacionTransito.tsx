@@ -24,14 +24,6 @@ const SMS: ScreenView = {
   composerLabel: 'Respondió el mensaje preguntando qué placa tiene la multa',
 }
 
-/// El mismo hilo después de haber comprobado. Ahora salir de él sí decide: se
-/// deja el mensaje sabiendo lo que es, que es lo que se quería medir.
-const SMS_VERIFICADO: ScreenView = {
-  ...SMS,
-  volverGoto: 'e_portal',
-  volverLabel: 'Dejó el mensaje después de comprobarlo en el portal oficial',
-}
-
 const SMS_RESPONDIDO: ScreenView = {
   ...SMS,
   composerGoto: undefined,
@@ -83,7 +75,7 @@ const NAVEGADOR: ScreenView = {
     {
       texto: 'ant.gob.ec',
       detalle: 'Agencia Nacional de Tránsito · consultas y trámites',
-      goto: 'n_portal',
+      goto: 'e_portal',
       label: 'Entró al portal oficial de la ANT desde sus sitios frecuentes',
     },
     { texto: 'sri.gob.ec', detalle: 'Servicio de Rentas Internas' },
@@ -112,11 +104,6 @@ const PORTAL: ScreenView = {
     'Los valores por infracciones se pagan en ventanilla o desde este portal. La ANT no envía enlaces de pago por mensaje de texto.',
   fields: [],
   button: '',
-  // Comprobar es mirar: la respuesta se lee aquí y se vuelve al mensaje,
-  // donde está la decisión. Antes esta pantalla solo se veía detrás del
-  // veredicto, así que la lección se contaba en vez de enseñarse.
-  cerrarGoto: 'n_sms_verificado',
-  cerrarLabel: 'Cerró el portal después de ver que no había ninguna citación',
 }
 
 /// El navegador es aquí lo que el marcador del portal era en phishing: el
@@ -145,8 +132,6 @@ const APPS: AppTelefono[] = [
 ]
 
 const STORY: Story<ScreenNode> = {
-  n_portal: { kind: 'scene', view: PORTAL },
-  n_sms_verificado: { kind: 'scene', view: SMS_VERIFICADO },
   n1: { kind: 'scene', view: SMS },
   n1b: { kind: 'scene', view: SMS_RESPONDIDO },
   n2: { kind: 'scene', view: PAGINA },
