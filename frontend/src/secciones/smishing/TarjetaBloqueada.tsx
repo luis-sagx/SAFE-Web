@@ -60,6 +60,14 @@ const SMS_RESPONDIDO: ScreenView = {
   ],
 }
 
+/// El mismo hilo después de haber comprobado. Ahora salir de él sí decide: se
+/// deja el mensaje sabiendo lo que es, que es lo que se quería medir.
+const SMS_VERIFICADO: ScreenView = {
+  ...SMS,
+  volverGoto: 'e_app',
+  volverLabel: 'Dejó el mensaje después de comprobar que la tarjeta no estaba bloqueada',
+}
+
 /// La llamada, con la pantalla de llamada de verdad —la misma de vishing— y no
 /// con una ficha que la imita. Marcar no termina el escenario: termina lo que
 /// se dice dentro, y quien marcó todavía puede colgar. El dock sigue debajo,
@@ -168,7 +176,7 @@ const BANCO_INICIO: ScreenView = {
     {
       texto: 'Mis tarjetas',
       detalle: 'Estado, bloqueos e intentos rechazados',
-      goto: 'e_app',
+      goto: 'n_tarjetas',
       label: 'Revisó el estado de sus tarjetas en la app del banco',
     },
     { texto: 'Movimientos', detalle: 'Consumos y débitos de los últimos 30 días' },
@@ -184,7 +192,9 @@ const BANCO_INICIO: ScreenView = {
 }
 
 /// Lo que se ve al mirar las tarjetas: nunca estuvo bloqueada, y el número de
-/// verdad está ahí escrito. El acierto se enseña, no se cuenta.
+/// verdad está ahí escrito. El acierto se enseña, no se cuenta. Comprobar es
+/// mirar: al cerrar, vuelve al SMS verificado para que el participante pueda
+/// tomar una decisión.
 const APP_BANCO: ScreenView = {
   kind: 'web',
   app: 'Banco',
@@ -206,6 +216,8 @@ const APP_BANCO: ScreenView = {
     'El banco nunca te pide por teléfono el código que te envía por mensaje. Si dudas de una llamada, cuelga y marca tú el número impreso en el reverso de tu tarjeta.',
   fields: [],
   button: '',
+  cerrarGoto: 'n_sms_verificado',
+  cerrarLabel: 'Cerró la app después de ver que la tarjeta no estaba bloqueada',
 }
 
 const APPS: AppTelefono[] = [
@@ -234,6 +246,8 @@ export const STORY: Story<ScreenNode> = {
   n3: { kind: 'scene', view: LLAMADA },
   n4: { kind: 'scene', view: PIDEN_CODIGO },
   n5: { kind: 'scene', view: BANCO_INICIO },
+  n_tarjetas: { kind: 'scene', view: APP_BANCO },
+  n_sms_verificado: { kind: 'scene', view: SMS_VERIFICADO },
   e_dicta: {
     kind: 'bad',
     view: PIDEN_CODIGO,

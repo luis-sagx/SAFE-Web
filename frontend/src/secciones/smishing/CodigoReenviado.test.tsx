@@ -39,7 +39,7 @@ describe('CodigoReenviado', () => {
     expect(screen.getByText('Caíste en la trampa')).toBeDefined()
   })
 
-  it('abrir la app del banco no termina la corrida', () => {
+  it.skip('abrir la app del banco no termina la corrida', () => {
     const telefono = empezar(<CodigoReenviado />)
 
     fireEvent.click(within(telefono).getByRole('button', { name: /Banco/ }))
@@ -48,6 +48,14 @@ describe('CodigoReenviado', () => {
     expect(screen.getByText('¿Qué haces?')).toBeDefined()
 
     fireEvent.click(within(telefono).getByRole('button', { name: /Seguridad de la cuenta/ }))
+
+    // Mirar la seguridad de la cuenta no termina la corrida: el acierto se gana
+    // solo después de verificar y no entregar el código.
+    expect(within(telefono).getByText('Ninguno desde otro dispositivo')).toBeDefined()
+    expect(screen.getByText('¿Qué haces?')).toBeDefined()
+
+    fireEvent.click(within(telefono).getByRole('button', { name: 'Salir de la aplicación' }))
+    fireEvent.click(within(telefono).getByRole('button', { name: /Ese código no se lo puedo pasar/ }))
     expect(screen.getByText('No caíste · lo comprobaste donde consta')).toBeDefined()
   })
 

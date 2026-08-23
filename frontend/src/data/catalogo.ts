@@ -290,9 +290,9 @@ const BASE: EscenarioBase[] = [
     escenarioId: 'baja-suscripcion',
     titulo: 'Suscripción que no contrataste',
     descripcion: 'Un SMS cobra un servicio que nunca pediste y ofrece cancelarlo respondiendo.',
-    // v2: abrir la app no es decisión; abre una pantalla de opciones y el
-    // acierto se dispara al elegir revisar suscripciones (issue #74).
-    version: 2,
+    // v3: las opciones mirar (revisar suscripciones) ya no acreditan al cerrar
+    // la pantalla; el acierto se gana solo al dejar el mensaje después de verificar (issue #74).
+    version: 3,
     naturaleza: 'fraude',
     dificultad: 1,
     espeja: 'smishing/alerta-consumo',
@@ -319,9 +319,9 @@ const BASE: EscenarioBase[] = [
     escenarioId: 'tarjeta-bloqueada',
     titulo: 'Tarjeta bloqueada',
     descripcion: 'Un SMS avisa de un bloqueo y da un número al que llamar para reactivar.',
-    // v2: abrir la app no es decisión; abre una pantalla de opciones y el
-    // acierto se dispara al elegir revisar el estado (issue #74).
-    version: 2,
+    // v3: las opciones mirar (revisar tarjetas) ya no acreditan al cerrar
+    // la pantalla; el acierto se gana solo al dejar el mensaje después de verificar (issue #74).
+    version: 3,
     naturaleza: 'fraude',
     dificultad: 3,
     espeja: 'smishing/alerta-consumo',
@@ -362,9 +362,9 @@ const BASE: EscenarioBase[] = [
     titulo: 'Código que piden reenviar',
     descripcion:
       'Alguien dice ser del banco y pide el código de verificación que acaba de llegarte.',
-    // v2: abrir la app no es decisión; abre una pantalla de opciones y el
-    // acierto se dispara al elegir revisar intentos de acceso (issue #74).
-    version: 2,
+    // v3: las opciones mirar (revisar intentos de acceso) ya no acreditan al cerrar
+    // la pantalla; el acierto se gana solo después de verificar (issue #74).
+    version: 3,
     naturaleza: 'fraude',
     dificultad: 5,
     espeja: 'smishing/alerta-consumo',
