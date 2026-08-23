@@ -290,9 +290,9 @@ const BASE: EscenarioBase[] = [
     escenarioId: 'baja-suscripcion',
     titulo: 'Suscripción que no contrataste',
     descripcion: 'Un SMS cobra un servicio que nunca pediste y ofrece cancelarlo respondiendo.',
-    // v2: abrir la app no es decisión; abre una pantalla de opciones y el
-    // acierto se dispara al elegir revisar suscripciones (issue #74).
-    version: 2,
+    // v3: las opciones mirar (revisar suscripciones) ya no acreditan al cerrar
+    // la pantalla; el acierto se gana solo al dejar el mensaje después de verificar (issue #74).
+    version: 3,
     naturaleza: 'fraude',
     dificultad: 1,
     espeja: 'smishing/alerta-consumo',
