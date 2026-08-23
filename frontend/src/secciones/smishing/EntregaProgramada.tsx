@@ -22,56 +22,38 @@ import type { Senal } from '../../components/ui/PanelVeredicto'
 
 const GUIA = '8842-EC'
 
-const AVISO = {
-      text: `ENVIAEXPRESS: su envio ${GUIA} sale a reparto manana entre 09h00 y 13h00. No requiere ningun pago. Puede ver el detalle en nuestra app.`,
-      time: '18:05',
-      senal: 'mensaje',
-    }
-
 const SMS: ScreenView = {
   kind: 'sms',
   sender: 'ENVIAEXPRESS',
   sub: 'Remitente habitual · SMS',
   senalRemitente: 'remitente',
-  msgs: [AVISO],
-  // Ninguna pregunta nada que el aviso ya diga —la franja viene escrita—, que
-  // es lo que hacía quedar tonto al participante. Lo que se escribe de verdad
-  // es una petición: la primera intenta arreglar la entrega, la segunda la
-  // rechaza. Las dos se pierden en un número que no lee.
-  respuestas: [
+  msgs: [
     {
-      texto: '¿Pueden dejarlo con el portero si no estoy?',
-      goto: 'e_responde',
-      label: 'Pidió por SMS que le dejen el paquete con el portero',
-    },
-    {
-      texto: 'Yo no pedí nada, no me lo traigan.',
-      goto: 'e_rechaza',
-      label: 'Contestó al aviso rechazando el envío',
+      text: `ENVIAEXPRESS: su envio ${GUIA} sale a reparto manana entre 09h00 y 13h00. No requiere ningun pago. Puede ver el detalle en nuestra app.`,
+      time: '18:05',
+      senal: 'mensaje',
     },
   ],
+  composerGoto: 'n2',
+  composerLabel: 'Fue a escribir una respuesta al aviso',
   volverGoto: 'e_ignora',
   volverLabel: 'Salió del hilo sin hacer nada',
 }
 
-/// El hilo con la respuesta ya enviada. Los dos finales que nacen de contestar
-/// se ven sobre la burbuja propia: sin ella el participante no sabe qué salió
-/// de su teléfono, solo que el escenario se acabó.
-const SMS_PREGUNTADO: ScreenView = {
+/// El mismo hilo después de haber comprobado. Ahora salir de él sí decide: se
+/// deja el mensaje sabiendo lo que es, que es lo que se quería medir.
+const SMS_VERIFICADO: ScreenView = {
   ...SMS,
-  respuestas: undefined,
-  volverGoto: undefined,
-  msgs: [
-    AVISO,
-    { text: '¿Pueden dejarlo con el portero si no estoy?', time: '18:07', mine: true },
-  ],
+  volverGoto: 'e_app',
+  volverLabel: 'Dejó el aviso después de comprobar la entrega en la app',
 }
 
-const SMS_RECHAZADO: ScreenView = {
+const SMS_BORRADOR: ScreenView = {
   ...SMS,
-  respuestas: undefined,
-  volverGoto: undefined,
-  msgs: [AVISO, { text: 'Yo no pedí nada, no me lo traigan.', time: '18:07', mine: true }],
+  borrador: '¿A qué hora exactamente? No voy a estar en la mañana.',
+  composerGoto: undefined,
+  enviarGoto: 'e_responde',
+  enviarLabel: 'Contestó al número del aviso preguntando por la hora',
 }
 
 /// El inicio de la app. Abrirla no es todavía haber comprobado: desde aquí se
@@ -89,7 +71,7 @@ const APP_INICIO: ScreenView = {
     {
       texto: 'Ver el detalle del envío',
       detalle: 'Estado, horario y datos del remitente',
-      goto: 'e_app',
+      goto: 'n_detalle',
       label: 'Revisó el detalle del envío en la app',
     },
     {
@@ -130,6 +112,11 @@ const APP_DETALLE: ScreenView = {
     'EnvíaExpress nunca solicita pagos por mensaje ni enlaces para liberar un envío. Los valores aduaneros, cuando existen, se cobran al momento de la entrega y con comprobante.',
   fields: [],
   button: '',
+  // Comprobar es mirar: la respuesta se lee aquí y se vuelve al mensaje,
+  // donde está la decisión. Antes esta pantalla solo se veía detrás del
+  // veredicto, así que la lección se contaba en vez de enseñarse.
+  cerrarGoto: 'n_sms_verificado',
+  cerrarLabel: 'Cerró la app después de ver el detalle del envío',
 }
 
 const APPS: AppTelefono[] = [
@@ -156,42 +143,38 @@ const APPS: AppTelefono[] = [
 ]
 
 const STORY: Story<ScreenNode> = {
+  n_detalle: { kind: 'scene', view: APP_DETALLE },
+  n_sms_verificado: { kind: 'scene', view: SMS_VERIFICADO },
   n1: { kind: 'scene', view: SMS },
+  n2: { kind: 'scene', view: SMS_BORRADOR },
   n3: { kind: 'scene', view: APP_INICIO },
   e_app: {
     kind: 'good',
     view: APP_DETALLE,
     verdict: 'Acertaste · el aviso era legítimo',
     outcome:
-      'El envío era el que esperabas, salía a reparto al día siguiente y sin ningún valor pendiente. Diez segundos en la app y ya sabías a qué hora estar en casa.',
+      'El envío era el que estabas esperando, salía a reparto al día siguiente y no había ningún valor pendiente. Comprobarlo en la app te tomó diez segundos y te dejó con la información que el mensaje anunciaba: a qué hora estar en casa.',
   },
   e_devuelve: {
     kind: 'bad',
     view: APP_INICIO,
     verdict: 'Aviso legítimo, reacción peligrosa',
     outcome:
-      'Devolviste un paquete que sí habías comprado, sin mirar de qué se trataba. El reembolso tarda semanas, y el aviso no pedía pago, ni traía enlace, ni metía prisa.',
+      'Devolviste al remitente un paquete que sí habías comprado, sin mirar antes de qué se trataba. El envío se fue de vuelta, el reembolso tarda semanas y el aviso no tenía nada de raro: ni pedía pago, ni traía enlace, ni metía prisa. Desconfiar de todo cuesta tanto como confiar de más.',
   },
   e_responde: {
     kind: 'partial',
-    view: SMS_PREGUNTADO,
-    verdict: 'Pediste el arreglo donde nadie lo lee',
+    view: SMS_BORRADOR,
+    verdict: 'Contestaste a un número que no lee',
     outcome:
-      'El remitente era el de siempre, así que no pasó nada malo. Pero los avisos automáticos salen de un número que no recibe respuestas: nadie leyó tu petición. Dejar instrucciones al repartidor se hace en la app, la que el propio aviso te señalaba.',
-  },
-  e_rechaza: {
-    kind: 'partial',
-    view: SMS_RECHAZADO,
-    verdict: 'Rechazaste un envío que sí era tuyo',
-    outcome:
-      'Nadie leyó ese mensaje, así que el paquete salió igual: era el tuyo. Pero no estabas en casa y volvió a bodega. Mirarlo en la app costaba diez segundos.',
+      'No pasó nada malo: el remitente era el de siempre. Pero los avisos automáticos salen de un número que no recibe respuestas, así que tu pregunta no llegó a ninguna parte. La franja horaria estaba en la app, a un toque de distancia.',
   },
   e_ignora: {
     kind: 'partial',
     view: SMS,
     verdict: 'Lo dejaste pasar',
     outcome:
-      'El mensaje era auténtico y el paquete llegó igual. Pero no había nadie en casa a las diez y volvió a bodega: el aviso servía justamente para eso.',
+      'No perdiste nada grave, porque el mensaje era auténtico y el paquete llegó igual. Pero al día siguiente no había nadie en casa a las diez de la mañana, y el envío volvió a bodega: el aviso servía justamente para eso.',
   },
 }
 
@@ -201,28 +184,28 @@ const SENALES: Senal[] = [
     targetId: 'mensaje',
     pantalla: 'n1',
     texto:
-      '<b>No pide nada.</b> Ni enlace, ni pago, ni plazo. Un aviso de verdad informa y se queda quieto; el engaño necesita que hagas algo.',
+      '<b>No pide nada.</b> No hay enlace, ni pago, ni plazo, ni un dato que darles. Un aviso de verdad informa y se queda quieto; el engaño necesita que hagas algo.',
   },
   {
     id: 's2',
     targetId: 'remitente',
     pantalla: 'n1',
     texto:
-      'Llega del <b>remitente por el que el courier te escribe siempre</b>, no de un celular cualquiera.',
+      'Llega del <b>remitente por el que el courier te escribe siempre</b>, no de un celular. Compáralo con el del paquete retenido y verás la diferencia.',
   },
   {
     id: 's3',
     targetId: 'sin-pago',
     pantalla: 'e_app',
     texto:
-      'En la app <b>no hay ningún valor pendiente</b>. Cuando hay que pagar de verdad se cobra al entregar, nunca por un enlace.',
+      'En la app <b>no hay ningún valor pendiente</b>. Cuando de verdad hay que pagar algo, se cobra al entregar y con comprobante, nunca por un enlace.',
   },
   {
     id: 's4',
     targetId: 'coincide',
     pantalla: 'e_app',
     texto:
-      'El envío <b>coincide con lo que esperabas</b>. No basta con que el mensaje parezca correcto: tiene que cuadrar con algo tuyo.',
+      'El envío <b>coincide con lo que estabas esperando</b>. Ese es el segundo dato: no basta con que el mensaje parezca correcto, tiene que cuadrar con algo tuyo.',
   },
 ]
 

@@ -37,6 +37,14 @@ const SMS: ScreenView = {
   ],
 }
 
+/// El mismo hilo después de haber comprobado. Ahora salir de él sí decide: se
+/// deja el mensaje sabiendo lo que es, que es lo que se quería medir.
+const SMS_VERIFICADO: ScreenView = {
+  ...SMS,
+  volverGoto: 'e_app',
+  volverLabel: 'Dejó el mensaje después de comprobar el envío en la app',
+}
+
 const SMS_RESPONDIDO: ScreenView = {
   ...SMS,
   respuestas: undefined,
@@ -94,7 +102,7 @@ const APP_INICIO: ScreenView = {
     {
       texto: 'Rastrear una guía',
       detalle: 'Consulta el estado con tu número de guía',
-      goto: 'e_app',
+      goto: 'n_courier',
       label: 'Rastreó la guía dentro de la app del courier',
     },
     { texto: 'Puntos de retiro', detalle: 'Encuentra la agencia más cercana' },
@@ -125,6 +133,11 @@ const APP_COURIER: ScreenView = {
     'Los envíos con valores aduaneros se notifican dentro de la app y se pagan aquí mismo. Nunca por enlaces enviados por mensaje.',
   fields: [],
   button: '',
+  // Comprobar es mirar: la respuesta se lee aquí y se vuelve al mensaje,
+  // donde está la decisión. Antes esta pantalla solo se veía detrás del
+  // veredicto, así que la lección se contaba en vez de enseñarse.
+  cerrarGoto: 'n_sms_verificado',
+  cerrarLabel: 'Cerró la app después de ver el estado real del envío',
 }
 
 /// Las cuatro se abren; solo la del courier decide. Las otras muestran su
@@ -154,6 +167,8 @@ const APPS: AppTelefono[] = [
 ]
 
 const STORY: Story<ScreenNode> = {
+  n_courier: { kind: 'scene', view: APP_COURIER },
+  n_sms_verificado: { kind: 'scene', view: SMS_VERIFICADO },
   n1: { kind: 'scene', view: SMS },
   n1b: { kind: 'scene', view: SMS_RESPONDIDO },
   n2: { kind: 'scene', view: PAGINA },
@@ -189,11 +204,38 @@ const STORY: Story<ScreenNode> = {
 }
 
 const SENALES: Senal[] = [
-  { id: 's1', targetId: 'remitente', pantalla: 'n1', texto: 'Llega de un <b>número de celular</b> que no tienes guardado, no del canal habitual del courier.' },
-  { id: 's2', targetId: 'url', pantalla: 'n2', texto: 'El enlace lleva a <b>envia-express.info</b>, que lleva el nombre del courier adentro pero no es la dirección de su sitio. Además empieza por http y no por https, así que no muestra el candado y lo que escribas viaja sin proteger.' },
-  { id: 's3', targetId: 'mensaje', pantalla: 'n1', texto: 'Un monto <b>diminuto</b> baja tu guardia: lo que buscan es la tarjeta, no el dólar.' },
-  { id: 's4', targetId: 'tarjeta', pantalla: 'n2', texto: 'Pide <b>número completo, caducidad y CVV</b>: eso alcanza para comprar en tu nombre.' },
-  { id: 's5', targetId: 'respuesta', pantalla: 'n1b', texto: 'Al responder, la <b>urgencia aumenta</b> en vez de darte información concreta.' },
+  {
+    id: 's1',
+    targetId: 'remitente',
+    pantalla: 'n1',
+    texto:
+      'Llega de un <b>número de celular</b> que no tienes guardado, no del canal habitual del courier.',
+  },
+  {
+    id: 's2',
+    targetId: 'url',
+    pantalla: 'n2',
+    texto:
+      'El enlace lleva a <b>envia-express.info</b>, que lleva el nombre del courier adentro pero no es la dirección de su sitio. Además empieza por http y no por https, así que no muestra el candado y lo que escribas viaja sin proteger.',
+  },
+  {
+    id: 's3',
+    targetId: 'mensaje',
+    pantalla: 'n1',
+    texto: 'Un monto <b>diminuto</b> baja tu guardia: lo que buscan es la tarjeta, no el dólar.',
+  },
+  {
+    id: 's4',
+    targetId: 'tarjeta',
+    pantalla: 'n2',
+    texto: 'Pide <b>número completo, caducidad y CVV</b>: eso alcanza para comprar en tu nombre.',
+  },
+  {
+    id: 's5',
+    targetId: 'respuesta',
+    pantalla: 'n1b',
+    texto: 'Al responder, la <b>urgencia aumenta</b> en vez de darte información concreta.',
+  },
 ]
 const RULE =
   'Regla de oro: un aviso de paquete se comprueba <b>en la app o la web del courier con tu número de guía</b>, nunca por el enlace del mensaje. Nadie necesita tu CVV para cobrarte un dólar.'
@@ -203,8 +245,8 @@ const RESUMEN = 'Un SMS dice que tu paquete está retenido por $1,20 de aduana.'
 const CONTEXTO: Contexto = {
   antes: (
     <>
-      Compraste algo por internet la semana pasada y{' '}
-      <strong>sí estás esperando un paquete</strong>: debería llegar en estos días.
+      Compraste algo por internet la semana pasada y <strong>sí estás esperando un paquete</strong>:
+      debería llegar en estos días.
     </>
   ),
   ahora: (

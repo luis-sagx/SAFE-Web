@@ -20,26 +20,21 @@ const SMS: ScreenView = {
   sub: 'Remitente sin verificar · SMS',
   senalRemitente: 'remitente',
   msgs: [PRIMER_SMS],
-  // Preguntar sigue la conversación y deja ver que no tienen ningún dato que
-  // dar; exigir que paren la cierra. Ninguna de las dos es gratis: contestar
-  // ya confirma que la línea existe y que alguien la lee.
-  respuestas: [
-    {
-      texto: '¿Cuál es la placa?',
-      goto: 'n1b',
-      label: 'Respondió el mensaje preguntando qué placa tiene la multa',
-    },
-    {
-      texto: 'No tengo ninguna multa, no me escriban más.',
-      goto: 'e_responde',
-      label: 'Contestó exigiendo que no le vuelvan a escribir',
-    },
-  ],
+  composerGoto: 'n1b',
+  composerLabel: 'Respondió el mensaje preguntando qué placa tiene la multa',
+}
+
+/// El mismo hilo después de haber comprobado. Ahora salir de él sí decide: se
+/// deja el mensaje sabiendo lo que es, que es lo que se quería medir.
+const SMS_VERIFICADO: ScreenView = {
+  ...SMS,
+  volverGoto: 'e_portal',
+  volverLabel: 'Dejó el mensaje después de comprobarlo en el portal oficial',
 }
 
 const SMS_RESPONDIDO: ScreenView = {
   ...SMS,
-  respuestas: undefined,
+  composerGoto: undefined,
   msgs: [
     PRIMER_SMS,
     { text: '¿Cuál es la placa?', time: '08:31', mine: true },
@@ -48,17 +43,6 @@ const SMS_RESPONDIDO: ScreenView = {
       time: '08:32',
       senal: 'respuesta',
     },
-  ],
-}
-
-/// El hilo con la exigencia ya enviada. Un final que nace de contestar se ve
-/// sobre la burbuja propia: sin ella no se sabe qué salió del teléfono.
-const SMS_CORTADO: ScreenView = {
-  ...SMS,
-  respuestas: undefined,
-  msgs: [
-    PRIMER_SMS,
-    { text: 'No tengo ninguna multa, no me escriban más.', time: '08:31', mine: true },
   ],
 }
 
@@ -99,7 +83,7 @@ const NAVEGADOR: ScreenView = {
     {
       texto: 'ant.gob.ec',
       detalle: 'Agencia Nacional de Tránsito · consultas y trámites',
-      goto: 'e_portal',
+      goto: 'n_portal',
       label: 'Entró al portal oficial de la ANT desde sus sitios frecuentes',
     },
     { texto: 'sri.gob.ec', detalle: 'Servicio de Rentas Internas' },
@@ -128,6 +112,11 @@ const PORTAL: ScreenView = {
     'Los valores por infracciones se pagan en ventanilla o desde este portal. La ANT no envía enlaces de pago por mensaje de texto.',
   fields: [],
   button: '',
+  // Comprobar es mirar: la respuesta se lee aquí y se vuelve al mensaje,
+  // donde está la decisión. Antes esta pantalla solo se veía detrás del
+  // veredicto, así que la lección se contaba en vez de enseñarse.
+  cerrarGoto: 'n_sms_verificado',
+  cerrarLabel: 'Cerró el portal después de ver que no había ninguna citación',
 }
 
 /// El navegador es aquí lo que el marcador del portal era en phishing: el
@@ -156,6 +145,8 @@ const APPS: AppTelefono[] = [
 ]
 
 const STORY: Story<ScreenNode> = {
+  n_portal: { kind: 'scene', view: PORTAL },
+  n_sms_verificado: { kind: 'scene', view: SMS_VERIFICADO },
   n1: { kind: 'scene', view: SMS },
   n1b: { kind: 'scene', view: SMS_RESPONDIDO },
   n2: { kind: 'scene', view: PAGINA },
@@ -174,13 +165,6 @@ const STORY: Story<ScreenNode> = {
     outcome:
       'Saliste de la página antes de enviar datos. Una institución que registra una multa no necesita pescar tu placa por un enlace.',
   },
-  e_responde: {
-    kind: 'partial',
-    view: SMS_CORTADO,
-    verdict: 'No entregaste nada, pero contestaste',
-    outcome:
-      'No diste ningún dato ni abriste el enlace, que es lo que evita el daño. Pero exigirles que paren es contestar, y contestar confirma que la línea está activa y que alguien la lee: es lo que buscan para insistir con algo mejor preparado. Y sigues sin saber si tienes alguna citación de verdad.',
-  },
   e_portal: {
     kind: 'good',
     view: PORTAL,
@@ -191,11 +175,38 @@ const STORY: Story<ScreenNode> = {
 }
 
 const SENALES: Senal[] = [
-  { id: 's1', targetId: 'mensaje', pantalla: 'n1', texto: 'El mensaje <b>no trae tu placa</b>; te pide escribirla porque no la sabe.' },
-  { id: 's2', targetId: 'mensaje', pantalla: 'n1', texto: 'El plazo "antes del viernes" crea presión, pero no explica artículo, fecha ni lugar de la supuesta infracción.' },
-  { id: 's3', targetId: 'url', pantalla: 'n2', texto: 'El dominio <b>transito-ec-pagos.com</b> suena oficial, pero no es un portal público ecuatoriano.' },
-  { id: 's4', targetId: 'tarjeta', pantalla: 'n2', texto: 'La página pide <b>tarjeta completa y CVV</b> antes de demostrar que la deuda existe.' },
-  { id: 's5', targetId: 'respuesta', pantalla: 'n1b', texto: 'Al responder, no dan datos concretos: solo empujan de nuevo al mismo enlace.' },
+  {
+    id: 's1',
+    targetId: 'mensaje',
+    pantalla: 'n1',
+    texto: 'El mensaje <b>no trae tu placa</b>; te pide escribirla porque no la sabe.',
+  },
+  {
+    id: 's2',
+    targetId: 'mensaje',
+    pantalla: 'n1',
+    texto:
+      'El plazo "antes del viernes" crea presión, pero no explica artículo, fecha ni lugar de la supuesta infracción.',
+  },
+  {
+    id: 's3',
+    targetId: 'url',
+    pantalla: 'n2',
+    texto:
+      'El dominio <b>transito-ec-pagos.com</b> suena oficial, pero no es un portal público ecuatoriano.',
+  },
+  {
+    id: 's4',
+    targetId: 'tarjeta',
+    pantalla: 'n2',
+    texto: 'La página pide <b>tarjeta completa y CVV</b> antes de demostrar que la deuda existe.',
+  },
+  {
+    id: 's5',
+    targetId: 'respuesta',
+    pantalla: 'n1b',
+    texto: 'Al responder, no dan datos concretos: solo empujan de nuevo al mismo enlace.',
+  },
 ]
 
 const RULE =
@@ -206,14 +217,14 @@ const RESUMEN = 'Un SMS avisa una citación de tránsito y amenaza con duplicar 
 const CONTEXTO: Contexto = {
   antes: (
     <>
-      Tienes carro y ya te ha pasado pagar multas tarde, así que una citación nueva no te
-      parece imposible.
+      Tienes carro y ya te ha pasado pagar multas tarde, así que una citación nueva no te parece
+      imposible.
     </>
   ),
   ahora: (
     <>
-      <strong>Antes de salir al trabajo</strong> recibes un SMS de Tránsito EC con un plazo
-      cercano para pagar.
+      <strong>Antes de salir al trabajo</strong> recibes un SMS de Tránsito EC con un plazo cercano
+      para pagar.
     </>
   ),
 }
