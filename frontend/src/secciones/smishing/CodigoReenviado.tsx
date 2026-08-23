@@ -156,7 +156,7 @@ const BANCO_INICIO: ScreenView = {
     {
       texto: 'Seguridad de la cuenta',
       detalle: 'Accesos, dispositivos y códigos solicitados',
-      goto: 'e_app',
+      goto: 'n_seguridad',
       label: 'Revisó la actividad y los accesos de su cuenta en la app',
     },
     { texto: 'Movimientos', detalle: 'Débitos y transferencias de los últimos 30 días' },
@@ -192,6 +192,8 @@ const APP_BANCO: ScreenView = {
     'El código que te enviamos autoriza operaciones en tu cuenta. Nadie del banco te lo pedirá nunca, ni por llamada, ni por mensaje, ni por correo. Si alguien te lo pide, es un intento de fraude.',
   fields: [],
   button: '',
+  cerrarGoto: 'n2',
+  cerrarLabel: 'Cerró la app después de ver que no había accesos no autorizados',
 }
 
 const APPS: AppTelefono[] = [
@@ -222,6 +224,7 @@ const STORY: Story<ScreenNode> = {
   n2: { kind: 'scene', view: LISTA },
   n3: { kind: 'scene', view: HILO_BANCO },
   n4: { kind: 'scene', view: BANCO_INICIO },
+  n_seguridad: { kind: 'scene', view: APP_BANCO },
   e_reenvia: {
     kind: 'bad',
     view: HILO_ENVIADO,
