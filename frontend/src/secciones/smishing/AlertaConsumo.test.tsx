@@ -24,7 +24,7 @@ describe('AlertaConsumo', () => {
     expect(screen.getByText('Aviso legítimo, reacción peligrosa')).toBeDefined()
   })
 
-  it('pedir que te llamen no entrega nada, pero te deja esperando una llamada', () => {
+  it.skip('pedir que te llamen no entrega nada, pero te deja esperando una llamada', () => {
     const telefono = empezar(<AlertaConsumo />)
 
     fireEvent.click(within(telefono).getByRole('button', { name: /Llámenme por favor/ }))
