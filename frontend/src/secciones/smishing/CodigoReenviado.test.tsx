@@ -39,7 +39,7 @@ describe('CodigoReenviado', () => {
     expect(screen.getByText('Caíste en la trampa')).toBeDefined()
   })
 
-  it.skip('abrir la app del banco no termina la corrida', () => {
+  it('abrir la app del banco no termina la corrida', () => {
     const telefono = empezar(<CodigoReenviado />)
 
     fireEvent.click(within(telefono).getByRole('button', { name: /Banco/ }))

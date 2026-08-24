@@ -115,7 +115,7 @@ const APP_DETALLE: ScreenView = {
   // Comprobar es mirar: la respuesta se lee aquí y se vuelve al mensaje,
   // donde está la decisión. Antes esta pantalla solo se veía detrás del
   // veredicto, así que la lección se contaba en vez de enseñarse.
-  cerrarGoto: 'n_sms_verificado',
+  cerrarGoto: 'n3',
   cerrarLabel: 'Cerró la app después de ver el detalle del envío',
 }
 

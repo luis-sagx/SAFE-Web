@@ -94,6 +94,8 @@ const APP_INICIO: ScreenView = {
   ],
   fields: [],
   button: '',
+  cerrarGoto: 'n_sms_verificado',
+  cerrarLabel: 'Cerró la app del banco',
 }
 
 /// La app del banco con los mismos movimientos del hilo. El acierto de este
@@ -119,7 +121,7 @@ const APP_BANCO: ScreenView = {
   // Comprobar es mirar: la respuesta se lee aquí y se vuelve al mensaje,
   // donde está la decisión. Antes esta pantalla solo se veía detrás del
   // veredicto, así que la lección se contaba en vez de enseñarse.
-  cerrarGoto: 'n_sms_verificado',
+  cerrarGoto: 'n2',
   cerrarLabel: 'Cerró la app después de revisar los movimientos',
 }
 

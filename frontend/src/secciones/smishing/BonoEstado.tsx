@@ -71,6 +71,8 @@ const NAVEGADOR: ScreenView = {
   ],
   fields: [],
   button: '',
+  cerrarGoto: 'n_sms_verificado',
+  cerrarLabel: 'Cerró el navegador',
 }
 
 /// Lo que el participante ve al comprobarlo por su cuenta. El acierto tiene
@@ -96,7 +98,7 @@ const PORTAL_MIES: ScreenView = {
   // Comprobar es mirar: al cerrar, vuelve al SMS verificado para que
   // el participante pueda tomar una decisión. La respuesta se lee aquí,
   // la decisión se toma al salir del hilo.
-  cerrarGoto: 'n_sms_verificado',
+  cerrarGoto: 'n3',
   cerrarLabel: 'Cerró el portal después de ver que no había ningún bono a su nombre',
 }
 

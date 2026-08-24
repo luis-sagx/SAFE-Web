@@ -35,7 +35,7 @@ describe('TarjetaBloqueada', () => {
 
   // Salir del marcador es lo correcto y no es suficiente: la corrida sigue
   // abierta, porque el estado de la tarjeta sigue sin comprobarse.
-  it.skip('no llamar devuelve al hilo con el escenario todavía por resolver', () => {
+  it('no llamar devuelve al hilo con el escenario todavía por resolver', () => {
     const telefono = empezar(<TarjetaBloqueada />)
 
     fireEvent.click(within(telefono).getByRole('link', { name: '09 87 654 321' }))
@@ -80,7 +80,7 @@ describe('TarjetaBloqueada', () => {
     expect(screen.getByText('Caíste en la trampa')).toBeDefined()
   })
 
-  it.skip('abrir la app del banco no termina la corrida', () => {
+  it('abrir la app del banco no termina la corrida', () => {
     const telefono = empezar(<TarjetaBloqueada />)
 
     fireEvent.click(within(telefono).getByRole('button', { name: /Banco/ }))

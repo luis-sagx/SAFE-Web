@@ -50,7 +50,7 @@ describe('BajaSuscripcion', () => {
     expect(reloj()).toBe('07:53')
   })
 
-  it.skip('abrir la app de la operadora no termina la corrida', () => {
+  it('abrir la app de la operadora no termina la corrida', () => {
     const telefono = empezar(<BajaSuscripcion />)
 
     fireEvent.click(within(telefono).getByRole('button', { name: /Mi Operadora/ }))

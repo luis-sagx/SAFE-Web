@@ -104,6 +104,8 @@ const OPERADORA_INICIO: ScreenView = {
   ],
   fields: [],
   button: '',
+  cerrarGoto: 'n_sms_verificado',
+  cerrarLabel: 'Cerró la app de la operadora',
 }
 
 /// Lo que se ve al mirar las suscripciones: no hay ninguna. El acierto tiene
@@ -126,7 +128,7 @@ const OPERADORA: ScreenView = {
     'Los servicios de suscripción se activan y se cancelan desde esta pantalla o llamando al *611. Nunca respondas mensajes de números cortos que no reconoces: la respuesta confirma que tu línea está activa.',
   fields: [],
   button: '',
-  cerrarGoto: 'n_sms_verificado',
+  cerrarGoto: 'n4',
   cerrarLabel: 'Cerró la app después de verificar que no había ninguna suscripción',
 }
 

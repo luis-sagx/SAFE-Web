@@ -189,6 +189,8 @@ const BANCO_INICIO: ScreenView = {
   ],
   fields: [],
   button: '',
+  cerrarGoto: 'n_sms_verificado',
+  cerrarLabel: 'Cerró la app del banco',
 }
 
 /// Lo que se ve al mirar las tarjetas: nunca estuvo bloqueada, y el número de
@@ -216,7 +218,7 @@ const APP_BANCO: ScreenView = {
     'El banco nunca te pide por teléfono el código que te envía por mensaje. Si dudas de una llamada, cuelga y marca tú el número impreso en el reverso de tu tarjeta.',
   fields: [],
   button: '',
-  cerrarGoto: 'n_sms_verificado',
+  cerrarGoto: 'n5',
   cerrarLabel: 'Cerró la app después de ver que la tarjeta no estaba bloqueada',
 }
 
