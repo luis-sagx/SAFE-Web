@@ -19,7 +19,7 @@ const SMS: ScreenView = {
   senalRemitente: 'remitente',
   msgs: [{ text: TEXTO_BONO, time: '09:41', senal: 'mensaje' }],
 }
-y si y
+
 const PAGINA: ScreenView = {
   kind: 'web',
   url: 'http://bono-social-ec.online/registro',
