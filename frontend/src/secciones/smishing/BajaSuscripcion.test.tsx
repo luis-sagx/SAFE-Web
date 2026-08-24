@@ -50,7 +50,7 @@ describe('BajaSuscripcion', () => {
     expect(reloj()).toBe('07:53')
   })
 
-  it('abrir la app de la operadora no termina la corrida', () => {
+  it('abrir la app de la operadora no termina la corrida, pero mirar las suscripciones sí', () => {
     const telefono = empezar(<BajaSuscripcion />)
 
     fireEvent.click(within(telefono).getByRole('button', { name: /Mi Operadora/ }))
@@ -62,13 +62,10 @@ describe('BajaSuscripcion', () => {
 
     fireEvent.click(within(telefono).getByRole('button', { name: /Paquetes y suscripciones/ }))
 
-    // Mirar las suscripciones no termina la corrida: el acierto se gana solo
-    // después de cerrar la app y volver al mensaje.
+    // Mirar las suscripciones ya es la comprobación: no queda nada abierto
+    // después, así que la corrida termina aquí.
     expect(within(telefono).getByText('Suscripciones activas')).toBeDefined()
     expect(within(telefono).getByText('Ninguna')).toBeDefined()
-    expect(screen.getByText('¿Qué haces?')).toBeDefined()
-
-    fireEvent.click(within(telefono).getByRole('button', { name: 'Volver a la lista de mensajes' }))
     expect(screen.getByText('No caíste · lo comprobaste con tu operadora')).toBeDefined()
   })
 

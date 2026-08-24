@@ -35,7 +35,7 @@ describe('TarjetaBloqueada', () => {
 
   // Salir del marcador es lo correcto y no es suficiente: la corrida sigue
   // abierta, porque el estado de la tarjeta sigue sin comprobarse.
-  it('no llamar devuelve al hilo con el escenario todavía por resolver', () => {
+  it('no llamar devuelve al hilo con el escenario todavía por resolver, y mirar las tarjetas cierra', () => {
     const telefono = empezar(<TarjetaBloqueada />)
 
     fireEvent.click(within(telefono).getByRole('link', { name: '09 87 654 321' }))
@@ -47,13 +47,9 @@ describe('TarjetaBloqueada', () => {
     fireEvent.click(within(telefono).getByRole('button', { name: /Banco/ }))
     fireEvent.click(within(telefono).getByRole('button', { name: /Mis tarjetas/ }))
 
-    // Mirar las tarjetas no termina la corrida: el acierto se gana solo
-    // después de cerrar la app y volver al mensaje.
+    // Sin llamada de por medio, mirar las tarjetas ya es la comprobación: no
+    // queda nada abierto después, así que la corrida termina aquí.
     expect(within(telefono).getByText('Activa · sin bloqueos ni intentos rechazados')).toBeDefined()
-    expect(screen.getByText('¿Qué haces?')).toBeDefined()
-
-    fireEvent.click(within(telefono).getByRole('button', { name: 'Salir de la aplicación' }))
-    fireEvent.click(within(telefono).getByRole('button', { name: 'Salir del hilo sin hacer nada' }))
     expect(screen.getByText('No caíste · lo comprobaste donde consta')).toBeDefined()
   })
 
@@ -80,7 +76,7 @@ describe('TarjetaBloqueada', () => {
     expect(screen.getByText('Caíste en la trampa')).toBeDefined()
   })
 
-  it('abrir la app del banco no termina la corrida', () => {
+  it('abrir la app del banco no termina la corrida, pero mirar las tarjetas sí', () => {
     const telefono = empezar(<TarjetaBloqueada />)
 
     fireEvent.click(within(telefono).getByRole('button', { name: /Banco/ }))
@@ -91,14 +87,32 @@ describe('TarjetaBloqueada', () => {
 
     fireEvent.click(within(telefono).getByRole('button', { name: /Mis tarjetas/ }))
 
-    // Mirar las tarjetas no termina la corrida: el acierto se gana solo
-    // después de cerrar la app y volver al mensaje.
+    expect(within(telefono).getByText('Activa · sin bloqueos ni intentos rechazados')).toBeDefined()
+    expect(screen.getByText('No caíste · lo comprobaste donde consta')).toBeDefined()
+  })
+
+  // La bifurcación del §3.3: con la llamada en pantalla, el icono del banco
+  // abre la variante que no cierra nada, porque colgar sigue pendiente.
+  it('comprobar la tarjeta en plena llamada no cierra el escenario: hay que colgar', () => {
+    const telefono = empezar(<TarjetaBloqueada />)
+
+    fireEvent.click(within(telefono).getByRole('link', { name: '09 87 654 321' }))
+    fireEvent.click(within(telefono).getByRole('button', { name: 'Llamar a este número' }))
+    expect(within(telefono).getByLabelText('Llamada en curso')).toBeDefined()
+
+    fireEvent.click(within(telefono).getByRole('button', { name: /Banco/ }))
+    fireEvent.click(within(telefono).getByRole('button', { name: /Mis tarjetas/ }))
+
+    // Se ve el mismo estado de siempre, pero la corrida sigue abierta.
     expect(within(telefono).getByText('Activa · sin bloqueos ni intentos rechazados')).toBeDefined()
     expect(screen.getByText('¿Qué haces?')).toBeDefined()
 
-    fireEvent.click(within(telefono).getByRole('button', { name: 'Salir de la aplicación' }))
-    fireEvent.click(within(telefono).getByRole('button', { name: 'Salir del hilo sin hacer nada' }))
-    expect(screen.getByText('No caíste · lo comprobaste donde consta')).toBeDefined()
+    // El icono de Teléfono devuelve a la llamada exactamente donde se dejó.
+    fireEvent.click(within(telefono).getByRole('button', { name: /Teléfono/ }))
+    expect(within(telefono).getByLabelText('Llamada en curso')).toBeDefined()
+
+    fireEvent.click(within(telefono).getByRole('button', { name: 'Colgar la llamada' }))
+    expect(screen.getByText('Colgaste bien, pero ya habías marcado')).toBeDefined()
   })
 
   it('anular la tarjeta sin mirar su estado no es el acierto', () => {

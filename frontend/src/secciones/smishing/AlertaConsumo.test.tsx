@@ -81,15 +81,10 @@ describe('AlertaConsumo', () => {
 
     fireEvent.click(within(telefono).getByRole('button', { name: /Movimientos/ }))
 
-    // El consumo se ve en pantalla y la corrida sigue abierta: revisar es
-    // mirar, y la decisión vuelve al mensaje (#74).
+    // El consumo se ve en pantalla, y verlo ya es la comprobación: no queda
+    // nada abierto después, así que la corrida termina aquí.
     expect(within(telefono).getByText('Últimos consumos')).toBeDefined()
     expect(within(telefono).getByText('$42,90')).toBeDefined()
-    expect(screen.getByText('¿Qué haces?')).toBeDefined()
-
-    fireEvent.click(within(telefono).getByRole('button', { name: 'Salir de la aplicación' }))
-    fireEvent.click(within(telefono).getByRole('button', { name: /Volver a la lista de mensajes/ }))
-
     expect(screen.getByText('Acertaste · el aviso era legítimo')).toBeDefined()
   })
 

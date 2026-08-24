@@ -38,14 +38,6 @@ const SMS: ScreenView = {
   volverLabel: 'Salió del hilo sin verificar el consumo',
 }
 
-/// El mismo hilo después de haber comprobado. Ahora salir de él sí decide: se
-/// deja el mensaje sabiendo lo que es, que es lo que se quería medir.
-const SMS_VERIFICADO: ScreenView = {
-  ...SMS,
-  volverGoto: 'e_app',
-  volverLabel: 'Dejó el aviso después de comprobar el consumo en la app',
-}
-
 /// Lo escrito y todavía sin enviar. Que el número completo esté a la vista
 /// antes de pulsar enviar es media lección del escenario: el error no es el
 /// aviso, es lo que uno está a punto de mandar por el mismo canal.
@@ -81,7 +73,7 @@ const APP_INICIO: ScreenView = {
     {
       texto: 'Movimientos',
       detalle: 'Consumos y débitos de los últimos 30 días',
-      goto: 'n_movimientos',
+      goto: 'e_app',
       label: 'Revisó los movimientos de la tarjeta en la app',
     },
     {
@@ -94,8 +86,6 @@ const APP_INICIO: ScreenView = {
   ],
   fields: [],
   button: '',
-  cerrarGoto: 'n_sms_verificado',
-  cerrarLabel: 'Cerró la app del banco',
 }
 
 /// La app del banco con los mismos movimientos del hilo. El acierto de este
@@ -118,11 +108,6 @@ const APP_BANCO: ScreenView = {
     '¿No reconoces un consumo? Bloquea la tarjeta desde aquí o llama al número impreso en ella.',
   fields: [],
   button: '',
-  // Comprobar es mirar: la respuesta se lee aquí y se vuelve al mensaje,
-  // donde está la decisión. Antes esta pantalla solo se veía detrás del
-  // veredicto, así que la lección se contaba en vez de enseñarse.
-  cerrarGoto: 'n2',
-  cerrarLabel: 'Cerró la app después de revisar los movimientos',
 }
 
 const APPS: AppTelefono[] = [
@@ -149,8 +134,6 @@ const APPS: AppTelefono[] = [
 ]
 
 const STORY: Story<ScreenNode> = {
-  n_movimientos: { kind: 'scene', view: APP_BANCO },
-  n_sms_verificado: { kind: 'scene', view: SMS_VERIFICADO },
   n1: { kind: 'scene', view: SMS },
   n1b: { kind: 'scene', view: SMS_BORRADOR },
   n2: { kind: 'scene', view: APP_INICIO },

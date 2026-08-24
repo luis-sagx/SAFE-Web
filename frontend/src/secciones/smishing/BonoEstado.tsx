@@ -19,15 +19,7 @@ const SMS: ScreenView = {
   senalRemitente: 'remitente',
   msgs: [{ text: TEXTO_BONO, time: '09:41', senal: 'mensaje' }],
 }
-
-/// El mismo hilo después de haber comprobado. Ahora salir de él sí decide: se
-/// deja el mensaje sabiendo lo que es, que es lo que se quería medir.
-const SMS_VERIFICADO: ScreenView = {
-  ...SMS,
-  volverGoto: 'e_verifica',
-  volverLabel: 'Dejó el mensaje después de comprobarlo en el portal oficial',
-}
-
+y si y
 const PAGINA: ScreenView = {
   kind: 'web',
   url: 'http://bono-social-ec.online/registro',
@@ -64,15 +56,13 @@ const NAVEGADOR: ScreenView = {
     {
       texto: 'inclusion.gob.ec',
       detalle: 'Ministerio de Inclusión Económica y Social',
-      goto: 'n_portal',
+      goto: 'e_verifica',
       label: 'Entró al sitio oficial del MIES desde sus sitios frecuentes',
     },
     { texto: 'sri.gob.ec', detalle: 'Servicio de Rentas Internas' },
   ],
   fields: [],
   button: '',
-  cerrarGoto: 'n_sms_verificado',
-  cerrarLabel: 'Cerró el navegador',
 }
 
 /// Lo que el participante ve al comprobarlo por su cuenta. El acierto tiene
@@ -95,11 +85,6 @@ const PORTAL_MIES: ScreenView = {
     'El MIES no preselecciona beneficiarios por mensajes de texto ni solicita claves de banca en línea. Los trámites se realizan únicamente en este portal o en las oficinas del Ministerio.',
   fields: [],
   button: '',
-  // Comprobar es mirar: al cerrar, vuelve al SMS verificado para que
-  // el participante pueda tomar una decisión. La respuesta se lee aquí,
-  // la decisión se toma al salir del hilo.
-  cerrarGoto: 'n3',
-  cerrarLabel: 'Cerró el portal después de ver que no había ningún bono a su nombre',
 }
 
 const APPS: AppTelefono[] = [
@@ -126,8 +111,6 @@ const APPS: AppTelefono[] = [
 ]
 
 const STORY: Story<ScreenNode> = {
-  n_portal: { kind: 'scene', view: PORTAL_MIES },
-  n_sms_verificado: { kind: 'scene', view: SMS_VERIFICADO },
   n1: { kind: 'scene', view: SMS },
   n2: { kind: 'scene', view: PAGINA },
   n3: { kind: 'scene', view: NAVEGADOR },

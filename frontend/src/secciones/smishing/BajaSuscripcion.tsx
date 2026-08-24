@@ -65,14 +65,6 @@ function conRespuesta(texto: string): Extract<ScreenView, { kind: 'sms' }> {
 const SMS_BAJA = conRespuesta('BAJA')
 const SMS_RECLAMO = conRespuesta('Yo no contraté nada, dejen de cobrarme.')
 
-/// El mismo hilo después de haber comprobado. Ahora salir de él sí decide: se
-/// deja el mensaje sabiendo lo que es, que es lo que se quería medir.
-const SMS_VERIFICADO: Extract<ScreenView, { kind: 'sms' }> = {
-  ...SMS,
-  volverGoto: 'e_verifica',
-  volverLabel: 'Dejó el mensaje después de comprobar que no había ningún cobro',
-}
-
 /// El inicio de la app. Abrir la app todavía no es haber comprobado nada: desde
 /// aquí se puede mirar las suscripciones o taparse el oído bloqueando los
 /// números cortos, que es el gesto precipitado que este escenario mide. Un
@@ -91,7 +83,7 @@ const OPERADORA_INICIO: ScreenView = {
     {
       texto: 'Paquetes y suscripciones',
       detalle: 'Lo que tienes contratado y sus cargos',
-      goto: 'n_detalle',
+      goto: 'e_verifica',
       label: 'Revisó sus paquetes y suscripciones en la app de la operadora',
     },
     { texto: 'Consumo de datos', detalle: '1,2 GB de 3 GB usados este mes' },
@@ -104,13 +96,11 @@ const OPERADORA_INICIO: ScreenView = {
   ],
   fields: [],
   button: '',
-  cerrarGoto: 'n_sms_verificado',
-  cerrarLabel: 'Cerró la app de la operadora',
 }
 
 /// Lo que se ve al mirar las suscripciones: no hay ninguna. El acierto tiene
-/// que enseñarse, no solo contarse. Comprobar es mirar: al cerrar, vuelve al
-/// SMS verificado para que el participante pueda tomar una decisión.
+/// que enseñarse, no solo contarse, y no queda nada abierto después de verlo:
+/// la pantalla que lo prueba es la que cierra.
 const OPERADORA: ScreenView = {
   kind: 'web',
   app: 'Mi Operadora',
@@ -128,8 +118,6 @@ const OPERADORA: ScreenView = {
     'Los servicios de suscripción se activan y se cancelan desde esta pantalla o llamando al *611. Nunca respondas mensajes de números cortos que no reconoces: la respuesta confirma que tu línea está activa.',
   fields: [],
   button: '',
-  cerrarGoto: 'n4',
-  cerrarLabel: 'Cerró la app después de verificar que no había ninguna suscripción',
 }
 
 const APPS: AppTelefono[] = [
@@ -158,8 +146,6 @@ const APPS: AppTelefono[] = [
 const STORY: Story<ScreenNode> = {
   n1: { kind: 'scene', view: SMS },
   n4: { kind: 'scene', view: OPERADORA_INICIO },
-  n_detalle: { kind: 'scene', view: OPERADORA },
-  n_sms_verificado: { kind: 'scene', view: SMS_VERIFICADO },
   e_responde: {
     kind: 'bad',
     view: SMS_BAJA,
