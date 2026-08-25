@@ -773,31 +773,115 @@ const BASE: EscenarioBase[] = [
   // entrada correspondiente. Las secciones se quedan declaradas en SECCIONES
   // arriba; Dashboard.tsx ya pinta "Pronto" cuando escenariosDeSeccion() da
   // vacío, así que no hace falta tocar nada más.
-  //
-  // {
-  //   seccionId: 'fisico',
-  //   escenarioId: 'foto',
-  //   titulo: 'Foto para el boletín',
-  //   descripcion:
-  //     'Una escena cotidiana expone información sensible visible en el puesto de trabajo.',
-  //   version: 1,
-  //   naturaleza: 'fraude',
-  //   dificultad: 2,
-  //   espeja: null,
-  //   Component: lazy(() => import('../secciones/fisico/Foto')),
-  // },
-  // {
-  //   seccionId: 'fisico',
-  //   escenarioId: 'baiting',
-  //   titulo: 'Trampa USB',
-  //   descripcion:
-  //     'Debes identificar señales de riesgo físico y digital antes de conectar un dispositivo desconocido.',
-  //   version: 1,
-  //   naturaleza: 'fraude',
-  //   dificultad: 2,
-  //   espeja: null,
-  //   Component: lazy(() => import('../secciones/fisico/Baiting')),
-  // },
+
+  {
+    seccionId: 'fisico',
+    escenarioId: 'foto',
+    titulo: 'Foto para el boletín',
+    descripcion:
+      'Una escena cotidiana expone información sensible visible en el puesto de trabajo.',
+    version: 1,
+    naturaleza: 'fraude',
+    dificultad: 2,
+    espeja: null,
+    Component: lazy(() => import('../secciones/fisico/Foto')),
+  },
+  {
+    seccionId: 'fisico',
+    escenarioId: 'baiting',
+    titulo: 'Trampa USB',
+    descripcion:
+      'Debes identificar señales de riesgo físico y digital antes de conectar un dispositivo desconocido.',
+    version: 1,
+    naturaleza: 'fraude',
+    dificultad: 2,
+    espeja: null,
+    Component: lazy(() => import('../secciones/fisico/Baiting')),
+  },
+  {
+    seccionId: 'fisico',
+    escenarioId: 'documento-abierto',
+    titulo: 'Documento abierto en escritorio',
+    descripcion:
+      'Alguien deja un documento confidencial visible en su escritorio mientras va por café.',
+    version: 1,
+    naturaleza: 'fraude',
+    dificultad: 1,
+    espeja: null,
+    Component: lazy(() => import('../secciones/fisico/DocumentoAbierto')),
+  },
+  {
+    seccionId: 'fisico',
+    escenarioId: 'pantalla-desbloqueada',
+    titulo: 'Pantalla desbloqueada sin vigilancia',
+    descripcion:
+      'Tu compañero se va y deja la sesión abierta en la computadora de la oficina.',
+    version: 1,
+    naturaleza: 'fraude',
+    dificultad: 1,
+    espeja: null,
+    Component: lazy(() => import('../secciones/fisico/PantallaDesbloqueada')),
+  },
+  {
+    seccionId: 'fisico',
+    escenarioId: 'carnet-olvidado',
+    titulo: 'Carnet de identificación olvidado',
+    descripcion:
+      'Encuentras un carnet de empleado de tu banco tirado en el piso de un mall.',
+    version: 1,
+    naturaleza: 'fraude',
+    dificultad: 2,
+    espeja: null,
+    Component: lazy(() => import('../secciones/fisico/CarnetOlvidado')),
+  },
+  {
+    seccionId: 'fisico',
+    escenarioId: 'conexion-publica',
+    titulo: 'Conexión pública en café',
+    descripcion:
+      'En un café ofrece una red WiFi gratuita para que hagas tus operaciones bancarias.',
+    version: 1,
+    naturaleza: 'fraude',
+    dificultad: 2,
+    espeja: null,
+    Component: lazy(() => import('../secciones/fisico/ConexionPublica')),
+  },
+  {
+    seccionId: 'fisico',
+    escenarioId: 'puerta-abierta',
+    titulo: 'Puerta de oficina abierta',
+    descripcion:
+      'Ves que alguien entra a la oficina de recursos humanos sin identificarse mientras el empleado almuerza.',
+    version: 1,
+    naturaleza: 'fraude',
+    dificultad: 2,
+    espeja: null,
+    Component: lazy(() => import('../secciones/fisico/PuertaAbierta')),
+  },
+  {
+    seccionId: 'fisico',
+    escenarioId: 'basura-confidencial',
+    titulo: 'Basura sin destruir',
+    descripcion:
+      'En el tacho de basura de tu oficina encuentras documentos con información confidencial de empleados sin destruir.',
+    version: 1,
+    naturaleza: 'fraude',
+    dificultad: 1,
+    espeja: null,
+    Component: lazy(() => import('../secciones/fisico/BasuraConfidencial')),
+  },
+  {
+    seccionId: 'fisico',
+    escenarioId: 'correo-fisico',
+    titulo: 'Correo de remitente desconocido',
+    descripcion:
+      'Recibes un paquete en la oficina de alguien desconocido que pide que lo abras urgentemente.',
+    version: 1,
+    naturaleza: 'fraude',
+    dificultad: 2,
+    espeja: null,
+    Component: lazy(() => import('../secciones/fisico/CorreoFisico')),
+  },
 ];
 
 // El id "<seccion>/<escenario>" es la clave que se guarda en la base: no puede
