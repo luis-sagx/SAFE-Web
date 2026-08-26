@@ -211,7 +211,7 @@ function PuertaAbierta() {
         engine.restart()
         setTocoEnVacio(false)
       }}
-      dispositivo="telefono"
+      dispositivo="escritorio"
     />
   )
 }
