@@ -13,7 +13,6 @@ type DocKey = 'evaluaciones' | 'clientes' | 'contrasena'
 interface Document {
   label: string
   title: string
-  content: string
   risk: string
 }
 
@@ -21,23 +20,32 @@ const DOCUMENTS: Record<DocKey, Document> = {
   evaluaciones: {
     label: 'Evaluaciones de desempeño',
     title: 'Evaluaciones de desempeño (CONFIDENCIAL)',
-    content:
-      'Salarios, comentarios de desempeño, calificaciones y metas de empleados de tu equipo. Información que afecta sus contratos y futuro en la empresa.',
     risk: 'Violación grave de privacidad',
   },
   clientes: {
     label: 'Datos de clientes',
-    title: 'Montos de contrato de clientes',
-    content:
-      'Clientes activos con sus montos de contrato, márgenes de ganancia y detalles del proyecto. Información estratégica competitiva.',
+    title: 'Clientes activos - Montos de contrato',
     risk: 'Robo de información corporativa',
   },
   contrasena: {
     label: 'Nota con contraseña',
-    title: 'Contraseña WiFi de la oficina',
-    content: 'WiFi: Of2026*Net! - Escrita a mano en una nota adhesiva visible',
+    title: 'Contraseña WiFi - Oficina',
     risk: 'Acceso no autorizado a la red',
   },
+}
+
+const DOCUMENT_DATA = {
+  evaluaciones: [
+    { nombre: 'Andrés García', salario: '$4.200', desempeño: '8.5/10', bono: '15%' },
+    { nombre: 'María López', salario: '$3.800', desempeño: '9.2/10', bono: '20%' },
+    { nombre: 'Juan Pérez', salario: '$3.500', desempeño: '7.8/10', bono: '10%' },
+    { nombre: 'Laura Ruiz', salario: '$4.500', desempeño: '8.9/10', bono: '18%' },
+  ],
+  clientes: [
+    { nombre: 'TechCorp Solutions', monto: '$125.000', margen: '28%', estado: 'Activo' },
+    { nombre: 'Global Industries Inc', monto: '$89.500', margen: '32%', estado: 'Activo' },
+    { nombre: 'DataStream Ltd', monto: '$156.000', margen: '25%', estado: 'Activo' },
+  ],
 }
 
 interface DecisionResult {
@@ -355,14 +363,67 @@ function DocumentoAbierto() {
                 </p>
 
                 <div className="document-preview">
-                  <div style={{ marginBottom: '16px' }}>
-                    <h3 style={{ margin: '0 0 8px 0', color: 'var(--color-ink)', fontSize: '1.05rem', fontWeight: '600' }}>
-                      {DOCUMENTS[inspectedDoc].title}
-                    </h3>
-                    <p style={{ margin: 0, color: 'var(--color-body)', lineHeight: '1.6', fontSize: '0.95rem' }}>
-                      {DOCUMENTS[inspectedDoc].content}
-                    </p>
-                  </div>
+                  <h3 style={{ margin: '0 0 20px 0', color: 'var(--color-ink)', fontSize: '1.1rem', fontWeight: '600', borderBottom: '2px solid var(--color-primary)', paddingBottom: '12px' }}>
+                    {DOCUMENTS[inspectedDoc].title}
+                  </h3>
+
+                  {inspectedDoc === 'evaluaciones' && (
+                    <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '20px', fontSize: '0.9rem' }}>
+                      <thead>
+                        <tr style={{ background: 'var(--color-surface-strong)' }}>
+                          <th style={{ padding: '10px', textAlign: 'left', fontWeight: '600', color: 'var(--color-ink)' }}>Empleado</th>
+                          <th style={{ padding: '10px', textAlign: 'left', fontWeight: '600', color: 'var(--color-ink)' }}>Salario</th>
+                          <th style={{ padding: '10px', textAlign: 'left', fontWeight: '600', color: 'var(--color-ink)' }}>Desempeño</th>
+                          <th style={{ padding: '10px', textAlign: 'left', fontWeight: '600', color: 'var(--color-ink)' }}>Bono</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {DOCUMENT_DATA.evaluaciones.map((row, idx) => (
+                          <tr key={idx} style={{ borderBottom: '1px solid var(--color-hairline)', background: idx % 2 === 0 ? 'transparent' : 'rgba(0,0,0,0.02)' }}>
+                            <td style={{ padding: '10px', color: 'var(--color-body)' }}>{row.nombre}</td>
+                            <td style={{ padding: '10px', color: 'var(--color-body)', fontWeight: '500' }}>{row.salario}</td>
+                            <td style={{ padding: '10px', color: 'var(--color-body)' }}>{row.desempeño}</td>
+                            <td style={{ padding: '10px', color: 'var(--color-body)' }}>{row.bono}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )}
+
+                  {inspectedDoc === 'clientes' && (
+                    <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '20px', fontSize: '0.9rem' }}>
+                      <thead>
+                        <tr style={{ background: 'var(--color-surface-strong)' }}>
+                          <th style={{ padding: '10px', textAlign: 'left', fontWeight: '600', color: 'var(--color-ink)' }}>Cliente</th>
+                          <th style={{ padding: '10px', textAlign: 'left', fontWeight: '600', color: 'var(--color-ink)' }}>Monto</th>
+                          <th style={{ padding: '10px', textAlign: 'left', fontWeight: '600', color: 'var(--color-ink)' }}>Margen</th>
+                          <th style={{ padding: '10px', textAlign: 'left', fontWeight: '600', color: 'var(--color-ink)' }}>Estado</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {DOCUMENT_DATA.clientes.map((row, idx) => (
+                          <tr key={idx} style={{ borderBottom: '1px solid var(--color-hairline)', background: idx % 2 === 0 ? 'transparent' : 'rgba(0,0,0,0.02)' }}>
+                            <td style={{ padding: '10px', color: 'var(--color-body)' }}>{row.nombre}</td>
+                            <td style={{ padding: '10px', color: 'var(--color-body)', fontWeight: '500' }}>{row.monto}</td>
+                            <td style={{ padding: '10px', color: 'var(--color-body)' }}>{row.margen}</td>
+                            <td style={{ padding: '10px', color: 'var(--color-primary)', fontWeight: '600' }}>{row.estado}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )}
+
+                  {inspectedDoc === 'contrasena' && (
+                    <div style={{ background: 'var(--color-surface-strong)', padding: '16px', borderRadius: '6px', marginBottom: '20px', border: '1px dashed var(--color-hairline-strong)' }}>
+                      <p style={{ margin: '0 0 12px 0', color: 'var(--color-muted)', fontSize: '0.85rem', textTransform: 'uppercase', fontWeight: '600' }}>Red WiFi</p>
+                      <p style={{ margin: 0, fontFamily: 'monospace', fontSize: '1.1rem', fontWeight: '600', color: 'var(--color-ink)', wordBreak: 'break-all' }}>
+                        Of2026*Net!
+                      </p>
+                      <p style={{ margin: '12px 0 0 0', color: 'var(--color-body)', fontSize: '0.85rem' }}>
+                        Contraseña actual del WiFi de la oficina
+                      </p>
+                    </div>
+                  )}
 
                   <div className="action-buttons-grid">
                     <button className="action-btn-inline" onClick={() => handleDocumentAction('lee')}>
