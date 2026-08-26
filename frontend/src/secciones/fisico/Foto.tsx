@@ -354,7 +354,7 @@ function DeskSVG({
           <g>
             <rect x="0" y="0" width="104" height="144" rx="11" fill="#fff9ec" stroke="#9c8a5e" strokeWidth="6" />
             <rect x="20" y="20" width="64" height="40" fill="#2c3e50" />
-            <text x="52" y="87" textAnchor="middle" fontFamily="'IBM Plex Mono',monospace" fontSize="20" fill="#1b232c">
+            <text x="52" y="87" textAnchor="middle" fontFamily="'IBM Plex Mono',monospace" fontSize="28" fill="#1b232c" fontWeight="700">
               ID 04521
             </text>
             <rect x="20" y="104" width="64" height="12" fill="#1b232c" />
@@ -513,16 +513,18 @@ function Foto() {
 
   const pantalla = (
     <div className={`${dossierTheme.dossierTheme} ${styles.app}`}>
-      <DossierHeader
-        caseLabel="RIESGO FÍSICO"
-        secondTab={`NIVEL ${levelIndex + 1}/${LEVELS.length}`}
-        riskLabel="TIEMPO"
-        gaugePercent={(timeLeft / level.time) * 100}
-        gaugeValueText={`${Math.ceil(timeLeft)}s`}
-        gaugeColor={gaugeColor}
-        participantName={displayName}
-        participantRole=""
-      />
+      {showReport && (
+        <DossierHeader
+          caseLabel="RIESGO FÍSICO"
+          secondTab={`NIVEL ${levelIndex + 1}/${LEVELS.length}`}
+          riskLabel="TIEMPO"
+          gaugePercent={(timeLeft / level.time) * 100}
+          gaugeValueText={`${Math.ceil(timeLeft)}s`}
+          gaugeColor={gaugeColor}
+          participantName={displayName}
+          participantRole=""
+        />
+      )}
 
       <main className={styles.mainArea}>
         <p className={styles.npcLine}>
