@@ -599,7 +599,6 @@ function DocumentoAbierto() {
                 )}
               </>
             )}
-          </>
         )}
       </main>
 
