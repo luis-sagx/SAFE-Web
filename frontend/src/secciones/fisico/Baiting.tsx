@@ -350,7 +350,6 @@ function Baiting() {
   const [view, setView] = useState<'map' | 'scene'>('map')
   const [activeIdx, setActiveIdx] = useState<number | null>(null)
   const [resolved, setResolved] = useState<Record<number, Resolved>>({})
-  const [totalRisk, setTotalRisk] = useState(0)
   const [choicesShown, setChoicesShown] = useState(false)
   const [shuffledChoices, setShuffledChoices] = useState<Choice[]>([])
   const [revealPending, setRevealPending] = useState(false)
@@ -360,14 +359,12 @@ function Baiting() {
   const stampFlash = useFlashTransition()
 
 
-  const pct = Math.min(totalRisk, 100)
   const resolvedCount = Object.keys(resolved).length
 
   function onEmpezar() {
     setView('map')
     setActiveIdx(null)
     setResolved({})
-    setTotalRisk(0)
     setChoicesShown(false)
     setShuffledChoices([])
     setRevealPending(false)
@@ -405,7 +402,6 @@ function Baiting() {
     const niveles = isComplete ? Object.values(siguiente).map((r) => r.level) : []
 
     setResolved(siguiente)
-    setTotalRisk((prev) => prev + choice.risk)
     setRevealPending(true)
     run.recordDecision({ caso: activeIdx, nivel: choice.level, riesgo: choice.risk })
 
@@ -427,10 +423,6 @@ function Baiting() {
         setView('map')
       }
     }, 750)
-  }
-
-  function handleRestart() {
-    window.location.reload()
   }
 
   const activeScenario = activeIdx !== null ? (SCENARIOS[activeIdx] ?? null) : null
@@ -599,7 +591,7 @@ function Baiting() {
 
               {showReport && resolvedCount === SCENARIOS.length && (
                 <div style={{ flex: '0 0 40%', minWidth: '0' }}>
-                  <Report resolved={resolved} pct={pct} onRestart={handleRestart} onNext={handleNext} />
+                  <Report resolved={resolved} onNext={handleNext} />
                 </div>
               )}
             </div>
@@ -709,71 +701,33 @@ function Baiting() {
 
 function Report({
   resolved,
-  pct,
-  onRestart,
   onNext,
 }: {
   resolved: Record<number, Resolved>
-  pct: number
-  onRestart: () => void
   onNext: () => void
 }) {
-  const anyDanger = Object.values(resolved).some((r) => r.level === 'danger')
   const safeCount = Object.values(resolved).filter((r) => r.level === 'safe').length
   const totalCount = Object.keys(resolved).length
   const minSafeRequired = Math.ceil(totalCount * 0.7)
   const canAdvance = safeCount >= minSafeRequired
-  let level: Level
-  let title: string
-  let summary: string
-  if (anyDanger) {
-    level = 'danger'
-    title = 'Incidente de seguridad registrado'
-    summary =
-      'Al menos una decisión habría dado a un atacante acceso a tus sistemas. El común denominador del baiting es la curiosidad o la prisa, y verificar antes de conectar es la única defensa real.'
-  } else if (pct <= 15) {
-    level = 'safe'
-    title = 'Protocolo ejemplar'
-    summary =
-      'Identificaste cada intento de baiting y seguiste el protocolo correcto: nunca conectar un dispositivo desconocido, siempre reportarlo por el canal adecuado.'
-  } else {
-    level = 'warn'
-    title = 'Aprobado con observaciones'
-    summary =
-      'Evitaste conectar cualquier dispositivo desconocido, pero algunas decisiones dejaron el riesgo circulando en lugar de eliminarlo. Reportar siempre es mejor que ignorar o reubicar el problema.'
-  }
 
   return (
-    <div className={styles.report} style={{ marginTop: 20, borderTop: '1px dashed var(--paper-edge)', paddingTop: 18 }}>
-      <span className={`${styles.reportStamp} ${styles[level]}`}>CASO CERRADO</span>
-      <h2>{title}</h2>
-      <p className={styles.summary}>
-        Nivel de riesgo final: <strong>{pct}%</strong>. {summary}
+    <div className={styles.report} style={{ marginTop: 20, paddingTop: 18 }}>
+      <p className={styles.summary} style={{ fontSize: '1.2rem', marginBottom: '24px' }}>
+        <strong>Aciertos: {safeCount}/{totalCount}</strong> ({Math.round((safeCount / totalCount) * 100)}%)
       </p>
-      <div>
-        {SCENARIOS.map((s, i) => (
-          <div key={s.location} className={styles.recapItem}>
-            <span className={styles.recapLoc}>{s.location}</span>
-            <span className={`${styles.recapTag} ${styles[resolved[i]!.level]}`}>{stampWord(resolved[i]!.level)}</span>
-          </div>
-        ))}
-      </div>
-      <div style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
-        <button type="button" className={styles.restartBtn} onClick={onRestart} style={{ flex: 1 }}>
-          Reiniciar simulación
-        </button>
+      <div style={{ display: 'flex', gap: '12px', flexDirection: 'column' }}>
         <button
           type="button"
           className={styles.restartBtn}
           onClick={onNext}
           disabled={!canAdvance}
           style={{
-            flex: 1,
             opacity: canAdvance ? 1 : 0.5,
             cursor: canAdvance ? 'pointer' : 'not-allowed',
           }}
         >
-          {canAdvance ? '→ Siguiente escenario' : `Necesitas ${minSafeRequired} aciertos (tienes ${safeCount})`}
+          {canAdvance ? '→ Siguiente escenario' : `Necesitas ${minSafeRequired} aciertos`}
         </button>
       </div>
     </div>
