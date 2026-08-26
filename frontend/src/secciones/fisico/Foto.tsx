@@ -1,16 +1,13 @@
 import { useRef, useState } from 'react'
-import { Link, useNavigate } from 'react-router'
+import { useNavigate } from 'react-router'
 import { useAuth } from '../../context/AuthContext'
 import DossierHeader from '../../components/ui/DossierHeader'
 import FlashOverlay from '../../components/ui/FlashOverlay'
 import { useFlashTransition } from '../../hooks/useFlashTransition'
 import { useScenarioRun } from '../../hooks/useScenarioRun'
 import { useCountdown } from '../../hooks/useCountdown'
-import AppHeader from '../../components/AppHeader'
-import InfoLink from '../../components/InfoLink'
-import ContextoEscenario from '../../components/ui/ContextoEscenario'
+import EscenarioLayout from '../../components/EscenarioLayout'
 import type { Contexto } from '../../components/ui/ContextoEscenario'
-import { getSeccion } from '../../data/catalogo'
 import dossierTheme from '../../styles/dossier-theme.module.css'
 import styles from './Foto.module.css'
 
@@ -384,11 +381,10 @@ function DeskSVG({
 }
 
 function Foto() {
-  const { displayName, roleLabel } = useAuth()
+  const { displayName } = useAuth()
   const run = useScenarioRun('fisico/foto')
   const navigate = useNavigate()
 
-  const [started, setStarted] = useState(false)
   const [levelIndex, setLevelIndex] = useState(0)
   const [fixedState, setFixedState] = useState(() => initialFixedState(0))
   const [finished, setFinished] = useState(false)
@@ -407,7 +403,6 @@ function Foto() {
     tickMs: 100,
     onExpire: () => handleTakePhoto(),
   })
-
 
   const activeItems = activeItemsFor(levelIndex)
   const riskKeysThisLevel = activeItems.filter((k) => ITEMS[k].isRisk)
@@ -516,51 +511,7 @@ function Foto() {
     ),
   }
 
-  if (!started) {
-    const seccion = getSeccion('fisico')
-    const volver = (
-      <Link to="/seccion/fisico" className="text-base font-medium text-link underline">
-        ← Volver a la sección
-      </Link>
-    )
-
-    return (
-      <div className="min-h-dvh bg-canvas">
-        <AppHeader>
-          {volver}
-          <InfoLink />
-        </AppHeader>
-
-        <main className="mx-auto max-w-6xl px-6 py-12">
-          <p className="text-base font-medium text-muted">{seccion?.canal}</p>
-          <h1 className="mt-2 text-4xl font-semibold tracking-tight text-ink">Foto para el boletín</h1>
-
-          <div className="mt-8">
-            <p className="text-lg leading-relaxed text-ink">
-              Hola, <strong className="font-semibold">{displayName}</strong>. Esto es lo que te está
-              pasando:
-            </p>
-
-            <div className="mt-5">
-              <ContextoEscenario contexto={contexto} />
-            </div>
-
-            <div className="mt-8 flex gap-4">
-              <button
-                type="button"
-                onClick={() => setStarted(true)}
-                className="min-h-12 rounded-md bg-primary px-7 py-3.5 text-lg font-medium text-on-primary transition hover:bg-primary-active"
-              >
-                Comenzar escenario
-              </button>
-            </div>
-          </div>
-        </main>
-      </div>
-    )
-  }
-
-  return (
+  const pantalla = (
     <div className={`${dossierTheme.dossierTheme} ${styles.app}`}>
       <DossierHeader
         caseLabel="RIESGO FÍSICO"
@@ -570,12 +521,10 @@ function Foto() {
         gaugeValueText={`${Math.ceil(timeLeft)}s`}
         gaugeColor={gaugeColor}
         participantName={displayName}
-        participantRole={roleLabel}
+        participantRole=""
       />
 
       <main className={styles.mainArea}>
-
-
         <p className={styles.npcLine}>
           {finished ? 'Valeria: "¡Listo, gracias! Ya la subo al boletín."' : level.npc}
         </p>
@@ -618,80 +567,92 @@ function Foto() {
         {!finished && (
           <p className={styles.hintText}>Haz clic en los objetos de riesgo del escritorio para ocultarlos antes de que se acabe el tiempo.</p>
         )}
-
-        {showReport && (
-          <div className={styles.report} style={{ marginTop: 18 }}>
-            <span className={`${styles.reportStamp} ${styles[resLevel]}`}>
-              FOTO PUBLICADA ({level.label.toUpperCase()})
-            </span>
-            <h2>{title}</h2>
-            <p className={styles.summary}>{summary}</p>
-            <div>
-              {riskKeysThisLevel.map((k) => (
-                <div key={k} className={styles.recapItem}>
-                  <span>{ITEMS[k].label}</span>
-                  <span className={`${styles.recapTag} ${fixedState[k] ? styles.safe : styles.danger}`}>
-                    {fixedState[k] ? 'OCULTO' : 'EXPUESTO'}
-                  </span>
-                </div>
-              ))}
-            </div>
-
-            {exposedRisks.length > 0 && (
-              <div className={styles.report} style={{ marginTop: 8, padding: 0 }}>
-                {exposedRisks.map((k) => (
-                  <p key={k} className={styles.summary} style={{ marginBottom: 8 }}>
-                    <strong>{ITEMS[k].label}:</strong> {ITEMS[k].riskFeedback}
-                  </p>
-                ))}
-              </div>
-            )}
-
-            {fixedRisks.length > 0 && (
-              <div className={styles.report} style={{ marginTop: 4, padding: 0 }}>
-                {fixedRisks.map((k) => (
-                  <p key={k} className={styles.summary} style={{ marginBottom: 8, color: '#2f6b52' }}>
-                    <strong>{ITEMS[k].label}:</strong> {ITEMS[k].fixedFeedback}
-                  </p>
-                ))}
-              </div>
-            )}
-
-            {isLastLevel ? (
-              <div className={styles.report} style={{ marginTop: 14 }}>
-                <h2 style={{ fontSize: '1.15rem' }}>Resumen de la sesión</h2>
-                <div>
-                  {sessionResults.map((r) => (
-                    <div key={r.label} className={styles.recapItem}>
-                      <span>{r.label}</span>
-                      <span className={`${styles.recapTag} ${r.exposed === 0 ? styles.safe : styles.danger}`}>
-                        {r.exposed}/{r.total} expuestos
-                      </span>
-                    </div>
-                  ))}
-                </div>
-                <button type="button" className={styles.restartBtn} onClick={() => navigate('/escenario/fisico/baiting')}>
-                  Ir al siguiente escenario →
-                </button>
-                <button type="button" className={styles.restartBtn} onClick={handleRestart} style={{ marginTop: '10px', background: 'transparent', color: 'var(--color-ink)', border: '2px solid var(--color-ink)' }}>
-                  Repetir desde el nivel 1
-                </button>
-              </div>
-            ) : (
-              <button type="button" className={styles.restartBtn} onClick={handleNextLevel}>
-                Siguiente nivel →
-              </button>
-            )}
-          </div>
-        )}
       </main>
 
       <FlashOverlay active={flash.active} />
-
-      <Link to="/seccion/fisico" className={styles.backLink}>
-        ← Volver a la sección
-      </Link>
     </div>
+  )
+
+  const decision = showReport ? (
+    <div className={styles.report} style={{ marginTop: 18 }}>
+      <span className={`${styles.reportStamp} ${styles[resLevel]}`}>
+        FOTO PUBLICADA ({level.label.toUpperCase()})
+      </span>
+      <h2>{title}</h2>
+      <p className={styles.summary}>{summary}</p>
+      <div>
+        {riskKeysThisLevel.map((k) => (
+          <div key={k} className={styles.recapItem}>
+            <span>{ITEMS[k].label}</span>
+            <span className={`${styles.recapTag} ${fixedState[k] ? styles.safe : styles.danger}`}>
+              {fixedState[k] ? 'OCULTO' : 'EXPUESTO'}
+            </span>
+          </div>
+        ))}
+      </div>
+
+      {exposedRisks.length > 0 && (
+        <div className={styles.report} style={{ marginTop: 8, padding: 0 }}>
+          {exposedRisks.map((k) => (
+            <p key={k} className={styles.summary} style={{ marginBottom: 8 }}>
+              <strong>{ITEMS[k].label}:</strong> {ITEMS[k].riskFeedback}
+            </p>
+          ))}
+        </div>
+      )}
+
+      {fixedRisks.length > 0 && (
+        <div className={styles.report} style={{ marginTop: 4, padding: 0 }}>
+          {fixedRisks.map((k) => (
+            <p key={k} className={styles.summary} style={{ marginBottom: 8, color: '#2f6b52' }}>
+              <strong>{ITEMS[k].label}:</strong> {ITEMS[k].fixedFeedback}
+            </p>
+          ))}
+        </div>
+      )}
+
+      {isLastLevel ? (
+        <div className={styles.report} style={{ marginTop: 14 }}>
+          <h2 style={{ fontSize: '1.15rem' }}>Resumen de la sesión</h2>
+          <div>
+            {sessionResults.map((r) => (
+              <div key={r.label} className={styles.recapItem}>
+                <span>{r.label}</span>
+                <span className={`${styles.recapTag} ${r.exposed === 0 ? styles.safe : styles.danger}`}>
+                  {r.exposed}/{r.total} expuestos
+                </span>
+              </div>
+            ))}
+          </div>
+          <button type="button" className={styles.restartBtn} onClick={() => navigate('/escenario/fisico/baiting')}>
+            Ir al siguiente escenario →
+          </button>
+          <button type="button" className={styles.restartBtn} onClick={handleRestart} style={{ marginTop: '10px', background: 'transparent', color: 'var(--color-ink)', border: '2px solid var(--color-ink)' }}>
+            Repetir desde el nivel 1
+          </button>
+        </div>
+      ) : (
+        <button type="button" className={styles.restartBtn} onClick={handleNextLevel}>
+          Siguiente nivel →
+        </button>
+      )}
+    </div>
+  ) : null
+
+  return (
+    <EscenarioLayout
+      escenarioId="fisico/foto"
+      resumen="Prepara tu escritorio antes de que tomen la foto para el boletín"
+      contexto={contexto}
+      nota="Haz clic en los elementos de riesgo para ocultarlos. Tienes poco tiempo antes de que disparen la cámara."
+      identidad={[]}
+      pantalla={pantalla}
+      decision={decision}
+      ocultarDecision={!showReport}
+      resultado={undefined}
+      onEmpezar={run.restart}
+      dispositivo="telefono"
+    />
   )
 }
 
