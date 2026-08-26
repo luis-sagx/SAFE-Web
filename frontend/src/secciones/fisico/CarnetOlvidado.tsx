@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router'
 import { useAuth } from '../../context/AuthContext'
-import DossierHeader from '../../components/ui/DossierHeader'
 import StoryEscenario, { type ScreenNode } from '../../components/StoryEscenario'
 import type { Contexto } from '../../components/ui/ContextoEscenario'
 import type { Story } from '../../hooks/useStoryEngine'
@@ -119,37 +118,32 @@ const CONTEXTO: Contexto = {
 }
 
 function CarnetOlvidado() {
-  const { displayName, roleLabel } = useAuth()
+  const { displayName } = useAuth()
   const [started, setStarted] = useState(false)
 
   if (!started) {
     return (
       <div className={`${dossierTheme.dossierTheme} ${styles.app}`}>
-        <DossierHeader
-          caseLabel="RIESGO FÍSICO"
-          secondTab="INTRODUCCIÓN"
-          riskLabel="RIESGO"
-          gaugePercent={0}
-          gaugeValueText=""
-          gaugeColor="var(--color-primary)"
-          participantName={displayName}
-          participantRole={roleLabel}
-        />
-
         <main className={styles.mainArea}>
           <p className={styles.introText}>
-            Hola, {displayName}. Esta mañana, mientras entrabas por el vestíbulo, ves algo en el piso: un carnet de
-            identificación de tu empresa. Tiene el nombre de un compañero, su foto, código de empleado y nivel de acceso.
+            Hola, {displayName}. Esto es lo que te está pasando:
           </p>
 
           <div className={styles.instructionsBox}>
-            <p className={styles.instructionsTitle}>Contexto</p>
+            <p className={styles.instructionsTitle}>Antes de esto</p>
             <p className={styles.summary}>
-              Los carnets de identificación no son solo objetos: son documentos de acceso a áreas restringidas. Si se
-              pierden, pueden ser usados por alguien más para impersonar al empleado o acceder a donde no debe.
+              Trabajas en una oficina donde los carnets de identificación son documentos oficiales de control de acceso a áreas
+              restringidas. Cada carnet contiene datos personales, un código de empleado y un nivel de acceso. Perderlos o dejarlos
+              expuestos es un riesgo de seguridad.
             </p>
+          </div>
+
+          <div className={styles.instructionsBox}>
+            <p className={styles.instructionsTitle}>Lo que acaba de pasar</p>
             <p className={styles.summary}>
-              Tu decisión sobre qué hacer con el carnet determina si lo manejas seguramente o si lo expones a más riesgo.
+              <strong>Mañana temprano.</strong> Mientras llegas a la oficina por el vestíbulo, ves algo en el piso: un carnet tirado.
+              Lo levantas y reconoces que es de un compañero. Tiene toda su información: nombre, foto, código de empleado, y su nivel
+              de acceso a áreas restringidas.
             </p>
           </div>
 
