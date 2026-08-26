@@ -40,14 +40,6 @@ const DOCUMENTS: Record<DocKey, Document> = {
   },
 }
 
-const DECISIONS = [
-  { id: 'lee', text: 'Leer rápido el documento', level: 'bad' as const },
-  { id: 'foto', text: 'Fotografiar el documento', level: 'bad' as const },
-  { id: 'ignora', text: 'Ignorarlo, no es mi responsabilidad', level: 'partial' as const },
-  { id: 'avisa', text: 'Avisar al compañero discretamente', level: 'good' as const },
-  { id: 'reporta', text: 'Reportar a Recursos Humanos', level: 'good' as const },
-]
-
 interface DecisionResult {
   id: string
   level: 'good' | 'bad' | 'partial'
@@ -101,18 +93,24 @@ function DocumentoAbierto() {
   const [started, setStarted] = useState(false)
   const [inspectedDoc, setInspectedDoc] = useState<DocKey | null>(null)
   const [result, setResult] = useState<DecisionResult | null>(null)
+  const [cameraFlash, setCameraFlash] = useState(false)
 
   const handleInspectDoc = (docKey: DocKey) => {
     setInspectedDoc(docKey)
   }
 
-  const handleDecision = (decisionId: string) => {
-    const decisionResult = DECISION_RESULTS[decisionId]
+  const handleDocumentAction = (actionId: string) => {
+    if (actionId === 'foto') {
+      setCameraFlash(true)
+      setTimeout(() => setCameraFlash(false), 300)
+    }
+
+    const decisionResult = DECISION_RESULTS[actionId]
     if (!decisionResult) return
 
     flash.trigger(() => {
       setResult(decisionResult)
-      run.recordDecision({ documento: inspectedDoc, accion: decisionId })
+      run.recordDecision({ documento: inspectedDoc, accion: actionId })
       void run.finish({
         endingId: decisionResult.level,
         outcome: decisionResult.level === 'good' ? 'CORRECTO' : decisionResult.level === 'partial' ? 'PARCIAL' : 'INCORRECTO',
@@ -154,8 +152,8 @@ function DocumentoAbierto() {
               compañeros caminan frecuentemente por este pasillo.
             </p>
             <p className={styles.summary}>
-              La decisión que tomes determina si accedes a esa información, si la reportas, o si simplemente la ignoras.
-              Cada opción tiene consecuencias diferentes.
+              Cuando inspecciones un documento, podrás interactuar directamente con él. Cada acción tiene
+              consecuencias diferentes.
             </p>
           </div>
 
@@ -187,33 +185,99 @@ function DocumentoAbierto() {
       />
 
       <main className={styles.mainArea}>
-        <p className={styles.introText}>
-          Ves tres documentos distintos sobre el escritorio de tu compañero. Haz clic en cada uno para inspeccionarlo y
-          luego decide qué hacer.
-        </p>
+        <style>{`
+          @keyframes docPulse {
+            0%, 100% { transform: scale(1) translateY(0); }
+            50% { transform: scale(1.05) translateY(-5px); }
+          }
+          @keyframes paperFlip {
+            0% { opacity: 0.8; filter: brightness(1); }
+            50% { opacity: 1; filter: brightness(1.1); }
+            100% { opacity: 0.8; filter: brightness(1); }
+          }
+          @keyframes cameraFlashEffect {
+            0% { opacity: 0; }
+            50% { opacity: 1; }
+            100% { opacity: 0; }
+          }
+          .doc-button {
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+          }
+          .doc-button:hover {
+            filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.15));
+            animation: paperFlip 0.6s ease-in-out;
+          }
+          .document-preview {
+            position: relative;
+            padding: 40px;
+            background: var(--color-surface);
+            border: 1px solid var(--color-hairline-strong);
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            margin-bottom: 24px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+          }
+          .document-preview:hover {
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+          }
+          .action-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            background: rgba(0, 0, 0, 0.03);
+            border-radius: 8px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+          }
+          .document-preview:hover .action-overlay {
+            opacity: 1;
+            pointer-events: all;
+          }
+          .action-btn-inline {
+            padding: 10px 14px;
+            background: var(--color-primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: Inter, sans-serif;
+          }
+          .action-btn-inline:hover {
+            background: #00522b;
+            transform: scale(1.05);
+          }
+          .flash-effect {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 100;
+            animation: cameraFlashEffect 0.3s ease-out;
+          }
+        `}</style>
 
         {!result ? (
           <>
             {!inspectedDoc ? (
               <>
-                <style>{`
-                  @keyframes docPulse {
-                    0%, 100% { transform: scale(1) translateY(0); }
-                    50% { transform: scale(1.05) translateY(-5px); }
-                  }
-                  @keyframes paperFlip {
-                    0% { opacity: 0.8; filter: brightness(1); }
-                    50% { opacity: 1; filter: brightness(1.1); }
-                    100% { opacity: 0.8; filter: brightness(1); }
-                  }
-                  .doc-button {
-                    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-                  }
-                  .doc-button:hover {
-                    filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.15));
-                    animation: paperFlip 0.6s ease-in-out;
-                  }
-                `}</style>
+                <p className={styles.introText}>
+                  Ves tres documentos distintos sobre el escritorio. Haz clic en cada uno para inspeccionarlo.
+                </p>
 
                 <div className={styles.deskWrap}>
                   <svg viewBox="0 0 600 320">
@@ -226,13 +290,11 @@ function DocumentoAbierto() {
                         <feDropShadow dx="2" dy="4" stdDeviation="3" floodOpacity="0.15" />
                       </filter>
                     </defs>
-                    {/* Escritorio */}
                     <rect width="600" height="320" fill="url(#deskGradient)" />
                     <rect y="60" width="600" height="10" fill="#d9dfe5" />
                     <rect x="20" y="200" width="560" height="20" fill="#d4b896" />
                     <rect x="20" y="180" width="560" height="20" fill="#e0c4a0" />
 
-                    {/* Documento 1: Evaluaciones */}
                     <g
                       onClick={() => handleInspectDoc('evaluaciones')}
                       className="doc-button"
@@ -253,7 +315,6 @@ function DocumentoAbierto() {
                       </text>
                     </g>
 
-                    {/* Documento 2: Clientes */}
                     <g
                       onClick={() => handleInspectDoc('clientes')}
                       className="doc-button"
@@ -274,7 +335,6 @@ function DocumentoAbierto() {
                       </text>
                     </g>
 
-                    {/* Documento 3: Nota adhesiva con contraseña */}
                     <g
                       onClick={() => handleInspectDoc('contrasena')}
                       className="doc-button"
@@ -295,127 +355,86 @@ function DocumentoAbierto() {
                 </div>
 
                 <div className={styles.instructionsBox} style={{ marginTop: '20px' }}>
-                  <p className={styles.instructionsTitle}>💡 Cómo jugar</p>
+                  <p className={styles.instructionsTitle}>Cómo interactuar</p>
                   <p className={styles.summary}>
-                    Haz clic en cada documento para inspeccionarlo y ver su contenido. Después, podrás decidir qué
-                    hacer: leerlo, fotografiarlo, ignorarlo, avisar al compañero, o reportarlo a Recursos Humanos.
+                    Cuando inspeccionas un documento, aparecerán opciones para interactuar con él. Puedes leerlo,
+                    fotografiarlo, ignorarlo, avisar al compañero o reportarlo a Recursos Humanos.
                   </p>
                 </div>
               </>
             ) : (
               <>
-                <style>{`
-                  @keyframes slideInDoc {
-                    from {
-                      opacity: 0;
-                      transform: translateY(20px) scale(0.95);
-                    }
-                    to {
-                      opacity: 1;
-                      transform: translateY(0) scale(1);
-                    }
-                  }
-                  @keyframes pulse-glow {
-                    0%, 100% { box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.4); }
-                    50% { box-shadow: 0 0 0 10px rgba(22, 163, 74, 0); }
-                  }
-                  .doc-preview {
-                    animation: slideInDoc 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-                  }
-                  .decision-btn {
-                    transition: all 0.2s ease;
-                  }
-                  .decision-btn:hover {
-                    transform: translateY(-3px);
-                    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
-                  }
-                  .decision-btn:active {
-                    transform: translateY(-1px);
-                  }
-                `}</style>
-
-                <div className="doc-preview" style={{ marginBottom: '20px' }}>
-                  <div className={styles.instructionsBox} style={{ background: 'var(--color-surface-strong)', borderLeft: '3px solid var(--color-ink)' }}>
-                    <p className={styles.instructionsTitle} style={{ color: 'var(--color-ink)', margin: '0 0 16px 0', fontSize: '1.05rem' }}>
-                      {DOCUMENTS[inspectedDoc].title}
-                    </p>
-                    <div style={{ background: 'rgba(255,255,255,0.6)', padding: '14px', borderRadius: '6px', marginBottom: '12px', borderLeft: '2px solid var(--color-ink)' }}>
-                      <p className={styles.summary} style={{ margin: 0, lineHeight: '1.6', fontSize: '0.95rem', color: 'var(--color-body)' }}>
-                        {DOCUMENTS[inspectedDoc].content}
-                      </p>
-                    </div>
-                    <div style={{ padding: '10px', background: 'var(--color-canvas)', borderRadius: '4px', borderLeft: '2px solid var(--color-muted)' }}>
-                      <span style={{ color: 'var(--color-body)', fontWeight: '600', fontSize: '0.9rem' }}>
-                        Riesgo: {DOCUMENTS[inspectedDoc].risk}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <p className={styles.introText} style={{ marginBottom: '18px', fontWeight: '500', fontSize: '0.95rem', color: 'var(--color-body)' }}>
-                  Alguien podría pasar en cualquier momento. ¿Qué haces?
+                <p className={styles.introText}>
+                  Alguien podría pasar en cualquier momento. ¿Qué haces con este documento?
                 </p>
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '12px', marginBottom: '20px' }}>
-                  {DECISIONS.map((decision) => (
-                    <button
-                      key={decision.id}
-                      onClick={() => handleDecision(decision.id)}
-                      className="decision-btn"
-                      style={{
-                        background: 'var(--color-primary)',
-                        color: 'white',
-                        padding: '13px 16px',
-                        fontSize: '0.85rem',
-                        fontWeight: '500',
-                        border: 'none',
-                        borderRadius: '6px',
-                        cursor: 'pointer',
-                        fontFamily: 'Inter, sans-serif',
-                        textAlign: 'center',
-                        lineHeight: '1.4',
-                      }}
-                    >
-                      {decision.text}
+                <div className="document-preview" onClick={() => handleDocumentAction('lee')}>
+                  <div style={{ marginBottom: '16px' }}>
+                    <h3 style={{ margin: '0 0 8px 0', color: 'var(--color-ink)', fontSize: '1.05rem', fontWeight: '600' }}>
+                      {DOCUMENTS[inspectedDoc].title}
+                    </h3>
+                    <p style={{ margin: 0, color: 'var(--color-body)', lineHeight: '1.6', fontSize: '0.95rem' }}>
+                      {DOCUMENTS[inspectedDoc].content}
+                    </p>
+                  </div>
+
+                  <div className="action-overlay">
+                    <button className="action-btn-inline" onClick={(e) => {
+                      e.stopPropagation()
+                      handleDocumentAction('lee')
+                    }}>
+                      Leer
                     </button>
-                  ))}
+                    <button className="action-btn-inline" onClick={(e) => {
+                      e.stopPropagation()
+                      handleDocumentAction('foto')
+                    }}>
+                      Fotografiar
+                    </button>
+                    <button className="action-btn-inline" onClick={(e) => {
+                      e.stopPropagation()
+                      handleDocumentAction('avisa')
+                    }}>
+                      Avisar
+                    </button>
+                    <button className="action-btn-inline" onClick={(e) => {
+                      e.stopPropagation()
+                      handleDocumentAction('reporta')
+                    }}>
+                      Reportar
+                    </button>
+                  </div>
                 </div>
 
                 <button
                   type="button"
                   className={styles.snapBtn}
-                  onClick={() => setInspectedDoc(null)}
-                  style={{
-                    background: 'transparent',
-                    color: 'var(--color-ink)',
-                    border: '2px solid var(--color-ink)',
-                    marginBottom: '20px',
-                    transition: 'all 0.2s ease'
+                  onClick={() => {
+                    setInspectedDoc(null)
                   }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = 'var(--color-ink)'
-                    e.currentTarget.style.color = 'white'
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'transparent'
-                    e.currentTarget.style.color = 'var(--color-ink)'
-                  }}
+                  style={{ background: 'transparent', color: 'var(--color-ink)', border: '2px solid var(--color-ink)', marginBottom: '20px' }}
                 >
                   ← Volver a los documentos
                 </button>
+
+                <p style={{ textAlign: 'center', color: 'var(--color-muted)', fontSize: '0.85rem', marginTop: '12px' }}>
+                  Pasa el mouse sobre el documento para ver opciones
+                </p>
+
+                {cameraFlash && <div className="flash-effect" />}
               </>
             )}
           </>
         ) : (
           <div className={styles.report}>
             <span className={`${styles.reportStamp} ${styles[result.level]}`}>
-              {result.level === 'good' ? '✓ CORRECTO' : result.level === 'partial' ? '! PARCIAL' : '✕ INCORRECTO'}
+              {result.level === 'good' ? 'CORRECTO' : result.level === 'partial' ? 'PARCIAL' : 'INCORRECTO'}
             </span>
             <h2>{result.title}</h2>
             <p className={styles.summary}>{result.outcome}</p>
 
             <button type="button" className={styles.restartBtn} onClick={handleRestart}>
-              ↻ Repetir el escenario
+              Repetir el escenario
             </button>
           </div>
         )}
