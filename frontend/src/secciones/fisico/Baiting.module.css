@@ -668,6 +668,14 @@
   }
 }
 
+.report {
+  width: 100%;
+  background: transparent;
+  padding: 20px 0;
+  border-top: 1px dashed var(--color-hairline);
+  margin-top: 20px;
+}
+
 .reportStamp {
   display: inline-block;
   font-family: var(--font-sans);
