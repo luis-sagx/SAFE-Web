@@ -126,6 +126,10 @@
   cursor: pointer;
 }
 
+.headerHidden {
+  display: none !important;
+}
+
 .tooltipHint {
   font-family: var(--font-mono);
   font-size: 0.66rem;
