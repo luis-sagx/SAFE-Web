@@ -417,6 +417,7 @@ function Baiting() {
             ? 'PARCIAL'
             : 'CORRECTO',
       })
+      setShowReport(true)
     }
 
     stampFlash.trigger(() => {
