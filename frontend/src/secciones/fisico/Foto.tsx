@@ -255,10 +255,16 @@ function DeskSVG({
 }) {
   return (
     <svg viewBox="0 0 500 300">
-      <rect width="500" height="300" fill="#eef1f2" />
-      <rect y="60" width="500" height="10" fill="#d7dde1" />
-      <rect x="20" y="190" width="460" height="20" fill="#cfae7c" />
-      <rect x="20" y="170" width="460" height="20" fill="#e6cd9e" />
+      <defs>
+        <linearGradient id="deskGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="#f5f7f9" />
+          <stop offset="100%" stopColor="#eef1f5" />
+        </linearGradient>
+      </defs>
+      <rect width="500" height="300" fill="url(#deskGradient)" />
+      <rect y="60" width="500" height="10" fill="#d9dfe5" />
+      <rect x="20" y="190" width="460" height="20" fill="#d4b896" />
+      <rect x="20" y="170" width="460" height="20" fill="#e0c4a0" />
 
       <g className={styles.clickable} onClick={() => onToggle('monitor')}>
         <rect x="150" y="60" width="120" height="80" rx="4" fill="#1b232c" />
