@@ -464,10 +464,11 @@ function Baiting() {
     <div className={`${dossierTheme.dossierTheme} ${styles.app}`}>
       <main className={styles.mainArea}>
         {view === 'map' && (
-          <div>
-            <p className={styles.mapCaption}>Plano, Oficinas administrativas · Induplast Andina S.A. · entra a cada lugar</p>
+          <div style={{ display: 'flex', gap: '20px', alignItems: 'flex-start' }}>
+            <div style={{ flex: showReport ? '0 0 60%' : '1' }}>
+              <p className={styles.mapCaption}>Plano, Oficinas administrativas · Induplast Andina S.A. · entra a cada lugar</p>
 
-            <div className={styles.mapWrap}>
+              <div className={styles.mapWrap}>
               <svg className={styles.officeMap} viewBox="0 0 1200 840">
                 {ROOM_ZONES.map((zone) => (
                   <rect
@@ -589,16 +590,19 @@ function Baiting() {
               </span>
             </div>
 
-            <div className={styles.progressRow}>
-              <span className={styles.progressText}>
-                Casos revisados: {resolvedCount}/{SCENARIOS.length}
-              </span>
-            </div>
+                <div className={styles.progressRow}>
+                  <span className={styles.progressText}>
+                    Casos revisados: {resolvedCount}/{SCENARIOS.length}
+                  </span>
+                </div>
+              </div>
 
-            {showReport && resolvedCount === SCENARIOS.length && (
-              <Report resolved={resolved} pct={pct} onRestart={handleRestart} onNext={handleNext} />
-            )}
-          </div>
+              {showReport && resolvedCount === SCENARIOS.length && (
+                <div style={{ flex: '0 0 40%', minWidth: '0' }}>
+                  <Report resolved={resolved} pct={pct} onRestart={handleRestart} onNext={handleNext} />
+                </div>
+              )}
+            </div>
         )}
 
         {view === 'scene' && activeScenario && (
