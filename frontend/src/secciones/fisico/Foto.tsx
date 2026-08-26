@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { Link } from 'react-router'
+import { Link, useNavigate } from 'react-router'
 import { useAuth } from '../../context/AuthContext'
 import DossierHeader from '../../components/ui/DossierHeader'
 import FlashOverlay from '../../components/ui/FlashOverlay'
@@ -381,6 +381,7 @@ function DeskSVG({
 function Foto() {
   const { displayName, roleLabel } = useAuth()
   const run = useScenarioRun('fisico/foto')
+  const navigate = useNavigate()
 
   const [started, setStarted] = useState(false)
   const [levelIndex, setLevelIndex] = useState(0)
@@ -657,7 +658,10 @@ function Foto() {
                     </div>
                   ))}
                 </div>
-                <button type="button" className={styles.restartBtn} onClick={handleRestart}>
+                <button type="button" className={styles.restartBtn} onClick={() => navigate('/escenario/fisico/baiting')}>
+                  Ir al siguiente escenario →
+                </button>
+                <button type="button" className={styles.restartBtn} onClick={handleRestart} style={{ marginTop: '10px', background: 'transparent', color: 'var(--color-ink)', border: '2px solid var(--color-ink)' }}>
                   Repetir desde el nivel 1
                 </button>
               </div>
