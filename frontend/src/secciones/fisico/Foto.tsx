@@ -382,6 +382,7 @@ function Foto() {
   const { displayName, roleLabel } = useAuth()
   const run = useScenarioRun('fisico/foto')
 
+  const [started, setStarted] = useState(false)
   const [levelIndex, setLevelIndex] = useState(0)
   const [fixedState, setFixedState] = useState(() => initialFixedState(0))
   const [finished, setFinished] = useState(false)
@@ -488,6 +489,59 @@ function Foto() {
     resLevel = 'danger'
     summary =
       'Varios elementos sensibles quedaron perfectamente visibles en una foto que ahora circula en el boletín interno o en redes de la empresa.'
+  }
+
+  if (!started) {
+    return (
+      <div className={`${dossierTheme.dossierTheme} ${styles.app}`}>
+        <DossierHeader
+          caseLabel="CASO #0721"
+          secondTab="INTRODUCCIÓN"
+          riskLabel="RIESGO"
+          gaugePercent={0}
+          gaugeValueText=""
+          gaugeColor="var(--color-primary)"
+          participantName={displayName}
+          participantRole={roleLabel}
+        />
+
+        <main className={styles.mainArea}>
+          <p className={styles.introText}>Induplast Andina S.A. · Área administrativa</p>
+
+          <div className={styles.instructionsBox}>
+            <p className={styles.instructionsTitle}>Contexto</p>
+            <p className={styles.summary}>
+              Trabajas en una oficina donde los boletines internos se publican frecuentemente. Valeria, del equipo de Comunicaciones,
+              te pide fotos para el boletín. Cada foto puede revelar información sensible de tu escritorio si no tienes cuidado:
+              la pantalla del computador, notas con contraseñas, carpetas de clientes, gafetes, teléfono, o libretas abiertos.
+            </p>
+            <p className={styles.summary}>
+              Cada nivel te da menos tiempo y objetos diferentes que proteger. Debes ocultarlos o resguardarlos antes de que
+              la foto se dispare.
+            </p>
+          </div>
+
+          <div className={styles.instructionsBox}>
+            <p className={styles.instructionsTitle}>Qué aprenderás</p>
+            <ul className={styles.instructionsList}>
+              <li><strong>Nivel 1 (20s):</strong> Escritorio con objetos básicos. Tiempo generoso.</li>
+              <li><strong>Nivel 2 (16s):</strong> Cierre de mes. Menos tiempo, más objetos.</li>
+              <li><strong>Nivel 3 (12s):</strong> Reunión urgente. Máxima dificultad.</li>
+            </ul>
+          </div>
+
+          <div className={styles.actionRow}>
+            <button type="button" className={styles.snapBtn} onClick={() => setStarted(true)}>
+              Comenzar escenario →
+            </button>
+          </div>
+        </main>
+
+        <Link to="/seccion/fisico" className={styles.backLink}>
+          ← Volver a la sección
+        </Link>
+      </div>
+    )
   }
 
   return (
