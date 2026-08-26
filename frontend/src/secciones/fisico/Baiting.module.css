@@ -82,7 +82,7 @@
 
 .mapWrap {
   width: 100%;
-  min-height: 450px;
+  min-height: 700px;
   border: 1px solid var(--color-hairline);
   border-radius: 8px;
   overflow: hidden;
@@ -93,12 +93,12 @@
   display: block;
   width: 100%;
   height: auto;
-  min-height: 450px;
+  min-height: 700px;
 }
 
 .roomLabel {
   font-family: var(--font-mono);
-  font-size: 13px;
+  font-size: 20px;
   letter-spacing: 1px;
   fill: var(--color-body);
   text-transform: uppercase;
@@ -141,7 +141,7 @@
 
 .deskTag {
   font-family: var(--font-mono);
-  font-size: 9px;
+  font-size: 13px;
   fill: var(--color-muted);
   pointer-events: none;
 }
