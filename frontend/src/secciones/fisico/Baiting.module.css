@@ -1,6 +1,6 @@
 .app {
   width: 100%;
-  max-width: 1200px;
+  max-width: 760px;
   min-height: 100vh;
   margin: 0 auto;
   display: flex;
@@ -82,7 +82,6 @@
 
 .mapWrap {
   width: 100%;
-  min-height: 700px;
   border: 1px solid var(--color-hairline);
   border-radius: 8px;
   overflow: hidden;
@@ -93,12 +92,11 @@
   display: block;
   width: 100%;
   height: auto;
-  min-height: 700px;
 }
 
 .roomLabel {
   font-family: var(--font-mono);
-  font-size: 20px;
+  font-size: 13px;
   letter-spacing: 1px;
   fill: var(--color-body);
   text-transform: uppercase;
@@ -109,39 +107,39 @@
 .wall {
   fill: none;
   stroke: var(--color-muted);
-  stroke-width: 4.5;
+  stroke-width: 3;
   pointer-events: none;
 }
 
 .furniture {
   fill: none;
   stroke: var(--color-hairline-strong);
-  stroke-width: 2.4;
+  stroke-width: 1.6;
   pointer-events: none;
 }
 
 .furnitureFill {
-  fill: var(--color-hairline-strong);
-  stroke: var(--color-muted);
-  stroke-width: 2;
+  fill: var(--color-surface-strong);
+  stroke: var(--color-hairline-strong);
+  stroke-width: 1.4;
   pointer-events: none;
 }
 
 .lot {
-  fill: var(--color-surface);
+  fill: var(--color-surface-strong);
   pointer-events: none;
 }
 
 .lotLine {
   stroke: var(--color-hairline-strong);
-  stroke-width: 3;
-  stroke-dasharray: 12 9;
+  stroke-width: 2;
+  stroke-dasharray: 8 6;
   pointer-events: none;
 }
 
 .deskTag {
   font-family: var(--font-mono);
-  font-size: 13px;
+  font-size: 9px;
   fill: var(--color-muted);
   pointer-events: none;
 }
@@ -296,18 +294,6 @@
 
 .sceneView {
   animation: fadeIn 0.25s ease both;
-  display: grid;
-  grid-template-columns: 1.5fr 320px;
-  gap: 20px;
-  grid-auto-flow: row;
-  grid-auto-rows: auto;
-  align-items: start;
-  max-height: calc(100vh - 200px);
-}
-
-.sceneView > :nth-child(n + 4) {
-  overflow-y: auto;
-  max-height: calc(100vh - 300px);
 }
 
 @keyframes fadeIn {
@@ -330,8 +316,6 @@
   padding: 0 0 12px;
   text-transform: uppercase;
   font-weight: 600;
-  grid-column: 1 / -1;
-  grid-row: 1;
 }
 
 .backBtn:hover {
@@ -347,8 +331,6 @@
   border-bottom: 1px solid var(--color-hairline);
   padding-bottom: 10px;
   margin-bottom: 14px;
-  grid-column: 1 / -1;
-  grid-row: 2;
 }
 
 .sceneLocation {
@@ -358,41 +340,35 @@
   text-align: center;
   margin: 0 0 12px;
   color: var(--color-ink);
-  grid-column: 1 / -1;
-  grid-row: 3;
 }
 
 .sceneCanvas {
   width: 100%;
-  height: 600px;
   border-radius: 8px;
   overflow: hidden;
   box-shadow: var(--shadow-card);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  grid-column: 1;
-  grid-row: 4 / 6;
+  margin-bottom: 16px;
 }
 
 .sceneCanvas svg {
   display: block;
   width: 100%;
-  height: 100%;
+  height: auto;
   background: var(--color-surface-strong);
 }
 
 .sceneObject {
-  display: none;
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--color-muted);
+  margin-bottom: 10px;
 }
 
 .sceneNarrative {
-  font-size: 1.08rem;
+  font-size: 0.98rem;
   line-height: 1.55;
-  margin: 0 0 16px;
+  margin: 0 0 8px;
   color: var(--color-body);
-  grid-column: 2;
-  grid-row: 4;
 }
 
 .flashHint {
@@ -402,8 +378,6 @@
   font-size: 0.66rem;
   color: var(--color-muted);
   margin-bottom: 18px;
-  grid-column: 1;
-  grid-row: 6;
 }
 
 .sceneFlash {
@@ -440,14 +414,11 @@
   flex-direction: column;
   gap: 10px;
   margin-top: 4px;
-  grid-column: 2;
-  grid-row: 5;
-  overflow: hidden;
 }
 
 .choiceBtn {
   font-family: var(--font-sans);
-  font-size: 1.02rem;
+  font-size: 0.94rem;
   text-align: left;
   background: var(--color-surface-strong);
   border: 1.5px solid var(--color-hairline);
@@ -457,15 +428,6 @@
   color: var(--color-ink);
   transition: all 0.15s;
   font-weight: 500;
-  word-break: break-word;
-  white-space: normal;
-  overflow-wrap: break-word;
-  width: 100%;
-  max-width: 100%;
-  box-sizing: border-box;
-  display: block;
-  overflow: hidden;
-  text-overflow: clip;
 }
 
 .choiceBtn:hover:not(:disabled) {
@@ -483,8 +445,6 @@
 .feedbackPanel {
   margin-top: 6px;
   animation: fadeUp 0.4s ease both;
-  grid-column: 2;
-  grid-row: 5;
 }
 
 @keyframes fadeUp {
@@ -678,16 +638,6 @@
   }
 }
 
-.report {
-  width: 100%;
-  background: transparent;
-  padding: 16px 0 0;
-  border-top: none;
-  margin-top: 16px;
-  display: flex;
-  flex-direction: column;
-}
-
 .reportStamp {
   display: inline-block;
   font-family: var(--font-sans);
@@ -757,7 +707,7 @@
 }
 
 .restartBtn {
-  margin-top: 12px;
+  margin-top: 22px;
   font-family: var(--font-sans);
   font-size: 0.85rem;
   letter-spacing: 0.05em;
@@ -774,11 +724,8 @@
 }
 
 .restartBtn:hover {
-  background: rgb(18, 83, 13);
+  background: var(--color-ink);
   color: white;
-  border-color: var(--color-success);
-  transform: translateY(-3px) scale(1.02);
-  box-shadow: 0 6px 16px rgba(22, 163, 74, 0.3);
 }
 
 @media (max-width: 480px) {
