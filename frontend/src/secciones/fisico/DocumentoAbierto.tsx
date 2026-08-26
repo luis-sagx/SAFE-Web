@@ -216,16 +216,39 @@ function DocumentoAbierto() {
             animation: paperFlip 0.6s ease-in-out;
           }
           .document-preview {
-            padding: 32px;
-            background: var(--color-surface);
-            border: 1px solid var(--color-hairline-strong);
-            border-radius: 8px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-            margin-bottom: 24px;
+            padding: 48px 40px;
+            background: #ffffff;
+            border: none;
+            border-radius: 0;
+            box-shadow:
+              0 10px 25px rgba(0, 0, 0, 0.1),
+              0 20px 40px rgba(0, 0, 0, 0.08),
+              -2px 0 4px rgba(0, 0, 0, 0.05);
+            margin: 24px auto;
+            max-width: 700px;
             transition: all 0.3s ease;
+            position: relative;
+            aspect-ratio: auto;
+            page-break-after: avoid;
           }
           .document-preview:hover {
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+            box-shadow:
+              0 15px 35px rgba(0, 0, 0, 0.15),
+              0 25px 50px rgba(0, 0, 0, 0.1),
+              -2px 0 4px rgba(0, 0, 0, 0.05);
+            transform: translateY(-2px);
+          }
+          .document-preview::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border: 1px solid #e5e5e5;
+            border-radius: 0;
+            pointer-events: none;
+            opacity: 0.5;
           }
           .action-buttons-grid {
             display: grid;
@@ -363,7 +386,7 @@ function DocumentoAbierto() {
                 </p>
 
                 <div className="document-preview">
-                  <h3 style={{ margin: '0 0 20px 0', color: 'var(--color-ink)', fontSize: '1.1rem', fontWeight: '600', borderBottom: '2px solid var(--color-primary)', paddingBottom: '12px' }}>
+                  <h3 style={{ margin: '0 0 32px 0', color: '#1a1a1a', fontSize: '1.2rem', fontWeight: '700', textAlign: 'center', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
                     {DOCUMENTS[inspectedDoc].title}
                   </h3>
 
