@@ -511,14 +511,14 @@ function Foto() {
 
           <div className={styles.instructionsBox}>
             <p className={styles.instructionsTitle}>Contexto</p>
-            <p className={styles.summary}>
-              Trabajas en una oficina donde los boletines internos se publican frecuentemente. Valeria, del equipo de Comunicaciones,
-              te pide fotos para el boletín. Cada foto puede revelar información sensible de tu escritorio si no tienes cuidado:
-              la pantalla del computador, notas con contraseñas, carpetas de clientes, gafetes, teléfono, o libretas abiertos.
+            <p className={styles.summary} style={{ fontStyle: 'italic', marginBottom: '12px' }}>
+              Hola, {displayName}. Hoy es un día normal en Induplast Andina S.A. — Valeria de Comunicaciones va a pasar por tu área
+              para tomar fotos para el boletín interno.
             </p>
             <p className={styles.summary}>
-              Cada nivel te da menos tiempo y objetos diferentes que proteger. Debes ocultarlos o resguardarlos antes de que
-              la foto se dispare.
+              En cada nivel, Valeria aparecerá con una foto diferente y menos tiempo. Tu escritorio tiene objetos que pueden revelar
+              información sensible si quedan visibles en la foto publicada: la pantalla del computador, notas con contraseñas, carpetas
+              de clientes, tu gafete de acceso, el teléfono, libretas. Debes ocultarlos o resguardarlos antes de que se dispare la foto.
             </p>
           </div>
 
