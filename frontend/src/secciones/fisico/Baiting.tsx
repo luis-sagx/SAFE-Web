@@ -347,6 +347,7 @@ function Baiting() {
   const { displayName, roleLabel } = useAuth()
   const run = useScenarioRun('fisico/baiting')
 
+  const [started, setStarted] = useState(false)
   const [view, setView] = useState<'map' | 'scene'>('map')
   const [activeIdx, setActiveIdx] = useState<number | null>(null)
   const [resolved, setResolved] = useState<Record<number, Resolved>>({})
@@ -418,6 +419,65 @@ function Baiting() {
   const activeResolved = activeIdx !== null ? (resolved[activeIdx] ?? null) : null
   const showFeedback = !!activeResolved && !revealPending
 
+  if (!started) {
+    return (
+      <div className={`${dossierTheme.dossierTheme} ${styles.app}`}>
+        <DossierHeader
+          caseLabel="CASO #0472"
+          secondTab="INTRODUCCIÓN"
+          riskLabel="RIESGO"
+          gaugePercent={0}
+          gaugeValueText=""
+          gaugeColor="var(--color-primary)"
+          participantName={displayName}
+          participantRole={roleLabel}
+        />
+
+        <main className={styles.mainArea}>
+          <p className={styles.introText}>
+            Hola, {displayName}. Hoy circulan varias historias sobre dispositivos USB de origen desconocido en la oficina.
+            Trabaja a través del plano, visita cada zona y toma decisiones sobre qué hacer si encuentras un USB o dispositivo
+            de carga sospechoso.
+          </p>
+
+          <div className={styles.instructionsBox}>
+            <p className={styles.instructionsTitle}>Contexto</p>
+            <p className={styles.summary}>
+              Los ataques USB son simplistas pero muy efectivos: un atacante deja un USB en el estacionamiento, la sala de
+              descanso o la recepción etiquetado de forma atractiva ("nómina.xls", "bonificación", "CV adjunto") o promocional
+              ("regalo de la empresa"). Si lo enchufas, puede ejecutar malware, capturar contraseñas o instalarse sin que lo notes.
+            </p>
+            <p className={styles.summary}>
+              Trabajarás en 4 zonas diferentes, cada una con un escenario distinto. Tus decisiones determinarán el nivel de riesgo
+              acumulado en toda la sesión.
+            </p>
+          </div>
+
+          <div className={styles.instructionsBox}>
+            <p className={styles.instructionsTitle}>Cómo jugar</p>
+            <ul className={styles.instructionsList}>
+              <li><strong>Haz clic</strong> en las 4 zonas del plano (Estacionamiento, Sala de descanso, Escritorio, Recepción)</li>
+              <li><strong>Inspecciona</strong> el dispositivo USB tocando el destello ⚡</li>
+              <li><strong>Elige una acción</strong> — cada una tiene consecuencias diferentes</li>
+              <li><strong>Mira el resultado</strong> y cómo afecta tu medidor de riesgo</li>
+              <li><strong>Al final</strong> verás un informe con todas tus decisiones y el riesgo total</li>
+            </ul>
+          </div>
+
+          <div className={styles.actionRow}>
+            <button type="button" className={styles.snapBtn} onClick={() => setStarted(true)}>
+              Comenzar escenario →
+            </button>
+          </div>
+        </main>
+
+        <Link to="/seccion/fisico" className={styles.backLink}>
+          ← Volver a la sección
+        </Link>
+      </div>
+    )
+  }
+
   return (
     <div className={`${dossierTheme.dossierTheme} ${styles.app}`}>
       <DossierHeader
@@ -434,33 +494,6 @@ function Baiting() {
       <main className={styles.mainArea}>
         {view === 'map' && (
           <div>
-            <div className={styles.instructionsBox}>
-              <p className={styles.instructionsTitle}>Qué tienes que hacer</p>
-              <ul className={styles.instructionsList}>
-                <li>
-                  En el plano de abajo hay 4 zonas marcadas con un pin numerado (1 a 4): Estacionamiento, Sala de
-                  descanso, Tu escritorio y Recepción. Haz clic o presiona Enter sobre cada zona para entrar.
-                </li>
-                <li>
-                  En cada zona vas a encontrar una situación distinta con un dispositivo USB o de carga de origen
-                  desconocido (un USB tirado en el piso, un cable ya conectado, un USB promocional, la memoria de un
-                  visitante).
-                </li>
-                <li>Toca el destello ⚡ sobre la escena para inspeccionar el objeto y ver las opciones disponibles.</li>
-                <li>
-                  Elige una de las opciones propuestas: cada una tiene una consecuencia distinta y suma un
-                  porcentaje distinto al medidor de "NIVEL DE RIESGO" (arriba a la derecha), según qué tan segura o
-                  arriesgada sea.
-                </li>
-                <li>
-                  No hay forma de deshacer una decisión una vez tomada, luego de elegir, vuelve al plano con el
-                  botón "← Volver al mapa" y entra a la siguiente zona pendiente (el pin cambia de color: pendiente,
-                  segura, observación o riesgo).
-                </li>
-                <li>Cuando hayas resuelto los 4 casos se habilita el botón "Ver informe final", con el resumen de tus decisiones y el riesgo total acumulado.</li>
-              </ul>
-            </div>
-
             <p className={styles.mapCaption}>Plano, Oficinas administrativas · Induplast Andina S.A. · entra a cada lugar</p>
 
             <div className={styles.mapWrap}>
