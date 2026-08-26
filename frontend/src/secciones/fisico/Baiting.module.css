@@ -346,8 +346,7 @@
 
 .sceneCanvas {
   width: 100%;
-  min-height: 200px;
-  max-height: 280px;
+  height: 350px;
   border-radius: 8px;
   overflow: hidden;
   box-shadow: var(--shadow-card);
@@ -360,8 +359,7 @@
 .sceneCanvas svg {
   display: block;
   width: 100%;
-  height: auto;
-  max-height: 260px;
+  height: 100%;
   background: var(--color-surface-strong);
 }
 
