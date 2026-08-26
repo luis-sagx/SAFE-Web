@@ -297,7 +297,7 @@
 .sceneView {
   animation: fadeIn 0.25s ease both;
   display: grid;
-  grid-template-columns: 350px 1fr;
+  grid-template-columns: 1.5fr 320px;
   gap: 20px;
   grid-auto-flow: row;
 }
@@ -384,7 +384,7 @@
 }
 
 .sceneNarrative {
-  font-size: 0.98rem;
+  font-size: 1.08rem;
   line-height: 1.55;
   margin: 0 0 8px;
   color: var(--color-body);
@@ -444,7 +444,7 @@
 
 .choiceBtn {
   font-family: var(--font-sans);
-  font-size: 0.94rem;
+  font-size: 1.02rem;
   text-align: left;
   background: var(--color-surface-strong);
   border: 1.5px solid var(--color-hairline);
