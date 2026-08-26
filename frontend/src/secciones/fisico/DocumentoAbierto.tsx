@@ -2,136 +2,129 @@ import { useState } from 'react'
 import { Link } from 'react-router'
 import { useAuth } from '../../context/AuthContext'
 import DossierHeader from '../../components/ui/DossierHeader'
-import StoryEscenario, { type ScreenNode } from '../../components/StoryEscenario'
-import type { Contexto } from '../../components/ui/ContextoEscenario'
-import type { Story } from '../../hooks/useStoryEngine'
-import type { ScreenView } from '../../components/ui/DeviceScreen'
-import type { Senal } from '../../components/ui/PanelVeredicto'
+import FlashOverlay from '../../components/ui/FlashOverlay'
+import { useFlashTransition } from '../../hooks/useFlashTransition'
+import { useScenarioRun } from '../../hooks/useScenarioRun'
 import dossierTheme from '../../styles/dossier-theme.module.css'
 import styles from './Foto.module.css'
 
-const ESCENA: ScreenView = {
-  kind: 'web',
-  app: 'Escritorio',
-  url: 'oficina',
-  secure: true,
-  brand: 'Puesto de trabajo',
-  title: 'Documentos visibles',
-  subtitle: 'Tu compañero se fue al café',
-  datos: [
-    {
-      etiqueta: 'Documento 1',
-      valor: 'Evaluaciones de desempeño (CONFIDENCIAL)',
-      senal: 'peligro',
-    },
-    {
-      etiqueta: 'Documento 2',
-      valor: 'Datos de clientes con montos de contrato',
-      senal: 'peligro',
-    },
-    {
-      etiqueta: 'Nota adhesiva',
-      valor: 'Contraseña WiFi: Of2026*Net!',
-      senal: 'peligro',
-    },
-  ],
-  aviso:
-    'Tu compañero Andrés dejó su escritorio hace 5 minutos diciendo "voy al café, regreso en 15". Ves documentos confidenciales visibles. Otros compañeros pasan frecuentemente por este pasillo.',
-  opciones: [
-    {
-      texto: 'Leer rápido el documento',
-      goto: 'e_lee',
-      label: 'Accedió a información confidencial sin autorización',
-    },
-    {
-      texto: 'Fotografiar el documento',
-      goto: 'e_foto',
-      label: 'Capturó documentos confidenciales con el celular',
-    },
-    {
-      texto: 'Ignorarlo, no es mi responsabilidad',
-      goto: 'e_ignora',
-      label: 'No reportó un documento confidencial expuesto',
-    },
-    {
-      texto: 'Avisar al compañero discretamente',
-      goto: 'e_avisa',
-      label: 'Reportó de forma discreta al dueño del documento',
-    },
-    {
-      texto: 'Reportar a Recursos Humanos',
-      goto: 'e_reporta',
-      label: 'Reportó a las autoridades correspondientes',
-    },
-  ],
-  fields: [],
-  button: '',
+type DocKey = 'evaluaciones' | 'clientes' | 'contrasena'
+
+interface Document {
+  label: string
+  title: string
+  content: string
+  risk: string
 }
 
-export const STORY: Story<ScreenNode> = {
-  n1: { kind: 'scene', view: ESCENA },
-  e_lee: {
-    kind: 'bad',
-    view: ESCENA,
-    verdict: 'Violaste políticas de seguridad',
-    outcome:
-      'Acceder a información confidencial sin autorización es una falta grave. No importa que sea "un vistazo rápido": viste datos que no autorizaban que vieras. Tu compañero podría ser responsabilizado por la exposición.',
+const DOCUMENTS: Record<DocKey, Document> = {
+  evaluaciones: {
+    label: 'Evaluaciones de desempeño',
+    title: 'Evaluaciones de desempeño (CONFIDENCIAL)',
+    content:
+      'Salarios, comentarios de desempeño, calificaciones y metas de empleados de tu equipo. Información que afecta sus contratos y futuro en la empresa.',
+    risk: 'Violación grave de privacidad',
   },
-  e_foto: {
-    kind: 'bad',
-    view: ESCENA,
-    verdict: 'Capturaste datos confidenciales',
-    outcome:
-      'Fotografiar documentos es aún más grave: ahora la información está en tu dispositivo personal, posiblemente sincronizado a la nube, completamente fuera del control de la empresa. Eso es un incidente de seguridad serio.',
+  clientes: {
+    label: 'Datos de clientes',
+    title: 'Montos de contrato de clientes',
+    content:
+      'Clientes activos con sus montos de contrato, márgenes de ganancia y detalles del proyecto. Información estratégica competitiva.',
+    risk: 'Robo de información corporativa',
   },
-  e_ignora: {
-    kind: 'partial',
-    view: ESCENA,
-    verdict: 'No actuaste, pero dejaste el riesgo activo',
-    outcome:
-      'No accediste a los datos, pero no reportar un documento confidencial expuesto significa que cualquier otra persona que pase puede leerlo, copiarlo o fotografiarlo. El riesgo sigue activo.',
-  },
-  e_avisa: {
-    kind: 'good',
-    view: ESCENA,
-    verdict: 'Actuaste correctamente de forma discreta',
-    outcome:
-      'Correcto. Reportar de forma discreta al compañero le permite guardar sus documentos de inmediato. Proteges tanto la información como su responsabilidad ante la empresa. Es la acción más humana y efectiva.',
-  },
-  e_reporta: {
-    kind: 'good',
-    view: ESCENA,
-    verdict: 'Seguiste el protocolo oficial',
-    outcome:
-      'También correcto. Si los documentos contienen información de terceros (clientes, empleados), reportar a Recursos Humanos o Seguridad es el protocolo adecuado. Es la ruta más formal cuando la exposición es severa.',
+  contrasena: {
+    label: 'Nota con contraseña',
+    title: 'Contraseña WiFi de la oficina',
+    content: 'WiFi: Of2026*Net! - Escrita a mano en una nota adhesiva visible',
+    risk: 'Acceso no autorizado a la red',
   },
 }
 
-const SENALES: Senal[] = [
-  {
-    id: 's1',
-    targetId: 'peligro',
-    pantalla: 'n1',
-    texto: 'Documentos confidenciales <b>visibles en una zona común</b> es un riesgo de seguridad activo.',
-  },
+const DECISIONS = [
+  { id: 'lee', text: 'Leer rápido el documento', level: 'bad' as const },
+  { id: 'foto', text: 'Fotografiar el documento', level: 'bad' as const },
+  { id: 'ignora', text: 'Ignorarlo, no es mi responsabilidad', level: 'partial' as const },
+  { id: 'avisa', text: 'Avisar al compañero discretamente', level: 'good' as const },
+  { id: 'reporta', text: 'Reportar a Recursos Humanos', level: 'good' as const },
 ]
 
-const RESUMEN = 'Tu compañero dejó documentos confidenciales visibles en su escritorio mientras se fue al café.'
+interface DecisionResult {
+  id: string
+  level: 'good' | 'bad' | 'partial'
+  title: string
+  outcome: string
+}
 
-const CONTEXTO: Contexto = {
-  antes: 'Trabajas en un ambiente de oficina donde hay políticas de seguridad de información.',
-  ahora: (
-    <>
-      <strong>Mediodía.</strong> Tu compañero Andrés se levanta de su escritorio y se va al café. Cuando se va,
-      ves que dejó varios <strong>documentos impresos visibles</strong>: evaluaciones de desempeño, datos de clientes con
-      montos de contrato, y notas con contraseñas.
-    </>
-  ),
+const DECISION_RESULTS: Record<string, DecisionResult> = {
+  lee: {
+    id: 'lee',
+    level: 'bad',
+    title: 'Violaste políticas de seguridad',
+    outcome:
+      'Acceder a información confidencial sin autorización es una falta grave. No importa que sea "un vistazo rápido": viste datos que no autorizaban que vieras.',
+  },
+  foto: {
+    id: 'foto',
+    level: 'bad',
+    title: 'Capturaste datos confidenciales',
+    outcome:
+      'Fotografiar documentos es más grave aún: ahora la información está en tu dispositivo personal, posiblemente sincronizado a la nube, completamente fuera del control de la empresa.',
+  },
+  ignora: {
+    id: 'ignora',
+    level: 'partial',
+    title: 'No actuaste, pero dejaste el riesgo activo',
+    outcome:
+      'No accediste a los datos, pero no reportar significa que cualquier otra persona que pase puede leerlo, copiarlo o fotografiarlo. El riesgo sigue activo.',
+  },
+  avisa: {
+    id: 'avisa',
+    level: 'good',
+    title: 'Actuaste correctamente de forma discreta',
+    outcome:
+      'Correcto. Reportar discretamente al compañero le permite guardar sus documentos de inmediato. Proteges tanto la información como su responsabilidad.',
+  },
+  reporta: {
+    id: 'reporta',
+    level: 'good',
+    title: 'Seguiste el protocolo oficial',
+    outcome:
+      'También correcto. Si los documentos contienen información de terceros, reportar a Recursos Humanos o Seguridad es el protocolo adecuado. Es la ruta más formal.',
+  },
 }
 
 function DocumentoAbierto() {
   const { displayName, roleLabel } = useAuth()
+  const run = useScenarioRun('fisico/documento-abierto')
+  const flash = useFlashTransition()
+
   const [started, setStarted] = useState(false)
+  const [inspectedDoc, setInspectedDoc] = useState<DocKey | null>(null)
+  const [result, setResult] = useState<DecisionResult | null>(null)
+
+  const handleInspectDoc = (docKey: DocKey) => {
+    setInspectedDoc(docKey)
+  }
+
+  const handleDecision = (decisionId: string) => {
+    const decisionResult = DECISION_RESULTS[decisionId]
+    if (!decisionResult) return
+
+    flash.trigger(() => {
+      setResult(decisionResult)
+      run.recordDecision({ documento: inspectedDoc, accion: decisionId })
+      void run.finish({
+        endingId: decisionResult.level,
+        outcome: decisionResult.level === 'good' ? 'CORRECTO' : decisionResult.level === 'partial' ? 'PARCIAL' : 'INCORRECTO',
+      })
+    }, 250)
+  }
+
+  const handleRestart = () => {
+    run.restart()
+    setInspectedDoc(null)
+    setResult(null)
+  }
 
   if (!started) {
     return (
@@ -156,9 +149,9 @@ function DocumentoAbierto() {
           <div className={styles.instructionsBox}>
             <p className={styles.instructionsTitle}>Contexto</p>
             <p className={styles.summary}>
-              En la mayoría de las oficinas, los documentos clasificados quedan a la vista todo el tiempo: evaluaciones
-              de desempeño, datos de clientes, contratos, salarios. Si alguien entra a esa área (otro compañero, un
-              visitante, limpieza), puede ver información que no le corresponde.
+              Tu compañero Andrés se fue al café por 15 minutos. En su escritorio ves: evaluaciones de desempeño de tu
+              equipo, datos de clientes con montos de contrato, y una nota adhesiva con la contraseña del WiFi. Otros
+              compañeros caminan frecuentemente por este pasillo.
             </p>
             <p className={styles.summary}>
               La decisión que tomes determina si accedes a esa información, si la reportas, o si simplemente la ignoras.
@@ -181,27 +174,124 @@ function DocumentoAbierto() {
   }
 
   return (
-    <StoryEscenario
-      escenarioId="fisico/documento-abierto"
-      resumen={RESUMEN}
-      contexto={CONTEXTO}
-      story={STORY}
-      senales={SENALES}
-      rule='Regla de oro: <b>documentos confidenciales nunca se dejan visibles</b>, ni siquiera "por un momento". Si los ves expuestos, avisa discretamente al dueño o reporta a Seguridad. No leas, no fotografíes, no ignores.'
-      restartLabel="↻ Repetir el escenario"
-      instruccion={
-        <p className="text-lg leading-relaxed text-body">
-          Ves documentos confidenciales dejados visibles. <strong>¿Qué haces?</strong> Elige la opción que consideres más
-          apropriada. Cada acción tiene una consecuencia diferente.
+    <div className={`${dossierTheme.dossierTheme} ${styles.app}`}>
+      <DossierHeader
+        caseLabel="RIESGO FÍSICO"
+        secondTab="DOCUMENTOS"
+        riskLabel="ACCIÓN"
+        gaugePercent={0}
+        gaugeValueText=""
+        gaugeColor="var(--color-primary)"
+        participantName={displayName}
+        participantRole={roleLabel}
+      />
+
+      <main className={styles.mainArea}>
+        <p className={styles.introText}>
+          Ves tres documentos distintos sobre el escritorio de tu compañero. Haz clic en cada uno para inspeccionarlo y
+          luego decide qué hacer.
         </p>
-      }
-      pista={
-        <p>
-          Reportar el riesgo —ya sea al dueño o a Seguridad— es siempre la acción correcta. Leer, fotografiar o ignorar
-          son faltas de seguridad.
-        </p>
-      }
-    />
+
+        {!result ? (
+          <>
+            {!inspectedDoc ? (
+              <>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '20px' }}>
+                  {(Object.entries(DOCUMENTS) as [DocKey, Document][]).map(([key, doc]) => (
+                    <button
+                      key={key}
+                      onClick={() => handleInspectDoc(key)}
+                      className={styles.snapBtn}
+                      style={{
+                        background: 'linear-gradient(135deg, var(--color-primary) 0%, #00522b 100%)',
+                        padding: '20px',
+                        textAlign: 'left',
+                        height: 'auto',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      <strong style={{ fontSize: '0.95rem', marginBottom: '4px' }}>📄 {doc.label}</strong>
+                      <span style={{ fontSize: '0.8rem', opacity: 0.9 }}>Haz clic para inspeccionar</span>
+                    </button>
+                  ))}
+                </div>
+
+                <div className={styles.instructionsBox} style={{ marginTop: '20px' }}>
+                  <p className={styles.instructionsTitle}>💡 Cómo jugar</p>
+                  <p className={styles.summary}>
+                    Haz clic en cada documento para leer su contenido. Después de inspeccionarlo, podrás decidir qué
+                    hacer: leerlo completo, fotografiarlo, ignorarlo, avisar al compañero, o reportarlo a Recursos
+                    Humanos.
+                  </p>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className={styles.instructionsBox} style={{ marginBottom: '20px', background: 'rgba(22, 163, 74, 0.08)', borderLeft: '3px solid #16a34a' }}>
+                  <p className={styles.instructionsTitle} style={{ color: '#16a34a', margin: '0 0 12px 0' }}>
+                    {DOCUMENTS[inspectedDoc].title}
+                  </p>
+                  <p className={styles.summary} style={{ margin: 0 }}>
+                    {DOCUMENTS[inspectedDoc].content}
+                  </p>
+                  <p style={{ marginTop: '12px', color: '#b4342f', fontWeight: '600', fontSize: '0.85rem' }}>
+                    ⚠ Riesgo: {DOCUMENTS[inspectedDoc].risk}
+                  </p>
+                </div>
+
+                <p className={styles.introText}>¿Qué haces ahora que viste este documento?</p>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '10px', marginBottom: '20px' }}>
+                  {DECISIONS.map((decision) => (
+                    <button
+                      key={decision.id}
+                      onClick={() => handleDecision(decision.id)}
+                      className={styles.snapBtn}
+                      style={{
+                        background: decision.level === 'good' ? '#16a34a' : decision.level === 'partial' ? '#d99b34' : '#b4342f',
+                        padding: '14px 16px',
+                        fontSize: '0.85rem',
+                      }}
+                    >
+                      {decision.text}
+                    </button>
+                  ))}
+                </div>
+
+                <button
+                  type="button"
+                  className={styles.snapBtn}
+                  onClick={() => setInspectedDoc(null)}
+                  style={{ background: 'transparent', color: 'var(--color-ink)', border: '2px solid var(--color-ink)', marginBottom: '20px' }}
+                >
+                  ← Volver a los documentos
+                </button>
+              </>
+            )}
+          </>
+        ) : (
+          <div className={styles.report}>
+            <span className={`${styles.reportStamp} ${styles[result.level]}`}>
+              {result.level === 'good' ? '✓ CORRECTO' : result.level === 'partial' ? '! PARCIAL' : '✕ INCORRECTO'}
+            </span>
+            <h2>{result.title}</h2>
+            <p className={styles.summary}>{result.outcome}</p>
+
+            <button type="button" className={styles.restartBtn} onClick={handleRestart}>
+              ↻ Repetir el escenario
+            </button>
+          </div>
+        )}
+      </main>
+
+      <FlashOverlay active={flash.active} />
+
+      <Link to="/seccion/fisico" className={styles.backLink}>
+        ← Volver a la sección
+      </Link>
+    </div>
   )
 }
 
