@@ -6,6 +6,11 @@ import FlashOverlay from '../../components/ui/FlashOverlay'
 import { useFlashTransition } from '../../hooks/useFlashTransition'
 import { useScenarioRun } from '../../hooks/useScenarioRun'
 import { useCountdown } from '../../hooks/useCountdown'
+import AppHeader from '../../components/AppHeader'
+import InfoLink from '../../components/InfoLink'
+import ContextoEscenario from '../../components/ui/ContextoEscenario'
+import type { Contexto } from '../../components/ui/ContextoEscenario'
+import { getSeccion } from '../../data/catalogo'
 import dossierTheme from '../../styles/dossier-theme.module.css'
 import styles from './Foto.module.css'
 
@@ -492,42 +497,65 @@ function Foto() {
       'Varios elementos sensibles quedaron perfectamente visibles en una foto que ahora circula en el boletín interno o en redes de la empresa.'
   }
 
+  const contexto: Contexto = {
+    antes: (
+      <>
+        Trabajas en una oficina donde se fotografía a los empleados regularmente para materiales
+        internos. Tu escritorio, como el de todos, tiene objetos que contienen información sensible:
+        pantallas con datos de nómina, notas con contraseñas, carpetas de clientes, gafetes con
+        códigos de acceso, teléfonos con notificaciones, libretas con anotaciones.
+      </>
+    ),
+    ahora: (
+      <>
+        <strong>Hace unos minutos</strong> Valeria de Comunicaciones te avisó que viene a fotografiar
+        tu puesto para el boletín interno. La foto se publicará en la intranet y en las redes de la
+        empresa. Tienes poco tiempo para preparar tu escritorio: debes ocultar o guardar cualquier
+        objeto que pueda revelar información sensible antes de que dispare la cámara.
+      </>
+    ),
+  }
+
   if (!started) {
+    const seccion = getSeccion('fisico')
+    const volver = (
+      <Link to="/seccion/fisico" className="text-base font-medium text-link underline">
+        ← Volver a la sección
+      </Link>
+    )
+
     return (
-      <div className={`${dossierTheme.dossierTheme} ${styles.app}`}>
-        <main className={styles.mainArea}>
-          <p className={styles.introText}>
-            Hola, {displayName}. Esto es lo que te está pasando:
-          </p>
+      <div className="min-h-dvh bg-canvas">
+        <AppHeader>
+          {volver}
+          <InfoLink />
+        </AppHeader>
 
-          <div className={styles.instructionsBox}>
-            <p className={styles.instructionsTitle}>Antes de esto</p>
-            <p className={styles.summary}>
-              Trabajas en una oficina donde se fotografía a los empleados regularmente para materiales internos. Tu escritorio, como el de todos, tiene objetos
-              que contienen información sensible: pantallas con datos de nómina, notas con contraseñas, carpetas de clientes, gafetes con códigos de acceso,
-              teléfonos con notificaciones, libretas con anotaciones.
+        <main className="mx-auto max-w-6xl px-6 py-12">
+          <p className="text-base font-medium text-muted">{seccion?.canal}</p>
+          <h1 className="mt-2 text-4xl font-semibold tracking-tight text-ink">Foto para el boletín</h1>
+
+          <div className="mt-8">
+            <p className="text-lg leading-relaxed text-ink">
+              Hola, <strong className="font-semibold">{displayName}</strong>. Esto es lo que te está
+              pasando:
             </p>
-          </div>
 
-          <div className={styles.instructionsBox}>
-            <p className={styles.instructionsTitle}>Lo que acaba de pasar</p>
-            <p className={styles.summary}>
-              <strong>Hace unos minutos</strong> Valeria de Comunicaciones te avisó que viene a fotografiar tu puesto para el boletín interno. La foto se publicará
-              en la intranet y en las redes de la empresa. Tienes poco tiempo para preparar tu escritorio: debes ocultar o guardar cualquier objeto que pueda revelar
-              información sensible antes de que dispare la cámara.
-            </p>
-          </div>
+            <div className="mt-5">
+              <ContextoEscenario contexto={contexto} />
+            </div>
 
-          <div className={styles.actionRow}>
-            <button type="button" className={styles.snapBtn} onClick={() => setStarted(true)}>
-              Comenzar escenario →
-            </button>
+            <div className="mt-8 flex gap-4">
+              <button
+                type="button"
+                onClick={() => setStarted(true)}
+                className="min-h-12 rounded-md bg-primary px-7 py-3.5 text-lg font-medium text-on-primary transition hover:bg-primary-active"
+              >
+                Comenzar escenario
+              </button>
+            </div>
           </div>
         </main>
-
-        <Link to="/seccion/fisico" className={styles.backLink}>
-          ← Volver a la sección
-        </Link>
       </div>
     )
   }
