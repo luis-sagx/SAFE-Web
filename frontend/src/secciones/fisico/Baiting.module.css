@@ -764,7 +764,7 @@
 }
 
 .restartBtn:hover {
-  background: var(--color-success);
+  background: rgb(18, 83, 13);
   color: white;
   border-color: var(--color-success);
   transform: translateY(-3px) scale(1.02);

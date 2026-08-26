@@ -590,7 +590,7 @@ function Baiting() {
               </div>
 
               {showReport && resolvedCount === SCENARIOS.length && (
-                <div style={{ flex: '0 0 40%', minWidth: '0' }}>
+                <div style={{ flex: '0 0 40%', minWidth: '0', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
                   <Report resolved={resolved} onNext={handleNext} />
                 </div>
               )}
@@ -712,7 +712,7 @@ function Report({
   const canAdvance = safeCount >= minSafeRequired
 
   return (
-    <div className={styles.report} style={{ marginTop: 20, paddingTop: 18, textAlign: 'center' }}>
+    <div className={styles.report} style={{ textAlign: 'center', margin: 0, padding: 0 }}>
       <p style={{ fontSize: '2.8rem', fontWeight: 'bold', margin: '0 0 8px', color: 'var(--color-ink)' }}>
         {Math.round((safeCount / totalCount) * 100)}%
       </p>
