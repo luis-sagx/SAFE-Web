@@ -133,7 +133,7 @@ const POSITIONS: Partial<Record<ItemKey, { x: string; y: string; w: string; h: s
   sticky: { x: '51%', y: '20%', w: '9.6%', h: '12%' },
   folder: { x: '65%', y: '50%', w: '12%', h: '14%' },
   badge: { x: '24%', y: '62%', w: '5.2%', h: '12%' },
-  phone: { x: '76%', y: '40%', w: '6%', h: '23%' },
+  phone: { x: '83%', y: '40%', w: '6%', h: '23%' },
   notebook: { x: '7%', y: '43%', w: '18%', h: '17%' },
 }
 
@@ -180,7 +180,7 @@ function SlotItem({
   }
   if (itemKey === 'phone') {
     return (
-      <g className={styles.clickable} transform="translate(1520,480)" onClick={() => onToggle('phone')}>
+      <g className={styles.clickable} transform="translate(1660,480)" onClick={() => onToggle('phone')}>
         {!fixedState.phone ? (
           <g>
             <rect x="0" y="0" width="120" height="280" rx="18" fill="#1b232c" />
