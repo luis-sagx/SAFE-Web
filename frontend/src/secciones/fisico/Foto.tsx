@@ -265,7 +265,7 @@ function DeskSVG({
         <rect x="205" y="140" width="20" height="16" fill="#3a4552" />
         {!fixedState.monitor ? (
           <g>
-            <rect x="160" y="70" width="100" height="10" fill="#c0453a" opacity="0.75" />
+            <rect x="160" y="70" width="100" height="10" fill="#b4342f" opacity="0.75" />
             <rect x="160" y="86" width="80" height="8" fill="#8fa0b0" opacity="0.6" />
             <rect x="160" y="100" width="90" height="8" fill="#8fa0b0" opacity="0.6" />
             <rect x="160" y="114" width="70" height="8" fill="#8fa0b0" opacity="0.6" />
@@ -326,7 +326,7 @@ function DeskSVG({
         {!fixedState.folder ? (
           <g>
             <rect x="330" y="150" width="60" height="42" rx="2" fill="#e0d4b0" stroke="#9c8a5e" strokeWidth="1.5" />
-            <rect x="330" y="150" width="60" height="10" fill="#c0453a" opacity="0.7" />
+            <rect x="330" y="150" width="60" height="10" fill="#b4342f" opacity="0.7" />
             <text x="360" y="172" textAnchor="middle" fontFamily="'IBM Plex Mono',monospace" fontSize="7" fill="#5f5238">
               Cliente XYZ
             </text>
