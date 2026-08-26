@@ -24,13 +24,18 @@ const ESCENA: ScreenView = {
       senal: 'peligro',
     },
     {
+      etiqueta: 'Foto de identificación',
+      valor: 'Visible en el carnet',
+      senal: 'peligro',
+    },
+    {
       etiqueta: 'Nivel de acceso',
       valor: 'Nivel 3 (Acceso a áreas restringidas)',
       senal: 'peligro',
     },
   ],
   aviso:
-    'Encontraste un carnet de identificación en el piso del vestíbulo. Tiene toda la información de un empleado: nombre, número de empleado, foto y nivel de acceso.',
+    'Encontraste un carnet de identificación en el piso del vestíbulo. Tiene toda la información de un empleado: nombre, número de empleado, foto y hasta el nivel de acceso. El carnet tiene un holograma de seguridad pero sigue siendo un documento válido.',
   opciones: [
     {
       texto: 'Publicar en el chat de la empresa: "¿De quién es este carnet?"',
@@ -106,8 +111,9 @@ const CONTEXTO: Contexto = {
   ahora: (
     <>
       <strong>Mañana temprano.</strong> Mientras llegas a la oficina por la entrada del vestíbulo, ves un carnet tirado
-      en el piso. Lo levantas y ves que tiene toda la información: nombre del empleado, su código de empleado, su
-      foto, y su nivel de acceso.
+      en el piso. Lo levantas y ves que tiene toda la información: nombre del empleado (Sergio Martín), su código de
+      empleado, su foto, y su nivel de acceso (Nivel 3 — acceso a áreas restringidas). El carnet tiene un holograma que
+      indica que es válido.
     </>
   ),
 }

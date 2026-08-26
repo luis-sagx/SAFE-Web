@@ -1,17 +1,8 @@
-import { useState } from 'react'
-import EscenarioLayout from '../../components/EscenarioLayout'
+import StoryEscenario, { type ScreenNode } from '../../components/StoryEscenario'
 import type { Contexto } from '../../components/ui/ContextoEscenario'
-import DeviceScreen from '../../components/ui/DeviceScreen'
+import type { Story } from '../../hooks/useStoryEngine'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
 import type { Senal } from '../../components/ui/PanelVeredicto'
-import PanelVeredicto from '../../components/ui/PanelVeredicto'
-import StoryChoices from '../../components/ui/StoryChoices'
-import Instrucciones from '../../components/ui/Instrucciones'
-import { useStoryEngine, type Story, type StoryNode } from '../../hooks/useStoryEngine'
-
-interface ScreenNode extends StoryNode {
-  view: ScreenView
-}
 
 const ESCENA: ScreenView = {
   kind: 'web',
@@ -71,7 +62,7 @@ const ESCENA: ScreenView = {
   button: '',
 }
 
-const STORY: Story<ScreenNode> = {
+export const STORY: Story<ScreenNode> = {
   n1: { kind: 'scene', view: ESCENA },
   e_entra: {
     kind: 'bad',
@@ -128,90 +119,26 @@ const CONTEXTO: Contexto = {
 }
 
 function PuertaAbierta() {
-  const engine = useStoryEngine(STORY, 'n1', 'fisico/puerta-abierta')
-  const [tocoEnVacio, setTocoEnVacio] = useState(false)
-
-  const onHotspot = (event: React.MouseEvent) => {
-    if (engine.isEnding) return
-
-    const objetivo = (event.target as HTMLElement).closest<HTMLElement>('[data-hotspot-goto]')
-    if (!objetivo) {
-      if (!engine.node.choices) {
-        setTocoEnVacio(true)
-      }
-      return
-    }
-
-    setTocoEnVacio(false)
-    const goto = objetivo.dataset.hotspotGoto
-    if (goto && goto !== engine.current) {
-      engine.choose(goto, objetivo.dataset.hotspotLabel)
-    }
-  }
-
-  const pantalla = (
-    <div
-      id="pantalla-escenario"
-      onClick={onHotspot}
-      style={{ width: '100%', height: '100%' }}
-    >
-      <DeviceScreen view={engine.node.view} />
-    </div>
-  )
-
-  const decision = engine.isEnding ? (
-    <PanelVeredicto
-      escenarioId="fisico/puerta-abierta"
-      node={engine.node}
-      senales={SENALES}
-      regla='Regla de oro: <b>si ves un área restringida abierta sin seguro, ciérrala e inmediatamente reporta a Seguridad</b>. No entres, no lleves a otros, no dejes que se exponga más tiempo.'
-      restartLabel="↻ Repetir el escenario"
-      onRestart={() => {
-        engine.restart()
-        setTocoEnVacio(false)
-      }}
-      contenedorId="pantalla-escenario"
-    />
-  ) : (
-    <div className="grid gap-3">
-      <p className="text-lg font-semibold text-ink">¿Qué haces?</p>
-      {engine.node.choices ? (
-        <StoryChoices choices={engine.node.choices} onChoose={engine.choose} />
-      ) : (
-        <Instrucciones pista={
-          <p>
-            Cierra la puerta y reporta inmediatamente. No entres, no lleves a otros, no ignores el riesgo. Las áreas
-            restringidas deben estar seguras siempre.
-          </p>
-        } fallo={tocoEnVacio}>
-          <p className="text-lg leading-relaxed text-body">
-            La puerta de un área restringida quedó abierta sin seguro. <strong>¿Qué haces?</strong> Elige tu acción.
-          </p>
-        </Instrucciones>
-      )}
-    </div>
-  )
-
   return (
-    <EscenarioLayout
+    <StoryEscenario
       escenarioId="fisico/puerta-abierta"
       resumen={RESUMEN}
       contexto={CONTEXTO}
-      nota={
-        <p>
-          Vas a ver una pantalla que simula una situación en tu oficina. Puedes actuar sobre ella como lo harías en
-          la vida real.
+      story={STORY}
+      senales={SENALES}
+      rule='Regla de oro: <b>si ves un área restringida abierta sin seguro, ciérrala e inmediatamente reporta a Seguridad</b>. No entres, no lleves a otros, no dejes que se exponga más tiempo.'
+      restartLabel="↻ Repetir el escenario"
+      instruccion={
+        <p className="text-lg leading-relaxed text-body">
+          La puerta de un área restringida quedó abierta sin seguro. <strong>¿Qué haces?</strong> Elige tu acción.
         </p>
       }
-      identidad={[]}
-      pantalla={pantalla}
-      decision={decision}
-      resultado={engine.resultado}
-      onEmpezar={() => {
-        engine.restart()
-        setTocoEnVacio(false)
-      }}
-      dispositivo="escritorio"
+      pista={
+        <p>
+          Cierra la puerta y reporta inmediatamente. No entres, no lleves a otros, no ignores el riesgo. Las áreas
+          restringidas deben estar seguras siempre.
+        </p>
+      }
     />
   )
 }
