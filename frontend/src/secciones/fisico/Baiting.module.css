@@ -1,6 +1,6 @@
 .app {
   width: 100%;
-  max-width: 760px;
+  max-width: 1200px;
   min-height: 100vh;
   margin: 0 auto;
   display: flex;
@@ -82,6 +82,7 @@
 
 .mapWrap {
   width: 100%;
+  min-height: 450px;
   border: 1px solid var(--color-hairline);
   border-radius: 8px;
   overflow: hidden;
@@ -92,6 +93,7 @@
   display: block;
   width: 100%;
   height: auto;
+  min-height: 450px;
 }
 
 .roomLabel {
@@ -344,7 +346,7 @@
 
 .sceneCanvas {
   width: 100%;
-  min-height: 380px;
+  min-height: 520px;
   border-radius: 8px;
   overflow: hidden;
   box-shadow: var(--shadow-card);
@@ -358,7 +360,7 @@
   display: block;
   width: 100%;
   height: auto;
-  min-height: 360px;
+  min-height: 500px;
   background: var(--color-surface-strong);
 }
 
