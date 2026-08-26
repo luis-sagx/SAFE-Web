@@ -17,6 +17,7 @@ const UMBRALES_ESPERADOS: Record<string, number> = {
   vishing: 6,
   suplantacion: 6,
   estafa: 6,
+  fisico: 6,
 }
 
 describe('catálogo de escenarios', () => {
@@ -57,8 +58,8 @@ describe('catálogo de escenarios', () => {
 
   // El MVP empieza con phishing y suma smishing y vishing. Las otras secciones
   // se quedan declaradas pero sin escenarios, y Dashboard.tsx las marca
-  // "Pronto". Es un estado deliberado, no un olvido.
-  it('phishing, smishing, vishing, suplantación y estafa son las secciones activas', () => {
+  // "Pronto". Es un estado deliberado, no un olvido. Riesgo físico se desbloqueó después.
+  it('phishing, smishing, vishing, suplantación, estafa y riesgo físico son las secciones activas', () => {
     const activas = SECCIONES.filter((seccion) => escenariosDeSeccion(seccion.id).length > 0)
     expect(activas.map((seccion) => seccion.id)).toEqual([
       'phishing',
@@ -66,6 +67,7 @@ describe('catálogo de escenarios', () => {
       'vishing',
       'suplantacion',
       'estafa',
+      'fisico',
     ])
   })
 
@@ -119,6 +121,16 @@ describe('catálogo de escenarios', () => {
     expect(estafa).toHaveLength(8)
     expect(estafa.filter((e) => e.naturaleza === 'fraude')).toHaveLength(6)
     expect(estafa.filter((e) => e.naturaleza === 'legitimo')).toHaveLength(2)
+  })
+
+  // Riesgo físico también sigue la misma forma: 8 escenarios con 6 de fraude y
+  // 2 legítimos (Foto para el boletín y Baiting con USB encontrado). Los dos
+  // legítimos entrenan a distinguir un acto normal de uno comprometido.
+  it('fisico tiene 8 escenarios: 6 de fraude y 2 legítimos', () => {
+    const fisico = escenariosDeSeccion('fisico')
+    expect(fisico).toHaveLength(8)
+    expect(fisico.filter((e) => e.naturaleza === 'fraude')).toHaveLength(6)
+    expect(fisico.filter((e) => e.naturaleza === 'legitimo')).toHaveLength(2)
   })
 
   // Guarda contra la regresión que tuvo la pantalla: el catálogo se redujo a 3
