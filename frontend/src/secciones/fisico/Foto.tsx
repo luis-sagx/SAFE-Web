@@ -558,33 +558,10 @@ function Foto() {
       />
 
       <main className={styles.mainArea}>
-        <p className={styles.introText}>Induplast Andina S.A. · Área administrativa</p>
-
-        <div className={styles.instructionsBox}>
-          <p className={styles.instructionsTitle}>Qué tienes que hacer</p>
-          <ul className={styles.instructionsList}>
-            <li>
-              Valeria te va a tomar una foto de tu escritorio para el boletín interno. Tienes un cronómetro corto
-              (columna "TIEMPO" arriba) antes de que se dispare.
-            </li>
-            <li>
-              Sobre el escritorio hay objetos que pueden revelar información sensible: la pantalla del computador,
-              una nota con la contraseña del wifi, una carpeta de cliente, tu gafete de acceso, el teléfono o una
-              libreta, según el nivel.
-            </li>
-            <li>
-              Haz clic sobre cada objeto de riesgo para ocultarlo o resguardarlo antes de la foto (por ejemplo:
-              bloquear la pantalla, guardar la nota, voltear el gafete). Un segundo clic lo vuelve a dejar expuesto,
-              por si te arrepientes.
-            </li>
-            <li>Objetos como la taza o la planta no son un riesgo: no necesitas hacer nada con ellos.</li>
-            <li>
-              Puedes tomar la foto antes de tiempo con el botón "Listo, tomen la foto", o esperar a que el
-              cronómetro llegue a cero (en ese momento la foto se toma tal como esté el escritorio en ese instante).
-            </li>
-            <li>Al final de cada nivel verás qué quedó expuesto en la foto y por qué es un problema. Son 3 niveles, cada uno con menos tiempo y objetos distintos.</li>
-          </ul>
-        </div>
+        <p className={styles.introText}>
+          Hola, {displayName}. Hoy es un día normal en Induplast Andina S.A. — Valeria de Comunicaciones va a pasar
+          por tu área para tomar fotos para el boletín interno.
+        </p>
 
         <p className={styles.npcLine}>
           {finished ? 'Valeria: "¡Listo, gracias! Ya la subo al boletín."' : level.npc}
