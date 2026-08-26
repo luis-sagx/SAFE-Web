@@ -1,4 +1,5 @@
 import { useState, type ReactElement } from 'react'
+import { useNavigate } from 'react-router'
 import EscenarioLayout from '../../components/EscenarioLayout'
 import FlashOverlay from '../../components/ui/FlashOverlay'
 import { useFlashTransition } from '../../hooks/useFlashTransition'
@@ -343,6 +344,7 @@ function shuffled<T>(arr: T[]): T[] {
 }
 
 function Baiting() {
+  const navigate = useNavigate()
   const run = useScenarioRun('fisico/baiting')
 
   const [view, setView] = useState<'map' | 'scene'>('map')
@@ -370,6 +372,10 @@ function Baiting() {
     setShuffledChoices([])
     setRevealPending(false)
     setShowReport(false)
+  }
+
+  function handleNext() {
+    navigate('/seccion/fisico/documento-abierto')
   }
 
   function enterScene(idx: number) {
@@ -582,18 +588,10 @@ function Baiting() {
               <span className={styles.progressText}>
                 Casos revisados: {resolvedCount}/{SCENARIOS.length}
               </span>
-              <button
-                type="button"
-                className={styles.reportBtn}
-                disabled={resolvedCount < SCENARIOS.length}
-                onClick={() => setShowReport(true)}
-              >
-                Ver informe final
-              </button>
             </div>
 
             {showReport && resolvedCount === SCENARIOS.length && (
-              <Report resolved={resolved} pct={pct} onRestart={handleRestart} />
+              <Report resolved={resolved} pct={pct} onRestart={handleRestart} onNext={handleNext} />
             )}
           </div>
         )}
@@ -704,12 +702,18 @@ function Report({
   resolved,
   pct,
   onRestart,
+  onNext,
 }: {
   resolved: Record<number, Resolved>
   pct: number
   onRestart: () => void
+  onNext: () => void
 }) {
   const anyDanger = Object.values(resolved).some((r) => r.level === 'danger')
+  const safeCount = Object.values(resolved).filter((r) => r.level === 'safe').length
+  const totalCount = Object.keys(resolved).length
+  const minSafeRequired = Math.ceil(totalCount * 0.7)
+  const canAdvance = safeCount >= minSafeRequired
   let level: Level
   let title: string
   let summary: string
@@ -745,9 +749,24 @@ function Report({
           </div>
         ))}
       </div>
-      <button type="button" className={styles.restartBtn} onClick={onRestart}>
-        Reiniciar simulación
-      </button>
+      <div style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
+        <button type="button" className={styles.restartBtn} onClick={onRestart} style={{ flex: 1 }}>
+          Reiniciar simulación
+        </button>
+        <button
+          type="button"
+          className={styles.restartBtn}
+          onClick={onNext}
+          disabled={!canAdvance}
+          style={{
+            flex: 1,
+            opacity: canAdvance ? 1 : 0.5,
+            cursor: canAdvance ? 'pointer' : 'not-allowed',
+          }}
+        >
+          {canAdvance ? '→ Siguiente escenario' : `Necesitas ${minSafeRequired} aciertos (tienes ${safeCount})`}
+        </button>
+      </div>
     </div>
   )
 }
