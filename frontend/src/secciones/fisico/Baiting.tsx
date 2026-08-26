@@ -423,7 +423,7 @@ function Baiting() {
     return (
       <div className={`${dossierTheme.dossierTheme} ${styles.app}`}>
         <DossierHeader
-          caseLabel="CASO #0472"
+          caseLabel="RIESGO FÍSICO"
           secondTab="INTRODUCCIÓN"
           riskLabel="RIESGO"
           gaugePercent={0}
@@ -481,7 +481,7 @@ function Baiting() {
   return (
     <div className={`${dossierTheme.dossierTheme} ${styles.app}`}>
       <DossierHeader
-        caseLabel="CASO #0472"
+        caseLabel="RIESGO FÍSICO"
         secondTab="TRAMPA USB"
         riskLabel="NIVEL DE RIESGO"
         gaugePercent={pct}
