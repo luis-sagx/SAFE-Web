@@ -671,9 +671,11 @@
 .report {
   width: 100%;
   background: transparent;
-  padding: 20px 0;
-  border-top: 1px dashed var(--color-hairline);
-  margin-top: 20px;
+  padding: 16px 0 0;
+  border-top: none;
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
 }
 
 .reportStamp {
@@ -745,7 +747,7 @@
 }
 
 .restartBtn {
-  margin-top: 22px;
+  margin-top: 12px;
   font-family: var(--font-sans);
   font-size: 0.85rem;
   letter-spacing: 0.05em;
@@ -764,6 +766,8 @@
 .restartBtn:hover {
   background: var(--color-ink);
   color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 @media (max-width: 480px) {
