@@ -3,11 +3,13 @@ import { Link } from 'react-router'
 import { useAuth } from '../../context/AuthContext'
 import StoryEscenario, { type ScreenNode } from '../../components/StoryEscenario'
 import type { Contexto } from '../../components/ui/ContextoEscenario'
+import AppHeader from '../../components/AppHeader'
+import InfoLink from '../../components/InfoLink'
+import ContextoEscenario from '../../components/ui/ContextoEscenario'
+import { getSeccion } from '../../data/catalogo'
 import type { Story } from '../../hooks/useStoryEngine'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
 import type { Senal } from '../../components/ui/PanelVeredicto'
-import dossierTheme from '../../styles/dossier-theme.module.css'
-import styles from './Foto.module.css'
 
 const ESCENA: ScreenView = {
   kind: 'web',
@@ -123,40 +125,44 @@ function PantallaDesbloqueada() {
   const [started, setStarted] = useState(false)
 
   if (!started) {
+    const seccion = getSeccion('fisico')
+    const volver = (
+      <Link to="/seccion/fisico" className="text-base font-medium text-link underline">
+        ← Volver a la sección
+      </Link>
+    )
+
     return (
-      <div className={`${dossierTheme.dossierTheme} ${styles.app}`}>
-        <main className={styles.mainArea}>
-          <p className={styles.introText}>
-            Hola, {displayName}. Esto es lo que te está pasando:
-          </p>
+      <div className="min-h-dvh bg-canvas">
+        <AppHeader>
+          {volver}
+          <InfoLink />
+        </AppHeader>
 
-          <div className={styles.instructionsBox}>
-            <p className={styles.instructionsTitle}>Antes de esto</p>
-            <p className={styles.summary}>
-              Trabajas en una oficina donde cada persona es responsable de bloquear su pantalla cuando se aleja del escritorio.
-              Es una norma básica de seguridad: nunca debes dejar una máquina desbloqueada, aunque solo sea por un momento.
+        <main className="mx-auto max-w-6xl px-6 py-12">
+          <p className="text-base font-medium text-muted">{seccion?.canal}</p>
+          <h1 className="mt-2 text-4xl font-semibold tracking-tight text-ink">Pantalla desbloqueada</h1>
+
+          <div className="mt-8">
+            <p className="text-lg leading-relaxed text-ink">
+              Hola, <strong className="font-semibold">{displayName}</strong>. Esto es lo que te está pasando:
             </p>
-          </div>
 
-          <div className={styles.instructionsBox}>
-            <p className={styles.instructionsTitle}>Lo que acaba de pasar</p>
-            <p className={styles.summary}>
-              <strong>Pausa de café.</strong> Acabas de llegar a tu escritorio después del café y ves algo preocupante: la pantalla de tu compañero
-              quedó completamente desbloqueada. Tiene abiertos tres sistemas: el sistema de nómina (con salarios de todo el equipo), su correo con
-              proyectos confidenciales, y la app de banca para hacer transferencias desde el área contable.
-            </p>
-          </div>
+            <div className="mt-5">
+              <ContextoEscenario contexto={CONTEXTO} />
+            </div>
 
-          <div className={styles.actionRow}>
-            <button type="button" className={styles.snapBtn} onClick={() => setStarted(true)}>
-              Comenzar escenario →
-            </button>
+            <div className="mt-8 flex gap-4">
+              <button
+                type="button"
+                onClick={() => setStarted(true)}
+                className="min-h-12 rounded-md bg-primary px-7 py-3.5 text-lg font-medium text-on-primary transition hover:bg-primary-active"
+              >
+                Comenzar escenario
+              </button>
+            </div>
           </div>
         </main>
-
-        <Link to="/seccion/fisico" className={styles.backLink}>
-          ← Volver a la sección
-        </Link>
       </div>
     )
   }

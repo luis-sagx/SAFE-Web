@@ -5,6 +5,11 @@ import DossierHeader from '../../components/ui/DossierHeader'
 import FlashOverlay from '../../components/ui/FlashOverlay'
 import { useFlashTransition } from '../../hooks/useFlashTransition'
 import { useScenarioRun } from '../../hooks/useScenarioRun'
+import AppHeader from '../../components/AppHeader'
+import InfoLink from '../../components/InfoLink'
+import ContextoEscenario from '../../components/ui/ContextoEscenario'
+import type { Contexto } from '../../components/ui/ContextoEscenario'
+import { getSeccion } from '../../data/catalogo'
 import dossierTheme from '../../styles/dossier-theme.module.css'
 import styles from './Foto.module.css'
 
@@ -132,43 +137,64 @@ function DocumentoAbierto() {
     setResult(null)
   }
 
+  const contexto: Contexto = {
+    antes: (
+      <>
+        Trabajas en una oficina donde hay documentos clasificados y confidenciales en cada escritorio. Tus
+        compañeros, como tú, son responsables de proteger estos documentos cuando se alejan de sus puestos.
+        El pasillo por donde caminas frecuentemente tiene varios escritorios a la vista.
+      </>
+    ),
+    ahora: (
+      <>
+        <strong>Esta tarde, pausa de café.</strong> Pasas por el escritorio de tu compañero Andrés cuando se
+        levanta diciendo {'"'}me voy por café, regreso en 15 minutos{'"'}. Mientras se va, ves que dejó su
+        escritorio desatendido con tres tipos de documentos visibles: evaluaciones de desempeño de tu equipo,
+        datos de clientes con montos de contrato, y una nota adhesiva con la contraseña del WiFi de la
+        oficina.
+      </>
+    ),
+  }
+
   if (!started) {
+    const seccion = getSeccion('fisico')
+    const volver = (
+      <Link to="/seccion/fisico" className="text-base font-medium text-link underline">
+        ← Volver a la sección
+      </Link>
+    )
+
     return (
-      <div className={`${dossierTheme.dossierTheme} ${styles.app}`}>
-        <main className={styles.mainArea}>
-          <p className={styles.introText}>
-            Hola, {displayName}. Esto es lo que te está pasando:
-          </p>
+      <div className="min-h-dvh bg-canvas">
+        <AppHeader>
+          {volver}
+          <InfoLink />
+        </AppHeader>
 
-          <div className={styles.instructionsBox}>
-            <p className={styles.instructionsTitle}>Antes de esto</p>
-            <p className={styles.summary}>
-              Trabajas en una oficina donde hay documentos clasificados y confidenciales en cada escritorio. Tus compañeros,
-              como tú, son responsables de proteger estos documentos cuando se alejan de sus puestos. El pasillo por donde
-              caminas frecuentemente tiene varios escritorios a la vista.
+        <main className="mx-auto max-w-6xl px-6 py-12">
+          <p className="text-base font-medium text-muted">{seccion?.canal}</p>
+          <h1 className="mt-2 text-4xl font-semibold tracking-tight text-ink">Documento abierto</h1>
+
+          <div className="mt-8">
+            <p className="text-lg leading-relaxed text-ink">
+              Hola, <strong className="font-semibold">{displayName}</strong>. Esto es lo que te está pasando:
             </p>
-          </div>
 
-          <div className={styles.instructionsBox}>
-            <p className={styles.instructionsTitle}>Lo que acaba de pasar</p>
-            <p className={styles.summary}>
-              <strong>Esta tarde, pausa de café.</strong> Pasas por el escritorio de tu compañero Andrés cuando se levanta diciendo
-              {'"'}me voy por café, regreso en 15 minutos{'"'}. Mientras se va, ves que dejó su escritorio desatendido con tres tipos
-              de documentos visibles: evaluaciones de desempeño de tu equipo, datos de clientes con montos de contrato, y una nota
-              adhesiva con la contraseña del WiFi de la oficina.
-            </p>
-          </div>
+            <div className="mt-5">
+              <ContextoEscenario contexto={contexto} />
+            </div>
 
-          <div className={styles.actionRow}>
-            <button type="button" className={styles.snapBtn} onClick={() => setStarted(true)}>
-              Comenzar escenario →
-            </button>
+            <div className="mt-8 flex gap-4">
+              <button
+                type="button"
+                onClick={() => setStarted(true)}
+                className="min-h-12 rounded-md bg-primary px-7 py-3.5 text-lg font-medium text-on-primary transition hover:bg-primary-active"
+              >
+                Comenzar escenario
+              </button>
+            </div>
           </div>
         </main>
-
-        <Link to="/seccion/fisico" className={styles.backLink}>
-          ← Volver a la sección
-        </Link>
       </div>
     )
   }
