@@ -781,7 +781,7 @@ const BASE: EscenarioBase[] = [
     descripcion:
       'Una escena cotidiana expone información sensible visible en el puesto de trabajo.',
     version: 1,
-    naturaleza: 'fraude',
+    naturaleza: 'legitimo',
     dificultad: 2,
     espeja: null,
     Component: lazy(() => import('../secciones/fisico/Foto')),
@@ -793,7 +793,7 @@ const BASE: EscenarioBase[] = [
     descripcion:
       'Debes identificar señales de riesgo físico y digital antes de conectar un dispositivo desconocido.',
     version: 1,
-    naturaleza: 'fraude',
+    naturaleza: 'legitimo',
     dificultad: 2,
     espeja: null,
     Component: lazy(() => import('../secciones/fisico/Baiting')),
@@ -869,18 +869,6 @@ const BASE: EscenarioBase[] = [
     dificultad: 1,
     espeja: null,
     Component: lazy(() => import('../secciones/fisico/BasuraConfidencial')),
-  },
-  {
-    seccionId: 'fisico',
-    escenarioId: 'correo-fisico',
-    titulo: 'Correo de remitente desconocido',
-    descripcion:
-      'Recibes un paquete en la oficina de alguien desconocido que pide que lo abras urgentemente.',
-    version: 1,
-    naturaleza: 'fraude',
-    dificultad: 2,
-    espeja: null,
-    Component: lazy(() => import('../secciones/fisico/CorreoFisico')),
   },
 ];
 
