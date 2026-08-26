@@ -356,7 +356,7 @@
 
 .sceneCanvas {
   width: 100%;
-  height: 500px;
+  height: 700px;
   border-radius: 8px;
   overflow: hidden;
   box-shadow: var(--shadow-card);
@@ -364,7 +364,7 @@
   align-items: center;
   justify-content: center;
   grid-column: 2;
-  grid-row: 4;
+  grid-row: 4 / 6;
 }
 
 .sceneCanvas svg {
@@ -389,7 +389,7 @@
   line-height: 1.55;
   margin: 0 0 8px;
   color: var(--color-body);
-  grid-column: 2;
+  grid-column: 1;
   grid-row: 5;
 }
 
