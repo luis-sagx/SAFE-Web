@@ -109,14 +109,14 @@
 .wall {
   fill: none;
   stroke: var(--color-muted);
-  stroke-width: 3;
+  stroke-width: 4.5;
   pointer-events: none;
 }
 
 .furniture {
   fill: none;
   stroke: var(--color-hairline-strong);
-  stroke-width: 1.6;
+  stroke-width: 2.4;
   pointer-events: none;
 }
 
@@ -134,8 +134,8 @@
 
 .lotLine {
   stroke: var(--color-hairline-strong);
-  stroke-width: 2;
-  stroke-dasharray: 8 6;
+  stroke-width: 3;
+  stroke-dasharray: 12 9;
   pointer-events: none;
 }
 

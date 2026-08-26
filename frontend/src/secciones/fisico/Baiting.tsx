@@ -457,7 +457,7 @@ function Baiting() {
             <p className={styles.mapCaption}>Plano, Oficinas administrativas · Induplast Andina S.A. · entra a cada lugar</p>
 
             <div className={styles.mapWrap}>
-              <svg className={styles.officeMap} viewBox="0 0 800 560">
+              <svg className={styles.officeMap} viewBox="0 0 1200 840">
                 {ROOM_ZONES.map((zone) => (
                   <rect
                     key={zone.idx}
