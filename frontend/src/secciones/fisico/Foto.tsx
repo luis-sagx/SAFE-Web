@@ -256,36 +256,36 @@ function DeskSVG({
   tooltip: Tooltip | null
 }) {
   return (
-    <svg viewBox="0 0 1400 840">
+    <svg viewBox="0 0 2000 1200">
       <defs>
         <linearGradient id="deskGradient" x1="0%" y1="0%" x2="0%" y2="100%">
           <stop offset="0%" stopColor="#f5f7f9" />
           <stop offset="100%" stopColor="#eef1f5" />
         </linearGradient>
       </defs>
-      <rect width="1400" height="840" fill="url(#deskGradient)" />
-      <rect y="168" width="1400" height="28" fill="#d9dfe5" />
-      <rect x="56" y="532" width="1288" height="56" fill="#d4b896" />
-      <rect x="56" y="476" width="1288" height="56" fill="#e0c4a0" />
+      <rect width="2000" height="1200" fill="url(#deskGradient)" />
+      <rect y="240" width="2000" height="40" fill="#d9dfe5" />
+      <rect x="80" y="760" width="1840" height="80" fill="#d4b896" />
+      <rect x="80" y="680" width="1840" height="80" fill="#e0c4a0" />
 
       <g className={styles.clickable} onClick={() => onToggle('monitor')}>
-        <rect x="420" y="168" width="336" height="224" rx="11" fill="#1b232c" />
-        <rect x="574" y="392" width="56" height="45" fill="#3a4552" />
+        <rect x="600" y="240" width="480" height="320" rx="16" fill="#1b232c" />
+        <rect x="820" y="560" width="80" height="64" fill="#3a4552" />
         {!fixedState.monitor ? (
           <g>
-            <rect x="448" y="196" width="280" height="28" fill="#b4342f" opacity="0.75" />
-            <rect x="448" y="241" width="224" height="22" fill="#8fa0b0" opacity="0.6" />
-            <rect x="448" y="280" width="252" height="22" fill="#8fa0b0" opacity="0.6" />
-            <rect x="448" y="319" width="196" height="22" fill="#8fa0b0" opacity="0.6" />
-            <text x="588" y="369" textAnchor="middle" fontFamily="'IBM Plex Mono',monospace" fontSize="22" fill="#e8b9b3">
+            <rect x="640" y="280" width="400" height="40" fill="#b4342f" opacity="0.75" />
+            <rect x="640" y="345" width="320" height="32" fill="#8fa0b0" opacity="0.6" />
+            <rect x="640" y="400" width="360" height="32" fill="#8fa0b0" opacity="0.6" />
+            <rect x="640" y="456" width="280" height="32" fill="#8fa0b0" opacity="0.6" />
+            <text x="840" y="528" textAnchor="middle" fontFamily="'IBM Plex Mono',monospace" fontSize="32" fill="#e8b9b3">
               NÓMINA_2026.xlsx
             </text>
           </g>
         ) : (
           <g>
-            <rect x="448" y="196" width="280" height="168" fill="#05080b" />
-            <circle cx="588" cy="280" r="28" fill="none" stroke="#8fa0b0" strokeWidth="7" />
-            <rect x="574" y="280" width="28" height="22" fill="#8fa0b0" />
+            <rect x="640" y="280" width="400" height="240" fill="#05080b" />
+            <circle cx="840" cy="400" r="40" fill="none" stroke="#8fa0b0" strokeWidth="10" />
+            <rect x="820" y="400" width="40" height="32" fill="#8fa0b0" />
           </g>
         )}
       </g>
@@ -294,35 +294,35 @@ function DeskSVG({
         {!fixedState.sticky && (
           <g>
             <rect
-              x="717"
-              y="168"
-              width="134"
-              height="101"
+              x="1024"
+              y="240"
+              width="192"
+              height="144"
               fill="#f4d94a"
               stroke="#c9ad1f"
-              strokeWidth="3"
-              transform="rotate(6 784 219)"
+              strokeWidth="4"
+              transform="rotate(6 1120 312)"
             />
             <text
-              x="784"
-              y="201"
+              x="1120"
+              y="287"
               textAnchor="middle"
               fontFamily="'IBM Plex Mono',monospace"
-              fontSize="19"
+              fontSize="27"
               fill="#4a3d0d"
-              transform="rotate(6 784 219)"
+              transform="rotate(6 1120 312)"
             >
               Clave wifi:
             </text>
             <text
-              x="784"
-              y="232"
+              x="1120"
+              y="331"
               textAnchor="middle"
               fontFamily="'IBM Plex Mono',monospace"
               fontWeight="600"
-              fontSize="21"
+              fontSize="30"
               fill="#2b2308"
-              transform="rotate(6 784 219)"
+              transform="rotate(6 1120 312)"
             >
               Of2026*Net!
             </text>
@@ -333,35 +333,35 @@ function DeskSVG({
       <g className={styles.clickable} onClick={() => onToggle('folder')}>
         {!fixedState.folder ? (
           <g>
-            <rect x="924" y="420" width="168" height="118" rx="6" fill="#e0d4b0" stroke="#9c8a5e" strokeWidth="4" />
-            <rect x="924" y="420" width="168" height="28" fill="#b4342f" opacity="0.7" />
-            <text x="1008" y="481" textAnchor="middle" fontFamily="'IBM Plex Mono',monospace" fontSize="22" fill="#5f5238">
+            <rect x="1320" y="600" width="240" height="168" rx="8" fill="#e0d4b0" stroke="#9c8a5e" strokeWidth="5" />
+            <rect x="1320" y="600" width="240" height="40" fill="#b4342f" opacity="0.7" />
+            <text x="1440" y="688" textAnchor="middle" fontFamily="'IBM Plex Mono',monospace" fontSize="32" fill="#5f5238">
               Cliente XYZ
             </text>
           </g>
         ) : (
           <g>
-            <rect x="924" y="492" width="168" height="45" rx="6" fill="#cfae7c" />
-            <text x="1008" y="523" textAnchor="middle" fontFamily="'IBM Plex Mono',monospace" fontSize="22" fill="#5f4a2a">
+            <rect x="1320" y="704" width="240" height="64" rx="8" fill="#cfae7c" />
+            <text x="1440" y="747" textAnchor="middle" fontFamily="'IBM Plex Mono',monospace" fontSize="32" fill="#5f4a2a">
               guardado
             </text>
           </g>
         )}
       </g>
 
-      <g className={styles.clickable} transform="translate(336,518)" onClick={() => onToggle('badge')}>
+      <g className={styles.clickable} transform="translate(480,740)" onClick={() => onToggle('badge')}>
         {!fixedState.badge ? (
           <g>
-            <rect x="0" y="0" width="73" height="101" rx="8" fill="#fff9ec" stroke="#9c8a5e" strokeWidth="4" />
-            <rect x="14" y="14" width="45" height="28" fill="#2c3e50" />
-            <text x="36" y="61" textAnchor="middle" fontFamily="'IBM Plex Mono',monospace" fontSize="14" fill="#1b232c">
+            <rect x="0" y="0" width="104" height="144" rx="11" fill="#fff9ec" stroke="#9c8a5e" strokeWidth="6" />
+            <rect x="20" y="20" width="64" height="40" fill="#2c3e50" />
+            <text x="52" y="87" textAnchor="middle" fontFamily="'IBM Plex Mono',monospace" fontSize="20" fill="#1b232c">
               ID 04521
             </text>
-            <rect x="14" y="73" width="45" height="8" fill="#1b232c" />
-            <rect x="14" y="87" width="45" height="8" fill="#1b232c" />
+            <rect x="20" y="104" width="64" height="12" fill="#1b232c" />
+            <rect x="20" y="124" width="64" height="12" fill="#1b232c" />
           </g>
         ) : (
-          <rect x="0" y="0" width="73" height="101" rx="8" fill="#c7bda1" stroke="#9c8a5e" strokeWidth="4" />
+          <rect x="0" y="0" width="104" height="144" rx="11" fill="#c7bda1" stroke="#9c8a5e" strokeWidth="6" />
         )}
       </g>
 
