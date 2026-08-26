@@ -407,21 +407,21 @@ function Baiting() {
     setRevealPending(true)
     run.recordDecision({ caso: activeIdx, nivel: choice.level, riesgo: choice.risk })
 
-    if (Object.keys(siguiente).length === SCENARIOS.length) {
-      const niveles = Object.values(siguiente).map((r) => r.level)
-      void run.finish({
-        endingId: niveles.join('-'),
-        outcome: niveles.includes('danger')
-          ? 'INCORRECTO'
-          : niveles.includes('warn')
-            ? 'PARCIAL'
-            : 'CORRECTO',
-      })
-      setShowReport(true)
-    }
-
     stampFlash.trigger(() => {
       setRevealPending(false)
+      if (Object.keys(siguiente).length === SCENARIOS.length) {
+        const niveles = Object.values(siguiente).map((r) => r.level)
+        void run.finish({
+          endingId: niveles.join('-'),
+          outcome: niveles.includes('danger')
+            ? 'INCORRECTO'
+            : niveles.includes('warn')
+              ? 'PARCIAL'
+              : 'CORRECTO',
+        })
+        setShowReport(true)
+        setView('map')
+      }
     }, 750)
   }
 
