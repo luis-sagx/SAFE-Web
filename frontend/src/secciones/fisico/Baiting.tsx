@@ -712,24 +712,25 @@ function Report({
   const canAdvance = safeCount >= minSafeRequired
 
   return (
-    <div className={styles.report} style={{ marginTop: 20, paddingTop: 18 }}>
-      <p className={styles.summary} style={{ fontSize: '1.2rem', marginBottom: '24px' }}>
-        <strong>Aciertos: {safeCount}/{totalCount}</strong> ({Math.round((safeCount / totalCount) * 100)}%)
+    <div className={styles.report} style={{ marginTop: 20, paddingTop: 18, textAlign: 'center' }}>
+      <p style={{ fontSize: '2.8rem', fontWeight: 'bold', margin: '0 0 8px', color: 'var(--color-ink)' }}>
+        {Math.round((safeCount / totalCount) * 100)}%
       </p>
-      <div style={{ display: 'flex', gap: '12px', flexDirection: 'column' }}>
-        <button
-          type="button"
-          className={styles.restartBtn}
-          onClick={onNext}
-          disabled={!canAdvance}
-          style={{
-            opacity: canAdvance ? 1 : 0.5,
-            cursor: canAdvance ? 'pointer' : 'not-allowed',
-          }}
-        >
-          {canAdvance ? '→ Siguiente escenario' : `Necesitas ${minSafeRequired} aciertos`}
-        </button>
-      </div>
+      <p style={{ fontSize: '0.95rem', margin: '0 0 24px', color: 'var(--color-muted)' }}>
+        Aciertos: {safeCount}/{totalCount}
+      </p>
+      <button
+        type="button"
+        className={styles.restartBtn}
+        onClick={onNext}
+        disabled={!canAdvance}
+        style={{
+          opacity: canAdvance ? 1 : 0.5,
+          cursor: canAdvance ? 'pointer' : 'not-allowed',
+        }}
+      >
+        {canAdvance ? '→ Siguiente escenario' : `Necesitas ${minSafeRequired} aciertos`}
+      </button>
     </div>
   )
 }
