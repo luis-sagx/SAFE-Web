@@ -128,7 +128,7 @@
 }
 
 .lot {
-  fill: var(--color-surface-strong);
+  fill: var(--color-hairline-strong);
   pointer-events: none;
 }
 
