@@ -299,7 +299,7 @@
   display: grid;
   grid-template-columns: 350px 1fr;
   gap: 20px;
-  grid-auto-flow: dense;
+  grid-auto-flow: row;
 }
 
 @keyframes fadeIn {
@@ -323,7 +323,7 @@
   text-transform: uppercase;
   font-weight: 600;
   grid-column: 1 / -1;
-  order: -3;
+  grid-row: 1;
 }
 
 .backBtn:hover {
@@ -340,7 +340,7 @@
   padding-bottom: 10px;
   margin-bottom: 14px;
   grid-column: 1 / -1;
-  order: -2;
+  grid-row: 2;
 }
 
 .sceneLocation {
@@ -351,7 +351,7 @@
   margin: 0 0 12px;
   color: var(--color-ink);
   grid-column: 1 / -1;
-  order: -1;
+  grid-row: 3;
 }
 
 .sceneCanvas {
@@ -364,6 +364,7 @@
   align-items: center;
   justify-content: center;
   grid-column: 2;
+  grid-row: 4;
 }
 
 .sceneCanvas svg {
@@ -378,6 +379,8 @@
   font-size: 0.8rem;
   color: var(--color-muted);
   margin-bottom: 10px;
+  grid-column: 1;
+  grid-row: 4;
 }
 
 .sceneNarrative {
@@ -385,6 +388,8 @@
   line-height: 1.55;
   margin: 0 0 8px;
   color: var(--color-body);
+  grid-column: 2;
+  grid-row: 5;
 }
 
 .flashHint {
@@ -394,6 +399,8 @@
   font-size: 0.66rem;
   color: var(--color-muted);
   margin-bottom: 18px;
+  grid-column: 2;
+  grid-row: 6;
 }
 
 .sceneFlash {
@@ -431,6 +438,7 @@
   gap: 10px;
   margin-top: 4px;
   grid-column: 1;
+  grid-row: 5;
 }
 
 .choiceBtn {
@@ -462,6 +470,8 @@
 .feedbackPanel {
   margin-top: 6px;
   animation: fadeUp 0.4s ease both;
+  grid-column: 1;
+  grid-row: 5;
 }
 
 @keyframes fadeUp {
