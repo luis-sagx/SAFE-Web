@@ -425,31 +425,31 @@ function Baiting() {
         <main className={styles.mainArea}>
           <p className={styles.introText}>
             Hola, {displayName}. Hoy circulan varias historias sobre dispositivos USB de origen desconocido en la oficina.
-            Trabaja a través del plano, visita cada zona y toma decisiones sobre qué hacer si encuentras un USB o dispositivo
-            de carga sospechoso.
+            Pasarás por diferentes zonas y te encontrarás con objetos sospechosos. Debes tomar decisiones inteligentes sobre
+            qué hacer con cada uno.
           </p>
 
           <div className={styles.instructionsBox}>
             <p className={styles.instructionsTitle}>Contexto</p>
             <p className={styles.summary}>
-              Los ataques USB son simplistas pero muy efectivos: un atacante deja un USB en el estacionamiento, la sala de
-              descanso o la recepción etiquetado de forma atractiva ("nómina.xls", "bonificación", "CV adjunto") o promocional
-              ("regalo de la empresa"). Si lo enchufas, puede ejecutar malware, capturar contraseñas o instalarse sin que lo notes.
+              Los ataques USB son efectivos porque los atacantes los dejan en espacios comunes: estacionamiento, salas de descanso,
+              escritorios, recepción. Algunos están etiquetados como promocionales ("regalo de empresa") o atractivos ("nómina adjunta").
+              Otros son cables o dispositivos de carga olvidados. Si conectas un USB comprometido, puede ejecutar malware, capturar
+              contraseñas o comprometer sistemas sin que lo notes.
             </p>
             <p className={styles.summary}>
-              Trabajarás en 4 zonas diferentes, cada una con un escenario distinto. Tus decisiones determinarán el nivel de riesgo
-              acumulado en toda la sesión.
+              Tus decisiones en cada zona determinarán el nivel de riesgo acumulado. Cada acción tiene consecuencias diferentes.
             </p>
           </div>
 
           <div className={styles.instructionsBox}>
             <p className={styles.instructionsTitle}>Cómo jugar</p>
             <ul className={styles.instructionsList}>
-              <li><strong>Haz clic</strong> en las 4 zonas del plano (Estacionamiento, Sala de descanso, Escritorio, Recepción)</li>
-              <li><strong>Inspecciona</strong> el dispositivo USB tocando el destello ⚡</li>
-              <li><strong>Elige una acción</strong> — cada una tiene consecuencias diferentes</li>
-              <li><strong>Mira el resultado</strong> y cómo afecta tu medidor de riesgo</li>
-              <li><strong>Al final</strong> verás un informe con todas tus decisiones y el riesgo total</li>
+              <li><strong>Navega el plano</strong> y haz clic en las 4 zonas (Estacionamiento, Sala de descanso, Escritorio, Recepción)</li>
+              <li><strong>Inspecciona</strong> el dispositivo sospechoso tocando el destello ⚡</li>
+              <li><strong>Elige una acción</strong> — cada opción tiene un nivel de riesgo diferente</li>
+              <li><strong>Observa el resultado</strong> y cómo afecta tu medidor de riesgo acumulado</li>
+              <li><strong>Al final</strong> verás un informe detallado de tus decisiones y el riesgo total de la sesión</li>
             </ul>
           </div>
 

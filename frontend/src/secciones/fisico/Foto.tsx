@@ -496,27 +496,29 @@ function Foto() {
     return (
       <div className={`${dossierTheme.dossierTheme} ${styles.app}`}>
         <main className={styles.mainArea}>
-          <p className={styles.introText}>Induplast Andina S.A. · Área administrativa</p>
+          <p className={styles.introText}>
+            Hola, {displayName}. Hoy es un día normal en Induplast Andina S.A. — Valeria de Comunicaciones va a pasar por tu área
+            para tomar fotos para el boletín interno. Tienes que preparar tu escritorio para que no quede nada expuesto en la foto publicada.
+          </p>
 
           <div className={styles.instructionsBox}>
             <p className={styles.instructionsTitle}>Contexto</p>
-            <p className={styles.summary} style={{ fontStyle: 'italic', marginBottom: '12px' }}>
-              Hola, {displayName}. Hoy es un día normal en Induplast Andina S.A. — Valeria de Comunicaciones va a pasar por tu área
-              para tomar fotos para el boletín interno.
+            <p className={styles.summary}>
+              Tu escritorio tiene objetos que pueden revelar información sensible si quedan visibles: la pantalla del computador con datos
+              de nómina, notas adhesivas con contraseñas, carpetas con información de clientes, tu gafete de acceso, el teléfono con códigos
+              de verificación, y libretas con datos anotados. Cada uno de estos objetos debe ocultarse o guardarse antes de que Valeria dispare la foto.
             </p>
             <p className={styles.summary}>
-              En cada nivel, Valeria aparecerá con una foto diferente y menos tiempo. Tu escritorio tiene objetos que pueden revelar
-              información sensible si quedan visibles en la foto publicada: la pantalla del computador, notas con contraseñas, carpetas
-              de clientes, tu gafete de acceso, el teléfono, libretas. Debes ocultarlos o resguardarlos antes de que se dispare la foto.
+              Tu decisión en cada nivel determina cuánta información sensible queda expuesta en el boletín interno y en las redes de la empresa.
             </p>
           </div>
 
           <div className={styles.instructionsBox}>
-            <p className={styles.instructionsTitle}>Qué aprenderás</p>
+            <p className={styles.instructionsTitle}>Cómo jugar</p>
             <ul className={styles.instructionsList}>
-              <li><strong>Nivel 1 (20s):</strong> Escritorio con objetos básicos. Tiempo generoso.</li>
-              <li><strong>Nivel 2 (16s):</strong> Cierre de mes. Menos tiempo, más objetos.</li>
-              <li><strong>Nivel 3 (12s):</strong> Reunión urgente. Máxima dificultad.</li>
+              <li><strong>Nivel 1 (20s):</strong> Escritorio con objetos básicos. Tiempo generoso para prepararse.</li>
+              <li><strong>Nivel 2 (16s):</strong> Cierre de mes. Menos tiempo, más objetos en riesgo.</li>
+              <li><strong>Nivel 3 (12s):</strong> Reunión urgente. Máxima dificultad, presión de tiempo.</li>
             </ul>
           </div>
 
