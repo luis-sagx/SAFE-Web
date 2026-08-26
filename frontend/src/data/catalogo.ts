@@ -793,7 +793,7 @@ const BASE: EscenarioBase[] = [
     descripcion:
       'Encuentras un USB anónimo en una zona común con una etiqueta que atrae la atención.',
     version: 1,
-    naturaleza: 'fraude',
+    naturaleza: 'legitimo',
     dificultad: 2,
     espeja: null,
     Component: lazy(() => import('../secciones/fisico/TrampaUSB')),
