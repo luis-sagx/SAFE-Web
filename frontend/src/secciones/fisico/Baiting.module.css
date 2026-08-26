@@ -302,6 +302,12 @@
   grid-auto-flow: row;
   grid-auto-rows: auto;
   align-items: start;
+  max-height: calc(100vh - 200px);
+}
+
+.sceneView > :nth-child(n + 4) {
+  overflow-y: auto;
+  max-height: calc(100vh - 300px);
 }
 
 @keyframes fadeIn {
@@ -358,7 +364,7 @@
 
 .sceneCanvas {
   width: 100%;
-  height: 500px;
+  height: 600px;
   border-radius: 8px;
   overflow: hidden;
   box-shadow: var(--shadow-card);
@@ -377,12 +383,7 @@
 }
 
 .sceneObject {
-  text-align: center;
-  font-size: 0.8rem;
-  color: var(--color-muted);
-  margin-bottom: 10px;
-  grid-column: 2;
-  grid-row: 5;
+  display: none;
 }
 
 .sceneNarrative {
