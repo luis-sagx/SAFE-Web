@@ -239,17 +239,17 @@ function DocumentoAbierto() {
                       style={{ cursor: 'pointer' }}
                       filter="url(#docShadow)"
                     >
-                      <rect x="60" y="80" width="140" height="100" rx="2" fill="#f5f5f5" stroke="#999" strokeWidth="1.5" />
-                      <rect x="65" y="85" width="130" height="8" fill="#006837" opacity="0.9" />
-                      <text x="75" y="102" fontFamily="Inter, sans-serif" fontSize="11" fontWeight="700" fill="#006837">
+                      <rect x="60" y="80" width="140" height="100" rx="2" fill="#fafafa" stroke="#d0d0d0" strokeWidth="1.5" />
+                      <rect x="65" y="85" width="130" height="8" fill="#60646c" opacity="0.7" />
+                      <text x="75" y="102" fontFamily="Inter, sans-serif" fontSize="11" fontWeight="600" fill="#1b232c">
                         Evaluaciones
                       </text>
-                      <text x="75" y="117" fontFamily="Inter, sans-serif" fontSize="9" fontWeight="600" fill="#60646c">
+                      <text x="75" y="117" fontFamily="Inter, sans-serif" fontSize="9" fontWeight="500" fill="#60646c">
                         de desempeño
                       </text>
-                      <line x1="65" y1="125" x2="195" y2="125" stroke="#ddd" strokeWidth="1.5" />
-                      <text x="75" y="155" fontFamily="Inter, sans-serif" fontSize="8" fontWeight="700" fill="#b4342f">
-                        🔒 CONFIDENCIAL
+                      <line x1="65" y1="125" x2="195" y2="125" stroke="#e0e0e0" strokeWidth="1" />
+                      <text x="75" y="155" fontFamily="Inter, sans-serif" fontSize="8" fontWeight="500" fill="#60646c">
+                        CONFIDENCIAL
                       </text>
                     </g>
 
@@ -260,17 +260,17 @@ function DocumentoAbierto() {
                       style={{ cursor: 'pointer' }}
                       filter="url(#docShadow)"
                     >
-                      <rect x="230" y="70" width="140" height="110" rx="2" fill="#f5f5f5" stroke="#999" strokeWidth="1.5" transform="rotate(4 300 125)" />
-                      <rect x="235" y="75" width="130" height="8" fill="#0066bb" opacity="0.9" transform="rotate(4 300 125)" />
-                      <text x="245" y="95" fontFamily="Inter, sans-serif" fontSize="11" fontWeight="700" fill="#0066bb" transform="rotate(4 300 125)">
+                      <rect x="230" y="70" width="140" height="110" rx="2" fill="#fafafa" stroke="#d0d0d0" strokeWidth="1.5" transform="rotate(4 300 125)" />
+                      <rect x="235" y="75" width="130" height="8" fill="#60646c" opacity="0.7" transform="rotate(4 300 125)" />
+                      <text x="245" y="95" fontFamily="Inter, sans-serif" fontSize="11" fontWeight="600" fill="#1b232c" transform="rotate(4 300 125)">
                         Clientes
                       </text>
-                      <text x="245" y="112" fontFamily="Inter, sans-serif" fontSize="9" fontWeight="600" fill="#60646c" transform="rotate(4 300 125)">
+                      <text x="245" y="112" fontFamily="Inter, sans-serif" fontSize="9" fontWeight="500" fill="#60646c" transform="rotate(4 300 125)">
                         Montos contrato
                       </text>
-                      <line x1="235" y1="120" x2="365" y2="120" stroke="#ddd" strokeWidth="1.5" transform="rotate(4 300 125)" />
-                      <text x="255" y="150" fontFamily="Inter, sans-serif" fontSize="8" fontWeight="700" fill="#b4342f" transform="rotate(4 300 125)">
-                        🔒 ESTRATÉGICO
+                      <line x1="235" y1="120" x2="365" y2="120" stroke="#e0e0e0" strokeWidth="1" transform="rotate(4 300 125)" />
+                      <text x="255" y="150" fontFamily="Inter, sans-serif" fontSize="8" fontWeight="500" fill="#60646c" transform="rotate(4 300 125)">
+                        DATOS CRÍTICOS
                       </text>
                     </g>
 
@@ -281,16 +281,15 @@ function DocumentoAbierto() {
                       style={{ cursor: 'pointer' }}
                       filter="url(#docShadow)"
                     >
-                      <rect x="400" y="90" width="120" height="90" fill="#f4d94a" stroke="#b8941a" strokeWidth="1.5" transform="rotate(-8 460 135)" />
-                      <rect x="402" y="92" width="116" height="86" fill="#fef5d9" rx="1" transform="rotate(-8 460 135)" />
-                      <text x="415" y="115" fontFamily="Inter, sans-serif" fontSize="10" fontWeight="700" fill="#1b232c" transform="rotate(-8 460 135)">
-                        WiFi 📡
+                      <rect x="400" y="90" width="120" height="90" fill="#fffaf0" stroke="#d4c5a9" strokeWidth="1.5" transform="rotate(-8 460 135)" />
+                      <rect x="402" y="92" width="116" height="86" fill="#fffcf7" rx="1" transform="rotate(-8 460 135)" />
+                      <text x="415" y="115" fontFamily="Inter, sans-serif" fontSize="10" fontWeight="600" fill="#1b232c" transform="rotate(-8 460 135)">
+                        WiFi
                       </text>
-                      <text x="415" y="130" fontFamily="monospace" fontSize="8" fontWeight="600" fill="#1b232c" transform="rotate(-8 460 135)">
+                      <text x="415" y="130" fontFamily="monospace" fontSize="8" fontWeight="500" fill="#1b232c" transform="rotate(-8 460 135)">
                         Of2026*Net!
                       </text>
-                      <circle cx="465" cy="100" r="4" fill="#b4342f" opacity="0.7" />
-                      <circle cx="468" cy="103" r="2" fill="#b4342f" opacity="0.5" />
+                      <circle cx="465" cy="100" r="4" fill="#60646c" opacity="0.4" />
                     </g>
                   </svg>
                 </div>
@@ -336,26 +335,25 @@ function DocumentoAbierto() {
                 `}</style>
 
                 <div className="doc-preview" style={{ marginBottom: '20px' }}>
-                  <div className={styles.instructionsBox} style={{ background: 'linear-gradient(135deg, rgba(22, 163, 74, 0.08) 0%, rgba(22, 163, 74, 0.04) 100%)', borderLeft: '4px solid #16a34a' }}>
-                    <p className={styles.instructionsTitle} style={{ color: '#16a34a', margin: '0 0 16px 0', fontSize: '1.1rem' }}>
-                      📄 {DOCUMENTS[inspectedDoc].title}
+                  <div className={styles.instructionsBox} style={{ background: 'var(--color-surface-strong)', borderLeft: '3px solid var(--color-ink)' }}>
+                    <p className={styles.instructionsTitle} style={{ color: 'var(--color-ink)', margin: '0 0 16px 0', fontSize: '1.05rem' }}>
+                      {DOCUMENTS[inspectedDoc].title}
                     </p>
-                    <div style={{ background: 'rgba(255,255,255,0.5)', padding: '14px', borderRadius: '6px', marginBottom: '12px', borderLeft: '3px solid #006837' }}>
-                      <p className={styles.summary} style={{ margin: 0, lineHeight: '1.6', fontSize: '0.95rem' }}>
+                    <div style={{ background: 'rgba(255,255,255,0.6)', padding: '14px', borderRadius: '6px', marginBottom: '12px', borderLeft: '2px solid var(--color-ink)' }}>
+                      <p className={styles.summary} style={{ margin: 0, lineHeight: '1.6', fontSize: '0.95rem', color: 'var(--color-body)' }}>
                         {DOCUMENTS[inspectedDoc].content}
                       </p>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px', background: 'rgba(180, 52, 47, 0.08)', borderRadius: '4px', borderLeft: '3px solid #b4342f' }}>
-                      <span style={{ fontSize: '1.2rem' }}>⚠️</span>
-                      <span style={{ color: '#b4342f', fontWeight: '700', fontSize: '0.9rem' }}>
+                    <div style={{ padding: '10px', background: 'var(--color-canvas)', borderRadius: '4px', borderLeft: '2px solid var(--color-muted)' }}>
+                      <span style={{ color: 'var(--color-body)', fontWeight: '600', fontSize: '0.9rem' }}>
                         Riesgo: {DOCUMENTS[inspectedDoc].risk}
                       </span>
                     </div>
                   </div>
                 </div>
 
-                <p className={styles.introText} style={{ marginBottom: '18px', fontWeight: '600', fontSize: '1rem' }}>
-                  ⏰ Alguien podría pasar en cualquier momento... ¿Qué haces?
+                <p className={styles.introText} style={{ marginBottom: '18px', fontWeight: '500', fontSize: '0.95rem', color: 'var(--color-body)' }}>
+                  Alguien podría pasar en cualquier momento. ¿Qué haces?
                 </p>
 
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '12px', marginBottom: '20px' }}>
@@ -365,17 +363,17 @@ function DocumentoAbierto() {
                       onClick={() => handleDecision(decision.id)}
                       className="decision-btn"
                       style={{
-                        background: decision.level === 'good' ? '#16a34a' : decision.level === 'partial' ? '#ab6400' : '#b4342f',
+                        background: 'var(--color-primary)',
                         color: 'white',
-                        padding: '14px 16px',
+                        padding: '13px 16px',
                         fontSize: '0.85rem',
-                        fontWeight: '600',
+                        fontWeight: '500',
                         border: 'none',
                         borderRadius: '6px',
                         cursor: 'pointer',
                         fontFamily: 'Inter, sans-serif',
                         textAlign: 'center',
-                        lineHeight: '1.3',
+                        lineHeight: '1.4',
                       }}
                     >
                       {decision.text}
