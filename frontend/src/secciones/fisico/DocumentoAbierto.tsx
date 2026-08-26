@@ -107,6 +107,7 @@ function DocumentoAbierto() {
   const [inspectedDoc, setInspectedDoc] = useState<DocKey | null>(null)
   const [result, setResult] = useState<DecisionResult | null>(null)
   const [cameraFlash, setCameraFlash] = useState(false)
+  const stampFlash = useFlashTransition()
 
   const handleInspectDoc = (docKey: DocKey) => {
     setInspectedDoc(docKey)
@@ -128,6 +129,7 @@ function DocumentoAbierto() {
         endingId: decisionResult.level,
         outcome: decisionResult.level === 'good' ? 'CORRECTO' : decisionResult.level === 'partial' ? 'PARCIAL' : 'INCORRECTO',
       })
+      stampFlash.trigger(() => {}, 750)
     }, 250)
   }
 
@@ -228,6 +230,29 @@ function DocumentoAbierto() {
             50% { opacity: 1; }
             100% { opacity: 0; }
           }
+          @keyframes stampIn {
+            0% {
+              opacity: 0;
+              transform: scale(3.2) rotate(-16deg);
+            }
+            35% {
+              opacity: 1;
+              transform: scale(0.92) rotate(-11deg);
+            }
+            48% {
+              transform: scale(1.06) rotate(-11deg);
+            }
+            62% {
+              transform: scale(1) rotate(-11deg);
+            }
+            82% {
+              opacity: 1;
+            }
+            100% {
+              opacity: 0;
+              transform: scale(1) rotate(-11deg);
+            }
+          }
           .doc-button {
             transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
           }
@@ -310,6 +335,55 @@ function DocumentoAbierto() {
             pointer-events: none;
             z-index: 100;
             animation: cameraFlashEffect 0.3s ease-out;
+          }
+          .stampOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+            z-index: 50;
+          }
+          .stampOverlay.show {
+            animation: fadeIn 0.2s ease-in;
+          }
+          .stamp {
+            font-family: var(--font-sans);
+            font-size: 2rem;
+            font-weight: 700;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            border: 5px solid;
+            border-radius: 10px;
+            padding: 16px 30px;
+            background: rgba(255, 255, 255, 0.1);
+          }
+          .stamp.good {
+            color: var(--color-success);
+            border-color: var(--color-success);
+          }
+          .stamp.bad {
+            color: var(--color-danger);
+            border-color: var(--color-danger);
+          }
+          .stamp.partial {
+            color: var(--color-warning);
+            border-color: var(--color-warning);
+          }
+          .stamp.show {
+            animation: stampIn 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+          }
+          @keyframes fadeIn {
+            from {
+              opacity: 0;
+            }
+            to {
+              opacity: 1;
+            }
           }
         `}</style>
 
@@ -524,6 +598,14 @@ function DocumentoAbierto() {
       </main>
 
       <FlashOverlay active={flash.active} />
+
+      {result && (
+        <div className={`stampOverlay ${stampFlash.active ? 'show' : ''}`}>
+          <div className={`stamp ${result.level} ${stampFlash.active ? 'show' : ''}`}>
+            {result.level === 'good' ? 'CORRECTO' : result.level === 'partial' ? 'PARCIAL' : 'INCORRECTO'}
+          </div>
+        </div>
+      )}
 
       <Link to="/seccion/fisico" className={styles.backLink}>
         ← Volver a la sección
