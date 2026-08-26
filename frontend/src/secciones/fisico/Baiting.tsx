@@ -1,14 +1,8 @@
 import { useState, type ReactElement } from 'react'
-import { Link } from 'react-router'
-import { useAuth } from '../../context/AuthContext'
-import DossierHeader from '../../components/ui/DossierHeader'
+import EscenarioLayout from '../../components/EscenarioLayout'
 import FlashOverlay from '../../components/ui/FlashOverlay'
 import { useFlashTransition } from '../../hooks/useFlashTransition'
-import AppHeader from '../../components/AppHeader'
-import InfoLink from '../../components/InfoLink'
-import ContextoEscenario from '../../components/ui/ContextoEscenario'
 import type { Contexto } from '../../components/ui/ContextoEscenario'
-import { getSeccion } from '../../data/catalogo'
 import dossierTheme from '../../styles/dossier-theme.module.css'
 import { useScenarioRun } from '../../hooks/useScenarioRun'
 import styles from './Baiting.module.css'
@@ -349,10 +343,8 @@ function shuffled<T>(arr: T[]): T[] {
 }
 
 function Baiting() {
-  const { displayName, roleLabel } = useAuth()
   const run = useScenarioRun('fisico/baiting')
 
-  const [started, setStarted] = useState(false)
   const [view, setView] = useState<'map' | 'scene'>('map')
   const [activeIdx, setActiveIdx] = useState<number | null>(null)
   const [resolved, setResolved] = useState<Record<number, Resolved>>({})
@@ -367,8 +359,18 @@ function Baiting() {
 
 
   const pct = Math.min(totalRisk, 100)
-  const gaugeColor = pct <= 20 ? 'var(--safe)' : pct <= 55 ? 'var(--amber)' : 'var(--danger)'
   const resolvedCount = Object.keys(resolved).length
+
+  function onEmpezar() {
+    setView('map')
+    setActiveIdx(null)
+    setResolved({})
+    setTotalRisk(0)
+    setChoicesShown(false)
+    setShuffledChoices([])
+    setRevealPending(false)
+    setShowReport(false)
+  }
 
   function enterScene(idx: number) {
     mapFlash.trigger(() => {
@@ -446,63 +448,9 @@ function Baiting() {
     ),
   }
 
-  if (!started) {
-    const seccion = getSeccion('fisico')
-    const volver = (
-      <Link to="/seccion/fisico" className="text-base font-medium text-link underline">
-        ← Volver a la sección
-      </Link>
-    )
-
-    return (
-      <div className="min-h-dvh bg-canvas">
-        <AppHeader>
-          {volver}
-          <InfoLink />
-        </AppHeader>
-
-        <main className="mx-auto max-w-6xl px-6 py-12">
-          <p className="text-base font-medium text-muted">{seccion?.canal}</p>
-          <h1 className="mt-2 text-4xl font-semibold tracking-tight text-ink">Trampa USB</h1>
-
-          <div className="mt-8">
-            <p className="text-lg leading-relaxed text-ink">
-              Hola, <strong className="font-semibold">{displayName}</strong>. Esto es lo que te está
-              pasando:
-            </p>
-
-            <div className="mt-5">
-              <ContextoEscenario contexto={contexto} />
-            </div>
-
-            <div className="mt-8 flex gap-4">
-              <button
-                type="button"
-                onClick={() => setStarted(true)}
-                className="min-h-12 rounded-md bg-primary px-7 py-3.5 text-lg font-medium text-on-primary transition hover:bg-primary-active"
-              >
-                Comenzar escenario
-              </button>
-            </div>
-          </div>
-        </main>
-      </div>
-    )
-  }
-
-  return (
+  // Game interface (pantalla)
+  const pantalla = (
     <div className={`${dossierTheme.dossierTheme} ${styles.app}`}>
-      <DossierHeader
-        caseLabel="RIESGO FÍSICO"
-        secondTab="TRAMPA USB"
-        riskLabel="NIVEL DE RIESGO"
-        gaugePercent={pct}
-        gaugeValueText={`${pct}%`}
-        gaugeColor={gaugeColor}
-        participantName={displayName}
-        participantRole={roleLabel}
-      />
-
       <main className={styles.mainArea}>
         {view === 'map' && (
           <div>
@@ -727,11 +675,28 @@ function Baiting() {
           <div className={`${styles.stamp} ${styles[activeResolved.level]}`}>{stampWord(activeResolved.level)}</div>
         </div>
       )}
-
-      <Link to="/seccion/fisico" className={styles.backLink}>
-        ← Volver a la sección
-      </Link>
     </div>
+  )
+
+  const nota = (
+    <div className="text-base leading-relaxed text-body">
+      <p>Encontrarás varios dispositivos en diferentes puntos de tu oficina. Cada uno requiere una decisión sobre qué hacer con él. Las buenas decisiones minimizan el riesgo; las malas pueden permitir que el ataque funcione.</p>
+    </div>
+  )
+
+  return (
+    <EscenarioLayout
+      escenarioId="fisico/baiting"
+      resumen="Dispositivos sospechosos en la oficina — decide qué hacer con cada uno"
+      contexto={contexto}
+      nota={nota}
+      identidad={[]}
+      pantalla={pantalla}
+      decision={null}
+      ocultarDecision={true}
+      onEmpezar={onEmpezar}
+      dispositivo="telefono"
+    />
   )
 }
 

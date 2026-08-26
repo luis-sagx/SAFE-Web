@@ -1,15 +1,17 @@
 import { useState } from 'react'
-import { Link } from 'react-router'
-import { useAuth } from '../../context/AuthContext'
-import StoryEscenario, { type ScreenNode } from '../../components/StoryEscenario'
-import AppHeader from '../../components/AppHeader'
-import InfoLink from '../../components/InfoLink'
-import ContextoEscenario from '../../components/ui/ContextoEscenario'
+import EscenarioLayout from '../../components/EscenarioLayout'
 import type { Contexto } from '../../components/ui/ContextoEscenario'
-import type { Story } from '../../hooks/useStoryEngine'
+import DeviceScreen from '../../components/ui/DeviceScreen'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
 import type { Senal } from '../../components/ui/PanelVeredicto'
-import { getSeccion } from '../../data/catalogo'
+import PanelVeredicto from '../../components/ui/PanelVeredicto'
+import StoryChoices from '../../components/ui/StoryChoices'
+import Instrucciones from '../../components/ui/Instrucciones'
+import { useStoryEngine, type Story, type StoryNode } from '../../hooks/useStoryEngine'
+
+interface ScreenNode extends StoryNode {
+  view: ScreenView
+}
 
 const ESCENA: ScreenView = {
   kind: 'web',
@@ -69,7 +71,7 @@ const ESCENA: ScreenView = {
   button: '',
 }
 
-export const STORY: Story<ScreenNode> = {
+const STORY: Story<ScreenNode> = {
   n1: { kind: 'scene', view: ESCENA },
   e_entra: {
     kind: 'bad',
@@ -126,73 +128,90 @@ const CONTEXTO: Contexto = {
 }
 
 function PuertaAbierta() {
-  const { displayName } = useAuth()
-  const [started, setStarted] = useState(false)
+  const engine = useStoryEngine(STORY, 'n1', 'fisico/puerta-abierta')
+  const [tocoEnVacio, setTocoEnVacio] = useState(false)
 
-  if (!started) {
-    const seccion = getSeccion('fisico')
-    const volver = (
-      <Link to="/seccion/fisico" className="text-base font-medium text-link underline">
-        ← Volver a la sección
-      </Link>
-    )
+  const onHotspot = (event: React.MouseEvent) => {
+    if (engine.isEnding) return
 
-    return (
-      <div className="min-h-dvh bg-canvas">
-        <AppHeader>
-          {volver}
-          <InfoLink />
-        </AppHeader>
+    const objetivo = (event.target as HTMLElement).closest<HTMLElement>('[data-hotspot-goto]')
+    if (!objetivo) {
+      if (!engine.node.choices) {
+        setTocoEnVacio(true)
+      }
+      return
+    }
 
-        <main className="mx-auto max-w-6xl px-6 py-12">
-          <p className="text-base font-medium text-muted">{seccion?.canal}</p>
-          <h1 className="mt-2 text-4xl font-semibold tracking-tight text-ink">Puerta abierta</h1>
-
-          <div className="mt-8">
-            <p className="text-lg leading-relaxed text-ink">
-              Hola, <strong className="font-semibold">{displayName}</strong>. Esto es lo que te está
-              pasando:
-            </p>
-
-            <div className="mt-5">
-              <ContextoEscenario contexto={CONTEXTO} />
-            </div>
-
-            <div className="mt-8 flex gap-4">
-              <button
-                type="button"
-                onClick={() => setStarted(true)}
-                className="min-h-12 rounded-md bg-primary px-7 py-3.5 text-lg font-medium text-on-primary transition hover:bg-primary-active"
-              >
-                Comenzar escenario
-              </button>
-            </div>
-          </div>
-        </main>
-      </div>
-    )
+    setTocoEnVacio(false)
+    const goto = objetivo.dataset.hotspotGoto
+    if (goto && goto !== engine.current) {
+      engine.choose(goto, objetivo.dataset.hotspotLabel)
+    }
   }
 
+  const pantalla = (
+    <div
+      id="pantalla-escenario"
+      onClick={onHotspot}
+      style={{ width: '100%', height: '100%' }}
+    >
+      <DeviceScreen view={engine.node.view} />
+    </div>
+  )
+
+  const decision = engine.isEnding ? (
+    <PanelVeredicto
+      escenarioId="fisico/puerta-abierta"
+      node={engine.node}
+      senales={SENALES}
+      regla='Regla de oro: <b>si ves un área restringida abierta sin seguro, ciérrala e inmediatamente reporta a Seguridad</b>. No entres, no lleves a otros, no dejes que se exponga más tiempo.'
+      restartLabel="↻ Repetir el escenario"
+      onRestart={() => {
+        engine.restart()
+        setTocoEnVacio(false)
+      }}
+      contenedorId="pantalla-escenario"
+    />
+  ) : (
+    <div className="grid gap-3">
+      <p className="text-lg font-semibold text-ink">¿Qué haces?</p>
+      {engine.node.choices ? (
+        <StoryChoices choices={engine.node.choices} onChoose={engine.choose} />
+      ) : (
+        <Instrucciones pista={
+          <p>
+            Cierra la puerta y reporta inmediatamente. No entres, no lleves a otros, no ignores el riesgo. Las áreas
+            restringidas deben estar seguras siempre.
+          </p>
+        } fallo={tocoEnVacio}>
+          <p className="text-lg leading-relaxed text-body">
+            La puerta de un área restringida quedó abierta sin seguro. <strong>¿Qué haces?</strong> Elige tu acción.
+          </p>
+        </Instrucciones>
+      )}
+    </div>
+  )
+
   return (
-    <StoryEscenario
+    <EscenarioLayout
       escenarioId="fisico/puerta-abierta"
       resumen={RESUMEN}
       contexto={CONTEXTO}
-      story={STORY}
-      senales={SENALES}
-      rule='Regla de oro: <b>si ves un área restringida abierta sin seguro, ciérrala e inmediatamente reporta a Seguridad</b>. No entres, no lleves a otros, no dejes que se exponga más tiempo.'
-      restartLabel="↻ Repetir el escenario"
-      instruccion={
-        <p className="text-lg leading-relaxed text-body">
-          La puerta de un área restringida quedó abierta sin seguro. <strong>¿Qué haces?</strong> Elige tu acción.
-        </p>
-      }
-      pista={
+      nota={
         <p>
-          Cierra la puerta y reporta inmediatamente. No entres, no lleves a otros, no ignores el riesgo. Las áreas
-          restringidas deben estar seguras siempre.
+          Vas a ver una pantalla que simula una situación en tu oficina. Puedes actuar sobre ella como lo harías en
+          la vida real.
         </p>
       }
+      identidad={[]}
+      pantalla={pantalla}
+      decision={decision}
+      resultado={engine.resultado}
+      onEmpezar={() => {
+        engine.restart()
+        setTocoEnVacio(false)
+      }}
+      dispositivo="telefono"
     />
   )
 }

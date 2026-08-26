@@ -1,15 +1,38 @@
-import { useState } from 'react'
-import { Link } from 'react-router'
-import { useAuth } from '../../context/AuthContext'
-import StoryEscenario, { type ScreenNode } from '../../components/StoryEscenario'
+import EscenarioLayout from '../../components/EscenarioLayout'
 import type { Contexto } from '../../components/ui/ContextoEscenario'
-import AppHeader from '../../components/AppHeader'
-import InfoLink from '../../components/InfoLink'
-import ContextoEscenario from '../../components/ui/ContextoEscenario'
-import { getSeccion } from '../../data/catalogo'
-import type { Story } from '../../hooks/useStoryEngine'
-import type { ScreenView } from '../../components/ui/DeviceScreen'
+import DeviceScreen, { type ScreenView } from '../../components/ui/DeviceScreen'
 import type { Senal } from '../../components/ui/PanelVeredicto'
+import PanelVeredicto from '../../components/ui/PanelVeredicto'
+import { useStoryEngine, type Story, type StoryNode } from '../../hooks/useStoryEngine'
+
+interface Opcion {
+  texto: string
+  goto: string
+  label: string
+}
+
+const OPCIONES: Opcion[] = [
+  {
+    texto: 'Revisar rápidamente los correos de la carpeta confidencial',
+    goto: 'e_lee',
+    label: 'Accedió a información confidencial sin permiso',
+  },
+  {
+    texto: 'Hacer una transferencia de prueba desde la app contable',
+    goto: 'e_modifica',
+    label: 'Intentó manipular sistemas financieros sin autorización',
+  },
+  {
+    texto: 'Esperar a que regrese sin tocar nada',
+    goto: 'e_espera',
+    label: 'Respetó el acceso sin vigilancia',
+  },
+  {
+    texto: 'Bloquear la pantalla (Ctrl+Alt+L o Win+L)',
+    goto: 'e_bloquea',
+    label: 'Actuó para proteger datos ajenos',
+  },
+]
 
 const ESCENA: ScreenView = {
   kind: 'web',
@@ -38,58 +61,32 @@ const ESCENA: ScreenView = {
   ],
   aviso:
     'Tu compañero de equipo se levantó de su escritorio para ir por café. Su pantalla quedó completamente desbloqueada con tres ventanas importantes abiertas. Estarán fuera unos 10 minutos.',
-  opciones: [
-    {
-      texto: 'Revisar rápidamente los correos de la carpeta confidencial',
-      goto: 'e_lee',
-      label: 'Accedió a información confidencial sin permiso',
-    },
-    {
-      texto: 'Hacer una transferencia de prueba desde la app contable',
-      goto: 'e_modifica',
-      label: 'Intentó manipular sistemas financieros sin autorización',
-    },
-    {
-      texto: 'Esperar a que regrese sin tocar nada',
-      goto: 'e_espera',
-      label: 'Respetó el acceso sin vigilancia',
-    },
-    {
-      texto: 'Bloquear la pantalla (Ctrl+Alt+L o Win+L)',
-      goto: 'e_bloquea',
-      label: 'Actuó para proteger datos ajenos',
-    },
-  ],
   fields: [],
   button: '',
 }
 
-export const STORY: Story<ScreenNode> = {
-  n1: { kind: 'scene', view: ESCENA },
+const STORY: Story<StoryNode> = {
+  n1: { kind: 'scene' },
   e_lee: {
     kind: 'bad',
-    view: ESCENA,
     verdict: 'Violaste la privacidad y confidencialidad',
     outcome:
       'Acceder a los correos de un compañero sin permiso es una falta grave. El hecho de que la pantalla esté sin vigilancia no te da derecho a usarla. Es tanto una violación de confianza como una violación de políticas de acceso.',
   },
   e_modifica: {
     kind: 'bad',
-    view: ESCENA,
     verdict: 'Cometiste fraude al intentar manipular transferencias',
     outcome:
       'Intentar usar el acceso de otra persona para hacer transacciones financieras es fraude. Es uno de los ataques más graves: aprovechaste la confianza y la sesión abierta para intentar operaciones que no te autorizan. Esto tendría consecuencias legales graves.',
   },
   e_espera: {
     kind: 'partial',
-    view: ESCENA,
     verdict: 'No actuaste, pero dejaste el riesgo activo',
     outcome:
       'No hiciste nada incorrecto personalmente, pero tampoco actuaste para reducir el riesgo. La pantalla sigue desbloqueada y disponible para cualquiera que pase. Un tercero podría ver datos o hacer cosas comprometedoras.',
   },
   e_bloquea: {
     kind: 'good',
-    view: ESCENA,
     verdict: 'Actuaste correctamente para proteger datos ajenos',
     outcome:
       'Perfecto. Bloquear la pantalla de un compañero que se olvidó es lo correcto: proteges sus datos, su sesión y su responsabilidad frente a la empresa. Es una acción defensiva que muestra conciencia de seguridad.',
@@ -120,74 +117,60 @@ const CONTEXTO: Contexto = {
   ),
 }
 
+const REGLA =
+  'Regla de oro: <b>nunca dejes tu pantalla desbloqueada</b>, y si ves una abierta, bloquéala discretamente. No accedas, no modifiques, no hagas nada con ella —solo protégela del siguiente que pase.'
+
 function PantallaDesbloqueada() {
-  const { displayName } = useAuth()
-  const [started, setStarted] = useState(false)
+  const engine = useStoryEngine(STORY, 'n1', 'fisico/pantalla-desbloqueada')
 
-  if (!started) {
-    const seccion = getSeccion('fisico')
-    const volver = (
-      <Link to="/seccion/fisico" className="text-base font-medium text-link underline">
-        ← Volver a la sección
-      </Link>
-    )
+  const pantalla = (
+    <div
+      id="pantalla-escenario"
+      style={{ width: '100%', height: '100%' }}
+    >
+      <DeviceScreen view={ESCENA} />
+    </div>
+  )
 
-    return (
-      <div className="min-h-dvh bg-canvas">
-        <AppHeader>
-          {volver}
-          <InfoLink />
-        </AppHeader>
-
-        <main className="mx-auto max-w-6xl px-6 py-12">
-          <p className="text-base font-medium text-muted">{seccion?.canal}</p>
-          <h1 className="mt-2 text-4xl font-semibold tracking-tight text-ink">Pantalla desbloqueada</h1>
-
-          <div className="mt-8">
-            <p className="text-lg leading-relaxed text-ink">
-              Hola, <strong className="font-semibold">{displayName}</strong>. Esto es lo que te está pasando:
-            </p>
-
-            <div className="mt-5">
-              <ContextoEscenario contexto={CONTEXTO} />
-            </div>
-
-            <div className="mt-8 flex gap-4">
-              <button
-                type="button"
-                onClick={() => setStarted(true)}
-                className="min-h-12 rounded-md bg-primary px-7 py-3.5 text-lg font-medium text-on-primary transition hover:bg-primary-active"
-              >
-                Comenzar escenario
-              </button>
-            </div>
-          </div>
-        </main>
+  const decision = engine.isEnding ? (
+    <PanelVeredicto
+      escenarioId="fisico/pantalla-desbloqueada"
+      node={engine.node}
+      senales={SENALES}
+      regla={REGLA}
+      restartLabel="↻ Repetir el escenario"
+      onRestart={engine.restart}
+      contenedorId="pantalla-escenario"
+    />
+  ) : (
+    <div className="grid gap-3">
+      <p className="text-lg font-semibold text-ink">¿Qué haces?</p>
+      <div className="grid gap-2">
+        {OPCIONES.map((opcion) => (
+          <button
+            key={opcion.label}
+            type="button"
+            onClick={() => engine.choose(opcion.goto, opcion.label)}
+            className="rounded-md border border-hairline-strong bg-surface px-4 py-3 text-left text-base transition hover:border-hairline-strong hover:bg-surface-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link"
+          >
+            {opcion.texto}
+          </button>
+        ))}
       </div>
-    )
-  }
+    </div>
+  )
 
   return (
-    <StoryEscenario
+    <EscenarioLayout
       escenarioId="fisico/pantalla-desbloqueada"
       resumen={RESUMEN}
       contexto={CONTEXTO}
-      story={STORY}
-      senales={SENALES}
-      rule='Regla de oro: <b>nunca dejes tu pantalla desbloqueada</b>, y si ves una abierta, bloquéala discretamente. No accedas, no modifiques, no hagas nada con ella —solo protégela del siguiente que pase.'
-      restartLabel="↻ Repetir el escenario"
-      instruccion={
-        <p className="text-lg leading-relaxed text-body">
-          Ves la pantalla de tu compañero desbloqueada con datos sensibles abiertos. <strong>¿Qué haces?</strong> Elige la
-          acción que consideres más apropriada.
-        </p>
-      }
-      pista={
-        <p>
-          La acción defensiva correcta es bloquear la pantalla. No accedas a los datos aunque puedas, no importa la
-          razón.
-        </p>
-      }
+      identidad={[]}
+      pantalla={pantalla}
+      decision={decision}
+      resultado={engine.resultado}
+      onEmpezar={engine.restart}
+      dispositivo="telefono"
     />
   )
 }
