@@ -129,12 +129,12 @@ const TOOLTIP_POS: Partial<Record<ItemKey, { x: number; y: number }>> = {
 }
 
 const POSITIONS: Partial<Record<ItemKey, { x: string; y: string; w: string; h: string }>> = {
-  monitor: { x: '30%', y: '20%', w: '26%', h: '27%' },
-  sticky: { x: '51%', y: '20%', w: '10%', h: '12%' },
-  folder: { x: '65%', y: '48%', w: '13%', h: '16%' },
-  badge: { x: '23%', y: '60%', w: '6%', h: '14%' },
-  phone: { x: '80%', y: '46%', w: '6%', h: '20%' },
-  notebook: { x: '10%', y: '47%', w: '16%', h: '15%' },
+  monitor: { x: '30%', y: '20%', w: '24%', h: '27%' },
+  sticky: { x: '51%', y: '20%', w: '9.6%', h: '12%' },
+  folder: { x: '65%', y: '50%', w: '12%', h: '14%' },
+  badge: { x: '24%', y: '62%', w: '5.2%', h: '12%' },
+  phone: { x: '76%', y: '40%', w: '6%', h: '23%' },
+  notebook: { x: '7%', y: '43%', w: '18%', h: '17%' },
 }
 
 function activeItemsFor(levelIdx: number): ItemKey[] {
