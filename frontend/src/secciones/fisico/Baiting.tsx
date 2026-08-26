@@ -317,10 +317,10 @@ const SCENARIOS: Scenario[] = [
 ]
 
 const ROOM_ZONES = [
-  { idx: 0, x: 10, y: 70, width: 160, height: 440, ariaLabel: 'Estacionamiento', pinPos: [95, 300] },
-  { idx: 3, x: 180, y: 70, width: 290, height: 220, ariaLabel: 'Recepción', pinPos: [410, 245] },
-  { idx: 1, x: 470, y: 70, width: 290, height: 220, ariaLabel: 'Sala de descanso', pinPos: [645, 225] },
-  { idx: 2, x: 180, y: 290, width: 290, height: 220, ariaLabel: 'Área administrativa', pinPos: [252, 362] },
+  { idx: 0, x: 15, y: 105, width: 240, height: 660, ariaLabel: 'Estacionamiento', pinPos: [142, 450] },
+  { idx: 3, x: 270, y: 105, width: 435, height: 330, ariaLabel: 'Recepción', pinPos: [615, 367] },
+  { idx: 1, x: 705, y: 105, width: 435, height: 330, ariaLabel: 'Sala de descanso', pinPos: [967, 337] },
+  { idx: 2, x: 270, y: 435, width: 435, height: 330, ariaLabel: 'Área administrativa', pinPos: [378, 543] },
 ]
 
 function verdictLabel(level: Level) {

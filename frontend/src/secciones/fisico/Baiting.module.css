@@ -121,9 +121,9 @@
 }
 
 .furnitureFill {
-  fill: var(--color-surface-strong);
-  stroke: var(--color-hairline-strong);
-  stroke-width: 1.4;
+  fill: var(--color-hairline-strong);
+  stroke: var(--color-muted);
+  stroke-width: 2;
   pointer-events: none;
 }
 
