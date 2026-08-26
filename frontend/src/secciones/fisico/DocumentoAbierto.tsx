@@ -216,27 +216,32 @@ function DocumentoAbierto() {
             animation: paperFlip 0.6s ease-in-out;
           }
           .document-preview {
-            padding: 48px 40px;
+            padding: 56px 44px;
             background: #ffffff;
             border: none;
-            border-radius: 0;
+            border-radius: 2px;
             box-shadow:
               0 10px 25px rgba(0, 0, 0, 0.1),
               0 20px 40px rgba(0, 0, 0, 0.08),
               -2px 0 4px rgba(0, 0, 0, 0.05);
             margin: 24px auto;
-            max-width: 700px;
+            width: 100%;
+            max-width: 580px;
+            aspect-ratio: 8.5 / 11;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
             transition: all 0.3s ease;
             position: relative;
-            aspect-ratio: auto;
             page-break-after: avoid;
+            overflow-y: auto;
           }
           .document-preview:hover {
             box-shadow:
               0 15px 35px rgba(0, 0, 0, 0.15),
               0 25px 50px rgba(0, 0, 0, 0.1),
               -2px 0 4px rgba(0, 0, 0, 0.05);
-            transform: translateY(-2px);
+            transform: translateY(-3px);
           }
           .document-preview::before {
             content: '';
@@ -245,10 +250,10 @@ function DocumentoAbierto() {
             left: 0;
             right: 0;
             bottom: 0;
-            border: 1px solid #e5e5e5;
-            border-radius: 0;
+            border: 1px solid #f0f0f0;
+            border-radius: 2px;
             pointer-events: none;
-            opacity: 0.5;
+            opacity: 1;
           }
           .action-buttons-grid {
             display: grid;
