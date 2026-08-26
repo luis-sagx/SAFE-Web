@@ -456,7 +456,7 @@ function Baiting() {
     <div className={`${dossierTheme.dossierTheme} ${styles.app}`}>
       <main className={styles.mainArea}>
         {view === 'map' && (
-          <div style={{ display: 'flex', gap: '20px', alignItems: 'flex-start' }}>
+          <div style={{ display: 'flex', gap: '20px', alignItems: 'stretch' }}>
             <div style={{ flex: showReport ? '0 0 60%' : '1' }}>
               <p className={styles.mapCaption}>Plano, Oficinas administrativas · Induplast Andina S.A. · entra a cada lugar</p>
 
