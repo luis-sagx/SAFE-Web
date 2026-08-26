@@ -196,6 +196,25 @@ function DocumentoAbierto() {
           <>
             {!inspectedDoc ? (
               <>
+                <style>{`
+                  @keyframes docPulse {
+                    0%, 100% { transform: scale(1) translateY(0); }
+                    50% { transform: scale(1.05) translateY(-5px); }
+                  }
+                  @keyframes paperFlip {
+                    0% { opacity: 0.8; filter: brightness(1); }
+                    50% { opacity: 1; filter: brightness(1.1); }
+                    100% { opacity: 0.8; filter: brightness(1); }
+                  }
+                  .doc-button {
+                    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+                  }
+                  .doc-button:hover {
+                    filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.15));
+                    animation: paperFlip 0.6s ease-in-out;
+                  }
+                `}</style>
+
                 <div className={styles.deskWrap}>
                   <svg viewBox="0 0 600 320">
                     <defs>
@@ -203,6 +222,9 @@ function DocumentoAbierto() {
                         <stop offset="0%" stopColor="#f5f7f9" />
                         <stop offset="100%" stopColor="#eef1f5" />
                       </linearGradient>
+                      <filter id="docShadow">
+                        <feDropShadow dx="2" dy="4" stdDeviation="3" floodOpacity="0.15" />
+                      </filter>
                     </defs>
                     {/* Escritorio */}
                     <rect width="600" height="320" fill="url(#deskGradient)" />
@@ -213,65 +235,62 @@ function DocumentoAbierto() {
                     {/* Documento 1: Evaluaciones */}
                     <g
                       onClick={() => handleInspectDoc('evaluaciones')}
+                      className="doc-button"
                       style={{ cursor: 'pointer' }}
-                      className={styles.clickable}
+                      filter="url(#docShadow)"
                     >
-                      <rect x="60" y="80" width="140" height="100" rx="2" fill="#f5f5f5" stroke="#ccc" strokeWidth="1" />
-                      <rect x="65" y="85" width="130" height="8" fill="#006837" opacity="0.8" />
-                      <text x="75" y="102" fontFamily="Inter, sans-serif" fontSize="11" fontWeight="600" fill="#1b232c">
+                      <rect x="60" y="80" width="140" height="100" rx="2" fill="#f5f5f5" stroke="#999" strokeWidth="1.5" />
+                      <rect x="65" y="85" width="130" height="8" fill="#006837" opacity="0.9" />
+                      <text x="75" y="102" fontFamily="Inter, sans-serif" fontSize="11" fontWeight="700" fill="#006837">
                         Evaluaciones
                       </text>
-                      <text x="75" y="117" fontFamily="Inter, sans-serif" fontSize="9" fill="#60646c">
+                      <text x="75" y="117" fontFamily="Inter, sans-serif" fontSize="9" fontWeight="600" fill="#60646c">
                         de desempeño
                       </text>
-                      <line x1="65" y1="125" x2="195" y2="125" stroke="#ddd" strokeWidth="1" />
-                      <text x="75" y="155" fontFamily="Inter, sans-serif" fontSize="8" fill="#999">
-                        CONFIDENCIAL
+                      <line x1="65" y1="125" x2="195" y2="125" stroke="#ddd" strokeWidth="1.5" />
+                      <text x="75" y="155" fontFamily="Inter, sans-serif" fontSize="8" fontWeight="700" fill="#b4342f">
+                        🔒 CONFIDENCIAL
                       </text>
                     </g>
 
                     {/* Documento 2: Clientes */}
                     <g
                       onClick={() => handleInspectDoc('clientes')}
+                      className="doc-button"
                       style={{ cursor: 'pointer' }}
-                      className={styles.clickable}
+                      filter="url(#docShadow)"
                     >
-                      <rect x="230" y="70" width="140" height="110" rx="2" fill="#f5f5f5" stroke="#ccc" strokeWidth="1" transform="rotate(4 300 125)" />
-                      <rect x="235" y="75" width="130" height="8" fill="#0066bb" opacity="0.8" transform="rotate(4 300 125)" />
-                      <text x="245" y="95" fontFamily="Inter, sans-serif" fontSize="11" fontWeight="600" fill="#1b232c" transform="rotate(4 300 125)">
+                      <rect x="230" y="70" width="140" height="110" rx="2" fill="#f5f5f5" stroke="#999" strokeWidth="1.5" transform="rotate(4 300 125)" />
+                      <rect x="235" y="75" width="130" height="8" fill="#0066bb" opacity="0.9" transform="rotate(4 300 125)" />
+                      <text x="245" y="95" fontFamily="Inter, sans-serif" fontSize="11" fontWeight="700" fill="#0066bb" transform="rotate(4 300 125)">
                         Clientes
                       </text>
-                      <text x="245" y="112" fontFamily="Inter, sans-serif" fontSize="9" fill="#60646c" transform="rotate(4 300 125)">
+                      <text x="245" y="112" fontFamily="Inter, sans-serif" fontSize="9" fontWeight="600" fill="#60646c" transform="rotate(4 300 125)">
                         Montos contrato
                       </text>
-                      <line x1="235" y1="120" x2="365" y2="120" stroke="#ddd" strokeWidth="1" transform="rotate(4 300 125)" />
-                      <text x="255" y="150" fontFamily="Inter, sans-serif" fontSize="8" fill="#999" transform="rotate(4 300 125)">
-                        ESTRATÉGICO
+                      <line x1="235" y1="120" x2="365" y2="120" stroke="#ddd" strokeWidth="1.5" transform="rotate(4 300 125)" />
+                      <text x="255" y="150" fontFamily="Inter, sans-serif" fontSize="8" fontWeight="700" fill="#b4342f" transform="rotate(4 300 125)">
+                        🔒 ESTRATÉGICO
                       </text>
                     </g>
 
                     {/* Documento 3: Nota adhesiva con contraseña */}
                     <g
                       onClick={() => handleInspectDoc('contrasena')}
+                      className="doc-button"
                       style={{ cursor: 'pointer' }}
-                      className={styles.clickable}
+                      filter="url(#docShadow)"
                     >
-                      <rect x="400" y="90" width="120" height="90" fill="#f4d94a" stroke="#c9ad1f" strokeWidth="1" transform="rotate(-8 460 135)" />
-                      <text x="415" y="115" fontFamily="Inter, sans-serif" fontSize="10" fontWeight="600" fill="#1b232c" transform="rotate(-8 460 135)">
-                        WiFi Clave:
+                      <rect x="400" y="90" width="120" height="90" fill="#f4d94a" stroke="#b8941a" strokeWidth="1.5" transform="rotate(-8 460 135)" />
+                      <rect x="402" y="92" width="116" height="86" fill="#fef5d9" rx="1" transform="rotate(-8 460 135)" />
+                      <text x="415" y="115" fontFamily="Inter, sans-serif" fontSize="10" fontWeight="700" fill="#1b232c" transform="rotate(-8 460 135)">
+                        WiFi 📡
                       </text>
-                      <text
-                        x="415"
-                        y="135"
-                        fontFamily="monospace"
-                        fontSize="9"
-                        fontWeight="600"
-                        fill="#1b232c"
-                        transform="rotate(-8 460 135)"
-                      >
+                      <text x="415" y="130" fontFamily="monospace" fontSize="8" fontWeight="600" fill="#1b232c" transform="rotate(-8 460 135)">
                         Of2026*Net!
                       </text>
-                      <circle cx="465" cy="100" r="3" fill="#b4342f" opacity="0.6" />
+                      <circle cx="465" cy="100" r="4" fill="#b4342f" opacity="0.7" />
+                      <circle cx="468" cy="103" r="2" fill="#b4342f" opacity="0.5" />
                     </g>
                   </svg>
                 </div>
@@ -286,30 +305,77 @@ function DocumentoAbierto() {
               </>
             ) : (
               <>
-                <div className={styles.instructionsBox} style={{ marginBottom: '20px', background: 'rgba(22, 163, 74, 0.08)', borderLeft: '3px solid #16a34a' }}>
-                  <p className={styles.instructionsTitle} style={{ color: '#16a34a', margin: '0 0 12px 0' }}>
-                    {DOCUMENTS[inspectedDoc].title}
-                  </p>
-                  <p className={styles.summary} style={{ margin: 0 }}>
-                    {DOCUMENTS[inspectedDoc].content}
-                  </p>
-                  <p style={{ marginTop: '12px', color: '#b4342f', fontWeight: '600', fontSize: '0.85rem' }}>
-                    ⚠ Riesgo: {DOCUMENTS[inspectedDoc].risk}
-                  </p>
+                <style>{`
+                  @keyframes slideInDoc {
+                    from {
+                      opacity: 0;
+                      transform: translateY(20px) scale(0.95);
+                    }
+                    to {
+                      opacity: 1;
+                      transform: translateY(0) scale(1);
+                    }
+                  }
+                  @keyframes pulse-glow {
+                    0%, 100% { box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.4); }
+                    50% { box-shadow: 0 0 0 10px rgba(22, 163, 74, 0); }
+                  }
+                  .doc-preview {
+                    animation: slideInDoc 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+                  }
+                  .decision-btn {
+                    transition: all 0.2s ease;
+                  }
+                  .decision-btn:hover {
+                    transform: translateY(-3px);
+                    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+                  }
+                  .decision-btn:active {
+                    transform: translateY(-1px);
+                  }
+                `}</style>
+
+                <div className="doc-preview" style={{ marginBottom: '20px' }}>
+                  <div className={styles.instructionsBox} style={{ background: 'linear-gradient(135deg, rgba(22, 163, 74, 0.08) 0%, rgba(22, 163, 74, 0.04) 100%)', borderLeft: '4px solid #16a34a' }}>
+                    <p className={styles.instructionsTitle} style={{ color: '#16a34a', margin: '0 0 16px 0', fontSize: '1.1rem' }}>
+                      📄 {DOCUMENTS[inspectedDoc].title}
+                    </p>
+                    <div style={{ background: 'rgba(255,255,255,0.5)', padding: '14px', borderRadius: '6px', marginBottom: '12px', borderLeft: '3px solid #006837' }}>
+                      <p className={styles.summary} style={{ margin: 0, lineHeight: '1.6', fontSize: '0.95rem' }}>
+                        {DOCUMENTS[inspectedDoc].content}
+                      </p>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px', background: 'rgba(180, 52, 47, 0.08)', borderRadius: '4px', borderLeft: '3px solid #b4342f' }}>
+                      <span style={{ fontSize: '1.2rem' }}>⚠️</span>
+                      <span style={{ color: '#b4342f', fontWeight: '700', fontSize: '0.9rem' }}>
+                        Riesgo: {DOCUMENTS[inspectedDoc].risk}
+                      </span>
+                    </div>
+                  </div>
                 </div>
 
-                <p className={styles.introText}>¿Qué haces ahora que viste este documento?</p>
+                <p className={styles.introText} style={{ marginBottom: '18px', fontWeight: '600', fontSize: '1rem' }}>
+                  ⏰ Alguien podría pasar en cualquier momento... ¿Qué haces?
+                </p>
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '10px', marginBottom: '20px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '12px', marginBottom: '20px' }}>
                   {DECISIONS.map((decision) => (
                     <button
                       key={decision.id}
                       onClick={() => handleDecision(decision.id)}
-                      className={styles.snapBtn}
+                      className="decision-btn"
                       style={{
-                        background: decision.level === 'good' ? '#16a34a' : decision.level === 'partial' ? '#d99b34' : '#b4342f',
+                        background: decision.level === 'good' ? '#16a34a' : decision.level === 'partial' ? '#ab6400' : '#b4342f',
+                        color: 'white',
                         padding: '14px 16px',
                         fontSize: '0.85rem',
+                        fontWeight: '600',
+                        border: 'none',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        fontFamily: 'Inter, sans-serif',
+                        textAlign: 'center',
+                        lineHeight: '1.3',
                       }}
                     >
                       {decision.text}
@@ -321,7 +387,21 @@ function DocumentoAbierto() {
                   type="button"
                   className={styles.snapBtn}
                   onClick={() => setInspectedDoc(null)}
-                  style={{ background: 'transparent', color: 'var(--color-ink)', border: '2px solid var(--color-ink)', marginBottom: '20px' }}
+                  style={{
+                    background: 'transparent',
+                    color: 'var(--color-ink)',
+                    border: '2px solid var(--color-ink)',
+                    marginBottom: '20px',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = 'var(--color-ink)'
+                    e.currentTarget.style.color = 'white'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'transparent'
+                    e.currentTarget.style.color = 'var(--color-ink)'
+                  }}
                 >
                   ← Volver a los documentos
                 </button>
