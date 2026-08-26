@@ -695,7 +695,7 @@ function Baiting() {
       decision={null}
       ocultarDecision={true}
       onEmpezar={onEmpezar}
-      dispositivo="telefono"
+      dispositivo="escritorio"
     />
   )
 }
