@@ -208,38 +208,24 @@ function DocumentoAbierto() {
             animation: paperFlip 0.6s ease-in-out;
           }
           .document-preview {
-            position: relative;
-            padding: 40px;
+            padding: 32px;
             background: var(--color-surface);
             border: 1px solid var(--color-hairline-strong);
             border-radius: 8px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
             margin-bottom: 24px;
-            cursor: pointer;
             transition: all 0.3s ease;
           }
           .document-preview:hover {
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
           }
-          .action-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 16px;
-            background: rgba(0, 0, 0, 0.03);
-            border-radius: 8px;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            pointer-events: none;
-          }
-          .document-preview:hover .action-overlay {
-            opacity: 1;
-            pointer-events: all;
+          .action-buttons-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+            margin-top: 24px;
+            padding-top: 24px;
+            border-top: 1px solid var(--color-hairline);
           }
           .action-btn-inline {
             padding: 10px 14px;
@@ -368,7 +354,7 @@ function DocumentoAbierto() {
                   Alguien podría pasar en cualquier momento. ¿Qué haces con este documento?
                 </p>
 
-                <div className="document-preview" onClick={() => handleDocumentAction('lee')}>
+                <div className="document-preview">
                   <div style={{ marginBottom: '16px' }}>
                     <h3 style={{ margin: '0 0 8px 0', color: 'var(--color-ink)', fontSize: '1.05rem', fontWeight: '600' }}>
                       {DOCUMENTS[inspectedDoc].title}
@@ -378,29 +364,17 @@ function DocumentoAbierto() {
                     </p>
                   </div>
 
-                  <div className="action-overlay">
-                    <button className="action-btn-inline" onClick={(e) => {
-                      e.stopPropagation()
-                      handleDocumentAction('lee')
-                    }}>
+                  <div className="action-buttons-grid">
+                    <button className="action-btn-inline" onClick={() => handleDocumentAction('lee')}>
                       Leer
                     </button>
-                    <button className="action-btn-inline" onClick={(e) => {
-                      e.stopPropagation()
-                      handleDocumentAction('foto')
-                    }}>
+                    <button className="action-btn-inline" onClick={() => handleDocumentAction('foto')}>
                       Fotografiar
                     </button>
-                    <button className="action-btn-inline" onClick={(e) => {
-                      e.stopPropagation()
-                      handleDocumentAction('avisa')
-                    }}>
+                    <button className="action-btn-inline" onClick={() => handleDocumentAction('avisa')}>
                       Avisar
                     </button>
-                    <button className="action-btn-inline" onClick={(e) => {
-                      e.stopPropagation()
-                      handleDocumentAction('reporta')
-                    }}>
+                    <button className="action-btn-inline" onClick={() => handleDocumentAction('reporta')}>
                       Reportar
                     </button>
                   </div>
