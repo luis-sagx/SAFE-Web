@@ -1,8 +1,14 @@
+import { useState } from 'react'
+import { Link } from 'react-router'
+import { useAuth } from '../../context/AuthContext'
+import DossierHeader from '../../components/ui/DossierHeader'
 import StoryEscenario, { type ScreenNode } from '../../components/StoryEscenario'
 import type { Contexto } from '../../components/ui/ContextoEscenario'
 import type { Story } from '../../hooks/useStoryEngine'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
 import type { Senal } from '../../components/ui/PanelVeredicto'
+import dossierTheme from '../../styles/dossier-theme.module.css'
+import styles from './Foto.module.css'
 
 const ESCENA: ScreenView = {
   kind: 'web',
@@ -113,6 +119,55 @@ const CONTEXTO: Contexto = {
 }
 
 function ConexionPublica() {
+  const { displayName, roleLabel } = useAuth()
+  const [started, setStarted] = useState(false)
+
+  if (!started) {
+    return (
+      <div className={`${dossierTheme.dossierTheme} ${styles.app}`}>
+        <DossierHeader
+          caseLabel="RIESGO FÍSICO"
+          secondTab="INTRODUCCIÓN"
+          riskLabel="RIESGO"
+          gaugePercent={0}
+          gaugeValueText=""
+          gaugeColor="var(--color-primary)"
+          participantName={displayName}
+          participantRole={roleLabel}
+        />
+
+        <main className={styles.mainArea}>
+          <p className={styles.introText}>
+            Hola, {displayName}. Estás en un café esperando a un cliente. Necesitas enviar un informe con datos de
+            proyectos antes de la reunión. El café ofrece WiFi público gratis, pero también tienes datos móviles.
+          </p>
+
+          <div className={styles.instructionsBox}>
+            <p className={styles.instructionsTitle}>Contexto</p>
+            <p className={styles.summary}>
+              Las redes WiFi públicas sin contraseña no tienen encriptación. Eso significa que cualquiera conectado a
+              la misma red puede ver todo lo que transmites: emails, credenciales, documentos, chats. Es especialmente
+              peligroso si transmites datos de la empresa.
+            </p>
+            <p className={styles.summary}>
+              Tu decisión sobre cómo conectarte determina si expones los datos de la empresa o si los proteges.
+            </p>
+          </div>
+
+          <div className={styles.actionRow}>
+            <button type="button" className={styles.snapBtn} onClick={() => setStarted(true)}>
+              Comenzar escenario →
+            </button>
+          </div>
+        </main>
+
+        <Link to="/seccion/fisico" className={styles.backLink}>
+          ← Volver a la sección
+        </Link>
+      </div>
+    )
+  }
+
   return (
     <StoryEscenario
       escenarioId="fisico/conexion-publica"

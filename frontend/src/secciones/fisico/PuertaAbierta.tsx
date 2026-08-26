@@ -1,8 +1,14 @@
+import { useState } from 'react'
+import { Link } from 'react-router'
+import { useAuth } from '../../context/AuthContext'
+import DossierHeader from '../../components/ui/DossierHeader'
 import StoryEscenario, { type ScreenNode } from '../../components/StoryEscenario'
 import type { Contexto } from '../../components/ui/ContextoEscenario'
 import type { Story } from '../../hooks/useStoryEngine'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
 import type { Senal } from '../../components/ui/PanelVeredicto'
+import dossierTheme from '../../styles/dossier-theme.module.css'
+import styles from './Foto.module.css'
 
 const ESCENA: ScreenView = {
   kind: 'web',
@@ -119,6 +125,55 @@ const CONTEXTO: Contexto = {
 }
 
 function PuertaAbierta() {
+  const { displayName, roleLabel } = useAuth()
+  const [started, setStarted] = useState(false)
+
+  if (!started) {
+    return (
+      <div className={`${dossierTheme.dossierTheme} ${styles.app}`}>
+        <DossierHeader
+          caseLabel="RIESGO FÍSICO"
+          secondTab="INTRODUCCIÓN"
+          riskLabel="RIESGO"
+          gaugePercent={0}
+          gaugeValueText=""
+          gaugeColor="var(--color-primary)"
+          participantName={displayName}
+          participantRole={roleLabel}
+        />
+
+        <main className={styles.mainArea}>
+          <p className={styles.introText}>
+            Hola, {displayName}. Esta tarde, pasando por un pasillo, ves algo inusual: la puerta de la sala de
+            servidores está abierta sin seguro. Puedes ver equipos de red y servidores desde donde estás.
+          </p>
+
+          <div className={styles.instructionsBox}>
+            <p className={styles.instructionsTitle}>Contexto</p>
+            <p className={styles.summary}>
+              Las áreas restringidas (salas de servidores, archivos de datos, bóvedas) están protegidas por una razón.
+              Si una puerta queda abierta sin seguro, cualquiera puede entrar, robar información, sabotear sistemas o
+              causar daños. Es un riesgo de seguridad crítico que debe reportarse inmediatamente.
+            </p>
+            <p className={styles.summary}>
+              Tu decisión determina si proteges la infraestructura o si ignoras el riesgo.
+            </p>
+          </div>
+
+          <div className={styles.actionRow}>
+            <button type="button" className={styles.snapBtn} onClick={() => setStarted(true)}>
+              Comenzar escenario →
+            </button>
+          </div>
+        </main>
+
+        <Link to="/seccion/fisico" className={styles.backLink}>
+          ← Volver a la sección
+        </Link>
+      </div>
+    )
+  }
+
   return (
     <StoryEscenario
       escenarioId="fisico/puerta-abierta"
