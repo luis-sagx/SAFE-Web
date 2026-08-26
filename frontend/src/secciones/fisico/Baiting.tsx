@@ -476,68 +476,68 @@ function Baiting() {
                   />
                 ))}
 
-                <rect x="10" y="70" width="160" height="440" className={styles.lot} />
-                <line x1="90" y1="90" x2="90" y2="490" className={styles.lotLine} />
-                <text x="20" y="55" className={styles.roomLabel}>
+                <rect x="15" y="105" width="240" height="660" className={styles.lot} />
+                <line x1="135" y1="135" x2="135" y2="735" className={styles.lotLine} />
+                <text x="30" y="82" className={styles.roomLabel}>
                   Estacionamiento
                 </text>
-                <rect x="55" y="300" width="70" height="34" rx="6" className={styles.furnitureFill} />
-                <circle cx="68" cy="336" r="6" className={styles.furniture} />
-                <circle cx="112" cy="336" r="6" className={styles.furniture} />
+                <rect x="82" y="450" width="105" height="51" rx="9" className={styles.furnitureFill} />
+                <circle cx="102" cy="504" r="9" className={styles.furniture} />
+                <circle cx="168" cy="504" r="9" className={styles.furniture} />
 
-                <rect x="180" y="70" width="580" height="440" className={styles.wall} fill="none" />
-                <line x1="470" y1="70" x2="470" y2="510" className={styles.wall} />
-                <line x1="180" y1="290" x2="760" y2="290" className={styles.wall} />
-                <line x1="180" y1="150" x2="180" y2="70" className={styles.wall} />
-                <line x1="180" y1="290" x2="180" y2="200" className={styles.wall} />
+                <rect x="270" y="105" width="870" height="660" className={styles.wall} fill="none" />
+                <line x1="705" y1="105" x2="705" y2="765" className={styles.wall} />
+                <line x1="270" y1="435" x2="1140" y2="435" className={styles.wall} />
+                <line x1="270" y1="225" x2="270" y2="105" className={styles.wall} />
+                <line x1="270" y1="435" x2="270" y2="300" className={styles.wall} />
 
-                <text x="200" y="95" className={styles.roomLabel}>
+                <text x="300" y="142" className={styles.roomLabel}>
                   Recepción
                 </text>
-                <rect x="205" y="200" width="110" height="38" rx="3" className={styles.furnitureFill} />
-                <rect x="235" y="185" width="30" height="16" className={styles.furniture} />
-                <circle cx="410" cy="245" r="14" className={styles.furnitureFill} />
-                <rect x="398" y="258" width="24" height="6" className={styles.furniture} />
-                <text x="386" y="278" className={styles.deskTag}>
+                <rect x="307" y="300" width="165" height="57" rx="4" className={styles.furnitureFill} />
+                <rect x="352" y="277" width="45" height="24" className={styles.furniture} />
+                <circle cx="615" cy="367" r="21" className={styles.furnitureFill} />
+                <rect x="597" y="387" width="36" height="9" className={styles.furniture} />
+                <text x="579" y="417" className={styles.deskTag}>
                   Visitante
                 </text>
 
-                <text x="490" y="95" className={styles.roomLabel}>
+                <text x="735" y="142" className={styles.roomLabel}>
                   Sala de descanso
                 </text>
-                <circle cx="670" cy="150" r="34" className={styles.furnitureFill} />
-                <circle cx="670" cy="105" r="8" className={styles.furniture} />
-                <circle cx="670" cy="195" r="8" className={styles.furniture} />
-                <circle cx="628" cy="150" r="8" className={styles.furniture} />
-                <circle cx="712" cy="150" r="8" className={styles.furniture} />
-                <rect x="580" y="215" width="150" height="26" className={styles.furnitureFill} />
-                <rect x="600" y="203" width="24" height="14" className={styles.furniture} />
-                <line x1="645" y1="241" x2="645" y2="255" className={styles.furniture} />
-                <line x1="638" y1="255" x2="652" y2="255" className={styles.furniture} />
-                <text x="580" y="260" className={styles.deskTag}>
+                <circle cx="1005" cy="225" r="51" className={styles.furnitureFill} />
+                <circle cx="1005" cy="157" r="12" className={styles.furniture} />
+                <circle cx="1005" cy="292" r="12" className={styles.furniture} />
+                <circle cx="942" cy="225" r="12" className={styles.furniture} />
+                <circle cx="1068" cy="225" r="12" className={styles.furniture} />
+                <rect x="870" y="322" width="225" height="39" className={styles.furnitureFill} />
+                <rect x="900" y="304" width="36" height="21" className={styles.furniture} />
+                <line x1="967" y1="361" x2="967" y2="382" className={styles.furniture} />
+                <line x1="957" y1="382" x2="978" y2="382" className={styles.furniture} />
+                <text x="870" y="390" className={styles.deskTag}>
                   Tomacorriente
                 </text>
 
-                <text x="200" y="315" className={styles.roomLabel}>
+                <text x="300" y="472" className={styles.roomLabel}>
                   Área administrativa
                 </text>
-                <rect x="205" y="335" width="95" height="55" rx="3" className={styles.furnitureFill} />
-                <rect x="220" y="345" width="30" height="18" className={styles.furniture} />
-                <text x="210" y="405" className={styles.deskTag}>
+                <rect x="307" y="502" width="142" height="82" rx="4" className={styles.furnitureFill} />
+                <rect x="330" y="517" width="45" height="27" className={styles.furniture} />
+                <text x="315" y="607" className={styles.deskTag}>
                   Tu escritorio
                 </text>
-                <rect x="330" y="335" width="90" height="55" rx="3" className={styles.furnitureFill} />
-                <rect x="345" y="345" width="30" height="18" className={styles.furniture} />
-                <rect x="205" y="420" width="95" height="55" rx="3" className={styles.furnitureFill} />
-                <rect x="220" y="430" width="30" height="18" className={styles.furniture} />
-                <rect x="330" y="420" width="90" height="55" rx="3" className={styles.furnitureFill} />
-                <rect x="345" y="430" width="30" height="18" className={styles.furniture} />
+                <rect x="495" y="502" width="135" height="82" rx="4" className={styles.furnitureFill} />
+                <rect x="517" y="517" width="45" height="27" className={styles.furniture} />
+                <rect x="307" y="630" width="142" height="82" rx="4" className={styles.furnitureFill} />
+                <rect x="330" y="645" width="45" height="27" className={styles.furniture} />
+                <rect x="495" y="630" width="135" height="82" rx="4" className={styles.furnitureFill} />
+                <rect x="517" y="645" width="45" height="27" className={styles.furniture} />
 
-                <text x="490" y="315" className={styles.roomLabel}>
+                <text x="735" y="472" className={styles.roomLabel}>
                   Pasillo / Archivo
                 </text>
-                <rect x="560" y="340" width="150" height="120" className={styles.furniture} fill="none" strokeDasharray="4 4" />
-                <text x="600" y="405" className={styles.deskTag}>
+                <rect x="840" y="510" width="225" height="180" className={styles.furniture} fill="none" strokeDasharray="4 4" />
+                <text x="900" y="607" className={styles.deskTag}>
                   Estantes
                 </text>
 
