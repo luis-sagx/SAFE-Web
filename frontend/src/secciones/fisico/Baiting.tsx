@@ -401,24 +401,28 @@ function Baiting() {
 
   function handleChoice(choice: Choice) {
     const siguiente = { ...resolved, [activeIdx!]: { level: choice.level, feedback: choice.feedback } }
+    const isComplete = Object.keys(siguiente).length === SCENARIOS.length
+    const niveles = isComplete ? Object.values(siguiente).map((r) => r.level) : []
 
     setResolved(siguiente)
     setTotalRisk((prev) => prev + choice.risk)
     setRevealPending(true)
     run.recordDecision({ caso: activeIdx, nivel: choice.level, riesgo: choice.risk })
 
+    if (isComplete) {
+      void run.finish({
+        endingId: niveles.join('-'),
+        outcome: niveles.includes('danger')
+          ? 'INCORRECTO'
+          : niveles.includes('warn')
+            ? 'PARCIAL'
+            : 'CORRECTO',
+      })
+    }
+
     stampFlash.trigger(() => {
       setRevealPending(false)
-      if (Object.keys(siguiente).length === SCENARIOS.length) {
-        const niveles = Object.values(siguiente).map((r) => r.level)
-        void run.finish({
-          endingId: niveles.join('-'),
-          outcome: niveles.includes('danger')
-            ? 'INCORRECTO'
-            : niveles.includes('warn')
-              ? 'PARCIAL'
-              : 'CORRECTO',
-        })
+      if (isComplete) {
         setShowReport(true)
         setView('map')
       }
