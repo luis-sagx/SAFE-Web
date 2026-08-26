@@ -163,68 +163,68 @@ function SlotItem({
 }) {
   if (itemKey === 'mug') {
     return (
-      <g className={styles.clickable} transform="translate(1164,465)" onClick={() => onNonRiskClick('mug')}>
-        <rect x="0" y="30" width="72" height="66" rx="9" fill="#fff9ec" stroke="#9c8a5e" strokeWidth="4" />
-        <path d="M72 42 h18 a18 18 0 0 1 0 42 h-18" fill="none" stroke="#9c8a5e" strokeWidth="4" />
+      <g className={styles.clickable} transform="translate(1000,500)" onClick={() => onNonRiskClick('mug')}>
+        <rect x="0" y="50" width="120" height="110" rx="15" fill="#fff9ec" stroke="#9c8a5e" strokeWidth="6" />
+        <path d="M120 70 h30 a30 30 0 0 1 0 70 h-30" fill="none" stroke="#9c8a5e" strokeWidth="6" />
       </g>
     )
   }
   if (itemKey === 'plant') {
     return (
-      <g className={styles.clickable} transform="translate(140,420)" onClick={() => onNonRiskClick('plant')}>
-        <rect x="24" y="102" width="60" height="48" rx="6" fill="#cbb98c" />
-        <path d="M54 102 Q30 60 54 18 Q78 60 54 102" fill="#5b8a5a" />
-        <path d="M54 102 Q78 66 102 36" stroke="#5b8a5a" strokeWidth="12" fill="none" strokeLinecap="round" />
+      <g className={styles.clickable} transform="translate(150,520)" onClick={() => onNonRiskClick('plant')}>
+        <rect x="40" y="160" width="100" height="80" rx="10" fill="#cbb98c" />
+        <path d="M90 160 Q50 90 90 20 Q130 90 90 160" fill="#5b8a5a" />
+        <path d="M90 160 Q130 110 170 50" stroke="#5b8a5a" strokeWidth="20" fill="none" strokeLinecap="round" />
       </g>
     )
   }
   if (itemKey === 'phone') {
     return (
-      <g className={styles.clickable} transform="translate(1164,420)" onClick={() => onToggle('phone')}>
+      <g className={styles.clickable} transform="translate(1000,300)" onClick={() => onToggle('phone')}>
         {!fixedState.phone ? (
           <g>
-            <rect x="0" y="0" width="78" height="174" rx="12" fill="#1b232c" />
-            <rect x="6" y="12" width="66" height="150" rx="6" fill="#3a4552" />
-            <rect x="9" y="60" width="60" height="60" rx="4" fill="#eef1f2" />
-            <text x="39" y="84" textAnchor="middle" fontFamily="'IBM Plex Mono',monospace" fontSize="12" fill="#4a5560">
+            <rect x="0" y="0" width="120" height="280" rx="18" fill="#1b232c" />
+            <rect x="10" y="20" width="100" height="240" rx="10" fill="#3a4552" />
+            <rect x="15" y="100" width="90" height="90" rx="6" fill="#eef1f2" />
+            <text x="60" y="135" textAnchor="middle" fontFamily="'IBM Plex Mono',monospace" fontSize="18" fill="#4a5560">
               Código:
             </text>
             <text
-              x="39"
-              y="108"
+              x="60"
+              y="165"
               textAnchor="middle"
               fontFamily="'IBM Plex Mono',monospace"
               fontWeight="600"
-              fontSize="15"
+              fontSize="22"
               fill="#1b232c"
             >
               482913
             </text>
           </g>
         ) : (
-          <rect x="0" y="0" width="78" height="174" rx="12" fill="#0d1319" />
+          <rect x="0" y="0" width="120" height="280" rx="18" fill="#0d1319" />
         )}
       </g>
     )
   }
   if (itemKey === 'notebook') {
     return (
-      <g className={styles.clickable} transform="translate(140,420)" onClick={() => onToggle('notebook')}>
+      <g className={styles.clickable} transform="translate(150,300)" onClick={() => onToggle('notebook')}>
         {!fixedState.notebook ? (
           <g>
-            <rect x="0" y="0" width="240" height="132" rx="6" fill="#f7f3e6" stroke="#b7a97e" strokeWidth="3" />
-            <line x1="114" y1="9" x2="114" y2="123" stroke="#b7a97e" strokeWidth="3" />
-            <path d="M18 36 h72 M18 57 h84 M18 78 h60" stroke="#9c8e6a" strokeWidth="2" />
-            <text x="180" y="51" textAnchor="middle" fontFamily="'IBM Plex Mono',monospace" fontSize="15" fill="#5f5238">
+            <rect x="0" y="0" width="360" height="200" rx="10" fill="#f7f3e6" stroke="#b7a97e" strokeWidth="4" />
+            <line x1="170" y1="15" x2="170" y2="185" stroke="#b7a97e" strokeWidth="4" />
+            <path d="M30 55 h110 M30 90 h130 M30 125 h90" stroke="#9c8e6a" strokeWidth="3" />
+            <text x="270" y="75" textAnchor="middle" fontFamily="'IBM Plex Mono',monospace" fontSize="22" fill="#5f5238">
               WiFi oficina:
             </text>
             <text
-              x="180"
-              y="84"
+              x="270"
+              y="125"
               textAnchor="middle"
               fontFamily="'IBM Plex Mono',monospace"
               fontWeight="600"
-              fontSize="15"
+              fontSize="22"
               fill="#2b2308"
             >
               Ofc-2026*Wpa
@@ -232,8 +232,8 @@ function SlotItem({
           </g>
         ) : (
           <g>
-            <rect x="18" y="18" width="204" height="96" rx="6" fill="#cfae7c" />
-            <path d="M54 66 l6 18 h72 l21-42" stroke="#5f4a2a" strokeWidth="2" fill="none" />
+            <rect x="30" y="30" width="300" height="140" rx="10" fill="#cfae7c" />
+            <path d="M80 100 l10 27 h110 l32-64" stroke="#5f4a2a" strokeWidth="3" fill="none" />
           </g>
         )}
       </g>
