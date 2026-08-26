@@ -1,8 +1,14 @@
+import { useState } from 'react'
+import { Link } from 'react-router'
+import { useAuth } from '../../context/AuthContext'
+import DossierHeader from '../../components/ui/DossierHeader'
 import StoryEscenario, { type ScreenNode } from '../../components/StoryEscenario'
 import type { Contexto } from '../../components/ui/ContextoEscenario'
 import type { Story } from '../../hooks/useStoryEngine'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
 import type { Senal } from '../../components/ui/PanelVeredicto'
+import dossierTheme from '../../styles/dossier-theme.module.css'
+import styles from './Foto.module.css'
 
 const ESCENA: ScreenView = {
   kind: 'web',
@@ -124,6 +130,56 @@ const CONTEXTO: Contexto = {
 }
 
 function DocumentoAbierto() {
+  const { displayName, roleLabel } = useAuth()
+  const [started, setStarted] = useState(false)
+
+  if (!started) {
+    return (
+      <div className={`${dossierTheme.dossierTheme} ${styles.app}`}>
+        <DossierHeader
+          caseLabel="RIESGO FÍSICO"
+          secondTab="INTRODUCCIÓN"
+          riskLabel="RIESGO"
+          gaugePercent={0}
+          gaugeValueText=""
+          gaugeColor="var(--color-primary)"
+          participantName={displayName}
+          participantRole={roleLabel}
+        />
+
+        <main className={styles.mainArea}>
+          <p className={styles.introText}>
+            Hola, {displayName}. Es una tarde normal en la oficina cuando ves que un compañero dejó su escritorio
+            sin vigilancia mientras va por café. Lo que te llama la atención: hay documentos confidenciales visibles.
+          </p>
+
+          <div className={styles.instructionsBox}>
+            <p className={styles.instructionsTitle}>Contexto</p>
+            <p className={styles.summary}>
+              En la mayoría de las oficinas, los documentos clasificados quedan a la vista todo el tiempo: evaluaciones
+              de desempeño, datos de clientes, contratos, salarios. Si alguien entra a esa área (otro compañero, un
+              visitante, limpieza), puede ver información que no le corresponde.
+            </p>
+            <p className={styles.summary}>
+              La decisión que tomes determina si accedes a esa información, si la reportas, o si simplemente la ignoras.
+              Cada opción tiene consecuencias diferentes.
+            </p>
+          </div>
+
+          <div className={styles.actionRow}>
+            <button type="button" className={styles.snapBtn} onClick={() => setStarted(true)}>
+              Comenzar escenario →
+            </button>
+          </div>
+        </main>
+
+        <Link to="/seccion/fisico" className={styles.backLink}>
+          ← Volver a la sección
+        </Link>
+      </div>
+    )
+  }
+
   return (
     <StoryEscenario
       escenarioId="fisico/documento-abierto"

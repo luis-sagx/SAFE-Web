@@ -1,8 +1,14 @@
+import { useState } from 'react'
+import { Link } from 'react-router'
+import { useAuth } from '../../context/AuthContext'
+import DossierHeader from '../../components/ui/DossierHeader'
 import StoryEscenario, { type ScreenNode } from '../../components/StoryEscenario'
 import type { Contexto } from '../../components/ui/ContextoEscenario'
 import type { Story } from '../../hooks/useStoryEngine'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
 import type { Senal } from '../../components/ui/PanelVeredicto'
+import dossierTheme from '../../styles/dossier-theme.module.css'
+import styles from './Foto.module.css'
 
 const ESCENA: ScreenView = {
   kind: 'web',
@@ -114,6 +120,55 @@ const CONTEXTO: Contexto = {
 }
 
 function PantallaDesbloqueada() {
+  const { displayName, roleLabel } = useAuth()
+  const [started, setStarted] = useState(false)
+
+  if (!started) {
+    return (
+      <div className={`${dossierTheme.dossierTheme} ${styles.app}`}>
+        <DossierHeader
+          caseLabel="RIESGO FÍSICO"
+          secondTab="INTRODUCCIÓN"
+          riskLabel="RIESGO"
+          gaugePercent={0}
+          gaugeValueText=""
+          gaugeColor="var(--color-primary)"
+          participantName={displayName}
+          participantRole={roleLabel}
+        />
+
+        <main className={styles.mainArea}>
+          <p className={styles.introText}>
+            Hola, {displayName}. Acabas de llegar a tu escritorio después del café y algo te llama la atención: la
+            pantalla de tu compañero está desbloqueada con sistemas y datos sensibles abiertos en las aplicaciones.
+          </p>
+
+          <div className={styles.instructionsBox}>
+            <p className={styles.instructionsTitle}>Contexto</p>
+            <p className={styles.summary}>
+              Una computadora desbloqueada y desatendida es una oportunidad de oro para alguien con malas intenciones:
+              desde acceder a información sensible hasta modificar datos o instalar malware. Lo peligroso es que
+              cualquiera que pase (compañero, visitante, limpieza) puede hacerlo.
+            </p>
+            <p className={styles.summary}>
+              Tu decisión determina si proteges el equipo, accedes a los datos, o simplemente ignoras lo que ves.
+            </p>
+          </div>
+
+          <div className={styles.actionRow}>
+            <button type="button" className={styles.snapBtn} onClick={() => setStarted(true)}>
+              Comenzar escenario →
+            </button>
+          </div>
+        </main>
+
+        <Link to="/seccion/fisico" className={styles.backLink}>
+          ← Volver a la sección
+        </Link>
+      </div>
+    )
+  }
+
   return (
     <StoryEscenario
       escenarioId="fisico/pantalla-desbloqueada"
