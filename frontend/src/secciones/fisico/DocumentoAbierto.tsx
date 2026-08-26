@@ -6,13 +6,14 @@ import FlashOverlay from '../../components/ui/FlashOverlay'
 import { useFlashTransition } from '../../hooks/useFlashTransition'
 import { useScenarioRun } from '../../hooks/useScenarioRun'
 import dossierTheme from '../../styles/dossier-theme.module.css'
-import styles from './Foto.module.css'
+import styles from './Baiting.module.css'
 
 type Level = 'safe' | 'warn' | 'danger'
 
 interface Choice {
   label: string
   level: Level
+  risk: number
   feedback: string
 }
 
@@ -20,54 +21,72 @@ function DocumentoAbierto() {
   const { displayName, roleLabel } = useAuth()
   const run = useScenarioRun('fisico/documento-abierto')
 
-  const [decided, setDecided] = useState(false)
-  const [selectedChoice, setSelectedChoice] = useState<Choice | null>(null)
+  const [choicesShown, setChoicesShown] = useState(false)
+  const [resolved, setResolved] = useState<{ level: Level; feedback: string } | null>(null)
+  const [totalRisk, setTotalRisk] = useState(0)
+  const [revealPending, setRevealPending] = useState(false)
+
   const flash = useFlashTransition()
+  const stampFlash = useFlashTransition()
 
   const choices: Choice[] = [
     {
       label: 'Leer rápido el documento para saber qué contiene',
       level: 'danger',
+      risk: 35,
       feedback:
-        'Acceder a información confidencial sin autorización es violación de privacidad y políticas de seguridad, aunque sea "un vistazo rápido". No importa lo que pretenda ser el documento.',
+        'Acceder a información confidencial sin autorización es violación de privacidad y políticas de seguridad. No importa que sea "un vistazo rápido": viste datos que no autorizaban que vieras.',
     },
     {
       label: 'Fotografiar el documento con el celular',
       level: 'danger',
+      risk: 40,
       feedback:
-        'Capturar documentos confidenciales es aún más grave: ahora la información está en tu dispositivo personal, posiblemente sincronizado a la nube, sin control de la empresa.',
+        'Capturar documentos confidenciales es aún más grave: ahora la información está en tu dispositivo personal, posiblemente sincronizado a la nube, completamente fuera del control de la empresa.',
     },
     {
-      label: 'Dejarla ahí, no es tu asunto',
+      label: 'Dejarla ahí, no es mi responsabilidad',
       level: 'warn',
+      risk: 15,
       feedback:
-        'Mejor que leerla, pero no reportar un documento confidencial expuesto deja el riesgo activo. Cualquier persona que pase por ese escritorio puede verlo o copiarlo.',
+        'No accediste a los datos, pero no reportar un documento confidencial expuesto deja el riesgo activo. Cualquier persona que pase puede leerlo, copiarlo o fotografiarlo.',
     },
     {
-      label: 'Avisar al dueño del escritorio que dejó documentos visibles',
+      label: 'Avisar discretamente al compañero que dejó documentos visibles',
       level: 'safe',
+      risk: 0,
       feedback:
-        'Correcto. Reportar de forma discreta al compañero le permite guardar sus documentos de inmediato. Así proteges tanto la información como su responsabilidad ante la empresa.',
+        'Correcto. Reportar de forma discreta al dueño le permite guardar sus documentos de inmediato. Proteges tanto la información como su responsabilidad ante la empresa.',
     },
     {
-      label: 'Reportar a Recursos Humanos o Seguridad de inmediato',
+      label: 'Reportar a Recursos Humanos o Seguridad',
       level: 'safe',
+      risk: 0,
       feedback:
-        'También correcto, aunque es más severo que avisar al dueño. Es la ruta adecuada si se trata de documentos de otros (clientes, empleados), no solo del compañero.',
+        'También correcto. Si se trata de documentos de terceros (clientes, empleados), reportar a las autoridades correspondientes es el protocolo adecuado.',
     },
   ]
 
-  const handleChoice = (choice: Choice) => {
-    setSelectedChoice(choice)
-    setDecided(true)
-
+  const handleFlashClick = () => {
     flash.trigger(() => {
-      run.recordDecision({
-        opcion: choice.label,
-        nivel: choice.level,
-      })
+      setChoicesShown(true)
+    }, 190)
+  }
 
-      run.finish({
+  const handleChoice = (choice: Choice) => {
+    setResolved({ level: choice.level, feedback: choice.feedback })
+    setTotalRisk(choice.risk)
+    setRevealPending(true)
+
+    run.recordDecision({
+      opcion: choice.label,
+      nivel: choice.level,
+      riesgo: choice.risk,
+    })
+
+    stampFlash.trigger(() => {
+      setRevealPending(false)
+      void run.finish({
         endingId: choice.level,
         outcome:
           choice.level === 'safe'
@@ -76,63 +95,115 @@ function DocumentoAbierto() {
               ? 'PARCIAL'
               : 'INCORRECTO',
       })
-    }, 250)
+    }, 750)
   }
 
-  const getResultLevel = () => {
-    if (!selectedChoice) return null
-    return selectedChoice.level === 'safe' ? 'safe' : 'danger'
-  }
+  const verdictLabel = (level: Level) =>
+    level === 'safe' ? 'Decisión segura' : level === 'warn' ? 'Observación' : 'Riesgo detectado'
 
-  const resultText = selectedChoice
-    ? selectedChoice.level === 'safe'
-      ? 'Actuaste correctamente'
-      : selectedChoice.level === 'warn'
-        ? 'No fue lo ideal'
-        : 'Violaste políticas de seguridad'
-    : ''
+  const stampWord = (level: Level) =>
+    level === 'safe' ? 'APROBADO' : level === 'warn' ? 'OBSERVACIÓN' : 'RIESGO'
+
+  const showFeedback = !!resolved && !revealPending
 
   return (
     <div className={`${dossierTheme.dossierTheme} ${styles.app}`}>
       <DossierHeader
         caseLabel="CASO #0725"
-        secondTab="DECISIÓN"
-        riskLabel="SEGURIDAD"
-        gaugePercent={decided ? 100 : 0}
-        gaugeValueText={decided ? '✓' : 'PENDIENTE'}
-        gaugeColor={decided ? 'var(--safe)' : 'var(--amber)'}
+        secondTab="ESCRITORIO"
+        riskLabel="NIVEL DE RIESGO"
+        gaugePercent={totalRisk}
+        gaugeValueText={`${totalRisk}%`}
+        gaugeColor={
+          totalRisk <= 15 ? 'var(--safe)' : totalRisk <= 30 ? 'var(--amber)' : 'var(--danger)'
+        }
         participantName={displayName}
         participantRole={roleLabel}
       />
 
       <main className={styles.mainArea}>
-        <p className={styles.introText}>Corporativo · Oficina abierta</p>
-
         <div className={styles.instructionsBox}>
           <p className={styles.instructionsTitle}>Situación</p>
-          <p style={{ marginBottom: '1rem' }}>
-            Son las 12:30 PM. Tu compañero Andrés se levanta de su escritorio diciendo "voy al café, regreso en 15 minutos".
-            Cuando se va, ves que dejó su monitor encendido con varios documentos impresos sobre el escritorio, entre ellos:
-          </p>
-          <ul style={{ marginBottom: '1rem' }}>
-            <li>Un informe de evaluación de desempeño de empleados</li>
-            <li>Datos de contacto de clientes con montos de contrato</li>
-            <li>Accesos y contraseñas de sistemas (parcialmente tapados)</li>
-          </ul>
           <p>
-            Otros compañeros pasan por ese pasillo frecuentemente. El escritorio está en una zona común donde cualquiera puede verlo.
+            Son las 12:30 PM. Tu compañero Andrés se levanta diciendo "voy al café, regreso en 15 minutos". Cuando se va,
+            ves que dejó su escritorio con varios documentos impresos visibles: evaluaciones de desempeño, datos de clientes
+            con montos de contrato, y accesos a sistemas.
+          </p>
+          <p style={{ marginTop: '0.5rem' }}>
+            Otros compañeros pasan frecuentemente por ese pasillo. El escritorio está en una zona común.
           </p>
         </div>
 
         <p className={styles.npcLine}>¿Qué haces?</p>
 
-        {!decided && (
+        <div className={styles.sceneWrap}>
+          <svg viewBox="0 0 500 300" style={{ width: '100%', maxWidth: '500px', margin: '2rem auto' }}>
+            {/* Escritorio */}
+            <rect x="50" y="100" width="400" height="150" rx="8" fill="#c9b89c" stroke="#8a6f54" strokeWidth="2" />
+
+            {/* Monitor */}
+            <rect x="80" y="60" width="120" height="80" rx="4" fill="#1b232c" stroke="#333" strokeWidth="1.5" />
+            <rect x="85" y="65" width="110" height="65" fill="#3a4552" />
+            <rect x="90" y="115" width="100" height="15" fill="#8a6f54" />
+
+            {/* Documento 1 - confidencial */}
+            <g>
+              <rect x="220" y="110" width="100" height="70" fill="#f5f1e6" stroke="#8b7355" strokeWidth="1.5" />
+              <text x="270" y="125" textAnchor="middle" fontSize="10" fontWeight="bold" fill="#d9534f">
+                CONFIDENCIAL
+              </text>
+              <line x1="230" y1="135" x2="310" y2="135" stroke="#bbb" strokeWidth="1" />
+              <line x1="230" y1="145" x2="310" y2="145" stroke="#bbb" strokeWidth="1" />
+              <line x1="230" y1="155" x2="290" y2="155" stroke="#bbb" strokeWidth="1" />
+              <line x1="230" y1="165" x2="310" y2="165" stroke="#bbb" strokeWidth="1" />
+            </g>
+
+            {/* Documento 2 */}
+            <g>
+              <rect x="330" y="120" width="95" height="60" fill="#fff9f0" stroke="#9c8a6f" strokeWidth="1.5" transform="rotate(-8 377.5 150)" />
+              <line x1="340" y1="130" x2="420" y2="130" stroke="#ccc" strokeWidth="1" />
+              <line x1="340" y1="142" x2="420" y2="142" stroke="#ccc" strokeWidth="1" />
+            </g>
+
+            {/* Nota adhesiva con contraseña */}
+            <g>
+              <rect x="240" y="70" width="50" height="35" fill="#f4d94a" stroke="#c9ad1f" strokeWidth="1" transform="rotate(12 265 87.5)" />
+              <text x="265" y="82" textAnchor="middle" fontSize="7" fontWeight="bold" fill="#2b2308">
+                WiFi Ofc:
+              </text>
+              <text x="265" y="95" textAnchor="middle" fontSize="6" fill="#2b2308" fontFamily="monospace">
+                Of2026*Net!
+              </text>
+            </g>
+
+            {/* Teclado */}
+            <rect x="120" y="200" width="140" height="30" rx="3" fill="#1b232c" stroke="#333" strokeWidth="1" />
+
+            {/* Flash interactivo */}
+            {!choicesShown && (
+              <g className={styles.sceneFlash} transform="translate(150, 90)" onClick={handleFlashClick} style={{ cursor: 'pointer' }}>
+                <circle className={styles.flashPulseSpark} r="20" />
+                <circle className={styles.flashDot} r="16" fill="#ff9800" opacity="0.8" />
+                <text className={styles.flashBoltText} y="2" fontSize="20">
+                  ⚡
+                </text>
+              </g>
+            )}
+          </svg>
+        </div>
+
+        {choicesShown && !showFeedback && (
           <div style={{ marginTop: '2rem' }}>
+            <p style={{ textAlign: 'center', marginBottom: '1rem', fontStyle: 'italic', color: '#666' }}>
+              Elige tu acción:
+            </p>
             <div
               style={{
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '0.75rem',
+                maxWidth: '600px',
+                margin: '0 auto',
               }}
             >
               {choices.map((choice, idx) => (
@@ -140,13 +211,22 @@ function DocumentoAbierto() {
                   key={idx}
                   onClick={() => handleChoice(choice)}
                   style={{
-                    padding: '1rem',
-                    border: '1px solid #ccc',
+                    padding: '0.75rem 1rem',
+                    border: '1px solid #ddd',
                     borderRadius: '4px',
                     textAlign: 'left',
                     cursor: 'pointer',
                     backgroundColor: '#fff',
-                    fontSize: '0.95rem',
+                    fontSize: '0.9rem',
+                    transition: 'all 0.2s',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = '#f5f5f5'
+                    e.currentTarget.style.borderColor = '#999'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = '#fff'
+                    e.currentTarget.style.borderColor = '#ddd'
                   }}
                 >
                   {choice.label}
@@ -156,20 +236,45 @@ function DocumentoAbierto() {
           </div>
         )}
 
-        {decided && selectedChoice && (
-          <div className={styles.report} style={{ marginTop: '2rem' }}>
-            <span
-              className={`${styles.reportStamp} ${getResultLevel() ? styles[getResultLevel()!] : ''}`}
+        {showFeedback && resolved && (
+          <div style={{ marginTop: '2rem', maxWidth: '600px', margin: '2rem auto' }}>
+            <div
+              style={{
+                backgroundColor: resolved.level === 'safe' ? '#e8f5e9' : '#fff3e0',
+                border: `2px solid ${resolved.level === 'safe' ? '#4caf50' : resolved.level === 'warn' ? '#ff9800' : '#d32f2f'}`,
+                borderRadius: '4px',
+                padding: '1rem',
+              }}
             >
-              {resultText.toUpperCase()}
-            </span>
-            <h2>{resultText}</h2>
-            <p className={styles.summary}>{selectedChoice.feedback}</p>
+              <div
+                style={{
+                  display: 'inline-block',
+                  padding: '0.5rem 1rem',
+                  backgroundColor: resolved.level === 'safe' ? '#4caf50' : resolved.level === 'warn' ? '#ff9800' : '#d32f2f',
+                  color: 'white',
+                  borderRadius: '3px',
+                  fontSize: '0.85rem',
+                  fontWeight: 'bold',
+                  marginBottom: '1rem',
+                }}
+              >
+                {stampWord(resolved.level)}
+              </div>
+              <h3 style={{ margin: '0.5rem 0', color: '#333' }}>{verdictLabel(resolved.level)}</h3>
+              <p style={{ margin: '0.5rem 0', lineHeight: '1.6', color: '#555' }}>{resolved.feedback}</p>
 
-            <div style={{ marginTop: '2rem' }}>
               <button
                 onClick={() => window.location.reload()}
-                className={styles.restartBtn}
+                style={{
+                  marginTop: '1rem',
+                  padding: '0.75rem 1.5rem',
+                  backgroundColor: '#333',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontSize: '0.9rem',
+                }}
               >
                 Repetir el escenario
               </button>
@@ -178,7 +283,7 @@ function DocumentoAbierto() {
         )}
       </main>
 
-      <FlashOverlay active={flash.active} />
+      <FlashOverlay active={flash.active || stampFlash.active} />
 
       <Link to="/seccion/fisico" className={styles.backLink}>
         ← Volver a la sección
