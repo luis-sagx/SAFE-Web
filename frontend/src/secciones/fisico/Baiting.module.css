@@ -297,8 +297,8 @@
 .sceneView {
   animation: fadeIn 0.25s ease both;
   display: grid;
-  grid-template-columns: 1fr 1.5fr;
-  gap: 16px;
+  grid-template-columns: 350px 1fr;
+  gap: 20px;
   align-items: start;
 }
 
@@ -376,6 +376,7 @@
   font-size: 0.8rem;
   color: var(--color-muted);
   margin-bottom: 10px;
+  grid-column: 2;
 }
 
 .sceneNarrative {
@@ -383,6 +384,7 @@
   line-height: 1.55;
   margin: 0 0 8px;
   color: var(--color-body);
+  grid-column: 2;
 }
 
 .flashHint {
@@ -392,6 +394,7 @@
   font-size: 0.66rem;
   color: var(--color-muted);
   margin-bottom: 18px;
+  grid-column: 2;
 }
 
 .sceneFlash {
@@ -461,6 +464,7 @@
 .feedbackPanel {
   margin-top: 6px;
   animation: fadeUp 0.4s ease both;
+  grid-column: 2;
 }
 
 @keyframes fadeUp {
