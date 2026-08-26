@@ -170,7 +170,7 @@ function PantallaDesbloqueada() {
       decision={decision}
       resultado={engine.resultado}
       onEmpezar={engine.restart}
-      dispositivo="telefono"
+      dispositivo="escritorio"
     />
   )
 }
