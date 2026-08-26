@@ -513,7 +513,7 @@ function Foto() {
 
   const pantalla = (
     <div className={`${dossierTheme.dossierTheme} ${styles.app}`}>
-      {showReport && (
+{showReport && (
         <DossierHeader
           caseLabel="RIESGO FÍSICO"
           secondTab={`NIVEL ${levelIndex + 1}/${LEVELS.length}`}
@@ -524,6 +524,16 @@ function Foto() {
           participantName={displayName}
           participantRole=""
         />
+      )}
+
+      {!showReport && (
+        <div style={{ padding: '12px 20px', display: 'flex', alignItems: 'center', gap: '12px', fontSize: '0.75rem', color: 'var(--color-muted)' }}>
+          <span>TIEMPO</span>
+          <div style={{ flex: 1, height: '6px', backgroundColor: 'var(--color-hairline)', borderRadius: '3px', overflow: 'hidden' }}>
+            <div style={{ width: `${(timeLeft / level.time) * 100}%`, height: '100%', backgroundColor: gaugeColor, transition: 'width 0.1s linear' }} />
+          </div>
+          <span style={{ minWidth: '30px', textAlign: 'right' }}>{Math.ceil(timeLeft)}s</span>
+        </div>
       )}
 
       <main className={styles.mainArea}>
