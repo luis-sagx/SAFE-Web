@@ -119,9 +119,9 @@ function ConsequenceArt({ level }: { level: Level }) {
         <rect width="400" height="220" fill="#1b232c" />
         <rect x="90" y="35" width="220" height="130" rx="6" fill="#0d1319" />
         <rect x="105" y="47" width="190" height="100" fill="#3d0f0f" />
-        <rect className={styles.glitchBar} x="105" y="66" width="190" height="7" fill="#c0453a" opacity="0.65" />
-        <rect className={styles.glitchBar} x="105" y="96" width="140" height="7" fill="#e2574a" opacity="0.5" />
-        <rect className={styles.glitchBar} x="140" y="118" width="150" height="7" fill="#c0453a" opacity="0.65" />
+        <rect className={styles.glitchBar} x="105" y="66" width="190" height="7" fill="#b4342f" opacity="0.65" />
+        <rect className={styles.glitchBar} x="105" y="96" width="140" height="7" fill="#d63031" opacity="0.5" />
+        <rect className={styles.glitchBar} x="140" y="118" width="150" height="7" fill="#b4342f" opacity="0.65" />
         <text
           x="200"
           y="105"
@@ -146,8 +146,8 @@ function ConsequenceArt({ level }: { level: Level }) {
         <rect width="400" height="220" fill="#f6efdd" />
         <rect x="150" y="35" width="100" height="140" rx="8" fill="#fff9ec" stroke="#9c8a5e" strokeWidth="3" />
         <rect x="172" y="25" width="56" height="16" rx="4" fill="#9c8a5e" />
-        <rect x="196" y="80" width="8" height="46" rx="4" fill="#d99b34" />
-        <circle cx="200" cy="140" r="6" fill="#d99b34" />
+        <rect x="196" y="80" width="8" height="46" rx="4" fill="#ab6400" />
+        <circle cx="200" cy="140" r="6" fill="#ab6400" />
       </svg>
     )
   }
@@ -158,7 +158,7 @@ function ConsequenceArt({ level }: { level: Level }) {
       <rect x="172" y="25" width="56" height="16" rx="4" fill="#9c8a5e" />
       <path
         d="M175 105 L198 128 L228 82"
-        stroke="#3f8f74"
+        stroke="#16a34a"
         strokeWidth="9"
         fill="none"
         strokeLinecap="round"
