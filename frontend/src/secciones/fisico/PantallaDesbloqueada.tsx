@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router'
 import { useAuth } from '../../context/AuthContext'
-import DossierHeader from '../../components/ui/DossierHeader'
 import StoryEscenario, { type ScreenNode } from '../../components/StoryEscenario'
 import type { Contexto } from '../../components/ui/ContextoEscenario'
 import type { Story } from '../../hooks/useStoryEngine'
@@ -120,38 +119,31 @@ const CONTEXTO: Contexto = {
 }
 
 function PantallaDesbloqueada() {
-  const { displayName, roleLabel } = useAuth()
+  const { displayName } = useAuth()
   const [started, setStarted] = useState(false)
 
   if (!started) {
     return (
       <div className={`${dossierTheme.dossierTheme} ${styles.app}`}>
-        <DossierHeader
-          caseLabel="RIESGO FÍSICO"
-          secondTab="INTRODUCCIÓN"
-          riskLabel="RIESGO"
-          gaugePercent={0}
-          gaugeValueText=""
-          gaugeColor="var(--color-primary)"
-          participantName={displayName}
-          participantRole={roleLabel}
-        />
-
         <main className={styles.mainArea}>
           <p className={styles.introText}>
-            Hola, {displayName}. Acabas de llegar a tu escritorio después del café y algo te llama la atención: la
-            pantalla de tu compañero está desbloqueada con sistemas y datos sensibles abiertos en las aplicaciones.
+            Hola, {displayName}. Esto es lo que te está pasando:
           </p>
 
           <div className={styles.instructionsBox}>
-            <p className={styles.instructionsTitle}>Contexto</p>
+            <p className={styles.instructionsTitle}>Antes de esto</p>
             <p className={styles.summary}>
-              Una computadora desbloqueada y desatendida es una oportunidad de oro para alguien con malas intenciones:
-              desde acceder a información sensible hasta modificar datos o instalar malware. Lo peligroso es que
-              cualquiera que pase (compañero, visitante, limpieza) puede hacerlo.
+              Trabajas en una oficina donde cada persona es responsable de bloquear su pantalla cuando se aleja del escritorio.
+              Es una norma básica de seguridad: nunca debes dejar una máquina desbloqueada, aunque solo sea por un momento.
             </p>
+          </div>
+
+          <div className={styles.instructionsBox}>
+            <p className={styles.instructionsTitle}>Lo que acaba de pasar</p>
             <p className={styles.summary}>
-              Tu decisión determina si proteges el equipo, accedes a los datos, o simplemente ignoras lo que ves.
+              <strong>Pausa de café.</strong> Acabas de llegar a tu escritorio después del café y ves algo preocupante: la pantalla de tu compañero
+              quedó completamente desbloqueada. Tiene abiertos tres sistemas: el sistema de nómina (con salarios de todo el equipo), su correo con
+              proyectos confidenciales, y la app de banca para hacer transferencias desde el área contable.
             </p>
           </div>
 

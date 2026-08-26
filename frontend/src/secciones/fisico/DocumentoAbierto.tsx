@@ -135,33 +135,27 @@ function DocumentoAbierto() {
   if (!started) {
     return (
       <div className={`${dossierTheme.dossierTheme} ${styles.app}`}>
-        <DossierHeader
-          caseLabel="RIESGO FÍSICO"
-          secondTab="INTRODUCCIÓN"
-          riskLabel="RIESGO"
-          gaugePercent={0}
-          gaugeValueText=""
-          gaugeColor="var(--color-primary)"
-          participantName={displayName}
-          participantRole={roleLabel}
-        />
-
         <main className={styles.mainArea}>
           <p className={styles.introText}>
-            Hola, {displayName}. Es una tarde normal en la oficina cuando ves que un compañero dejó su escritorio
-            sin vigilancia mientras va por café. Lo que te llama la atención: hay documentos confidenciales visibles.
+            Hola, {displayName}. Esto es lo que te está pasando:
           </p>
 
           <div className={styles.instructionsBox}>
-            <p className={styles.instructionsTitle}>Contexto</p>
+            <p className={styles.instructionsTitle}>Antes de esto</p>
             <p className={styles.summary}>
-              Tu compañero Andrés se fue al café por 15 minutos. En su escritorio ves: evaluaciones de desempeño de tu
-              equipo, datos de clientes con montos de contrato, y una nota adhesiva con la contraseña del WiFi. Otros
-              compañeros caminan frecuentemente por este pasillo.
+              Trabajas en una oficina donde hay documentos clasificados y confidenciales en cada escritorio. Tus compañeros,
+              como tú, son responsables de proteger estos documentos cuando se alejan de sus puestos. El pasillo por donde
+              caminas frecuentemente tiene varios escritorios a la vista.
             </p>
+          </div>
+
+          <div className={styles.instructionsBox}>
+            <p className={styles.instructionsTitle}>Lo que acaba de pasar</p>
             <p className={styles.summary}>
-              Cuando inspecciones un documento, podrás interactuar directamente con él. Cada acción tiene
-              consecuencias diferentes.
+              <strong>Esta tarde, pausa de café.</strong> Pasas por el escritorio de tu compañero Andrés cuando se levanta diciendo
+              {'"'}me voy por café, regreso en 15 minutos{'"'}. Mientras se va, ves que dejó su escritorio desatendido con tres tipos
+              de documentos visibles: evaluaciones de desempeño de tu equipo, datos de clientes con montos de contrato, y una nota
+              adhesiva con la contraseña del WiFi de la oficina.
             </p>
           </div>
 

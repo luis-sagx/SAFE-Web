@@ -497,29 +497,25 @@ function Foto() {
       <div className={`${dossierTheme.dossierTheme} ${styles.app}`}>
         <main className={styles.mainArea}>
           <p className={styles.introText}>
-            Hola, {displayName}. Hoy es un día normal en Induplast Andina S.A. — Valeria de Comunicaciones va a pasar por tu área
-            para tomar fotos para el boletín interno. Tienes que preparar tu escritorio para que no quede nada expuesto en la foto publicada.
+            Hola, {displayName}. Esto es lo que te está pasando:
           </p>
 
           <div className={styles.instructionsBox}>
-            <p className={styles.instructionsTitle}>Contexto</p>
+            <p className={styles.instructionsTitle}>Antes de esto</p>
             <p className={styles.summary}>
-              Tu escritorio tiene objetos que pueden revelar información sensible si quedan visibles: la pantalla del computador con datos
-              de nómina, notas adhesivas con contraseñas, carpetas con información de clientes, tu gafete de acceso, el teléfono con códigos
-              de verificación, y libretas con datos anotados. Cada uno de estos objetos debe ocultarse o guardarse antes de que Valeria dispare la foto.
-            </p>
-            <p className={styles.summary}>
-              Tu decisión en cada nivel determina cuánta información sensible queda expuesta en el boletín interno y en las redes de la empresa.
+              Trabajas en una oficina donde se fotografía a los empleados regularmente para materiales internos. Tu escritorio, como el de todos, tiene objetos
+              que contienen información sensible: pantallas con datos de nómina, notas con contraseñas, carpetas de clientes, gafetes con códigos de acceso,
+              teléfonos con notificaciones, libretas con anotaciones.
             </p>
           </div>
 
           <div className={styles.instructionsBox}>
-            <p className={styles.instructionsTitle}>Cómo jugar</p>
-            <ul className={styles.instructionsList}>
-              <li><strong>Nivel 1 (20s):</strong> Escritorio con objetos básicos. Tiempo generoso para prepararse.</li>
-              <li><strong>Nivel 2 (16s):</strong> Cierre de mes. Menos tiempo, más objetos en riesgo.</li>
-              <li><strong>Nivel 3 (12s):</strong> Reunión urgente. Máxima dificultad, presión de tiempo.</li>
-            </ul>
+            <p className={styles.instructionsTitle}>Lo que acaba de pasar</p>
+            <p className={styles.summary}>
+              <strong>Hace unos minutos</strong> Valeria de Comunicaciones te avisó que viene a fotografiar tu puesto para el boletín interno. La foto se publicará
+              en la intranet y en las redes de la empresa. Tienes poco tiempo para preparar tu escritorio: debes ocultar o guardar cualquier objeto que pueda revelar
+              información sensible antes de que dispare la cámara.
+            </p>
           </div>
 
           <div className={styles.actionRow}>

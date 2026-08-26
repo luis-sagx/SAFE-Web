@@ -424,33 +424,25 @@ function Baiting() {
       <div className={`${dossierTheme.dossierTheme} ${styles.app}`}>
         <main className={styles.mainArea}>
           <p className={styles.introText}>
-            Hola, {displayName}. Hoy circulan varias historias sobre dispositivos USB de origen desconocido en la oficina.
-            Pasarás por diferentes zonas y te encontrarás con objetos sospechosos. Debes tomar decisiones inteligentes sobre
-            qué hacer con cada uno.
+            Hola, {displayName}. Esto es lo que te está pasando:
           </p>
 
           <div className={styles.instructionsBox}>
-            <p className={styles.instructionsTitle}>Contexto</p>
+            <p className={styles.instructionsTitle}>Antes de esto</p>
             <p className={styles.summary}>
-              Los ataques USB son efectivos porque los atacantes los dejan en espacios comunes: estacionamiento, salas de descanso,
-              escritorios, recepción. Algunos están etiquetados como promocionales ("regalo de empresa") o atractivos ("nómina adjunta").
-              Otros son cables o dispositivos de carga olvidados. Si conectas un USB comprometido, puede ejecutar malware, capturar
-              contraseñas o comprometer sistemas sin que lo notes.
-            </p>
-            <p className={styles.summary}>
-              Tus decisiones en cada zona determinarán el nivel de riesgo acumulado. Cada acción tiene consecuencias diferentes.
+              En tu oficina, los espacios comunes (estacionamiento, salas de descanso, escritorios, recepción) tienen varios puntos donde alguien podría dejar un dispositivo:
+              un USB en el escritorio, un cable en un tomacorriente, un dispositivo de carga en la sala de descanso. Sabes que los ataques USB son comunes pero raramente los ves venir
+              porque generalmente parecen inofensivos: están etiquetados de forma atractiva ("nómina", "bonificación") o promocional ("regalo de la empresa").
             </p>
           </div>
 
           <div className={styles.instructionsBox}>
-            <p className={styles.instructionsTitle}>Cómo jugar</p>
-            <ul className={styles.instructionsList}>
-              <li><strong>Navega el plano</strong> y haz clic en las 4 zonas (Estacionamiento, Sala de descanso, Escritorio, Recepción)</li>
-              <li><strong>Inspecciona</strong> el dispositivo sospechoso tocando el destello ⚡</li>
-              <li><strong>Elige una acción</strong> — cada opción tiene un nivel de riesgo diferente</li>
-              <li><strong>Observa el resultado</strong> y cómo afecta tu medidor de riesgo acumulado</li>
-              <li><strong>Al final</strong> verás un informe detallado de tus decisiones y el riesgo total de la sesión</li>
-            </ul>
+            <p className={styles.instructionsTitle}>Lo que acaba de pasar</p>
+            <p className={styles.summary}>
+              <strong>Hoy</strong> circulan varias historias sobre dispositivos USB y accesorios de carga de origen desconocido encontrados en diferentes zonas de la oficina.
+              Pasarás por las 4 zonas principales de tu área de trabajo y te encontrarás con objetos sospechosos. Debes tomar decisiones sobre qué hacer con cada uno
+              — cada acción tiene consecuencias diferentes en el nivel de riesgo total.
+            </p>
           </div>
 
           <div className={styles.actionRow}>

@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router'
 import { useAuth } from '../../context/AuthContext'
-import DossierHeader from '../../components/ui/DossierHeader'
 import StoryEscenario, { type ScreenNode } from '../../components/StoryEscenario'
 import type { Contexto } from '../../components/ui/ContextoEscenario'
 import type { Story } from '../../hooks/useStoryEngine'
@@ -119,38 +118,31 @@ const CONTEXTO: Contexto = {
 }
 
 function ConexionPublica() {
-  const { displayName, roleLabel } = useAuth()
+  const { displayName } = useAuth()
   const [started, setStarted] = useState(false)
 
   if (!started) {
     return (
       <div className={`${dossierTheme.dossierTheme} ${styles.app}`}>
-        <DossierHeader
-          caseLabel="RIESGO FÍSICO"
-          secondTab="INTRODUCCIÓN"
-          riskLabel="RIESGO"
-          gaugePercent={0}
-          gaugeValueText=""
-          gaugeColor="var(--color-primary)"
-          participantName={displayName}
-          participantRole={roleLabel}
-        />
-
         <main className={styles.mainArea}>
           <p className={styles.introText}>
-            Hola, {displayName}. Estás en un café esperando a un cliente. Necesitas enviar un informe con datos de
-            proyectos antes de la reunión. El café ofrece WiFi público gratis, pero también tienes datos móviles.
+            Hola, {displayName}. Esto es lo que te está pasando:
           </p>
 
           <div className={styles.instructionsBox}>
-            <p className={styles.instructionsTitle}>Contexto</p>
+            <p className={styles.instructionsTitle}>Antes de esto</p>
             <p className={styles.summary}>
-              Las redes WiFi públicas sin contraseña no tienen encriptación. Eso significa que cualquiera conectado a
-              la misma red puede ver todo lo que transmites: emails, credenciales, documentos, chats. Es especialmente
-              peligroso si transmites datos de la empresa.
+              Trabajas con información confidencial de la empresa: datos de proyectos, salarios, contratos. Sabes que estos datos
+              no deben exponerse en redes públicas. Tienes un plan de datos móvil limitado en tu celular.
             </p>
+          </div>
+
+          <div className={styles.instructionsBox}>
+            <p className={styles.instructionsTitle}>Lo que acaba de pasar</p>
             <p className={styles.summary}>
-              Tu decisión sobre cómo conectarte determina si expones los datos de la empresa o si los proteges.
+              <strong>Pausa de reunión.</strong> Estás en un café esperando a un cliente. Necesitas enviar un informe urgente con datos
+              de proyectos antes de la reunión — son 10 minutos de trabajo. El café ofrece WiFi público gratis ("CafeAmanecer_Free", sin
+              contraseña). Tu celular tiene datos móviles, pero limitados. Debes elegir cómo conectarte.
             </p>
           </div>
 

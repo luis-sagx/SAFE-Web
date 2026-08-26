@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router'
 import { useAuth } from '../../context/AuthContext'
-import DossierHeader from '../../components/ui/DossierHeader'
 import StoryEscenario, { type ScreenNode } from '../../components/StoryEscenario'
 import type { Contexto } from '../../components/ui/ContextoEscenario'
 import type { Story } from '../../hooks/useStoryEngine'
@@ -125,38 +124,31 @@ const CONTEXTO: Contexto = {
 }
 
 function PuertaAbierta() {
-  const { displayName, roleLabel } = useAuth()
+  const { displayName } = useAuth()
   const [started, setStarted] = useState(false)
 
   if (!started) {
     return (
       <div className={`${dossierTheme.dossierTheme} ${styles.app}`}>
-        <DossierHeader
-          caseLabel="RIESGO FÍSICO"
-          secondTab="INTRODUCCIÓN"
-          riskLabel="RIESGO"
-          gaugePercent={0}
-          gaugeValueText=""
-          gaugeColor="var(--color-primary)"
-          participantName={displayName}
-          participantRole={roleLabel}
-        />
-
         <main className={styles.mainArea}>
           <p className={styles.introText}>
-            Hola, {displayName}. Esta tarde, pasando por un pasillo, ves algo inusual: la puerta de la sala de
-            servidores está abierta sin seguro. Puedes ver equipos de red y servidores desde donde estás.
+            Hola, {displayName}. Esto es lo que te está pasando:
           </p>
 
           <div className={styles.instructionsBox}>
-            <p className={styles.instructionsTitle}>Contexto</p>
+            <p className={styles.instructionsTitle}>Antes de esto</p>
             <p className={styles.summary}>
-              Las áreas restringidas (salas de servidores, archivos de datos, bóvedas) están protegidas por una razón.
-              Si una puerta queda abierta sin seguro, cualquiera puede entrar, robar información, sabotear sistemas o
-              causar daños. Es un riesgo de seguridad crítico que debe reportarse inmediatamente.
+              Trabajas en una oficina donde hay áreas restringidas que requieren pase de seguridad: la sala de servidores, archivos de datos,
+              y otras zonas críticas. Estos espacios están protegidos porque contienen equipos e información sensible que no puede estar al alcance de cualquiera.
             </p>
+          </div>
+
+          <div className={styles.instructionsBox}>
+            <p className={styles.instructionsTitle}>Lo que acaba de pasar</p>
             <p className={styles.summary}>
-              Tu decisión determina si proteges la infraestructura o si ignoras el riesgo.
+              <strong>Esta tarde, pasando por un pasillo.</strong> Ves que la puerta de la sala de servidores está abierta. Es una puerta con cierre automático
+              que normalmente requiere pase para entrar. Hoy está sin seguro — parece que el técnico de IT estuvo trabajando ahí pero se fue sin aseguarla. Desde el
+              pasillo puedes ver equipos de red, servidores, y backup drives.
             </p>
           </div>
 

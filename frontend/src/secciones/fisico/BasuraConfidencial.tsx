@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router'
 import { useAuth } from '../../context/AuthContext'
-import DossierHeader from '../../components/ui/DossierHeader'
 import StoryEscenario, { type ScreenNode } from '../../components/StoryEscenario'
 import type { Contexto } from '../../components/ui/ContextoEscenario'
 import type { Story } from '../../hooks/useStoryEngine'
@@ -125,39 +124,33 @@ const CONTEXTO: Contexto = {
 }
 
 function BasuraConfidencial() {
-  const { displayName, roleLabel } = useAuth()
+  const { displayName } = useAuth()
   const [started, setStarted] = useState(false)
 
   if (!started) {
     return (
       <div className={`${dossierTheme.dossierTheme} ${styles.app}`}>
-        <DossierHeader
-          caseLabel="RIESGO FÍSICO"
-          secondTab="INTRODUCCIÓN"
-          riskLabel="RIESGO"
-          gaugePercent={0}
-          gaugeValueText=""
-          gaugeColor="var(--color-primary)"
-          participantName={displayName}
-          participantRole={roleLabel}
-        />
-
         <main className={styles.mainArea}>
           <p className={styles.introText}>
-            Hola, {displayName}. Esta mañana vas a la zona de descanso por un café y ves algo preocupante: la papelera
-            está llena de documentos impresos. Aunque están rotos, puedes reconocer información confidencial: nombres,
-            salarios, números de cuenta.
+            Hola, {displayName}. Esto es lo que te está pasando:
           </p>
 
           <div className={styles.instructionsBox}>
-            <p className={styles.instructionsTitle}>Contexto</p>
+            <p className={styles.instructionsTitle}>Antes de esto</p>
             <p className={styles.summary}>
-              Los documentos confidenciales que van a la papelera común son accesibles para cualquiera: compañeros,
-              personal de limpieza, visitantes. Incluso si están rotos o aparentemente ilegibles, pueden ser
-              reconstruidos o usados para obtener información valiosa.
+              Trabajas en una oficina donde hay documentos clasificados y áreas comunes compartidas con otros empleados, personal de
+              limpieza y visitantes. La papelera común es accesible para cualquiera. Los documentos confidenciales siempre deben pasar
+              por una trituradora de seguridad, nunca la basura normal.
             </p>
+          </div>
+
+          <div className={styles.instructionsBox}>
+            <p className={styles.instructionsTitle}>Lo que acaba de pasar</p>
             <p className={styles.summary}>
-              Tu decisión determina si proteges esos documentos o si los dejas expuestos.
+              <strong>Esta mañana, pausa del café.</strong> Vas a la zona de descanso por un café. Ves la papelera llena de documentos
+              impresos. Aunque están rotos, reconoces que son confidenciales: evaluaciones de desempeño con nombres, salarios de la nómina,
+              y hasta extractos bancarios de un tercero. Los documentos están visibles en la papelera pública. La persona de limpieza llegará
+              en una hora.
             </p>
           </div>
 
