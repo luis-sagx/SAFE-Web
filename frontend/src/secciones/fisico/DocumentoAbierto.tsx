@@ -387,16 +387,14 @@ function DocumentoAbierto() {
           }
         `}</style>
 
-        {!result ? (
+        {!inspectedDoc ? (
           <>
-            {!inspectedDoc ? (
-              <>
-                <p className={styles.introText}>
-                  Ves tres documentos distintos sobre el escritorio. Haz clic en cada uno para inspeccionarlo.
-                </p>
+            <p className={styles.introText}>
+              Ves tres documentos distintos sobre el escritorio. Haz clic en cada uno para inspeccionarlo.
+            </p>
 
-                <div className={styles.deskWrap}>
-                  <svg viewBox="0 0 600 320">
+            <div className={styles.deskWrap}>
+              <svg viewBox="0 0 600 320">
                     <defs>
                       <linearGradient id="deskGradient" x1="0%" y1="0%" x2="0%" y2="100%">
                         <stop offset="0%" stopColor="#f5f7f9" />
@@ -579,21 +577,29 @@ function DocumentoAbierto() {
                 </p>
 
                 {cameraFlash && <div className="flash-effect" />}
+
+                {result && (
+                  <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0, 0, 0, 0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 40, backdropFilter: 'blur(2px)' }}>
+                    <div style={{ background: 'white', borderRadius: '8px', padding: '40px 32px', maxWidth: '500px', textAlign: 'center', boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)' }}>
+                      <span className={`${styles.reportStamp} ${styles[result.level]}`} style={{ display: 'block', marginBottom: '20px' }}>
+                        {result.level === 'good' ? 'CORRECTO' : result.level === 'partial' ? 'PARCIAL' : 'INCORRECTO'}
+                      </span>
+                      <h2 style={{ margin: '0 0 12px', fontSize: '1.3rem', color: 'var(--color-ink)' }}>{result.title}</h2>
+                      <p style={{ margin: '0 0 28px', color: 'var(--color-body)', lineHeight: '1.6' }}>{result.outcome}</p>
+                      <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+                        <button type="button" className={styles.restartBtn} onClick={() => setInspectedDoc(null)} style={{ marginTop: 0, flex: 1 }}>
+                          Volver a los documentos
+                        </button>
+                        <button type="button" className={styles.restartBtn} onClick={handleRestart} style={{ marginTop: 0, flex: 1 }}>
+                          Repetir
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </>
             )}
           </>
-        ) : (
-          <div className={styles.report}>
-            <span className={`${styles.reportStamp} ${styles[result.level]}`}>
-              {result.level === 'good' ? 'CORRECTO' : result.level === 'partial' ? 'PARCIAL' : 'INCORRECTO'}
-            </span>
-            <h2>{result.title}</h2>
-            <p className={styles.summary}>{result.outcome}</p>
-
-            <button type="button" className={styles.restartBtn} onClick={handleRestart}>
-              Repetir el escenario
-            </button>
-          </div>
         )}
       </main>
 
