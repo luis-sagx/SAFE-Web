@@ -344,16 +344,21 @@
 
 .sceneCanvas {
   width: 100%;
+  min-height: 380px;
   border-radius: 8px;
   overflow: hidden;
   box-shadow: var(--shadow-card);
   margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .sceneCanvas svg {
   display: block;
   width: 100%;
   height: auto;
+  min-height: 360px;
   background: var(--color-surface-strong);
 }
 
