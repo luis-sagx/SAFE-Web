@@ -21,12 +21,12 @@
   border-bottom: none;
 }
 .tab.active {
-  color: var(--color-warning);
+  color: var(--color-primary);
 }
 .participantStrip {
-  background: rgba(171, 100, 0, 0.08);
-  color: #6c4d10;
-  border: 1px dashed var(--color-warning);
+  background: var(--color-surface);
+  color: var(--color-body);
+  border: 1px dashed var(--color-hairline-strong);
   border-top: none;
   padding: 10px 16px;
   font-family: var(--font-mono);
