@@ -651,7 +651,7 @@ function Foto() {
       ocultarDecision={!showReport}
       resultado={undefined}
       onEmpezar={run.restart}
-      dispositivo="telefono"
+      dispositivo="escritorio"
     />
   )
 }
