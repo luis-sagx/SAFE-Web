@@ -1,93 +1,79 @@
 .app {
   width: 100%;
-  max-width: 640px;
+  max-width: 760px;
   min-height: 100vh;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-  font-family: var(--font-body);
-  color: var(--text-light);
+  font-family: var(--font-sans);
+  color: var(--color-body);
   padding: 28px 16px 60px;
+  background: var(--color-canvas);
 }
-
-/* El fondo cubre toda la ventana aunque el contenido tenga ancho máximo: sin
-   esto, en pantallas anchas quedaba una columna oscura sobre el blanco del
-   body. */
-.app::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  background: radial-gradient(1200px 600px at 15% -10%, #1a2330 0%, transparent 60%), var(--ink);
-}
-
 
 .backLink {
   align-self: center;
   margin-top: 14px;
-  color: var(--muted);
+  color: var(--color-muted);
   font-size: 0.78rem;
   font-weight: 600;
   text-decoration: none;
 }
+
 .backLink:hover {
-  color: var(--text-light);
+  color: var(--color-ink);
   text-decoration: underline;
 }
 
 .mainArea {
-  background: var(--paper);
-  color: var(--ink-on-paper);
-  border-radius: 0 0 10px 10px;
-  padding: 20px 20px 26px;
-  box-shadow: 0 20px 40px -20px rgba(0, 0, 0, 0.6);
+  background: var(--color-surface);
+  color: var(--color-ink);
+  border-radius: 8px;
+  padding: 24px 20px 26px;
+  box-shadow: var(--shadow-card);
   position: relative;
   overflow: hidden;
-}
-.mainArea::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background: repeating-linear-gradient(90deg, var(--paper-edge) 0 14px, transparent 14px 20px);
 }
 
 .introText {
   font-size: 0.92rem;
   text-align: center;
-  color: #5f5238;
+  color: var(--color-body);
   margin: 0 0 14px;
   line-height: 1.5;
 }
 
 .instructionsBox {
-  background: #fff9ec;
-  border: 1px solid var(--paper-edge);
-  border-radius: 8px;
+  background: var(--color-surface-strong);
+  border: 1px solid var(--color-hairline);
+  border-radius: 6px;
   padding: 14px 16px;
   margin-bottom: 14px;
 }
+
 .instructionsTitle {
-  font-family: var(--font-display);
+  font-family: var(--font-sans);
   font-size: 0.78rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--ink-on-paper);
+  color: var(--color-ink);
   margin: 0 0 8px;
+  font-weight: 600;
 }
+
 .instructionsList {
   margin: 0;
   padding-left: 18px;
   font-size: 0.85rem;
   line-height: 1.5;
-  color: #5f5238;
+  color: var(--color-body);
 }
+
 .instructionsList li {
   margin-bottom: 6px;
 }
+
 .instructionsList li:last-child {
   margin-bottom: 0;
 }
@@ -96,38 +82,42 @@
   text-align: center;
   font-family: var(--font-mono);
   font-size: 0.78rem;
-  color: #8a5f16;
-  background: #fff3d9;
-  border: 1px dashed var(--amber);
-  border-radius: 8px;
+  color: var(--color-ink);
+  background: var(--color-surface-strong);
+  border: 1px dashed var(--color-hairline-strong);
+  border-radius: 6px;
   padding: 10px 14px;
   margin-bottom: 14px;
 }
 
 .deskWrap {
   width: 100%;
-  border-radius: 10px;
+  border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 8px 20px -10px rgba(0, 0, 0, 0.45);
+  box-shadow: var(--shadow-card);
   margin-bottom: 14px;
-  background: #eef1f2;
+  background: var(--color-surface-strong);
 }
+
 .deskWrap svg {
   display: block;
   width: 100%;
   height: auto;
 }
+
 .clickable {
   cursor: pointer;
 }
+
 .tooltipHint {
   font-family: var(--font-mono);
   font-size: 0.66rem;
   text-anchor: middle;
-  fill: #fff;
+  fill: white;
 }
+
 .tooltipBg {
-  fill: rgba(20, 26, 34, 0.85);
+  fill: rgba(0, 0, 0, 0.75);
 }
 
 .actionRow {
@@ -135,116 +125,154 @@
   justify-content: center;
   margin-bottom: 6px;
 }
+
 .snapBtn {
-  font-family: var(--font-display);
+  font-family: var(--font-sans);
   font-size: 0.9rem;
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  background: var(--ink);
-  color: var(--text-light);
+  background: var(--color-ink);
+  color: white;
   border: none;
-  border-radius: 30px;
+  border-radius: 6px;
   padding: 13px 28px;
   cursor: pointer;
+  font-weight: 600;
+  transition: background 0.2s;
 }
+
 .snapBtn:hover {
-  background: #232f3d;
+  background: var(--color-primary);
 }
+
 .hintText {
   text-align: center;
   font-family: var(--font-mono);
   font-size: 0.66rem;
-  color: #a0916c;
+  color: var(--color-muted);
   margin-top: 8px;
 }
 
 .resultFrame {
-  border: 10px solid #fff;
-  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5), 0 0 0 1px #ccc;
+  border: 3px solid var(--color-warning);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
   position: relative;
   margin-bottom: 16px;
 }
+
 .resultBadge {
   position: absolute;
-  top: 10px;
-  right: 10px;
+  top: 12px;
+  right: 12px;
   font-family: var(--font-mono);
   font-size: 0.65rem;
-  background: rgba(20, 26, 34, 0.85);
-  color: #e8e2d3;
-  padding: 4px 8px;
+  background: var(--color-warning);
+  color: white;
+  padding: 6px 10px;
   border-radius: 4px;
   letter-spacing: 0.05em;
+  font-weight: 600;
 }
+
 .callout {
   position: absolute;
-  border: 2px solid var(--danger);
-  border-radius: 6px;
+  border: 3px solid var(--color-danger);
+  border-radius: 4px;
   pointer-events: none;
+  box-shadow: 0 0 0 2px var(--color-surface);
 }
 
 .reportStamp {
   display: inline-block;
-  font-family: var(--font-display);
+  font-family: var(--font-sans);
   font-size: 0.85rem;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   border: 2px solid;
-  border-radius: 5px;
-  padding: 5px 12px;
+  border-radius: 4px;
+  padding: 6px 12px;
   margin-bottom: 14px;
+  font-weight: 600;
 }
+
+.reportStamp.good {
+  color: var(--color-success);
+  border-color: var(--color-success);
+  background: rgba(22, 163, 74, 0.05);
+}
+
+.reportStamp.bad {
+  color: var(--color-danger);
+  border-color: var(--color-danger);
+  background: rgba(180, 52, 47, 0.05);
+}
+
 .report h2 {
-  font-family: var(--font-display);
-  font-size: 1.5rem;
+  font-family: var(--font-sans);
+  font-size: 1.3rem;
   margin: 0 0 12px;
   line-height: 1.3;
+  font-weight: 600;
+  color: var(--color-ink);
 }
+
 .summary {
-  font-size: 0.98rem;
-  line-height: 1.55;
-  margin-bottom: 18px;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  margin-bottom: 16px;
+  color: var(--color-body);
 }
+
 .recapItem {
   display: flex;
   justify-content: space-between;
   gap: 10px;
   font-size: 0.85rem;
   padding: 9px 0;
-  border-bottom: 1px dashed var(--paper-edge);
+  border-bottom: 1px solid var(--color-hairline);
+  color: var(--color-body);
 }
+
 .recapItem:last-of-type {
   border-bottom: none;
 }
+
 .recapTag {
   font-family: var(--font-mono);
   font-size: 0.72rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  font-weight: 600;
 }
+
 .recapTag.safe {
-  color: var(--safe);
+  color: var(--color-success);
 }
+
 .recapTag.danger {
-  color: var(--danger);
+  color: var(--color-danger);
 }
+
 .restartBtn {
   margin-top: 20px;
-  font-family: var(--font-display);
+  font-family: var(--font-sans);
   font-size: 0.85rem;
   letter-spacing: 0.05em;
   text-transform: uppercase;
   background: transparent;
-  color: var(--ink-on-paper);
-  border: 1.5px solid var(--ink-on-paper);
-  border-radius: 7px;
+  color: var(--color-ink);
+  border: 2px solid var(--color-ink);
+  border-radius: 6px;
   padding: 11px 20px;
   cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s;
   width: 100%;
 }
+
 .restartBtn:hover {
-  background: var(--ink-on-paper);
-  color: var(--paper);
+  background: var(--color-ink);
+  color: white;
 }
 
 @media (max-width: 480px) {
