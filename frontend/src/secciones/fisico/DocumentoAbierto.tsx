@@ -196,34 +196,91 @@ function DocumentoAbierto() {
           <>
             {!inspectedDoc ? (
               <>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '20px' }}>
-                  {(Object.entries(DOCUMENTS) as [DocKey, Document][]).map(([key, doc]) => (
-                    <button
-                      key={key}
-                      onClick={() => handleInspectDoc(key)}
-                      className={styles.snapBtn}
-                      style={{
-                        background: 'linear-gradient(135deg, var(--color-primary) 0%, #00522b 100%)',
-                        padding: '20px',
-                        textAlign: 'left',
-                        height: 'auto',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        justifyContent: 'center',
-                      }}
+                <div className={styles.deskWrap}>
+                  <svg viewBox="0 0 600 320">
+                    <defs>
+                      <linearGradient id="deskGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stopColor="#f5f7f9" />
+                        <stop offset="100%" stopColor="#eef1f5" />
+                      </linearGradient>
+                    </defs>
+                    {/* Escritorio */}
+                    <rect width="600" height="320" fill="url(#deskGradient)" />
+                    <rect y="60" width="600" height="10" fill="#d9dfe5" />
+                    <rect x="20" y="200" width="560" height="20" fill="#d4b896" />
+                    <rect x="20" y="180" width="560" height="20" fill="#e0c4a0" />
+
+                    {/* Documento 1: Evaluaciones */}
+                    <g
+                      onClick={() => handleInspectDoc('evaluaciones')}
+                      style={{ cursor: 'pointer' }}
+                      className={styles.clickable}
                     >
-                      <strong style={{ fontSize: '0.95rem', marginBottom: '4px' }}>📄 {doc.label}</strong>
-                      <span style={{ fontSize: '0.8rem', opacity: 0.9 }}>Haz clic para inspeccionar</span>
-                    </button>
-                  ))}
+                      <rect x="60" y="80" width="140" height="100" rx="2" fill="#f5f5f5" stroke="#ccc" strokeWidth="1" />
+                      <rect x="65" y="85" width="130" height="8" fill="#006837" opacity="0.8" />
+                      <text x="75" y="102" fontFamily="Inter, sans-serif" fontSize="11" fontWeight="600" fill="#1b232c">
+                        Evaluaciones
+                      </text>
+                      <text x="75" y="117" fontFamily="Inter, sans-serif" fontSize="9" fill="#60646c">
+                        de desempeño
+                      </text>
+                      <line x1="65" y1="125" x2="195" y2="125" stroke="#ddd" strokeWidth="1" />
+                      <text x="75" y="155" fontFamily="Inter, sans-serif" fontSize="8" fill="#999">
+                        CONFIDENCIAL
+                      </text>
+                    </g>
+
+                    {/* Documento 2: Clientes */}
+                    <g
+                      onClick={() => handleInspectDoc('clientes')}
+                      style={{ cursor: 'pointer' }}
+                      className={styles.clickable}
+                    >
+                      <rect x="230" y="70" width="140" height="110" rx="2" fill="#f5f5f5" stroke="#ccc" strokeWidth="1" transform="rotate(4 300 125)" />
+                      <rect x="235" y="75" width="130" height="8" fill="#0066bb" opacity="0.8" transform="rotate(4 300 125)" />
+                      <text x="245" y="95" fontFamily="Inter, sans-serif" fontSize="11" fontWeight="600" fill="#1b232c" transform="rotate(4 300 125)">
+                        Clientes
+                      </text>
+                      <text x="245" y="112" fontFamily="Inter, sans-serif" fontSize="9" fill="#60646c" transform="rotate(4 300 125)">
+                        Montos contrato
+                      </text>
+                      <line x1="235" y1="120" x2="365" y2="120" stroke="#ddd" strokeWidth="1" transform="rotate(4 300 125)" />
+                      <text x="255" y="150" fontFamily="Inter, sans-serif" fontSize="8" fill="#999" transform="rotate(4 300 125)">
+                        ESTRATÉGICO
+                      </text>
+                    </g>
+
+                    {/* Documento 3: Nota adhesiva con contraseña */}
+                    <g
+                      onClick={() => handleInspectDoc('contrasena')}
+                      style={{ cursor: 'pointer' }}
+                      className={styles.clickable}
+                    >
+                      <rect x="400" y="90" width="120" height="90" fill="#f4d94a" stroke="#c9ad1f" strokeWidth="1" transform="rotate(-8 460 135)" />
+                      <text x="415" y="115" fontFamily="Inter, sans-serif" fontSize="10" fontWeight="600" fill="#1b232c" transform="rotate(-8 460 135)">
+                        WiFi Clave:
+                      </text>
+                      <text
+                        x="415"
+                        y="135"
+                        fontFamily="monospace"
+                        fontSize="9"
+                        fontWeight="600"
+                        fill="#1b232c"
+                        transform="rotate(-8 460 135)"
+                      >
+                        Of2026*Net!
+                      </text>
+                      <circle cx="465" cy="100" r="3" fill="#b4342f" opacity="0.6" />
+                    </g>
+                  </svg>
                 </div>
 
                 <div className={styles.instructionsBox} style={{ marginTop: '20px' }}>
                   <p className={styles.instructionsTitle}>💡 Cómo jugar</p>
                   <p className={styles.summary}>
-                    Haz clic en cada documento para leer su contenido. Después de inspeccionarlo, podrás decidir qué
-                    hacer: leerlo completo, fotografiarlo, ignorarlo, avisar al compañero, o reportarlo a Recursos
-                    Humanos.
+                    Haz clic en cada documento para inspeccionarlo y ver su contenido. Después, podrás decidir qué
+                    hacer: leerlo, fotografiarlo, ignorarlo, avisar al compañero, o reportarlo a Recursos Humanos.
                   </p>
                 </div>
               </>
