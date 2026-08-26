@@ -180,7 +180,7 @@ function SlotItem({
   }
   if (itemKey === 'phone') {
     return (
-      <g className={styles.clickable} transform="translate(1000,300)" onClick={() => onToggle('phone')}>
+      <g className={styles.clickable} transform="translate(1520,480)" onClick={() => onToggle('phone')}>
         {!fixedState.phone ? (
           <g>
             <rect x="0" y="0" width="120" height="280" rx="18" fill="#1b232c" />
@@ -209,7 +209,7 @@ function SlotItem({
   }
   if (itemKey === 'notebook') {
     return (
-      <g className={styles.clickable} transform="translate(150,300)" onClick={() => onToggle('notebook')}>
+      <g className={styles.clickable} transform="translate(140,520)" onClick={() => onToggle('notebook')}>
         {!fixedState.notebook ? (
           <g>
             <rect x="0" y="0" width="360" height="200" rx="10" fill="#f7f3e6" stroke="#b7a97e" strokeWidth="4" />
