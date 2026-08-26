@@ -96,9 +96,10 @@
   width: 100%;
   border-radius: 8px;
   overflow: hidden;
-  box-shadow: var(--shadow-card);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06), 0 4px 16px rgba(0, 0, 0, 0.04);
   margin-bottom: 14px;
-  background: var(--color-surface-strong);
+  background: var(--color-surface);
+  border: 1px solid var(--color-hairline-strong);
 }
 
 .deskWrap svg {
