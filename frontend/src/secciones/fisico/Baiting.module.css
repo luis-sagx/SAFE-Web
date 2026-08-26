@@ -346,8 +346,8 @@
 
 .sceneCanvas {
   width: 100%;
-  min-height: 300px;
-  max-height: 400px;
+  min-height: 200px;
+  max-height: 280px;
   border-radius: 8px;
   overflow: hidden;
   box-shadow: var(--shadow-card);
@@ -361,7 +361,7 @@
   display: block;
   width: 100%;
   height: auto;
-  min-height: 280px;
+  max-height: 260px;
   background: var(--color-surface-strong);
 }
 
