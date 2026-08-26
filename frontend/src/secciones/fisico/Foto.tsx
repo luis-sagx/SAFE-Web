@@ -496,7 +496,7 @@ function Foto() {
     return (
       <div className={`${dossierTheme.dossierTheme} ${styles.app}`}>
         <DossierHeader
-          caseLabel="CASO #0721"
+          caseLabel="RIESGO FÍSICO"
           secondTab="INTRODUCCIÓN"
           riskLabel="RIESGO"
           gaugePercent={0}
@@ -548,7 +548,7 @@ function Foto() {
   return (
     <div className={`${dossierTheme.dossierTheme} ${styles.app}`}>
       <DossierHeader
-        caseLabel="CASO #0721"
+        caseLabel="RIESGO FÍSICO"
         secondTab={`NIVEL ${levelIndex + 1}/${LEVELS.length}`}
         riskLabel="TIEMPO"
         gaugePercent={(timeLeft / level.time) * 100}
@@ -559,10 +559,7 @@ function Foto() {
       />
 
       <main className={styles.mainArea}>
-        <p className={styles.introText}>
-          Hola, {displayName}. Hoy es un día normal en Induplast Andina S.A. — Valeria de Comunicaciones va a pasar
-          por tu área para tomar fotos para el boletín interno.
-        </p>
+
 
         <p className={styles.npcLine}>
           {finished ? 'Valeria: "¡Listo, gracias! Ya la subo al boletín."' : level.npc}
