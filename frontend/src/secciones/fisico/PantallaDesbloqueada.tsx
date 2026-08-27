@@ -215,6 +215,30 @@ function PantallaDesbloqueada() {
           box-shadow: 0 25px 70px rgba(0, 0, 0, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.3);
           transform: scale(1.02);
         }
+        .door-window {
+          position: absolute;
+          width: 90px;
+          height: 130px;
+          top: 100px;
+          left: 50%;
+          transform: translateX(-50%);
+          background: linear-gradient(135deg, #d4e4f7 0%, #a8c5e0 100%);
+          border: 3px solid #8b7355;
+          border-radius: 6px;
+          box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.2), 0 2px 6px rgba(0, 0, 0, 0.3);
+          overflow: hidden;
+          z-index: 3;
+        }
+        .door-window::before {
+          content: '';
+          position: absolute;
+          width: 100%;
+          height: 100%;
+          background:
+            linear-gradient(180deg, rgba(200, 180, 160, 0.4) 0%, transparent 40%),
+            linear-gradient(90deg, rgba(0, 0, 0, 0.1) 50%, rgba(0, 0, 0, 0.05) 50%);
+          pointer-events: none;
+        }
         .door-knob {
           width: 20px;
           height: 20px;
@@ -223,6 +247,7 @@ function PantallaDesbloqueada() {
           position: absolute;
           right: 30px;
           box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3), inset -1px -1px 3px rgba(0, 0, 0, 0.2);
+          z-index: 4;
         }
         .door-label {
           font-size: 24px;
@@ -364,6 +389,7 @@ function PantallaDesbloqueada() {
               setDoorOpened(true)
               setTimeout(() => setThoughtPhase('in-office'), 600)
             }}>
+              <div className="door-window" />
               <div className="door-label">OFICINA</div>
               <div className="door-knob" />
               <div className="door-hint">Haz clic para entrar</div>
