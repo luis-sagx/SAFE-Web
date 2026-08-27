@@ -270,7 +270,7 @@ function EscenarioLayout({
         {!ocultarDecision && (
           /* Apilado, el bloque nunca pasa de media pantalla: si no cabe, se
               desplaza él, no la página. Al costado puede usar todo el alto. */
-          <div className="flex flex-col max-h-[45%] w-full shrink-0 overflow-y-auto border-t border-hairline bg-canvas px-4 py-4 sm:w-[28.75rem] sm:border-0 sm:bg-transparent sm:px-0 sm:py-0 lg:w-[23.75rem] lg:max-h-full lg:self-center xl:w-[28.75rem]">
+          <div className="max-h-[45%] w-full shrink-0 overflow-y-auto border-t border-hairline bg-canvas px-4 py-4 sm:w-[28.75rem] sm:border-0 sm:bg-transparent sm:px-0 sm:py-0 lg:w-[23.75rem] lg:max-h-full lg:self-center xl:w-[28.75rem]">
             {/* La historia queda a un clic, no ocupando espacio permanente. Vive
                 en un diálogo y no en un bloque fijo porque se consulta poco: casi
                 siempre se recuerda, y cuando no, se abre.
@@ -283,7 +283,7 @@ function EscenarioLayout({
             <button
               type="button"
               onClick={() => dialogoRef.current?.showModal()}
-              className="mb-4 self-end flex items-center gap-1.5 text-base font-medium text-link underline decoration-dotted underline-offset-4 transition hover:decoration-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link"
+              className="mb-4 inline-flex items-center gap-1.5 text-sm font-medium text-link underline decoration-dotted underline-offset-4 transition hover:decoration-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link whitespace-nowrap"
             >
               <Info aria-hidden className="size-3.5" strokeWidth={2} />
               {/* El nombre dice lo que hay dentro: quien se olvidó de su cédula
