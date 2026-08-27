@@ -114,6 +114,7 @@ function DocumentoAbierto() {
   }
 
   const handleDocumentAction = (actionId: string) => {
+    console.log('handleDocumentAction called', { actionId, inspectedDoc })
     if (actionId === 'foto') {
       setCameraFlash(true)
       setTimeout(() => setCameraFlash(false), 300)
@@ -122,40 +123,32 @@ function DocumentoAbierto() {
     const decisionResult = DECISION_RESULTS[actionId]
     if (!decisionResult || !inspectedDoc) return
 
+    console.log('Processing action:', { actionId, inspectedDoc, decisionResult: decisionResult.level })
     flash.trigger(() => {
       setResult(decisionResult)
       run.recordDecision({ documento: inspectedDoc, accion: actionId })
 
       // Guardar la decisión para este documento
       const updatedDecisions = { ...decisions, [inspectedDoc]: decisionResult }
+      console.log('Setting decision:', { document: inspectedDoc, level: decisionResult.level, updatedDecisions })
       setDecisions(updatedDecisions)
 
       // Contar aciertos en tiempo real
       const currentGoodCount = Object.values(updatedDecisions).filter(d => d && (d.level === 'good' || d.level === 'partial')).length
+      console.log('Aciertos count:', { currentGoodCount, totalDecisions: Object.values(updatedDecisions).length })
 
-      // Si ya tenemos 2 aciertos, permitir avanzar inmediatamente
-      if (currentGoodCount >= 2) {
+      // Verificar si todos los documentos tienen decisiones
+      const allDecided = updatedDecisions.evaluaciones && updatedDecisions.clientes && updatedDecisions.contrasena
+      if (allDecided) {
+        // Si todos están decididos, mostrar resultado final
+        const canAdvance = currentGoodCount >= 2
         setTimeout(() => {
-          setFinalResult({ goodCount: currentGoodCount, canAdvance: true })
-          setResult(decisionResult)
+          setFinalResult({ goodCount: currentGoodCount, canAdvance })
           void run.finish({
-            endingId: 'good',
-            outcome: 'CORRECTO',
+            endingId: canAdvance ? 'good' : 'bad',
+            outcome: canAdvance ? 'CORRECTO' : 'INCORRECTO',
           })
         }, 1500)
-      } else {
-        // Verificar si todos los documentos tienen decisiones
-        const allDecided = updatedDecisions.evaluaciones && updatedDecisions.clientes && updatedDecisions.contrasena
-        if (allDecided) {
-          // Si todos están decididos pero menos de 2 aciertos, mostrar resultado final
-          setTimeout(() => {
-            setFinalResult({ goodCount: currentGoodCount, canAdvance: false })
-            void run.finish({
-              endingId: 'bad',
-              outcome: 'INCORRECTO',
-            })
-          }, 1500)
-        }
       }
 
       stampFlash.trigger(() => {}, 750)
