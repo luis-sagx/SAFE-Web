@@ -139,15 +139,16 @@ const SCENARIO_BREAK_ROOM = {
     'Vas a cargar tu celular y notas un cable USB ya conectado al enchufe público, sin nadie cerca reclamándolo. Se ve nuevo y en buen estado.',
   choices: [
     {
-      label: 'Llevártelo a tu escritorio',
-      level: 'warn',
-      risk: 8,
-      feedback: '',
+      label: 'Usarlo para cargar tu celular aquí',
+      level: 'danger',
+      risk: 15,
+      feedback:
+        "Un cable desconocido en un punto de carga público puede llevar un chip malicioso (juice jacking). Conectarlo directamente a tu dispositivo es un riesgo inmediato.",
     },
     {
-      label: 'Avisarle a mantenimiento sobre el cable',
-      level: 'safe',
-      risk: 0,
+      label: 'Llevártelo a tu escritorio, ahí lo necesitas más',
+      level: 'warn',
+      risk: 8,
       feedback: '',
     },
   ],
@@ -253,10 +254,10 @@ function CableComprometido() {
           setPhase('office')
         } else {
           setRevealPending(false)
-          setResolved({ level: choice.level, feedback: 'Excelente decisión: reportar cables desconocidos es el protocolo correcto.' })
+          setResolved({ level: choice.level, feedback: choice.feedback })
           void run.finish({
             endingId: choice.level,
-            outcome: 'CORRECTO',
+            outcome: choice.level === 'safe' ? 'CORRECTO' : choice.level === 'warn' ? 'PARCIAL' : 'INCORRECTO',
           })
         }
       } else {
