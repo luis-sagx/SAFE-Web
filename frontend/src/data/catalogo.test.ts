@@ -17,6 +17,7 @@ const UMBRALES_ESPERADOS: Record<string, number> = {
   vishing: 6,
   suplantacion: 6,
   estafa: 6,
+  fisico: 6,
 }
 
 describe('catálogo de escenarios', () => {
@@ -57,8 +58,8 @@ describe('catálogo de escenarios', () => {
 
   // El MVP empieza con phishing y suma smishing y vishing. Las otras secciones
   // se quedan declaradas pero sin escenarios, y Dashboard.tsx las marca
-  // "Pronto". Es un estado deliberado, no un olvido.
-  it('phishing, smishing, vishing, suplantación y estafa son las secciones activas', () => {
+  // "Pronto". Es un estado deliberado, no un olvido. Riesgo físico se desbloqueó después.
+  it('phishing, smishing, vishing, suplantación, estafa y riesgo físico son las secciones activas', () => {
     const activas = SECCIONES.filter((seccion) => escenariosDeSeccion(seccion.id).length > 0)
     expect(activas.map((seccion) => seccion.id)).toEqual([
       'phishing',
@@ -66,6 +67,7 @@ describe('catálogo de escenarios', () => {
       'vishing',
       'suplantacion',
       'estafa',
+      'fisico',
     ])
   })
 
@@ -120,6 +122,7 @@ describe('catálogo de escenarios', () => {
     expect(estafa.filter((e) => e.naturaleza === 'fraude')).toHaveLength(6)
     expect(estafa.filter((e) => e.naturaleza === 'legitimo')).toHaveLength(2)
   })
+
 
   // Guarda contra la regresión que tuvo la pantalla: el catálogo se redujo a 3
   // escenarios y el umbral del backend se quedó en 6, así que la insignia

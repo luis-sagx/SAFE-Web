@@ -1,11 +1,13 @@
 import { useRef, useState } from 'react'
-import { Link } from 'react-router'
+import { useNavigate } from 'react-router'
 import { useAuth } from '../../context/AuthContext'
 import DossierHeader from '../../components/ui/DossierHeader'
 import FlashOverlay from '../../components/ui/FlashOverlay'
 import { useFlashTransition } from '../../hooks/useFlashTransition'
 import { useScenarioRun } from '../../hooks/useScenarioRun'
 import { useCountdown } from '../../hooks/useCountdown'
+import EscenarioLayout from '../../components/EscenarioLayout'
+import type { Contexto } from '../../components/ui/ContextoEscenario'
 import dossierTheme from '../../styles/dossier-theme.module.css'
 import styles from './Foto.module.css'
 
@@ -127,12 +129,12 @@ const TOOLTIP_POS: Partial<Record<ItemKey, { x: number; y: number }>> = {
 }
 
 const POSITIONS: Partial<Record<ItemKey, { x: string; y: string; w: string; h: string }>> = {
-  monitor: { x: '30%', y: '20%', w: '26%', h: '27%' },
-  sticky: { x: '51%', y: '20%', w: '10%', h: '12%' },
-  folder: { x: '65%', y: '48%', w: '13%', h: '16%' },
-  badge: { x: '23%', y: '60%', w: '6%', h: '14%' },
-  phone: { x: '80%', y: '46%', w: '6%', h: '20%' },
-  notebook: { x: '10%', y: '47%', w: '16%', h: '15%' },
+  monitor: { x: '30%', y: '20%', w: '24%', h: '27%' },
+  sticky: { x: '51%', y: '20%', w: '9.6%', h: '12%' },
+  folder: { x: '65%', y: '50%', w: '12%', h: '14%' },
+  badge: { x: '24%', y: '62%', w: '5.2%', h: '12%' },
+  phone: { x: '83%', y: '40%', w: '6%', h: '23%' },
+  notebook: { x: '7%', y: '43%', w: '18%', h: '17%' },
 }
 
 function activeItemsFor(levelIdx: number): ItemKey[] {
@@ -161,68 +163,68 @@ function SlotItem({
 }) {
   if (itemKey === 'mug') {
     return (
-      <g className={styles.clickable} transform="translate(410,155)" onClick={() => onNonRiskClick('mug')}>
-        <rect x="0" y="10" width="24" height="22" rx="3" fill="#fff9ec" stroke="#9c8a5e" strokeWidth="1.5" />
-        <path d="M24 14 h6 a6 6 0 0 1 0 14 h-6" fill="none" stroke="#9c8a5e" strokeWidth="1.5" />
+      <g className={styles.clickable} transform="translate(1000,500)" onClick={() => onNonRiskClick('mug')}>
+        <rect x="0" y="50" width="120" height="110" rx="15" fill="#fff9ec" stroke="#9c8a5e" strokeWidth="6" />
+        <path d="M120 70 h30 a30 30 0 0 1 0 70 h-30" fill="none" stroke="#9c8a5e" strokeWidth="6" />
       </g>
     )
   }
   if (itemKey === 'plant') {
     return (
-      <g className={styles.clickable} transform="translate(60,140)" onClick={() => onNonRiskClick('plant')}>
-        <rect x="8" y="34" width="20" height="16" rx="2" fill="#cbb98c" />
-        <path d="M18 34 Q10 20 18 6 Q26 20 18 34" fill="#5b8a5a" />
-        <path d="M18 34 Q26 22 34 12" stroke="#5b8a5a" strokeWidth="4" fill="none" strokeLinecap="round" />
+      <g className={styles.clickable} transform="translate(150,520)" onClick={() => onNonRiskClick('plant')}>
+        <rect x="40" y="160" width="100" height="80" rx="10" fill="#cbb98c" />
+        <path d="M90 160 Q50 90 90 20 Q130 90 90 160" fill="#5b8a5a" />
+        <path d="M90 160 Q130 110 170 50" stroke="#5b8a5a" strokeWidth="20" fill="none" strokeLinecap="round" />
       </g>
     )
   }
   if (itemKey === 'phone') {
     return (
-      <g className={styles.clickable} transform="translate(408,140)" onClick={() => onToggle('phone')}>
+      <g className={styles.clickable} transform="translate(1660,480)" onClick={() => onToggle('phone')}>
         {!fixedState.phone ? (
           <g>
-            <rect x="0" y="0" width="26" height="58" rx="4" fill="#1b232c" />
-            <rect x="2" y="4" width="22" height="50" rx="2" fill="#3a4552" />
-            <rect x="3" y="20" width="20" height="20" rx="1.5" fill="#eef1f2" />
-            <text x="13" y="28" textAnchor="middle" fontFamily="'IBM Plex Mono',monospace" fontSize="4" fill="#4a5560">
+            <rect x="0" y="0" width="120" height="280" rx="18" fill="#1b232c" />
+            <rect x="10" y="20" width="100" height="240" rx="10" fill="#3a4552" />
+            <rect x="15" y="100" width="90" height="90" rx="6" fill="#eef1f2" />
+            <text x="60" y="135" textAnchor="middle" fontFamily="'IBM Plex Mono',monospace" fontSize="18" fill="#4a5560">
               Código:
             </text>
             <text
-              x="13"
-              y="36"
+              x="60"
+              y="165"
               textAnchor="middle"
               fontFamily="'IBM Plex Mono',monospace"
               fontWeight="600"
-              fontSize="5.2"
+              fontSize="22"
               fill="#1b232c"
             >
               482913
             </text>
           </g>
         ) : (
-          <rect x="0" y="0" width="26" height="58" rx="4" fill="#0d1319" />
+          <rect x="0" y="0" width="120" height="280" rx="18" fill="#0d1319" />
         )}
       </g>
     )
   }
   if (itemKey === 'notebook') {
     return (
-      <g className={styles.clickable} transform="translate(50,140)" onClick={() => onToggle('notebook')}>
+      <g className={styles.clickable} transform="translate(140,520)" onClick={() => onToggle('notebook')}>
         {!fixedState.notebook ? (
           <g>
-            <rect x="0" y="0" width="80" height="44" rx="2" fill="#f7f3e6" stroke="#b7a97e" strokeWidth="1.2" />
-            <line x1="38" y1="3" x2="38" y2="41" stroke="#b7a97e" strokeWidth="1" />
-            <path d="M6 12 h24 M6 19 h28 M6 26 h20" stroke="#9c8e6a" strokeWidth="1" />
-            <text x="60" y="17" textAnchor="middle" fontFamily="'IBM Plex Mono',monospace" fontSize="5" fill="#5f5238">
+            <rect x="0" y="0" width="360" height="200" rx="10" fill="#f7f3e6" stroke="#b7a97e" strokeWidth="4" />
+            <line x1="170" y1="15" x2="170" y2="185" stroke="#b7a97e" strokeWidth="4" />
+            <path d="M30 55 h110 M30 90 h130 M30 125 h90" stroke="#9c8e6a" strokeWidth="3" />
+            <text x="270" y="75" textAnchor="middle" fontFamily="'IBM Plex Mono',monospace" fontSize="22" fill="#5f5238">
               WiFi oficina:
             </text>
             <text
-              x="60"
-              y="28"
+              x="270"
+              y="125"
               textAnchor="middle"
               fontFamily="'IBM Plex Mono',monospace"
               fontWeight="600"
-              fontSize="5.2"
+              fontSize="22"
               fill="#2b2308"
             >
               Ofc-2026*Wpa
@@ -230,8 +232,8 @@ function SlotItem({
           </g>
         ) : (
           <g>
-            <rect x="6" y="6" width="68" height="32" rx="2" fill="#cfae7c" />
-            <path d="M18 22 l2 6 h24 l7-14" stroke="#5f4a2a" strokeWidth="1" fill="none" />
+            <rect x="30" y="30" width="300" height="140" rx="10" fill="#cfae7c" />
+            <path d="M80 100 l10 27 h110 l32-64" stroke="#5f4a2a" strokeWidth="3" fill="none" />
           </g>
         )}
       </g>
@@ -254,30 +256,36 @@ function DeskSVG({
   tooltip: Tooltip | null
 }) {
   return (
-    <svg viewBox="0 0 500 300">
-      <rect width="500" height="300" fill="#eef1f2" />
-      <rect y="60" width="500" height="10" fill="#d7dde1" />
-      <rect x="20" y="190" width="460" height="20" fill="#cfae7c" />
-      <rect x="20" y="170" width="460" height="20" fill="#e6cd9e" />
+    <svg viewBox="0 0 2000 1200">
+      <defs>
+        <linearGradient id="deskGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="#f5f7f9" />
+          <stop offset="100%" stopColor="#eef1f5" />
+        </linearGradient>
+      </defs>
+      <rect width="2000" height="1200" fill="url(#deskGradient)" />
+      <rect y="240" width="2000" height="40" fill="#d9dfe5" />
+      <rect x="80" y="760" width="1840" height="80" fill="#d4b896" />
+      <rect x="80" y="680" width="1840" height="80" fill="#e0c4a0" />
 
       <g className={styles.clickable} onClick={() => onToggle('monitor')}>
-        <rect x="150" y="60" width="120" height="80" rx="4" fill="#1b232c" />
-        <rect x="205" y="140" width="20" height="16" fill="#3a4552" />
+        <rect x="600" y="240" width="480" height="320" rx="16" fill="#1b232c" />
+        <rect x="820" y="560" width="80" height="64" fill="#3a4552" />
         {!fixedState.monitor ? (
           <g>
-            <rect x="160" y="70" width="100" height="10" fill="#c0453a" opacity="0.75" />
-            <rect x="160" y="86" width="80" height="8" fill="#8fa0b0" opacity="0.6" />
-            <rect x="160" y="100" width="90" height="8" fill="#8fa0b0" opacity="0.6" />
-            <rect x="160" y="114" width="70" height="8" fill="#8fa0b0" opacity="0.6" />
-            <text x="210" y="132" textAnchor="middle" fontFamily="'IBM Plex Mono',monospace" fontSize="7" fill="#e8b9b3">
+            <rect x="640" y="280" width="400" height="40" fill="#b4342f" opacity="0.75" />
+            <rect x="640" y="345" width="320" height="32" fill="#8fa0b0" opacity="0.6" />
+            <rect x="640" y="400" width="360" height="32" fill="#8fa0b0" opacity="0.6" />
+            <rect x="640" y="456" width="280" height="32" fill="#8fa0b0" opacity="0.6" />
+            <text x="840" y="528" textAnchor="middle" fontFamily="'IBM Plex Mono',monospace" fontSize="32" fill="#e8b9b3">
               NÓMINA_2026.xlsx
             </text>
           </g>
         ) : (
           <g>
-            <rect x="160" y="70" width="100" height="60" fill="#05080b" />
-            <circle cx="210" cy="100" r="10" fill="none" stroke="#8fa0b0" strokeWidth="2.5" />
-            <rect x="205" y="100" width="10" height="8" fill="#8fa0b0" />
+            <rect x="640" y="280" width="400" height="240" fill="#05080b" />
+            <circle cx="840" cy="400" r="40" fill="none" stroke="#8fa0b0" strokeWidth="10" />
+            <rect x="820" y="400" width="40" height="32" fill="#8fa0b0" />
           </g>
         )}
       </g>
@@ -286,35 +294,35 @@ function DeskSVG({
         {!fixedState.sticky && (
           <g>
             <rect
-              x="256"
-              y="60"
-              width="48"
-              height="36"
+              x="1024"
+              y="240"
+              width="192"
+              height="144"
               fill="#f4d94a"
               stroke="#c9ad1f"
-              strokeWidth="1"
-              transform="rotate(6 280 78)"
+              strokeWidth="4"
+              transform="rotate(6 1120 312)"
             />
             <text
-              x="280"
-              y="72"
+              x="1120"
+              y="287"
               textAnchor="middle"
               fontFamily="'IBM Plex Mono',monospace"
-              fontSize="6"
+              fontSize="27"
               fill="#4a3d0d"
-              transform="rotate(6 280 78)"
+              transform="rotate(6 1120 312)"
             >
               Clave wifi:
             </text>
             <text
-              x="280"
-              y="83"
+              x="1120"
+              y="331"
               textAnchor="middle"
               fontFamily="'IBM Plex Mono',monospace"
               fontWeight="600"
-              fontSize="6.5"
+              fontSize="30"
               fill="#2b2308"
-              transform="rotate(6 280 78)"
+              transform="rotate(6 1120 312)"
             >
               Of2026*Net!
             </text>
@@ -325,35 +333,35 @@ function DeskSVG({
       <g className={styles.clickable} onClick={() => onToggle('folder')}>
         {!fixedState.folder ? (
           <g>
-            <rect x="330" y="150" width="60" height="42" rx="2" fill="#e0d4b0" stroke="#9c8a5e" strokeWidth="1.5" />
-            <rect x="330" y="150" width="60" height="10" fill="#c0453a" opacity="0.7" />
-            <text x="360" y="172" textAnchor="middle" fontFamily="'IBM Plex Mono',monospace" fontSize="7" fill="#5f5238">
+            <rect x="1320" y="600" width="240" height="168" rx="8" fill="#e0d4b0" stroke="#9c8a5e" strokeWidth="5" />
+            <rect x="1320" y="600" width="240" height="40" fill="#b4342f" opacity="0.7" />
+            <text x="1440" y="688" textAnchor="middle" fontFamily="'IBM Plex Mono',monospace" fontSize="32" fill="#5f5238">
               Cliente XYZ
             </text>
           </g>
         ) : (
           <g>
-            <rect x="330" y="176" width="60" height="16" rx="2" fill="#cfae7c" />
-            <text x="360" y="187" textAnchor="middle" fontFamily="'IBM Plex Mono',monospace" fontSize="7" fill="#5f4a2a">
+            <rect x="1320" y="704" width="240" height="64" rx="8" fill="#cfae7c" />
+            <text x="1440" y="747" textAnchor="middle" fontFamily="'IBM Plex Mono',monospace" fontSize="32" fill="#5f4a2a">
               guardado
             </text>
           </g>
         )}
       </g>
 
-      <g className={styles.clickable} transform="translate(120,185)" onClick={() => onToggle('badge')}>
+      <g className={styles.clickable} transform="translate(480,740)" onClick={() => onToggle('badge')}>
         {!fixedState.badge ? (
           <g>
-            <rect x="0" y="0" width="26" height="36" rx="3" fill="#fff9ec" stroke="#9c8a5e" strokeWidth="1.5" />
-            <rect x="5" y="5" width="16" height="10" fill="#2c3e50" />
-            <text x="13" y="22" textAnchor="middle" fontFamily="'IBM Plex Mono',monospace" fontSize="4.4" fill="#1b232c">
+            <rect x="0" y="0" width="104" height="144" rx="11" fill="#fff9ec" stroke="#9c8a5e" strokeWidth="6" />
+            <rect x="20" y="20" width="64" height="40" fill="#2c3e50" />
+            <text x="52" y="87" textAnchor="middle" fontFamily="'IBM Plex Mono',monospace" fontSize="28" fill="#1b232c" fontWeight="700">
               ID 04521
             </text>
-            <rect x="5" y="26" width="16" height="3" fill="#1b232c" />
-            <rect x="5" y="31" width="16" height="3" fill="#1b232c" />
+            <rect x="20" y="104" width="64" height="12" fill="#1b232c" />
+            <rect x="20" y="124" width="64" height="12" fill="#1b232c" />
           </g>
         ) : (
-          <rect x="0" y="0" width="26" height="36" rx="3" fill="#c7bda1" stroke="#9c8a5e" strokeWidth="1.5" />
+          <rect x="0" y="0" width="104" height="144" rx="11" fill="#c7bda1" stroke="#9c8a5e" strokeWidth="6" />
         )}
       </g>
 
@@ -373,8 +381,9 @@ function DeskSVG({
 }
 
 function Foto() {
-  const { displayName, roleLabel } = useAuth()
+  const { displayName } = useAuth()
   const run = useScenarioRun('fisico/foto')
+  const navigate = useNavigate()
 
   const [levelIndex, setLevelIndex] = useState(0)
   const [fixedState, setFixedState] = useState(() => initialFixedState(0))
@@ -394,7 +403,6 @@ function Foto() {
     tickMs: 100,
     onExpire: () => handleTakePhoto(),
   })
-
 
   const activeItems = activeItemsFor(levelIndex)
   const riskKeysThisLevel = activeItems.filter((k) => ITEMS[k].isRisk)
@@ -484,48 +492,51 @@ function Foto() {
       'Varios elementos sensibles quedaron perfectamente visibles en una foto que ahora circula en el boletín interno o en redes de la empresa.'
   }
 
-  return (
+  const contexto: Contexto = {
+    antes: (
+      <>
+        Trabajas en una oficina donde se fotografía a los empleados regularmente para materiales
+        internos. Tu escritorio, como el de todos, tiene objetos que contienen información sensible:
+        pantallas con datos de nómina, notas con contraseñas, carpetas de clientes, gafetes con
+        códigos de acceso, teléfonos con notificaciones, libretas con anotaciones.
+      </>
+    ),
+    ahora: (
+      <>
+        <strong>Hace unos minutos</strong> Valeria de Comunicaciones te avisó que viene a fotografiar
+        tu puesto para el boletín interno. La foto se publicará en la intranet y en las redes de la
+        empresa. Tienes poco tiempo para preparar tu escritorio: debes ocultar o guardar cualquier
+        objeto que pueda revelar información sensible antes de que dispare la cámara.
+      </>
+    ),
+  }
+
+  const pantalla = (
     <div className={`${dossierTheme.dossierTheme} ${styles.app}`}>
-      <DossierHeader
-        caseLabel="CASO #0721"
-        secondTab={`NIVEL ${levelIndex + 1}/${LEVELS.length}`}
-        riskLabel="TIEMPO"
-        gaugePercent={(timeLeft / level.time) * 100}
-        gaugeValueText={`${Math.ceil(timeLeft)}s`}
-        gaugeColor={gaugeColor}
-        participantName={displayName}
-        participantRole={roleLabel}
-      />
+{showReport && (
+        <DossierHeader
+          caseLabel="RIESGO FÍSICO"
+          secondTab={`NIVEL ${levelIndex + 1}/${LEVELS.length}`}
+          riskLabel="TIEMPO"
+          gaugePercent={(timeLeft / level.time) * 100}
+          gaugeValueText={`${Math.ceil(timeLeft)}s`}
+          gaugeColor={gaugeColor}
+          participantName={displayName}
+          participantRole=""
+        />
+      )}
+
+      {!showReport && (
+        <div style={{ padding: '12px 20px', display: 'flex', alignItems: 'center', gap: '12px', fontSize: '0.75rem', color: 'var(--color-muted)' }}>
+          <span>TIEMPO</span>
+          <div style={{ flex: 1, height: '6px', backgroundColor: 'var(--color-hairline)', borderRadius: '3px', overflow: 'hidden' }}>
+            <div style={{ width: `${(timeLeft / level.time) * 100}%`, height: '100%', backgroundColor: gaugeColor, transition: 'width 0.1s linear' }} />
+          </div>
+          <span style={{ minWidth: '30px', textAlign: 'right' }}>{Math.ceil(timeLeft)}s</span>
+        </div>
+      )}
 
       <main className={styles.mainArea}>
-        <p className={styles.introText}>Induplast Andina S.A. · Área administrativa</p>
-
-        <div className={styles.instructionsBox}>
-          <p className={styles.instructionsTitle}>Qué tienes que hacer</p>
-          <ul className={styles.instructionsList}>
-            <li>
-              Valeria te va a tomar una foto de tu escritorio para el boletín interno. Tienes un cronómetro corto
-              (columna "TIEMPO" arriba) antes de que se dispare.
-            </li>
-            <li>
-              Sobre el escritorio hay objetos que pueden revelar información sensible: la pantalla del computador,
-              una nota con la contraseña del wifi, una carpeta de cliente, tu gafete de acceso, el teléfono o una
-              libreta, según el nivel.
-            </li>
-            <li>
-              Haz clic sobre cada objeto de riesgo para ocultarlo o resguardarlo antes de la foto (por ejemplo:
-              bloquear la pantalla, guardar la nota, voltear el gafete). Un segundo clic lo vuelve a dejar expuesto,
-              por si te arrepientes.
-            </li>
-            <li>Objetos como la taza o la planta no son un riesgo: no necesitas hacer nada con ellos.</li>
-            <li>
-              Puedes tomar la foto antes de tiempo con el botón "Listo, tomen la foto", o esperar a que el
-              cronómetro llegue a cero (en ese momento la foto se toma tal como esté el escritorio en ese instante).
-            </li>
-            <li>Al final de cada nivel verás qué quedó expuesto en la foto y por qué es un problema. Son 3 niveles, cada uno con menos tiempo y objetos distintos.</li>
-          </ul>
-        </div>
-
         <p className={styles.npcLine}>
           {finished ? 'Valeria: "¡Listo, gracias! Ya la subo al boletín."' : level.npc}
         </p>
@@ -568,77 +579,92 @@ function Foto() {
         {!finished && (
           <p className={styles.hintText}>Haz clic en los objetos de riesgo del escritorio para ocultarlos antes de que se acabe el tiempo.</p>
         )}
-
-        {showReport && (
-          <div className={styles.report} style={{ marginTop: 18 }}>
-            <span className={`${styles.reportStamp} ${styles[resLevel]}`}>
-              FOTO PUBLICADA ({level.label.toUpperCase()})
-            </span>
-            <h2>{title}</h2>
-            <p className={styles.summary}>{summary}</p>
-            <div>
-              {riskKeysThisLevel.map((k) => (
-                <div key={k} className={styles.recapItem}>
-                  <span>{ITEMS[k].label}</span>
-                  <span className={`${styles.recapTag} ${fixedState[k] ? styles.safe : styles.danger}`}>
-                    {fixedState[k] ? 'OCULTO' : 'EXPUESTO'}
-                  </span>
-                </div>
-              ))}
-            </div>
-
-            {exposedRisks.length > 0 && (
-              <div className={styles.report} style={{ marginTop: 8, padding: 0 }}>
-                {exposedRisks.map((k) => (
-                  <p key={k} className={styles.summary} style={{ marginBottom: 8 }}>
-                    <strong>{ITEMS[k].label}:</strong> {ITEMS[k].riskFeedback}
-                  </p>
-                ))}
-              </div>
-            )}
-
-            {fixedRisks.length > 0 && (
-              <div className={styles.report} style={{ marginTop: 4, padding: 0 }}>
-                {fixedRisks.map((k) => (
-                  <p key={k} className={styles.summary} style={{ marginBottom: 8, color: '#2f6b52' }}>
-                    <strong>{ITEMS[k].label}:</strong> {ITEMS[k].fixedFeedback}
-                  </p>
-                ))}
-              </div>
-            )}
-
-            {isLastLevel ? (
-              <div className={styles.report} style={{ marginTop: 14 }}>
-                <h2 style={{ fontSize: '1.15rem' }}>Resumen de la sesión</h2>
-                <div>
-                  {sessionResults.map((r) => (
-                    <div key={r.label} className={styles.recapItem}>
-                      <span>{r.label}</span>
-                      <span className={`${styles.recapTag} ${r.exposed === 0 ? styles.safe : styles.danger}`}>
-                        {r.exposed}/{r.total} expuestos
-                      </span>
-                    </div>
-                  ))}
-                </div>
-                <button type="button" className={styles.restartBtn} onClick={handleRestart}>
-                  Repetir desde el nivel 1
-                </button>
-              </div>
-            ) : (
-              <button type="button" className={styles.restartBtn} onClick={handleNextLevel}>
-                Siguiente nivel →
-              </button>
-            )}
-          </div>
-        )}
       </main>
 
       <FlashOverlay active={flash.active} />
-
-      <Link to="/seccion/fisico" className={styles.backLink}>
-        ← Volver a la sección
-      </Link>
     </div>
+  )
+
+  const decision = showReport ? (
+    <div className={styles.report} style={{ marginTop: 18 }}>
+      <span className={`${styles.reportStamp} ${styles[resLevel]}`}>
+        FOTO PUBLICADA ({level.label.toUpperCase()})
+      </span>
+      <h2>{title}</h2>
+      <p className={styles.summary}>{summary}</p>
+      <div>
+        {riskKeysThisLevel.map((k) => (
+          <div key={k} className={styles.recapItem}>
+            <span>{ITEMS[k].label}</span>
+            <span className={`${styles.recapTag} ${fixedState[k] ? styles.safe : styles.danger}`}>
+              {fixedState[k] ? 'OCULTO' : 'EXPUESTO'}
+            </span>
+          </div>
+        ))}
+      </div>
+
+      {exposedRisks.length > 0 && (
+        <div className={styles.report} style={{ marginTop: 8, padding: 0 }}>
+          {exposedRisks.map((k) => (
+            <p key={k} className={styles.summary} style={{ marginBottom: 8 }}>
+              <strong>{ITEMS[k].label}:</strong> {ITEMS[k].riskFeedback}
+            </p>
+          ))}
+        </div>
+      )}
+
+      {fixedRisks.length > 0 && (
+        <div className={styles.report} style={{ marginTop: 4, padding: 0 }}>
+          {fixedRisks.map((k) => (
+            <p key={k} className={styles.summary} style={{ marginBottom: 8, color: '#2f6b52' }}>
+              <strong>{ITEMS[k].label}:</strong> {ITEMS[k].fixedFeedback}
+            </p>
+          ))}
+        </div>
+      )}
+
+      {isLastLevel ? (
+        <div className={styles.report} style={{ marginTop: 14 }}>
+          <h2 style={{ fontSize: '1.15rem' }}>Resumen de la sesión</h2>
+          <div>
+            {sessionResults.map((r) => (
+              <div key={r.label} className={styles.recapItem}>
+                <span>{r.label}</span>
+                <span className={`${styles.recapTag} ${r.exposed === 0 ? styles.safe : styles.danger}`}>
+                  {r.exposed}/{r.total} expuestos
+                </span>
+              </div>
+            ))}
+          </div>
+          <button type="button" className={styles.restartBtn} onClick={() => navigate('/escenario/fisico/baiting')}>
+            Ir al siguiente escenario →
+          </button>
+          <button type="button" className={styles.restartBtn} onClick={handleRestart} style={{ marginTop: '10px', background: 'transparent', color: 'var(--color-ink)', border: '2px solid var(--color-ink)' }}>
+            Repetir desde el nivel 1
+          </button>
+        </div>
+      ) : (
+        <button type="button" className={styles.restartBtn} onClick={handleNextLevel}>
+          Siguiente nivel →
+        </button>
+      )}
+    </div>
+  ) : null
+
+  return (
+    <EscenarioLayout
+      escenarioId="fisico/foto"
+      resumen="Prepara tu escritorio antes de que tomen la foto para el boletín"
+      contexto={contexto}
+      nota="Haz clic en los elementos de riesgo para ocultarlos. Tienes poco tiempo antes de que disparen la cámara."
+      identidad={[]}
+      pantalla={pantalla}
+      decision={decision}
+      ocultarDecision={!showReport}
+      resultado={undefined}
+      onEmpezar={run.restart}
+      dispositivo="escritorio"
+    />
   )
 }
 

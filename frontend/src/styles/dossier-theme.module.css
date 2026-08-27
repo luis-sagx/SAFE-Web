@@ -11,12 +11,12 @@
   --paper: #ece3cd;
   --paper-edge: #d9cdae;
   --ink-on-paper: #2b2318;
-  --amber: #d99b34;
-  --danger: #b6392f;
-  --safe: #3f8f74;
+  --amber: #ab6400;
+  --danger: #b4342f;
+  --safe: #16a34a;
   --muted: #8fa0b0;
   --text-light: #e8e2d3;
-  --font-display: 'Oswald', 'Arial Narrow', sans-serif;
-  --font-body: 'IBM Plex Serif', Georgia, serif;
-  --font-mono: 'IBM Plex Mono', 'Courier New', monospace;
+  --font-display: 'Inter', 'Oswald', 'Arial Narrow', sans-serif;
+  --font-body: 'Inter', 'IBM Plex Serif', Georgia, serif;
+  --font-mono: 'JetBrains Mono', 'IBM Plex Mono', 'Courier New', monospace;
 }

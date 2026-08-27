@@ -773,31 +773,103 @@ const BASE: EscenarioBase[] = [
   // entrada correspondiente. Las secciones se quedan declaradas en SECCIONES
   // arriba; Dashboard.tsx ya pinta "Pronto" cuando escenariosDeSeccion() da
   // vacío, así que no hace falta tocar nada más.
-  //
-  // {
-  //   seccionId: 'fisico',
-  //   escenarioId: 'foto',
-  //   titulo: 'Foto para el boletín',
-  //   descripcion:
-  //     'Una escena cotidiana expone información sensible visible en el puesto de trabajo.',
-  //   version: 1,
-  //   naturaleza: 'fraude',
-  //   dificultad: 2,
-  //   espeja: null,
-  //   Component: lazy(() => import('../secciones/fisico/Foto')),
-  // },
-  // {
-  //   seccionId: 'fisico',
-  //   escenarioId: 'baiting',
-  //   titulo: 'Trampa USB',
-  //   descripcion:
-  //     'Debes identificar señales de riesgo físico y digital antes de conectar un dispositivo desconocido.',
-  //   version: 1,
-  //   naturaleza: 'fraude',
-  //   dificultad: 2,
-  //   espeja: null,
-  //   Component: lazy(() => import('../secciones/fisico/Baiting')),
-  // },
+
+  {
+    seccionId: 'fisico',
+    escenarioId: 'foto',
+    titulo: 'Foto para el boletín',
+    descripcion:
+      'Una escena cotidiana expone información sensible visible en el puesto de trabajo.',
+    version: 1,
+    naturaleza: 'legitimo',
+    dificultad: 2,
+    espeja: null,
+    Component: lazy(() => import('../secciones/fisico/Foto')),
+  },
+  {
+    seccionId: 'fisico',
+    escenarioId: 'trampa-usb',
+    titulo: 'USB abandonado',
+    descripcion:
+      'Encuentras un USB anónimo en una zona común con una etiqueta que atrae la atención.',
+    version: 1,
+    naturaleza: 'fraude',
+    dificultad: 2,
+    espeja: null,
+    Component: lazy(() => import('../secciones/fisico/TrampaUSB')),
+  },
+  {
+    seccionId: 'fisico',
+    escenarioId: 'cable-comprometido',
+    titulo: 'Cable sospechoso',
+    descripcion:
+      'Un cable USB desconocido está conectado en un punto de carga compartido de la oficina.',
+    version: 1,
+    naturaleza: 'fraude',
+    dificultad: 2,
+    espeja: null,
+    Component: lazy(() => import('../secciones/fisico/CableComprometido')),
+  },
+  {
+    seccionId: 'fisico',
+    escenarioId: 'impostor-tecnico',
+    titulo: 'Visitante pide favor',
+    descripcion:
+      'Un visitante en recepción te pide conectar su USB a tu computador de trabajo.',
+    version: 1,
+    naturaleza: 'fraude',
+    dificultad: 2,
+    espeja: null,
+    Component: lazy(() => import('../secciones/fisico/ImpostorTecnico')),
+  },
+  {
+    seccionId: 'fisico',
+    escenarioId: 'usb-promocional',
+    titulo: 'USB de feria tecnológica',
+    descripcion:
+      'Encuentras un USB con logo de una feria tecnológica dejado en tu escritorio.',
+    version: 1,
+    naturaleza: 'fraude',
+    dificultad: 2,
+    espeja: null,
+    Component: lazy(() => import('../secciones/fisico/USBPromocional')),
+  },
+  {
+    seccionId: 'fisico',
+    escenarioId: 'tecnico-impostor',
+    titulo: 'Técnico de servicios',
+    descripcion:
+      'Un técnico desconocido llega diciendo que viene a hacer mantenimiento rutinario.',
+    version: 1,
+    naturaleza: 'fraude',
+    dificultad: 2,
+    espeja: null,
+    Component: lazy(() => import('../secciones/fisico/TecnicoImpostor')),
+  },
+  {
+    seccionId: 'fisico',
+    escenarioId: 'conexion-publica',
+    titulo: 'Conexión pública en café',
+    descripcion:
+      'En un café ofrece una red WiFi gratuita para que hagas tus operaciones bancarias.',
+    version: 1,
+    naturaleza: 'fraude',
+    dificultad: 2,
+    espeja: null,
+    Component: lazy(() => import('../secciones/fisico/ConexionPublica')),
+  },
+  {
+    seccionId: 'fisico',
+    escenarioId: 'basura-confidencial',
+    titulo: 'Basura sin destruir',
+    descripcion:
+      'En el tacho de basura de tu oficina encuentras documentos con información confidencial sin destruir.',
+    version: 1,
+    naturaleza: 'fraude',
+    dificultad: 1,
+    espeja: null,
+    Component: lazy(() => import('../secciones/fisico/BasuraConfidencial')),
+  },
 ];
 
 // El id "<seccion>/<escenario>" es la clave que se guarda en la base: no puede

@@ -283,7 +283,7 @@ function EscenarioLayout({
             <button
               type="button"
               onClick={() => dialogoRef.current?.showModal()}
-              className="mb-4 inline-flex items-center gap-1.5 text-base font-medium text-link underline decoration-dotted underline-offset-4 transition hover:decoration-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link"
+              className="mb-4 inline-flex items-center gap-1.5 text-sm font-medium text-link underline decoration-dotted underline-offset-4 transition hover:decoration-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link whitespace-nowrap"
             >
               <Info aria-hidden className="size-3.5" strokeWidth={2} />
               {/* El nombre dice lo que hay dentro: quien se olvidó de su cédula

@@ -1,9 +1,9 @@
 import { useState, type ReactElement } from 'react'
-import { Link } from 'react-router'
-import { useAuth } from '../../context/AuthContext'
-import DossierHeader from '../../components/ui/DossierHeader'
+import { useNavigate } from 'react-router'
+import EscenarioLayout from '../../components/EscenarioLayout'
 import FlashOverlay from '../../components/ui/FlashOverlay'
 import { useFlashTransition } from '../../hooks/useFlashTransition'
+import type { Contexto } from '../../components/ui/ContextoEscenario'
 import dossierTheme from '../../styles/dossier-theme.module.css'
 import { useScenarioRun } from '../../hooks/useScenarioRun'
 import styles from './Baiting.module.css'
@@ -119,9 +119,9 @@ function ConsequenceArt({ level }: { level: Level }) {
         <rect width="400" height="220" fill="#1b232c" />
         <rect x="90" y="35" width="220" height="130" rx="6" fill="#0d1319" />
         <rect x="105" y="47" width="190" height="100" fill="#3d0f0f" />
-        <rect className={styles.glitchBar} x="105" y="66" width="190" height="7" fill="#c0453a" opacity="0.65" />
-        <rect className={styles.glitchBar} x="105" y="96" width="140" height="7" fill="#e2574a" opacity="0.5" />
-        <rect className={styles.glitchBar} x="140" y="118" width="150" height="7" fill="#c0453a" opacity="0.65" />
+        <rect className={styles.glitchBar} x="105" y="66" width="190" height="7" fill="#b4342f" opacity="0.65" />
+        <rect className={styles.glitchBar} x="105" y="96" width="140" height="7" fill="#d63031" opacity="0.5" />
+        <rect className={styles.glitchBar} x="140" y="118" width="150" height="7" fill="#b4342f" opacity="0.65" />
         <text
           x="200"
           y="105"
@@ -146,8 +146,8 @@ function ConsequenceArt({ level }: { level: Level }) {
         <rect width="400" height="220" fill="#f6efdd" />
         <rect x="150" y="35" width="100" height="140" rx="8" fill="#fff9ec" stroke="#9c8a5e" strokeWidth="3" />
         <rect x="172" y="25" width="56" height="16" rx="4" fill="#9c8a5e" />
-        <rect x="196" y="80" width="8" height="46" rx="4" fill="#d99b34" />
-        <circle cx="200" cy="140" r="6" fill="#d99b34" />
+        <rect x="196" y="80" width="8" height="46" rx="4" fill="#ab6400" />
+        <circle cx="200" cy="140" r="6" fill="#ab6400" />
       </svg>
     )
   }
@@ -158,7 +158,7 @@ function ConsequenceArt({ level }: { level: Level }) {
       <rect x="172" y="25" width="56" height="16" rx="4" fill="#9c8a5e" />
       <path
         d="M175 105 L198 128 L228 82"
-        stroke="#3f8f74"
+        stroke="#16a34a"
         strokeWidth="9"
         fill="none"
         strokeLinecap="round"
@@ -318,10 +318,10 @@ const SCENARIOS: Scenario[] = [
 ]
 
 const ROOM_ZONES = [
-  { idx: 0, x: 10, y: 70, width: 160, height: 440, ariaLabel: 'Estacionamiento', pinPos: [95, 300] },
-  { idx: 3, x: 180, y: 70, width: 290, height: 220, ariaLabel: 'Recepción', pinPos: [410, 245] },
-  { idx: 1, x: 470, y: 70, width: 290, height: 220, ariaLabel: 'Sala de descanso', pinPos: [645, 225] },
-  { idx: 2, x: 180, y: 290, width: 290, height: 220, ariaLabel: 'Área administrativa', pinPos: [252, 362] },
+  { idx: 0, x: 15, y: 105, width: 240, height: 660, ariaLabel: 'Estacionamiento', pinPos: [142, 450] },
+  { idx: 3, x: 270, y: 105, width: 435, height: 330, ariaLabel: 'Recepción', pinPos: [615, 367] },
+  { idx: 1, x: 705, y: 105, width: 435, height: 330, ariaLabel: 'Sala de descanso', pinPos: [967, 337] },
+  { idx: 2, x: 270, y: 435, width: 435, height: 330, ariaLabel: 'Área administrativa', pinPos: [378, 543] },
 ]
 
 function verdictLabel(level: Level) {
@@ -344,13 +344,12 @@ function shuffled<T>(arr: T[]): T[] {
 }
 
 function Baiting() {
-  const { displayName, roleLabel } = useAuth()
+  const navigate = useNavigate()
   const run = useScenarioRun('fisico/baiting')
 
   const [view, setView] = useState<'map' | 'scene'>('map')
   const [activeIdx, setActiveIdx] = useState<number | null>(null)
   const [resolved, setResolved] = useState<Record<number, Resolved>>({})
-  const [totalRisk, setTotalRisk] = useState(0)
   const [choicesShown, setChoicesShown] = useState(false)
   const [shuffledChoices, setShuffledChoices] = useState<Choice[]>([])
   const [revealPending, setRevealPending] = useState(false)
@@ -360,9 +359,21 @@ function Baiting() {
   const stampFlash = useFlashTransition()
 
 
-  const pct = Math.min(totalRisk, 100)
-  const gaugeColor = pct <= 20 ? 'var(--safe)' : pct <= 55 ? 'var(--amber)' : 'var(--danger)'
   const resolvedCount = Object.keys(resolved).length
+
+  function onEmpezar() {
+    setView('map')
+    setActiveIdx(null)
+    setResolved({})
+    setChoicesShown(false)
+    setShuffledChoices([])
+    setRevealPending(false)
+    setShowReport(false)
+  }
+
+  function handleNext() {
+    navigate('/seccion/fisico/documento-abierto')
+  }
 
   function enterScene(idx: number) {
     mapFlash.trigger(() => {
@@ -387,14 +398,14 @@ function Baiting() {
 
   function handleChoice(choice: Choice) {
     const siguiente = { ...resolved, [activeIdx!]: { level: choice.level, feedback: choice.feedback } }
+    const isComplete = Object.keys(siguiente).length === SCENARIOS.length
+    const niveles = isComplete ? Object.values(siguiente).map((r) => r.level) : []
 
     setResolved(siguiente)
-    setTotalRisk((prev) => prev + choice.risk)
     setRevealPending(true)
     run.recordDecision({ caso: activeIdx, nivel: choice.level, riesgo: choice.risk })
 
-    if (Object.keys(siguiente).length === SCENARIOS.length) {
-      const niveles = Object.values(siguiente).map((r) => r.level)
+    if (isComplete) {
       void run.finish({
         endingId: niveles.join('-'),
         outcome: niveles.includes('danger')
@@ -407,64 +418,50 @@ function Baiting() {
 
     stampFlash.trigger(() => {
       setRevealPending(false)
+      if (isComplete) {
+        setShowReport(true)
+        setView('map')
+      }
     }, 750)
-  }
-
-  function handleRestart() {
-    window.location.reload()
   }
 
   const activeScenario = activeIdx !== null ? (SCENARIOS[activeIdx] ?? null) : null
   const activeResolved = activeIdx !== null ? (resolved[activeIdx] ?? null) : null
   const showFeedback = !!activeResolved && !revealPending
 
-  return (
-    <div className={`${dossierTheme.dossierTheme} ${styles.app}`}>
-      <DossierHeader
-        caseLabel="CASO #0472"
-        secondTab="TRAMPA USB"
-        riskLabel="NIVEL DE RIESGO"
-        gaugePercent={pct}
-        gaugeValueText={`${pct}%`}
-        gaugeColor={gaugeColor}
-        participantName={displayName}
-        participantRole={roleLabel}
-      />
+  const contexto: Contexto = {
+    antes: (
+      <>
+        En tu oficina, los espacios comunes (estacionamiento, salas de descanso, escritorios, recepción)
+        tienen varios puntos donde alguien podría dejar un dispositivo: un USB en el escritorio, un cable
+        en un tomacorriente, un dispositivo de carga en la sala de descanso. Sabes que los ataques USB
+        son comunes pero raramente los ves venir porque generalmente parecen inofensivos: están etiquetados
+        de forma atractiva ({'"'}nómina{'"'}, {'"'}bonificación{'"'}) o promocional ({'"'}regalo de la
+        empresa{'"'}).
+      </>
+    ),
+    ahora: (
+      <>
+        <strong>Hoy</strong> circulan varias historias sobre dispositivos USB y accesorios de carga de
+        origen desconocido encontrados en diferentes zonas de la oficina. Pasarás por las 4 zonas
+        principales de tu área de trabajo y te encontrarás con objetos sospechosos. Debes tomar
+        decisiones sobre qué hacer con cada uno — cada acción tiene consecuencias diferentes en el nivel
+        de riesgo total.
+      </>
+    ),
+  }
 
+  // Game interface (pantalla)
+  const pantalla = (
+    <div className={`${dossierTheme.dossierTheme} ${styles.app}`}>
       <main className={styles.mainArea}>
         {view === 'map' && (
-          <div>
-            <div className={styles.instructionsBox}>
-              <p className={styles.instructionsTitle}>Qué tienes que hacer</p>
-              <ul className={styles.instructionsList}>
-                <li>
-                  En el plano de abajo hay 4 zonas marcadas con un pin numerado (1 a 4): Estacionamiento, Sala de
-                  descanso, Tu escritorio y Recepción. Haz clic o presiona Enter sobre cada zona para entrar.
-                </li>
-                <li>
-                  En cada zona vas a encontrar una situación distinta con un dispositivo USB o de carga de origen
-                  desconocido (un USB tirado en el piso, un cable ya conectado, un USB promocional, la memoria de un
-                  visitante).
-                </li>
-                <li>Toca el destello ⚡ sobre la escena para inspeccionar el objeto y ver las opciones disponibles.</li>
-                <li>
-                  Elige una de las opciones propuestas: cada una tiene una consecuencia distinta y suma un
-                  porcentaje distinto al medidor de "NIVEL DE RIESGO" (arriba a la derecha), según qué tan segura o
-                  arriesgada sea.
-                </li>
-                <li>
-                  No hay forma de deshacer una decisión una vez tomada, luego de elegir, vuelve al plano con el
-                  botón "← Volver al mapa" y entra a la siguiente zona pendiente (el pin cambia de color: pendiente,
-                  segura, observación o riesgo).
-                </li>
-                <li>Cuando hayas resuelto los 4 casos se habilita el botón "Ver informe final", con el resumen de tus decisiones y el riesgo total acumulado.</li>
-              </ul>
-            </div>
+          <div style={{ display: 'flex', gap: '20px', alignItems: 'stretch' }}>
+            <div style={{ flex: showReport ? '0 0 60%' : '1' }}>
+              <p className={styles.mapCaption}>Plano, Oficinas administrativas · Induplast Andina S.A. · entra a cada lugar</p>
 
-            <p className={styles.mapCaption}>Plano, Oficinas administrativas · Induplast Andina S.A. · entra a cada lugar</p>
-
-            <div className={styles.mapWrap}>
-              <svg className={styles.officeMap} viewBox="0 0 800 560">
+              <div className={styles.mapWrap}>
+              <svg className={styles.officeMap} viewBox="0 0 1200 840">
                 {ROOM_ZONES.map((zone) => (
                   <rect
                     key={zone.idx}
@@ -483,68 +480,68 @@ function Baiting() {
                   />
                 ))}
 
-                <rect x="10" y="70" width="160" height="440" className={styles.lot} />
-                <line x1="90" y1="90" x2="90" y2="490" className={styles.lotLine} />
-                <text x="20" y="55" className={styles.roomLabel}>
+                <rect x="15" y="105" width="240" height="660" className={styles.lot} />
+                <line x1="135" y1="135" x2="135" y2="735" className={styles.lotLine} />
+                <text x="30" y="82" className={styles.roomLabel}>
                   Estacionamiento
                 </text>
-                <rect x="55" y="300" width="70" height="34" rx="6" className={styles.furnitureFill} />
-                <circle cx="68" cy="336" r="6" className={styles.furniture} />
-                <circle cx="112" cy="336" r="6" className={styles.furniture} />
+                <rect x="82" y="450" width="105" height="51" rx="9" className={styles.furnitureFill} />
+                <circle cx="102" cy="504" r="9" className={styles.furniture} />
+                <circle cx="168" cy="504" r="9" className={styles.furniture} />
 
-                <rect x="180" y="70" width="580" height="440" className={styles.wall} fill="none" />
-                <line x1="470" y1="70" x2="470" y2="510" className={styles.wall} />
-                <line x1="180" y1="290" x2="760" y2="290" className={styles.wall} />
-                <line x1="180" y1="150" x2="180" y2="70" className={styles.wall} />
-                <line x1="180" y1="290" x2="180" y2="200" className={styles.wall} />
+                <rect x="270" y="105" width="870" height="660" className={styles.wall} fill="none" />
+                <line x1="705" y1="105" x2="705" y2="765" className={styles.wall} />
+                <line x1="270" y1="435" x2="1140" y2="435" className={styles.wall} />
+                <line x1="270" y1="225" x2="270" y2="105" className={styles.wall} />
+                <line x1="270" y1="435" x2="270" y2="300" className={styles.wall} />
 
-                <text x="200" y="95" className={styles.roomLabel}>
+                <text x="300" y="142" className={styles.roomLabel}>
                   Recepción
                 </text>
-                <rect x="205" y="200" width="110" height="38" rx="3" className={styles.furnitureFill} />
-                <rect x="235" y="185" width="30" height="16" className={styles.furniture} />
-                <circle cx="410" cy="245" r="14" className={styles.furnitureFill} />
-                <rect x="398" y="258" width="24" height="6" className={styles.furniture} />
-                <text x="386" y="278" className={styles.deskTag}>
+                <rect x="307" y="300" width="165" height="57" rx="4" className={styles.furnitureFill} />
+                <rect x="352" y="277" width="45" height="24" className={styles.furniture} />
+                <circle cx="615" cy="367" r="21" className={styles.furnitureFill} />
+                <rect x="597" y="387" width="36" height="9" className={styles.furniture} />
+                <text x="579" y="417" className={styles.deskTag}>
                   Visitante
                 </text>
 
-                <text x="490" y="95" className={styles.roomLabel}>
+                <text x="735" y="142" className={styles.roomLabel}>
                   Sala de descanso
                 </text>
-                <circle cx="670" cy="150" r="34" className={styles.furnitureFill} />
-                <circle cx="670" cy="105" r="8" className={styles.furniture} />
-                <circle cx="670" cy="195" r="8" className={styles.furniture} />
-                <circle cx="628" cy="150" r="8" className={styles.furniture} />
-                <circle cx="712" cy="150" r="8" className={styles.furniture} />
-                <rect x="580" y="215" width="150" height="26" className={styles.furnitureFill} />
-                <rect x="600" y="203" width="24" height="14" className={styles.furniture} />
-                <line x1="645" y1="241" x2="645" y2="255" className={styles.furniture} />
-                <line x1="638" y1="255" x2="652" y2="255" className={styles.furniture} />
-                <text x="580" y="260" className={styles.deskTag}>
+                <circle cx="1005" cy="225" r="51" className={styles.furnitureFill} />
+                <circle cx="1005" cy="157" r="12" className={styles.furniture} />
+                <circle cx="1005" cy="292" r="12" className={styles.furniture} />
+                <circle cx="942" cy="225" r="12" className={styles.furniture} />
+                <circle cx="1068" cy="225" r="12" className={styles.furniture} />
+                <rect x="870" y="322" width="225" height="39" className={styles.furnitureFill} />
+                <rect x="900" y="304" width="36" height="21" className={styles.furniture} />
+                <line x1="967" y1="361" x2="967" y2="382" className={styles.furniture} />
+                <line x1="957" y1="382" x2="978" y2="382" className={styles.furniture} />
+                <text x="870" y="390" className={styles.deskTag}>
                   Tomacorriente
                 </text>
 
-                <text x="200" y="315" className={styles.roomLabel}>
+                <text x="300" y="472" className={styles.roomLabel}>
                   Área administrativa
                 </text>
-                <rect x="205" y="335" width="95" height="55" rx="3" className={styles.furnitureFill} />
-                <rect x="220" y="345" width="30" height="18" className={styles.furniture} />
-                <text x="210" y="405" className={styles.deskTag}>
+                <rect x="307" y="502" width="142" height="82" rx="4" className={styles.furnitureFill} />
+                <rect x="330" y="517" width="45" height="27" className={styles.furniture} />
+                <text x="315" y="607" className={styles.deskTag}>
                   Tu escritorio
                 </text>
-                <rect x="330" y="335" width="90" height="55" rx="3" className={styles.furnitureFill} />
-                <rect x="345" y="345" width="30" height="18" className={styles.furniture} />
-                <rect x="205" y="420" width="95" height="55" rx="3" className={styles.furnitureFill} />
-                <rect x="220" y="430" width="30" height="18" className={styles.furniture} />
-                <rect x="330" y="420" width="90" height="55" rx="3" className={styles.furnitureFill} />
-                <rect x="345" y="430" width="30" height="18" className={styles.furniture} />
+                <rect x="495" y="502" width="135" height="82" rx="4" className={styles.furnitureFill} />
+                <rect x="517" y="517" width="45" height="27" className={styles.furniture} />
+                <rect x="307" y="630" width="142" height="82" rx="4" className={styles.furnitureFill} />
+                <rect x="330" y="645" width="45" height="27" className={styles.furniture} />
+                <rect x="495" y="630" width="135" height="82" rx="4" className={styles.furnitureFill} />
+                <rect x="517" y="645" width="45" height="27" className={styles.furniture} />
 
-                <text x="490" y="315" className={styles.roomLabel}>
+                <text x="735" y="472" className={styles.roomLabel}>
                   Pasillo / Archivo
                 </text>
-                <rect x="560" y="340" width="150" height="120" className={styles.furniture} fill="none" strokeDasharray="4 4" />
-                <text x="600" y="405" className={styles.deskTag}>
+                <rect x="840" y="510" width="225" height="180" className={styles.furniture} fill="none" strokeDasharray="4 4" />
+                <text x="900" y="607" className={styles.deskTag}>
                   Estantes
                 </text>
 
@@ -585,24 +582,19 @@ function Baiting() {
               </span>
             </div>
 
-            <div className={styles.progressRow}>
-              <span className={styles.progressText}>
-                Casos revisados: {resolvedCount}/{SCENARIOS.length}
-              </span>
-              <button
-                type="button"
-                className={styles.reportBtn}
-                disabled={resolvedCount < SCENARIOS.length}
-                onClick={() => setShowReport(true)}
-              >
-                Ver informe final
-              </button>
-            </div>
+                <div className={styles.progressRow}>
+                  <span className={styles.progressText}>
+                    Casos revisados: {resolvedCount}/{SCENARIOS.length}
+                  </span>
+                </div>
+              </div>
 
-            {showReport && resolvedCount === SCENARIOS.length && (
-              <Report resolved={resolved} pct={pct} onRestart={handleRestart} />
-            )}
-          </div>
+              {showReport && resolvedCount === SCENARIOS.length && (
+                <div style={{ flex: '0 0 40%', minWidth: '0', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+                  <Report resolved={resolved} onNext={handleNext} />
+                </div>
+              )}
+            </div>
         )}
 
         {view === 'scene' && activeScenario && (
@@ -682,61 +674,62 @@ function Baiting() {
           <div className={`${styles.stamp} ${styles[activeResolved.level]}`}>{stampWord(activeResolved.level)}</div>
         </div>
       )}
-
-      <Link to="/seccion/fisico" className={styles.backLink}>
-        ← Volver a la sección
-      </Link>
     </div>
+  )
+
+  const nota = (
+    <div className="text-base leading-relaxed text-body">
+      <p>Encontrarás varios dispositivos en diferentes puntos de tu oficina. Cada uno requiere una decisión sobre qué hacer con él. Las buenas decisiones minimizan el riesgo; las malas pueden permitir que el ataque funcione.</p>
+    </div>
+  )
+
+  return (
+    <EscenarioLayout
+      escenarioId="fisico/baiting"
+      resumen="Dispositivos sospechosos en la oficina — decide qué hacer con cada uno"
+      contexto={contexto}
+      nota={nota}
+      identidad={[]}
+      pantalla={pantalla}
+      decision={null}
+      ocultarDecision={true}
+      onEmpezar={onEmpezar}
+      dispositivo="escritorio"
+    />
   )
 }
 
 function Report({
   resolved,
-  pct,
-  onRestart,
+  onNext,
 }: {
   resolved: Record<number, Resolved>
-  pct: number
-  onRestart: () => void
+  onNext: () => void
 }) {
-  const anyDanger = Object.values(resolved).some((r) => r.level === 'danger')
-  let level: Level
-  let title: string
-  let summary: string
-  if (anyDanger) {
-    level = 'danger'
-    title = 'Incidente de seguridad registrado'
-    summary =
-      'Al menos una decisión habría dado a un atacante acceso a tus sistemas. El común denominador del baiting es la curiosidad o la prisa, y verificar antes de conectar es la única defensa real.'
-  } else if (pct <= 15) {
-    level = 'safe'
-    title = 'Protocolo ejemplar'
-    summary =
-      'Identificaste cada intento de baiting y seguiste el protocolo correcto: nunca conectar un dispositivo desconocido, siempre reportarlo por el canal adecuado.'
-  } else {
-    level = 'warn'
-    title = 'Aprobado con observaciones'
-    summary =
-      'Evitaste conectar cualquier dispositivo desconocido, pero algunas decisiones dejaron el riesgo circulando en lugar de eliminarlo. Reportar siempre es mejor que ignorar o reubicar el problema.'
-  }
+  const safeCount = Object.values(resolved).filter((r) => r.level === 'safe').length
+  const totalCount = Object.keys(resolved).length
+  const minSafeRequired = Math.ceil(totalCount * 0.7)
+  const canAdvance = safeCount >= minSafeRequired
 
   return (
-    <div className={styles.report} style={{ marginTop: 20, borderTop: '1px dashed var(--paper-edge)', paddingTop: 18 }}>
-      <span className={`${styles.reportStamp} ${styles[level]}`}>CASO CERRADO</span>
-      <h2>{title}</h2>
-      <p className={styles.summary}>
-        Nivel de riesgo final: <strong>{pct}%</strong>. {summary}
+    <div className={styles.report} style={{ textAlign: 'center', margin: 0, padding: 0 }}>
+      <p style={{ fontSize: '2.8rem', fontWeight: 'bold', margin: '0 0 8px', color: 'var(--color-ink)' }}>
+        {Math.round((safeCount / totalCount) * 100)}%
       </p>
-      <div>
-        {SCENARIOS.map((s, i) => (
-          <div key={s.location} className={styles.recapItem}>
-            <span className={styles.recapLoc}>{s.location}</span>
-            <span className={`${styles.recapTag} ${styles[resolved[i]!.level]}`}>{stampWord(resolved[i]!.level)}</span>
-          </div>
-        ))}
-      </div>
-      <button type="button" className={styles.restartBtn} onClick={onRestart}>
-        Reiniciar simulación
+      <p style={{ fontSize: '0.95rem', margin: '0 0 24px', color: 'var(--color-muted)' }}>
+        Aciertos: {safeCount}/{totalCount}
+      </p>
+      <button
+        type="button"
+        className={styles.restartBtn}
+        onClick={onNext}
+        disabled={!canAdvance}
+        style={{
+          opacity: canAdvance ? 1 : 0.5,
+          cursor: canAdvance ? 'pointer' : 'not-allowed',
+        }}
+      >
+        {canAdvance ? '→ Siguiente escenario' : `Necesitas ${minSafeRequired} aciertos`}
       </button>
     </div>
   )

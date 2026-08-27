@@ -189,6 +189,8 @@ const BANCO_INICIO: ScreenView = {
   ],
   fields: [],
   button: '',
+  cerrarGoto: 'n_sms_verificado',
+  cerrarLabel: 'Cerró la app del banco',
 }
 
 const APP_BANCO: ScreenView = {
