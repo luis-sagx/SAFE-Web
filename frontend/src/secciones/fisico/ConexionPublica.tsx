@@ -61,11 +61,11 @@ const SCENE_ART = ({ flash, onFlashClick }: { flash: boolean; onFlashClick: () =
     </g>
 
     {/* Letrero "Internet Café Gratis" en la pared */}
-    <rect x="250" y="40" width="140" height="50" fill="#e74c3c" stroke="#c0392b" strokeWidth="2" rx="4" />
-    <text x="320" y="62" textAnchor="middle" fontFamily="Arial" fontSize="14" fontWeight="bold" fill="white">
+    <rect x="250" y="40" width="140" height="50" fill="#8b6f47" stroke="#654321" strokeWidth="2" rx="4" />
+    <text x="320" y="62" textAnchor="middle" fontFamily="Arial" fontSize="14" fontWeight="bold" fill="#f5f5f5">
       Internet Café
     </text>
-    <text x="320" y="80" textAnchor="middle" fontFamily="Arial" fontSize="12" fill="white">
+    <text x="320" y="80" textAnchor="middle" fontFamily="Arial" fontSize="12" fill="#f5f5f5">
       GRATIS
     </text>
 
