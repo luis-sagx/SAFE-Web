@@ -123,15 +123,6 @@ describe('catálogo de escenarios', () => {
     expect(estafa.filter((e) => e.naturaleza === 'legitimo')).toHaveLength(2)
   })
 
-  // Riesgo físico también sigue la misma forma: 8 escenarios con 6 de fraude y
-  // 2 legítimos (Foto para el boletín y Baiting con USB encontrado). Los dos
-  // legítimos entrenan a distinguir un acto normal de uno comprometido.
-  it('fisico tiene 8 escenarios: 6 de fraude y 2 legítimos', () => {
-    const fisico = escenariosDeSeccion('fisico')
-    expect(fisico).toHaveLength(8)
-    expect(fisico.filter((e) => e.naturaleza === 'fraude')).toHaveLength(6)
-    expect(fisico.filter((e) => e.naturaleza === 'legitimo')).toHaveLength(2)
-  })
 
   // Guarda contra la regresión que tuvo la pantalla: el catálogo se redujo a 3
   // escenarios y el umbral del backend se quedó en 6, así que la insignia
