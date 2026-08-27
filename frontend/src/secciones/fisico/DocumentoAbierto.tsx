@@ -651,6 +651,7 @@ function DocumentoAbierto() {
                             onClick={() => {
                               setResult(null)
                               setInspectedDoc(null)
+                              setFinalResult(null)
                             }}
                             style={{ marginTop: 0, flex: 1, minHeight: '56px', fontSize: '1.1rem', fontWeight: '700', padding: '16px 24px' }}
                           >
