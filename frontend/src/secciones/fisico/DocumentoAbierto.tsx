@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link } from 'react-router'
+import { Link, useNavigate } from 'react-router'
 import { useAuth } from '../../context/AuthContext'
 import DossierHeader from '../../components/ui/DossierHeader'
 import FlashOverlay from '../../components/ui/FlashOverlay'
@@ -95,6 +95,7 @@ function DocumentoAbierto() {
   const { displayName, roleLabel } = useAuth()
   const run = useScenarioRun('fisico/documento-abierto')
   const flash = useFlashTransition()
+  const navigate = useNavigate()
 
   const [started, setStarted] = useState(false)
   const [inspectedDoc, setInspectedDoc] = useState<DocKey | null>(null)
@@ -156,6 +157,12 @@ function DocumentoAbierto() {
     setResult(null)
     setDecisions({ evaluaciones: null, clientes: null, contrasena: null })
     setFinalResult(null)
+  }
+
+  const handleNext = () => {
+    if (finalResult?.canAdvance) {
+      navigate('/seccion/fisico/documento-abierto')
+    }
   }
 
   const docsCompleted = Object.values(decisions).filter(d => d !== null).length
@@ -607,10 +614,16 @@ function DocumentoAbierto() {
                       <p style={{ margin: '0 0 24px', color: 'var(--color-muted)', fontSize: '0.9rem' }}>
                         Documentos completados: {docsCompleted}/3
                       </p>
-                      {docsCompleted === 3 && (
+                      {docsCompleted === 3 && finalResult && (
                         <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', width: '100%' }}>
-                          <button type="button" className={styles.restartBtn} onClick={handleRestart} style={{ marginTop: 0, flex: 1, minHeight: '56px', fontSize: '1.1rem', fontWeight: '700', padding: '16px 24px' }}>
-                            {finalResult?.canAdvance ? 'Continuar' : 'Repetir escenario'}
+                          <button
+                            type="button"
+                            className={styles.restartBtn}
+                            onClick={handleNext}
+                            disabled={!finalResult.canAdvance}
+                            style={{ marginTop: 0, flex: 1, minHeight: '56px', fontSize: '1.1rem', fontWeight: '700', padding: '16px 24px', opacity: finalResult.canAdvance ? 1 : 0.5, cursor: finalResult.canAdvance ? 'pointer' : 'not-allowed' }}
+                          >
+                            {finalResult.canAdvance ? '→ Siguiente escenario' : `Necesitas ${3 - finalResult.goodCount} acierto${3 - finalResult.goodCount !== 1 ? 's' : ''} más`}
                           </button>
                         </div>
                       )}
