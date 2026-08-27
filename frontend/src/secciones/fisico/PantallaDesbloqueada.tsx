@@ -267,173 +267,76 @@ function PantallaDesbloqueada() {
         <div style={{
           width: '100%',
           height: '100%',
-          position: 'relative',
-          background: 'linear-gradient(180deg, #d8d4cc 0%, #a8a4a0 100%)',
           display: 'flex',
-          flexDirection: 'column',
           alignItems: 'center',
-          justifyContent: 'flex-end',
+          justifyContent: 'center',
+          background: '#f5f1ed',
           overflow: 'hidden',
-          padding: '60px 40px 40px',
+          position: 'relative',
         }}>
           <style>{`
-            .office-scene {
-              position: relative;
+            .desk-svg-container {
               width: 100%;
               height: 100%;
-              display: flex;
-              flex-direction: column;
-              align-items: center;
-              justify-content: flex-end;
-            }
-            .walls-back {
-              position: absolute;
-              top: 0;
-              left: 0;
-              width: 100%;
-              height: 55%;
-              background: linear-gradient(to bottom, #e8e4dc 0%, #d8d4cc 100%);
-              box-shadow: inset 0 80px 120px rgba(0, 0, 0, 0.2);
-            }
-            .walls-side {
-              position: absolute;
-              top: 0;
-              width: 25%;
-              height: 100%;
-            }
-            .walls-left {
-              left: 0;
-              background: linear-gradient(to right, #c0bbb3 0%, #d8d4cc 100%);
-              box-shadow: inset 20px 0 80px rgba(0, 0, 0, 0.25);
-            }
-            .walls-right {
-              right: 0;
-              background: linear-gradient(to left, #c0bbb3 0%, #d8d4cc 100%);
-              box-shadow: inset -20px 0 80px rgba(0, 0, 0, 0.25);
-            }
-            .window {
-              position: absolute;
-              top: 80px;
-              right: 80px;
-              width: 160px;
-              height: 120px;
-              background: linear-gradient(135deg, #87ceeb 0%, #b0e0e6 100%);
-              border: 8px solid #8b7355;
-              box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.15), 0 12px 35px rgba(0, 0, 0, 0.35);
-              z-index: 5;
-            }
-            .floor {
-              position: absolute;
-              bottom: 0;
-              width: 100%;
-              height: 30%;
-              background: linear-gradient(to bottom, #8a8480 0%, #6a6460 50%, #5a5450 100%);
-              box-shadow: inset 0 40px 80px rgba(0, 0, 0, 0.5);
-              z-index: 1;
-            }
-            .desk-wrapper {
-              position: relative;
-              z-index: 20;
-              width: 850px;
-              height: auto;
-              display: flex;
-              flex-direction: column;
-              align-items: center;
-              margin-bottom: -50px;
-            }
-            .monitor-container-wrapper {
-              position: relative;
-              z-index: 30;
-              margin-bottom: -30px;
-            }
-            .desk-top {
-              width: 100%;
-              height: 80px;
-              background: linear-gradient(to bottom, #8a7a6a 0%, #6a5a4a 100%);
-              border-radius: 40px 40px 0 0;
-              box-shadow:
-                0 -30px 80px rgba(0, 0, 0, 0.6),
-                inset 0 1px 0 rgba(255, 255, 255, 0.1),
-                0 30px 50px rgba(0, 0, 0, 0.7);
               display: flex;
               align-items: center;
               justify-content: center;
-              position: relative;
+              perspective: 1200px;
             }
-            .desk-front {
-              width: 100%;
-              height: 300px;
-              background: linear-gradient(to bottom, #5a4a3a 0%, #4a3a2a 100%);
-              border-radius: 0 0 40px 40px;
-              box-shadow:
-                inset 0 1px 0 rgba(255, 255, 255, 0.05),
-                0 40px 80px rgba(0, 0, 0, 0.8);
-              position: relative;
-            }
-            .desk-legs {
-              position: absolute;
-              bottom: 0;
-              width: 100%;
-              height: 300px;
-              display: flex;
-              justify-content: space-between;
-              padding: 0 80px;
-              box-sizing: border-box;
-              pointer-events: none;
-            }
-            .desk-leg {
-              width: 50px;
-              background: linear-gradient(to right, #3a2a1a 0%, #5a4a3a 50%, #3a2a1a 100%);
-              box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.9), 0 20px 40px rgba(0, 0, 0, 0.7);
-              border-radius: 0 0 10px 10px;
+            svg {
+              max-width: 95%;
+              max-height: 95%;
+              filter: drop-shadow(0 20px 60px rgba(0, 0, 0, 0.3));
             }
           `}</style>
 
-          <div className="office-scene">
-            <div className="walls-back" />
-            <div className="walls-side walls-left" />
-            <div className="walls-side walls-right" />
-            <div className="window" />
-            <div className="floor" />
+          <div className="desk-svg-container">
+            <svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg" style={{ background: 'linear-gradient(135deg, #e8e4dc 0%, #d8d4cc 100%)' }}>
+              <defs>
+                <linearGradient id="deskGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" style={{ stopColor: '#a89878', stopOpacity: 1 }} />
+                  <stop offset="100%" style={{ stopColor: '#8a7860', stopOpacity: 1 }} />
+                </linearGradient>
+              </defs>
 
-            <div className="desk-wrapper">
-              <div className="monitor-container-wrapper">
-                <div className="monitor-container" style={{ position: 'relative', zIndex: 30 }}>
-                  <div className="monitor-bezel" style={{ width: '520px' }}>
-                    <div className="monitor-screen">
-                      <div className="desktop-content">
-                        <div>
-                          <div className="warning-badge">
-                            ⚠️ Sesión activa - Sistema de nómina (RRHH)
-                          </div>
-                          <h2 style={{ margin: '0 0 20px 0', fontSize: '18px', fontWeight: '600' }}>
-                            Puesto de trabajo - Escritorio
-                          </h2>
-                          <div style={{ fontSize: '12px', color: '#999', lineHeight: '1.6' }}>
-                            <p style={{ margin: '4px 0' }}>📧 Correos: Proyectos confidenciales</p>
-                            <p style={{ margin: '4px 0' }}>💰 Banca: Transferencias</p>
-                            <p style={{ margin: '4px 0' }}>👤 Sesión: activa sin bloqueo</p>
-                          </div>
-                        </div>
+              {/* Escritorio */}
+              <rect x="150" y="200" width="900" height="500" fill="url(#deskGrad)" rx="20" filter="drop-shadow(0 30px 60px rgba(0,0,0,0.4))" />
 
-                        <div className="taskbar">
-                          <div className="taskbar-item">📧 Correo</div>
-                          <div className="taskbar-item">💳 Banca</div>
-                          <div className="taskbar-item">📊 RH</div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              {/* Monitor */}
+              <g transform="translate(600, 320)">
+                {/* Stand/Base */}
+                <rect x="-150" y="80" width="300" height="40" fill="#3a3a3a" rx="5" />
 
-              <div className="desk-top" />
-              <div className="desk-front" />
-              <div className="desk-legs">
-                <div className="desk-leg" />
-                <div className="desk-leg" />
-              </div>
-            </div>
+                {/* Monitor body */}
+                <rect x="-180" y="-120" width="360" height="200" fill="#1a1a1a" rx="15" filter="drop-shadow(0 20px 50px rgba(0,0,0,0.5))" />
+
+                {/* Monitor screen */}
+                <rect x="-170" y="-110" width="340" height="180" fill="#0f1629" rx="8" />
+
+                {/* Monitor content */}
+                <text x="0" y="-70" fontSize="20" fill="#ff6464" textAnchor="middle" fontWeight="bold">⚠️ Sesión activa</text>
+                <text x="0" y="-40" fontSize="16" fill="#ffffff" textAnchor="middle" fontWeight="600">Sistema de nómina</text>
+                <text x="0" y="-15" fontSize="13" fill="#999999" textAnchor="middle">Proyectos confidenciales</text>
+                <text x="0" y="10" fontSize="13" fill="#999999" textAnchor="middle">Transferencias bancarias</text>
+                <text x="0" y="35" fontSize="13" fill="#999999" textAnchor="middle">Sesión: activa sin bloqueo</text>
+
+                {/* Monitor glow effect */}
+                <rect x="-170" y="-110" width="340" height="180" fill="none" stroke="#4a7fff" strokeWidth="1" opacity="0.3" rx="8" />
+              </g>
+
+              {/* Decorative items on desk */}
+              {/* Teclado */}
+              <rect x="300" y="550" width="200" height="80" fill="#4a4a4a" rx="5" opacity="0.6" />
+
+              {/* Mouse */}
+              <ellipse cx="900" cy="580" rx="30" ry="50" fill="#5a5a5a" opacity="0.5" />
+
+              {/* Lámpara */}
+              <g transform="translate(200, 300)">
+                <rect x="0" y="0" width="15" height="120" fill="#666666" />
+                <circle cx="7" cy="-20" r="30" fill="#ffeb3b" opacity="0.3" />
+              </g>
+            </svg>
           </div>
         </div>
       )}
