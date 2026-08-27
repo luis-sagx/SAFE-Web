@@ -606,8 +606,17 @@ function DocumentoAbierto() {
                       <p style={{ margin: '0 0 24px', color: 'var(--color-muted)', fontSize: '0.9rem' }}>
                         Documentos completados: {docsCompleted}/3
                       </p>
-                      {docsCompleted === 3 && finalResult && (
-                        <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', width: '100%' }}>
+                      <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', width: '100%' }}>
+                        {docsCompleted < 3 ? (
+                          <button
+                            type="button"
+                            className={styles.restartBtn}
+                            onClick={() => setResult(null)}
+                            style={{ marginTop: 0, flex: 1, minHeight: '56px', fontSize: '1.1rem', fontWeight: '700', padding: '16px 24px' }}
+                          >
+                            → Siguiente documento
+                          </button>
+                        ) : finalResult ? (
                           <button
                             type="button"
                             className={styles.restartBtn}
@@ -617,8 +626,8 @@ function DocumentoAbierto() {
                           >
                             {finalResult.canAdvance ? '→ Siguiente escenario' : `Necesitas ${3 - finalResult.goodCount} acierto${3 - finalResult.goodCount !== 1 ? 's' : ''} más`}
                           </button>
-                        </div>
-                      )}
+                        ) : null}
+                      </div>
                     </div>
                   </div>
                 )}
