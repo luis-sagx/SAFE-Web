@@ -9,6 +9,7 @@ import { useScenarioRun } from '../../hooks/useScenarioRun'
 import styles from './Baiting.module.css'
 
 type Level = 'safe' | 'warn' | 'danger'
+type Phase = 'break-room' | 'office' | 'resolved'
 
 interface Choice {
   label: string
@@ -34,7 +35,7 @@ function FlashSpark({ x, y, onClick }: { x: number; y: number; onClick: () => vo
   )
 }
 
-const SCENE_ART = ({ flash, onFlashClick }: { flash: boolean; onFlashClick: () => void }) => (
+const SCENE_ART_BREAK_ROOM = ({ flash, onFlashClick }: { flash: boolean; onFlashClick: () => void }) => (
   <svg viewBox="0 0 400 220">
     <rect width="400" height="220" fill="#ece0c4" />
     <rect y="160" width="400" height="60" fill="#cabb90" />
@@ -46,6 +47,31 @@ const SCENE_ART = ({ flash, onFlashClick }: { flash: boolean; onFlashClick: () =
     <rect x="228" y="112" width="16" height="12" rx="2" fill="#3a3226" />
     <path d="M236 124 Q252 148 236 162" stroke="#2b2318" strokeWidth="3" fill="none" className={styles.glitchBar} />
     {flash && <FlashSpark x={236} y={158} onClick={onFlashClick} />}
+  </svg>
+)
+
+const SCENE_ART_OFFICE = ({ flash, onFlashClick }: { flash: boolean; onFlashClick: () => void }) => (
+  <svg viewBox="0 0 400 220">
+    {/* Fondo pared */}
+    <rect width="400" height="180" fill="#d4cfc8" />
+    {/* Piso */}
+    <rect y="180" width="400" height="40" fill="#9a8f86" />
+
+    {/* Escritorio */}
+    <rect x="50" y="120" width="300" height="60" fill="#8a7a6a" stroke="#6a5a4a" strokeWidth="2" />
+
+    {/* Computadora */}
+    <g transform="translate(80, 70)">
+      <rect x="0" y="0" width="80" height="50" fill="#1a1a1a" stroke="#333" strokeWidth="1.5" rx="2" />
+      <rect x="2" y="2" width="76" height="46" fill="#0a0a2a" />
+      <rect x="25" y="50" width="30" height="8" fill="#333" />
+    </g>
+
+    {/* Cable en el escritorio */}
+    <path d="M240 130 Q250 120 260 130 Q270 140 260 150" stroke="#2b2318" strokeWidth="4" fill="none" />
+    <circle cx="265" cy="145" r="6" fill="#c0c0c0" />
+
+    {flash && <FlashSpark x={250} y={130} onClick={onFlashClick} />}
   </svg>
 )
 
@@ -105,7 +131,7 @@ function ConsequenceArt({ level }: { level: Level }) {
   )
 }
 
-const SCENARIO = {
+const SCENARIO_BREAK_ROOM = {
   location: 'Sala de descanso',
   time: '10:15 AM',
   object: 'Objeto: cable USB conectado al tomacorriente',
@@ -113,32 +139,53 @@ const SCENARIO = {
     'Vas a cargar tu celular y notas un cable USB ya conectado al enchufe público, sin nadie cerca reclamándolo. Se ve nuevo y en buen estado.',
   choices: [
     {
-      label: 'Usarlo para cargar tu celular, se ve nuevo y en buen estado',
-      level: 'danger',
-      risk: 28,
-      feedback:
-        "Un cable 'olvidado' en un punto de carga público puede llevar un chip que roba datos o inyecta comandos apenas se conecta un dispositivo (juice jacking). Regla simple: solo tu propio cable, en tu propio cargador.",
-    },
-    {
-      label: 'Llevártelo a tu escritorio, ahí te sirve más',
+      label: 'Llevártelo a tu escritorio',
       level: 'warn',
-      risk: 12,
-      feedback:
-        'Sigue siendo el mismo cable comprometido, solo que ahora en tu puesto de trabajo, con acceso potencial a más sistemas. El riesgo no desaparece por cambiar de enchufe.',
+      risk: 8,
+      feedback: '',
     },
     {
       label: 'Avisarle a mantenimiento sobre el cable',
       level: 'safe',
       risk: 0,
+      feedback: '',
+    },
+  ],
+}
+
+const SCENARIO_OFFICE = {
+  location: 'Tu escritorio',
+  time: '10:30 AM',
+  object: 'Objeto: cable USB desconocido que encontraste',
+  narrative: 'El cable está en tu escritorio. Ahora tienes que decidir qué hacer con él.',
+  choices: [
+    {
+      label: 'Conectarlo a tu celular para cargar',
+      level: 'danger',
+      risk: 28,
       feedback:
-        'Correcto. Cualquier accesorio de carga no identificado en espacios comunes debe reportarse, nunca usarse, sin importar cuán nuevo se vea.',
+        "Un cable 'olvidado' puede llevar un chip que roba datos o inyecta comandos apenas se conecta un dispositivo (juice jacking). Regla simple: solo tu propio cable.",
     },
     {
-      label: 'Usarlo solo para cargar el celular, sin pasar archivos',
+      label: 'Conectarlo a tu computadora para "revisar" qué es',
       level: 'danger',
-      risk: 22,
+      risk: 30,
       feedback:
-        "Existen cables modificados (tipo 'O.MG Cable') con un chip que puede inyectar comandos o robar datos alimentándose solo de la corriente del puerto, sin que tú transfieras nada a propósito. La intención de 'solo cargar' no depende de ti, depende del cable.",
+        "Existen cables modificados (tipo 'O.MG Cable') con un chip que puede inyectar comandos o robar datos. Conectarlo a tu computadora es incluso más peligroso que al celular.",
+    },
+    {
+      label: 'Entregarlo a IT para análisis',
+      level: 'safe',
+      risk: 0,
+      feedback:
+        'Correcto. Cualquier accesorio no identificado debe analizarse en un entorno controlado, nunca usarse directamente.',
+    },
+    {
+      label: 'Descartarlo directamente',
+      level: 'safe',
+      risk: 0,
+      feedback:
+        'También correcto. Descartar un cable desconocido es la forma más segura de evitar cualquier riesgo de juice jacking o inyección de comandos.',
     },
   ],
 }
@@ -164,6 +211,7 @@ function CableComprometido() {
   const navigate = useNavigate()
   const run = useScenarioRun('fisico/cable-comprometido')
 
+  const [phase, setPhase] = useState<Phase>('break-room')
   const [choicesShown, setChoicesShown] = useState(false)
   const [shuffledChoices, setShuffledChoices] = useState<Choice[]>([])
   const [revealPending, setRevealPending] = useState(false)
@@ -173,8 +221,10 @@ function CableComprometido() {
   const stampFlash = useFlashTransition()
 
   const showFeedback = !!resolved && !revealPending
+  const currentScenario = phase === 'break-room' ? SCENARIO_BREAK_ROOM : SCENARIO_OFFICE
 
   function onEmpezar() {
+    setPhase('break-room')
     setChoicesShown(false)
     setShuffledChoices([])
     setRevealPending(false)
@@ -186,7 +236,7 @@ function CableComprometido() {
   }
 
   function handleFlashClick() {
-    setShuffledChoices(shuffled(SCENARIO.choices as Choice[]))
+    setShuffledChoices(shuffled(currentScenario.choices as Choice[]))
     setChoicesShown(true)
   }
 
@@ -195,12 +245,28 @@ function CableComprometido() {
     run.recordDecision({ nivel: choice.level, riesgo: choice.risk })
 
     stampFlash.trigger(() => {
-      setRevealPending(false)
-      setResolved({ level: choice.level, feedback: choice.feedback })
-      void run.finish({
-        endingId: choice.level,
-        outcome: choice.level === 'safe' ? 'CORRECTO' : choice.level === 'warn' ? 'PARCIAL' : 'INCORRECTO',
-      })
+      if (phase === 'break-room') {
+        if (choice.label.includes('Llevártelo')) {
+          setRevealPending(false)
+          setChoicesShown(false)
+          setShuffledChoices([])
+          setPhase('office')
+        } else {
+          setRevealPending(false)
+          setResolved({ level: choice.level, feedback: 'Excelente decisión: reportar cables desconocidos es el protocolo correcto.' })
+          void run.finish({
+            endingId: choice.level,
+            outcome: 'CORRECTO',
+          })
+        }
+      } else {
+        setRevealPending(false)
+        setResolved({ level: choice.level, feedback: choice.feedback })
+        void run.finish({
+          endingId: choice.level,
+          outcome: choice.level === 'safe' ? 'CORRECTO' : choice.level === 'warn' ? 'PARCIAL' : 'INCORRECTO',
+        })
+      }
     }, 750)
   }
 
@@ -212,13 +278,18 @@ function CableComprometido() {
         para interceptar datos o inyectar código cuando lo conectes.
       </>
     ),
-    ahora: (
-      <>
-        <strong>Hoy a media mañana</strong> vas a cargar tu celular en la sala de descanso y encuentras
-        un cable USB ya conectado al tomacorriente público, sin nadie reclamándolo y sin etiqueta de
-        identificación.
-      </>
-    ),
+    ahora:
+      phase === 'break-room' ? (
+        <>
+          <strong>Hoy a media mañana</strong> vas a cargar tu celular en la sala de descanso y encuentras
+          un cable USB ya conectado al tomacorriente público. ¿Qué haces?
+        </>
+      ) : (
+        <>
+          <strong>En tu escritorio</strong> tienes el cable desconocido. Ahora tienes que decidir qué hacer
+          con él.
+        </>
+      ),
   }
 
   const pantalla = (
@@ -226,22 +297,24 @@ function CableComprometido() {
       <main className={styles.mainArea}>
         <div className={styles.sceneView}>
           <div className={styles.sceneMeta}>
-            <span>{SCENARIO.location.toUpperCase()}</span>
-            <span>{SCENARIO.time}</span>
+            <span>{currentScenario.location.toUpperCase()}</span>
+            <span>{currentScenario.time}</span>
           </div>
-          <h3 className={styles.sceneLocation}>{SCENARIO.location}</h3>
+          <h3 className={styles.sceneLocation}>{currentScenario.location}</h3>
 
           <div className={styles.sceneCanvas}>
             {showFeedback ? (
               <ConsequenceArt level={resolved.level} />
+            ) : phase === 'break-room' ? (
+              <SCENE_ART_BREAK_ROOM flash={!choicesShown && !revealPending} onFlashClick={handleFlashClick} />
             ) : (
-              <SCENE_ART flash={!choicesShown && !revealPending} onFlashClick={handleFlashClick} />
+              <SCENE_ART_OFFICE flash={!choicesShown && !revealPending} onFlashClick={handleFlashClick} />
             )}
           </div>
 
           <p
             className={styles.sceneNarrative}
-            dangerouslySetInnerHTML={{ __html: SCENARIO.narrative }}
+            dangerouslySetInnerHTML={{ __html: currentScenario.narrative }}
           />
 
           {!showFeedback && !choicesShown && !revealPending && (
@@ -250,7 +323,7 @@ function CableComprometido() {
 
           {showFeedback ? (
             <>
-              <p className={styles.sceneObject}>{SCENARIO.object}</p>
+              <p className={styles.sceneObject}>{currentScenario.object}</p>
               <div className={styles.feedbackPanel}>
                 <div className={styles.verdictRow}>
                   <span className={`${styles.badge} ${styles[resolved.level]}`}>
@@ -266,7 +339,7 @@ function CableComprometido() {
           ) : (
             (choicesShown || revealPending) && (
               <>
-                <p className={styles.sceneObject}>{SCENARIO.object}</p>
+                <p className={styles.sceneObject}>{currentScenario.object}</p>
                 <div className={styles.choices}>
                   {shuffledChoices.map((choice) => (
                     <button
@@ -298,7 +371,11 @@ function CableComprometido() {
 
   const nota = (
     <div className="text-base leading-relaxed text-body">
-      <p>Encuentras un cable USB en un punto de carga compartido. Debes decidir si lo usas o lo reportas.</p>
+      <p>
+        {phase === 'break-room'
+          ? 'Encuentras un cable USB en un punto de carga compartido. ¿Lo usas o lo reportas?'
+          : 'Ya tienes el cable en tu escritorio. ¿Qué haces con él?'}
+      </p>
     </div>
   )
 
