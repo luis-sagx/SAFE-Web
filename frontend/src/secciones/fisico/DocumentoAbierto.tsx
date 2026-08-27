@@ -430,12 +430,12 @@ function DocumentoAbierto() {
                     <rect x="20" y="180" width="560" height="20" fill="#e0c4a0" />
 
                     <g
-                      onClick={() => handleInspectDoc('evaluaciones')}
+                      onClick={() => !decisions.evaluaciones && handleInspectDoc('evaluaciones')}
                       className="doc-button"
-                      style={{ cursor: 'pointer' }}
+                      style={{ cursor: decisions.evaluaciones ? 'not-allowed' : 'pointer', opacity: decisions.evaluaciones ? 0.5 : 1 }}
                       filter="url(#docShadow)"
                     >
-                      <rect x="60" y="80" width="140" height="100" rx="2" fill="#fafafa" stroke="#d0d0d0" strokeWidth="1.5" />
+                      <rect x="60" y="80" width="140" height="100" rx="2" fill="#fafafa" stroke={decisions.evaluaciones ? '#999' : '#d0d0d0'} strokeWidth="1.5" />
                       <rect x="65" y="85" width="130" height="8" fill="#60646c" opacity="0.7" />
                       <text x="75" y="102" fontFamily="Inter, sans-serif" fontSize="11" fontWeight="600" fill="#1b232c">
                         Evaluaciones
@@ -444,18 +444,23 @@ function DocumentoAbierto() {
                         de desempeño
                       </text>
                       <line x1="65" y1="125" x2="195" y2="125" stroke="#e0e0e0" strokeWidth="1" />
+                      {decisions.evaluaciones && (
+                        <text x="130" y="165" fontFamily="Inter, sans-serif" fontSize="10" fontWeight="700" fill={decisions.evaluaciones.level === 'good' ? '#16a34a' : decisions.evaluaciones.level === 'partial' ? '#f59e0b' : '#dc2626'} textAnchor="middle">
+                          {decisions.evaluaciones.level === 'good' ? '✓' : decisions.evaluaciones.level === 'partial' ? '~' : '✗'}
+                        </text>
+                      )}
                       <text x="75" y="155" fontFamily="Inter, sans-serif" fontSize="8" fontWeight="500" fill="#60646c">
                         CONFIDENCIAL
                       </text>
                     </g>
 
                     <g
-                      onClick={() => handleInspectDoc('clientes')}
+                      onClick={() => !decisions.clientes && handleInspectDoc('clientes')}
                       className="doc-button"
-                      style={{ cursor: 'pointer' }}
+                      style={{ cursor: decisions.clientes ? 'not-allowed' : 'pointer', opacity: decisions.clientes ? 0.5 : 1 }}
                       filter="url(#docShadow)"
                     >
-                      <rect x="230" y="70" width="140" height="110" rx="2" fill="#fafafa" stroke="#d0d0d0" strokeWidth="1.5" transform="rotate(4 300 125)" />
+                      <rect x="230" y="70" width="140" height="110" rx="2" fill="#fafafa" stroke={decisions.clientes ? '#999' : '#d0d0d0'} strokeWidth="1.5" transform="rotate(4 300 125)" />
                       <rect x="235" y="75" width="130" height="8" fill="#60646c" opacity="0.7" transform="rotate(4 300 125)" />
                       <text x="245" y="95" fontFamily="Inter, sans-serif" fontSize="11" fontWeight="600" fill="#1b232c" transform="rotate(4 300 125)">
                         Clientes
@@ -464,18 +469,23 @@ function DocumentoAbierto() {
                         Montos contrato
                       </text>
                       <line x1="235" y1="120" x2="365" y2="120" stroke="#e0e0e0" strokeWidth="1" transform="rotate(4 300 125)" />
+                      {decisions.clientes && (
+                        <text x="300" y="165" fontFamily="Inter, sans-serif" fontSize="10" fontWeight="700" fill={decisions.clientes.level === 'good' ? '#16a34a' : decisions.clientes.level === 'partial' ? '#f59e0b' : '#dc2626'} textAnchor="middle">
+                          {decisions.clientes.level === 'good' ? '✓' : decisions.clientes.level === 'partial' ? '~' : '✗'}
+                        </text>
+                      )}
                       <text x="255" y="150" fontFamily="Inter, sans-serif" fontSize="8" fontWeight="500" fill="#60646c" transform="rotate(4 300 125)">
                         DATOS CRÍTICOS
                       </text>
                     </g>
 
                     <g
-                      onClick={() => handleInspectDoc('contrasena')}
+                      onClick={() => !decisions.contrasena && handleInspectDoc('contrasena')}
                       className="doc-button"
-                      style={{ cursor: 'pointer' }}
+                      style={{ cursor: decisions.contrasena ? 'not-allowed' : 'pointer', opacity: decisions.contrasena ? 0.5 : 1 }}
                       filter="url(#docShadow)"
                     >
-                      <rect x="400" y="90" width="120" height="90" fill="#fffaf0" stroke="#d4c5a9" strokeWidth="1.5" transform="rotate(-8 460 135)" />
+                      <rect x="400" y="90" width="120" height="90" fill="#fffaf0" stroke={decisions.contrasena ? '#999' : '#d4c5a9'} strokeWidth="1.5" transform="rotate(-8 460 135)" />
                       <rect x="402" y="92" width="116" height="86" fill="#fffcf7" rx="1" transform="rotate(-8 460 135)" />
                       <text x="415" y="115" fontFamily="Inter, sans-serif" fontSize="10" fontWeight="600" fill="#1b232c" transform="rotate(-8 460 135)">
                         WiFi
@@ -483,6 +493,11 @@ function DocumentoAbierto() {
                       <text x="415" y="130" fontFamily="monospace" fontSize="8" fontWeight="500" fill="#1b232c" transform="rotate(-8 460 135)">
                         Of2026*Net!
                       </text>
+                      {decisions.contrasena && (
+                        <text x="460" y="175" fontFamily="Inter, sans-serif" fontSize="10" fontWeight="700" fill={decisions.contrasena.level === 'good' ? '#16a34a' : decisions.contrasena.level === 'partial' ? '#f59e0b' : '#dc2626'} textAnchor="middle">
+                          {decisions.contrasena.level === 'good' ? '✓' : decisions.contrasena.level === 'partial' ? '~' : '✗'}
+                        </text>
+                      )}
                       <circle cx="465" cy="100" r="4" fill="#60646c" opacity="0.4" />
                     </g>
                   </svg>
