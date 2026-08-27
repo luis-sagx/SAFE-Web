@@ -82,19 +82,12 @@ const DECISION_RESULTS: Record<string, DecisionResult> = {
     outcome:
       'No accediste a los datos, pero no reportar significa que cualquier otra persona que pase puede leerlo, copiarlo o fotografiarlo. El riesgo sigue activo.',
   },
-  avisa: {
-    id: 'avisa',
-    level: 'good',
-    title: 'Actuaste correctamente de forma discreta',
-    outcome:
-      'Correcto. Reportar discretamente al compañero le permite guardar sus documentos de inmediato. Proteges tanto la información como su responsabilidad.',
-  },
   reporta: {
     id: 'reporta',
     level: 'good',
-    title: 'Seguiste el protocolo oficial',
+    title: 'Reportaste el documento',
     outcome:
-      'También correcto. Si los documentos contienen información de terceros, reportar a Recursos Humanos o Seguridad es el protocolo adecuado. Es la ruta más formal.',
+      'Correcto. Reportaste discretamente o al protocolo oficial. El documento está seguro y no será expuesto. Proteges tanto la información como la responsabilidad.',
   },
 }
 
@@ -587,9 +580,6 @@ function DocumentoAbierto() {
                     <button className="action-btn-inline" onClick={() => handleDocumentAction('foto')}>
                       Fotografiar
                     </button>
-                    <button className="action-btn-inline" onClick={() => handleDocumentAction('avisa')}>
-                      Avisar
-                    </button>
                     <button className="action-btn-inline" onClick={() => handleDocumentAction('reporta')}>
                       Reportar
                     </button>
@@ -621,22 +611,16 @@ function DocumentoAbierto() {
                       </span>
                       <h2 style={{ margin: '0 0 12px', fontSize: '1.3rem', color: 'var(--color-ink)' }}>{result.title}</h2>
                       <p style={{ margin: '0 0 28px', color: 'var(--color-body)', lineHeight: '1.6' }}>{result.outcome}</p>
-                      {docsCompleted < 3 && (
-                        <p style={{ margin: '0 0 24px', color: 'var(--color-muted)', fontSize: '0.9rem' }}>
-                          Documentos completados: {docsCompleted}/3
-                        </p>
-                      )}
-                      <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
-                        {docsCompleted < 3 ? (
-                          <button type="button" className={styles.restartBtn} onClick={handleNextDocument} style={{ marginTop: 0, flex: 1 }}>
-                            Siguiente documento
-                          </button>
-                        ) : (
+                      <p style={{ margin: '0 0 24px', color: 'var(--color-muted)', fontSize: '0.9rem' }}>
+                        Documentos completados: {docsCompleted}/3
+                      </p>
+                      {docsCompleted === 3 && (
+                        <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
                           <button type="button" className={styles.restartBtn} onClick={handleRestart} style={{ marginTop: 0, flex: 1 }}>
                             {finalResult?.canAdvance ? 'Continuar' : 'Repetir escenario'}
                           </button>
-                        )}
-                      </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
