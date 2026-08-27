@@ -151,14 +151,6 @@ function DocumentoAbierto() {
     }, 250)
   }
 
-  const handleRestart = () => {
-    run.restart()
-    setInspectedDoc(null)
-    setResult(null)
-    setDecisions({ evaluaciones: null, clientes: null, contrasena: null })
-    setFinalResult(null)
-  }
-
   const handleNext = () => {
     if (finalResult?.canAdvance) {
       navigate('/seccion/fisico/documento-abierto')
