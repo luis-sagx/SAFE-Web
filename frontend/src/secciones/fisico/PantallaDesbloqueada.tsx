@@ -291,51 +291,65 @@ function PantallaDesbloqueada() {
           `}</style>
 
           <div className="desk-svg-container">
-            <svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg" style={{ background: 'linear-gradient(135deg, #e8e4dc 0%, #d8d4cc 100%)' }}>
+            <svg viewBox="0 0 1200 900" xmlns="http://www.w3.org/2000/svg" style={{ background: 'linear-gradient(to bottom, #d8d4cc 0%, #a8a4a0 100%)' }}>
               <defs>
-                <linearGradient id="deskGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" style={{ stopColor: '#a89878', stopOpacity: 1 }} />
-                  <stop offset="100%" style={{ stopColor: '#8a7860', stopOpacity: 1 }} />
+                <linearGradient id="wallGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" style={{ stopColor: '#e8e4dc', stopOpacity: 1 }} />
+                  <stop offset="100%" style={{ stopColor: '#d0ccc4', stopOpacity: 1 }} />
+                </linearGradient>
+                <linearGradient id="deskGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" style={{ stopColor: '#8a7a6a', stopOpacity: 1 }} />
+                  <stop offset="100%" style={{ stopColor: '#6a5a4a', stopOpacity: 1 }} />
                 </linearGradient>
               </defs>
 
-              {/* Escritorio */}
-              <rect x="150" y="200" width="900" height="500" fill="url(#deskGrad)" rx="20" filter="drop-shadow(0 30px 60px rgba(0,0,0,0.4))" />
+              {/* Paredes y piso */}
+              <rect x="0" y="0" width="1200" height="500" fill="url(#wallGrad)" />
+              <rect x="0" y="500" width="1200" height="400" fill="#7a7470" />
 
-              {/* Monitor */}
-              <g transform="translate(600, 320)">
-                {/* Stand/Base */}
-                <rect x="-150" y="80" width="300" height="40" fill="#3a3a3a" rx="5" />
+              {/* Ventana en la pared */}
+              <rect x="950" y="80" width="180" height="150" fill="#87ceeb" stroke="#8b7355" strokeWidth="8" rx="4" />
 
-                {/* Monitor body */}
-                <rect x="-180" y="-120" width="360" height="200" fill="#1a1a1a" rx="15" filter="drop-shadow(0 20px 50px rgba(0,0,0,0.5))" />
+              {/* Mesa - vista frontal */}
+              <g>
+                {/* Tablero de la mesa */}
+                <path d="M 250 500 L 950 500 L 980 650 L 220 650 Z" fill="url(#deskGrad)" filter="drop-shadow(0 20px 50px rgba(0,0,0,0.5))" />
 
-                {/* Monitor screen */}
-                <rect x="-170" y="-110" width="340" height="180" fill="#0f1629" rx="8" />
-
-                {/* Monitor content */}
-                <text x="0" y="-70" fontSize="20" fill="#ff6464" textAnchor="middle" fontWeight="bold">⚠️ Sesión activa</text>
-                <text x="0" y="-40" fontSize="16" fill="#ffffff" textAnchor="middle" fontWeight="600">Sistema de nómina</text>
-                <text x="0" y="-15" fontSize="13" fill="#999999" textAnchor="middle">Proyectos confidenciales</text>
-                <text x="0" y="10" fontSize="13" fill="#999999" textAnchor="middle">Transferencias bancarias</text>
-                <text x="0" y="35" fontSize="13" fill="#999999" textAnchor="middle">Sesión: activa sin bloqueo</text>
-
-                {/* Monitor glow effect */}
-                <rect x="-170" y="-110" width="340" height="180" fill="none" stroke="#4a7fff" strokeWidth="1" opacity="0.3" rx="8" />
+                {/* Patas izquierda */}
+                <rect x="280" y="650" width="50" height="150" fill="#4a3a2a" />
+                {/* Patas derecha */}
+                <rect x="890" y="650" width="50" height="150" fill="#4a3a2a" />
               </g>
 
-              {/* Decorative items on desk */}
+              {/* Monitor encima de la mesa */}
+              <g transform="translate(600, 380)">
+                {/* Pedestal del monitor */}
+                <rect x="-80" y="50" width="160" height="35" fill="#2a2a2a" rx="3" />
+                <rect x="-70" y="85" width="140" height="15" fill="#1a1a1a" />
+
+                {/* Cuerpo del monitor */}
+                <rect x="-200" y="-180" width="400" height="240" fill="#1a1a1a" rx="20" filter="drop-shadow(0 15px 40px rgba(0,0,0,0.6))" />
+
+                {/* Pantalla */}
+                <rect x="-190" y="-170" width="380" height="220" fill="#0f1629" rx="15" />
+
+                {/* Contenido de la pantalla */}
+                <text x="0" y="-120" fontSize="24" fill="#ff6464" textAnchor="middle" fontWeight="bold">⚠️ Sesión activa</text>
+                <text x="0" y="-85" fontSize="20" fill="#ffffff" textAnchor="middle" fontWeight="600">Sistema de nómina (RRHH)</text>
+                <line x1="-150" y1="-70" x2="150" y2="-70" stroke="#444" strokeWidth="1" />
+                <text x="0" y="-45" fontSize="16" fill="#cccccc" textAnchor="middle">📧 Proyectos confidenciales</text>
+                <text x="0" y="-20" fontSize="16" fill="#cccccc" textAnchor="middle">💰 Transferencias bancarias</text>
+                <text x="0" y="5" fontSize="16" fill="#cccccc" textAnchor="middle">👤 Sesión: activa sin bloqueo</text>
+
+                {/* Glow del monitor */}
+                <rect x="-190" y="-170" width="380" height="220" fill="none" stroke="#5599ff" strokeWidth="2" opacity="0.4" rx="15" />
+              </g>
+
+              {/* Decorativos en la mesa */}
               {/* Teclado */}
-              <rect x="300" y="550" width="200" height="80" fill="#4a4a4a" rx="5" opacity="0.6" />
-
+              <ellipse cx="350" cy="560" rx="80" ry="40" fill="#4a4a4a" opacity="0.5" />
               {/* Mouse */}
-              <ellipse cx="900" cy="580" rx="30" ry="50" fill="#5a5a5a" opacity="0.5" />
-
-              {/* Lámpara */}
-              <g transform="translate(200, 300)">
-                <rect x="0" y="0" width="15" height="120" fill="#666666" />
-                <circle cx="7" cy="-20" r="30" fill="#ffeb3b" opacity="0.3" />
-              </g>
+              <circle cx="820" cy="580" r="25" fill="#5a5a5a" opacity="0.5" />
             </svg>
           </div>
         </div>
