@@ -445,8 +445,8 @@ function DocumentoAbierto() {
                       </text>
                       <line x1="65" y1="125" x2="195" y2="125" stroke="#e0e0e0" strokeWidth="1" />
                       {decisions.evaluaciones && (
-                        <text x="130" y="165" fontFamily="Inter, sans-serif" fontSize="10" fontWeight="700" fill={decisions.evaluaciones.level === 'good' ? '#16a34a' : decisions.evaluaciones.level === 'partial' ? '#f59e0b' : '#dc2626'} textAnchor="middle">
-                          {decisions.evaluaciones.level === 'good' ? '✓' : decisions.evaluaciones.level === 'partial' ? '~' : '✗'}
+                        <text x="130" y="165" fontFamily="Inter, sans-serif" fontSize="9" fontWeight="700" fill={decisions.evaluaciones.level === 'good' ? '#16a34a' : '#dc2626'} textAnchor="middle">
+                          {decisions.evaluaciones.level === 'good' ? 'Aprobado' : 'No aprobado'}
                         </text>
                       )}
                       <text x="75" y="155" fontFamily="Inter, sans-serif" fontSize="8" fontWeight="500" fill="#60646c">
