@@ -1,6 +1,5 @@
 import EscenarioLayout from '../../components/EscenarioLayout'
 import type { Contexto } from '../../components/ui/ContextoEscenario'
-import DeviceScreen, { type ScreenView } from '../../components/ui/DeviceScreen'
 import type { Senal } from '../../components/ui/PanelVeredicto'
 import PanelVeredicto from '../../components/ui/PanelVeredicto'
 import { useStoryEngine, type Story, type StoryNode } from '../../hooks/useStoryEngine'
@@ -33,37 +32,6 @@ const OPCIONES: Opcion[] = [
     label: 'Actuó para proteger datos ajenos',
   },
 ]
-
-const ESCENA: ScreenView = {
-  kind: 'web',
-  app: 'Escritorio',
-  url: 'oficina',
-  secure: true,
-  brand: 'Puesto de trabajo',
-  title: 'Pantalla desbloqueada',
-  subtitle: 'Tu compañero se levantó unos minutos',
-  datos: [
-    {
-      etiqueta: 'Acceso',
-      valor: 'Sistema de nómina (RRHH) - sesión activa',
-      senal: 'peligro',
-    },
-    {
-      etiqueta: 'Correos abiertos',
-      valor: 'Carpeta de proyectos confidenciales',
-      senal: 'peligro',
-    },
-    {
-      etiqueta: 'Aplicación de banca',
-      valor: 'App de transferencias del área contable',
-      senal: 'peligro',
-    },
-  ],
-  aviso:
-    'Tu compañero de equipo se levantó de su escritorio para ir por café. Su pantalla quedó completamente desbloqueada con tres ventanas importantes abiertas. Estarán fuera unos 10 minutos.',
-  fields: [],
-  button: '',
-}
 
 const STORY: Story<StoryNode> = {
   n1: { kind: 'scene' },
@@ -126,9 +94,127 @@ function PantallaDesbloqueada() {
   const pantalla = (
     <div
       id="pantalla-escenario"
-      style={{ width: '100%', height: '100%' }}
+      style={{
+        width: '100%',
+        height: '100%',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)',
+        padding: '40px',
+        position: 'relative',
+        overflow: 'hidden',
+      }}
     >
-      <DeviceScreen view={ESCENA} />
+      <style>{`
+        @keyframes monitorGlow {
+          0% {
+            box-shadow: 0 0 20px rgba(100, 200, 255, 0.3), inset 0 0 30px rgba(0, 0, 0, 0.8);
+          }
+          50% {
+            box-shadow: 0 0 40px rgba(100, 200, 255, 0.5), inset 0 0 30px rgba(0, 0, 0, 0.8);
+          }
+          100% {
+            box-shadow: 0 0 20px rgba(100, 200, 255, 0.3), inset 0 0 30px rgba(0, 0, 0, 0.8);
+          }
+        }
+        @keyframes slideIn {
+          from {
+            opacity: 0;
+            transform: translateY(30px) scale(0.95);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+          }
+        }
+        .monitor-container {
+          animation: slideIn 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+        .monitor-bezel {
+          background: linear-gradient(135deg, #1a1a1a 0%, #0d0d0d 50%, #1a1a1a 100%);
+          padding: 20px;
+          border-radius: 12px;
+          box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+          animation: monitorGlow 3s ease-in-out infinite;
+        }
+        .monitor-screen {
+          background: #0a0e27;
+          border-radius: 4px;
+          overflow: hidden;
+          aspect-ratio: 16 / 9;
+          width: 100%;
+          max-width: 900px;
+          position: relative;
+        }
+        .desktop-content {
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(180deg, #0f1629 0%, #1a2847 100%);
+          padding: 40px;
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+          color: #fff;
+        }
+        .taskbar {
+          display: flex;
+          gap: 8px;
+          margin-top: 20px;
+          padding-top: 12px;
+          border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .taskbar-item {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          padding: 6px 12px;
+          background: rgba(100, 150, 200, 0.2);
+          border: 1px solid rgba(100, 150, 200, 0.3);
+          border-radius: 4px;
+          font-size: 12px;
+          color: #64b4ff;
+        }
+        .warning-badge {
+          background: rgba(255, 100, 100, 0.2);
+          border: 1px solid rgba(255, 100, 100, 0.4);
+          color: #ff6464;
+          padding: 12px 16px;
+          border-radius: 6px;
+          font-size: 14px;
+          margin-bottom: 20px;
+        }
+      `}</style>
+
+      <div className="monitor-container">
+        <div className="monitor-bezel">
+          <div className="monitor-screen">
+            <div className="desktop-content">
+              <div>
+                <div className="warning-badge">
+                  ⚠️ Sesión activa - Sistema de nómina (RRHH)
+                </div>
+                <h2 style={{ margin: '0 0 20px 0', fontSize: '20px', fontWeight: '600' }}>
+                  Puesto de trabajo - Escritorio
+                </h2>
+                <div style={{ fontSize: '13px', color: '#999', lineHeight: '1.8' }}>
+                  <p>📧 Carpeta de correos: Proyectos confidenciales (abierta)</p>
+                  <p>💰 App de banca: Transferencias (abierta)</p>
+                  <p>👤 Sesión: activa sin bloqueo</p>
+                </div>
+              </div>
+
+              <div className="taskbar">
+                <div className="taskbar-item">📧 Correo</div>
+                <div className="taskbar-item">💳 Banca</div>
+                <div className="taskbar-item">📊 RH</div>
+                <div className="taskbar-item">⏰ 14:30</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   )
 
