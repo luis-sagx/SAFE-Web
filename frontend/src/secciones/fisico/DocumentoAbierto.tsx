@@ -608,6 +608,7 @@ function DocumentoAbierto() {
                   type="button"
                   className={styles.snapBtn}
                   onClick={() => {
+                    setResult(null)
                     setInspectedDoc(null)
                   }}
                   style={{ background: 'transparent', color: 'var(--color-ink)', border: '2px solid var(--color-ink)', marginBottom: '20px' }}
