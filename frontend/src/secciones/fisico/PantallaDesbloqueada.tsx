@@ -104,7 +104,7 @@ function PantallaDesbloqueada() {
         alignItems: 'center',
         justifyContent: 'center',
         background: 'linear-gradient(135deg, #2a3f5f 0%, #1a2a3a 100%)',
-        padding: '40px',
+        padding: '0',
         position: 'relative',
         overflow: 'hidden',
       }}
