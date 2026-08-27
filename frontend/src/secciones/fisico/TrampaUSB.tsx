@@ -227,7 +227,6 @@ function TrampaUSB() {
   const [shuffledChoices, setShuffledChoices] = useState<Choice[]>([])
   const [revealPending, setRevealPending] = useState(false)
   const [resolved, setResolved] = useState<Resolved | null>(null)
-  const [initialDecision, setInitialDecision] = useState<Choice | null>(null)
 
   const flash = useFlashTransition()
   const stampFlash = useFlashTransition()
@@ -241,7 +240,6 @@ function TrampaUSB() {
     setShuffledChoices([])
     setRevealPending(false)
     setResolved(null)
-    setInitialDecision(null)
   }
 
   function handleNext() {
@@ -263,7 +261,6 @@ function TrampaUSB() {
           setRevealPending(false)
           setChoicesShown(false)
           setShuffledChoices([])
-          setInitialDecision(choice)
           setPhase('office')
         } else {
           setRevealPending(false)
