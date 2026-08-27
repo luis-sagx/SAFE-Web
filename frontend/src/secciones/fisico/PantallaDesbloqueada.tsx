@@ -335,7 +335,42 @@ function PantallaDesbloqueada() {
       `}</style>
 
       {!doorOpened ? (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '40px', height: '100%' }}>
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '40px',
+          height: '100%',
+          background: 'linear-gradient(180deg, #e8e4dc 0%, #d8d4cc 60%, #9a8f86 100%)',
+          position: 'relative',
+          overflow: 'hidden',
+        }}>
+          <svg style={{ position: 'absolute', width: '100%', height: '100%', top: 0, left: 0, zIndex: 0 }}>
+            <defs>
+              <linearGradient id="wallGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor="#f5f1ed" stopOpacity="1" />
+                <stop offset="100%" stopColor="#e8e4dc" stopOpacity="1" />
+              </linearGradient>
+              <linearGradient id="floorGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="#8b7f75" stopOpacity="1" />
+                <stop offset="50%" stopColor="#9a8f86" stopOpacity="1" />
+                <stop offset="100%" stopColor="#7a6f65" stopOpacity="1" />
+              </linearGradient>
+            </defs>
+            {/* Pared */}
+            <rect width="100%" height="70%" fill="url(#wallGrad)" />
+            {/* Zócalo */}
+            <rect y="70%" width="100%" height="5%" fill="#8a7355" opacity="0.8" />
+            {/* Piso */}
+            <rect y="75%" width="100%" height="25%" fill="url(#floorGrad)" />
+            {/* Líneas de piso para profundidad */}
+            <line x1="0" y1="78%" x2="100%" y2="78%" stroke="rgba(0,0,0,0.1)" strokeWidth="1" />
+            <line x1="0" y1="82%" x2="100%" y2="82%" stroke="rgba(0,0,0,0.08)" strokeWidth="1" />
+            <line x1="0" y1="86%" x2="100%" y2="86%" stroke="rgba(0,0,0,0.06)" strokeWidth="1" />
+            {/* Sombra de pared */}
+            <rect width="100%" height="70%" fill="url(#wallGrad)" opacity="0.3" />
+          </svg>
           {thoughtPhase === 'before' && (
             <div style={{
               background: 'white',
@@ -347,6 +382,7 @@ function PantallaDesbloqueada() {
               position: 'relative',
               marginBottom: '20px',
               animation: 'fadeIn 0.6s ease-out',
+              zIndex: 10,
             }}>
               <style>{`
                 @keyframes fadeIn {
@@ -384,7 +420,7 @@ function PantallaDesbloqueada() {
             </div>
           )}
 
-          <div className="door-container">
+          <div className="door-container" style={{ zIndex: 10 }}>
             <div className="door" onClick={() => {
               setDoorOpened(true)
               setTimeout(() => setThoughtPhase('in-office'), 600)
