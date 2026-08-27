@@ -108,6 +108,12 @@ function DocumentoAbierto() {
   const [result, setResult] = useState<DecisionResult | null>(null)
   const [cameraFlash, setCameraFlash] = useState(false)
   const stampFlash = useFlashTransition()
+  const [decisions, setDecisions] = useState<Record<DocKey, DecisionResult | null>>({
+    evaluaciones: null,
+    clientes: null,
+    contrasena: null,
+  })
+  const [finalResult, setFinalResult] = useState<{ goodCount: number; canAdvance: boolean } | null>(null)
 
   const handleInspectDoc = (docKey: DocKey) => {
     setInspectedDoc(docKey)
@@ -120,15 +126,33 @@ function DocumentoAbierto() {
     }
 
     const decisionResult = DECISION_RESULTS[actionId]
-    if (!decisionResult) return
+    if (!decisionResult || !inspectedDoc) return
 
     flash.trigger(() => {
       setResult(decisionResult)
       run.recordDecision({ documento: inspectedDoc, accion: actionId })
-      void run.finish({
-        endingId: decisionResult.level,
-        outcome: decisionResult.level === 'good' ? 'CORRECTO' : decisionResult.level === 'partial' ? 'PARCIAL' : 'INCORRECTO',
-      })
+
+      // Guardar la decisión para este documento
+      const updatedDecisions = { ...decisions, [inspectedDoc]: decisionResult }
+      setDecisions(updatedDecisions)
+
+      // Verificar si todos los documentos tienen decisiones
+      const allDecided = updatedDecisions.evaluaciones && updatedDecisions.clientes && updatedDecisions.contrasena
+      if (allDecided) {
+        // Contar aciertos (good y partial son considerados aciertos)
+        const goodCount = Object.values(updatedDecisions).filter(d => d && (d.level === 'good' || d.level === 'partial')).length
+        const canAdvance = goodCount >= 2
+
+        // Mostrar resultado final después de un delay
+        setTimeout(() => {
+          setFinalResult({ goodCount, canAdvance })
+          void run.finish({
+            endingId: canAdvance ? 'good' : 'bad',
+            outcome: canAdvance ? 'CORRECTO' : 'INCORRECTO',
+          })
+        }, 1500)
+      }
+
       stampFlash.trigger(() => {}, 750)
     }, 250)
   }
@@ -137,7 +161,18 @@ function DocumentoAbierto() {
     run.restart()
     setInspectedDoc(null)
     setResult(null)
+    setDecisions({ evaluaciones: null, clientes: null, contrasena: null })
+    setFinalResult(null)
   }
+
+  const handleNextDocument = () => {
+    // Si ya se mostró el resultado final, no permitir continuar
+    if (finalResult) return
+    setInspectedDoc(null)
+    setResult(null)
+  }
+
+  const docsCompleted = Object.values(decisions).filter(d => d !== null).length
 
   const contexto: Contexto = {
     antes: (
@@ -586,20 +621,27 @@ function DocumentoAbierto() {
                       </span>
                       <h2 style={{ margin: '0 0 12px', fontSize: '1.3rem', color: 'var(--color-ink)' }}>{result.title}</h2>
                       <p style={{ margin: '0 0 28px', color: 'var(--color-body)', lineHeight: '1.6' }}>{result.outcome}</p>
+                      {docsCompleted < 3 && (
+                        <p style={{ margin: '0 0 24px', color: 'var(--color-muted)', fontSize: '0.9rem' }}>
+                          Documentos completados: {docsCompleted}/3
+                        </p>
+                      )}
                       <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
-                        <button type="button" className={styles.restartBtn} onClick={() => setInspectedDoc(null)} style={{ marginTop: 0, flex: 1 }}>
-                          Volver a los documentos
-                        </button>
-                        <button type="button" className={styles.restartBtn} onClick={handleRestart} style={{ marginTop: 0, flex: 1 }}>
-                          Repetir
-                        </button>
+                        {docsCompleted < 3 ? (
+                          <button type="button" className={styles.restartBtn} onClick={handleNextDocument} style={{ marginTop: 0, flex: 1 }}>
+                            Siguiente documento
+                          </button>
+                        ) : (
+                          <button type="button" className={styles.restartBtn} onClick={handleRestart} style={{ marginTop: 0, flex: 1 }}>
+                            {finalResult?.canAdvance ? 'Continuar' : 'Repetir escenario'}
+                          </button>
+                        )}
                       </div>
                     </div>
                   </div>
                 )}
               </>
             )}
-        )}
       </main>
 
       <FlashOverlay active={flash.active} />
