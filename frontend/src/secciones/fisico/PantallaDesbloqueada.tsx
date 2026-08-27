@@ -320,27 +320,94 @@ function PantallaDesbloqueada() {
       ) : (
         <div style={{
           width: '100%',
-          height: '100%',
+          minHeight: '100%',
           display: 'flex',
+          flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
           background: '#f5f1ed',
-          overflow: 'hidden',
+          overflow: 'auto',
           position: 'relative',
+          padding: '40px',
+          gap: '40px',
         }}>
           <style>{`
+            @keyframes fadeIn {
+              from { opacity: 0; transform: translateY(-10px); }
+              to { opacity: 1; transform: translateY(0); }
+            }
             .desk-svg-container {
               width: 100%;
-              height: 100%;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              perspective: 1200px;
+              max-width: 900px;
+              flex-shrink: 0;
             }
             svg {
-              max-width: 95%;
-              max-height: 95%;
+              width: 100%;
               filter: drop-shadow(0 20px 60px rgba(0, 0, 0, 0.3));
+            }
+            .thought-container {
+              background: white;
+              border-radius: 24px;
+              padding: 32px 40px;
+              max-width: 600px;
+              box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+              position: relative;
+              animation: fadeIn 0.8s ease-out 0.4s both;
+            }
+            .thought-container::after {
+              content: '';
+              position: absolute;
+              bottom: -25px;
+              left: 50px;
+              width: 25px;
+              height: 25px;
+              background: white;
+              border-radius: 50%;
+              box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            }
+            .thought-container::before {
+              content: '';
+              position: absolute;
+              bottom: -42px;
+              left: 30px;
+              width: 16px;
+              height: 16px;
+              background: white;
+              border-radius: 50%;
+              box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            }
+            .thought-text {
+              font-size: 18px;
+              color: #1a1a1a;
+              font-weight: 600;
+              line-height: 1.6;
+              margin: 0 0 24px 0;
+              font-style: italic;
+            }
+            .thought-options {
+              display: grid;
+              grid-template-columns: 1fr;
+              gap: 12px;
+            }
+            .thought-option-btn {
+              padding: 16px 20px;
+              background: linear-gradient(135deg, #2a5f3f 0%, #1a3a2a 100%);
+              border: 2px solid #4a9f6f;
+              border-radius: 10px;
+              color: #ffffff;
+              font-size: 14px;
+              font-weight: 600;
+              text-align: left;
+              cursor: pointer;
+              transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+              line-height: 1.5;
+              box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            }
+            .thought-option-btn:hover {
+              background: linear-gradient(135deg, #3a7f5f 0%, #2a5a3a 100%);
+              border-color: #6adf9f;
+              box-shadow: 0 10px 30px rgba(74, 159, 111, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+              transform: translateY(-1px);
             }
           `}</style>
 
@@ -421,57 +488,18 @@ function PantallaDesbloqueada() {
       onRestart={engine.restart}
       contenedorId="pantalla-escenario"
     />
-  ) : (
-    <div style={{ width: '100%' }}>
-      <style>{`
-        .options-container {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 20px;
-          margin-top: 40px;
-          width: 100%;
-        }
-        .option-btn {
-          position: relative;
-          padding: 24px 28px;
-          background: linear-gradient(135deg, #2a5f3f 0%, #1a3a2a 100%);
-          border: 2px solid #4a9f6f;
-          border-radius: 12px;
-          color: #ffffff;
-          font-size: 15px;
-          font-weight: 600;
-          text-align: left;
-          cursor: pointer;
-          transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-          line-height: 1.5;
-          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
-        }
-        .option-btn:hover {
-          background: linear-gradient(135deg, #3a7f5f 0%, #2a5a3a 100%);
-          border-color: #6adf9f;
-          box-shadow: 0 15px 45px rgba(74, 159, 111, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
-          transform: translateY(-2px);
-        }
-        .option-btn:active {
-          transform: translateY(0);
-        }
-        .prompt-text {
-          font-size: 18px;
-          font-weight: 700;
-          color: #1a1a1a;
-          margin-bottom: 8px;
-          text-align: center;
-        }
-      `}</style>
-
-      <div className="prompt-text">¿Qué haces con la pantalla desbloqueada?</div>
-      <div className="options-container">
+  ) : !doorOpened ? null : (
+    <div className="thought-container">
+      <p className="thought-text">
+        "Su computadora está abierta... tengo acceso a todo. ¿Qué hago?"
+      </p>
+      <div className="thought-options">
         {OPCIONES.map((opcion) => (
           <button
             key={opcion.label}
             type="button"
             onClick={() => engine.choose(opcion.goto, opcion.label)}
-            className="option-btn"
+            className="thought-option-btn"
           >
             {opcion.texto}
           </button>
