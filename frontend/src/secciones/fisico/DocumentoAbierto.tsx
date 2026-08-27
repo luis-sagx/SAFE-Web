@@ -162,16 +162,8 @@ function DocumentoAbierto() {
   }
 
   const handleNext = () => {
-    console.log('handleNext clicked', { finalResult, canAdvance: finalResult?.canAdvance })
     if (finalResult?.canAdvance) {
-      console.log('Navigating to pantalla-desbloqueada')
-      try {
-        navigate('/seccion/fisico/pantalla-desbloqueada')
-      } catch (err) {
-        console.error('Navigation failed:', err)
-      }
-    } else {
-      console.log('Cannot advance:', { canAdvance: finalResult?.canAdvance })
+      navigate('/seccion/fisico/pantalla-desbloqueada')
     }
   }
 
