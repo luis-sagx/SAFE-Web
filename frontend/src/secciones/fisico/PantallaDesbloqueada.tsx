@@ -334,48 +334,58 @@ function PantallaDesbloqueada() {
             .desk-wrapper {
               position: relative;
               z-index: 20;
-              width: 800px;
-              height: 380px;
-              margin-bottom: -40px;
+              width: 850px;
+              height: auto;
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              margin-bottom: -50px;
+            }
+            .monitor-container-wrapper {
+              position: relative;
+              z-index: 30;
+              margin-bottom: -30px;
             }
             .desk-top {
               width: 100%;
-              height: 60px;
-              background: linear-gradient(to bottom, #7a6a5a 0%, #6a5a4a 100%);
-              border-radius: 20px 20px 0 0;
+              height: 80px;
+              background: linear-gradient(to bottom, #8a7a6a 0%, #6a5a4a 100%);
+              border-radius: 40px 40px 0 0;
               box-shadow:
-                0 -20px 60px rgba(0, 0, 0, 0.5),
+                0 -30px 80px rgba(0, 0, 0, 0.6),
                 inset 0 1px 0 rgba(255, 255, 255, 0.1),
-                0 20px 40px rgba(0, 0, 0, 0.6);
+                0 30px 50px rgba(0, 0, 0, 0.7);
               display: flex;
-              align-items: flex-start;
+              align-items: center;
               justify-content: center;
-              padding-top: 20px;
+              position: relative;
             }
             .desk-front {
               width: 100%;
-              height: 320px;
+              height: 300px;
               background: linear-gradient(to bottom, #5a4a3a 0%, #4a3a2a 100%);
-              border-radius: 0 0 20px 20px;
+              border-radius: 0 0 40px 40px;
               box-shadow:
                 inset 0 1px 0 rgba(255, 255, 255, 0.05),
-                0 30px 60px rgba(0, 0, 0, 0.7);
+                0 40px 80px rgba(0, 0, 0, 0.8);
+              position: relative;
             }
             .desk-legs {
               position: absolute;
               bottom: 0;
               width: 100%;
-              height: 320px;
+              height: 300px;
               display: flex;
               justify-content: space-between;
-              padding: 0 60px;
+              padding: 0 80px;
               box-sizing: border-box;
               pointer-events: none;
             }
             .desk-leg {
-              width: 40px;
+              width: 50px;
               background: linear-gradient(to right, #3a2a1a 0%, #5a4a3a 50%, #3a2a1a 100%);
-              box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.8), 0 15px 30px rgba(0, 0, 0, 0.6);
+              box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.9), 0 20px 40px rgba(0, 0, 0, 0.7);
+              border-radius: 0 0 10px 10px;
             }
           `}</style>
 
@@ -387,9 +397,9 @@ function PantallaDesbloqueada() {
             <div className="floor" />
 
             <div className="desk-wrapper">
-              <div className="desk-top">
+              <div className="monitor-container-wrapper">
                 <div className="monitor-container" style={{ position: 'relative', zIndex: 30 }}>
-                  <div className="monitor-bezel" style={{ width: '500px' }}>
+                  <div className="monitor-bezel" style={{ width: '520px' }}>
                     <div className="monitor-screen">
                       <div className="desktop-content">
                         <div>
@@ -416,6 +426,8 @@ function PantallaDesbloqueada() {
                   </div>
                 </div>
               </div>
+
+              <div className="desk-top" />
               <div className="desk-front" />
               <div className="desk-legs">
                 <div className="desk-leg" />
