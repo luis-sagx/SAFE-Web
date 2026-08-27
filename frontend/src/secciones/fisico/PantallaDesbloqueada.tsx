@@ -141,8 +141,36 @@ function PantallaDesbloqueada() {
         }
         .door-container {
           perspective: 1000px;
-          width: 300px;
-          height: 500px;
+          width: 320px;
+          height: 540px;
+          position: relative;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .door-container::before {
+          content: '';
+          position: absolute;
+          width: 340px;
+          height: 560px;
+          border: 8px solid #9e8b7a;
+          border-radius: 16px;
+          box-shadow:
+            inset 0 0 20px rgba(0, 0, 0, 0.3),
+            0 0 30px rgba(0, 0, 0, 0.2);
+          pointer-events: none;
+          z-index: 2;
+        }
+        .door-container::after {
+          content: '';
+          position: absolute;
+          width: 360px;
+          height: 580px;
+          border-radius: 18px;
+          background:
+            linear-gradient(90deg, rgba(200, 180, 160, 0.15) 0%, transparent 30%, transparent 70%, rgba(50, 30, 20, 0.15) 100%);
+          pointer-events: none;
+          z-index: 1;
         }
         .door {
           width: 100%;
