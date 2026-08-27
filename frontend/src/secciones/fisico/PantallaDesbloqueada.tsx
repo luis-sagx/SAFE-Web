@@ -326,7 +326,7 @@ function PantallaDesbloqueada() {
           alignItems: 'center',
           justifyContent: 'center',
           background: '#f5f1ed',
-          overflow: 'auto',
+          overflow: 'hidden',
           position: 'relative',
           padding: '40px',
           gap: '40px',
