@@ -354,6 +354,7 @@ function PantallaDesbloqueada() {
               border-radius: 24px;
               padding: 32px 40px;
               max-width: 600px;
+              max-height: 60vh;
               box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
               position: relative;
               animation: fadeIn 0.8s ease-out 0.4s both;
