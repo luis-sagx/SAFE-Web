@@ -608,8 +608,8 @@ function DocumentoAbierto() {
                         Documentos completados: {docsCompleted}/3
                       </p>
                       {docsCompleted === 3 && (
-                        <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
-                          <button type="button" className={styles.restartBtn} onClick={handleRestart} style={{ marginTop: 0, flex: 1 }}>
+                        <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', width: '100%' }}>
+                          <button type="button" className={styles.restartBtn} onClick={handleRestart} style={{ marginTop: 0, flex: 1, minHeight: '56px', fontSize: '1.1rem', fontWeight: '700', padding: '16px 24px' }}>
                             {finalResult?.canAdvance ? 'Continuar' : 'Repetir escenario'}
                           </button>
                         </div>
