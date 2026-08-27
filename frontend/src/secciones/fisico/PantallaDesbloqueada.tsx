@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import EscenarioLayout from '../../components/EscenarioLayout'
 import type { Contexto } from '../../components/ui/ContextoEscenario'
 import type { Senal } from '../../components/ui/PanelVeredicto'
@@ -90,6 +91,7 @@ const REGLA =
 
 function PantallaDesbloqueada() {
   const engine = useStoryEngine(STORY, 'n1', 'fisico/pantalla-desbloqueada')
+  const [doorOpened, setDoorOpened] = useState(false)
 
   const pantalla = (
     <div
@@ -100,13 +102,31 @@ function PantallaDesbloqueada() {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)',
+        background: 'linear-gradient(135deg, #2a3f5f 0%, #1a2a3a 100%)',
         padding: '40px',
         position: 'relative',
         overflow: 'hidden',
       }}
     >
       <style>{`
+        @keyframes doorOpen {
+          from {
+            transform: rotateY(0deg);
+            opacity: 1;
+          }
+          to {
+            transform: rotateY(-90deg);
+            opacity: 0;
+          }
+        }
+        @keyframes officeReveal {
+          from {
+            opacity: 0;
+          }
+          to {
+            opacity: 1;
+          }
+        }
         @keyframes monitorGlow {
           0% {
             box-shadow: 0 0 20px rgba(100, 200, 255, 0.3), inset 0 0 30px rgba(0, 0, 0, 0.8);
@@ -118,15 +138,53 @@ function PantallaDesbloqueada() {
             box-shadow: 0 0 20px rgba(100, 200, 255, 0.3), inset 0 0 30px rgba(0, 0, 0, 0.8);
           }
         }
-        @keyframes slideIn {
-          from {
-            opacity: 0;
-            transform: translateY(30px) scale(0.95);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-          }
+        .door-container {
+          perspective: 1000px;
+          width: 300px;
+          height: 500px;
+        }
+        .door {
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(90deg, #8b6f47 0%, #a0826d 50%, #8b6f47 100%);
+          border-radius: 12px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-direction: column;
+          cursor: pointer;
+          box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+          transition: all 0.3s ease;
+          animation: ${doorOpened ? 'doorOpen 0.8s ease-out forwards' : 'none'};
+        }
+        .door:hover:not(.opened) {
+          box-shadow: 0 25px 70px rgba(0, 0, 0, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+          transform: scale(1.02);
+        }
+        .door-knob {
+          width: 20px;
+          height: 20px;
+          background: radial-gradient(circle at 30% 30%, #ffeb3b, #fbc02d);
+          border-radius: 50%;
+          position: absolute;
+          right: 30px;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3), inset -1px -1px 3px rgba(0, 0, 0, 0.2);
+        }
+        .door-label {
+          font-size: 24px;
+          font-weight: 700;
+          color: rgba(0, 0, 0, 0.6);
+          text-align: center;
+          margin-bottom: 10px;
+        }
+        .door-hint {
+          font-size: 12px;
+          color: rgba(0, 0, 0, 0.5);
+          margin-top: 20px;
+          font-style: italic;
+        }
+        .office-interior {
+          animation: officeReveal 0.8s ease-out forwards;
         }
         .monitor-container {
           animation: slideIn 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
@@ -185,36 +243,58 @@ function PantallaDesbloqueada() {
           font-size: 14px;
           margin-bottom: 20px;
         }
+        @keyframes slideIn {
+          from {
+            opacity: 0;
+            transform: translateY(30px) scale(0.95);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+          }
+        }
       `}</style>
 
-      <div className="monitor-container">
-        <div className="monitor-bezel">
-          <div className="monitor-screen">
-            <div className="desktop-content">
-              <div>
-                <div className="warning-badge">
-                  ⚠️ Sesión activa - Sistema de nómina (RRHH)
-                </div>
-                <h2 style={{ margin: '0 0 20px 0', fontSize: '20px', fontWeight: '600' }}>
-                  Puesto de trabajo - Escritorio
-                </h2>
-                <div style={{ fontSize: '13px', color: '#999', lineHeight: '1.8' }}>
-                  <p>📧 Carpeta de correos: Proyectos confidenciales (abierta)</p>
-                  <p>💰 App de banca: Transferencias (abierta)</p>
-                  <p>👤 Sesión: activa sin bloqueo</p>
-                </div>
-              </div>
+      {!doorOpened ? (
+        <div className="door-container">
+          <div className="door" onClick={() => setDoorOpened(true)}>
+            <div className="door-label">OFICINA</div>
+            <div className="door-knob" />
+            <div className="door-hint">Haz clic para entrar</div>
+          </div>
+        </div>
+      ) : (
+        <div className="office-interior">
+          <div className="monitor-container">
+            <div className="monitor-bezel">
+              <div className="monitor-screen">
+                <div className="desktop-content">
+                  <div>
+                    <div className="warning-badge">
+                      ⚠️ Sesión activa - Sistema de nómina (RRHH)
+                    </div>
+                    <h2 style={{ margin: '0 0 20px 0', fontSize: '20px', fontWeight: '600' }}>
+                      Puesto de trabajo - Escritorio
+                    </h2>
+                    <div style={{ fontSize: '13px', color: '#999', lineHeight: '1.8' }}>
+                      <p>📧 Carpeta de correos: Proyectos confidenciales (abierta)</p>
+                      <p>💰 App de banca: Transferencias (abierta)</p>
+                      <p>👤 Sesión: activa sin bloqueo</p>
+                    </div>
+                  </div>
 
-              <div className="taskbar">
-                <div className="taskbar-item">📧 Correo</div>
-                <div className="taskbar-item">💳 Banca</div>
-                <div className="taskbar-item">📊 RH</div>
-                <div className="taskbar-item">⏰ 14:30</div>
+                  <div className="taskbar">
+                    <div className="taskbar-item">📧 Correo</div>
+                    <div className="taskbar-item">💳 Banca</div>
+                    <div className="taskbar-item">📊 RH</div>
+                    <div className="taskbar-item">⏰ 14:30</div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   )
 
