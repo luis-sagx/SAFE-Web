@@ -109,13 +109,7 @@ function ConsequenceArt({ level }: { level: Level }) {
   )
 }
 
-const SCENARIO: {
-  location: string
-  time: string
-  object: string
-  narrative: string
-  choices: Choice[]
-} = {
+const SCENARIO = {
   location: 'Estacionamiento',
   time: '7:52 AM',
   object: 'Objeto: USB negro con etiqueta manuscrita',
@@ -196,7 +190,7 @@ function TrampaUSB() {
   }
 
   function handleFlashClick() {
-    setShuffledChoices(shuffled(SCENARIO.choices))
+    setShuffledChoices(shuffled(SCENARIO.choices as Choice[]))
     setChoicesShown(true)
   }
 

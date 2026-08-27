@@ -105,13 +105,7 @@ function ConsequenceArt({ level }: { level: Level }) {
   )
 }
 
-const SCENARIO: {
-  location: string
-  time: string
-  object: string
-  narrative: string
-  choices: Choice[]
-} = {
+const SCENARIO = {
   location: 'Sala de descanso',
   time: '10:15 AM',
   object: 'Objeto: cable USB conectado al tomacorriente',
@@ -192,7 +186,7 @@ function CableComprometido() {
   }
 
   function handleFlashClick() {
-    setShuffledChoices(shuffled(SCENARIO.choices))
+    setShuffledChoices(shuffled(SCENARIO.choices as Choice[]))
     setChoicesShown(true)
   }
 
