@@ -442,6 +442,7 @@
   margin-top: 4px;
   grid-column: 2;
   grid-row: 5;
+  overflow: hidden;
 }
 
 .choiceBtn {
@@ -460,6 +461,11 @@
   white-space: normal;
   overflow-wrap: break-word;
   width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  display: block;
+  overflow: hidden;
+  text-overflow: clip;
 }
 
 .choiceBtn:hover:not(:disabled) {
