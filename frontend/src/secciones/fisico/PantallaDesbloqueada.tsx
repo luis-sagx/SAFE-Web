@@ -268,163 +268,158 @@ function PantallaDesbloqueada() {
           width: '100%',
           height: '100%',
           position: 'relative',
-          perspective: '1200px',
+          background: 'linear-gradient(180deg, #d8d4cc 0%, #a8a4a0 100%)',
           display: 'flex',
+          flexDirection: 'column',
           alignItems: 'center',
-          justifyContent: 'center',
+          justifyContent: 'flex-end',
           overflow: 'hidden',
+          padding: '60px 40px 40px',
         }}>
           <style>{`
-            .room-container {
+            .office-scene {
               position: relative;
               width: 100%;
               height: 100%;
-              transform-style: preserve-3d;
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              justify-content: flex-end;
             }
-            .room-floor {
-              position: absolute;
-              bottom: 0;
-              width: 200%;
-              height: 40%;
-              left: -50%;
-              background: linear-gradient(to bottom, #7a7470 0%, #5a5450 50%, #4a4440 100%);
-              transform: rotateX(60deg);
-              transform-origin: center bottom;
-              box-shadow: inset 0 50px 100px rgba(0, 0, 0, 0.8);
-            }
-            .room-floor::before {
-              content: '';
-              position: absolute;
-              width: 100%;
-              height: 100%;
-              background: repeating-linear-gradient(
-                90deg,
-                transparent,
-                transparent 100px,
-                rgba(0, 0, 0, 0.1) 100px,
-                rgba(0, 0, 0, 0.1) 102px
-              );
-            }
-            .room-back-wall {
+            .walls-back {
               position: absolute;
               top: 0;
               left: 0;
               width: 100%;
-              height: 65%;
-              background: linear-gradient(to bottom, #e0dcd4 0%, #d0ccc4 100%);
-              box-shadow: inset 0 100px 150px rgba(0, 0, 0, 0.3);
+              height: 55%;
+              background: linear-gradient(to bottom, #e8e4dc 0%, #d8d4cc 100%);
+              box-shadow: inset 0 80px 120px rgba(0, 0, 0, 0.2);
             }
-            .room-left-wall {
+            .walls-side {
               position: absolute;
               top: 0;
-              left: 0;
-              width: 40%;
+              width: 25%;
               height: 100%;
-              background: linear-gradient(to right, #c8c4bc 0%, #d8d4cc 100%);
-              box-shadow: inset 30px 0 100px rgba(0, 0, 0, 0.4);
-              opacity: 0.9;
             }
-            .room-right-wall {
-              position: absolute;
-              top: 0;
+            .walls-left {
+              left: 0;
+              background: linear-gradient(to right, #c0bbb3 0%, #d8d4cc 100%);
+              box-shadow: inset 20px 0 80px rgba(0, 0, 0, 0.25);
+            }
+            .walls-right {
               right: 0;
-              width: 40%;
-              height: 100%;
-              background: linear-gradient(to left, #c8c4bc 0%, #d8d4cc 100%);
-              box-shadow: inset -30px 0 100px rgba(0, 0, 0, 0.4);
-              opacity: 0.9;
-            }
-            .room-ceiling {
-              position: absolute;
-              top: 0;
-              width: 200%;
-              height: 20%;
-              left: -50%;
-              background: linear-gradient(to bottom, #f0ede5 0%, #e8e4dc 100%);
-              transform: rotateX(-60deg);
-              transform-origin: center top;
-              box-shadow: inset 0 -50px 100px rgba(0, 0, 0, 0.15);
+              background: linear-gradient(to left, #c0bbb3 0%, #d8d4cc 100%);
+              box-shadow: inset -20px 0 80px rgba(0, 0, 0, 0.25);
             }
             .window {
               position: absolute;
               top: 80px;
-              right: 100px;
-              width: 180px;
-              height: 140px;
+              right: 80px;
+              width: 160px;
+              height: 120px;
               background: linear-gradient(135deg, #87ceeb 0%, #b0e0e6 100%);
-              border: 10px solid #8b7355;
-              border-radius: 4px;
-              box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.2), 0 15px 40px rgba(0, 0, 0, 0.4);
+              border: 8px solid #8b7355;
+              box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.15), 0 12px 35px rgba(0, 0, 0, 0.35);
               z-index: 5;
             }
-            .desk-base {
-              position: absolute;
-              bottom: 60px;
-              width: 700px;
-              height: 280px;
-              background: linear-gradient(135deg, #6b5b4b 0%, #4a3a2a 50%, #6b5b4b 100%);
-              border-radius: 12px 12px 0 0;
-              box-shadow: 0 -30px 80px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.15);
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              z-index: 20;
-            }
-            .desk-leg {
+            .floor {
               position: absolute;
               bottom: 0;
-              width: 35px;
-              background: linear-gradient(to right, #3a2a1a 0%, #5a4a3a 50%, #3a2a1a 100%);
+              width: 100%;
+              height: 30%;
+              background: linear-gradient(to bottom, #8a8480 0%, #6a6460 50%, #5a5450 100%);
+              box-shadow: inset 0 40px 80px rgba(0, 0, 0, 0.5);
+              z-index: 1;
+            }
+            .desk-wrapper {
+              position: relative;
+              z-index: 20;
+              width: 800px;
+              height: 380px;
+              margin-bottom: -40px;
+            }
+            .desk-top {
+              width: 100%;
               height: 60px;
-              box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.8), 0 10px 20px rgba(0, 0, 0, 0.5);
+              background: linear-gradient(to bottom, #7a6a5a 0%, #6a5a4a 100%);
+              border-radius: 20px 20px 0 0;
+              box-shadow:
+                0 -20px 60px rgba(0, 0, 0, 0.5),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1),
+                0 20px 40px rgba(0, 0, 0, 0.6);
+              display: flex;
+              align-items: flex-start;
+              justify-content: center;
+              padding-top: 20px;
             }
-            .desk-leg-left {
-              left: 60px;
+            .desk-front {
+              width: 100%;
+              height: 320px;
+              background: linear-gradient(to bottom, #5a4a3a 0%, #4a3a2a 100%);
+              border-radius: 0 0 20px 20px;
+              box-shadow:
+                inset 0 1px 0 rgba(255, 255, 255, 0.05),
+                0 30px 60px rgba(0, 0, 0, 0.7);
             }
-            .desk-leg-right {
-              right: 60px;
+            .desk-legs {
+              position: absolute;
+              bottom: 0;
+              width: 100%;
+              height: 320px;
+              display: flex;
+              justify-content: space-between;
+              padding: 0 60px;
+              box-sizing: border-box;
+              pointer-events: none;
+            }
+            .desk-leg {
+              width: 40px;
+              background: linear-gradient(to right, #3a2a1a 0%, #5a4a3a 50%, #3a2a1a 100%);
+              box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.8), 0 15px 30px rgba(0, 0, 0, 0.6);
             }
           `}</style>
 
-          <div className="room-container">
-            <div className="room-ceiling" />
-            <div className="room-back-wall" />
-            <div className="room-left-wall" />
-            <div className="room-right-wall" />
-            <div className="room-floor" />
+          <div className="office-scene">
+            <div className="walls-back" />
+            <div className="walls-side walls-left" />
+            <div className="walls-side walls-right" />
             <div className="window" />
+            <div className="floor" />
 
-            <div className="desk-base">
-              <div className="desk-leg desk-leg-left" />
-              <div className="desk-leg desk-leg-right" />
-
-              <div className="monitor-container" style={{ position: 'relative', zIndex: 30 }}>
-                <div className="monitor-bezel">
-                  <div className="monitor-screen">
-                    <div className="desktop-content">
-                      <div>
-                        <div className="warning-badge">
-                          ⚠️ Sesión activa - Sistema de nómina (RRHH)
+            <div className="desk-wrapper">
+              <div className="desk-top">
+                <div className="monitor-container" style={{ position: 'relative', zIndex: 30 }}>
+                  <div className="monitor-bezel" style={{ width: '500px' }}>
+                    <div className="monitor-screen">
+                      <div className="desktop-content">
+                        <div>
+                          <div className="warning-badge">
+                            ⚠️ Sesión activa - Sistema de nómina (RRHH)
+                          </div>
+                          <h2 style={{ margin: '0 0 20px 0', fontSize: '18px', fontWeight: '600' }}>
+                            Puesto de trabajo - Escritorio
+                          </h2>
+                          <div style={{ fontSize: '12px', color: '#999', lineHeight: '1.6' }}>
+                            <p style={{ margin: '4px 0' }}>📧 Correos: Proyectos confidenciales</p>
+                            <p style={{ margin: '4px 0' }}>💰 Banca: Transferencias</p>
+                            <p style={{ margin: '4px 0' }}>👤 Sesión: activa sin bloqueo</p>
+                          </div>
                         </div>
-                        <h2 style={{ margin: '0 0 20px 0', fontSize: '20px', fontWeight: '600' }}>
-                          Puesto de trabajo - Escritorio
-                        </h2>
-                        <div style={{ fontSize: '13px', color: '#999', lineHeight: '1.8' }}>
-                          <p>📧 Carpeta de correos: Proyectos confidenciales (abierta)</p>
-                          <p>💰 App de banca: Transferencias (abierta)</p>
-                          <p>👤 Sesión: activa sin bloqueo</p>
-                        </div>
-                      </div>
 
-                      <div className="taskbar">
-                        <div className="taskbar-item">📧 Correo</div>
-                        <div className="taskbar-item">💳 Banca</div>
-                        <div className="taskbar-item">📊 RH</div>
-                        <div className="taskbar-item">⏰ 14:30</div>
+                        <div className="taskbar">
+                          <div className="taskbar-item">📧 Correo</div>
+                          <div className="taskbar-item">💳 Banca</div>
+                          <div className="taskbar-item">📊 RH</div>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
+              </div>
+              <div className="desk-front" />
+              <div className="desk-legs">
+                <div className="desk-leg" />
+                <div className="desk-leg" />
               </div>
             </div>
           </div>
