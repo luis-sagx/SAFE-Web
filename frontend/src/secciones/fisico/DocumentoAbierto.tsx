@@ -130,21 +130,31 @@ function DocumentoAbierto() {
       const updatedDecisions = { ...decisions, [inspectedDoc]: decisionResult }
       setDecisions(updatedDecisions)
 
-      // Verificar si todos los documentos tienen decisiones
-      const allDecided = updatedDecisions.evaluaciones && updatedDecisions.clientes && updatedDecisions.contrasena
-      if (allDecided) {
-        // Contar aciertos (good y partial son considerados aciertos)
-        const goodCount = Object.values(updatedDecisions).filter(d => d && (d.level === 'good' || d.level === 'partial')).length
-        const canAdvance = goodCount >= 2
+      // Contar aciertos en tiempo real
+      const currentGoodCount = Object.values(updatedDecisions).filter(d => d && (d.level === 'good' || d.level === 'partial')).length
 
-        // Mostrar resultado final después de un delay
+      // Si ya tenemos 2 aciertos, permitir avanzar inmediatamente
+      if (currentGoodCount >= 2) {
         setTimeout(() => {
-          setFinalResult({ goodCount, canAdvance })
+          setFinalResult({ goodCount: currentGoodCount, canAdvance: true })
           void run.finish({
-            endingId: canAdvance ? 'good' : 'bad',
-            outcome: canAdvance ? 'CORRECTO' : 'INCORRECTO',
+            endingId: 'good',
+            outcome: 'CORRECTO',
           })
         }, 1500)
+      } else {
+        // Verificar si todos los documentos tienen decisiones
+        const allDecided = updatedDecisions.evaluaciones && updatedDecisions.clientes && updatedDecisions.contrasena
+        if (allDecided) {
+          // Si todos están decididos pero menos de 2 aciertos, mostrar resultado final
+          setTimeout(() => {
+            setFinalResult({ goodCount: currentGoodCount, canAdvance: false })
+            void run.finish({
+              endingId: 'bad',
+              outcome: 'INCORRECTO',
+            })
+          }, 1500)
+        }
       }
 
       stampFlash.trigger(() => {}, 750)
@@ -152,8 +162,16 @@ function DocumentoAbierto() {
   }
 
   const handleNext = () => {
+    console.log('handleNext clicked', { finalResult, canAdvance: finalResult?.canAdvance })
     if (finalResult?.canAdvance) {
-      navigate('/seccion/fisico/pantalla-desbloqueada')
+      console.log('Navigating to pantalla-desbloqueada')
+      try {
+        navigate('/seccion/fisico/pantalla-desbloqueada')
+      } catch (err) {
+        console.error('Navigation failed:', err)
+      }
+    } else {
+      console.log('Cannot advance:', { canAdvance: finalResult?.canAdvance })
     }
   }
 
@@ -622,7 +640,17 @@ function DocumentoAbierto() {
                         Documentos completados: {docsCompleted}/3
                       </p>
                       <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', width: '100%' }}>
-                        {docsCompleted < 3 ? (
+                        {finalResult ? (
+                          <button
+                            type="button"
+                            className={styles.restartBtn}
+                            onClick={handleNext}
+                            disabled={!finalResult.canAdvance}
+                            style={{ marginTop: 0, flex: 1, minHeight: '56px', fontSize: '1.1rem', fontWeight: '700', padding: '16px 24px', opacity: finalResult.canAdvance ? 1 : 0.5, cursor: finalResult.canAdvance ? 'pointer' : 'not-allowed' }}
+                          >
+                            {finalResult.canAdvance ? '→ Siguiente escenario' : `Necesitas ${2 - finalResult.goodCount} acierto${2 - finalResult.goodCount !== 1 ? 's' : ''} más`}
+                          </button>
+                        ) : docsCompleted < 3 ? (
                           <button
                             type="button"
                             className={styles.restartBtn}
@@ -633,16 +661,6 @@ function DocumentoAbierto() {
                             style={{ marginTop: 0, flex: 1, minHeight: '56px', fontSize: '1.1rem', fontWeight: '700', padding: '16px 24px' }}
                           >
                             → Siguiente documento
-                          </button>
-                        ) : finalResult ? (
-                          <button
-                            type="button"
-                            className={styles.restartBtn}
-                            onClick={handleNext}
-                            disabled={!finalResult.canAdvance}
-                            style={{ marginTop: 0, flex: 1, minHeight: '56px', fontSize: '1.1rem', fontWeight: '700', padding: '16px 24px', opacity: finalResult.canAdvance ? 1 : 0.5, cursor: finalResult.canAdvance ? 'pointer' : 'not-allowed' }}
-                          >
-                            {finalResult.canAdvance ? '→ Siguiente escenario' : `Necesitas ${3 - finalResult.goodCount} acierto${3 - finalResult.goodCount !== 1 ? 's' : ''} más`}
                           </button>
                         ) : null}
                       </div>
