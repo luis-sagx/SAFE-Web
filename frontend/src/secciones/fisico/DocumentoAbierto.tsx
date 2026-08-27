@@ -158,13 +158,6 @@ function DocumentoAbierto() {
     setFinalResult(null)
   }
 
-  const handleNextDocument = () => {
-    // Si ya se mostró el resultado final, no permitir continuar
-    if (finalResult) return
-    setInspectedDoc(null)
-    setResult(null)
-  }
-
   const docsCompleted = Object.values(decisions).filter(d => d !== null).length
 
   const contexto: Contexto = {
