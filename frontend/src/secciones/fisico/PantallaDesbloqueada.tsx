@@ -334,12 +334,12 @@ function PantallaDesbloqueada() {
                 <rect x="-190" y="-170" width="380" height="220" fill="#0f1629" rx="15" />
 
                 {/* Contenido de la pantalla */}
-                <text x="0" y="-120" fontSize="24" fill="#ff6464" textAnchor="middle" fontWeight="bold">⚠️ Sesión activa</text>
+                <text x="0" y="-120" fontSize="24" fill="#ff6464" textAnchor="middle" fontWeight="bold">Sesión activa</text>
                 <text x="0" y="-85" fontSize="20" fill="#ffffff" textAnchor="middle" fontWeight="600">Sistema de nómina (RRHH)</text>
                 <line x1="-150" y1="-70" x2="150" y2="-70" stroke="#444" strokeWidth="1" />
-                <text x="0" y="-45" fontSize="16" fill="#cccccc" textAnchor="middle">📧 Proyectos confidenciales</text>
-                <text x="0" y="-20" fontSize="16" fill="#cccccc" textAnchor="middle">💰 Transferencias bancarias</text>
-                <text x="0" y="5" fontSize="16" fill="#cccccc" textAnchor="middle">👤 Sesión: activa sin bloqueo</text>
+                <text x="0" y="-45" fontSize="16" fill="#cccccc" textAnchor="middle">Proyectos confidenciales abiertos</text>
+                <text x="0" y="-20" fontSize="16" fill="#cccccc" textAnchor="middle">Transferencias bancarias disponibles</text>
+                <text x="0" y="5" fontSize="16" fill="#cccccc" textAnchor="middle">Sesión sin bloqueo</text>
 
                 {/* Glow del monitor */}
                 <rect x="-190" y="-170" width="380" height="220" fill="none" stroke="#5599ff" strokeWidth="2" opacity="0.4" rx="15" />
@@ -368,15 +368,56 @@ function PantallaDesbloqueada() {
       contenedorId="pantalla-escenario"
     />
   ) : (
-    <div className="grid gap-3">
-      <p className="text-lg font-semibold text-ink">¿Qué haces?</p>
-      <div className="grid gap-2">
+    <div style={{ width: '100%' }}>
+      <style>{`
+        .options-container {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 20px;
+          margin-top: 40px;
+          width: 100%;
+        }
+        .option-btn {
+          position: relative;
+          padding: 24px 28px;
+          background: linear-gradient(135deg, #2a3f5f 0%, #1a2a3a 100%);
+          border: 2px solid #4a6f9f;
+          border-radius: 12px;
+          color: #ffffff;
+          font-size: 15px;
+          font-weight: 600;
+          text-align: left;
+          cursor: pointer;
+          transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+          line-height: 1.5;
+          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+        .option-btn:hover {
+          background: linear-gradient(135deg, #3a5f7f 0%, #2a3a5a 100%);
+          border-color: #6a9fdf;
+          box-shadow: 0 15px 45px rgba(74, 111, 159, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+          transform: translateY(-2px);
+        }
+        .option-btn:active {
+          transform: translateY(0);
+        }
+        .prompt-text {
+          font-size: 18px;
+          font-weight: 700;
+          color: #1a1a1a;
+          margin-bottom: 8px;
+          text-align: center;
+        }
+      `}</style>
+
+      <div className="prompt-text">¿Qué haces con la pantalla desbloqueada?</div>
+      <div className="options-container">
         {OPCIONES.map((opcion) => (
           <button
             key={opcion.label}
             type="button"
             onClick={() => engine.choose(opcion.goto, opcion.label)}
-            className="rounded-md border border-hairline-strong bg-surface px-4 py-3 text-left text-base transition hover:border-hairline-strong hover:bg-surface-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link"
+            className="option-btn"
           >
             {opcion.texto}
           </button>
