@@ -148,13 +148,13 @@ const SCENARIO_PARKING = {
     'Llegas temprano. Cerca de tu auto, en el suelo, hay un USB negro con una etiqueta escrita a mano: <em>"NÓMINA DICIEMBRE, CONFIDENCIAL"</em>. No hay nadie cerca para preguntar de quién es.',
   choices: [
     {
-      label: 'Agarrar el USB y llevarlo a tu oficina',
+      label: 'Agarrarlo, alguien lo dejó y probablemente lo necesita',
       level: 'warn',
       risk: 8,
       feedback: '',
     },
     {
-      label: 'Dejar el USB ahí y reportar a Seguridad',
+      label: 'Dejarlo ahí, no es asunto tuyo',
       level: 'safe',
       risk: 0,
       feedback: '',
@@ -256,14 +256,14 @@ function TrampaUSB() {
 
     stampFlash.trigger(() => {
       if (phase === 'parking') {
-        if (choice.label.includes('Agarrar')) {
+        if (choice.label.includes('Agarrarlo')) {
           setRevealPending(false)
           setChoicesShown(false)
           setShuffledChoices([])
           setPhase('office')
         } else {
           setRevealPending(false)
-          setResolved({ level: choice.level, feedback: 'Excelente decisión: no agarrar dispositivos desconocidos es la mejor opción. Reportar a Seguridad es el protocolo correcto.' })
+          setResolved({ level: choice.level, feedback: 'Decisión segura: no agarrar dispositivos desconocidos previene riesgos potenciales.' })
           void run.finish({
             endingId: choice.level,
             outcome: 'CORRECTO',
