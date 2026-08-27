@@ -153,7 +153,7 @@ function DocumentoAbierto() {
 
   const handleNext = () => {
     if (finalResult?.canAdvance) {
-      navigate('/seccion/fisico/documento-abierto')
+      navigate('/seccion/fisico/pantalla-desbloqueada')
     }
   }
 
