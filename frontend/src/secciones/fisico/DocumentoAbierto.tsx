@@ -137,6 +137,7 @@ function DocumentoAbierto() {
       if (currentGoodCount >= 2) {
         setTimeout(() => {
           setFinalResult({ goodCount: currentGoodCount, canAdvance: true })
+          setResult(decisionResult)
           void run.finish({
             endingId: 'good',
             outcome: 'CORRECTO',
