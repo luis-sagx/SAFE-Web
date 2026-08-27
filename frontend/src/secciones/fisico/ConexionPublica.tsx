@@ -14,43 +14,43 @@ const ESCENA: ScreenView = {
   subtitle: 'Conexión desprotegida',
   datos: [
     {
-      etiqueta: 'Nombre de red',
-      valor: 'CafeAmanecer_Free (sin contraseña)',
+      etiqueta: 'Red',
+      valor: 'CafeAmanecer_Free',
       senal: 'peligro',
     },
     {
-      etiqueta: 'Encriptación',
-      valor: 'Ninguna — tráfico visible para cualquiera',
+      etiqueta: 'Contraseña',
+      valor: 'Ninguna',
       senal: 'peligro',
     },
     {
       etiqueta: 'Usuarios conectados',
-      valor: '23 dispositivos en la misma red',
+      valor: '23 dispositivos',
       senal: 'peligro',
     },
   ],
   aviso:
-    'Estás en un café esperando a un cliente. Necesitas terminar un informe con datos de proyectos y contraseñas antes de la reunión. El café ofrece WiFi público sin contraseña. Nadie se vería afectado si esperas, pero sería más cómodo terminar ahora.',
+    'Estás en un café esperando una reunión con un cliente. Necesitas terminar un informe antes de que llegue. El café tiene WiFi gratis disponible. Tu celular tiene datos pero es un plan limitado. Tienes unos 10 minutos.',
   opciones: [
     {
-      texto: 'Conectarte y enviar el informe por email directamente',
+      texto: 'Conectarte al WiFi del café, es lo más rápido',
       goto: 'e_envia',
-      label: 'Transmitió datos confidenciales por red pública sin cifrar',
+      label: 'Se conectó al WiFi público para enviar datos',
     },
     {
-      texto: 'Conectarte y guardar el archivo en la nube del trabajo',
+      texto: 'Sincronizar los cambios en la nube mientras esperas',
       goto: 'e_nube',
-      label: 'Sincronizó datos con credenciales de empresa en red pública',
+      label: 'Sincronizó datos de empresa en red pública',
     },
     {
-      texto: 'Usar el hotspot de tu celular con dato móvil',
+      texto: 'Usar los datos móviles de tu celular',
       goto: 'e_celular',
-      label: 'Usó conexión cifrada propia con datos de tu plan',
+      label: 'Usó su propia conexión cifrada',
     },
     {
-      texto: 'Esperar a la oficina o a una conexión segura',
+      texto: 'Dejar el trabajo para después',
       goto: 'e_espera',
-      label: 'Retrasó la tarea pero evitó exponerse',
+      label: 'Posergó la tarea para no exponerse',
     },
   ],
   fields: [],
