@@ -36,69 +36,25 @@ function FlashSpark({ x, y, onClick }: { x: number; y: number; onClick: () => vo
 
 const SCENE_ART = ({ flash, onFlashClick }: { flash: boolean; onFlashClick: () => void }) => (
   <svg viewBox="0 0 400 220">
-    {/* Fondo pared */}
-    <rect width="400" height="180" fill="#d4cfc8" />
-    {/* Piso */}
-    <rect y="180" width="400" height="40" fill="#9a8f86" />
-
-    {/* Escritorio - tablero */}
-    <rect x="30" y="140" width="340" height="50" fill="#8a7a6a" stroke="#6a5a4a" strokeWidth="2" />
-
-    {/* Soporte/patas del escritorio */}
-    <rect x="50" y="190" width="15" height="30" fill="#5a4a3a" />
-    <rect x="335" y="190" width="15" height="30" fill="#5a4a3a" />
-
-    {/* Computadora/Laptop */}
-    <g transform="translate(80, 100)">
-      {/* Pantalla */}
-      <rect x="0" y="0" width="80" height="50" fill="#1a1a1a" stroke="#333" strokeWidth="1.5" rx="2" />
-      <rect x="2" y="2" width="76" height="46" fill="#0a0a2a" />
-      {/* Líneas de contenido en pantalla */}
-      <line x1="5" y1="10" x2="75" y2="10" stroke="#00ff00" strokeWidth="0.5" />
-      <line x1="5" y1="15" x2="75" y2="15" stroke="#00ff00" strokeWidth="0.5" />
-      <line x1="5" y1="20" x2="70" y2="20" stroke="#00ff00" strokeWidth="0.5" />
-      {/* Base */}
-      <rect x="25" y="50" width="30" height="8" fill="#333" />
-    </g>
-
-    {/* Papeles random en el escritorio */}
-    <g transform="translate(200, 150)">
-      {/* Papel 1 */}
-      <rect x="-30" y="-15" width="40" height="25" fill="#f5f5f5" stroke="#ccc" strokeWidth="1" transform="rotate(-12)" />
-      <line x1="-25" y1="-10" x2="5" y2="-10" stroke="#ddd" strokeWidth="1" />
-      <line x1="-25" y1="-5" x2="5" y2="-5" stroke="#ddd" strokeWidth="1" />
-      {/* Papel 2 */}
-      <rect x="20" y="-10" width="35" height="20" fill="#fffacd" stroke="#daa" strokeWidth="1" transform="rotate(8)" />
-      <circle cx="28" cy="0" r="2" fill="#ff9900" />
-      {/* Papel 3 */}
-      <rect x="-5" y="15" width="30" height="20" fill="#fff" stroke="#bbb" strokeWidth="1" />
-      <line x1="0" y1="20" x2="20" y2="20" stroke="#ddd" strokeWidth="0.5" />
-    </g>
-
-    {/* USB Promocional - prominente en el escritorio */}
-    <g transform="translate(280, 130)" onClick={onFlashClick} style={{ cursor: 'pointer' }}>
-      {/* Cuerpo USB - naranja brillante */}
-      <rect x="-18" y="0" width="36" height="24" fill="#ff6b35" stroke="#cc5500" strokeWidth="2" rx="4" />
-
-      {/* Logo/texto area - dorado */}
-      <rect x="-14" y="3" width="28" height="10" fill="#ffd700" stroke="#daa" strokeWidth="0.5" rx="2" />
-
-      {/* Texto del logo */}
-      <text x="0" y="10" textAnchor="middle" fontFamily="Arial" fontSize="6" fontWeight="bold" fill="#cc5500">
-        TECH FAIR
+    <rect width="400" height="220" fill="#e8e4dc" />
+    <rect y="160" width="400" height="60" fill="#9a8f86" />
+    {/* Escritorio */}
+    <rect x="100" y="120" width="200" height="40" fill="#8a7a6a" stroke="#6a5a4a" strokeWidth="2" />
+    {/* Keyboard */}
+    <rect x="120" y="128" width="160" height="8" fill="#3a3a3a" rx="1" />
+    {/* USB promocional */}
+    <g transform="translate(200, 85)">
+      {/* Cuerpo USB */}
+      <rect x="-15" y="0" width="30" height="20" fill="#ff6b35" rx="3" stroke="#cc5500" strokeWidth="1.5" />
+      {/* Logo/texto area */}
+      <rect x="-12" y="3" width="24" height="8" fill="#ffe6cc" rx="1" />
+      <text x="0" y="9" textAnchor="middle" fontFamily="Arial" fontSize="5" fontWeight="bold" fill="#cc5500">
+        TECH
       </text>
-      <text x="0" y="18" textAnchor="middle" fontFamily="Arial" fontSize="4" fill="#cc5500">
-        2024
-      </text>
-
       {/* Conector */}
-      <rect x="-5" y="22" width="10" height="6" fill="#c0c0c0" stroke="#888" strokeWidth="0.5" />
-
-      {/* Destello de luz */}
-      <circle cx="-8" cy="8" r="2" fill="#fff" opacity="0.6" />
+      <rect x="-4" y="18" width="8" height="5" fill="#c0c0c0" />
     </g>
-
-    {flash && <FlashSpark x={280} y={120} onClick={onFlashClick} />}
+    {flash && <FlashSpark x={200} y={100} onClick={onFlashClick} />}
   </svg>
 )
 
