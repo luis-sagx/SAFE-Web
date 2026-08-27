@@ -39,29 +39,52 @@ const SCENE_ART = ({ flash, onFlashClick }: { flash: boolean; onFlashClick: () =
     {/* Pared fondo */}
     <rect width="400" height="220" fill="#f5e6d3" />
 
-    {/* Mesas del café */}
-    <rect x="40" y="80" width="120" height="8" fill="#8b6f47" stroke="#654321" strokeWidth="1" />
-    <rect x="48" y="88" width="8" height="50" fill="#654321" />
-    <rect x="140" y="88" width="8" height="50" fill="#654321" />
+    {/* Piso */}
+    <rect y="160" width="400" height="60" fill="#d4c5b0" />
 
-    {/* Persona en la mesa con laptop */}
-    <circle cx="100" cy="50" r="10" fill="#d4a574" />
-    <rect x="85" y="60" width="30" height="20" fill="#4a6fa5" stroke="#2c3e50" strokeWidth="1" />
-    {/* Pantalla del laptop */}
-    <rect x="88" y="62" width="24" height="14" fill="#1a1a1a" stroke="#333" strokeWidth="0.5" />
+    {/* Mesa */}
+    <rect x="30" y="110" width="150" height="60" fill="#8b6f47" stroke="#654321" strokeWidth="2" />
+    {/* Patas de la mesa */}
+    <rect x="50" y="170" width="12" height="30" fill="#654321" />
+    <rect x="148" y="170" width="12" height="30" fill="#654321" />
 
-    {/* Router/WiFi simbolo */}
-    <g transform="translate(280, 60)">
-      <circle cx="0" cy="0" r="3" fill="#e74c3c" />
-      <circle cx="0" cy="0" r="8" fill="none" stroke="#e74c3c" strokeWidth="1.5" opacity="0.6" />
-      <circle cx="0" cy="0" r="13" fill="none" stroke="#e74c3c" strokeWidth="1" opacity="0.3" />
+    {/* Persona sentada */}
+    <circle cx="90" cy="70" r="14" fill="#d4a574" />
+    {/* Cuerpo */}
+    <rect x="78" y="84" width="24" height="28" fill="#4a5f8a" stroke="#2c3e50" strokeWidth="1" />
+
+    {/* Computadora/Laptop en la mesa */}
+    <g transform="translate(100, 115)">
+      <rect x="0" y="0" width="60" height="40" fill="#2c3e50" stroke="#1a1a1a" strokeWidth="2" rx="3" />
+      <rect x="5" y="5" width="50" height="28" fill="#1a1a1a" />
+      <rect x="15" y="36" width="30" height="4" fill="#654321" />
     </g>
 
-    {/* Laptop en la mesa con destello */}
-    <rect x="200" y="95" width="50" height="35" fill="#2c3e50" stroke="#1a1a1a" strokeWidth="1" rx="2" />
-    <rect x="205" y="100" width="40" height="25" fill="#1a1a1a" />
+    {/* Letrero "Internet Café Gratis" en la pared */}
+    <rect x="250" y="40" width="140" height="50" fill="#e74c3c" stroke="#c0392b" strokeWidth="2" rx="4" />
+    <text x="320" y="62" textAnchor="middle" fontFamily="Arial" fontSize="14" fontWeight="bold" fill="white">
+      Internet Café
+    </text>
+    <text x="320" y="80" textAnchor="middle" fontFamily="Arial" fontSize="12" fill="white">
+      GRATIS
+    </text>
 
-    {flash && <FlashSpark x={225} y={115} onClick={onFlashClick} />}
+    {/* Router WiFi en la estantería */}
+    <g transform="translate(310, 140)">
+      {/* Caja del router */}
+      <rect x="-20" y="0" width="40" height="25" fill="#333" stroke="#1a1a1a" strokeWidth="1" rx="2" />
+      {/* Antenas */}
+      <rect x="-18" y="-12" width="3" height="12" fill="#555" />
+      <rect x="-8" y="-12" width="3" height="12" fill="#555" />
+      <rect x="2" y="-12" width="3" height="12" fill="#555" />
+      <rect x="12" y="-12" width="3" height="12" fill="#555" />
+      {/* Símbolo WiFi */}
+      <circle cx="0" cy="-8" r="2" fill="#e74c3c" />
+      <circle cx="0" cy="-8" r="6" fill="none" stroke="#e74c3c" strokeWidth="1" opacity="0.5" />
+    </g>
+
+    {/* Destello sobre la computadora */}
+    {flash && <FlashSpark x={130} y={135} onClick={onFlashClick} />}
   </svg>
 )
 
