@@ -1,138 +1,315 @@
-import StoryEscenario, { type ScreenNode } from '../../components/StoryEscenario'
+import { useState } from 'react'
+import { useNavigate } from 'react-router'
+import EscenarioLayout from '../../components/EscenarioLayout'
+import FlashOverlay from '../../components/ui/FlashOverlay'
+import { useFlashTransition } from '../../hooks/useFlashTransition'
 import type { Contexto } from '../../components/ui/ContextoEscenario'
-import type { Story } from '../../hooks/useStoryEngine'
-import type { ScreenView } from '../../components/ui/DeviceScreen'
-import type { Senal } from '../../components/ui/PanelVeredicto'
+import dossierTheme from '../../styles/dossier-theme.module.css'
+import { useScenarioRun } from '../../hooks/useScenarioRun'
+import styles from './Baiting.module.css'
 
-const ESCENA: ScreenView = {
-  kind: 'web',
-  app: 'Café Amanecer',
-  url: 'wifi-publico',
-  secure: false,
-  brand: 'Red pública sin cifrar',
-  title: 'WiFi del café',
-  subtitle: 'Conexión desprotegida',
-  datos: [
-    {
-      etiqueta: 'Red',
-      valor: 'CafeAmanecer_Free',
-      senal: 'peligro',
-    },
-    {
-      etiqueta: 'Contraseña',
-      valor: 'Ninguna',
-      senal: 'peligro',
-    },
-    {
-      etiqueta: 'Usuarios conectados',
-      valor: '23 dispositivos',
-      senal: 'peligro',
-    },
-  ],
-  aviso:
-    'Estás en un café esperando una reunión con un cliente. Necesitas terminar un informe antes de que llegue. El café tiene WiFi gratis disponible. Tu celular tiene datos pero es un plan limitado. Tienes unos 10 minutos.',
-  opciones: [
-    {
-      texto: 'Conectarte al WiFi del café, es lo más rápido',
-      goto: 'e_envia',
-      label: 'Se conectó al WiFi público para enviar datos',
-    },
-    {
-      texto: 'Sincronizar los cambios en la nube mientras esperas',
-      goto: 'e_nube',
-      label: 'Sincronizó datos de empresa en red pública',
-    },
-    {
-      texto: 'Usar los datos móviles de tu celular',
-      goto: 'e_celular',
-      label: 'Usó su propia conexión cifrada',
-    },
-    {
-      texto: 'Dejar el trabajo para después',
-      goto: 'e_espera',
-      label: 'Posergó la tarea para no exponerse',
-    },
-  ],
-  fields: [],
-  button: '',
+type Level = 'safe' | 'warn' | 'danger'
+
+interface Choice {
+  label: string
+  level: Level
+  risk: number
+  feedback: string
 }
 
-export const STORY: Story<ScreenNode> = {
-  n1: { kind: 'scene', view: ESCENA },
-  e_envia: {
-    kind: 'bad',
-    view: ESCENA,
-    verdict: 'Enviaste datos confidenciales por una red pública sin cifrar',
-    outcome:
-      'El email que acabas de enviar —con el informe y cualquier dato que contenga— viaja en texto plano a través del WiFi. Cualquiera en el café con una herramienta básica de red puede interceptar tu tráfico, leer el email, ver el informe y capturar cualquier contraseña o dato que hayas incluido.',
-  },
-  e_nube: {
-    kind: 'bad',
-    view: ESCENA,
-    verdict: 'Sincronizaste datos con credenciales de empresa en red pública',
-    outcome:
-      'Cuando sincronizas con la nube de la empresa desde el WiFi público, tu sesión —incluyendo tu usuario y contraseña— viaja sin cifrar. Aunque el servidor de la nube puede tener https, el primer tramo es visible. Un atacante puede robar tus credenciales e infiltrarse en los sistemas de la empresa.',
-  },
-  e_celular: {
-    kind: 'good',
-    view: ESCENA,
-    verdict: 'Usaste tu conexión cifrada propia',
-    outcome:
-      'Correcto. Tu hotspot de celular usa cifrado (4G/5G) que el WiFi público no tiene. Tu tráfico viaja encriptado desde tu laptop a través de tu plan de datos. Es más lento, pero es seguro. Cuando tienes datos sensibles, el WiFi público nunca vale la pena.',
-  },
-  e_espera: {
-    kind: 'partial',
-    view: ESCENA,
-    verdict: 'Retrasaste pero evitaste el riesgo',
-    outcome:
-      'No es la opción ideal (esperar retrasa el trabajo), pero es la más segura. Cuando tienes datos sensibles y no hay conexión confiable disponible, esperar a una red cifrada es lo correcto. La seguridad de los datos pesa más que la comodidad.',
-  },
+interface Resolved {
+  level: Level
+  feedback: string
 }
 
-const SENALES: Senal[] = [
-  {
-    id: 's1',
-    targetId: 'peligro',
-    pantalla: 'n1',
-    texto:
-      '<b>WiFi público sin contraseña = sin encriptación</b>. Cualquiera en la red puede ver todo lo que transmites: emails, credenciales, datos, archivos. No es seguro para nada que contenga información de la empresa.',
-  },
-]
+function FlashSpark({ x, y, onClick }: { x: number; y: number; onClick: () => void }) {
+  return (
+    <g className={styles.sceneFlash} transform={`translate(${x},${y})`} onClick={onClick}>
+      <circle className={styles.flashPulseSpark} r="15" />
+      <circle className={styles.flashDot} r="12" />
+      <text className={styles.flashBoltText} y="1">
+        ⚡
+      </text>
+    </g>
+  )
+}
 
-const RESUMEN = 'Conectaste a un WiFi público sin encriptación para completar trabajo con datos confidenciales.'
+const SCENE_ART = ({ flash, onFlashClick }: { flash: boolean; onFlashClick: () => void }) => (
+  <svg viewBox="0 0 400 220">
+    {/* Pared fondo */}
+    <rect width="400" height="220" fill="#f5e6d3" />
 
-const CONTEXTO: Contexto = {
-  antes: 'Trabajas con información confidencial de la empresa y sabes que no debe exponerse en redes públicas.',
-  ahora: (
-    <>
-      <strong>Pausa de reunión.</strong> Estás en un café esperando a un cliente. Necesitas enviar un informe con datos
-      de proyectos y salarios antes de la reunión —son 10 minutos de trabajo. El café ofrece WiFi gratis ({'"'}CafeAmanecer_Free
-      {'"'}, sin contraseña). Tu celular tiene datos móviles, pero de un plan limitado. ¿Qué haces?
-    </>
-  ),
+    {/* Mesas del café */}
+    <rect x="40" y="80" width="120" height="8" fill="#8b6f47" stroke="#654321" strokeWidth="1" />
+    <rect x="48" y="88" width="8" height="50" fill="#654321" />
+    <rect x="140" y="88" width="8" height="50" fill="#654321" />
+
+    {/* Persona en la mesa con laptop */}
+    <circle cx="100" cy="50" r="10" fill="#d4a574" />
+    <rect x="85" y="60" width="30" height="20" fill="#4a6fa5" stroke="#2c3e50" strokeWidth="1" />
+    {/* Pantalla del laptop */}
+    <rect x="88" y="62" width="24" height="14" fill="#1a1a1a" stroke="#333" strokeWidth="0.5" />
+
+    {/* Router/WiFi simbolo */}
+    <g transform="translate(280, 60)">
+      <circle cx="0" cy="0" r="3" fill="#e74c3c" />
+      <circle cx="0" cy="0" r="8" fill="none" stroke="#e74c3c" strokeWidth="1.5" opacity="0.6" />
+      <circle cx="0" cy="0" r="13" fill="none" stroke="#e74c3c" strokeWidth="1" opacity="0.3" />
+    </g>
+
+    {/* Laptop en la mesa con destello */}
+    <rect x="200" y="95" width="50" height="35" fill="#2c3e50" stroke="#1a1a1a" strokeWidth="1" rx="2" />
+    <rect x="205" y="100" width="40" height="25" fill="#1a1a1a" />
+
+    {flash && <FlashSpark x={225} y={115} onClick={onFlashClick} />}
+  </svg>
+)
+
+function ConsequenceArt({ level }: { level: Level }) {
+  if (level === 'danger') {
+    return (
+      <svg viewBox="0 0 400 220">
+        <rect width="400" height="220" fill="#1b232c" />
+        <rect x="90" y="35" width="220" height="130" rx="6" fill="#0d1319" />
+        <rect x="105" y="47" width="190" height="100" fill="#3d0f0f" />
+        <rect className={styles.glitchBar} x="105" y="66" width="190" height="7" fill="#b4342f" opacity="0.65" />
+        <rect className={styles.glitchBar} x="105" y="96" width="140" height="7" fill="#d63031" opacity="0.5" />
+        <text x="200" y="105" textAnchor="middle" fontFamily="'IBM Plex Mono',monospace" fontSize="12" fill="#f4d9d6" className={styles.glitchText}>
+          ⚠ DATOS_INTERCEPTADOS
+        </text>
+      </svg>
+    )
+  }
+  if (level === 'warn') {
+    return (
+      <svg viewBox="0 0 400 220">
+        <rect width="400" height="220" fill="#f6efdd" />
+        <rect x="150" y="35" width="100" height="140" rx="8" fill="#fff9ec" stroke="#9c8a5e" strokeWidth="3" />
+        <rect x="172" y="25" width="56" height="16" rx="4" fill="#9c8a5e" />
+        <rect x="196" y="80" width="8" height="46" rx="4" fill="#ab6400" />
+        <circle cx="200" cy="140" r="6" fill="#ab6400" />
+      </svg>
+    )
+  }
+  return (
+    <svg viewBox="0 0 400 220">
+      <rect width="400" height="220" fill="#f6efdd" />
+      <rect x="150" y="35" width="100" height="140" rx="8" fill="#fff9ec" stroke="#9c8a5e" strokeWidth="3" />
+      <rect x="172" y="25" width="56" height="16" rx="4" fill="#9c8a5e" />
+      <path d="M175 105 L198 128 L228 82" stroke="#16a34a" strokeWidth="9" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+const SCENARIO = {
+  location: 'Café Amanecer',
+  time: '2:45 PM',
+  object: 'Objeto: WiFi público del café sin contraseña',
+  narrative:
+    'Esperas a un cliente en un café. Necesitas terminar un informe con datos de proyectos antes de la reunión que comienza en 10 minutos. El café ofrece WiFi gratis. Tu celular tiene datos pero es plan limitado.',
+  choices: [
+    {
+      label: 'Conectarte al WiFi del café, es lo más rápido',
+      level: 'danger',
+      risk: 28,
+      feedback:
+        'Un WiFi público sin contraseña no tiene encriptación. Todos tus datos —emails, contraseñas, archivos— viajan en texto plano. Cualquiera en el café con herramientas básicas puede interceptar tu tráfico.',
+    },
+    {
+      label: 'Sincronizar los cambios en la nube mientras esperas',
+      level: 'danger',
+      risk: 25,
+      feedback:
+        'Cuando sincronizas con la nube desde un WiFi público, tu usuario y contraseña viajan sin cifrar. Un atacante puede capturar tus credenciales e infiltrarse en los sistemas de la empresa.',
+    },
+    {
+      label: 'Usar los datos móviles de tu celular',
+      level: 'safe',
+      risk: 0,
+      feedback:
+        'Correcto. Tu conexión 4G/5G está cifrada. Es más lento pero seguro. Cuando tienes datos confidenciales, nunca vale la pena usar WiFi público.',
+    },
+    {
+      label: 'Dejar el trabajo para después, en la oficina',
+      level: 'warn',
+      risk: 5,
+      feedback:
+        'Seguro, pero retrasa el trabajo. Es la opción más conservadora. Cuando no hay conexión confiable, esperar es lo más prudente.',
+    },
+  ],
+}
+
+function shuffled<T>(arr: T[]): T[] {
+  const a = arr.slice()
+  for (let i = a.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[a[i], a[j]] = [a[j]!, a[i]!]
+  }
+  return a
+}
+
+function verdictLabel(level: Level) {
+  return level === 'safe' ? 'Decisión segura' : level === 'warn' ? 'Observación' : 'Riesgo detectado'
+}
+
+function stampWord(level: Level) {
+  return level === 'safe' ? 'APROBADO' : level === 'warn' ? 'OBSERVACIÓN' : 'RIESGO'
 }
 
 function ConexionPublica() {
+  const navigate = useNavigate()
+  const run = useScenarioRun('fisico/conexion-publica')
+
+  const [choicesShown, setChoicesShown] = useState(false)
+  const [shuffledChoices, setShuffledChoices] = useState<Choice[]>([])
+  const [revealPending, setRevealPending] = useState(false)
+  const [resolved, setResolved] = useState<Resolved | null>(null)
+
+  const flash = useFlashTransition()
+  const stampFlash = useFlashTransition()
+
+  const showFeedback = !!resolved && !revealPending
+
+  function onEmpezar() {
+    setChoicesShown(false)
+    setShuffledChoices([])
+    setRevealPending(false)
+    setResolved(null)
+  }
+
+  function handleNext() {
+    navigate('/seccion/fisico')
+  }
+
+  function handleFlashClick() {
+    setShuffledChoices(shuffled(SCENARIO.choices as Choice[]))
+    setChoicesShown(true)
+  }
+
+  function handleChoice(choice: Choice) {
+    setRevealPending(true)
+    run.recordDecision({ nivel: choice.level, riesgo: choice.risk })
+
+    stampFlash.trigger(() => {
+      setRevealPending(false)
+      setResolved({ level: choice.level, feedback: choice.feedback })
+      void run.finish({
+        endingId: choice.level,
+        outcome: choice.level === 'safe' ? 'CORRECTO' : choice.level === 'warn' ? 'PARCIAL' : 'INCORRECTO',
+      })
+    }, 750)
+  }
+
+  const contexto: Contexto = {
+    antes: (
+      <>
+        Los espacios públicos como cafés ofrecen WiFi sin contraseña para atraer clientes. El problema:
+        sin encriptación, cualquiera en la red puede ver todo lo que transmites. Trabajar con datos
+        confidenciales en una red pública expone esos datos a interceptación.
+      </>
+    ),
+    ahora: (
+      <>
+        <strong>Tarde</strong> estás en un café esperando una reunión. Necesitas terminar un informe con datos
+        de la empresa. El café tiene WiFi gratis ({'"'}CafeAmanecer_Free{'"'}, sin contraseña). Tu celular tiene
+        datos pero es plan limitado.
+      </>
+    ),
+  }
+
+  const pantalla = (
+    <div className={`${dossierTheme.dossierTheme} ${styles.app}`}>
+      <main className={styles.mainArea}>
+        <div className={styles.sceneView}>
+          <div className={styles.sceneMeta}>
+            <span>{SCENARIO.location.toUpperCase()}</span>
+            <span>{SCENARIO.time}</span>
+          </div>
+          <h3 className={styles.sceneLocation}>{SCENARIO.location}</h3>
+
+          <div className={styles.sceneCanvas}>
+            {showFeedback ? (
+              <ConsequenceArt level={resolved.level} />
+            ) : (
+              <SCENE_ART flash={!choicesShown && !revealPending} onFlashClick={handleFlashClick} />
+            )}
+          </div>
+
+          <p
+            className={styles.sceneNarrative}
+            dangerouslySetInnerHTML={{ __html: SCENARIO.narrative }}
+          />
+
+          {!showFeedback && !choicesShown && !revealPending && (
+            <span className={styles.flashHint}>Toca el destello ⚡ sobre la escena para inspeccionar</span>
+          )}
+
+          {showFeedback ? (
+            <>
+              <p className={styles.sceneObject}>{SCENARIO.object}</p>
+              <div className={styles.feedbackPanel}>
+                <div className={styles.verdictRow}>
+                  <span className={`${styles.badge} ${styles[resolved.level]}`}>
+                    {verdictLabel(resolved.level)}
+                  </span>
+                </div>
+                <p className={styles.feedbackText}>{resolved.feedback}</p>
+                <button type="button" className={styles.nextBtn} onClick={handleNext}>
+                  Siguiente
+                </button>
+              </div>
+            </>
+          ) : (
+            (choicesShown || revealPending) && (
+              <>
+                <p className={styles.sceneObject}>{SCENARIO.object}</p>
+                <div className={styles.choices}>
+                  {shuffledChoices.map((choice) => (
+                    <button
+                      key={choice.label}
+                      type="button"
+                      className={styles.choiceBtn}
+                      disabled={revealPending}
+                      onClick={() => handleChoice(choice)}
+                    >
+                      {choice.label}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )
+          )}
+        </div>
+      </main>
+
+      <FlashOverlay active={flash.active} />
+
+      {revealPending && resolved && (
+        <div className={`${styles.stampOverlay} ${stampFlash.active ? styles.show : ''}`}>
+          <div className={`${styles.stamp} ${styles[resolved.level]}`}>{stampWord(resolved.level)}</div>
+        </div>
+      )}
+    </div>
+  )
+
+  const nota = (
+    <div className="text-base leading-relaxed text-body">
+      <p>Necesitas trabajar con datos de la empresa en un café. ¿Cómo te conectas?</p>
+    </div>
+  )
+
   return (
-    <StoryEscenario
+    <EscenarioLayout
       escenarioId="fisico/conexion-publica"
-      resumen={RESUMEN}
-      contexto={CONTEXTO}
-      story={STORY}
-      senales={SENALES}
-      rule='Regla de oro: <b>nunca transmitas datos confidenciales por WiFi público</b>. Usa VPN si tienes que hacerlo, o espera a una red segura (4G/5G, oficina, home office).'
-      restartLabel="↻ Repetir el escenario"
-      instruccion={
-        <p className="text-lg leading-relaxed text-body">
-          Necesitas completar un informe con datos de la empresa en un café con WiFi público. <strong>¿Cómo te conectas?</strong>
-        </p>
-      }
-      pista={
-        <p>
-          Las redes públicas sin contraseña no tienen encriptación. Usa tu celular con datos móviles o espera a una
-          conexión segura. Nunca es una buena idea usar WiFi público para datos confidenciales.
-        </p>
-      }
+      resumen="WiFi público — ¿la usas o esperas?"
+      contexto={contexto}
+      nota={nota}
+      identidad={[]}
+      pantalla={pantalla}
+      decision={null}
+      ocultarDecision={true}
+      onEmpezar={onEmpezar}
+      dispositivo="escritorio"
     />
   )
 }
