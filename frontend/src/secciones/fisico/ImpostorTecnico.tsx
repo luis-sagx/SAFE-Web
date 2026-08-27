@@ -1,4 +1,4 @@
-import { useState, type ReactElement } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router'
 import EscenarioLayout from '../../components/EscenarioLayout'
 import FlashOverlay from '../../components/ui/FlashOverlay'
@@ -187,7 +187,7 @@ function ImpostorTecnico() {
   }
 
   function handleFlashClick() {
-    setShuffledChoices(shuffled(SCENARIO.choices))
+    setShuffledChoices(shuffled(SCENARIO.choices as Choice[]))
     setChoicesShown(true)
   }
 
