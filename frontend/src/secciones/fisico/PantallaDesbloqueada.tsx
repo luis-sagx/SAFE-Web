@@ -92,6 +92,7 @@ const REGLA =
 function PantallaDesbloqueada() {
   const engine = useStoryEngine(STORY, 'n1', 'fisico/pantalla-desbloqueada')
   const [doorOpened, setDoorOpened] = useState(false)
+  const [thoughtPhase, setThoughtPhase] = useState<'before' | 'entering' | 'in-office'>('before')
 
   const pantalla = (
     <div
@@ -256,11 +257,64 @@ function PantallaDesbloqueada() {
       `}</style>
 
       {!doorOpened ? (
-        <div className="door-container">
-          <div className="door" onClick={() => setDoorOpened(true)}>
-            <div className="door-label">OFICINA</div>
-            <div className="door-knob" />
-            <div className="door-hint">Haz clic para entrar</div>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '40px', height: '100%' }}>
+          {thoughtPhase === 'before' && (
+            <div style={{
+              background: 'white',
+              borderRadius: '20px',
+              padding: '30px 40px',
+              maxWidth: '400px',
+              textAlign: 'center',
+              boxShadow: '0 20px 60px rgba(0, 0, 0, 0.2)',
+              position: 'relative',
+              marginBottom: '20px',
+              animation: 'fadeIn 0.6s ease-out',
+            }}>
+              <style>{`
+                @keyframes fadeIn {
+                  from { opacity: 0; transform: translateY(-10px); }
+                  to { opacity: 1; transform: translateY(0); }
+                }
+                .thought-bubble::after {
+                  content: '';
+                  position: absolute;
+                  bottom: -20px;
+                  left: 40px;
+                  width: 20px;
+                  height: 20px;
+                  background: white;
+                  border-radius: 50%;
+                  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+                }
+                .thought-bubble::before {
+                  content: '';
+                  position: absolute;
+                  bottom: -35px;
+                  left: 20px;
+                  width: 12px;
+                  height: 12px;
+                  background: white;
+                  border-radius: 50%;
+                  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+                }
+              `}</style>
+              <div className="thought-bubble" style={{ paddingBottom: '30px' }}>
+                <p style={{ margin: '0', fontSize: '18px', color: '#1a1a1a', fontWeight: '600', lineHeight: '1.6' }}>
+                  "Voy a revisar qué hay en la oficina de mi compañero mientras se toma un café..."
+                </p>
+              </div>
+            </div>
+          )}
+
+          <div className="door-container">
+            <div className="door" onClick={() => {
+              setDoorOpened(true)
+              setTimeout(() => setThoughtPhase('in-office'), 600)
+            }}>
+              <div className="door-label">OFICINA</div>
+              <div className="door-knob" />
+              <div className="door-hint">Haz clic para entrar</div>
+            </div>
           </div>
         </div>
       ) : (
@@ -380,8 +434,8 @@ function PantallaDesbloqueada() {
         .option-btn {
           position: relative;
           padding: 24px 28px;
-          background: linear-gradient(135deg, #2a3f5f 0%, #1a2a3a 100%);
-          border: 2px solid #4a6f9f;
+          background: linear-gradient(135deg, #2a5f3f 0%, #1a3a2a 100%);
+          border: 2px solid #4a9f6f;
           border-radius: 12px;
           color: #ffffff;
           font-size: 15px;
@@ -393,9 +447,9 @@ function PantallaDesbloqueada() {
           box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
         }
         .option-btn:hover {
-          background: linear-gradient(135deg, #3a5f7f 0%, #2a3a5a 100%);
-          border-color: #6a9fdf;
-          box-shadow: 0 15px 45px rgba(74, 111, 159, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+          background: linear-gradient(135deg, #3a7f5f 0%, #2a5a3a 100%);
+          border-color: #6adf9f;
+          box-shadow: 0 15px 45px rgba(74, 159, 111, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
           transform: translateY(-2px);
         }
         .option-btn:active {
