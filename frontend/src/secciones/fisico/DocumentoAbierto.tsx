@@ -611,7 +611,10 @@ function DocumentoAbierto() {
                           <button
                             type="button"
                             className={styles.restartBtn}
-                            onClick={() => setResult(null)}
+                            onClick={() => {
+                              setResult(null)
+                              setInspectedDoc(null)
+                            }}
                             style={{ marginTop: 0, flex: 1, minHeight: '56px', fontSize: '1.1rem', fontWeight: '700', padding: '16px 24px' }}
                           >
                             → Siguiente documento
