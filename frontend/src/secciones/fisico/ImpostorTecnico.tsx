@@ -36,18 +36,38 @@ function FlashSpark({ x, y, onClick }: { x: number; y: number; onClick: () => vo
 
 const SCENE_ART = ({ flash, onFlashClick }: { flash: boolean; onFlashClick: () => void }) => (
   <svg viewBox="0 0 400 220">
-    <rect width="400" height="220" fill="#eef1f2" />
-    <rect y="55" width="400" height="10" fill="#d7dde1" />
-    <rect x="40" y="130" width="320" height="16" fill="#cfae7c" />
-    <rect x="40" y="112" width="320" height="20" fill="#e6cd9e" />
-    <rect x="160" y="45" width="90" height="60" rx="4" fill="#1b232c" />
-    <rect x="196" y="105" width="18" height="14" fill="#3a4552" />
-    <rect x="150" y="130" width="70" height="14" rx="2" fill="#cfd6dc" />
-    <path d="M300 40 L332 72" stroke="#2b2318" strokeWidth="4" />
-    <circle cx="300" cy="40" r="8" fill="#2b2318" />
-    <rect x="238" y="133" width="18" height="9" rx="2" fill="#1b232c" />
-    <rect x="244" y="127" width="6" height="7" fill="#1b232c" />
-    {flash && <FlashSpark x={247} y={138} onClick={onFlashClick} />}
+    {/* Fondo y piso */}
+    <rect width="400" height="150" fill="#e8e4dc" />
+    <rect y="150" width="400" height="70" fill="#b0a89a" />
+    <line x1="0" y1="150" x2="400" y2="150" stroke="#d0c8ba" strokeWidth="2" />
+
+    {/* Escritorio de recepción */}
+    <rect x="250" y="110" width="130" height="40" fill="#8a7a6a" stroke="#6a5a4a" strokeWidth="2" />
+    <rect x="255" y="90" width="120" height="25" fill="#a8988a" />
+
+    {/* Visitante - persona simple */}
+    <circle cx="80" cy="70" r="15" fill="#d4a574" />
+    {/* Cuerpo */}
+    <rect x="65" y="85" width="30" height="40" fill="#4a6b8a" rx="2" />
+    {/* Brazos */}
+    <rect x="50" y="90" width="15" height="8" fill="#d4a574" rx="4" />
+    <rect x="95" y="90" width="15" height="8" fill="#d4a574" rx="4" />
+    {/* Piernas */}
+    <rect x="70" y="125" width="8" height="25" fill="#3a3a3a" />
+    <rect x="82" y="125" width="8" height="25" fill="#3a3a3a" />
+
+    {/* USB en la mano del visitante */}
+    <rect x="105" y="88" width="20" height="12" fill="#2a2a2a" rx="2" />
+    <rect x="110" y="83" width="10" height="8" fill="#c0c0c0" rx="1" />
+
+    {/* Receptionist detrás del escritorio */}
+    <circle cx="315" cy="80" r="12" fill="#d4a574" />
+    <rect x="305" y="92" width="20" height="35" fill="#6a7a9a" rx="2" />
+    <rect x="295" y="98" width="10" height="6" fill="#d4a574" rx="2" />
+    <rect x="325" y="98" width="10" height="6" fill="#d4a574" rx="2" />
+
+    {/* Indicador de interacción */}
+    {flash && <FlashSpark x={100} y={100} onClick={onFlashClick} />}
   </svg>
 )
 
