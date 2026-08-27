@@ -154,9 +154,34 @@ function PantallaDesbloqueada() {
           justify-content: center;
           flex-direction: column;
           cursor: pointer;
-          box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+          box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.2), inset -1px 0 0 rgba(0, 0, 0, 0.4);
           transition: all 0.3s ease;
           animation: ${doorOpened ? 'doorOpen 0.8s ease-out forwards' : 'none'};
+          border-left: 3px solid rgba(0, 0, 0, 0.3);
+          position: relative;
+        }
+        .door::before {
+          content: '';
+          position: absolute;
+          left: 15px;
+          top: 50%;
+          transform: translateY(-50%);
+          width: 12px;
+          height: 12px;
+          background: radial-gradient(circle at 30% 30%, #c0a080, #8b7355);
+          border-radius: 50%;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5), inset -1px -1px 2px rgba(0, 0, 0, 0.3);
+        }
+        .door::after {
+          content: '';
+          position: absolute;
+          left: 15px;
+          top: 80px;
+          width: 10px;
+          height: 10px;
+          background: radial-gradient(circle at 30% 30%, #888, #555);
+          border-radius: 50%;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.6), inset -1px -1px 2px rgba(0, 0, 0, 0.4);
         }
         .door:hover:not(.opened) {
           box-shadow: 0 25px 70px rgba(0, 0, 0, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.3);
