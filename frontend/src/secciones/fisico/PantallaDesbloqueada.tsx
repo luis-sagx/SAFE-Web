@@ -264,30 +264,132 @@ function PantallaDesbloqueada() {
           </div>
         </div>
       ) : (
-        <div className="office-interior">
-          <div className="monitor-container">
-            <div className="monitor-bezel">
-              <div className="monitor-screen">
-                <div className="desktop-content">
-                  <div>
-                    <div className="warning-badge">
-                      ⚠️ Sesión activa - Sistema de nómina (RRHH)
-                    </div>
-                    <h2 style={{ margin: '0 0 20px 0', fontSize: '20px', fontWeight: '600' }}>
-                      Puesto de trabajo - Escritorio
-                    </h2>
-                    <div style={{ fontSize: '13px', color: '#999', lineHeight: '1.8' }}>
-                      <p>📧 Carpeta de correos: Proyectos confidenciales (abierta)</p>
-                      <p>💰 App de banca: Transferencias (abierta)</p>
-                      <p>👤 Sesión: activa sin bloqueo</p>
-                    </div>
-                  </div>
+        <div className="office-interior" style={{
+          width: '100%',
+          height: '100%',
+          position: 'relative',
+          background: 'linear-gradient(to bottom, #d4d0c8 0%, #c8c4bc 50%, #a8a4a0 100%)',
+          display: 'flex',
+          alignItems: 'flex-end',
+          justifyContent: 'center',
+          overflow: 'hidden',
+        }}>
+          <style>{`
+            .office-walls {
+              position: absolute;
+              top: 0;
+              left: 0;
+              width: 100%;
+              height: 60%;
+              background: linear-gradient(to bottom, #e8e4dc 0%, #d8d4cc 100%);
+              box-shadow: inset 0 10px 30px rgba(0, 0, 0, 0.1);
+            }
+            .office-wall-right {
+              position: absolute;
+              right: 0;
+              top: 0;
+              width: 30%;
+              height: 100%;
+              background: linear-gradient(to left, #d0ccc4 0%, #e8e4dc 100%);
+              box-shadow: inset -20px 0 40px rgba(0, 0, 0, 0.15);
+            }
+            .office-floor {
+              position: absolute;
+              bottom: 0;
+              width: 100%;
+              height: 40%;
+              background: linear-gradient(to bottom, #8b8680 0%, #6b6660 100%);
+              box-shadow: inset 0 20px 50px rgba(0, 0, 0, 0.3);
+            }
+            .desk {
+              position: relative;
+              z-index: 10;
+              width: 600px;
+              height: 300px;
+              background: linear-gradient(135deg, #5a4a3a 0%, #4a3a2a 50%, #5a4a3a 100%);
+              border-radius: 8px 8px 0 0;
+              box-shadow: 0 -20px 60px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              margin-bottom: -10px;
+            }
+            .desk::before {
+              content: '';
+              position: absolute;
+              bottom: -40px;
+              left: 0;
+              width: 100%;
+              height: 40px;
+              background: linear-gradient(to bottom, #4a3a2a 0%, #3a2a1a 100%);
+              border-radius: 0 0 8px 8px;
+              box-shadow: inset 0 -10px 20px rgba(0, 0, 0, 0.5);
+            }
+            .desk-leg-left {
+              position: absolute;
+              bottom: -80px;
+              left: 40px;
+              width: 30px;
+              height: 80px;
+              background: linear-gradient(to right, #3a2a1a 0%, #4a3a2a 50%, #3a2a1a 100%);
+              box-shadow: inset 1px 0 3px rgba(0, 0, 0, 0.5);
+            }
+            .desk-leg-right {
+              position: absolute;
+              bottom: -80px;
+              right: 40px;
+              width: 30px;
+              height: 80px;
+              background: linear-gradient(to left, #3a2a1a 0%, #4a3a2a 50%, #3a2a1a 100%);
+              box-shadow: inset -1px 0 3px rgba(0, 0, 0, 0.5);
+            }
+            .window {
+              position: absolute;
+              top: 60px;
+              right: 60px;
+              width: 150px;
+              height: 120px;
+              background: linear-gradient(135deg, #87ceeb 0%, #87ceeb 50%, #b0e0e6 100%);
+              border: 8px solid #8b7355;
+              border-radius: 4px;
+              box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.2), 0 10px 30px rgba(0, 0, 0, 0.3);
+              opacity: 0.8;
+            }
+          `}</style>
 
-                  <div className="taskbar">
-                    <div className="taskbar-item">📧 Correo</div>
-                    <div className="taskbar-item">💳 Banca</div>
-                    <div className="taskbar-item">📊 RH</div>
-                    <div className="taskbar-item">⏰ 14:30</div>
+          <div className="office-walls" />
+          <div className="office-wall-right" />
+          <div className="office-floor" />
+          <div className="window" />
+
+          <div className="desk">
+            <div className="desk-leg-left" />
+            <div className="desk-leg-right" />
+
+            <div className="monitor-container" style={{ position: 'relative', zIndex: 20 }}>
+              <div className="monitor-bezel">
+                <div className="monitor-screen">
+                  <div className="desktop-content">
+                    <div>
+                      <div className="warning-badge">
+                        ⚠️ Sesión activa - Sistema de nómina (RRHH)
+                      </div>
+                      <h2 style={{ margin: '0 0 20px 0', fontSize: '20px', fontWeight: '600' }}>
+                        Puesto de trabajo - Escritorio
+                      </h2>
+                      <div style={{ fontSize: '13px', color: '#999', lineHeight: '1.8' }}>
+                        <p>📧 Carpeta de correos: Proyectos confidenciales (abierta)</p>
+                        <p>💰 App de banca: Transferencias (abierta)</p>
+                        <p>👤 Sesión: activa sin bloqueo</p>
+                      </div>
+                    </div>
+
+                    <div className="taskbar">
+                      <div className="taskbar-item">📧 Correo</div>
+                      <div className="taskbar-item">💳 Banca</div>
+                      <div className="taskbar-item">📊 RH</div>
+                      <div className="taskbar-item">⏰ 14:30</div>
+                    </div>
                   </div>
                 </div>
               </div>
