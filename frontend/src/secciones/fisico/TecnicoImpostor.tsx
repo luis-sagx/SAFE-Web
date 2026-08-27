@@ -46,15 +46,8 @@ const SCENE_ART = ({ flash, onFlashClick }: { flash: boolean; onFlashClick: () =
 
     {/* Técnico con herramientas */}
     <circle cx="150" cy="70" r="14" fill="#d4a574" />
-
     {/* Cuerpo con uniforme */}
     <rect x="138" y="84" width="24" height="35" fill="#3a5a7a" rx="2" />
-
-    {/* Texto en la camiseta */}
-    <text x="150" y="108" textAnchor="middle" fontFamily="Arial" fontSize="8" fontWeight="bold" fill="#ffcc00" textDecoration="none">
-      TECNICO
-    </text>
-
     {/* Brazos */}
     <rect x="125" y="88" width="13" height="8" fill="#d4a574" rx="3" />
     <rect x="162" y="88" width="13" height="8" fill="#d4a574" rx="3" />
