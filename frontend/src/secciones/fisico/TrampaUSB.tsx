@@ -41,7 +41,6 @@ const SCENE_ART_PARKING = ({ flash, onFlashClick }: { flash: boolean; onFlashCli
     <rect y="128" width="400" height="92" fill="#6c7580" />
     <rect y="124" width="400" height="6" fill="#e7dcae" opacity="0.55" />
     <rect x="36" y="150" width="7" height="55" fill="#dcd3b8" />
-    <rect x="150" y="150" width="7" height="55" fill="#dcd3b8" />
     <g transform="translate(190,138)">
       <rect x="0" y="20" width="140" height="34" rx="10" fill="#2c3e50" />
       <rect x="20" y="0" width="90" height="26" rx="8" fill="#34495e" />
