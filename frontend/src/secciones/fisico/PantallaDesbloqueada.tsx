@@ -339,7 +339,11 @@ function PantallaDesbloqueada() {
             .desk-svg-container {
               width: 100%;
               max-width: 900px;
-              flex-shrink: 0;
+              flex: 1;
+              min-height: 0;
+              display: flex;
+              align-items: center;
+              justify-content: center;
             }
             svg {
               width: 100%;
