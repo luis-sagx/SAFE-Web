@@ -1,4 +1,4 @@
-import { useState, type ReactElement } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router'
 import EscenarioLayout from '../../components/EscenarioLayout'
 import FlashOverlay from '../../components/ui/FlashOverlay'
@@ -109,7 +109,13 @@ function ConsequenceArt({ level }: { level: Level }) {
   )
 }
 
-const SCENARIO = {
+const SCENARIO: {
+  location: string
+  time: string
+  object: string
+  narrative: string
+  choices: Choice[]
+} = {
   location: 'Estacionamiento',
   time: '7:52 AM',
   object: 'Objeto: USB negro con etiqueta manuscrita',
