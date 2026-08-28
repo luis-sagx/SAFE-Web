@@ -793,7 +793,7 @@ const BASE: EscenarioBase[] = [
     descripcion:
       'Encuentras un USB anónimo en una zona común con una etiqueta que atrae la atención.',
     version: 1,
-    naturaleza: 'fraude',
+    naturaleza: 'legitimo',
     dificultad: 2,
     espeja: null,
     Component: lazy(() => import('../secciones/fisico/TrampaUSB')),
@@ -824,6 +824,30 @@ const BASE: EscenarioBase[] = [
   },
   {
     seccionId: 'fisico',
+    escenarioId: 'usb-promocional',
+    titulo: 'USB de feria tecnológica',
+    descripcion:
+      'Encuentras un USB con logo de una feria tecnológica dejado en tu escritorio.',
+    version: 1,
+    naturaleza: 'fraude',
+    dificultad: 2,
+    espeja: null,
+    Component: lazy(() => import('../secciones/fisico/USBPromocional')),
+  },
+  {
+    seccionId: 'fisico',
+    escenarioId: 'tecnico-impostor',
+    titulo: 'Técnico de servicios',
+    descripcion:
+      'Un técnico desconocido llega diciendo que viene a hacer mantenimiento rutinario.',
+    version: 1,
+    naturaleza: 'fraude',
+    dificultad: 2,
+    espeja: null,
+    Component: lazy(() => import('../secciones/fisico/TecnicoImpostor')),
+  },
+  {
+    seccionId: 'fisico',
     escenarioId: 'conexion-publica',
     titulo: 'Conexión pública en café',
     descripcion:
@@ -839,7 +863,7 @@ const BASE: EscenarioBase[] = [
     escenarioId: 'basura-confidencial',
     titulo: 'Basura sin destruir',
     descripcion:
-      'En el tacho de basura de tu oficina encuentras documentos con información confidencial de empleados sin destruir.',
+      'En el tacho de basura de tu oficina encuentras documentos con información confidencial sin destruir.',
     version: 1,
     naturaleza: 'fraude',
     dificultad: 1,
