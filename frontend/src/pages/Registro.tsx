@@ -14,6 +14,7 @@ function Registro() {
   const [email, setEmail] = useState("");
   const [cedula, setCedula] = useState("");
   const [password, setPassword] = useState("");
+  const [acceptedPolicy, setAcceptedPolicy] = useState(false);
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
@@ -38,6 +39,11 @@ function Registro() {
     // El backend valida igual; esto solo evita un viaje al servidor.
     if (!esCedulaEcuatoriana(cedulaLimpia)) {
       setError("Revisa tu número de cédula: son 10 dígitos.");
+      return;
+    }
+
+    if (!acceptedPolicy) {
+      setError("Debes aceptar la política de datos para continuar");
       return;
     }
 
@@ -126,6 +132,27 @@ function Registro() {
           maxLength={128}
           ayuda="Mínimo 8 caracteres."
         />
+
+        <div className="flex items-start gap-3">
+          <input
+            id="acceptPolicy"
+            type="checkbox"
+            checked={acceptedPolicy}
+            onChange={(e) => setAcceptedPolicy(e.target.checked)}
+            className="mt-1 h-5 w-5 rounded border-input bg-surface text-primary"
+          />
+          <label htmlFor="acceptPolicy" className="text-sm text-body">
+            Acepto la{" "}
+            <a
+              href="/politica-de-datos"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-link underline hover:text-link-active"
+            >
+              política de datos
+            </a>
+          </label>
+        </div>
 
         {error && (
           <p role="alert" className="text-sm text-danger">
