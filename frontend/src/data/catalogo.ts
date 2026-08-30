@@ -776,15 +776,15 @@ const BASE: EscenarioBase[] = [
 
   {
     seccionId: 'fisico',
-    escenarioId: 'foto',
-    titulo: 'Foto para el boletín',
+    escenarioId: 'salida-segura',
+    titulo: 'Fin de jornada segura',
     descripcion:
-      'Una escena cotidiana expone información sensible visible en el puesto de trabajo.',
+      'Debes proteger tu escritorio y computadora antes de irte de la oficina al final del día.',
     version: 1,
     naturaleza: 'legitimo',
     dificultad: 2,
     espeja: null,
-    Component: lazy(() => import('../secciones/fisico/Foto')),
+    Component: lazy(() => import('../secciones/fisico/SalidaSegura')),
   },
   {
     seccionId: 'fisico',
