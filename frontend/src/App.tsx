@@ -8,6 +8,7 @@ import Admin from './pages/Admin'
 import Bienvenida from './pages/Bienvenida'
 import Dashboard from './pages/Dashboard'
 import Login from './pages/Login'
+import PoliticaDatos from './pages/PoliticaDatos'
 import Registro from './pages/Registro'
 import Seccion from './pages/Seccion'
 
@@ -17,6 +18,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/registro" element={<Registro />} />
+        <Route path="/politica-de-datos" element={<PoliticaDatos />} />
 
         <Route element={<RequireSupervisor />}>
           <Route path="/admin" element={<Admin />} />
