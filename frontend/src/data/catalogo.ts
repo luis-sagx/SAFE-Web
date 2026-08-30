@@ -870,6 +870,18 @@ const BASE: EscenarioBase[] = [
     espeja: null,
     Component: lazy(() => import('../secciones/fisico/BasuraConfidencial')),
   },
+  {
+    seccionId: 'fisico',
+    escenarioId: 'tarjeta-clonada',
+    titulo: 'Billetera clonada',
+    descripcion:
+      'Tu billetera fue clonada en la calle: alguien la escaneó o accedió sin que lo notaras. Debes decidir cómo guardarla y qué hacer cuando descubres el fraude.',
+    version: 1,
+    naturaleza: 'fraude',
+    dificultad: 2,
+    espeja: null,
+    Component: lazy(() => import('../secciones/fisico/TarjetaClonada')),
+  },
 ];
 
 // El id "<seccion>/<escenario>" es la clave que se guarda en la base: no puede
