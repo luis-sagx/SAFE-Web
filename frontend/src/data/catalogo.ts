@@ -882,6 +882,30 @@ const BASE: EscenarioBase[] = [
     espeja: null,
     Component: lazy(() => import('../secciones/fisico/TarjetaClonada')),
   },
+  {
+    seccionId: 'fisico',
+    escenarioId: 'descarga-programas-piratas',
+    titulo: 'Descarga de software pirata',
+    descripcion:
+      'Un compañero te ofrece una versión gratis de un software profesional caro. Debes elegir de dónde descargarlo.',
+    version: 1,
+    naturaleza: 'fraude',
+    dificultad: 3,
+    espeja: null,
+    Component: lazy(() => import('../secciones/fisico/DescargaProgramasPiratas')),
+  },
+  {
+    seccionId: 'fisico',
+    escenarioId: 'puertos-frios-datacenter',
+    titulo: 'Puerto frío abierto en datacenter',
+    descripcion:
+      'La puerta del puerto frío está abierta. Debes actuar rápido para evitar que equipos críticos se vean afectados por el calor.',
+    version: 1,
+    naturaleza: 'legitimo',
+    dificultad: 3,
+    espeja: null,
+    Component: lazy(() => import('../secciones/fisico/PuertosFriosColdAisle')),
+  },
 ];
 
 // El id "<seccion>/<escenario>" es la clave que se guarda en la base: no puede
