@@ -47,7 +47,7 @@ function ContextoEscenario({ contexto }: { contexto: Contexto }) {
               {/* Etiqueta pequeña y en mayúsculas, como el título del diálogo:
                   tiene que poder saltarse con la vista para ir directo a la
                   fila que interesa, no competir con lo que dice la fila. */}
-              <dt className="text-[0.6875rem] font-semibold uppercase tracking-[0.88px] text-muted">
+              <dt className="text-xs font-semibold uppercase tracking-[0.88px] text-muted">
                 {etiqueta}
               </dt>
               <dd className="text-lg leading-relaxed text-body">{contexto[clave]}</dd>

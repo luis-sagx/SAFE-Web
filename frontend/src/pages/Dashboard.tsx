@@ -19,23 +19,30 @@ const SECCIONES_ACTIVAS = SECCIONES.filter((s) => escenariosDeSeccion(s.id).leng
  * propósito: contarlas mostraría un avance de "3 de 48" que no refleja nada que
  * el participante pueda hacer hoy, y que se movería solo porque abrimos un
  * módulo nuevo.
+ *
+ * Un módulo cuyo progreso no llegó tampoco entra en el denominador. Es el mismo
+ * criterio: un módulo sin umbral en el servidor no se puede aprobar, así que
+ * contarlo dejaba el marcador en un "x/6 módulos" que nadie podía completar.
+ * Cuando el servidor le dé umbral, vuelve a contar solo.
  */
 function calcularGlobal(progresos: Record<string, Progreso>) {
   let aprobados = 0
   let total = 0
   let requeridos = 0
   let modulosAprobados = 0
+  let modulos = 0
 
   for (const seccion of SECCIONES_ACTIVAS) {
     const progreso = progresos[seccion.id]
-    total += escenariosDeSeccion(seccion.id).length
     if (!progreso) continue
+    modulos += 1
+    total += escenariosDeSeccion(seccion.id).length
     aprobados += progreso.aprobados
     requeridos += progreso.requeridos
     if (progreso.aprobado) modulosAprobados += 1
   }
 
-  return { aprobados, total, requeridos, modulosAprobados, modulos: SECCIONES_ACTIVAS.length }
+  return { aprobados, total, requeridos, modulosAprobados, modulos }
 }
 
 function Dashboard() {
@@ -45,13 +52,18 @@ function Dashboard() {
   useEffect(() => {
     let cancelled = false
 
-    Promise.all(SECCIONES_ACTIVAS.map((s) => fetchProgreso(s.id)))
+    // allSettled y no all: un módulo que todavía no tiene umbral en el servidor
+    // responde 404, y con Promise.all ese único rechazo tiraba la promesa
+    // entera. El panel se quedaba sin ningún progreso —barra en cero e
+    // insignias "Aprobado" apagadas— para todos los módulos, incluidos los que
+    // sí habían respondido.
+    Promise.allSettled(SECCIONES_ACTIVAS.map((s) => fetchProgreso(s.id)))
       .then((resultados) => {
         if (cancelled) return
-        setProgresos(Object.fromEntries(resultados.map((p) => [p.modulo, p])))
-      })
-      .catch(() => {
-        // El progreso es informativo: si no carga, el dashboard sigue usable.
+        const cargados = resultados
+          .filter((r) => r.status === 'fulfilled')
+          .map((r) => r.value)
+        setProgresos(Object.fromEntries(cargados.map((p) => [p.modulo, p])))
       })
 
     return () => {
@@ -60,6 +72,12 @@ function Dashboard() {
   }, [])
 
   const global = calcularGlobal(progresos)
+
+  // Por dónde se sigue: el primer módulo del recorrido que todavía no está
+  // aprobado. Solo cuenta los que ya respondieron su progreso, para no marcar
+  // como "empieza aquí" un módulo que un segundo después resulta estar
+  // aprobado; mientras no haya llegado nada, ninguna tarjeta lleva insignia.
+  const entrada = SECCIONES_ACTIVAS.find((s) => progresos[s.id] && !progresos[s.id]?.aprobado)
 
   return (
     <div className="min-h-screen bg-canvas">
@@ -79,15 +97,19 @@ function Dashboard() {
       </AppHeader>
 
       <main className="mx-auto max-w-6xl px-6 py-12">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.88px] text-muted">
+        <p className="text-xs font-semibold uppercase tracking-[0.88px] text-muted">
           Entrenamiento
         </p>
         <h1 className="mt-2 text-4xl font-semibold tracking-tight text-ink">
           Hola, {displayName}
         </h1>
+        {/* Dice la regla del curso, no una promesa que el veredicto luego
+            desmiente. Antes prometía que ninguna respuesta te deja mal y a los
+            diez minutos el panel de resultado decía "caíste en la trampa": de
+            las dos, la que se recuerda es la segunda. */}
         <p className="mt-3 max-w-xl text-base leading-relaxed text-body">
-          Elige un tipo de engaño y enfréntate a una situación como las de todos los días. No hay
-          respuestas que te dejen mal: la idea es practicar.
+          Elige un tipo de engaño y enfréntate a una situación como las de todos los días. Puedes
+          fallar y repetir: lo que cuenta es tu último intento en cada escenario.
         </p>
 
         {global.total > 0 && (
@@ -98,21 +120,25 @@ function Dashboard() {
             <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
               <h2
                 id="titulo-global"
-                className="text-[11px] font-semibold uppercase tracking-[0.88px] text-muted"
+                className="text-xs font-semibold uppercase tracking-[0.88px] text-muted"
               >
                 Tu avance
               </h2>
+              {/* Los módulos van primero y con el número grande: aprobar un
+                  módulo es la meta del curso, y el total de escenarios no lo
+                  es —aprobar los 8 de un módulo no vale más que aprobar 6—.
+                  El detalle por escenario queda detrás, en letra chica. */}
               <p className="text-sm text-body">
                 <span className="text-lg font-semibold tabular-nums text-ink">
-                  {global.aprobados}
+                  {global.modulosAprobados}
                 </span>
-                <span className="text-muted">/{global.total}</span> escenarios
+                <span className="text-muted">/{global.modulos}</span>{' '}
+                {global.modulos === 1 ? 'módulo aprobado' : 'módulos aprobados'}
                 <span aria-hidden className="mx-2 text-muted-soft">
                   ·
                 </span>
-                <span className="font-medium text-ink tabular-nums">{global.modulosAprobados}</span>
-                <span className="text-muted">/{global.modulos}</span>{' '}
-                {global.modulos === 1 ? 'módulo' : 'módulos'}
+                <span className="tabular-nums">{global.aprobados}</span>
+                <span className="text-muted">/{global.total}</span> escenarios
               </p>
             </div>
 
@@ -135,6 +161,8 @@ function Dashboard() {
             const escenarios = escenariosDeSeccion(seccion.id)
             const disponible = escenarios.length > 0
             const progreso = progresos[seccion.id]
+            const esEntrada = seccion.id === entrada?.id
+            const empezado = (progreso?.escenarios.length ?? 0) > 0
 
             const Icono = seccion.Icono
 
@@ -142,19 +170,29 @@ function Dashboard() {
               <>
                 <div className="flex items-start justify-between gap-3">
                   <span
-                    className={`flex size-9 items-center justify-center rounded-md bg-surface-strong ${disponible ? 'text-link' : 'text-muted'}`}
+                    className={`flex size-9 items-center justify-center rounded-md ${
+                      esEntrada ? 'bg-mint-light' : 'bg-surface-strong'
+                    } ${disponible ? 'text-link' : 'text-muted'}`}
                   >
                     <Icono aria-hidden className="size-[18px]" strokeWidth={1.75} />
                   </span>
                   {!disponible && (
-                    <span className="text-[11px] font-semibold uppercase tracking-[0.88px] text-muted">
+                    <span className="text-xs font-semibold uppercase tracking-[0.88px] text-muted">
                       Pronto
                     </span>
                   )}
                   {progreso?.aprobado && (
-                    <span className="inline-flex items-center gap-1 text-[11px] font-semibold uppercase tracking-[0.88px] text-success">
+                    <span className="inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-[0.88px] text-success">
                       <CheckCircle2 aria-hidden className="size-3.5" strokeWidth={2.5} />
                       Aprobado
+                    </span>
+                  )}
+                  {/* Una sola tarjeta lleva esta insignia. Seis tarjetas del
+                      mismo peso no dicen por dónde se entra, y el recorrido sí
+                      tiene un orden: este es el primer módulo sin aprobar. */}
+                  {esEntrada && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-primary px-2.5 py-1 text-xs font-semibold uppercase tracking-[0.88px] text-on-primary">
+                      {empezado ? 'Continúa aquí' : 'Empieza aquí'}
                     </span>
                   )}
                 </div>
@@ -165,15 +203,27 @@ function Dashboard() {
                 </p>
 
                 <div className="mt-5 border-t border-hairline pt-3">
-                  <div className="flex items-center justify-between gap-3">
+                  <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
                     <span className="text-sm text-muted">{seccion.canal}</span>
                     {progreso && (
                       <span className="text-sm font-medium text-ink tabular-nums">
                         {progreso.aprobados}/{escenarios.length}
-                        <span className="font-normal text-muted"></span>
                       </span>
                     )}
                   </div>
+
+                  {/* Cuánto es el módulo y cuánto hay que aprobar, antes de
+                      entrar. Sin esta línea la tarjeta no decía a qué se estaba
+                      apuntando el participante y había que abrirla para
+                      averiguarlo. El total sale del catálogo; el umbral, del
+                      servidor, así que aparece en cuanto llega el progreso. */}
+                  {disponible && (
+                    <p className="mt-1.5 text-sm text-muted">
+                      {escenarios.length} escenarios
+                      {progreso && ` · aprueba ${progreso.requeridos}`}
+                    </p>
+                  )}
+
                   {progreso && (
                     <BarraProgreso
                       className="mt-2.5"
@@ -197,7 +247,11 @@ function Dashboard() {
               <Link
                 key={seccion.id}
                 to={`/seccion/${seccion.id}`}
-                className={`${clases} border-hairline-strong bg-surface hover:-translate-y-0.5 hover:border-link/40 hover:shadow-card`}
+                className={`${clases} bg-surface hover:-translate-y-0.5 hover:shadow-card ${
+                  esEntrada
+                    ? 'border-link/50 shadow-card hover:border-link'
+                    : 'border-hairline-strong hover:border-link/40'
+                }`}
               >
                 {contenido}
               </Link>

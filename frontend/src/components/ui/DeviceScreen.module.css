@@ -263,10 +263,15 @@
    pantalla venga ni si CSS Modules le reescribió el nombre a sus otras
    clases. */
 :global(.senal-resaltada) {
-  outline: 3px solid #16a34a;
+  /* Ámbar, no el verde de --color-success. En toda la aplicación el verde
+     significa "esto está bien" —la barra de progreso, la insignia de aprobado—
+     y aquí marcaba justo lo contrario: la pista que debió levantar sospechas.
+     Era la única contradicción de código de color del sistema, y caía en la
+     pantalla que enseña. */
+  outline: 3px solid #ab6400;
   outline-offset: 3px;
   border-radius: 0.25rem;
-  background: rgba(22, 163, 74, 0.1);
+  background: rgba(171, 100, 0, 0.12);
   transition:
     outline-color 0.2s,
     background 0.2s;
@@ -1724,6 +1729,23 @@ button.mailNavItem {
   min-height: 0;
   display: flex;
   background: #f2f4f7;
+}
+
+/* Barra de desplazamiento visible dentro del teléfono. Por defecto es un hilo
+   de un píxel del color del fondo, así que una página cuyo botón principal
+   queda debajo del pliegue —el "Acreditar mi bono" del bono del Estado— no da
+   ninguna pista de que haya algo más abajo, y el participante se queda mirando
+   un formulario sin salida. */
+.phoneViewport *::-webkit-scrollbar {
+  width: 0.375rem;
+}
+.phoneViewport *::-webkit-scrollbar-thumb {
+  border-radius: 0.1875rem;
+  background: rgb(15 23 42 / 28%);
+}
+.phoneViewport * {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(15 23 42 / 28%) transparent;
 }
 
 .phoneBrowserBar {

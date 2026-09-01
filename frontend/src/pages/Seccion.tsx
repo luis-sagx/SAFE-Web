@@ -1,26 +1,29 @@
 import { ArrowRight, CheckCircle2, LockKeyhole } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { Link, Navigate, useParams } from 'react-router'
+import { Link, Navigate, useLocation, useParams } from 'react-router'
 import AppHeader from '../components/AppHeader'
 import BarraProgreso from '../components/BarraProgreso'
 import InfoLink from '../components/InfoLink'
 import { escenariosDeSeccion, getSeccion, SECCIONES, type Seccion as SeccionCatalogo } from '../data/catalogo'
 import { fetchProgreso, type Progreso } from '../lib/api'
-import { escenarioEstaDisponible } from '../lib/bloqueoEscenarios'
+import { escenarioEstaDisponible, escenarioFueJugado } from '../lib/bloqueoEscenarios'
 
-/// Los puntos de dificultad no delatan nada: un escenario legítimo puede ser
-/// tan difícil como uno de fraude, y de hecho los que espejan lo son.
+/// La dificultad no delata nada: un escenario legítimo puede ser tan difícil
+/// como uno de fraude, y de hecho los que espejan lo son.
+///
+/// Va con la palabra y no con cinco puntos. Los puntos eran un código sin
+/// clave: el significado solo estaba en el `title` del navegador y en un
+/// `sr-only`, así que quien no pasa el cursor y no usa lector de pantalla
+/// —la mayoría del público— veía cinco círculos grises que intentaba
+/// descifrar. Tres nombres se leen sin explicación.
+const NOMBRE_DIFICULTAD = ['Fácil', 'Fácil', 'Media', 'Difícil', 'Difícil'] as const
+
 function Dificultad({ nivel }: { nivel: number }) {
+  const nombre = NOMBRE_DIFICULTAD[nivel - 1] ?? 'Media'
+
   return (
-    <span className="flex items-center gap-[3px]" title={`Dificultad ${nivel} de 5`}>
-      <span className="sr-only">Dificultad {nivel} de 5</span>
-      {Array.from({ length: 5 }, (_, i) => (
-        <span
-          key={i}
-          aria-hidden
-          className={`size-[5px] rounded-full ${i < nivel ? 'bg-muted' : 'bg-muted-soft/50'}`}
-        />
-      ))}
+    <span className="text-sm text-muted" title={`Dificultad ${nivel} de 5`}>
+      {nombre}
     </span>
   )
 }
@@ -79,7 +82,7 @@ function SiguienteModulo({
       </span>
 
       <div className="min-w-0 flex-1">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.88px] text-muted">
+        <p className="text-xs font-semibold uppercase tracking-[0.88px] text-muted">
           Siguiente módulo
         </p>
         <h2 className="mt-1 text-lg font-semibold text-ink">{siguiente.titulo}</h2>
@@ -87,7 +90,7 @@ function SiguienteModulo({
       </div>
 
       {abierto && !listo && (
-        <span className="shrink-0 text-[11px] font-semibold uppercase tracking-[0.88px] text-muted">
+        <span className="shrink-0 text-xs font-semibold uppercase tracking-[0.88px] text-muted">
           Pronto
         </span>
       )}
@@ -123,6 +126,7 @@ function Seccion() {
   const { seccionId } = useParams()
   const seccion = getSeccion(seccionId)
   const [progreso, setProgreso] = useState<Progreso | null>(null)
+  const bloqueado = (useLocation().state as { bloqueado?: string } | null)?.bloqueado
 
   // getSeccion() devuelve un objeto nuevo en cada render: la dependencia es
   // seccion?.id, no seccion, para no pedir el progreso de nuevo en cada uno.
@@ -153,6 +157,11 @@ function Seccion() {
   const escenarios = escenariosDeSeccion(seccion.id)
   const faltan = progreso ? Math.max(progreso.requeridos - progreso.aprobados, 0) : 0
 
+  // El único escenario abierto de los que faltan: es el que hay que terminar
+  // para que se abra el siguiente, y por eso es el que nombran los candados.
+  const pendiente = escenarios.findIndex((e) => !escenarioFueJugado(progreso, e.id))
+  const abre = String(pendiente + 1).padStart(2, '0')
+
   return (
     <div className="min-h-screen bg-canvas">
       <AppHeader>
@@ -166,7 +175,7 @@ function Seccion() {
           pantallas de navegación se leen como una sola, sin que el contenido
           salte de sitio al entrar en una sección. */}
       <main className="mx-auto max-w-6xl px-6 py-12">
-        <p className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.88px] text-muted">
+        <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.88px] text-muted">
           <seccion.Icono aria-hidden className="size-4 text-link" strokeWidth={2} />
           {seccion.titulo}
           <span aria-hidden className="text-muted-soft">
@@ -177,6 +186,18 @@ function Seccion() {
 
         <h1 className="mt-3 text-4xl font-semibold tracking-tight text-ink">{seccion.titulo}</h1>
         <p className="mt-3 max-w-2xl text-base leading-relaxed text-body">{seccion.descripcion}</p>
+
+        {/* Por qué la página cambió sola. Lo pone RequireEscenarioDisponible al
+            redirigir; `role="status"` para que un lector de pantalla lo anuncie
+            al llegar, que es justo cuando hace falta. */}
+        {bloqueado && (
+          <p
+            role="status"
+            className="mt-6 max-w-2xl rounded-lg border border-hairline-strong bg-canvas-soft px-4 py-3 text-base text-body"
+          >
+            «{bloqueado}» todavía no está abierto. Termina el escenario {abre} para llegar a él.
+          </p>
+        )}
 
         {/* El bloque de avance va antes que las tarjetas y ocupa el ancho
             completo: es lo que el participante viene a consultar cuando vuelve
@@ -189,17 +210,22 @@ function Seccion() {
             <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
               <h2
                 id="titulo-progreso"
-                className="text-[11px] font-semibold uppercase tracking-[0.88px] text-muted"
+                className="text-xs font-semibold uppercase tracking-[0.88px] text-muted"
               >
                 Progreso del módulo
               </h2>
+              {/* El umbral va escrito junto al contador. La marca de meta de
+                  la barra es un contorno de un píxel que nadie interpreta, y
+                  sin ella la barra parece exigir los ocho. */}
               <p className="text-sm font-medium text-ink">
                 <span className="text-lg font-semibold tabular-nums">{progreso.aprobados}</span>
                 <span className="text-muted">/{escenarios.length}</span>
                 <span aria-hidden className="mx-2 text-muted-soft">
                   ·
                 </span>
-                <span className="text-body"></span>
+                <span className="font-normal text-body">
+                  meta: <span className="tabular-nums">{progreso.requeridos}</span>
+                </span>
               </p>
             </div>
 
@@ -268,22 +294,26 @@ function Seccion() {
 
                   <div className="mt-4 flex items-center justify-between border-t border-hairline pt-3">
                     {aprobado ? (
-                      <span className="inline-flex items-center gap-1 text-[11px] font-semibold uppercase tracking-[0.88px] text-success">
+                      <span className="inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-[0.88px] text-success">
                         <CheckCircle2 aria-hidden className="size-3.5" strokeWidth={2.5} />
                         Aprobado
                       </span>
                     ) : ultimo !== undefined ? (
-                      <span className="text-[11px] font-semibold uppercase tracking-[0.88px] text-muted">
+                      <span className="text-xs font-semibold uppercase tracking-[0.88px] text-muted">
                         Sin aprobar
                       </span>
                     ) : disponible ? (
-                      <span className="text-[11px] font-semibold uppercase tracking-[0.88px] text-muted-soft">
+                      <span className="text-xs font-semibold uppercase tracking-[0.88px] text-muted">
                         Sin jugar
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1 text-[11px] font-semibold uppercase tracking-[0.88px] text-muted">
+                      /* El candado dice qué lo abre. "Bloqueado" a secas deja
+                         siete tarjetas muertas en la primera visita sin que
+                         nadie sepa qué hacer con ellas, cuando la condición es
+                         simple y el propio listado la conoce. */
+                      <span className="inline-flex items-center gap-1 text-xs font-medium text-muted">
                         <LockKeyhole aria-hidden className="size-3.5" strokeWidth={2.5} />
-                        Bloqueado
+                        Se abre al terminar el {abre}
                       </span>
                     )}
                     <span

@@ -43,6 +43,8 @@ describe('Seccion', () => {
       container.querySelector('a[href="/seccion/phishing/clave-caducada"]'),
     ).not.toBeNull()
     expect(container.querySelector('a[href="/seccion/phishing/rol-de-pagos"]')).toBeNull()
-    expect(await screen.findAllByText('Bloqueado')).toHaveLength(6)
+    // El candado nombra el escenario que lo abre: el primero sin jugar es el
+    // 02 (el 01 ya se intentó), así que los seis bloqueados apuntan ahí.
+    expect(await screen.findAllByText('Se abre al terminar el 02')).toHaveLength(6)
   })
 })

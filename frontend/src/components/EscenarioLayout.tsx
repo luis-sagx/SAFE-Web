@@ -7,7 +7,7 @@ import AvisoFinEscenario from "./ui/AvisoFinEscenario";
 import ContextoEscenario, { type Contexto } from "./ui/ContextoEscenario";
 import type { ResultadoEscenario } from "../hooks/useScenarioRun";
 import { useAuth } from "../context/AuthContext";
-import { getEscenario, getSeccion } from "../data/catalogo";
+import { escenariosDeSeccion, getEscenario, getSeccion } from "../data/catalogo";
 import TarjetaIdentidad, { type DatoIdentidad } from "./ui/TarjetaIdentidad";
 
 interface EscenarioLayoutProps {
@@ -58,9 +58,20 @@ interface EscenarioLayoutProps {
  * mostraría va en `pantalla`, si no va en `decision`. Un participante no aparece
  * dentro de su propia app bancaria y un banco no tiene una sección "Contexto".
  */
-/** Alto y angosto, como se sostiene un celular. */
+/** Alto y angosto, como se sostiene un celular.
+ *
+ *  27.5rem de ancho por 46rem de alto: relación 0.60. Las medidas anteriores
+ *  —31.25 × 44rem, relación 0.71— daban un aparato ancho y corto que se leía
+ *  como una tableta, justo en los módulos (SMS, llamada, chat) donde toda la
+ *  enseñanza depende de que se sienta como el propio teléfono.
+ *
+ *  No se baja hasta la relación real de un celular (~0.46): estas pantallas
+ *  tienen que caber formularios, hilos largos y el dock, y a 0.46 el contenido
+ *  se estrangula. Es el punto medio entre parecer un teléfono y poder mostrar
+ *  lo que el escenario necesita.
+ */
 const MARCO_TELEFONO =
-  "sm:max-h-[44rem] sm:w-[31.25rem] sm:rounded-[1.75rem] sm:border sm:border-hairline-strong sm:shadow-[0_30px_70px_rgba(0,0,0,0.22)] lg:h-[44rem] lg:max-h-full lg:flex-none lg:self-center";
+  "sm:max-h-[46rem] sm:w-[27.5rem] sm:rounded-[1.75rem] sm:border sm:border-hairline-strong sm:shadow-[0_30px_70px_rgba(0,0,0,0.22)] lg:h-[46rem] lg:max-h-full lg:flex-none lg:self-center";
 
 /** Ancho y bajo, como una ventana de escritorio. Los anchos con vw + min/max
  *
@@ -104,7 +115,10 @@ function EscenarioLayout({
     throw new Error(`Escenario "${escenarioId}" no está en el catálogo.`);
   }
 
-  const { displayName, roleLabel, correoSimulado, usuarioSimulado } = useAuth();
+  // El nombre y el rol salían en la barra del escenario y ocupaban el sitio
+  // donde ahora va la ubicación en el recorrido. Quién eres ya lo sabes; en
+  // qué punto del módulo estás, no había forma de saberlo sin salir.
+  const { displayName, correoSimulado, usuarioSimulado } = useAuth();
   const correoDelEscenario = dominioCorreo
     ? `${usuarioSimulado}@${dominioCorreo}`
     : correoSimulado;
@@ -112,6 +126,7 @@ function EscenarioLayout({
   const empezarRef = useRef<HTMLButtonElement>(null);
   const escenaRef = useRef<HTMLDivElement>(null);
   const dialogoRef = useRef<HTMLDialogElement>(null);
+  const salidaRef = useRef<HTMLDialogElement>(null);
 
   useEffect(() => {
     if (fase === "briefing") {
@@ -128,6 +143,24 @@ function EscenarioLayout({
     setFase("escenario");
   }
 
+  const seccion = getSeccion(escenario.seccionId);
+  const delModulo = escenariosDeSeccion(escenario.seccionId);
+  const posicion = delModulo.findIndex((e) => e.id === escenario.id) + 1;
+
+  /** "Phishing · 3 de 8". Dentro del escenario no había forma de saber en qué
+   *  punto del recorrido se estaba sin salirse de él. */
+  const ubicacion = posicion > 0 && (
+    <p className="text-base text-muted">
+      {seccion?.titulo}
+      <span aria-hidden className="mx-1.5 text-muted-soft">
+        ·
+      </span>
+      <span className="tabular-nums">
+        {posicion} de {delModulo.length}
+      </span>
+    </p>
+  );
+
   const volver = (
     <Link
       to={`/seccion/${escenario.seccionId}`}
@@ -135,6 +168,20 @@ function EscenarioLayout({
     >
       ← Volver a la sección
     </Link>
+  );
+
+  /** La salida de dentro del escenario. Se llama por lo que hace y confirma
+   *  una vez: la corrida solo se registra al llegar a un final, así que salir a
+   *  mitad la pierde entera, y "← Volver a la sección" tiene aspecto de flecha
+   *  de retroceso, que es lo que se pulsa por reflejo. */
+  const salir = (
+    <button
+      type="button"
+      onClick={() => salidaRef.current?.showModal()}
+      className="text-base font-medium text-link underline"
+    >
+      ← Salir sin terminar
+    </button>
   );
 
   if (fase === "briefing") {
@@ -155,8 +202,18 @@ function EscenarioLayout({
             derecha, esa columna doblaba en alto a la otra y el botón quedaba
             flotando muy por debajo del texto que acompaña. */}
         <main className="mx-auto max-w-6xl px-6 py-12">
-          <p className="text-base font-medium text-muted">
-            {getSeccion(escenario.seccionId)?.canal}
+          <p className="flex flex-wrap items-baseline gap-x-2 text-base font-medium text-muted">
+            <span>{seccion?.canal}</span>
+            {posicion > 0 && (
+              <>
+                <span aria-hidden className="text-muted-soft">
+                  ·
+                </span>
+                <span className="tabular-nums">
+                  Escenario {posicion} de {delModulo.length}
+                </span>
+              </>
+            )}
           </p>
           <h1 className="mt-2 text-4xl font-semibold tracking-tight text-ink">
             {escenario.titulo}
@@ -228,12 +285,16 @@ function EscenarioLayout({
     // h-dvh + overflow-hidden: la página no se desplaza nunca. Lo que se
     // desplaza es el interior del dispositivo, como en una app real, y el
     // bloque de decisión si su contenido no cabe.
-    <div className="flex h-dvh flex-col overflow-hidden bg-canvas-soft">
+    // Desde 640px la página no se desplaza nunca: lo que se desplaza es el
+    // interior del dispositivo, como en una app real. Por debajo de eso sí se
+    // desplaza, y a propósito: en un celular, con la barra superior, el
+    // dispositivo simulado y el bloque de decisión repartiéndose 844px de
+    // alto, encerrarlo todo en una pantalla dejaba al correo unas tres líneas
+    // visibles dentro de una caja que había que desplazar por dentro.
+    <div className="flex min-h-dvh flex-col bg-canvas-soft sm:h-dvh sm:overflow-hidden">
       <AppHeader>
-        {volver}
-        <p className="text-base text-muted lg:order-3">
-          {displayName} · {roleLabel}
-        </p>
+        {salir}
+        <span className="lg:order-3">{ubicacion}</span>
         <p className="w-full text-base leading-snug text-body lg:order-2 lg:w-auto lg:flex-1 lg:px-6">
           {resumen}
         </p>
@@ -259,7 +320,11 @@ function EscenarioLayout({
           aria-label={`${escenario.titulo}: pantalla simulada`}
           // `relative`: el aviso de fin se posiciona contra este marco, no
           // contra la página, para taparlo exactamente a él.
-          className={`relative flex min-h-0 w-full flex-1 overflow-hidden focus:outline-none ${
+          // El alto mínimo es solo para el celular, donde la página se
+          // desplaza: sin él el marco se comprimía hasta lo que sobrara y la
+          // pantalla simulada dejaba de poder leerse. De sm en adelante manda
+          // el alto de la ventana, como antes.
+          className={`relative flex min-h-[34rem] w-full flex-1 overflow-hidden focus:outline-none sm:min-h-0 ${
             dispositivo === "escritorio" ? MARCO_ESCRITORIO : MARCO_TELEFONO
           }`}
         >
@@ -268,9 +333,11 @@ function EscenarioLayout({
         </div>
 
         {!ocultarDecision && (
-          /* Apilado, el bloque nunca pasa de media pantalla: si no cabe, se
-              desplaza él, no la página. Al costado puede usar todo el alto. */
-          <div className="max-h-[45%] w-full shrink-0 overflow-y-auto border-t border-hairline bg-canvas px-4 py-4 sm:w-[28.75rem] sm:border-0 sm:bg-transparent sm:px-0 sm:py-0 lg:w-[23.75rem] lg:max-h-full lg:self-center xl:w-[28.75rem]">
+          /* En celular va debajo del dispositivo y se desplaza con la página.
+              De 640 a 1024 sigue apilado pero la página ya no se desplaza, así
+              que el bloque no pasa de media pantalla y se desplaza él. Al
+              costado puede usar todo el alto. */
+          <div className="w-full shrink-0 border-t border-hairline bg-canvas px-4 py-4 sm:max-h-[45%] sm:w-[28.75rem] sm:overflow-y-auto sm:border-0 sm:bg-transparent sm:px-0 sm:py-0 lg:w-[23.75rem] lg:max-h-full lg:self-center xl:w-[28.75rem]">
             {/* La historia queda a un clic, no ocupando espacio permanente. Vive
                 en un diálogo y no en un bloque fijo porque se consulta poco: casi
                 siempre se recuerda, y cuando no, se abre.
@@ -309,7 +376,7 @@ function EscenarioLayout({
       >
         <h2
           id="titulo-contexto"
-          className="text-[0.6875rem] font-semibold uppercase tracking-[0.88px] text-muted"
+          className="text-xs font-semibold uppercase tracking-[0.88px] text-muted"
         >
           Tu situación
         </h2>
@@ -336,6 +403,41 @@ function EscenarioLayout({
             Seguir
           </button>
         </form>
+      </dialog>
+
+      {/* Confirmación de salida. La corrida solo se guarda al llegar a un
+          final, así que salir a mitad la borra entera: eso hay que decirlo
+          antes, no después. Un solo paso, y la opción segura —quedarse— es la
+          que tiene el peso visual. */}
+      <dialog
+        ref={salidaRef}
+        aria-labelledby="titulo-salida"
+        className="m-auto w-[min(92vw,30rem)] rounded-xl border border-hairline-strong bg-surface p-8 text-ink shadow-card backdrop:bg-ink/40"
+      >
+        <h2 id="titulo-salida" className="text-xl font-semibold text-ink">
+          ¿Salir del escenario?
+        </h2>
+        <p className="mt-3 text-base leading-relaxed text-body">
+          Todavía no has decidido nada, así que este intento no se va a guardar.
+          Puedes volver a empezarlo cuando quieras.
+        </p>
+
+        <div className="mt-6 flex flex-wrap justify-end gap-3">
+          <Link
+            to={`/seccion/${escenario.seccionId}`}
+            className="flex min-h-11 items-center rounded-md border border-hairline-strong bg-surface px-5 text-base font-medium text-ink transition hover:bg-canvas-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link"
+          >
+            Salir
+          </Link>
+          <form method="dialog">
+            <button
+              type="submit"
+              className="min-h-11 rounded-md bg-primary px-5 text-base font-medium text-on-primary transition hover:bg-primary-active focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link"
+            >
+              Seguir aquí
+            </button>
+          </form>
+        </div>
       </dialog>
     </div>
   );

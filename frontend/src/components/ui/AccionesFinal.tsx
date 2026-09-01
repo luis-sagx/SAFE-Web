@@ -37,6 +37,10 @@ function AccionesFinal({ escenarioId, onRestart, restartLabel, autoFocus }: Acci
   // null mientras no se sabe: hasta que llegue el progreso se usa el orden del
   // catálogo, que da un "siguiente" razonable sin dejar la pantalla en blanco.
   const [intentados, setIntentados] = useState<Set<string> | null>(null)
+  // Cuántos van aprobados contra el umbral. Es el dato que convierte un
+  // escenario suelto en avance de un curso, y el momento de decirlo es
+  // justo después del veredicto.
+  const [avance, setAvance] = useState<{ aprobados: number; requeridos: number } | null>(null)
   const principalRef = useRef<HTMLAnchorElement | HTMLButtonElement>(null)
 
   useEffect(() => {
@@ -50,6 +54,7 @@ function AccionesFinal({ escenarioId, onRestart, restartLabel, autoFocus }: Acci
         // en paralelo y este progreso puede haberse pedido antes de que el
         // servidor la registre.
         setIntentados(new Set([...progreso.escenarios.map((e) => e.id), escenarioId]))
+        setAvance({ aprobados: progreso.aprobados, requeridos: progreso.requeridos })
       })
       .catch(() => {
         // Sin progreso se sigue con el orden del catálogo. Quedarse sin ningún
@@ -79,6 +84,26 @@ function AccionesFinal({ escenarioId, onRestart, restartLabel, autoFocus }: Acci
     </Link>
   )
 
+  // El progreso llega un instante después del veredicto, así que este bloque
+  // aparece solo cuando hay algo cierto que decir. Cuando ya se superó el
+  // umbral lo dice, en vez de seguir contando contra una meta ya cumplida.
+  const marcador = avance && (
+    <p className="mt-4 text-center text-base text-body">
+      {avance.aprobados >= avance.requeridos ? (
+        <>
+          Llevas <span className="font-semibold text-ink tabular-nums">{avance.aprobados}</span>{' '}
+          aprobados en este módulo: ya superaste los {avance.requeridos} que hacían falta.
+        </>
+      ) : (
+        <>
+          Llevas <span className="font-semibold text-ink tabular-nums">{avance.aprobados}</span> de
+          los <span className="tabular-nums">{avance.requeridos}</span> que necesitas para aprobar
+          el módulo.
+        </>
+      )}
+    </p>
+  )
+
   if (siguiente) {
     const restantes = intentados
       ? escenarios.filter((e) => !intentados.has(e.id)).length
@@ -86,6 +111,7 @@ function AccionesFinal({ escenarioId, onRestart, restartLabel, autoFocus }: Acci
 
     return (
       <>
+        {marcador}
         <Link
           ref={principalRef as React.Ref<HTMLAnchorElement>}
           to={`/seccion/${siguiente.seccionId}/${siguiente.escenarioId}`}
@@ -106,6 +132,7 @@ function AccionesFinal({ escenarioId, onRestart, restartLabel, autoFocus }: Acci
 
   return (
     <>
+      {marcador}
       {escenarios.length > 0 && (
         <p className="mt-5 text-center text-base text-body">
           Ya recorriste los {escenarios.length} escenarios del módulo. Ahora puedes repetir el que
