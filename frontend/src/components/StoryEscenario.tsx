@@ -405,6 +405,7 @@ function StoryEscenario({
 
   const decision = engine.isEnding ? (
     <PanelVeredicto
+      estadoGuardado={engine.runStatus}
       escenarioId={escenarioId}
       node={engine.node}
       senales={senales}

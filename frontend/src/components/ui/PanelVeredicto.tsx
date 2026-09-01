@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import AccionesFinal from './AccionesFinal'
 import EtiquetaAprobacion from './EtiquetaAprobacion'
 import type { StoryNode } from '../../hooks/useStoryEngine'
+import type { RunStatus } from '../../hooks/useScenarioRun'
 
 export interface Senal {
   id: string
@@ -35,6 +36,10 @@ interface PanelVeredictoProps {
   contenedorId: string
   /** Avisa qué pantalla toca mostrar en cada paso del repaso. */
   onPantalla?: (pantallaId: string | undefined) => void
+  /** Si la corrida llegó al servidor. Sin esto, una corrida que se encoló por
+   *  falta de red se veía igual que una guardada y el participante daba por
+   *  registrado un intento que todavía no lo estaba. */
+  estadoGuardado?: RunStatus
 }
 
 const CLASE_RESALTADA = 'senal-resaltada'
@@ -53,6 +58,7 @@ function PanelVeredicto({
   onRestart,
   contenedorId,
   onPantalla,
+  estadoGuardado,
 }: PanelVeredictoProps) {
   const haySenales = senales.length > 0
 
@@ -141,6 +147,15 @@ function PanelVeredicto({
       <p className="mt-3 text-lg leading-relaxed text-body">{node.outcome}</p>
 
       <EtiquetaAprobacion node={node} />
+
+      {/* Solo cuando hay algo que decir: "guardado" es lo esperado y no merece
+          una línea, pero una corrida en cola sí, porque el participante cree
+          que ya contó. */}
+      {estadoGuardado === 'queued' && (
+        <p role="status" className="mt-3 text-base text-warning">
+          Sin conexión: este intento se guardó en el equipo y se enviará solo cuando vuelva la red.
+        </p>
+      )}
 
       {enVeredicto && (
         <button

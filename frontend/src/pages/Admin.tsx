@@ -441,7 +441,7 @@ function Admin() {
       <AppHeader>
         <div className="flex items-baseline gap-2">
           <span className="text-sm font-semibold text-ink">SAFE Web</span>
-          <span className="text-[11px] font-semibold uppercase tracking-[0.88px] text-muted">
+          <span className="text-xs font-semibold uppercase tracking-[0.88px] text-muted">
             Supervisión
           </span>
         </div>
@@ -460,7 +460,7 @@ function Admin() {
       </AppHeader>
 
       <main className="mx-auto max-w-6xl px-6 py-12">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.88px] text-muted">
+        <p className="text-xs font-semibold uppercase tracking-[0.88px] text-muted">
           Panel del supervisor
         </p>
         <h1 className="mt-2 text-4xl font-semibold tracking-tight text-ink">

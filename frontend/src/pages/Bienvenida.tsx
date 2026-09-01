@@ -123,6 +123,14 @@ function Bienvenida() {
       return;
     }
 
+    await cerrar();
+  }
+
+  /// Salir del aviso, tanto al terminarlo como al saltárselo. Es el mismo
+  /// camino en los dos casos: marcar y navegar. Si "Saltar" no marcara,
+  /// RequireAuth volvería a mandar aquí en el siguiente render y la pantalla
+  /// sería inescapable.
+  async function cerrar() {
     setEnviando(true);
 
     try {
@@ -140,14 +148,14 @@ function Bienvenida() {
   return (
     <div className="flex min-h-dvh items-center justify-center bg-ink/40 px-6 py-10">
       <div className="w-full max-w-2xl rounded-xl border border-hairline-strong bg-surface p-8 shadow-card">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.88px] text-muted">
+        <p className="text-xs font-semibold uppercase tracking-[0.88px] text-muted">
           SAFE Web
         </p>
 
-        {/* Alto reservado para el paso más largo. Sin él, la fila de botones
-            sube y baja entre una amenaza y otra, y hay que volver a buscar el
-            botón en cada paso. */}
-        <div className="mt-1.5 min-h-[19rem]">
+        {/* Alto reservado para el paso más largo, que ahora es la portada con
+            las reglas del curso. Sin él, la fila de botones sube y baja entre
+            un paso y otro, y hay que volver a buscar el botón cada vez. */}
+        <div className="mt-1.5 min-h-[21rem]">
           {amenaza ? (
             <>
               <p className="text-sm font-medium text-muted">
@@ -184,10 +192,28 @@ function Bienvenida() {
                 criterio, no que memorices una lista.
               </p>
 
-              <p className="mt-4 text-lg leading-relaxed text-body">
-                Antes de empezar, te las presentamos una por una, con un ejemplo
-                de cómo suena cada una y qué hacer cuando te llegue.
-              </p>
+              {/* Las reglas del curso, en la portada. El aviso enumeraba seis
+                  amenazas y no decía en ningún momento cómo se aprueba ni por
+                  qué los módulos aparecen cerrados: el participante lo
+                  descubría al chocar con un candado. */}
+              <ul className="mt-4 grid gap-2 rounded-md bg-canvas-soft px-4 py-3 text-base leading-relaxed text-body">
+                <li>
+                  <strong className="text-ink">Seis módulos</strong>, uno por
+                  amenaza. Se abren en orden: cada uno necesita el anterior.
+                </li>
+                <li>
+                  Dentro de cada módulo,{" "}
+                  <strong className="text-ink">
+                    apruebas con 6 de sus 8 escenarios
+                  </strong>
+                  .
+                </li>
+                <li>
+                  Puedes fallar y repetir. Cuenta tu último intento en cada
+                  escenario.
+                </li>
+              </ul>
+
             </>
           )}
         </div>
@@ -240,6 +266,23 @@ function Bienvenida() {
               {enviando ? "Un momento…" : ultimo ? "Continuar" : "Siguiente →"}
             </button>
           </div>
+
+          {/* Una salida desde el primer paso. Siete pantallas obligatorias sin
+              forma de salirse es la pantalla que todo el mundo aprende a
+              atravesar sin leer; y quien vuelve a abrir el aviso desde el ícono
+              ⓘ a mitad de un escenario no debería tener que recorrerlo entero
+              para regresar. Las seis amenazas siguen contadas, mejor, en la
+              tarjeta de cada módulo del panel. */}
+          {!ultimo && (
+            <button
+              type="button"
+              disabled={enviando}
+              onClick={() => void cerrar()}
+              className="mx-auto mt-4 block text-base font-medium text-link underline decoration-dotted underline-offset-4 transition hover:decoration-solid disabled:opacity-60"
+            >
+              Saltar la introducción
+            </button>
+          )}
         </form>
       </div>
     </div>

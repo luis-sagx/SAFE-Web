@@ -83,6 +83,14 @@ function Login() {
         >
           {submitting ? 'Entrando…' : 'Entrar'}
         </button>
+
+        {/* No hay correo saliente, así que no hay enlace que enviar. Decirlo
+            es lo único honesto: sin esta línea, quien olvidó su clave se queda
+            frente a un formulario que no le va a dejar entrar nunca y sin
+            ninguna pista de a quién pedirle ayuda. */}
+        <p className="text-sm text-body">
+          ¿No puedes entrar? Pídele a quien dirige la sesión que restablezca tu contraseña.
+        </p>
       </form>
     </AuthLayout>
   )

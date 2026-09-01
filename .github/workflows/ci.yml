@@ -147,19 +147,18 @@ jobs:
   dependencias-nuevas:
     name: Revisión de dependencias del PR
     runs-on: ubuntu-latest
-    # La acción necesita el grafo de dependencias, y en un repositorio privado
-    # exige además GitHub Advanced Security, que es de pago. Sin eso no falla
-    # avisando: rompe el job entero con "Dependency review is not supported on
-    # this repository", y tumba el CI de cualquier PR.
-    #
-    # La condición de repositorio público es la que distingue los dos casos: en
-    # público el grafo viene activado y la revisión funciona; en privado el job
-    # se salta y la auditoría queda cubierta por `pnpm audit`, que corre igual
-    # en el job de arriba y sí bloquea por severidad alta.
-    if: github.event_name == 'pull_request' && !github.event.repository.private
+    # dependency-review-action necesita el grafo de dependencias activado (y en
+    # repos privados, GitHub Advanced Security de pago). Si falta cualquiera de
+    # los dos rompe el job entero con "Dependency review is not supported on
+    # this repository" y tumba el CI del PR. La auditoría real la cubre
+    # `pnpm audit` en el job `auditoria`, que sí bloquea por severidad alta, así
+    # que este job es informativo y nunca debe hacer fallar el CI.
+    if: github.event_name == 'pull_request'
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/dependency-review-action@v4
+        continue-on-error: true
         with:
           fail-on-severity: high
           comment-summary-in-pr: never

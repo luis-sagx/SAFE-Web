@@ -48,7 +48,17 @@ function RequireEscenarioDisponible({
     )
 
     if (!disponible) {
-      return <Navigate to={`/seccion/${escenario.seccionId}`} replace />
+      // Con el título a cuestas: la sección lo usa para decir por qué cambió
+      // la página sola. Sin eso, quien llega por un enlace guardado o por el
+      // historial ve otra pantalla y no sabe si se equivocó de dirección, si
+      // la aplicación falló o si le quitaron el acceso.
+      return (
+        <Navigate
+          to={`/seccion/${escenario.seccionId}`}
+          replace
+          state={{ bloqueado: escenario.titulo }}
+        />
+      )
     }
   }
 
