@@ -906,6 +906,18 @@ const BASE: EscenarioBase[] = [
     espeja: null,
     Component: lazy(() => import('../secciones/fisico/PuertosFriosColdAisle')),
   },
+  {
+    seccionId: 'fisico',
+    escenarioId: 'privacidad-claves',
+    titulo: 'Privacidad en el escritorio compartido',
+    descripcion:
+      'Un compañero se acerca a tu escritorio mientras trabajas. Debes proteger tu información sensible sin ser obvio.',
+    version: 1,
+    naturaleza: 'legitimo',
+    dificultad: 2,
+    espeja: null,
+    Component: lazy(() => import('../secciones/fisico/PrivacidadClaves')),
+  },
 ];
 
 // El id "<seccion>/<escenario>" es la clave que se guarda en la base: no puede
