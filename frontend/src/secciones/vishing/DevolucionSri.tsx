@@ -1,4 +1,4 @@
-import { Camera, Compass, Phone, Wallet } from "lucide-react";
+import { Camera, Compass, MessageSquareText, Phone, Wallet } from "lucide-react";
 import StoryEscenario, {
   type AppTelefono,
   type ScreenNode,
@@ -20,6 +20,11 @@ import {
  * el escenario separa lo que se llegó a decir de lo que no — colgar después de
  * dar la cédula no es lo mismo que colgar antes, y el final tiene que
  * distinguirlo o la lección se pierde.
+ *
+ * El código que piden al final es auténtico y llega solo, en cuanto lo
+ * mencionan: es el que el banco manda para autorizar una salida de dinero, no
+ * para liberar ningún depósito. La confusión entre las dos cosas es la trampa
+ * entera.
  */
 
 const NUMERO = "+593 2 299 0100";
@@ -131,6 +136,22 @@ const SIN_CEDULA: ScreenView = {
   colgarLabel: "Colgó sin dar ningún dato",
 };
 
+/// El mensaje auténtico. Sin `volverGoto`: no hay lista a la que volver, y la
+/// vuelta a la llamada es el icono `Teléfono`, que restaura la conversación
+/// exacta donde se dejó.
+const CODIGO_SMS: ScreenView = {
+  kind: "sms",
+  sender: "BancoLitoral",
+  sub: "Remitente verificado · SMS",
+  msgs: [
+    {
+      text: `Su codigo de autorizacion de transferencia es ${CODIGO}. Vence en 5 minutos. Nunca lo comparta: con el se autorizan salidas de dinero de su cuenta.`,
+      time: "10:12",
+      senal: "texto-codigo",
+    },
+  ],
+};
+
 const NAVEGADOR: ScreenView = {
   kind: "web",
   app: "Navegador",
@@ -181,6 +202,13 @@ const PORTAL: ScreenView = {
 const APPS: AppTelefono[] = [
   { Icono: Phone, texto: "Teléfono", color: "#2f9e44", hilo: "call" },
   {
+    Icono: MessageSquareText,
+    texto: "Mensajes",
+    color: "#2f9e44",
+    goto: "n_codigo",
+    label: "Abrió los mensajes para leer el código",
+  },
+  {
     Icono: Compass,
     texto: "Navegador",
     color: "#1971c2",
@@ -201,12 +229,24 @@ const APPS: AppTelefono[] = [
   },
 ];
 
+/// Llega en cuanto lo mencionan, sobre la llamada en curso, y es la misma en
+/// los dos caminos: con cédula dada o sin darla, el código se pide igual.
+const NOTIFICACION_CODIGO = {
+  app: "Mensajes",
+  remitente: "BancoLitoral",
+  hora: "10:12",
+  texto: `Su codigo de autorizacion de transferencia es ${CODIGO}. Vence en 5 minutos. Nunca lo comparta: con el se autorizan salidas de dinero de su cuenta.`,
+  goto: "n_codigo",
+  label: "Abrió la notificación del código que envió el banco",
+};
+
 export const STORY: Story<ScreenNode> = {
   n1: { kind: "scene", view: ENTRANTE },
   n2: { kind: "scene", view: BASE },
-  n3: { kind: "scene", view: DIO_CEDULA },
-  n3b: { kind: "scene", view: SIN_CEDULA },
+  n3: { kind: "scene", view: DIO_CEDULA, notificacion: NOTIFICACION_CODIGO },
+  n3b: { kind: "scene", view: SIN_CEDULA, notificacion: NOTIFICACION_CODIGO },
   n4: { kind: "scene", view: NAVEGADOR },
+  n_codigo: { kind: "scene", view: CODIGO_SMS },
   e_rechaza: {
     kind: "good",
     view: ENTRANTE,
@@ -292,6 +332,13 @@ const SENALES: Senal[] = [
     pantalla: "e_portal",
     texto:
       "En el portal <b>no había ninguna devolución</b>. Los trámites con el Estado se ven entrando tú, no en una llamada que empezó el otro.",
+  },
+  {
+    id: "s7",
+    targetId: "texto-codigo",
+    pantalla: "n_codigo",
+    texto:
+      "El mensaje lo dice en su propio texto: ese código <b>autoriza salidas de dinero</b>, nunca libera un depósito. Es el mismo código, pero no para lo que te dijeron.",
   },
 ];
 

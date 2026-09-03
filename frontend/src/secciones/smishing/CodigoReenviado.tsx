@@ -20,9 +20,10 @@ import type { Senal } from '../../components/ui/PanelVeredicto'
  *
  * Se entra por el hilo del impostor y no por la lista, como en cualquier otro
  * escenario: quien recibe un mensaje lo abre desde la notificación, no desde
- * la bandeja. El código del banco está a un gesto —la flecha ‹ de la cabecera
- * lleva a la lista, y su vista previa lo enseña—, que es exactamente lo que
- * cuesta en un teléfono de verdad.
+ * la bandeja. El código del banco llega solo, como en un teléfono de verdad:
+ * su notificación aparece encima del hilo del impostor y sigue a la vista
+ * hasta que se toca o se descarta. La flecha ‹ de la cabecera lleva también a
+ * la lista, donde la vista previa lo enseña otra vez.
  */
 
 const CODIGO = '731 640'
@@ -244,7 +245,21 @@ const APPS: AppTelefono[] = [
 ]
 
 const STORY: Story<ScreenNode> = {
-  n1: { kind: 'scene', view: HILO_FALSO },
+  n1: {
+    kind: 'scene',
+    view: HILO_FALSO,
+    // El código ya llegó cuando arranca el escenario: en la vida real las dos
+    // conversaciones son casi simultáneas. El banner deja los seis dígitos y
+    // recorta la advertencia; leerla entera es lo que cuesta un toque.
+    notificacion: {
+      app: 'Mensajes',
+      remitente: 'BANCO LITORAL',
+      hora: '20:40',
+      texto: `Su codigo de verificacion es ${CODIGO}. Vence en 5 minutos. NUNCA lo comparta con nadie, ni con personal del banco.`,
+      goto: 'n3',
+      label: 'Abrió la notificación del código que envió el banco',
+    },
+  },
   n1c: { kind: 'scene', view: HILO_COMPROBADO },
   n2: { kind: 'scene', view: LISTA },
   n3: { kind: 'scene', view: HILO_BANCO },

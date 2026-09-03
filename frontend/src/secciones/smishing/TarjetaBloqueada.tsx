@@ -18,10 +18,17 @@ import { IDENTIDAD_FICTICIA } from '../../lib/identidadFicticia'
  * que marcarlo cuesta un gesto y comprobarlo cuesta buscar la tarjeta. Esa
  * diferencia de esfuerzo es justo la que explota el ataque, y por eso el
  * escenario deja las dos cosas a un toque de distancia.
+ *
+ * El código que piden en la llamada es auténtico —el banco lo manda de
+ * verdad, porque el impostor acaba de provocar una compra con la tarjeta—, y
+ * llega como notificación en cuanto lo mencionan. El remitente de ese mensaje
+ * es la comparación que falta: `BANCO LITORAL`, no el `BANCO-LIT` sin
+ * verificar del SMS que empezó todo.
  */
 
 const NUMERO_FALSO = '09 87 654 321'
 const PREGUNTA = '¿Qué consumo fue? No reconozco ningún bloqueo.'
+const CODIGO = '508 213'
 
 /// El número va como enlace porque en un teléfono lo es: el sistema los
 /// detecta y los vuelve pulsables. Que se toque sin pensar es parte del ataque.
@@ -150,6 +157,23 @@ const PIDEN_CODIGO: ScreenView = {
   colgarLabel: 'Colgó sin dictar el código',
 }
 
+/// El mensaje auténtico, leído desde la notificación o desde el dock. Sin
+/// `volverGoto`: no hay lista a la que volver, y la vuelta a la llamada es el
+/// icono `Teléfono`, que ya restaura la conversación exacta donde se dejó.
+const CODIGO_SMS: ScreenView = {
+  kind: 'sms',
+  sender: 'BANCO LITORAL',
+  sub: 'Remitente habitual · SMS',
+  senalRemitente: 'remitente-real',
+  msgs: [
+    {
+      text: `Su codigo de autorizacion es ${CODIGO}. Vence en 5 minutos. El Banco del Litoral nunca le pedira este codigo por telefono ni por mensaje: si alguien se lo pide, cuelgue.`,
+      time: '20:44',
+      senal: 'aviso-real',
+    },
+  ],
+}
+
 /// El inicio de la banca móvil. Abrir la app todavía no es haber comprobado
 /// nada: desde aquí se puede mirar el estado de la tarjeta o anularla a ciegas,
 /// que es el gesto precipitado que este escenario mide. Un icono que resuelve
@@ -262,7 +286,19 @@ export const STORY: Story<ScreenNode> = {
   n1: { kind: 'scene', view: SMS },
   n2: { kind: 'scene', view: MARCADOR },
   n3: { kind: 'scene', view: LLAMADA },
-  n4: { kind: 'scene', view: PIDEN_CODIGO },
+  n4: {
+    kind: 'scene',
+    view: PIDEN_CODIGO,
+    notificacion: {
+      app: 'Mensajes',
+      remitente: 'BANCO LITORAL',
+      hora: '20:44',
+      texto: `Su codigo de autorizacion es ${CODIGO}. Vence en 5 minutos. El Banco del Litoral nunca le pedira este codigo por telefono ni por mensaje: si alguien se lo pide, cuelgue.`,
+      goto: 'n_codigo',
+      label: 'Abrió la notificación del código que envió el banco',
+    },
+  },
+  n_codigo: { kind: 'scene', view: CODIGO_SMS },
   n5: { kind: 'scene', view: BANCO_INICIO },
   n5c: { kind: 'scene', view: BANCO_INICIO_EN_LLAMADA },
   n_tarjetas_llamada: { kind: 'scene', view: APP_BANCO },
@@ -357,6 +393,13 @@ const SENALES: Senal[] = [
     pantalla: 'e_app',
     texto:
       'En la app <b>no había ningún bloqueo</b>. El estado real está ahí y en el reverso de tu tarjeta: dos sitios que no dependen de quien te escribió.',
+  },
+  {
+    id: 's6',
+    targetId: 'remitente-real',
+    pantalla: 'n_codigo',
+    texto:
+      'Este mensaje sí viene de <b>BANCO LITORAL</b>, el remitente habitual. Compáralo con el <b>BANCO-LIT</b> sin verificar del primer mensaje: el código es de verdad, pero quien lo pide no es el banco.',
   },
 ]
 

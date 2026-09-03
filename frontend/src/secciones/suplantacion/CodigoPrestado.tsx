@@ -16,6 +16,9 @@ import type { Story } from '../../hooks/useStoryEngine'
  * Es difícil porque el favor parece diminuto —un número que no es tuyo, dicho
  * en un chat de confianza— y porque quien lo pide tiene todas las razones para
  * parecer tu prima: su número, su foto y su historial.
+ *
+ * El código se anuncia solo, un minuto antes de que abra el chat: el mismo
+ * orden que tuvo el ataque real.
  */
 
 const PRIMA = 'Gaby'
@@ -181,7 +184,20 @@ const APPS: AppTelefono[] = [
 ]
 
 export const STORY: Story<ScreenNode> = {
-  n1: { kind: 'scene', view: CHAT },
+  n1: {
+    kind: 'scene',
+    view: CHAT,
+    // El código llegó un minuto antes que el chat de la prima, como en la
+    // vida real: alguien acaba de pedir entrar a tu cuenta con tu número.
+    notificacion: {
+      app: 'Verificación',
+      remitente: 'Verificación',
+      hora: '20:13',
+      texto: `Tu código es ${CODIGO}. No lo compartas con nadie. Si no lo pediste, alguien está intentando entrar a tu cuenta.`,
+      goto: 'n2',
+      label: 'Abrió la notificación del código de verificación',
+    },
+  },
   n2: { kind: 'scene', view: MENSAJES },
   n2b: { kind: 'scene', view: INSISTE },
   n3: { kind: 'scene', view: CON_CODIGO },

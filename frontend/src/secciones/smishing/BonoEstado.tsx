@@ -5,6 +5,12 @@ import type { Story } from '../../hooks/useStoryEngine'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
 import type { Senal } from '../../components/ui/PanelVeredicto'
 
+/// Mientras el formulario está abierto, los atacantes usan el usuario y la
+/// clave que acabas de escribir para entrar a tu banca de verdad, y el banco
+/// manda el código de verdad para autorizarlo. Ese código llega solo, como
+/// notificación, mientras la página sigue esperando que lo escribas ahí.
+const CODIGO = '625 914'
+
 /// El acortador se ve como texto y no como dirección: eso es justo lo que la
 /// señal s2 enseña, así que el enlace se pinta tal cual llega, sin desplegar.
 const ENLACE =
@@ -39,6 +45,25 @@ const PAGINA: ScreenView = {
   botonLabel: 'Envió cédula, usuario, clave y código de verificación',
   cerrarGoto: 'e_cierra',
   cerrarLabel: 'Salió de la página sin enviar los datos',
+}
+
+/// El mensaje auténtico, leído desde la notificación. Con `volverGoto`: aquí
+/// sí hace falta, porque de la página se sale al hilo y del hilo hay que
+/// poder volver a la página.
+const CODIGO_SMS: ScreenView = {
+  kind: 'sms',
+  sender: 'BANCO LITORAL',
+  sub: 'Remitente habitual · SMS',
+  senalRemitente: 'remitente-real',
+  msgs: [
+    {
+      text: `Su codigo de verificacion es ${CODIGO}. Vence en 5 minutos. NUNCA lo comparta con nadie, ni con personal del banco.`,
+      time: '09:47',
+      senal: 'aviso-real',
+    },
+  ],
+  volverGoto: 'n2',
+  volverLabel: 'Volvió a la página después de leer el código',
 }
 
 /// El navegador abre en sus sitios frecuentes. Abrirlo no comprueba nada: la
@@ -112,7 +137,19 @@ const APPS: AppTelefono[] = [
 
 const STORY: Story<ScreenNode> = {
   n1: { kind: 'scene', view: SMS },
-  n2: { kind: 'scene', view: PAGINA },
+  n2: {
+    kind: 'scene',
+    view: PAGINA,
+    notificacion: {
+      app: 'Mensajes',
+      remitente: 'BANCO LITORAL',
+      hora: '09:47',
+      texto: `Su codigo de verificacion es ${CODIGO}. Vence en 5 minutos. NUNCA lo comparta con nadie, ni con personal del banco.`,
+      goto: 'n_codigo',
+      label: 'Abrió la notificación del código que envió el banco',
+    },
+  },
+  n_codigo: { kind: 'scene', view: CODIGO_SMS },
   n3: { kind: 'scene', view: NAVEGADOR },
   e_datos: {
     kind: 'bad',
@@ -171,6 +208,13 @@ const SENALES: Senal[] = [
     pantalla: 'n2',
     texto:
       'Pide el <b>código que te llega por SMS</b>. Ese código es la última puerta de tu banco: con tu clave y con él ya entran a tu cuenta desde su propio teléfono.',
+  },
+  {
+    id: 's6',
+    targetId: 'aviso-real',
+    pantalla: 'n_codigo',
+    texto:
+      'Ese código <b>sí es auténtico</b> y lleva la defensa escrita: "nunca lo comparta". Llegó porque acabas de escribir tu usuario y tu clave en la página falsa.',
   },
 ]
 const RULE =

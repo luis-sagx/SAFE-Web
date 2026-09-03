@@ -18,6 +18,9 @@ import { IDENTIDAD_FICTICIA } from "../../lib/identidadFicticia";
  * auténtico —lo manda el banco de verdad, porque alguien está intentando
  * operar con tu cuenta ahora mismo—, así que todo lo que el módulo de smishing
  * enseña a mirar sale bien en él. Lo falso es quien lo pide.
+ *
+ * El mensaje se anuncia solo, encima de la llamada en curso, justo cuando el
+ * impostor dice que lo acaba de enviar: es el instante entero del ataque.
  */
 
 const NUMERO = "+593 2 380 4412";
@@ -116,6 +119,18 @@ function pidiendoCodigo(
     colgarLabel: "Colgó cuando le pidieron el código",
   };
 }
+
+/// El teléfono anuncia el mensaje justo cuando el impostor lo pide, como pasa
+/// de verdad: el atacante acaba de provocar el envío. Texto plano y sin las
+/// negritas del hilo, como cualquier banner del sistema.
+const NOTIFICACION_CODIGO = {
+  app: "Mensajes",
+  remitente: "BancoLitoral",
+  hora: "21:07",
+  texto: `Su código de autorización es ${CODIGO}. Vence en 5 minutos. El Banco del Litoral nunca le pedirá este código por teléfono ni por mensaje: si alguien se lo pide, cuelgue.`,
+  goto: "n4",
+  label: "Abrió la notificación del código que envió el banco",
+};
 
 const NIEGA_CONSUMO = pidiendoCodigo([
   { texto: NO_RECONOZCO, mio: true },
@@ -229,8 +244,8 @@ const APPS: AppTelefono[] = [
 export const STORY: Story<ScreenNode> = {
   n1: { kind: "scene", view: ENTRANTE },
   n2: { kind: "scene", view: LLAMADA },
-  n3: { kind: "scene", view: NIEGA_CONSUMO },
-  n3b: { kind: "scene", view: DUDA_QUIEN },
+  n3: { kind: "scene", view: NIEGA_CONSUMO, notificacion: NOTIFICACION_CODIGO },
+  n3b: { kind: "scene", view: DUDA_QUIEN, notificacion: NOTIFICACION_CODIGO },
   n4: { kind: "scene", view: MENSAJE },
   n5: { kind: "scene", view: BANCO },
   e_rechaza: {

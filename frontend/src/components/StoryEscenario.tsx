@@ -1,5 +1,5 @@
 import { Lock, TriangleAlert } from 'lucide-react'
-import { useEffect, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useState, type ReactNode } from 'react'
 import EscenarioLayout from './EscenarioLayout'
 import Instrucciones from './ui/Instrucciones'
 import { carpetasCorreo } from './ui/carpetasCorreo'
@@ -8,6 +8,7 @@ import DeviceScreen, { type ScreenView } from './ui/DeviceScreen'
 import { evitarNavegacion, manejarClicHotspot } from './ui/interactivo'
 import type { AccionCorreo, Reloj } from './ui/DesktopChrome'
 import { Navegador, type MarcadorNavegador, type PestanaConfig } from './ui/Navegador'
+import NotificacionTelefono, { type Notificacion } from './ui/NotificacionTelefono'
 import StoryChoices from './ui/StoryChoices'
 import type { DatoIdentidad } from './ui/TarjetaIdentidad'
 import PanelVeredicto, { type Senal } from './ui/PanelVeredicto'
@@ -19,6 +20,11 @@ import styles from './ui/DeviceScreen.module.css'
  *  el resultado se lee al lado de la pantalla que lo provocó. */
 export interface ScreenNode extends StoryNode {
   view: ScreenView
+  /** Lo que el teléfono anuncia al llegar a esta escena. Va en el nodo y no en
+   *  la vista porque una notificación no es contenido de una pantalla: es algo
+   *  que pasa en un momento del guion. Dos nodos que enseñan la misma pantalla
+   *  pueden diferir en si el mensaje ya llegó. */
+  notificacion?: Notificacion
 }
 
 interface StoryEscenarioProps {
@@ -190,6 +196,10 @@ function StoryEscenario({
   /// te manda un código por mensaje— y ahí "volver" significa una pantalla
   /// distinta según el icono que se pulse.
   const [hilos, setHilos] = useState<{ sms?: string; call?: string }>({})
+  /// Notificaciones ya vistas (tocadas, descartadas o dejadas atrás al decidir
+  /// otra cosa). Una notificación llega una vez; "↻ Repetir el escenario" tiene
+  /// que devolverla, por eso `reiniciar` la limpia junto con `engine.restart`.
+  const [descartadas, setDescartadas] = useState<string[]>([])
   const nodoVisible = pantallaRepaso ?? pestanaMirada ?? engine.current
   const vistaDelNodo = story[nodoVisible]?.view ?? engine.node.view
   /// Releer el hilo desde otra pantalla no puede terminar la corrida: la
@@ -243,6 +253,29 @@ function StoryEscenario({
       setHilos((previos) => ({ ...previos, [kind]: engine.current }))
     }
   }, [engine.current, engine.node.view])
+
+  // La notificación pertenece a la posición del grafo (engine.current), no a
+  // la pantalla que se está mirando: que siga ahí mientras se abre la cámara
+  // desde el dock es lo que hace un teléfono de verdad. No se pinta sobre el
+  // veredicto (ya hay un overlay ahí) ni durante el repaso (taparía la señal
+  // que se está explicando).
+  const notificacionNodo = story[engine.current]?.notificacion
+  const mostrarNotificacion = Boolean(
+    notificacionNodo && !engine.isEnding && !pantallaRepaso && !descartadas.includes(engine.current),
+  )
+
+  useEffect(() => {
+    if (!mostrarNotificacion) return
+    // Se marca al salir del nodo y no al entrar: mientras se siga ahí sigue en
+    // pantalla, y en cuanto pasa cualquier cosa —tocarla, descartarla, decidir
+    // otra cosa— el momento ya pasó y no vuelve.
+    return () => setDescartadas((ids) => [...ids, engine.current])
+  }, [mostrarNotificacion, engine.current])
+
+  const reiniciar = useCallback(() => {
+    setDescartadas([])
+    engine.restart()
+  }, [engine.restart])
 
   // Una pestaña por escena con pantalla. Se indexan por nodo, como pide su
   // Navegador, y las que comparten dirección se pliegan en una sola.
@@ -411,7 +444,7 @@ function StoryEscenario({
       senales={senales}
       regla={rule}
       restartLabel={restartLabel}
-      onRestart={engine.restart}
+      onRestart={reiniciar}
       contenedorId="pantalla-escenario"
       onPantalla={setPantallaRepaso}
     />
@@ -439,6 +472,12 @@ function StoryEscenario({
         </span>
       </div>
       <div className={styles.phoneBody}>
+        {mostrarNotificacion && notificacionNodo && (
+          <NotificacionTelefono
+            notificacion={notificacionNodo}
+            onDescartar={() => setDescartadas((ids) => [...ids, engine.current])}
+          />
+        )}
         <div className={styles.phoneApp}>
           {appAbierta && !engine.isEnding ? (
             <>
@@ -638,7 +677,7 @@ function StoryEscenario({
       identidad={identidad}
       decision={decision}
       resultado={engine.resultado}
-      onEmpezar={engine.restart}
+      onEmpezar={reiniciar}
       // El correo y la web se abren más en computador que en celular; el SMS
       // se queda en celular, que es donde de verdad llegan los mensajes.
       dispositivo={accionesEnPantalla || vista.kind === 'sms' ? 'telefono' : 'escritorio'}

@@ -77,4 +77,32 @@ describe('CodigoReenviado', () => {
 
     expect(screen.getByText('Cambiaste la clave, pero el código sigue vivo')).toBeDefined()
   })
+
+  // El código llega solo, como en un teléfono de verdad: no hay que salir del
+  // hilo del impostor a buscarlo.
+  it('el código del banco llega como notificación desde el primer instante', () => {
+    const telefono = empezar(<CodigoReenviado />)
+
+    expect(within(telefono).getByText('BANCO LITORAL')).toBeDefined()
+    expect(within(telefono).getByText(/Su codigo de verificacion es 731 640/)).toBeDefined()
+  })
+
+  it('tocar la notificación abre el mensaje del banco', () => {
+    const telefono = empezar(<CodigoReenviado />)
+
+    fireEvent.click(within(telefono).getByRole('button', { name: 'Abrir la notificación' }))
+
+    expect(within(telefono).getByText(/Su codigo de verificacion es 731 640/)).toBeDefined()
+    expect(screen.getByText('¿Qué haces?')).toBeDefined()
+  })
+
+  it('descartar la notificación no termina la corrida ni enciende la pista de fallo', () => {
+    const telefono = empezar(<CodigoReenviado />)
+
+    fireEvent.click(within(telefono).getByRole('button', { name: 'Descartar la notificación' }))
+
+    expect(within(telefono).queryByText(/Su codigo de verificacion es 731 640/)).toBeNull()
+    expect(screen.getByText('¿Qué haces?')).toBeDefined()
+    expect(screen.queryByText('Ahí no hay nada que hacer.', { exact: false })).toBeNull()
+  })
 })
