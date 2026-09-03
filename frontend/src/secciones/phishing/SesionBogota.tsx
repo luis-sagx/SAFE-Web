@@ -248,13 +248,13 @@ function ContenidoPaginaClave() {
       <p className={styles.pageSub}>Confirme su contraseña para cerrar el acceso no reconocido.</p>
 
       <div className={styles.form}>
-        <label className={styles.field}>
+        <div className={styles.field} role="group" aria-label="Contraseña de banca en línea">
           <span>Contraseña de banca en línea</span>
           <span className={styles.input}>
             <span className="sr-only">Tu contraseña, ya completada: </span>
             ••••••••
           </span>
-        </label>
+        </div>
         <BotonHotspot
           goto="n3"
           label="Escribió su contraseña para cerrar el acceso no reconocido"
@@ -285,13 +285,13 @@ function ContenidoPaginaOtp() {
       <p className={styles.pageSub}>Ingrese el código que le acabamos de enviar por SMS.</p>
 
       <div className={styles.form}>
-        <label className={styles.field} data-signal="campo-otp">
+        <div className={styles.field} data-signal="campo-otp" role="group" aria-label="Código de verificación">
           <span>Código de verificación</span>
           <span className={styles.input}>
             <span className="sr-only">El código, ya completado: </span>
             418 902
           </span>
-        </label>
+        </div>
         <BotonHotspot
           goto="e_otp"
           label="Escribió el código que llegó por SMS"

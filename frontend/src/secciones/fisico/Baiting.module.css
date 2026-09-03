@@ -459,7 +459,7 @@
   color: var(--color-ink);
   transition: all 0.15s;
   font-weight: 500;
-  word-break: break-word;
+  overflow-wrap: anywhere;
   white-space: normal;
   overflow-wrap: break-word;
   width: 100%;

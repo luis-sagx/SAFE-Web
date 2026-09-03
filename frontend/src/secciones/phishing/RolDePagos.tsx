@@ -254,20 +254,20 @@ function ContenidoPortal() {
       </p>
 
       <div className={styles.form}>
-        <label className={styles.field}>
+        <div className={styles.field} role="group" aria-label="Usuario">
           <span>Usuario</span>
           <span className={styles.input}>
             <span className="sr-only">Tu usuario, ya completado: </span>
             {usuarioSimulado}
           </span>
-        </label>
-        <label className={styles.field}>
+        </div>
+        <div className={styles.field} role="group" aria-label="Contraseña">
           <span>Contraseña</span>
           <span className={styles.input}>
             <span className="sr-only">Tu contraseña, ya completada: </span>
             ••••••••
           </span>
-        </label>
+        </div>
         <BotonHotspot
           goto="e_bien"
           label="Ingresó a su portal del colaborador"

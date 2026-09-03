@@ -310,6 +310,7 @@ function Participantes() {
               {/* El foco arranca en Cancelar: la acción destructiva no se
                   confirma con un Enter reflejo. */}
               <button
+                type="button"
                 value="cancel"
                 autoFocus
                 className="h-9 rounded-md border border-hairline-strong bg-surface px-3 text-sm font-medium text-ink transition hover:bg-surface-strong"
@@ -317,6 +318,7 @@ function Participantes() {
                 No, cancelar
               </button>
               <button
+                type="button"
                 value="confirm"
                 onClick={() => void confirmacion.accion()}
                 className={`inline-flex h-9 items-center gap-1.5 rounded-md px-3 text-sm font-medium text-on-primary transition ${

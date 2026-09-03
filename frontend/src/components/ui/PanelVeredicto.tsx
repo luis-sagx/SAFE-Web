@@ -152,9 +152,9 @@ function PanelVeredicto({
           una línea, pero una corrida en cola sí, porque el participante cree
           que ya contó. */}
       {estadoGuardado === 'queued' && (
-        <p role="status" className="mt-3 text-base text-warning">
+        <output className="mt-3 text-base text-warning">
           Sin conexión: este intento se guardó en el equipo y se enviará solo cuando vuelva la red.
-        </p>
+        </output>
       )}
 
       {enVeredicto && (

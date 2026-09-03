@@ -51,15 +51,14 @@ function BarraProgreso({
     : `${hechos} de ${total} escenarios aprobados`
 
   return (
-    <div
-      role="progressbar"
-      aria-valuemin={0}
-      aria-valuemax={total}
-      aria-valuenow={hechos}
-      aria-valuetext={textoAccesible}
-      aria-label={etiqueta}
-      className={`relative ${className}`}
-    >
+    <div className={`relative ${className}`}>
+      <progress
+        className="sr-only"
+        max={total}
+        value={hechos}
+        aria-label={etiqueta}
+        aria-valuetext={textoAccesible}
+      />
       {forma === 'segmentada' ? (
         <div className="flex gap-1">
           {Array.from({ length: total }, (_, i) => {

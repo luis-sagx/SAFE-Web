@@ -81,13 +81,6 @@
   margin-bottom: 0;
 }
 
-.summary {
-  font-size: 1rem;
-  line-height: 1.625;
-  color: var(--color-body);
-  margin: 0;
-}
-
 .npcLine {
   text-align: center;
   font-family: var(--font-sans);

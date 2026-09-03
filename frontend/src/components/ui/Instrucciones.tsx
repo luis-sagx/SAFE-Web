@@ -33,10 +33,10 @@ function Instrucciones({
           persona que está atascada, y la pista le llega sin habérsela ofrecido
           antes a quien no la necesita. */}
       {fallo && (
-        <p role="status" className="rounded-md bg-surface-strong px-3 py-2 text-base text-body">
+        <output className="rounded-md bg-surface-strong px-3 py-2 text-base text-body">
           Ahí no hay nada que hacer. Solo algunos elementos responden: recórrelos con el cursor (o
           con la tecla Tab) y se marcarán al pasar.
-        </p>
+        </output>
       )}
 
       {pista && (
