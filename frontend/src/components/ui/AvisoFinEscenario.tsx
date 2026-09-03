@@ -55,35 +55,12 @@ function AvisoFinEscenario({ resultado }: { resultado?: ResultadoEscenario }) {
     return () => clearTimeout(id)
   }, [visible])
 
-  if (!resultado) return null
+  if (!resultado || !visible) return null
 
   const { Icono, clase, titulo } = TONOS[resultado]
 
-  // La franja se queda mientras el escenario esté terminado. El golpe dura
-  // menos de dos segundos y quien parpadea se lo pierde; entonces la pantalla
-  // vuelve a verse exactamente igual que mientras se jugaba y el único rastro
-  // del final vive en la columna de al lado, que es justo donde el ojo no
-  // estaba. La franja deja el aviso pegado a la pantalla que lo provocó.
-  const franja = (
-    <div className={`${styles.franja} ${clase}`} aria-hidden>
-      <span className={styles.franjaDisco}>
-        <Icono className={styles.franjaIcono} strokeWidth={3} />
-      </span>
-      <span className={styles.franjaTexto}>
-        Escenario terminado.
-        <span className="hidden lg:inline"> El resultado está a la derecha.</span>
-        <span className="lg:hidden"> El resultado está abajo.</span>
-      </span>
-      <ArrowRight className={`${styles.franjaFlecha} hidden lg:block`} strokeWidth={2.5} />
-      <ArrowDown className={`${styles.franjaFlecha} lg:hidden`} strokeWidth={2.5} />
-    </div>
-  )
-
-  if (!visible) return franja
-
   return (
     <>
-      {franja}
       <div className={`${styles.capa} ${clase}`} aria-hidden>
         <span className={styles.disco}>
           <Icono className={styles.icono} strokeWidth={3.5} />
