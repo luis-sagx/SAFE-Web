@@ -33,6 +33,22 @@ const TAB_CONTENTS: TabContent[] = [
   { name: 'Reportes', content: 'Reportes financieros' },
 ]
 
+function tabFill(isClosed: boolean, isActive: boolean): string {
+  if (isClosed) return '#555'
+  if (isActive) return '#0078d4'
+  return '#666'
+}
+
+function tabTextFill(isClosed: boolean, isActive: boolean): string {
+  if (isClosed) return '#888'
+  if (isActive) return '#fff'
+  return '#ccc'
+}
+
+function tabCursor(isClosed: boolean): 'default' | 'pointer' {
+  return isClosed ? 'default' : 'pointer'
+}
+
 function SalidaSegura() {
   const navigate = useNavigate()
   const run = useScenarioRun('fisico/salida-segura')
@@ -191,11 +207,11 @@ function SalidaSegura() {
                 y="70"
                 width="100"
                 height="50"
-                fill={isClosed ? '#555' : isActive ? '#0078d4' : '#666'}
+                fill={tabFill(isClosed, isActive)}
                 rx="8"
                 stroke="#222"
                 strokeWidth="2"
-                style={{ cursor: isClosed ? 'default' : 'pointer' }}
+                style={{ cursor: tabCursor(isClosed) }}
                 onClick={() => !isClosed && handleTabClick(i)}
                 opacity={isClosed ? 0.5 : 1}
               />
@@ -205,9 +221,9 @@ function SalidaSegura() {
                 y="105"
                 textAnchor="middle"
                 fontSize="16"
-                fill={isClosed ? '#888' : isActive ? '#fff' : '#ccc'}
+                fill={tabTextFill(isClosed, isActive)}
                 fontWeight="bold"
-                style={{ cursor: isClosed ? 'default' : 'pointer', pointerEvents: 'none' }}
+                style={{ cursor: tabCursor(isClosed), pointerEvents: 'none' }}
               >
                 {tab.name.substring(0, 10)}
               </text>

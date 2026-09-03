@@ -7,6 +7,22 @@ import styles from './Baiting.module.css'
 
 type Level = 'safe' | 'danger' | 'partial'
 
+function outcomeForLevel(level: Level): 'CORRECTO' | 'PARCIAL' | 'INCORRECTO' {
+  switch (level) {
+    case 'safe': return 'CORRECTO'
+    case 'partial': return 'PARCIAL'
+    case 'danger': return 'INCORRECTO'
+  }
+}
+
+function resultVariant(level: Level): 'good' | 'partial' | 'bad' {
+  switch (level) {
+    case 'safe': return 'good'
+    case 'partial': return 'partial'
+    case 'danger': return 'bad'
+  }
+}
+
 interface Resolved {
   level: Level
   feedback: string
@@ -51,7 +67,7 @@ function PuertosFriosColdAisle() {
     setResolved(result)
     void run.finish({
       endingId: result.level,
-      outcome: result.level === 'safe' ? 'CORRECTO' : result.level === 'partial' ? 'PARCIAL' : 'INCORRECTO',
+      outcome: outcomeForLevel(result.level),
     })
   }
 
@@ -230,7 +246,7 @@ function PuertosFriosColdAisle() {
       pantalla={pantalla}
       decision={decisionPanel}
       ocultarDecision={false}
-      resultado={resolved ? (resolved.level === 'safe' ? 'good' : resolved.level === 'partial' ? 'partial' : 'bad') : undefined}
+      resultado={resolved ? resultVariant(resolved.level) : undefined}
       onEmpezar={onEmpezar}
       dispositivo="escritorio"
     />

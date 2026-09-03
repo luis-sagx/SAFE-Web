@@ -5,6 +5,7 @@ import type { Contexto } from '../../components/ui/ContextoEscenario'
 import dossierTheme from '../../styles/dossier-theme.module.css'
 import { useScenarioRun } from '../../hooks/useScenarioRun'
 import { shuffle } from '../../utils/shuffle'
+import { outcomeForLevel, stampForLevel, verdictForLevel } from '../../utils/verdict'
 import styles from './Baiting.module.css'
 
 type Level = 'safe' | 'warn' | 'danger'
@@ -44,14 +45,6 @@ const SCENARIO_PARKING = {
   ],
 }
 
-function verdictLabel(level: Level) {
-  return level === 'safe' ? 'Decisión segura' : level === 'warn' ? 'Observación' : 'Riesgo detectado'
-}
-
-function stampWord(level: Level) {
-  return level === 'safe' ? 'APROBADO' : level === 'warn' ? 'OBSERVACIÓN' : 'RIESGO'
-}
-
 function TrampaUSB() {
   const run = useScenarioRun('fisico/trampa-usb')
 
@@ -80,7 +73,7 @@ function TrampaUSB() {
       setResolved({ level: choice.level, feedback: choice.feedback })
       void run.finish({
         endingId: choice.level,
-        outcome: choice.level === 'safe' ? 'CORRECTO' : choice.level === 'warn' ? 'PARCIAL' : 'INCORRECTO',
+        outcome: outcomeForLevel(choice.level),
       })
     }, 750)
   }
@@ -168,7 +161,7 @@ function TrampaUSB() {
   const decisionPanel = resolved ? (
     <div className="space-y-4">
       <div className="border-l-4 border-gray-400 pl-3 py-1">
-        <p className="text-xs font-bold uppercase text-gray-700 mb-2">{verdictLabel(resolved.level)}</p>
+        <p className="text-xs font-bold uppercase text-gray-700 mb-2">{verdictForLevel(resolved.level)}</p>
         <p className="text-sm text-body leading-relaxed">{resolved.feedback}</p>
       </div>
     </div>
@@ -212,7 +205,7 @@ function TrampaUSB() {
 
       {revealPending && resolved && (
         <div className={`${styles.stampOverlay} ${stampFlash.active ? styles.show : ''}`}>
-          <div className={`${styles.stamp} ${styles[resolved.level]}`}>{stampWord(resolved.level)}</div>
+          <div className={`${styles.stamp} ${styles[resolved.level]}`}>{stampForLevel(resolved.level)}</div>
         </div>
       )}
     </div>

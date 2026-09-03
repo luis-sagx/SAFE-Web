@@ -7,6 +7,7 @@ import type { Contexto } from '../../components/ui/ContextoEscenario'
 import dossierTheme from '../../styles/dossier-theme.module.css'
 import { useScenarioRun } from '../../hooks/useScenarioRun'
 import { shuffle } from '../../utils/shuffle'
+import { outcomeForLevel, stampForLevel, verdictForLevel } from '../../utils/verdict'
 import styles from './Baiting.module.css'
 
 type Level = 'safe' | 'warn' | 'danger'
@@ -149,14 +150,6 @@ const SCENARIO = {
   ],
 }
 
-function verdictLabel(level: Level) {
-  return level === 'safe' ? 'Decisión segura' : level === 'warn' ? 'Observación' : 'Riesgo detectado'
-}
-
-function stampWord(level: Level) {
-  return level === 'safe' ? 'APROBADO' : level === 'warn' ? 'OBSERVACIÓN' : 'RIESGO'
-}
-
 function TecnicoImpostor() {
   const navigate = useNavigate()
   const run = useScenarioRun('fisico/tecnico-impostor')
@@ -196,7 +189,7 @@ function TecnicoImpostor() {
       setResolved({ level: choice.level, feedback: choice.feedback })
       void run.finish({
         endingId: choice.level,
-        outcome: choice.level === 'safe' ? 'CORRECTO' : choice.level === 'warn' ? 'PARCIAL' : 'INCORRECTO',
+        outcome: outcomeForLevel(choice.level),
       })
     }, 750)
   }
@@ -248,7 +241,7 @@ function TecnicoImpostor() {
               <div className={styles.feedbackPanel}>
                 <div className={styles.verdictRow}>
                   <span className={`${styles.badge} ${styles[resolved.level]}`}>
-                    {verdictLabel(resolved.level)}
+                    {verdictForLevel(resolved.level)}
                   </span>
                 </div>
                 <p className={styles.feedbackText}>{resolved.feedback}</p>
@@ -284,7 +277,7 @@ function TecnicoImpostor() {
 
       {revealPending && resolved && (
         <div className={`${styles.stampOverlay} ${stampFlash.active ? styles.show : ''}`}>
-          <div className={`${styles.stamp} ${styles[resolved.level]}`}>{stampWord(resolved.level)}</div>
+          <div className={`${styles.stamp} ${styles[resolved.level]}`}>{stampForLevel(resolved.level)}</div>
         </div>
       )}
     </div>
