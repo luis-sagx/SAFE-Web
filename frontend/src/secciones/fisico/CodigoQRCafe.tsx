@@ -2,6 +2,7 @@ import { useState } from 'react'
 import EscenarioLayout from '../../components/EscenarioLayout'
 import { useFlashTransition } from '../../hooks/useFlashTransition'
 import type { Contexto } from '../../components/ui/ContextoEscenario'
+import Instrucciones from '../../components/ui/Instrucciones'
 import { useScenarioRun } from '../../hooks/useScenarioRun'
 
 type Level = 'safe' | 'warn' | 'danger'
@@ -68,12 +69,10 @@ export default function CodigoQRCafe() {
 
   const [resolved, setResolved] = useState<Resolved | null>(null)
   const [revealPending, setRevealPending] = useState(false)
-  const [choicesShown, setChoicesShown] = useState(false)
   const [shuffledChoices, setShuffledChoices] = useState<Choice[]>([])
 
   function onEmpezar() {
     setResolved(null)
-    setChoicesShown(false)
     setShuffledChoices(shuffled(SCENARIO.choices))
   }
 
@@ -111,7 +110,7 @@ export default function CodigoQRCafe() {
   const ESCENA = () => (
     <div className="w-full space-y-4 flex flex-col h-full">
       <img
-        src="/codigoQRCafe.jpeg"
+        src="/InternetCafe.jpeg"
         alt="Café - Código QR en la pared"
         className="w-full h-170 object-cover rounded shadow-md"
       />
@@ -130,6 +129,21 @@ export default function CodigoQRCafe() {
           <p className="text-gray-800 font-bold text-sm">WiFi Público</p>
         </div>
       </div>
+
+      {!resolved && shuffledChoices.length > 0 && (
+        <div className="space-y-2 mt-4 px-2">
+          {shuffledChoices.map((choice) => (
+            <button
+              key={choice.label}
+              onClick={() => handleChoice(choice)}
+              disabled={revealPending || resolved !== null}
+              className="w-full px-4 py-2 rounded font-semibold text-gray-800 bg-gray-300 hover:bg-gray-400 disabled:opacity-50 disabled:cursor-not-allowed transition text-sm text-left"
+            >
+              {choice.label}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   )
 
@@ -143,35 +157,19 @@ export default function CodigoQRCafe() {
       </div>
     </div>
   ) : (
-    <div className="space-y-6">
-      <div>
-        <h3 className="font-semibold text-ink mb-3">¿Qué haces?</h3>
-        <p className="text-sm text-body leading-relaxed">{SCENARIO.narrative.replace(/<[^>]*>/g, '')}</p>
+    <Instrucciones
+      pista={
+        <p>
+          Tienes tres caminos posibles: escanear el QR, pedir la contraseña al café, o usar datos móviles.
+          Cuál de los tres es el más seguro es justamente lo que decides tú.
+        </p>
+      }
+    >
+      <div className="grid gap-3">
+        <p className="text-lg font-semibold text-ink">¿Qué haces?</p>
+        <p className="text-base leading-relaxed text-body">{SCENARIO.narrative}</p>
       </div>
-      <button
-        onClick={() => {
-          setShuffledChoices(shuffled(SCENARIO.choices))
-          setChoicesShown(true)
-        }}
-        className="text-sm font-medium text-link underline decoration-dotted"
-      >
-        No sé por dónde empezar
-      </button>
-      {choicesShown && (
-        <div className="space-y-2">
-          {shuffledChoices.map((choice) => (
-            <button
-              key={choice.label}
-              onClick={() => handleChoice(choice)}
-              disabled={revealPending || resolved !== null}
-              className="w-full px-3 py-3 rounded font-semibold text-gray-800 bg-gray-300 hover:bg-gray-400 disabled:opacity-50 disabled:cursor-not-allowed transition text-sm text-left"
-            >
-              {choice.label}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
+    </Instrucciones>
   )
 
   const nota = (
