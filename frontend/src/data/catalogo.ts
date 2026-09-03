@@ -812,66 +812,6 @@ const BASE: EscenarioBase[] = [
   },
   {
     seccionId: 'fisico',
-    escenarioId: 'impostor-tecnico',
-    titulo: 'Visitante pide favor',
-    descripcion:
-      'Un visitante en recepción te pide conectar su USB a tu computador de trabajo.',
-    version: 1,
-    naturaleza: 'fraude',
-    dificultad: 2,
-    espeja: null,
-    Component: lazy(() => import('../secciones/fisico/ImpostorTecnico')),
-  },
-  {
-    seccionId: 'fisico',
-    escenarioId: 'usb-promocional',
-    titulo: 'USB de feria tecnológica',
-    descripcion:
-      'Encuentras un USB con logo de una feria tecnológica dejado en tu escritorio.',
-    version: 1,
-    naturaleza: 'fraude',
-    dificultad: 2,
-    espeja: null,
-    Component: lazy(() => import('../secciones/fisico/USBPromocional')),
-  },
-  {
-    seccionId: 'fisico',
-    escenarioId: 'tecnico-impostor',
-    titulo: 'Técnico de servicios',
-    descripcion:
-      'Un técnico desconocido llega diciendo que viene a hacer mantenimiento rutinario.',
-    version: 1,
-    naturaleza: 'fraude',
-    dificultad: 2,
-    espeja: null,
-    Component: lazy(() => import('../secciones/fisico/TecnicoImpostor')),
-  },
-  {
-    seccionId: 'fisico',
-    escenarioId: 'conexion-publica',
-    titulo: 'Conexión pública en café',
-    descripcion:
-      'En un café ofrece una red WiFi gratuita para que hagas tus operaciones bancarias.',
-    version: 1,
-    naturaleza: 'fraude',
-    dificultad: 2,
-    espeja: null,
-    Component: lazy(() => import('../secciones/fisico/ConexionPublica')),
-  },
-  {
-    seccionId: 'fisico',
-    escenarioId: 'basura-confidencial',
-    titulo: 'Basura sin destruir',
-    descripcion:
-      'En el tacho de basura de tu oficina encuentras documentos con información confidencial sin destruir.',
-    version: 1,
-    naturaleza: 'fraude',
-    dificultad: 1,
-    espeja: null,
-    Component: lazy(() => import('../secciones/fisico/BasuraConfidencial')),
-  },
-  {
-    seccionId: 'fisico',
     escenarioId: 'tarjeta-clonada',
     titulo: 'Billetera clonada',
     descripcion:
@@ -917,6 +857,18 @@ const BASE: EscenarioBase[] = [
     dificultad: 2,
     espeja: null,
     Component: lazy(() => import('../secciones/fisico/PrivacidadClaves')),
+  },
+  {
+    seccionId: 'fisico',
+    escenarioId: 'qr-cafe-wifi',
+    titulo: 'Código QR en café',
+    descripcion:
+      'En un café ves un código QR en la pared que promete WiFi gratis. ¿Es seguro escanearlo?',
+    version: 1,
+    naturaleza: 'fraude',
+    dificultad: 2,
+    espeja: null,
+    Component: lazy(() => import('../secciones/fisico/CodigoQRCafe')),
   },
 ];
 
