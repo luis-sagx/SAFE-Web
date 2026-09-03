@@ -33,7 +33,7 @@ RUN corepack enable
 ENV NODE_ENV=production
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-RUN pnpm install --frozen-lockfile --prod && pnpm store prune
+RUN pnpm install --frozen-lockfile
 
 COPY --from=build /app/dist ./dist
 # `dist/` refleja la estructura de la raíz del proyecto (dist/apps, dist/libs),
