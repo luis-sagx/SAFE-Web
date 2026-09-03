@@ -15,3 +15,8 @@ publicHoistPattern:
 
 overrides:
   deepmerge-ts: ^8.0.1
+  # Prisma CLI 7.10 incorpora estas dependencias transitivas en versiones
+  # vulnerables. El override aplica al workspace que construye y ejecuta los
+  # dos servicios; los ajustes de la raíz no se heredan aquí.
+  mysql2: '>=3.22.0'
+  fast-uri: '>=3.1.6'
