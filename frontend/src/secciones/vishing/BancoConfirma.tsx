@@ -17,6 +17,9 @@ import { IDENTIDAD_FICTICIA } from '../../lib/identidadFicticia'
  * sino miedo: el fraude de verdad estaba ocurriendo y quedarse sin hacer nada
  * cuesta dinero. Por eso colgar sin comprobar nada es parcial y no acierto, y
  * el acierto pleno es colgar y llamar tú, o mirarlo en la app.
+ *
+ * El mensaje se anuncia solo justo después de que la llamada lo mencione: el
+ * banner repite la misma defensa que se acaba de escuchar.
  */
 
 const NUMERO = '+593 4 373 8000'
@@ -188,7 +191,21 @@ const APPS: AppTelefono[] = [
 export const STORY: Story<ScreenNode> = {
   n1: { kind: 'scene', view: ENTRANTE },
   n2: { kind: 'scene', view: LLAMADA },
-  n3: { kind: 'scene', view: BLOQUEAN },
+  n3: {
+    kind: 'scene',
+    view: BLOQUEAN,
+    // Llega justo después de que te lo anuncien en la llamada, y trae en el
+    // banner mismo la defensa que la llamada acaba de decir con otras
+    // palabras: "no me lo dé a mí ni a nadie".
+    notificacion: {
+      app: 'Mensajes',
+      remitente: 'BancoLitoral',
+      hora: '21:06',
+      texto: `Banco del Litoral: retuvimos un consumo de $890,00 ELECTROSUR GYE con su tarjeta *${IDENTIDAD_FICTICIA.tarjeta}. Su código de constancia es ${CODIGO}. Nunca se lo pediremos por teléfono.`,
+      goto: 'n4',
+      label: 'Abrió la notificación del código de constancia',
+    },
+  },
   n4: { kind: 'scene', view: MENSAJE },
   n5: { kind: 'scene', view: BANCO },
   e_rechaza: {

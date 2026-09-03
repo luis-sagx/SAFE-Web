@@ -123,4 +123,26 @@ describe('TarjetaBloqueada', () => {
 
     expect(screen.getByText('Anulaste una tarjeta que estaba sana')).toBeDefined()
   })
+
+  // El código es auténtico y llega solo, justo cuando lo mencionan en la
+  // llamada: es la mitad del ataque que antes no se veía.
+  it('el código llega como notificación al pedirlo, y el icono Teléfono devuelve a la llamada', () => {
+    const telefono = empezar(<TarjetaBloqueada />)
+
+    fireEvent.click(within(telefono).getByRole('link', { name: '09 87 654 321' }))
+    fireEvent.click(within(telefono).getByRole('button', { name: 'Llamar a este número' }))
+    fireEvent.click(within(telefono).getByRole('button', { name: /¿Qué consumo fue\?/ }))
+
+    expect(within(telefono).getByText('BANCO LITORAL')).toBeDefined()
+
+    fireEvent.click(within(telefono).getByRole('button', { name: 'Abrir la notificación' }))
+    expect(within(telefono).getByText(/Su codigo de autorizacion es 508 213/)).toBeDefined()
+    expect(screen.getByText('¿Qué haces?')).toBeDefined()
+
+    fireEvent.click(within(telefono).getByRole('button', { name: /Teléfono/ }))
+    expect(within(telefono).getByLabelText('Llamada en curso')).toBeDefined()
+
+    fireEvent.click(within(telefono).getByRole('button', { name: 'Se lo dicto.' }))
+    expect(screen.getByText('Caíste en la trampa')).toBeDefined()
+  })
 })
