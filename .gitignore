@@ -10,6 +10,7 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
+coverage
 *.local
 
 # Editor directories and files
@@ -36,3 +37,6 @@ shots/
 # "bak" y no tras un guion: `.env.bak` a secas —lo que deja `cp .env .env.bak`—
 # se colaba por el hueco entre los dos patrones.
 .env.bak*
+
+# Reportes generados por k6
+k6-*-summary.json
