@@ -2,6 +2,9 @@ allowBuilds:
   unrs-resolver: true
   prisma: true
   '@prisma/engines': true
+  esbuild: set this to true or false
+  msgpackr-extract: set this to true or false
+  workerd: set this to true or false
 
 # El Prisma Client se genera fuera de node_modules (en generated/prisma), así
 # que debe poder resolver @prisma/client-runtime-utils desde la raíz del
