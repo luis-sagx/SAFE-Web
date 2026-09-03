@@ -55,7 +55,7 @@ function AvisoFinEscenario({ resultado }: { resultado?: ResultadoEscenario }) {
     return () => clearTimeout(id)
   }, [visible])
 
-  if (!resultado) return null
+  if (!resultado || !visible) return null
 
   const { Icono, clase, titulo } = TONOS[resultado]
 
