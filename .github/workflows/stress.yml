@@ -1,0 +1,57 @@
+name: Prueba de carga extendida
+
+on:
+  workflow_dispatch:
+    inputs:
+      perfil:
+        description: Perfil de carga autorizado para el entorno de pruebas
+        required: true
+        default: extendida
+        type: choice
+        options: [extendida]
+      confirmacion:
+        description: Escribe EJECUTAR-CARGA para confirmar que no es producción
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: carga-controlada
+  cancel-in-progress: false
+
+jobs:
+  estres:
+    if: inputs.confirmacion == 'EJECUTAR-CARGA'
+    name: k6 (${{ inputs.perfil }})
+    runs-on: ubuntu-latest
+    # Este entorno debe configurarse en GitHub con revisores requeridos y la
+    # variable LOAD_TEST_URL apuntando exclusivamente al entorno de pruebas.
+    environment: load-test
+    env:
+      BASE_URL: ${{ vars.LOAD_TEST_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Comprobar destino autorizado
+        run: |
+          test -n "$BASE_URL"
+          case "$BASE_URL" in
+            https://*) ;;
+            *) echo 'LOAD_TEST_URL debe usar HTTPS'; exit 1 ;;
+          esac
+      - name: Ejecutar k6
+        run: |
+          docker run --rm \
+            -e BASE_URL \
+            --user "$(id -u):$(id -g)" \
+            -v "$PWD:/work" -w /work \
+            grafana/k6:2.1.0 run \
+            --summary-export /work/k6-stress-summary.json \
+            tests/carga/nominal.js
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: k6-stress-summary
+          path: k6-stress-summary.json
+          if-no-files-found: error
