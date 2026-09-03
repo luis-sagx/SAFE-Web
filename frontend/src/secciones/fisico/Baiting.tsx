@@ -6,6 +6,7 @@ import { useFlashTransition } from '../../hooks/useFlashTransition'
 import type { Contexto } from '../../components/ui/ContextoEscenario'
 import dossierTheme from '../../styles/dossier-theme.module.css'
 import { useScenarioRun } from '../../hooks/useScenarioRun'
+import { shuffle } from '../../utils/shuffle'
 import styles from './Baiting.module.css'
 
 type Level = 'safe' | 'warn' | 'danger'
@@ -334,15 +335,6 @@ function pinSymbol(level: Level) {
   return level === 'safe' ? '✓' : level === 'warn' ? '!' : '✕'
 }
 
-function shuffled<T>(arr: T[]): T[] {
-  const a = arr.slice()
-  for (let i = a.length - 1; i > 0; i -= 1) {
-    const j = Math.floor(Math.random() * (i + 1))
-    ;[a[i], a[j]] = [a[j]!, a[i]!]
-  }
-  return a
-}
-
 function Baiting() {
   const navigate = useNavigate()
   const run = useScenarioRun('fisico/baiting')
@@ -392,7 +384,7 @@ function Baiting() {
   }
 
   function handleFlashClick() {
-    setShuffledChoices(shuffled(SCENARIOS[activeIdx!]!.choices))
+    setShuffledChoices(shuffle(SCENARIOS[activeIdx!]!.choices))
     setChoicesShown(true)
   }
 

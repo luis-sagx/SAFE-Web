@@ -4,6 +4,7 @@ import { useFlashTransition } from '../../hooks/useFlashTransition'
 import type { Contexto } from '../../components/ui/ContextoEscenario'
 import dossierTheme from '../../styles/dossier-theme.module.css'
 import { useScenarioRun } from '../../hooks/useScenarioRun'
+import { shuffle } from '../../utils/shuffle'
 import styles from './Baiting.module.css'
 
 type Level = 'safe' | 'warn' | 'danger'
@@ -41,15 +42,6 @@ const SCENARIO_PARKING = {
       feedback: 'Correcto. No tocar dispositivos desconocidos es la decisión segura. Aunque alguien lo haya dejado, no debes exponerte a riesgos de seguridad. Lo mejor es reportar el USB encontrado al área de IT para que lo inspeccionen en un entorno controlado.',
     },
   ],
-}
-
-function shuffled<T>(arr: T[]): T[] {
-  const a = arr.slice()
-  for (let i = a.length - 1; i > 0; i -= 1) {
-    const j = Math.floor(Math.random() * (i + 1))
-    ;[a[i], a[j]] = [a[j]!, a[i]!]
-  }
-  return a
 }
 
 function verdictLabel(level: Level) {
@@ -188,7 +180,7 @@ function TrampaUSB() {
       </div>
       <button
         onClick={() => {
-          setShuffledChoices(shuffled(currentScenario.choices as Choice[]))
+          setShuffledChoices(shuffle(currentScenario.choices as Choice[]))
           setChoicesShown(true)
         }}
         className="text-sm font-medium text-link underline decoration-dotted"

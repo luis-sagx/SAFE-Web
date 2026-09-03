@@ -111,8 +111,35 @@ export const VOCES: Record<string, string> = {
 def nombre(voz: tuple[str, str, str], texto: str) -> str:
     # El ritmo entra en la huella: si se retoca, los audios viejos dejan de
     # cuadrar y se regeneran solos en vez de quedarse mezclados con los nuevos.
-    huella = hashlib.sha1(f"{voz}\n{texto}".encode("utf-8")).hexdigest()
+    # Solo identifica archivos estáticos; no se usa como firma ni para
+    # proteger datos. La marca evita tratar este identificador como secreto.
+    huella = hashlib.sha1(
+        f"{voz}\n{texto}".encode("utf-8"), usedforsecurity=False
+    ).hexdigest()
     return huella[:12] + ".mp3"
+
+
+def ruta_audio_segura(nombre_archivo: str) -> Path:
+    """Resuelve un audio y garantiza que permanezca dentro de public/voz."""
+    base = AUDIOS.resolve()
+    candidata = (AUDIOS / nombre_archivo).resolve()
+    try:
+        candidata.relative_to(base)
+    except ValueError as error:
+        raise ValueError("la ruta del audio sale del directorio permitido") from error
+    return candidata
+
+
+def entrada_segura(argumento: str) -> Path:
+    """Acepta JSON externo solo dentro del checkout del frontend."""
+    candidata = Path(argumento).resolve(strict=True)
+    try:
+        candidata.relative_to(RAIZ.resolve())
+    except ValueError as error:
+        raise ValueError("la entrada debe estar dentro del frontend") from error
+    if not candidata.is_file():
+        raise ValueError("la entrada no es un archivo")
+    return candidata
 
 
 async def sintetizar(texto: str, voz: tuple[str, str, str], destino: Path) -> None:
@@ -137,7 +164,12 @@ async def main() -> int:
             return 1
         lineas = json.loads(entre.group(1))
     else:
-        lineas = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+        try:
+            entrada = entrada_segura(sys.argv[1])
+        except (OSError, ValueError) as error:
+            print(f"entrada no válida: {error}", file=sys.stderr)
+            return 1
+        lineas = json.loads(entrada.read_text(encoding="utf-8"))
 
     AUDIOS.mkdir(parents=True, exist_ok=True)
 
@@ -148,7 +180,7 @@ async def main() -> int:
         voz = VOZ_POR_ROL.get(linea.get("rol") or "") or VOZ_POR_ESCENARIO.get(
             linea["escenario"], VOZ_POR_DEFECTO
         )
-        archivo = AUDIOS / nombre(voz, texto)
+        archivo = ruta_audio_segura(nombre(voz, texto))
         indice[texto] = f"/voz/{archivo.name}"
         vivos.add(archivo.name)
         if archivo.exists():
@@ -163,7 +195,7 @@ async def main() -> int:
     for viejo in AUDIOS.glob("*.mp3"):
         if viejo.name not in vivos:
             print(f"sobra, se borra: {viejo.name}")
-            viejo.unlink()
+            ruta_audio_segura(viejo.name).unlink()
 
     cuerpo = "".join(
         f"  {json.dumps(texto, ensure_ascii=False)}: {json.dumps(url)},\n"
