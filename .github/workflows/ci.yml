@@ -138,7 +138,16 @@ jobs:
           cache-dependency-path: ${{ matrix.proyecto }}/pnpm-lock.yaml
       - run: pnpm install --frozen-lockfile
       # Bloquea solo lo que llega al servidor; lo de desarrollo se reporta.
-      - run: pnpm audit --prod --audit-level high
+      # El endpoint de asesorías de npm es externo y puede expirar de forma
+      # transitoria. Se amplían sus reintentos, pero no se ignoran errores:
+      # una vulnerabilidad alta/crítica o una caída persistente siguen fallando.
+      - run: >-
+          pnpm audit --prod --audit-level high
+          --fetch-retries 4
+          --fetch-retry-factor 2
+          --fetch-retry-mintimeout 10000
+          --fetch-retry-maxtimeout 60000
+          --fetch-timeout 120000
       - name: Dependencias de desarrollo (informativo)
         if: always()
         continue-on-error: true
