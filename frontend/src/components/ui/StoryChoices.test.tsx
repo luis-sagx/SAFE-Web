@@ -13,12 +13,12 @@ describe('StoryChoices', () => {
     const { container } = render(<StoryChoices choices={choices} onChoose={vi.fn()} />)
 
     expect(container).toBeDefined()
-    expect(container.querySelectorAll('button').length).toBe(2)
+    expect(container.querySelectorAll('button')).toHaveLength(2)
   })
 
   it('renderiza lista vacía correctamente', () => {
     const { container } = render(<StoryChoices choices={[]} onChoose={vi.fn()} />)
 
-    expect(container.querySelectorAll('button').length).toBe(0)
+    expect(container.querySelectorAll('button')).toHaveLength(0)
   })
 })
