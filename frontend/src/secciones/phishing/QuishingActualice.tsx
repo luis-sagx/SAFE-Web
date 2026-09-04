@@ -201,7 +201,7 @@ const PESTANAS: Record<string, PestanaConfig> = {
   n1: { titulo: 'Correo', url: 'https://correo.safeweb.com/u/0/#recibidos', segura: true },
   n2: {
     titulo: 'Actualización de datos',
-    url: 'http://litoral-actualiza.web.app/actualizar',
+    url: 'http://litoral-actualiza.web.app/actualizar', // NOSONAR: URL insegura intencional que el participante debe detectar.
     segura: false,
     cierra: 'n1',
   },

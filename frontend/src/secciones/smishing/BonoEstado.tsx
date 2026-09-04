@@ -28,7 +28,7 @@ const SMS: ScreenView = {
 
 const PAGINA: ScreenView = {
   kind: 'web',
-  url: 'http://bono-social-ec.online/registro',
+  url: 'http://bono-social-ec.online/registro', // NOSONAR: URL insegura intencional que el participante debe detectar.
   secure: false,
   senalUrl: 'url',
   brand: 'Registro de beneficiarios',

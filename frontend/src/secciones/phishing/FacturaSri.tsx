@@ -248,7 +248,7 @@ const PESTANAS: Record<string, PestanaConfig> = {
   n1: { titulo: 'Correo', url: 'https://correo.safeweb.com/u/0/#recibidos', segura: true },
   n2: {
     titulo: 'Validación de comprobante',
-    url: 'http://sri-facturacion-ec.com/validar-ruc',
+    url: 'http://sri-facturacion-ec.com/validar-ruc', // NOSONAR: URL insegura intencional que el participante debe detectar.
     segura: false,
     // Cerrarla devuelve al correo sin decidir nada: irse de una página que da
     // mala espina no es un veredicto todavía.
@@ -339,7 +339,7 @@ function ContenidoCorreo({ recibido, carpetas }: { recibido: string; carpetas: C
         <EnlaceHotspot
           goto="n2"
           label="Abrió el enlace para validar la factura"
-          href="http://sri-facturacion-ec.com/validar-ruc"
+          href="http://sri-facturacion-ec.com/validar-ruc" // NOSONAR: URL insegura intencional que el participante debe detectar.
           className="cta"
         >
           Validar mi factura ahora

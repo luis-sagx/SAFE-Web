@@ -7,6 +7,8 @@ import {
   crearApp,
   cuerpo,
   limpiar,
+  PASSWORD_INVALIDA,
+  PASSWORD_PRUEBA,
   registro,
   type ErrorBody,
   type PerfilBody,
@@ -63,7 +65,7 @@ describe('Autenticación (e2e)', () => {
       expect(sesion.participant.passwordHash).toBeUndefined();
       expect(sesion.participant.seq).toBeUndefined();
       expect(sesion.participant.cedulaHash).toBeUndefined();
-      expect(JSON.stringify(sesion)).not.toContain('clave-larga-123');
+      expect(JSON.stringify(sesion)).not.toContain(PASSWORD_PRUEBA);
       expect(JSON.stringify(sesion)).not.toContain(datos.cedula);
     });
 
@@ -184,7 +186,7 @@ describe('Autenticación (e2e)', () => {
     it('entrega un token con las credenciales correctas', async () => {
       const res = await server()
         .post('/api/auth/login')
-        .send({ email: 'maria.login@ejemplo.com', password: 'clave-larga-123' })
+        .send({ email: 'maria.login@ejemplo.com', password: PASSWORD_PRUEBA })
         .expect(200);
 
       expect(typeof cuerpo<SesionBody>(res).accessToken).toBe('string');
@@ -195,7 +197,7 @@ describe('Autenticación (e2e)', () => {
     it('tampoco devuelve el hash de la contraseña ni la huella de la cédula', async () => {
       const res = await server()
         .post('/api/auth/login')
-        .send({ email: 'maria.login@ejemplo.com', password: 'clave-larga-123' })
+        .send({ email: 'maria.login@ejemplo.com', password: PASSWORD_PRUEBA })
         .expect(200);
 
       const sesion = cuerpo<SesionBody>(res);
@@ -209,12 +211,12 @@ describe('Autenticación (e2e)', () => {
     it('no distingue entre correo inexistente y contraseña incorrecta', async () => {
       const inexistente = await server()
         .post('/api/auth/login')
-        .send({ email: 'nadie@ejemplo.com', password: 'clave-larga-123' })
+        .send({ email: 'nadie@ejemplo.com', password: PASSWORD_PRUEBA })
         .expect(401);
 
       const claveMala = await server()
         .post('/api/auth/login')
-        .send({ email: 'maria.login@ejemplo.com', password: 'otra-clave-123' })
+        .send({ email: 'maria.login@ejemplo.com', password: PASSWORD_INVALIDA })
         .expect(401);
 
       expect(cuerpo<ErrorBody>(inexistente).message).toBe(

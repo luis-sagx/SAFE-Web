@@ -6,7 +6,7 @@ import type { ScreenView } from '../../components/ui/DeviceScreen'
 import type { Senal } from '../../components/ui/PanelVeredicto'
 
 const ENLACE =
-  '<a href="http://envia-express.info/pago" data-hotspot-goto="n2" data-hotspot-label="Abrió el enlace del mensaje">http://envia-express.info/pago</a>'
+  '<a href="http://envia-express.info/pago" data-hotspot-goto="n2" data-hotspot-label="Abrió el enlace del mensaje">http://envia-express.info/pago</a>' // NOSONAR: URL insegura intencional que el participante debe detectar.
 
 const PRIMER_SMS = {
   text: `ENVIAEXPRESS: su paquete 4471-EC está RETENIDO en aduana por un valor pendiente de $1,20. Regularice hoy para evitar la devolución: ${ENLACE}`,
@@ -61,7 +61,7 @@ const SMS_NEGADO: ScreenView = {
 
 const PAGINA: ScreenView = {
   kind: 'web',
-  url: 'http://envia-express.info/pago',
+  url: 'http://envia-express.info/pago', // NOSONAR: URL insegura intencional que el participante debe detectar.
   secure: false,
   senalUrl: 'url',
   brand: 'EnvíaExpress',
