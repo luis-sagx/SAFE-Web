@@ -4,7 +4,7 @@ import { useFlashTransition } from '../../hooks/useFlashTransition'
 import type { Contexto } from '../../components/ui/ContextoEscenario'
 import dossierTheme from '../../styles/dossier-theme.module.css'
 import { useScenarioRun } from '../../hooks/useScenarioRun'
-import styles from './Baiting.module.css'
+import styles from './fisico.module.css'
 
 type Level = 'safe' | 'warn' | 'danger'
 
