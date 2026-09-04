@@ -205,8 +205,7 @@ function Bienvenida() {
                   Dentro de cada módulo,{" "}
                   <strong className="text-ink">
                     apruebas con 6 de sus 8 escenarios
-                  </strong>
-                  .
+                  </strong>.
                 </li>
                 <li>
                   Puedes fallar y repetir. Cuenta tu último intento en cada

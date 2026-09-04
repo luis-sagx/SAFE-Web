@@ -149,7 +149,7 @@ function SalidaSegura() {
     ),
   }
 
-  const ESCENA = () => (
+  const Escena = () => (
     <svg viewBox="0 0 1000 700" className="w-full">
       {/* Fondo pared */}
       <rect width="1000" height="700" fill="#f5e6d3" />
@@ -379,7 +379,7 @@ function SalidaSegura() {
           ) : (
             <div className="space-y-6 mt-6">
               <div className={styles.sceneCanvas}>
-                <ESCENA />
+        <Escena />
               </div>
 
               <div className="flex gap-4">

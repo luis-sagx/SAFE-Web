@@ -273,14 +273,14 @@ function ContenidoPortalFalso() {
           <span>Cédula</span>
           <span className={styles.input}>
             <span className="sr-only">Tu cédula, ya completada: </span>
-            {IDENTIDAD_FICTICIA.cedula}
+            {' '}{IDENTIDAD_FICTICIA.cedula}
           </span>
         </div>
         <div className={styles.field} data-signal="campo-clave" role="group" aria-label="Clave de acceso">
           <span>Clave de acceso</span>
           <span className={styles.input}>
             <span className="sr-only">Tu clave, ya completada: </span>
-            ••••••••
+            {' '}••••••••
           </span>
         </div>
         <BotonHotspot

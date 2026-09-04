@@ -134,7 +134,7 @@ function PrivacidadClaves() {
     ),
     ahora: (
       <>
-        <strong>Un compañero se acerca a tu escritorio</strong> para hacerte una pregunta.
+        <strong>Un compañero se acerca a tu escritorio</strong>{' '}para hacerte una pregunta.
         Tu pantalla tiene <strong>tres pestañas abiertas con información sensible</strong>.
         <strong>¿Las cierras y bloqueas la pantalla?</strong>
       </>

@@ -36,7 +36,7 @@ function FlashSpark({ x, y, onClick }: { x: number; y: number; onClick: () => vo
   )
 }
 
-const SCENE_ART = ({ flash, onFlashClick }: { flash: boolean; onFlashClick: () => void }) => (
+const SceneArt = ({ flash, onFlashClick }: { flash: boolean; onFlashClick: () => void }) => (
   <svg viewBox="0 0 400 220">
     {/* Fondo de oficina */}
     <rect width="400" height="150" fill="#e8e4dc" />
@@ -225,7 +225,7 @@ function TecnicoImpostor() {
             {showFeedback ? (
               <ConsequenceArt level={resolved.level} />
             ) : (
-              <SCENE_ART flash={!choicesShown && !revealPending} onFlashClick={handleFlashClick} />
+            <SceneArt flash={!choicesShown && !revealPending} onFlashClick={handleFlashClick} />
             )}
           </div>
 

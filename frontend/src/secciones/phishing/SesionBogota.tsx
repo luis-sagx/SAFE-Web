@@ -252,7 +252,7 @@ function ContenidoPaginaClave() {
           <span>Contraseña de banca en línea</span>
           <span className={styles.input}>
             <span className="sr-only">Tu contraseña, ya completada: </span>
-            ••••••••
+            {' '}••••••••
           </span>
         </div>
         <BotonHotspot
@@ -289,7 +289,7 @@ function ContenidoPaginaOtp() {
           <span>Código de verificación</span>
           <span className={styles.input}>
             <span className="sr-only">El código, ya completado: </span>
-            418 902
+            {' '}418 902
           </span>
         </div>
         <BotonHotspot

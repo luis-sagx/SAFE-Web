@@ -371,14 +371,14 @@ function ContenidoPortalFalso() {
                 reales en ella. */}
             <span className={styles.input}>
               <span className="sr-only">Tu RUC, ya completado: </span>
-              {IDENTIDAD_FICTICIA.ruc}
+              {' '}{IDENTIDAD_FICTICIA.ruc}
             </span>
           </div>
           <div className={styles.field} data-signal="campo-clave" role="group" aria-label="Clave del portal SRI">
             <span>Clave del portal SRI</span>
             <span className={styles.input}>
               <span className="sr-only">Tu clave, ya completada: </span>
-              ••••••••
+              {' '}••••••••
             </span>
           </div>
           <BotonHotspot

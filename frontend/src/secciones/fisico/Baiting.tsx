@@ -548,19 +548,19 @@ function Baiting() {
 
             <div className={styles.legend}>
               <span>
-                <span className={`${styles.dot} ${styles.pending}`} />
+                <span className={`${styles.dot} ${styles.pending}`} />{' '}
                 Pendiente
               </span>
               <span>
-                <span className={`${styles.dot} ${styles.safe}`} />
+                <span className={`${styles.dot} ${styles.safe}`} />{' '}
                 Segura
               </span>
               <span>
-                <span className={`${styles.dot} ${styles.warn}`} />
+                <span className={`${styles.dot} ${styles.warn}`} />{' '}
                 Observación
               </span>
               <span>
-                <span className={`${styles.dot} ${styles.danger}`} />
+                <span className={`${styles.dot} ${styles.danger}`} />{' '}
                 Riesgo
               </span>
             </div>

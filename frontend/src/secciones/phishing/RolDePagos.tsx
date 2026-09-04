@@ -258,14 +258,14 @@ function ContenidoPortal() {
           <span>Usuario</span>
           <span className={styles.input}>
             <span className="sr-only">Tu usuario, ya completado: </span>
-            {usuarioSimulado}
+            {' '}{usuarioSimulado}
           </span>
         </div>
         <div className={styles.field} role="group" aria-label="Contraseña">
           <span>Contraseña</span>
           <span className={styles.input}>
             <span className="sr-only">Tu contraseña, ya completada: </span>
-            ••••••••
+            {' '}••••••••
           </span>
         </div>
         <BotonHotspot

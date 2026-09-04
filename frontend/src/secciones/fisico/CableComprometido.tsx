@@ -37,7 +37,7 @@ function FlashSpark({ x, y, onClick }: { x: number; y: number; onClick: () => vo
   )
 }
 
-const SCENE_ART_BREAK_ROOM = ({ flash, onFlashClick }: { flash: boolean; onFlashClick: () => void }) => (
+const SceneArtBreakRoom = ({ flash, onFlashClick }: { flash: boolean; onFlashClick: () => void }) => (
   <svg viewBox="0 0 400 220">
     <rect width="400" height="220" fill="#ece0c4" />
     <rect y="160" width="400" height="60" fill="#cabb90" />
@@ -52,7 +52,7 @@ const SCENE_ART_BREAK_ROOM = ({ flash, onFlashClick }: { flash: boolean; onFlash
   </svg>
 )
 
-const SCENE_ART_OFFICE = ({ flash, onFlashClick }: { flash: boolean; onFlashClick: () => void }) => (
+const SceneArtOffice = ({ flash, onFlashClick }: { flash: boolean; onFlashClick: () => void }) => (
   <svg viewBox="0 0 400 220">
     {/* Fondo pared */}
     <rect width="400" height="180" fill="#d4cfc8" />
@@ -292,9 +292,9 @@ function CableComprometido() {
             {showFeedback ? (
               <ConsequenceArt level={resolved.level} />
             ) : phase === 'break-room' ? (
-              <SCENE_ART_BREAK_ROOM flash={!choicesShown && !revealPending} onFlashClick={handleFlashClick} />
+              <SceneArtBreakRoom flash={!choicesShown && !revealPending} onFlashClick={handleFlashClick} />
             ) : (
-              <SCENE_ART_OFFICE flash={!choicesShown && !revealPending} onFlashClick={handleFlashClick} />
+              <SceneArtOffice flash={!choicesShown && !revealPending} onFlashClick={handleFlashClick} />
             )}
           </div>
 

@@ -67,7 +67,7 @@ interface ScenePhase {
   cloning: boolean
 }
 
-const SCENE_ART_SCENARIO = () => {
+const SceneArtScenario = () => {
   const [phase, setPhase] = useState<ScenePhase>({
     distractor: -100,
     attacker: 420,
@@ -165,7 +165,7 @@ const SCENE_ART_SCENARIO = () => {
   )
 }
 
-const SCENE_ART_DISCOVERY = ({ flash, onFlashClick }: { flash: boolean; onFlashClick: () => void }) => {
+const SceneArtDiscovery = ({ flash, onFlashClick }: { flash: boolean; onFlashClick: () => void }) => {
   const [phoneRinging, setPhoneRinging] = useState(false)
 
   useEffect(() => {
@@ -419,9 +419,9 @@ function TarjetaClonada() {
             {showFeedback ? (
               <ConsequenceArt level={resolved.level} />
             ) : phase === 'scenario' ? (
-              <SCENE_ART_SCENARIO />
+              <SceneArtScenario />
             ) : (
-              <SCENE_ART_DISCOVERY flash={!choicesShown && !revealPending} onFlashClick={handleFlashClick} />
+              <SceneArtDiscovery flash={!choicesShown && !revealPending} onFlashClick={handleFlashClick} />
             )}
           </div>
 

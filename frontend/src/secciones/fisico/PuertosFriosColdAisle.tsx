@@ -162,7 +162,7 @@ function PuertosFriosColdAisle() {
     </div>
   )
 
-  const ESCENA = () => (
+  const Escena = () => (
     <div className="w-full h-full space-y-4 flex flex-col">
       {/* Imagen GRANDE ocupando todo el ancho */}
       <img
@@ -220,7 +220,7 @@ function PuertosFriosColdAisle() {
       <main className={styles.mainArea}>
         <div className={styles.sceneView}>
           <div className={styles.sceneCanvas}>
-            <ESCENA />
+        <Escena />
           </div>
         </div>
       </main>

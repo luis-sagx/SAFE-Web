@@ -96,7 +96,7 @@ function TrampaUSB() {
     ),
   }
 
-  const ESCENA = () => (
+  const Escena = () => (
     <div className="w-full space-y-4 flex flex-col h-full">
       {/* Imagen GRANDE ocupando todo el ancho */}
       <img
@@ -197,7 +197,7 @@ function TrampaUSB() {
       <main className={styles.mainArea} style={{ display: 'flex', flexDirection: 'column', height: '100%', flex: 1 }}>
         <div className={styles.sceneView} style={{ gridColumn: '1', gridRow: '4', height: '100%', flex: 1 }}>
           <div className={styles.sceneCanvas} style={{ overflow: 'visible', display: 'flex', flexDirection: 'column', height: '100%', flex: 1 }}>
-            <ESCENA />
+            <Escena />
           </div>
         </div>
       </main>
