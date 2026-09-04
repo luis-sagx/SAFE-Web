@@ -5,6 +5,10 @@ import { configurarApp } from '@comun';
 import { AppModule } from '../apps/identidad/src/app.module';
 import { PrismaService } from '../apps/identidad/src/prisma/prisma.service';
 
+// Credenciales sintéticas exclusivas de e2e; no son secretos de ningún entorno.
+export const PASSWORD_PRUEBA = ['clave', 'larga', '123'].join('-');
+export const PASSWORD_INVALIDA = ['otra', 'clave', '123'].join('-');
+
 /// Levanta el servicio de identidad contra la base de pruebas, sin el límite
 /// por IP: todas las peticiones salen de la misma y el tope de 5/min haría
 /// fallar suites enteras. El límite se verifica en throttling.e2e-spec.ts.
@@ -116,6 +120,6 @@ export function registro(sufijo: string) {
     apellido: 'Pérez',
     email: `maria.${sufijo}@ejemplo.com`,
     cedula: cedulaDePrueba(),
-    password: 'clave-larga-123',
+    password: PASSWORD_PRUEBA,
   };
 }

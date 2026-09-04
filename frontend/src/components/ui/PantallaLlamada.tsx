@@ -328,7 +328,7 @@ function PantallaLlamada({ view, terminada }: { view: Llamada; terminada?: boole
         >
           <span className={styles.callControlIcono}>
             <PhoneOff aria-hidden className={styles.callControlGlifo} strokeWidth={2} />
-          </span>
+          </span>{' '}
           Colgar
         </button>
       </div>

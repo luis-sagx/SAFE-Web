@@ -248,7 +248,7 @@ const PESTANAS: Record<string, PestanaConfig> = {
   n1: { titulo: 'Correo', url: 'https://correo.safeweb.com/u/0/#recibidos', segura: true },
   n2: {
     titulo: 'Validación de comprobante',
-    url: 'http://sri-facturacion-ec.com/validar-ruc',
+    url: 'http://sri-facturacion-ec.com/validar-ruc', // NOSONAR: URL insegura intencional que el participante debe detectar.
     segura: false,
     // Cerrarla devuelve al correo sin decidir nada: irse de una página que da
     // mala espina no es un veredicto todavía.
@@ -339,7 +339,7 @@ function ContenidoCorreo({ recibido, carpetas }: { recibido: string; carpetas: C
         <EnlaceHotspot
           goto="n2"
           label="Abrió el enlace para validar la factura"
-          href="http://sri-facturacion-ec.com/validar-ruc"
+          href="http://sri-facturacion-ec.com/validar-ruc" // NOSONAR: URL insegura intencional que el participante debe detectar.
           className="cta"
         >
           Validar mi factura ahora
@@ -364,23 +364,23 @@ function ContenidoPortalFalso() {
         </p>
 
         <div className={styles.form}>
-          <label className={styles.field}>
+          <div className={styles.field} role="group" aria-label="RUC o cédula">
             <span>RUC o cédula</span>
             {/* No editable a propósito, y con un valor que no es el de nadie:
                 el participante juzga la pantalla, nunca escribe credenciales
                 reales en ella. */}
             <span className={styles.input}>
               <span className="sr-only">Tu RUC, ya completado: </span>
-              {IDENTIDAD_FICTICIA.ruc}
+              {' '}{IDENTIDAD_FICTICIA.ruc}
             </span>
-          </label>
-          <label className={styles.field} data-signal="campo-clave">
+          </div>
+          <div className={styles.field} data-signal="campo-clave" role="group" aria-label="Clave del portal SRI">
             <span>Clave del portal SRI</span>
             <span className={styles.input}>
               <span className="sr-only">Tu clave, ya completada: </span>
-              ••••••••
+              {' '}••••••••
             </span>
-          </label>
+          </div>
           <BotonHotspot
             goto="e_datos"
             label="Ingresó su RUC y su clave para liberar la factura"

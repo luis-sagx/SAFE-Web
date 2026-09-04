@@ -201,7 +201,7 @@ const PESTANAS: Record<string, PestanaConfig> = {
   n1: { titulo: 'Correo', url: 'https://correo.safeweb.com/u/0/#recibidos', segura: true },
   n2: {
     titulo: 'Actualización de datos',
-    url: 'http://litoral-actualiza.web.app/actualizar',
+    url: 'http://litoral-actualiza.web.app/actualizar', // NOSONAR: URL insegura intencional que el participante debe detectar.
     segura: false,
     cierra: 'n1',
   },
@@ -269,20 +269,20 @@ function ContenidoPortalFalso() {
       </p>
 
       <div className={styles.form}>
-        <label className={styles.field}>
+        <div className={styles.field} role="group" aria-label="Cédula">
           <span>Cédula</span>
           <span className={styles.input}>
             <span className="sr-only">Tu cédula, ya completada: </span>
-            {IDENTIDAD_FICTICIA.cedula}
+            {' '}{IDENTIDAD_FICTICIA.cedula}
           </span>
-        </label>
-        <label className={styles.field} data-signal="campo-clave">
+        </div>
+        <div className={styles.field} data-signal="campo-clave" role="group" aria-label="Clave de acceso">
           <span>Clave de acceso</span>
           <span className={styles.input}>
             <span className="sr-only">Tu clave, ya completada: </span>
-            ••••••••
+            {' '}••••••••
           </span>
-        </label>
+        </div>
         <BotonHotspot
           goto="e_datos"
           label="Ingresó su cédula y su clave de acceso"

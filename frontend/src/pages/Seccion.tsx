@@ -191,12 +191,11 @@ function Seccion() {
             redirigir; `role="status"` para que un lector de pantalla lo anuncie
             al llegar, que es justo cuando hace falta. */}
         {bloqueado && (
-          <p
-            role="status"
+          <output
             className="mt-6 max-w-2xl rounded-lg border border-hairline-strong bg-canvas-soft px-4 py-3 text-base text-body"
           >
             «{bloqueado}» todavía no está abierto. Termina el escenario {abre} para llegar a él.
-          </p>
+          </output>
         )}
 
         {/* El bloque de avance va antes que las tarjetas y ocupa el ancho

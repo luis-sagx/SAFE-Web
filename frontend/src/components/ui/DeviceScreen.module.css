@@ -666,7 +666,7 @@ button.mailNavItem {
   height: 0.875rem;
 }
 .tabClose:hover {
-  background: rgba(0, 0, 0, 0.09);
+  background: rgba(255, 255, 255, 0.22);
   color: #16202c;
 }
 
@@ -1502,7 +1502,7 @@ button.mailNavItem {
   height: 1.75rem;
   border-radius: 999px;
   background: #dfe3e9;
-  color: #6b7684;
+  color: #475569;
 }
 .capturaFotoIcono {
   width: 1.0625rem;
@@ -1581,7 +1581,7 @@ button.mailNavItem {
   border-top: 1px solid #e3e6ea;
   background: #f7f8fa;
   font-size: 0.75rem;
-  color: #6b7684;
+  color: #475569;
 }
 
 .smsComposer {
@@ -1604,7 +1604,7 @@ button.mailNavItem {
   font-size: 1.0625rem;
   line-height: 1.35;
   text-align: left;
-  color: #97a1ad;
+  color: #64748b;
 }
 /* Con borrador el campo deja de ser marcador de posición: se lee como algo ya
    escrito, que es lo que hace que enviarlo cuente como entregarlo. */
@@ -1949,7 +1949,7 @@ button.mailNavItem {
   text-align: center;
   font-size: 1rem;
   line-height: 1.5;
-  color: #6b7684;
+  color: #475569;
   background: #f2f4f7;
 }
 
