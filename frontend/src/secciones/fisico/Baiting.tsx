@@ -6,8 +6,6 @@ import { useFlashTransition } from '../../hooks/useFlashTransition'
 import type { Contexto } from '../../components/ui/ContextoEscenario'
 import dossierTheme from '../../styles/dossier-theme.module.css'
 import { useScenarioRun } from '../../hooks/useScenarioRun'
-import { shuffle } from '../../utils/shuffle'
-import { pinForLevel, stampForLevel, verdictForLevel } from '../../utils/verdict'
 import styles from './Baiting.module.css'
 
 type Level = 'safe' | 'warn' | 'danger'
@@ -326,6 +324,25 @@ const ROOM_ZONES = [
   { idx: 2, x: 270, y: 435, width: 435, height: 330, ariaLabel: 'Área administrativa', pinPos: [378, 543] },
 ]
 
+function verdictLabel(level: Level) {
+  return level === 'safe' ? 'Decisión segura' : level === 'warn' ? 'Observación' : 'Riesgo detectado'
+}
+function stampWord(level: Level) {
+  return level === 'safe' ? 'APROBADO' : level === 'warn' ? 'OBSERVACIÓN' : 'RIESGO'
+}
+function pinSymbol(level: Level) {
+  return level === 'safe' ? '✓' : level === 'warn' ? '!' : '✕'
+}
+
+function shuffled<T>(arr: T[]): T[] {
+  const a = arr.slice()
+  for (let i = a.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[a[i], a[j]] = [a[j]!, a[i]!]
+  }
+  return a
+}
+
 function Baiting() {
   const navigate = useNavigate()
   const run = useScenarioRun('fisico/baiting')
@@ -375,7 +392,7 @@ function Baiting() {
   }
 
   function handleFlashClick() {
-    setShuffledChoices(shuffle(SCENARIOS[activeIdx!]!.choices))
+    setShuffledChoices(shuffled(SCENARIOS[activeIdx!]!.choices))
     setChoicesShown(true)
   }
 
@@ -537,7 +554,7 @@ function Baiting() {
                       <g className={`${styles.pin} ${res ? styles[res.level] : ''}`}>
                         <circle className={styles.pinBase} r="12" />
                         <text className={styles.pinText} y="1">
-                          {res ? pinForLevel(res.level) : zone.idx + 1}
+                          {res ? pinSymbol(res.level) : zone.idx + 1}
                         </text>
                       </g>
                     </g>
@@ -548,19 +565,19 @@ function Baiting() {
 
             <div className={styles.legend}>
               <span>
-                <span className={`${styles.dot} ${styles.pending}`} />{' '}
+                <span className={`${styles.dot} ${styles.pending}`} />
                 Pendiente
               </span>
               <span>
-                <span className={`${styles.dot} ${styles.safe}`} />{' '}
+                <span className={`${styles.dot} ${styles.safe}`} />
                 Segura
               </span>
               <span>
-                <span className={`${styles.dot} ${styles.warn}`} />{' '}
+                <span className={`${styles.dot} ${styles.warn}`} />
                 Observación
               </span>
               <span>
-                <span className={`${styles.dot} ${styles.danger}`} />{' '}
+                <span className={`${styles.dot} ${styles.danger}`} />
                 Riesgo
               </span>
             </div>
@@ -617,7 +634,7 @@ function Baiting() {
                 <div className={styles.feedbackPanel}>
                   <div className={styles.verdictRow}>
                     <span className={`${styles.badge} ${styles[activeResolved.level]}`}>
-                      {verdictForLevel(activeResolved.level)}
+                      {verdictLabel(activeResolved.level)}
                     </span>
                   </div>
                   <p className={styles.feedbackText}>{activeResolved.feedback}</p>
@@ -654,7 +671,7 @@ function Baiting() {
 
       {revealPending && activeResolved && (
         <div className={`${styles.stampOverlay} ${stampFlash.active ? styles.show : ''}`}>
-          <div className={`${styles.stamp} ${styles[activeResolved.level]}`}>{stampForLevel(activeResolved.level)}</div>
+          <div className={`${styles.stamp} ${styles[activeResolved.level]}`}>{stampWord(activeResolved.level)}</div>
         </div>
       )}
     </div>

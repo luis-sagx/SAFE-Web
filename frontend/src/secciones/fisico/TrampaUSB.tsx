@@ -4,8 +4,6 @@ import { useFlashTransition } from '../../hooks/useFlashTransition'
 import type { Contexto } from '../../components/ui/ContextoEscenario'
 import dossierTheme from '../../styles/dossier-theme.module.css'
 import { useScenarioRun } from '../../hooks/useScenarioRun'
-import { shuffle } from '../../utils/shuffle'
-import { outcomeForLevel, stampForLevel, verdictForLevel } from '../../utils/verdict'
 import styles from './Baiting.module.css'
 
 type Level = 'safe' | 'warn' | 'danger'
@@ -45,6 +43,23 @@ const SCENARIO_PARKING = {
   ],
 }
 
+function shuffled<T>(arr: T[]): T[] {
+  const a = arr.slice()
+  for (let i = a.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[a[i], a[j]] = [a[j]!, a[i]!]
+  }
+  return a
+}
+
+function verdictLabel(level: Level) {
+  return level === 'safe' ? 'Decisión segura' : level === 'warn' ? 'Observación' : 'Riesgo detectado'
+}
+
+function stampWord(level: Level) {
+  return level === 'safe' ? 'APROBADO' : level === 'warn' ? 'OBSERVACIÓN' : 'RIESGO'
+}
+
 function TrampaUSB() {
   const run = useScenarioRun('fisico/trampa-usb')
 
@@ -73,7 +88,7 @@ function TrampaUSB() {
       setResolved({ level: choice.level, feedback: choice.feedback })
       void run.finish({
         endingId: choice.level,
-        outcome: outcomeForLevel(choice.level),
+        outcome: choice.level === 'safe' ? 'CORRECTO' : choice.level === 'warn' ? 'PARCIAL' : 'INCORRECTO',
       })
     }, 750)
   }
@@ -96,7 +111,7 @@ function TrampaUSB() {
     ),
   }
 
-  const Escena = () => (
+  const ESCENA = () => (
     <div className="w-full space-y-4 flex flex-col h-full">
       {/* Imagen GRANDE ocupando todo el ancho */}
       <img
@@ -161,7 +176,7 @@ function TrampaUSB() {
   const decisionPanel = resolved ? (
     <div className="space-y-4">
       <div className="border-l-4 border-gray-400 pl-3 py-1">
-        <p className="text-xs font-bold uppercase text-gray-700 mb-2">{verdictForLevel(resolved.level)}</p>
+        <p className="text-xs font-bold uppercase text-gray-700 mb-2">{verdictLabel(resolved.level)}</p>
         <p className="text-sm text-body leading-relaxed">{resolved.feedback}</p>
       </div>
     </div>
@@ -173,7 +188,7 @@ function TrampaUSB() {
       </div>
       <button
         onClick={() => {
-          setShuffledChoices(shuffle(currentScenario.choices as Choice[]))
+          setShuffledChoices(shuffled(currentScenario.choices as Choice[]))
           setChoicesShown(true)
         }}
         className="text-sm font-medium text-link underline decoration-dotted"
@@ -197,7 +212,7 @@ function TrampaUSB() {
       <main className={styles.mainArea} style={{ display: 'flex', flexDirection: 'column', height: '100%', flex: 1 }}>
         <div className={styles.sceneView} style={{ gridColumn: '1', gridRow: '4', height: '100%', flex: 1 }}>
           <div className={styles.sceneCanvas} style={{ overflow: 'visible', display: 'flex', flexDirection: 'column', height: '100%', flex: 1 }}>
-            <Escena />
+            <ESCENA />
           </div>
         </div>
       </main>
@@ -205,7 +220,7 @@ function TrampaUSB() {
 
       {revealPending && resolved && (
         <div className={`${styles.stampOverlay} ${stampFlash.active ? styles.show : ''}`}>
-          <div className={`${styles.stamp} ${styles[resolved.level]}`}>{stampForLevel(resolved.level)}</div>
+          <div className={`${styles.stamp} ${styles[resolved.level]}`}>{stampWord(resolved.level)}</div>
         </div>
       )}
     </div>

@@ -6,8 +6,6 @@ import { useFlashTransition } from '../../hooks/useFlashTransition'
 import type { Contexto } from '../../components/ui/ContextoEscenario'
 import dossierTheme from '../../styles/dossier-theme.module.css'
 import { useScenarioRun } from '../../hooks/useScenarioRun'
-import { shuffle } from '../../utils/shuffle'
-import { outcomeForLevel, stampForLevel, verdictForLevel } from '../../utils/verdict'
 import styles from './Baiting.module.css'
 
 const animationCSS = `
@@ -67,7 +65,7 @@ interface ScenePhase {
   cloning: boolean
 }
 
-const SceneArtScenario = () => {
+const SCENE_ART_SCENARIO = () => {
   const [phase, setPhase] = useState<ScenePhase>({
     distractor: -100,
     attacker: 420,
@@ -165,7 +163,7 @@ const SceneArtScenario = () => {
   )
 }
 
-const SceneArtDiscovery = ({ flash, onFlashClick }: { flash: boolean; onFlashClick: () => void }) => {
+const SCENE_ART_DISCOVERY = ({ flash, onFlashClick }: { flash: boolean; onFlashClick: () => void }) => {
   const [phoneRinging, setPhoneRinging] = useState(false)
 
   useEffect(() => {
@@ -324,6 +322,23 @@ const SCENARIO_DISCOVERY = {
   ],
 }
 
+function shuffled<T>(arr: T[]): T[] {
+  const a = arr.slice()
+  for (let i = a.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[a[i], a[j]] = [a[j]!, a[i]!]
+  }
+  return a
+}
+
+function verdictLabel(level: Level) {
+  return level === 'safe' ? 'Decisión segura' : level === 'warn' ? 'Observación' : 'Riesgo detectado'
+}
+
+function stampWord(level: Level) {
+  return level === 'safe' ? 'APROBADO' : level === 'warn' ? 'OBSERVACIÓN' : 'RIESGO'
+}
+
 function TarjetaClonada() {
   const navigate = useNavigate()
   const run = useScenarioRun('fisico/tarjeta-clonada')
@@ -363,7 +378,7 @@ function TarjetaClonada() {
 
   function handleFlashClick() {
     if (phase === 'discovery' && !choicesShown) {
-      setShuffledChoices(shuffle(SCENARIO_DISCOVERY.choices as Choice[]))
+      setShuffledChoices(shuffled(SCENARIO_DISCOVERY.choices as Choice[]))
       setChoicesShown(true)
     }
   }
@@ -377,7 +392,7 @@ function TarjetaClonada() {
       setResolved({ level: choice.level, feedback: choice.feedback })
       void run.finish({
         endingId: choice.level,
-        outcome: outcomeForLevel(choice.level),
+        outcome: choice.level === 'safe' ? 'CORRECTO' : choice.level === 'warn' ? 'PARCIAL' : 'INCORRECTO',
       })
     }, 750)
   }
@@ -419,9 +434,9 @@ function TarjetaClonada() {
             {showFeedback ? (
               <ConsequenceArt level={resolved.level} />
             ) : phase === 'scenario' ? (
-              <SceneArtScenario />
+              <SCENE_ART_SCENARIO />
             ) : (
-              <SceneArtDiscovery flash={!choicesShown && !revealPending} onFlashClick={handleFlashClick} />
+              <SCENE_ART_DISCOVERY flash={!choicesShown && !revealPending} onFlashClick={handleFlashClick} />
             )}
           </div>
 
@@ -439,7 +454,7 @@ function TarjetaClonada() {
               <div className={styles.feedbackPanel}>
                 <div className={styles.verdictRow}>
                   <span className={`${styles.badge} ${styles[resolved.level]}`}>
-                    {verdictForLevel(resolved.level)}
+                    {verdictLabel(resolved.level)}
                   </span>
                 </div>
                 <p className={styles.feedbackText}>{resolved.feedback}</p>
@@ -502,7 +517,7 @@ function TarjetaClonada() {
 
       {revealPending && resolved && (
         <div className={`${styles.stampOverlay} ${stampFlash.active ? styles.show : ''}`}>
-          <div className={`${styles.stamp} ${styles[resolved.level]}`}>{stampForLevel(resolved.level)}</div>
+          <div className={`${styles.stamp} ${styles[resolved.level]}`}>{stampWord(resolved.level)}</div>
         </div>
       )}
     </div>

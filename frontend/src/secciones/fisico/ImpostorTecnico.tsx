@@ -6,8 +6,6 @@ import { useFlashTransition } from '../../hooks/useFlashTransition'
 import type { Contexto } from '../../components/ui/ContextoEscenario'
 import dossierTheme from '../../styles/dossier-theme.module.css'
 import { useScenarioRun } from '../../hooks/useScenarioRun'
-import { shuffle } from '../../utils/shuffle'
-import { outcomeForLevel, stampForLevel, verdictForLevel } from '../../utils/verdict'
 import styles from './Baiting.module.css'
 
 type Level = 'safe' | 'warn' | 'danger'
@@ -36,7 +34,7 @@ function FlashSpark({ x, y, onClick }: { x: number; y: number; onClick: () => vo
   )
 }
 
-const SceneArt = ({ flash, onFlashClick }: { flash: boolean; onFlashClick: () => void }) => (
+const SCENE_ART = ({ flash, onFlashClick }: { flash: boolean; onFlashClick: () => void }) => (
   <svg viewBox="0 0 400 220">
     {/* Fondo y piso */}
     <rect width="400" height="150" fill="#e8e4dc" />
@@ -172,6 +170,23 @@ const SCENARIO: {
   ],
 }
 
+function shuffled<T>(arr: T[]): T[] {
+  const a = arr.slice()
+  for (let i = a.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[a[i], a[j]] = [a[j]!, a[i]!]
+  }
+  return a
+}
+
+function verdictLabel(level: Level) {
+  return level === 'safe' ? 'Decisión segura' : level === 'warn' ? 'Observación' : 'Riesgo detectado'
+}
+
+function stampWord(level: Level) {
+  return level === 'safe' ? 'APROBADO' : level === 'warn' ? 'OBSERVACIÓN' : 'RIESGO'
+}
+
 function ImpostorTecnico() {
   const navigate = useNavigate()
   const run = useScenarioRun('fisico/impostor-tecnico')
@@ -198,7 +213,7 @@ function ImpostorTecnico() {
   }
 
   function handleFlashClick() {
-    setShuffledChoices(shuffle(SCENARIO.choices as Choice[]))
+    setShuffledChoices(shuffled(SCENARIO.choices as Choice[]))
     setChoicesShown(true)
   }
 
@@ -211,7 +226,7 @@ function ImpostorTecnico() {
       setResolved({ level: choice.level, feedback: choice.feedback })
       void run.finish({
         endingId: choice.level,
-        outcome: outcomeForLevel(choice.level),
+        outcome: choice.level === 'safe' ? 'CORRECTO' : choice.level === 'warn' ? 'PARCIAL' : 'INCORRECTO',
       })
     }, 750)
   }
@@ -247,7 +262,7 @@ function ImpostorTecnico() {
             {showFeedback ? (
               <ConsequenceArt level={resolved.level} />
             ) : (
-            <SceneArt flash={!choicesShown && !revealPending} onFlashClick={handleFlashClick} />
+              <SCENE_ART flash={!choicesShown && !revealPending} onFlashClick={handleFlashClick} />
             )}
           </div>
 
@@ -266,7 +281,7 @@ function ImpostorTecnico() {
               <div className={styles.feedbackPanel}>
                 <div className={styles.verdictRow}>
                   <span className={`${styles.badge} ${styles[resolved.level]}`}>
-                    {verdictForLevel(resolved.level)}
+                    {verdictLabel(resolved.level)}
                   </span>
                 </div>
                 <p className={styles.feedbackText}>{resolved.feedback}</p>
@@ -302,7 +317,7 @@ function ImpostorTecnico() {
 
       {revealPending && resolved && (
         <div className={`${styles.stampOverlay} ${stampFlash.active ? styles.show : ''}`}>
-          <div className={`${styles.stamp} ${styles[resolved.level]}`}>{stampForLevel(resolved.level)}</div>
+          <div className={`${styles.stamp} ${styles[resolved.level]}`}>{stampWord(resolved.level)}</div>
         </div>
       )}
     </div>
