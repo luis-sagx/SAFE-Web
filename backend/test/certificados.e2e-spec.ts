@@ -4,7 +4,13 @@ import request from 'supertest';
 import type { App } from 'supertest/types';
 import type { AtestacionPayload, JwtPayload } from '@comun';
 import { PrismaService } from '../apps/identidad/src/prisma/prisma.service';
-import { crearApp, cuerpo, limpiar, registro, type SesionBody } from './identidad.e2e';
+import {
+  crearApp,
+  cuerpo,
+  limpiar,
+  registro,
+  type SesionBody,
+} from './identidad.e2e';
 
 interface CertificadoBody {
   codigo: string;
@@ -58,25 +64,44 @@ describe('Certificados (e2e)', () => {
   /// `seq` (el participante no debe verlo), así que es el único lugar de
   /// donde tomarlo sin tocar la base a mano.
   async function participante(sufijo: string) {
-    const res = await server().post('/api/auth/register').send(registro(sufijo)).expect(201);
+    const res = await server()
+      .post('/api/auth/register')
+      .send(registro(sufijo))
+      .expect(201);
     const sesion = cuerpo<SesionBody>(res);
     const payload = jwt.decode<JwtPayload>(sesion.accessToken);
-    return { accessToken: sesion.accessToken, sub: payload.sub, seq: payload.seq };
+    return {
+      accessToken: sesion.accessToken,
+      sub: payload.sub,
+      seq: payload.seq,
+    };
   }
 
   describe('POST /api/certificados', () => {
     it('exige token de acceso', async () => {
       const pase = await atestacion({});
-      await server().post('/api/certificados').send({ atestacion: pase }).expect(401);
+      await server()
+        .post('/api/certificados')
+        .send({ atestacion: pase })
+        .expect(401);
     });
 
-    it('rechaza una atestación firmada con otro secreto', async () => {
+    it('rechaza un cuerpo sin la forma de un JWT antes de tocar el servicio', async () => {
       const { accessToken } = await participante('cert-1');
       await server()
         .post('/api/certificados')
         .set('Authorization', `Bearer ${accessToken}`)
-        .send({ atestacion: 'no.es.un-jwt-valido' })
+        .send({ atestacion: 'esto-no-tiene-puntos' })
         .expect(400);
+    });
+
+    it('rechaza una atestación con la forma de un JWT pero mal firmada', async () => {
+      const { accessToken } = await participante('cert-1b');
+      await server()
+        .post('/api/certificados')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({ atestacion: 'aaa.bbb.ccc' })
+        .expect(403);
     });
 
     it('rechaza un access token presentado como si fuera la atestación', async () => {
@@ -150,7 +175,9 @@ describe('Certificados (e2e)', () => {
         .expect(200);
 
       expect(res.headers['content-type']).toContain('application/pdf');
-      expect((res.body as Buffer).subarray(0, 5).toString('latin1')).toBe('%PDF-');
+      expect((res.body as Buffer).subarray(0, 5).toString('latin1')).toBe(
+        '%PDF-',
+      );
     });
 
     it('sin certificado emitido, 404', async () => {

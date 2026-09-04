@@ -14,7 +14,11 @@ const PARTICIPANTE: JwtPayload = {
 /// que usa el controlador — sin levantar Nest ni un servidor HTTP real, igual
 /// que los demás tests de este proyecto instancian sus servicios a mano.
 function respuestaFalsa() {
-  const llamadas: { status?: number; headers?: Record<string, string>; body?: unknown } = {};
+  const llamadas: {
+    status?: number;
+    headers?: Record<string, string>;
+    body?: unknown;
+  } = {};
   const res = {
     status: (codigo: number) => {
       llamadas.status = codigo;
@@ -38,14 +42,24 @@ describe('CertificadosController', () => {
     const servicio = {
       emitir: (participante: JwtPayload, atestacion: string) => {
         recibido = { participante, atestacion };
-        return Promise.resolve({ codigo: 'SW-AAAA-BBBB', emitidoAt: 'x', modulos: [], horas: 4 });
+        return Promise.resolve({
+          codigo: 'SW-AAAA-BBBB',
+          emitidoAt: 'x',
+          modulos: [],
+          horas: 4,
+        });
       },
     } as unknown as CertificadosService;
 
     const controller = new CertificadosController(servicio);
-    const resultado = await controller.emitir(PARTICIPANTE, { atestacion: 'un.jwt.valido' });
+    const resultado = await controller.emitir(PARTICIPANTE, {
+      atestacion: 'un.jwt.valido',
+    });
 
-    expect(recibido).toEqual({ participante: PARTICIPANTE, atestacion: 'un.jwt.valido' });
+    expect(recibido).toEqual({
+      participante: PARTICIPANTE,
+      atestacion: 'un.jwt.valido',
+    });
     expect(resultado.codigo).toBe('SW-AAAA-BBBB');
   });
 
@@ -60,8 +74,12 @@ describe('CertificadosController', () => {
     await controller.pdf(PARTICIPANTE, { atestacion: 'un.jwt.valido' }, res);
 
     expect(llamadas.status).toBe(200);
-    expect(llamadas.headers).toMatchObject({ 'Content-Type': 'application/pdf' });
-    expect(llamadas.headers?.['Content-Disposition']).toContain('certificado-safe-web.pdf');
+    expect(llamadas.headers).toMatchObject({
+      'Content-Type': 'application/pdf',
+    });
+    expect(llamadas.headers?.['Content-Disposition']).toContain(
+      'certificado-safe-web.pdf',
+    );
     expect(llamadas.body).toBe(buffer);
   });
 

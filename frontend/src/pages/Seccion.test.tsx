@@ -1,15 +1,16 @@
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import Seccion from './Seccion'
 
-const { fetchProgresoMock } = vi.hoisted(() => ({
+const { fetchProgresoMock, fetchMyRunsMock } = vi.hoisted(() => ({
   fetchProgresoMock: vi.fn(),
+  fetchMyRunsMock: vi.fn(),
 }))
 
 vi.mock('../lib/api', async () => {
   const actual = await vi.importActual<typeof import('../lib/api')>('../lib/api')
-  return { ...actual, fetchProgreso: fetchProgresoMock }
+  return { ...actual, fetchProgreso: fetchProgresoMock, fetchMyRuns: fetchMyRunsMock }
 })
 
 function renderSeccion() {
@@ -25,6 +26,8 @@ function renderSeccion() {
 describe('Seccion', () => {
   beforeEach(() => {
     fetchProgresoMock.mockReset()
+    fetchMyRunsMock.mockReset()
+    fetchMyRunsMock.mockResolvedValue([])
   })
 
   it('solo deja como link activo el próximo escenario pendiente y bloquea los posteriores', async () => {
@@ -47,5 +50,24 @@ describe('Seccion', () => {
     // número compartido: el 08 depende del 07, no del 02.
     expect(await screen.findByText('Se abre al terminar el 02')).toBeDefined()
     expect(await screen.findByText('Se abre al terminar el 07')).toBeDefined()
+  })
+
+  it('con el módulo aprobado, abre el resumen en un modal al pedirlo', async () => {
+    fetchProgresoMock.mockResolvedValue({
+      modulo: 'phishing',
+      escenarios: [],
+      aprobados: 6,
+      requeridos: 6,
+      aprobado: true,
+    })
+
+    renderSeccion()
+
+    const boton = await screen.findByRole('button', { name: 'Ver resumen del módulo' })
+    expect(screen.queryByRole('dialog')).toBeNull()
+
+    fireEvent.click(boton)
+
+    expect(await screen.findByRole('dialog')).toBeDefined()
   })
 })

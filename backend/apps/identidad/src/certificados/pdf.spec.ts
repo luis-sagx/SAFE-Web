@@ -7,7 +7,9 @@ import { generarCertificadoPdf, type DatosCertificado } from './pdf';
 /// respaldo para uno que el mapa no reconoce), un nombre largo que fuerza el
 /// ajuste de línea, y un número impar de módulos que deja una columna sin
 /// pareja en la lista de temas.
-function datosBase(overrides: Partial<DatosCertificado> = {}): DatosCertificado {
+function datosBase(
+  overrides: Partial<DatosCertificado> = {},
+): DatosCertificado {
   return {
     nombreCompleto: 'Luis Sagnay',
     modulos: ['phishing', 'smishing', 'vishing', 'suplantacion', 'estafa'],
@@ -37,7 +39,14 @@ describe('generarCertificadoPdf', () => {
   it('incluye riesgo físico: el ícono de respaldo (escudo) para un módulo sin glifo propio', async () => {
     const buffer = await generarCertificadoPdf(
       datosBase({
-        modulos: ['phishing', 'smishing', 'vishing', 'suplantacion', 'estafa', 'fisico'],
+        modulos: [
+          'phishing',
+          'smishing',
+          'vishing',
+          'suplantacion',
+          'estafa',
+          'fisico',
+        ],
       }),
     );
 
@@ -45,7 +54,9 @@ describe('generarCertificadoPdf', () => {
   });
 
   it('un id de módulo que no está en el catálogo cae en el ícono por defecto, no revienta', async () => {
-    const buffer = await generarCertificadoPdf(datosBase({ modulos: ['un-modulo-inventado'] }));
+    const buffer = await generarCertificadoPdf(
+      datosBase({ modulos: ['un-modulo-inventado'] }),
+    );
 
     expect(esPdfValido(buffer)).toBe(true);
   });
@@ -62,7 +73,14 @@ describe('generarCertificadoPdf', () => {
     const buffer = await generarCertificadoPdf(
       datosBase({
         nombreCompleto: 'María Fernanda Guanoluisa Chicaiza',
-        modulos: ['phishing', 'smishing', 'vishing', 'suplantacion', 'estafa', 'fisico'],
+        modulos: [
+          'phishing',
+          'smishing',
+          'vishing',
+          'suplantacion',
+          'estafa',
+          'fisico',
+        ],
       }),
     );
 

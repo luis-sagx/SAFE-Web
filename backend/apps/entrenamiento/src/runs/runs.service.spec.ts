@@ -1,4 +1,4 @@
-import { ConflictException } from '@nestjs/common';
+import { ConflictException, NotFoundException } from '@nestjs/common';
 import type { JwtService } from '@nestjs/jwt';
 import type { JwtPayload } from '@comun';
 import { RunsService } from './runs.service';
@@ -117,6 +117,32 @@ const PARTICIPANTE: JwtPayload = {
   role: 'PARTICIPANT',
   typ: 'access',
 };
+
+describe('RunsService.progreso', () => {
+  it('404 si el módulo no está en UMBRALES ni en TOTALES', async () => {
+    await expect(
+      serviceWith([]).progreso('p1', 'no-existe'),
+    ).rejects.toBeInstanceOf(NotFoundException);
+  });
+
+  it('calcula el progreso de un módulo real con las corridas del participante', async () => {
+    const runs = [
+      {
+        scenarioId: 'phishing/factura-sri',
+        outcome: 'CORRECTO' as const,
+        finishedAt: new Date('2026-08-01T10:00:00.000Z'),
+      },
+    ];
+
+    const progreso = await serviceWith(runs).progreso('p1', 'phishing');
+
+    expect(progreso).toMatchObject({
+      modulo: 'phishing',
+      aprobados: 1,
+      requeridos: 6,
+    });
+  });
+});
 
 describe('RunsService.atestacion', () => {
   it('firma la atestación cuando todos los módulos de UMBRALES están aprobados', async () => {

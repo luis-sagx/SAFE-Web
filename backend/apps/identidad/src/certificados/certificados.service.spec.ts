@@ -113,7 +113,12 @@ describe('CertificadosService.emitir · el canje de la atestación', () => {
           create: () => {
             intentos += 1;
             if (intentos === 1) {
-              const colision = { code: 'P2002' };
+              // Un Error de verdad con `.code`, como el que lanza Prisma:
+              // `esColisionDeUnicidad` no exige que sea una instancia de
+              // Error, pero el objeto que se rechaza aquí sí debe serlo.
+              const colision = Object.assign(new Error('P2002'), {
+                code: 'P2002',
+              });
               return Promise.reject(colision);
             }
             return Promise.resolve({
@@ -140,7 +145,7 @@ describe('CertificadosService.emitir · el canje de la atestación', () => {
   it('un error que no es una colisión de código se propaga sin reintentar', async () => {
     const jwt = jwtQueDevuelve(atestacionValida());
     let intentos = 0;
-    const fallo = 'la base no respondió';
+    const fallo = new Error('la base no respondió');
     const svc = servicio(
       {
         certificate: {
