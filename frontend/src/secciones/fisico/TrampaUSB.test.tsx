@@ -14,7 +14,7 @@ describe('TrampaUSB', () => {
   })
 
   it('la pista explica dónde tocar sin revelar la respuesta', () => {
-    const telefono = empezar(<TrampaUSB />)
+    empezar(<TrampaUSB />)
 
     fireEvent.click(screen.getByText(/No sé por dónde empezar/))
 
