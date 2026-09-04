@@ -42,7 +42,7 @@ describe('SalidaSegura', () => {
     expect(within(telefono).getByRole('button', { name: 'Listo para irme' }).hasAttribute('disabled')).toBe(false)
   })
 
-  it('terminar con todo asegurado es la decisión segura', async () => {
+  it('terminar con todo asegurado es la decisión segura, y Siguiente no rompe la navegación', async () => {
     const telefono = empezar(<SalidaSegura />)
 
     asegurarEscritorio(telefono)
@@ -50,15 +50,6 @@ describe('SalidaSegura', () => {
 
     expect(await screen.findByText('Decisión segura')).toBeDefined()
     expect(screen.getByText(/4 pestañas cerradas/)).toBeDefined()
-  })
-
-  it('el botón Siguiente tras resolver no rompe la navegación', async () => {
-    const telefono = empezar(<SalidaSegura />)
-
-    asegurarEscritorio(telefono)
-    fireEvent.click(within(telefono).getByRole('button', { name: 'Listo para irme' }))
-    await screen.findByText('Decisión segura')
-
     fireEvent.click(within(telefono).getByRole('button', { name: 'Siguiente' }))
   })
 })

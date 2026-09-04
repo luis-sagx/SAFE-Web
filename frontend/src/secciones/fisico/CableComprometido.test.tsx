@@ -18,7 +18,7 @@ describe('CableComprometido', () => {
     expect(within(telefono).getByText('Sala de descanso')).toBeDefined()
   })
 
-  it('usar el cable en la sala de descanso es la opción de mayor riesgo', async () => {
+  it('usar el cable en la sala de descanso es la opción de mayor riesgo, y Siguiente no rompe la navegación', async () => {
     const telefono = empezar(<CableComprometido />)
     tocarDestello(telefono)
 
@@ -26,6 +26,7 @@ describe('CableComprometido', () => {
     fireEvent.click(usarBtn)
 
     expect(await screen.findByText('Riesgo detectado')).toBeDefined()
+    fireEvent.click(within(telefono).getByRole('button', { name: 'Siguiente' }))
   })
 
   it('llevarse el cable al escritorio pasa a la segunda fase, no termina la corrida', async () => {
@@ -50,15 +51,5 @@ describe('CableComprometido', () => {
     fireEvent.click(itBtn)
 
     expect(await screen.findByText('Decisión segura')).toBeDefined()
-  })
-
-  it('el botón Siguiente tras resolver no rompe la navegación', async () => {
-    const telefono = empezar(<CableComprometido />)
-    tocarDestello(telefono)
-
-    fireEvent.click(within(telefono).getByRole('button', { name: /Usarlo para cargar/ }))
-    await screen.findByText('Riesgo detectado')
-
-    fireEvent.click(within(telefono).getByRole('button', { name: 'Siguiente' }))
   })
 })

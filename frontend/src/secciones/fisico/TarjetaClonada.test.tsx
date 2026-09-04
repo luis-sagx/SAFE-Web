@@ -41,38 +41,24 @@ describe('TarjetaClonada', () => {
     expect(within(telefono).getByText('Banco')).toBeDefined()
   })
 
-  it('bloquear la tarjeta y denunciar es la decisión correcta', async () => {
+  it('bloquear la tarjeta y denunciar es la decisión correcta, y Siguiente no rompe la navegación', async () => {
     const telefono = empezar(<TarjetaClonada />)
     await llegarADescubrimiento(telefono)
 
-    const safeBtn = within(telefono).queryByRole('button', { name: /Bloquear la tarjeta inmediatamente/ })
-    if (safeBtn) {
-      fireEvent.click(safeBtn)
-      await vi.advanceTimersByTimeAsync(800)
-      expect(screen.getByText('Decisión segura')).toBeDefined()
-    }
+    fireEvent.click(within(telefono).getByRole('button', { name: /Bloquear la tarjeta inmediatamente/ }))
+    await vi.advanceTimersByTimeAsync(800)
+
+    expect(screen.getByText('Decisión segura')).toBeDefined()
+    fireEvent.click(within(telefono).getByRole('button', { name: 'Siguiente' }))
   })
 
   it('ignorar la notificación es la decisión de mayor riesgo', async () => {
     const telefono = empezar(<TarjetaClonada />)
     await llegarADescubrimiento(telefono)
 
-    const dangerBtn = within(telefono).queryByRole('button', { name: /Ignorar la notificación/ })
-    if (dangerBtn) {
-      fireEvent.click(dangerBtn)
-      await vi.advanceTimersByTimeAsync(800)
-      expect(screen.getByText('Riesgo detectado')).toBeDefined()
-    }
-  })
-
-  it('el botón Siguiente tras resolver no rompe la navegación', async () => {
-    const telefono = empezar(<TarjetaClonada />)
-    await llegarADescubrimiento(telefono)
-
-    const safeBtn = within(telefono).getByRole('button', { name: /Bloquear la tarjeta inmediatamente/ })
-    fireEvent.click(safeBtn)
+    fireEvent.click(within(telefono).getByRole('button', { name: /Ignorar la notificación/ }))
     await vi.advanceTimersByTimeAsync(800)
 
-    fireEvent.click(within(telefono).getByRole('button', { name: 'Siguiente' }))
+    expect(screen.getByText('Riesgo detectado')).toBeDefined()
   })
 })

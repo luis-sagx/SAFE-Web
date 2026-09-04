@@ -13,39 +13,42 @@ describe('DescargaProgramasPiratas', () => {
     expect(within(telefono).getAllByText(/Resultados para: descargar Adobe/).length).toBeGreaterThan(0)
   })
 
-  it('descargar desde el sitio pirata termina en malware', () => {
-    const telefono = empezar(<DescargaProgramasPiratas />)
+  const RUTAS_DE_DESCARGA: [string, RegExp, string, string][] = [
+    [
+      'sitio pirata',
+      /Adobe gratis 2024/,
+      'Descargar ahora',
+      'Caíste en la trampa - Resultado pirata',
+    ],
+    [
+      'adobe.com oficial',
+      /Adobe: Creative, marketing and document management solutions/,
+      'Descargar ahora',
+      'No caíste - Descargaste del sitio oficial',
+    ],
+    [
+      'prueba gratuita de adobe.com',
+      /Adobe: Creative, marketing and document management solutions/,
+      'Probar gratis',
+      'Decisión segura - Versión de prueba legal',
+    ],
+    [
+      'sitio falso de Flash',
+      /Adobe Flash gratis - Software libre/,
+      'Descargar ahora',
+      'Caíste en la trampa - Sitio falso',
+    ],
+  ]
 
-    fireEvent.click(within(telefono).getByText(/Adobe gratis 2024/))
-    fireEvent.click(within(telefono).getByText('Descargar ahora'))
+  it.each(RUTAS_DE_DESCARGA)(
+    'elegir %s y luego "%s" lleva al veredicto correcto',
+    (_caso, resultado, boton, veredicto) => {
+      const telefono = empezar(<DescargaProgramasPiratas />)
 
-    expect(screen.getByText('Caíste en la trampa - Resultado pirata')).toBeDefined()
-  })
+      fireEvent.click(within(telefono).getByText(resultado))
+      fireEvent.click(within(telefono).getByText(boton))
 
-  it('descargar desde adobe.com oficial es la decisión segura', () => {
-    const telefono = empezar(<DescargaProgramasPiratas />)
-
-    fireEvent.click(within(telefono).getByText('Adobe: Creative, marketing and document management solutions'))
-    fireEvent.click(within(telefono).getByText('Descargar ahora'))
-
-    expect(screen.getByText('No caíste - Descargaste del sitio oficial')).toBeDefined()
-  })
-
-  it('probar gratis desde adobe.com también es una decisión segura', () => {
-    const telefono = empezar(<DescargaProgramasPiratas />)
-
-    fireEvent.click(within(telefono).getByText('Adobe: Creative, marketing and document management solutions'))
-    fireEvent.click(within(telefono).getByText('Probar gratis'))
-
-    expect(screen.getByText('Decisión segura - Versión de prueba legal')).toBeDefined()
-  })
-
-  it('el resultado falso de Flash también compromete el equipo', () => {
-    const telefono = empezar(<DescargaProgramasPiratas />)
-
-    fireEvent.click(within(telefono).getByText('Adobe Flash gratis - Software libre'))
-    fireEvent.click(within(telefono).getByText('Descargar ahora'))
-
-    expect(screen.getByText('Caíste en la trampa - Sitio falso')).toBeDefined()
-  })
+      expect(screen.getByText(veredicto)).toBeDefined()
+    },
+  )
 })

@@ -135,7 +135,7 @@
 
 .nextBtn {
   padding: 0.75rem 1rem;
-  background: #3b82f6;
+  background: #1d4ed8;
   color: white;
   border: none;
   border-radius: 0.375rem;
@@ -145,7 +145,7 @@
 }
 
 .nextBtn:hover {
-  background: #2563eb;
+  background: #1e40af;
 }
 
 .stampOverlay {

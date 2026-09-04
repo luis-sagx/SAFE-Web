@@ -11,8 +11,6 @@ export default function IndicadorProgreso({
 }: IndicadorProgresoProps) {
   if (posicion <= 0 || total <= 0) return null;
 
-  const porcentaje = (posicion / total) * 100;
-
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
@@ -23,17 +21,12 @@ export default function IndicadorProgreso({
           {posicion} de {total}
         </p>
       </div>
-      <div className="h-2 w-full rounded-full bg-muted-soft overflow-hidden">
-        <div
-          className="h-full bg-primary transition-all duration-300 ease-out"
-          style={{ width: `${porcentaje}%` }}
-          role="progressbar"
-          aria-valuenow={posicion}
-          aria-valuemin={1}
-          aria-valuemax={total}
-          aria-label={`Progreso: ${posicion} de ${total} escenarios completados`}
-        />
-      </div>
+      <progress
+        className="h-2 w-full overflow-hidden rounded-full bg-muted-soft [&::-moz-progress-bar]:rounded-full [&::-moz-progress-bar]:bg-primary [&::-webkit-progress-bar]:rounded-full [&::-webkit-progress-bar]:bg-muted-soft [&::-webkit-progress-value]:rounded-full [&::-webkit-progress-value]:bg-primary [&::-webkit-progress-value]:transition-all [&::-webkit-progress-value]:duration-300"
+        value={posicion}
+        max={total}
+        aria-label={`Progreso: ${posicion} de ${total} escenarios completados`}
+      />
     </div>
   );
 }

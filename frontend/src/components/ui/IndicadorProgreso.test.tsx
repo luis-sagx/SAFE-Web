@@ -28,23 +28,16 @@ describe('IndicadorProgreso', () => {
     expect(container.firstChild).toBeNull()
   })
 
-  it('calcula el porcentaje correctamente', () => {
+  it('usa el elemento nativo <progress> con value y max correctos', () => {
     const { container } = render(<IndicadorProgreso posicion={1} total={4} titulo="Test" />)
-    const progressBar = container.querySelector('[role="progressbar"]') as HTMLElement
-    expect(progressBar?.style.width).toBe('25%')
-  })
-
-  it('tiene atributos aria correctos', () => {
-    const { container } = render(<IndicadorProgreso posicion={5} total={10} titulo="Test" />)
-    const progressBar = container.querySelector('[role="progressbar"]') as HTMLElement
-    expect(progressBar?.getAttribute('aria-valuenow')).toBe('5')
-    expect(progressBar?.getAttribute('aria-valuemin')).toBe('1')
-    expect(progressBar?.getAttribute('aria-valuemax')).toBe('10')
+    const progressBar = container.querySelector('progress') as HTMLProgressElement
+    expect(progressBar?.value).toBe(1)
+    expect(progressBar?.max).toBe(4)
   })
 
   it('tiene aria-label descriptivo', () => {
     const { container } = render(<IndicadorProgreso posicion={2} total={5} titulo="Test" />)
-    const progressBar = container.querySelector('[role="progressbar"]') as HTMLElement
+    const progressBar = container.querySelector('progress') as HTMLElement
     expect(progressBar?.getAttribute('aria-label')).toContain('2 de 5')
   })
 })
