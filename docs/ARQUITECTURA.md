@@ -733,32 +733,42 @@ guardada solo como HMAC.
 
 **Catálogo:** 48 escenarios activos, ocho por cada una de las seis secciones
 (phishing, smishing, vishing, suplantación, estafa electrónica, riesgo
-físico), 6 de fraude y 2 legítimos por sección, ordenados por `dificultad`
-ascendente dentro de cada una. Gating 6/8 (`GET /api/runs/progreso/:modulo`,
-último intento manda) reflejado en Dashboard y Seccion, con desbloqueo
-secuencial dentro del módulo. `UMBRALES` (`progreso.ts`) declara hoy cinco de
-las seis secciones — el sexto queda pendiente de su propio umbral.
+físico). Cinco secciones siguen el diseño pedagógico de 6 fraude / 2
+legítimos; `riesgo físico` está en 4/4 mientras esa sección se rediseña, sin
+que eso afecte el gating (que solo cuenta CORRECTO/total, no la proporción).
+Los escenarios de las cinco primeras secciones van ordenados por `dificultad`
+ascendente dentro de cada una; los de `riesgo físico` no, todavía. Gating 6/8
+(`GET /api/runs/progreso/:modulo`, último intento manda, y **exige haber
+jugado los 8**, no solo llegar al umbral — `TOTALES` en `progreso.ts`)
+reflejado en Dashboard y Seccion, con desbloqueo secuencial dentro del
+módulo. `UMBRALES` y `TOTALES` (`progreso.ts`) ya declaran las seis
+secciones.
 
 **Gamificación** (spec `2026-09-03-gamificacion-y-certificado-design.md`):
-puntaje visible en el debrief de cada escenario, pantalla `/recorrido` con el
-historial propio (`GET /api/runs/me`), y cierre de módulo con los cuatro
-discriminadores del diseño pedagógico al aprobar 6/8.
+pantalla `/recorrido` con el historial propio (`GET /api/runs/me`), estrellas
+de dificultad en `Seccion.tsx`, y resumen de módulo con los cuatro
+discriminadores del diseño pedagógico, en un modal que se abre por elección
+—no un bloque fijo en cada visita a una sección ya aprobada. El puntaje por
+escenario se probó visible en el debrief y se quitó: casi siempre repetía el
+resultado (0/50/100) y generaba la pregunta de para qué servía sin aportar
+nada; se sigue guardando para el análisis del supervisor.
 
-**Certificado:** de 4 horas, emitido cuando se aprueban todos los módulos que
-declara `UMBRALES`. Se canjea con una atestación firmada por `entrenamiento`
-(`GET /api/runs/atestacion`) que `identidad` verifica y convierte en PDF
-(`pdfkit`, sin persistir), con código verificable en `/verificar/:codigo` sin
-exponer el nombre, y revocación manual por un supervisor
-(`PATCH /api/admin/certificados/:id/revocar`). Sin envío por correo ni
-verificación de correo al registrarse — la descarga en la aplicación es toda
-la entrega.
+**Certificado:** de 4 horas, emitido cuando se aprueban las seis secciones
+que declara `UMBRALES` —riesgo físico incluido. Se canjea con una atestación
+firmada por `entrenamiento` (`GET /api/runs/atestacion`) que `identidad`
+verifica y convierte en PDF (`pdfkit`, sin persistir), con código verificable
+en `/verificar/:codigo` sin exponer el nombre, y revocación manual por un
+supervisor (`PATCH /api/admin/certificados/:id/revocar`). Sin envío por
+correo ni verificación de correo al registrarse — la descarga en la
+aplicación es toda la entrega.
 
 Pantalla de bienvenida con el flag `onboardingVisto` persistido
 (`PATCH /api/auth/me`) y accesible siempre desde el ícono ⓘ.
 
 Pendiente:
 
-1. El umbral de la sección de riesgo físico en `UMBRALES`.
-2. Terminación TLS en el servidor propio y respaldo del volumen de la base.
-3. Insignias por discriminador y repetición espaciada de escenarios fallados
+1. Terminación TLS en el servidor propio y respaldo del volumen de la base.
+2. Insignias por discriminador y repetición espaciada de escenarios fallados
    (diferidas en el spec de gamificación, §3.2).
+3. El rediseño de `riesgo físico` (hoy en 4 fraude / 4 legítimos) y el orden
+   por dificultad de sus 8 escenarios, para igualar al resto del catálogo.

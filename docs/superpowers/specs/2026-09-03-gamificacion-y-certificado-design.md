@@ -6,6 +6,15 @@
 **Rama:** `gamificacion-y-certificado` (desde `4246114`)
 **Continúa:** `2026-08-03-safe-web-mvp-phishing-design.md` (§7 gating, §11 certificado diferido)
 
+> **Actualización posterior a este spec:** §3.2 y §3.3 dejaban `fisico` fuera
+> porque otra persona lo llevaba y no tenía umbral. Esa persona ya lo cerró en
+> 8 escenarios (4 fraude / 4 legítimos, no 6/2 — sigue en rediseño); con eso
+> resuelto, se decidió incluirlo. `UMBRALES` y `TOTALES` en `progreso.ts` ya
+> declaran `fisico: 6` y `fisico: 8`, así que el certificado exige las **seis**
+> secciones, no cinco. El resto de §3.3, §5.1 y §5.4.1 sigue describiendo
+> correctamente el mecanismo — solo cambió el número real de módulos que
+> `UMBRALES` declara hoy.
+
 ---
 
 ## 1. Problema
