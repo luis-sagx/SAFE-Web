@@ -37,18 +37,18 @@ function FlashSpark({ x, y, onClick }: { x: number; y: number; onClick: () => vo
 }
 
 const SCENE_ART_BREAK_ROOM = ({ flash, onFlashClick }: { flash: boolean; onFlashClick: () => void }) => (
-  <svg viewBox="0 0 400 220">
-    <rect width="400" height="220" fill="#ece0c4" />
-    <rect y="160" width="400" height="60" fill="#cabb90" />
-    <rect x="30" y="35" width="80" height="90" fill="#cfd6dc" opacity="0.55" />
-    <ellipse cx="300" cy="160" rx="55" ry="16" fill="#a9744a" />
-    <rect x="292" y="160" width="16" height="34" fill="#8a5d38" />
-    <rect x="150" y="128" width="130" height="30" fill="#d8cba0" stroke="#9c8a5e" strokeWidth="2" />
-    <rect x="170" y="105" width="26" height="24" fill="#5b4630" />
-    <rect x="228" y="112" width="16" height="12" rx="2" fill="#3a3226" />
-    <path d="M236 124 Q252 148 236 162" stroke="#2b2318" strokeWidth="3" fill="none" className={styles.glitchBar} />
-    {flash && <FlashSpark x={236} y={158} onClick={onFlashClick} />}
-  </svg>
+  <div className="relative w-full">
+    <img
+      src="/CargadorSospechoso.jpeg"
+      alt="Sala de descanso - Cable USB conectado al tomacorriente"
+      className="w-full h-170 object-cover rounded shadow-md"
+    />
+    {flash && (
+      <svg viewBox="0 0 400 220" preserveAspectRatio="xMidYMid slice" className="absolute inset-0 h-full w-full">
+        <FlashSpark x={288} y={168} onClick={onFlashClick} />
+      </svg>
+    )}
+  </div>
 )
 
 const SCENE_ART_OFFICE = ({ flash, onFlashClick }: { flash: boolean; onFlashClick: () => void }) => (
