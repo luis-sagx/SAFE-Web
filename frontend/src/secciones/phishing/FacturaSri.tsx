@@ -364,8 +364,8 @@ function ContenidoPortalFalso() {
         </p>
 
         <div className={styles.form}>
-          <div className={styles.field} role="group" aria-label="RUC o cédula">
-            <span>RUC o cédula</span>
+          <fieldset className={styles.field}>
+            <legend>RUC o cédula</legend>
             {/* No editable a propósito, y con un valor que no es el de nadie:
                 el participante juzga la pantalla, nunca escribe credenciales
                 reales en ella. */}
@@ -373,14 +373,14 @@ function ContenidoPortalFalso() {
               <span className="sr-only">Tu RUC, ya completado: </span>
               {' '}{IDENTIDAD_FICTICIA.ruc}
             </span>
-          </div>
-          <div className={styles.field} data-signal="campo-clave" role="group" aria-label="Clave del portal SRI">
-            <span>Clave del portal SRI</span>
+          </fieldset>
+          <fieldset className={styles.field} data-signal="campo-clave">
+            <legend>Clave del portal SRI</legend>
             <span className={styles.input}>
               <span className="sr-only">Tu clave, ya completada: </span>
               {' '}••••••••
             </span>
-          </div>
+          </fieldset>
           <BotonHotspot
             goto="e_datos"
             label="Ingresó su RUC y su clave para liberar la factura"
