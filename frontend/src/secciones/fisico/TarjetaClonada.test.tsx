@@ -1,195 +1,61 @@
-import { render, screen, fireEvent } from '@testing-library/react'
-import { BrowserRouter } from 'react-router'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { fireEvent, screen, within } from '@testing-library/react'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { empezar } from '../../test/escenario'
 import TarjetaClonada from './TarjetaClonada'
 
-const mocks = vi.hoisted(() => ({
-  useSiguienteEscenario: vi.fn(),
-  useScenarioRun: vi.fn(),
-  useFlashTransition: vi.fn(),
-}))
+vi.mock('../../context/AuthContext', async () => (await import('../../test/escenario')).authFalso())
+vi.mock('../../lib/api', async () => (await import('../../test/escenario')).apiSinRed())
 
-vi.mock('../../hooks/useSiguienteEscenario', () => ({ useSiguienteEscenario: mocks.useSiguienteEscenario }))
-vi.mock('../../hooks/useScenarioRun', () => ({ useScenarioRun: mocks.useScenarioRun }))
-vi.mock('../../hooks/useFlashTransition', () => ({ useFlashTransition: mocks.useFlashTransition }))
-vi.mock('../../components/EscenarioLayout', () => ({
-  default: ({ pantalla, onEmpezar }: any) => (
-    <div data-testid="escenario-layout">
-      <button onClick={onEmpezar} data-testid="btn-empezar">
-        Empezar
-      </button>
-      {pantalla}
-    </div>
-  ),
-}))
-vi.mock('../../components/ui/FlashOverlay', () => ({
-  default: () => <div data-testid="flash-overlay" />,
-}))
+async function llegarADescubrimiento(telefono: HTMLElement) {
+  await vi.advanceTimersByTimeAsync(6100)
+  const destello = telefono.querySelector('.sceneFlash, g[class*="Flash"]')
+  if (destello) fireEvent.click(destello)
+}
 
 describe('TarjetaClonada', () => {
-  const recordDecisionMock = vi.fn()
-  const finishMock = vi.fn()
-  const triggerMock = vi.fn((callback) => callback())
-
   beforeEach(() => {
-    vi.clearAllMocks()
-    mocks.useSiguienteEscenario.mockReturnValue({ ruta: '/seccion/fisico/otro' })
-    mocks.useScenarioRun.mockReturnValue({
-      recordDecision: recordDecisionMock,
-      finish: finishMock,
-    })
-    mocks.useFlashTransition.mockReturnValue({ active: false, trigger: triggerMock })
+    vi.useFakeTimers()
   })
 
-  it('renderiza sin errores', () => {
-    const { container } = render(
-      <BrowserRouter>
-        <TarjetaClonada />
-      </BrowserRouter>
-    )
-    expect(container).toBeDefined()
+  afterEach(() => {
+    vi.useRealTimers()
   })
 
-  it('renderiza layout y opciones después de Empezar', () => {
-    render(
-      <BrowserRouter>
-        <TarjetaClonada />
-      </BrowserRouter>
-    )
-    const empezarBtn = screen.getByTestId('btn-empezar')
-    fireEvent.click(empezarBtn)
+  it('abre con la escena de clonación en la calle', () => {
+    const telefono = empezar(<TarjetaClonada />)
 
-    expect(screen.getByTestId('escenario-layout')).toBeDefined()
+    expect(within(telefono).getByText('Calle/Restaurante')).toBeDefined()
   })
 
-  it('muestra opciones de decisión después de Empezar', () => {
-    render(
-      <BrowserRouter>
-        <TarjetaClonada />
-      </BrowserRouter>
-    )
-    const empezarBtn = screen.getByTestId('btn-empezar')
-    fireEvent.click(empezarBtn)
+  it('a los pocos segundos pasa al banco con la notificación de fraude', async () => {
+    const telefono = empezar(<TarjetaClonada />)
 
-    const bloquearBtn = screen.queryByRole('button', { name: /Bloquear/ })
-    expect(bloquearBtn || screen.queryAllByRole('button').length).toBeTruthy()
+    await llegarADescubrimiento(telefono)
+
+    expect(within(telefono).getByText('Banco')).toBeDefined()
   })
 
-  it('registra decisión cuando selecciona opción safe', () => {
-    render(
-      <BrowserRouter>
-        <TarjetaClonada />
-      </BrowserRouter>
-    )
-    const empezarBtn = screen.getByTestId('btn-empezar')
-    fireEvent.click(empezarBtn)
+  it('bloquear la tarjeta y denunciar es la decisión correcta', async () => {
+    const telefono = empezar(<TarjetaClonada />)
+    await llegarADescubrimiento(telefono)
 
-    const safeOption = screen.queryByRole('button', { name: /Bloquear.*inmediatamente/ })
-    if (safeOption) {
-      fireEvent.click(safeOption)
-      expect(recordDecisionMock).toHaveBeenCalledWith(expect.objectContaining({ nivel: 'safe' }))
+    const safeBtn = within(telefono).queryByRole('button', { name: /Bloquear la tarjeta inmediatamente/ })
+    if (safeBtn) {
+      fireEvent.click(safeBtn)
+      await vi.advanceTimersByTimeAsync(800)
+      expect(screen.getByText('Decisión segura')).toBeDefined()
     }
   })
 
-  it('finaliza escenario después de seleccionar opción', () => {
-    render(
-      <BrowserRouter>
-        <TarjetaClonada />
-      </BrowserRouter>
-    )
-    const empezarBtn = screen.getByTestId('btn-empezar')
-    fireEvent.click(empezarBtn)
+  it('ignorar la notificación es la decisión de mayor riesgo', async () => {
+    const telefono = empezar(<TarjetaClonada />)
+    await llegarADescubrimiento(telefono)
 
-    const anyOption = screen.queryAllByRole('button').find(btn => btn.textContent && btn.textContent.includes('Bloquear'))
-    if (anyOption) {
-      fireEvent.click(anyOption)
-      expect(finishMock).toHaveBeenCalled()
-    }
-  })
-
-  it('muestra opciones al hacer click en el destello', () => {
-    const { container } = render(
-      <BrowserRouter>
-        <TarjetaClonada />
-      </BrowserRouter>
-    )
-    const empezarBtn = screen.getByTestId('btn-empezar')
-    fireEvent.click(empezarBtn)
-
-    const flash = container.querySelector('.sceneFlash') || container.querySelector('g[class*="Flash"]')
-    if (flash) {
-      fireEvent.click(flash)
-      const buttons = screen.queryAllByRole('button')
-      expect(buttons.length).toBeGreaterThan(1)
-    }
-  })
-
-  it('registra decisión tras destello y selección', () => {
-    const { container } = render(
-      <BrowserRouter>
-        <TarjetaClonada />
-      </BrowserRouter>
-    )
-    const empezarBtn = screen.getByTestId('btn-empezar')
-    fireEvent.click(empezarBtn)
-
-    const flash = container.querySelector('.sceneFlash') || container.querySelector('g[class*="Flash"]')
-    if (flash) {
-      fireEvent.click(flash)
-      const allButtons = screen.queryAllByRole('button')
-      const optionBtn = allButtons.find(btn => btn !== empezarBtn && btn.textContent && btn.textContent.length > 5)
-      if (optionBtn) {
-        fireEvent.click(optionBtn)
-        expect(recordDecisionMock).toHaveBeenCalled()
-      }
-    }
-  })
-
-  it('finaliza escenario tras destello y selección', () => {
-    const { container } = render(
-      <BrowserRouter>
-        <TarjetaClonada />
-      </BrowserRouter>
-    )
-    const empezarBtn = screen.getByTestId('btn-empezar')
-    fireEvent.click(empezarBtn)
-
-    const flash = container.querySelector('.sceneFlash') || container.querySelector('g[class*="Flash"]')
-    if (flash) {
-      fireEvent.click(flash)
-      const allButtons = screen.queryAllByRole('button')
-      const optionBtn = allButtons.find(btn => btn !== empezarBtn && btn.textContent && btn.textContent.length > 5)
-      if (optionBtn) {
-        fireEvent.click(optionBtn)
-        expect(finishMock).toHaveBeenCalled()
-      }
-    }
-  })
-
-  it('integra hooks correctamente', () => {
-    render(
-      <BrowserRouter>
-        <TarjetaClonada />
-      </BrowserRouter>
-    )
-    expect(mocks.useSiguienteEscenario).toHaveBeenCalled()
-    expect(mocks.useScenarioRun).toHaveBeenCalled()
-    expect(mocks.useFlashTransition).toHaveBeenCalled()
-  })
-
-  it('dispara trigger de flash después de seleccionar', () => {
-    render(
-      <BrowserRouter>
-        <TarjetaClonada />
-      </BrowserRouter>
-    )
-    const empezarBtn = screen.getByTestId('btn-empezar')
-    fireEvent.click(empezarBtn)
-
-    const anyOption = screen.queryAllByRole('button').find(btn => btn.textContent && btn !== empezarBtn)
-    if (anyOption) {
-      fireEvent.click(anyOption)
-      expect(triggerMock).toHaveBeenCalled()
+    const dangerBtn = within(telefono).queryByRole('button', { name: /Ignorar la notificación/ })
+    if (dangerBtn) {
+      fireEvent.click(dangerBtn)
+      await vi.advanceTimersByTimeAsync(800)
+      expect(screen.getByText('Riesgo detectado')).toBeDefined()
     }
   })
 })

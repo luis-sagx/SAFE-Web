@@ -1,228 +1,54 @@
-import { render, screen, fireEvent } from '@testing-library/react'
-import { BrowserRouter } from 'react-router'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { fireEvent, screen, within } from '@testing-library/react'
+import { describe, expect, it, vi } from 'vitest'
+import { empezar } from '../../test/escenario'
 import CableComprometido from './CableComprometido'
 
-const { useSiguienteEscenarioMock, useScenarioRunMock, useFlashTransitionMock } = vi.hoisted(() => ({
-  useSiguienteEscenarioMock: vi.fn(),
-  useScenarioRunMock: vi.fn(),
-  useFlashTransitionMock: vi.fn(),
-}))
+vi.mock('../../context/AuthContext', async () => (await import('../../test/escenario')).authFalso())
+vi.mock('../../lib/api', async () => (await import('../../test/escenario')).apiSinRed())
 
-vi.mock('../../hooks/useSiguienteEscenario', () => ({
-  useSiguienteEscenario: useSiguienteEscenarioMock,
-}))
-
-vi.mock('../../hooks/useScenarioRun', () => ({
-  useScenarioRun: useScenarioRunMock,
-}))
-
-vi.mock('../../hooks/useFlashTransition', () => ({
-  useFlashTransition: useFlashTransitionMock,
-}))
-
-vi.mock('../../components/EscenarioLayout', () => ({
-  default: ({ pantalla, onEmpezar }: any) => (
-    <div data-testid="escenario-layout">
-      <button onClick={onEmpezar} data-testid="btn-empezar">
-        Empezar
-      </button>
-      {pantalla}
-    </div>
-  ),
-}))
-
-vi.mock('../../components/ui/FlashOverlay', () => ({
-  default: () => <div data-testid="flash-overlay" />,
-}))
+function tocarDestello(telefono: HTMLElement) {
+  const destello = telefono.querySelector('.sceneFlash, g[class*="Flash"]')
+  if (destello) fireEvent.click(destello)
+}
 
 describe('CableComprometido', () => {
-  const recordDecisionMock = vi.fn()
-  const finishMock = vi.fn()
-  const triggerMock = vi.fn((callback) => callback())
+  it('abre en la sala de descanso con el cable en el tomacorriente', () => {
+    const telefono = empezar(<CableComprometido />)
 
-  beforeEach(() => {
-    vi.clearAllMocks()
-    useSiguienteEscenarioMock.mockReturnValue({ ruta: '/seccion/fisico/otro' })
-    useScenarioRunMock.mockReturnValue({
-      recordDecision: recordDecisionMock,
-      finish: finishMock,
-    })
-    useFlashTransitionMock.mockReturnValue({ active: false, trigger: triggerMock })
+    expect(within(telefono).getByText('Sala de descanso')).toBeDefined()
   })
 
-  it('renderiza sin errores', () => {
-    const { container } = render(
-      <BrowserRouter>
-        <CableComprometido />
-      </BrowserRouter>
-    )
-    expect(container).toBeDefined()
+  it('usar el cable en la sala de descanso es la opción de mayor riesgo', async () => {
+    const telefono = empezar(<CableComprometido />)
+    tocarDestello(telefono)
+
+    const usarBtn = within(telefono).getByRole('button', { name: /Usarlo para cargar/ })
+    fireEvent.click(usarBtn)
+
+    expect(await screen.findByText('Riesgo detectado')).toBeDefined()
   })
 
-  it('renderiza layout correctamente', () => {
-    render(
-      <BrowserRouter>
-        <CableComprometido />
-      </BrowserRouter>
-    )
-    expect(screen.getByTestId('escenario-layout')).toBeDefined()
+  it('llevarse el cable al escritorio pasa a la segunda fase, no termina la corrida', async () => {
+    const telefono = empezar(<CableComprometido />)
+    tocarDestello(telefono)
+
+    const llevarBtn = within(telefono).getByRole('button', { name: /Llevártelo/ })
+    fireEvent.click(llevarBtn)
+
+    expect(await within(telefono).findByText('Tu escritorio')).toBeDefined()
   })
 
-  it('renderiza flash overlay', () => {
-    render(
-      <BrowserRouter>
-        <CableComprometido />
-      </BrowserRouter>
-    )
-    expect(screen.getByTestId('flash-overlay')).toBeDefined()
-  })
+  it('entregar el cable a IT desde el escritorio es la decisión segura', async () => {
+    const telefono = empezar(<CableComprometido />)
+    tocarDestello(telefono)
 
-  it('usa hooks correctamente', () => {
-    render(
-      <BrowserRouter>
-        <CableComprometido />
-      </BrowserRouter>
-    )
-    expect(useSiguienteEscenarioMock).toHaveBeenCalled()
-    expect(useScenarioRunMock).toHaveBeenCalled()
-    expect(useFlashTransitionMock).toHaveBeenCalled()
-  })
+    fireEvent.click(within(telefono).getByRole('button', { name: /Llevártelo/ }))
+    await within(telefono).findByText('Tu escritorio')
+    tocarDestello(telefono)
 
-  it('inicia escenario cuando se hace click en Empezar', () => {
-    render(
-      <BrowserRouter>
-        <CableComprometido />
-      </BrowserRouter>
-    )
-    const empezarBtn = screen.getByTestId('btn-empezar')
-    fireEvent.click(empezarBtn)
+    const itBtn = within(telefono).getByRole('button', { name: /Entregarlo a IT/ })
+    fireEvent.click(itBtn)
 
-    expect(useScenarioRunMock).toHaveBeenCalled()
-  })
-
-  it('muestra pantalla después de empezar', () => {
-    const { container } = render(
-      <BrowserRouter>
-        <CableComprometido />
-      </BrowserRouter>
-    )
-    const empezarBtn = screen.getByTestId('btn-empezar')
-    fireEvent.click(empezarBtn)
-
-    const svgs = container.querySelectorAll('svg')
-    expect(svgs.length).toBeGreaterThan(0)
-  })
-
-  it('puede reiniciarse múltiples veces', () => {
-    const { rerender } = render(
-      <BrowserRouter>
-        <CableComprometido />
-      </BrowserRouter>
-    )
-    expect(useScenarioRunMock).toHaveBeenCalledTimes(1)
-
-    rerender(
-      <BrowserRouter>
-        <CableComprometido />
-      </BrowserRouter>
-    )
-    expect(useScenarioRunMock).toHaveBeenCalledTimes(2)
-  })
-
-  it('permite interacción después de Empezar', () => {
-    render(
-      <BrowserRouter>
-        <CableComprometido />
-      </BrowserRouter>
-    )
-    const empezarBtn = screen.getByTestId('btn-empezar')
-    fireEvent.click(empezarBtn)
-
-    const buttons = screen.queryAllByRole('button')
-    expect(buttons).toBeDefined()
-  })
-
-  it('muestra opciones al hacer click en el destello', () => {
-    const { container } = render(
-      <BrowserRouter>
-        <CableComprometido />
-      </BrowserRouter>
-    )
-    const empezarBtn = screen.getByTestId('btn-empezar')
-    fireEvent.click(empezarBtn)
-
-    const flash = container.querySelector('.sceneFlash') || container.querySelector('g[class*="Flash"]')
-    if (flash) {
-      fireEvent.click(flash)
-      const buttons = screen.queryAllByRole('button')
-      expect(buttons.length).toBeGreaterThan(1)
-    }
-  })
-
-  it('registra decisión cuando selecciona una opción tras destello', () => {
-    const { container } = render(
-      <BrowserRouter>
-        <CableComprometido />
-      </BrowserRouter>
-    )
-    const empezarBtn = screen.getByTestId('btn-empezar')
-    fireEvent.click(empezarBtn)
-
-    const flash = container.querySelector('.sceneFlash') || container.querySelector('g[class*="Flash"]')
-    if (flash) {
-      fireEvent.click(flash)
-      const allButtons = screen.queryAllByRole('button')
-      const optionBtn = allButtons.find(btn => btn !== empezarBtn && btn.textContent && btn.textContent.length > 5)
-      if (optionBtn) {
-        fireEvent.click(optionBtn)
-        expect(recordDecisionMock).toHaveBeenCalled()
-      }
-    }
-  })
-
-  it('finaliza escenario tras destello y selección', () => {
-    const { container } = render(
-      <BrowserRouter>
-        <CableComprometido />
-      </BrowserRouter>
-    )
-    const empezarBtn = screen.getByTestId('btn-empezar')
-    fireEvent.click(empezarBtn)
-
-    const flash = container.querySelector('.sceneFlash') || container.querySelector('g[class*="Flash"]')
-    if (flash) {
-      fireEvent.click(flash)
-      const optionBtn = screen.queryByRole('button', { name: /Usarlo para cargar/ })
-      if (optionBtn) {
-        fireEvent.click(optionBtn)
-        expect(finishMock).toHaveBeenCalled()
-      }
-    }
-  })
-
-  it('maneja múltiples fases del escenario', () => {
-    const { rerender } = render(
-      <BrowserRouter>
-        <CableComprometido />
-      </BrowserRouter>
-    )
-    expect(useScenarioRunMock).toHaveBeenCalledTimes(1)
-
-    rerender(
-      <BrowserRouter>
-        <CableComprometido />
-      </BrowserRouter>
-    )
-    expect(useScenarioRunMock).toHaveBeenCalledTimes(2)
-  })
-
-  it('configura hooks para transiciones visuales', () => {
-    render(
-      <BrowserRouter>
-        <CableComprometido />
-      </BrowserRouter>
-    )
-    expect(useFlashTransitionMock).toHaveBeenCalled()
+    expect(await screen.findByText('Decisión segura')).toBeDefined()
   })
 })

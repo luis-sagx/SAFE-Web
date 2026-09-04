@@ -1,184 +1,39 @@
-import { render, screen, fireEvent } from '@testing-library/react'
-import { BrowserRouter } from 'react-router'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { fireEvent, screen, within } from '@testing-library/react'
+import { describe, expect, it, vi } from 'vitest'
+import { empezar } from '../../test/escenario'
 import TrampaUSB from './TrampaUSB'
 
-const mocks = vi.hoisted(() => ({
-  useScenarioRun: vi.fn(),
-  useFlashTransition: vi.fn(),
-  useSiguienteEscenario: vi.fn(),
-}))
-
-vi.mock('../../hooks/useScenarioRun', () => ({ useScenarioRun: mocks.useScenarioRun }))
-vi.mock('../../hooks/useFlashTransition', () => ({ useFlashTransition: mocks.useFlashTransition }))
-vi.mock('../../hooks/useSiguienteEscenario', () => ({ useSiguienteEscenario: mocks.useSiguienteEscenario }))
-vi.mock('../../components/EscenarioLayout', () => ({
-  default: ({ pantalla, decision, onEmpezar }: any) => (
-    <div data-testid="escenario-layout">
-      <button onClick={onEmpezar} data-testid="btn-empezar">
-        Empezar
-      </button>
-      {pantalla}
-      {decision}
-    </div>
-  ),
-}))
-vi.mock('../../components/ui/FlashOverlay', () => ({
-  default: () => <div data-testid="flash-overlay" />,
-}))
+vi.mock('../../context/AuthContext', async () => (await import('../../test/escenario')).authFalso())
+vi.mock('../../lib/api', async () => (await import('../../test/escenario')).apiSinRed())
 
 describe('TrampaUSB', () => {
-  const recordDecisionMock = vi.fn()
-  const finishMock = vi.fn()
-  const triggerMock = vi.fn((callback) => callback())
+  it('abre en el estacionamiento con el USB en el suelo', () => {
+    const telefono = empezar(<TrampaUSB />)
 
-  beforeEach(() => {
-    vi.clearAllMocks()
-    mocks.useSiguienteEscenario.mockReturnValue({ ruta: '/seccion/fisico/otro' })
-    mocks.useScenarioRun.mockReturnValue({
-      recordDecision: recordDecisionMock,
-      finish: finishMock,
-    })
-    mocks.useFlashTransition.mockReturnValue({ active: false, trigger: triggerMock })
+    expect(within(telefono).getByText('Estacionamiento')).toBeDefined()
   })
 
-  it('renderiza sin errores', () => {
-    const { container } = render(
-      <BrowserRouter>
-        <TrampaUSB />
-      </BrowserRouter>
-    )
-    expect(container).toBeDefined()
-  })
+  it('la pista explica dónde tocar sin revelar la respuesta', () => {
+    const telefono = empezar(<TrampaUSB />)
 
-  it('renderiza layout correctamente', () => {
-    render(
-      <BrowserRouter>
-        <TrampaUSB />
-      </BrowserRouter>
-    )
-    expect(screen.getByTestId('escenario-layout')).toBeDefined()
-  })
+    fireEvent.click(screen.getByText(/No sé por dónde empezar/))
 
-  it('usa hooks correctamente', () => {
-    render(
-      <BrowserRouter>
-        <TrampaUSB />
-      </BrowserRouter>
-    )
-    expect(mocks.useScenarioRun).toHaveBeenCalled()
-    expect(mocks.useFlashTransition).toHaveBeenCalled()
-  })
-
-  it('registra decisión cuando se selecciona opción', () => {
-    render(
-      <BrowserRouter>
-        <TrampaUSB />
-      </BrowserRouter>
-    )
-    const empezarBtn = screen.getByTestId('btn-empezar')
-    fireEvent.click(empezarBtn)
-
-    const buttons = screen.queryAllByRole('button')
-    const choiceBtn = buttons.find(
-      (btn) => btn.textContent && btn !== empezarBtn && btn.textContent.length > 10,
-    )
-    if (choiceBtn) {
-      fireEvent.click(choiceBtn)
-      expect(recordDecisionMock).toHaveBeenCalled()
-    }
-  })
-
-  it('finaliza escenario después de seleccionar', () => {
-    render(
-      <BrowserRouter>
-        <TrampaUSB />
-      </BrowserRouter>
-    )
-    const empezarBtn = screen.getByTestId('btn-empezar')
-    fireEvent.click(empezarBtn)
-
-    const buttons = screen.queryAllByRole('button')
-    const choiceBtn = buttons.find(
-      (btn) => btn.textContent && btn !== empezarBtn && btn.textContent.length > 10,
-    )
-    if (choiceBtn) {
-      fireEvent.click(choiceBtn)
-      expect(finishMock).toHaveBeenCalled()
-    }
-  })
-
-  it('muestra opciones después de Empezar', () => {
-    render(
-      <BrowserRouter>
-        <TrampaUSB />
-      </BrowserRouter>
-    )
-    const empezarBtn = screen.getByTestId('btn-empezar')
-    fireEvent.click(empezarBtn)
-
-    const options = screen.queryAllByRole('button')
-    expect(options.length).toBeGreaterThan(1)
-  })
-
-  it('registra decisión cuando selecciona una opción', () => {
-    render(
-      <BrowserRouter>
-        <TrampaUSB />
-      </BrowserRouter>
-    )
-    const empezarBtn = screen.getByTestId('btn-empezar')
-    fireEvent.click(empezarBtn)
-
-    const allButtons = screen.queryAllByRole('button')
-    const optionBtn = allButtons.find(btn => btn !== empezarBtn && btn.textContent && btn.textContent.length > 5)
-    if (optionBtn) {
-      fireEvent.click(optionBtn)
-      expect(recordDecisionMock).toHaveBeenCalled()
-    }
-  })
-
-  it('finaliza escenario después de seleccionar', () => {
-    render(
-      <BrowserRouter>
-        <TrampaUSB />
-      </BrowserRouter>
-    )
-    const empezarBtn = screen.getByTestId('btn-empezar')
-    fireEvent.click(empezarBtn)
-
-    const allButtons = screen.queryAllByRole('button')
-    const optionBtn = allButtons.find(btn => btn !== empezarBtn && btn.textContent && btn.textContent.length > 5)
-    if (optionBtn) {
-      fireEvent.click(optionBtn)
-      expect(finishMock).toHaveBeenCalled()
-    }
-  })
-
-  it('muestra botón "No sé por dónde empezar"', () => {
-    render(
-      <BrowserRouter>
-        <TrampaUSB />
-      </BrowserRouter>
-    )
-    const empezarBtn = screen.getByTestId('btn-empezar')
-    fireEvent.click(empezarBtn)
-
-    const helpBtn = screen.getByText(/No sé por dónde empezar/)
-    expect(helpBtn).toBeDefined()
-  })
-
-  it('muestra pista después de click en ayuda', () => {
-    render(
-      <BrowserRouter>
-        <TrampaUSB />
-      </BrowserRouter>
-    )
-    const empezarBtn = screen.getByTestId('btn-empezar')
-    fireEvent.click(empezarBtn)
-
-    const helpBtn = screen.getByText(/No sé por dónde empezar/)
-    fireEvent.click(helpBtn)
     expect(screen.getByText(/Haz click en el USB/)).toBeDefined()
+  })
+
+  it('agarrar el USB es la decisión de riesgo', async () => {
+    const telefono = empezar(<TrampaUSB />)
+
+    fireEvent.click(within(telefono).getByRole('button', { name: /Agarrarlo, alguien lo dejó/ }))
+
+    expect(await screen.findByText('Observación')).toBeDefined()
+  })
+
+  it('dejar el USB en el suelo es la decisión segura', async () => {
+    const telefono = empezar(<TrampaUSB />)
+
+    fireEvent.click(within(telefono).getByRole('button', { name: /Dejarlo ahí/ }))
+
+    expect(await screen.findByText('Decisión segura')).toBeDefined()
   })
 })

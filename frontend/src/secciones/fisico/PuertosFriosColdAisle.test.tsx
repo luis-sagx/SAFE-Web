@@ -1,207 +1,49 @@
-import { render, screen, fireEvent } from '@testing-library/react'
-import { BrowserRouter } from 'react-router'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { fireEvent, screen, within } from '@testing-library/react'
+import { describe, expect, it, vi } from 'vitest'
+import { empezar } from '../../test/escenario'
 import PuertosFriosColdAisle from './PuertosFriosColdAisle'
 
-const mocks = vi.hoisted(() => ({
-  useScenarioRun: vi.fn(),
-}))
-
-vi.mock('../../hooks/useScenarioRun', () => ({ useScenarioRun: mocks.useScenarioRun }))
-vi.mock('../../components/EscenarioLayout', () => ({
-  default: ({ pantalla, decision, onEmpezar }: any) => (
-    <div data-testid="escenario-layout">
-      <button onClick={onEmpezar} data-testid="btn-empezar">
-        Empezar
-      </button>
-      {pantalla}
-      {decision}
-    </div>
-  ),
-}))
+vi.mock('../../context/AuthContext', async () => (await import('../../test/escenario')).authFalso())
+vi.mock('../../lib/api', async () => (await import('../../test/escenario')).apiSinRed())
 
 describe('PuertosFriosColdAisle', () => {
-  const recordDecisionMock = vi.fn()
-  const finishMock = vi.fn()
+  it('abre con la puerta del puerto frío abierta', () => {
+    empezar(<PuertosFriosColdAisle />)
 
-  beforeEach(() => {
-    vi.clearAllMocks()
-    mocks.useScenarioRun.mockReturnValue({
-      recordDecision: recordDecisionMock,
-      finish: finishMock,
-    })
+    expect(screen.getByText(/menos de 3 minutos para actuar/)).toBeDefined()
   })
 
-  it('renderiza sin errores', () => {
-    const { container } = render(
-      <BrowserRouter>
-        <PuertosFriosColdAisle />
-      </BrowserRouter>
-    )
-    expect(container).toBeDefined()
+  it('la pista explica la mejor respuesta sin revelarla del todo', () => {
+    empezar(<PuertosFriosColdAisle />)
+
+    fireEvent.click(screen.getByText(/No sé por dónde empezar/))
+
+    expect(screen.getByText(/actuar INMEDIATAMENTE/)).toBeDefined()
   })
 
-  it('renderiza layout correctamente', () => {
-    render(
-      <BrowserRouter>
-        <PuertosFriosColdAisle />
-      </BrowserRouter>
-    )
-    expect(screen.getByTestId('escenario-layout')).toBeDefined()
-  })
+  it('cerrar y reportar es la decisión excelente', async () => {
+    const telefono = empezar(<PuertosFriosColdAisle />)
 
-  it('llama useScenarioRun hook', () => {
-    render(
-      <BrowserRouter>
-        <PuertosFriosColdAisle />
-      </BrowserRouter>
-    )
-    expect(mocks.useScenarioRun).toHaveBeenCalled()
-  })
+    fireEvent.click(within(telefono).getByRole('button', { name: /Reportar el incidente/ }))
 
-  it('registra decisión cuando se hace click en opción', () => {
-    render(
-      <BrowserRouter>
-        <PuertosFriosColdAisle />
-      </BrowserRouter>
-    )
-    const empezarBtn = screen.getByTestId('btn-empezar')
-    fireEvent.click(empezarBtn)
-
-    const buttons = screen.queryAllByRole('button')
-    const choiceBtn = buttons.find(
-      (btn) => btn.textContent && btn !== empezarBtn && btn.textContent.length > 10,
-    )
-    if (choiceBtn) {
-      fireEvent.click(choiceBtn)
-      expect(recordDecisionMock).toHaveBeenCalled()
-    }
-  })
-
-  it('finaliza escenario después de seleccionar', () => {
-    render(
-      <BrowserRouter>
-        <PuertosFriosColdAisle />
-      </BrowserRouter>
-    )
-    const empezarBtn = screen.getByTestId('btn-empezar')
-    fireEvent.click(empezarBtn)
-
-    const buttons = screen.queryAllByRole('button')
-    const choiceBtn = buttons.find(
-      (btn) => btn.textContent && btn !== empezarBtn && btn.textContent.length > 10,
-    )
-    if (choiceBtn) {
-      fireEvent.click(choiceBtn)
-      expect(finishMock).toHaveBeenCalled()
-    }
-  })
-
-  it('selecciona opción "solo-cierra"', () => {
-    render(
-      <BrowserRouter>
-        <PuertosFriosColdAisle />
-      </BrowserRouter>
-    )
-    const empezarBtn = screen.getByTestId('btn-empezar')
-    fireEvent.click(empezarBtn)
-
-    const soloBtn = screen.queryByRole('button', { name: /Asegurar la puerta/ })
-    if (soloBtn) {
-      fireEvent.click(soloBtn)
-      expect(recordDecisionMock).toHaveBeenCalledWith(expect.objectContaining({ nivel: 'partial' }))
-    }
-  })
-
-  it('selecciona opción "cierra-reporta"', () => {
-    render(
-      <BrowserRouter>
-        <PuertosFriosColdAisle />
-      </BrowserRouter>
-    )
-    const empezarBtn = screen.getByTestId('btn-empezar')
-    fireEvent.click(empezarBtn)
-
-    const reportBtn = screen.queryByRole('button', { name: /Reportar el incidente/ })
-    if (reportBtn) {
-      fireEvent.click(reportBtn)
-      expect(recordDecisionMock).toHaveBeenCalledWith(expect.objectContaining({ nivel: 'safe' }))
-    }
-  })
-
-  it('selecciona opción "nada"', () => {
-    render(
-      <BrowserRouter>
-        <PuertosFriosColdAisle />
-      </BrowserRouter>
-    )
-    const empezarBtn = screen.getByTestId('btn-empezar')
-    fireEvent.click(empezarBtn)
-
-    const nothingBtn = screen.queryByRole('button', { name: /Observar la situación/ })
-    if (nothingBtn) {
-      fireEvent.click(nothingBtn)
-      expect(recordDecisionMock).toHaveBeenCalledWith(expect.objectContaining({ nivel: 'danger' }))
-    }
-  })
-
-  it('reinicia escenario correctamente', () => {
-    const { rerender } = render(
-      <BrowserRouter>
-        <PuertosFriosColdAisle />
-      </BrowserRouter>
-    )
-    expect(mocks.useScenarioRun).toHaveBeenCalledTimes(1)
-
-    rerender(
-      <BrowserRouter>
-        <PuertosFriosColdAisle />
-      </BrowserRouter>
-    )
-    expect(mocks.useScenarioRun).toHaveBeenCalledTimes(2)
-  })
-
-  it('muestra pista cuando clickea "No sé por dónde empezar"', () => {
-    render(
-      <BrowserRouter>
-        <PuertosFriosColdAisle />
-      </BrowserRouter>
-    )
-    const empezarBtn = screen.getByTestId('btn-empezar')
-    fireEvent.click(empezarBtn)
-
-    const helpBtn = screen.getByText(/No sé por dónde empezar/)
-    fireEvent.click(helpBtn)
-    expect(screen.getByText(/actuar INMEDIATAMENTE/i)).toBeDefined()
-  })
-
-  it('muestra panel de resultado "safe" con detalles', () => {
-    render(
-      <BrowserRouter>
-        <PuertosFriosColdAisle />
-      </BrowserRouter>
-    )
-    const empezarBtn = screen.getByTestId('btn-empezar')
-    fireEvent.click(empezarBtn)
-
-    const reportBtn = screen.getByRole('button', { name: /Reportar el incidente/ })
-    fireEvent.click(reportBtn)
-
+    expect(await screen.findByText('Decisión excelente')).toBeDefined()
     expect(screen.getByText(/Lo que hiciste bien/)).toBeDefined()
   })
 
-  it('muestra panel de resultado "partial" con detalles', () => {
-    render(
-      <BrowserRouter>
-        <PuertosFriosColdAisle />
-      </BrowserRouter>
-    )
-    const empezarBtn = screen.getByTestId('btn-empezar')
-    fireEvent.click(empezarBtn)
+  it('solo cerrar la puerta es una respuesta incompleta', async () => {
+    const telefono = empezar(<PuertosFriosColdAisle />)
 
-    const soloBtn = screen.getByRole('button', { name: /Asegurar la puerta/ })
-    fireEvent.click(soloBtn)
+    fireEvent.click(within(telefono).getByRole('button', { name: /Asegurar la puerta/ }))
 
+    expect(await screen.findByText('Acción rápida, respuesta incompleta')).toBeDefined()
     expect(screen.getByText(/Lo que faltó/)).toBeDefined()
+  })
+
+  it('no hacer nada es el fallo crítico', async () => {
+    const telefono = empezar(<PuertosFriosColdAisle />)
+
+    fireEvent.click(within(telefono).getByRole('button', { name: /Observar la situación/ }))
+
+    expect(await screen.findByText('Fallo crítico - Equipos comprometidos')).toBeDefined()
   })
 })

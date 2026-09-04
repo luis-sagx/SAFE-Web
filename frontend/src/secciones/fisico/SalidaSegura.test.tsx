@@ -1,210 +1,54 @@
-import { render, screen, fireEvent } from '@testing-library/react'
-import { BrowserRouter } from 'react-router'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { fireEvent, screen, within } from '@testing-library/react'
+import { describe, expect, it, vi } from 'vitest'
+import { empezar } from '../../test/escenario'
 import SalidaSegura from './SalidaSegura'
 
-const mocks = vi.hoisted(() => ({
-  useSiguienteEscenario: vi.fn(),
-  useScenarioRun: vi.fn(),
-  useFlashTransition: vi.fn(),
-  useNavigate: vi.fn(),
-}))
+vi.mock('../../context/AuthContext', async () => (await import('../../test/escenario')).authFalso())
+vi.mock('../../lib/api', async () => (await import('../../test/escenario')).apiSinRed())
 
-vi.mock('../../hooks/useSiguienteEscenario', () => ({ useSiguienteEscenario: mocks.useSiguienteEscenario }))
-vi.mock('../../hooks/useScenarioRun', () => ({ useScenarioRun: mocks.useScenarioRun }))
-vi.mock('../../hooks/useFlashTransition', () => ({ useFlashTransition: mocks.useFlashTransition }))
-vi.mock('react-router', async () => {
-  const actual = await vi.importActual('react-router')
-  return {
-    ...actual,
-    useNavigate: mocks.useNavigate,
+function asegurarEscritorio(telefono: HTMLElement) {
+  while (within(telefono).queryAllByText('✕').length > 0) {
+    fireEvent.click(within(telefono).getAllByText('✕')[0]!)
   }
-})
-vi.mock('../../components/EscenarioLayout', () => ({
-  default: ({ pantalla, onEmpezar }: any) => (
-    <div data-testid="escenario-layout">
-      <button onClick={onEmpezar} data-testid="btn-empezar">
-        Empezar
-      </button>
-      {pantalla}
-    </div>
-  ),
-}))
-vi.mock('../../components/ui/FlashOverlay', () => ({
-  default: () => <div data-testid="flash-overlay" />,
-}))
+  fireEvent.click(within(telefono).getByText('Contratos'))
+  fireEvent.click(within(telefono).getByText('Nóminas'))
+  fireEvent.click(within(telefono).getByText('Datos Bancarios'))
+  // El botón de bloquear es un <rect> con el onClick, no su <g>: el texto
+  // "⌨️ Bloquear" es un hermano y no burbujea hasta el manejador.
+  const lockRect = telefono.querySelector('rect[width="180"][height="50"]')
+  if (lockRect) fireEvent.click(lockRect)
+}
 
 describe('SalidaSegura', () => {
-  const recordDecisionMock = vi.fn()
-  const finishMock = vi.fn()
-  const triggerMock = vi.fn((callback) => {
-    callback?.()
-  })
-  const navigateMock = vi.fn()
+  it('abre con pestañas, documentos y la computadora sin bloquear', () => {
+    const telefono = empezar(<SalidaSegura />)
 
-  beforeEach(() => {
-    vi.clearAllMocks()
-    mocks.useSiguienteEscenario.mockReturnValue({ ruta: '/seccion/fisico/otro' })
-    mocks.useScenarioRun.mockReturnValue({
-      recordDecision: recordDecisionMock,
-      finish: finishMock,
-    })
-    mocks.useFlashTransition.mockReturnValue({ active: false, trigger: triggerMock })
-    mocks.useNavigate.mockReturnValue(navigateMock)
+    expect(within(telefono).getByText(/Completa todo/)).toBeDefined()
   })
 
-  it('renderiza sin errores', () => {
-    const { container } = render(
-      <BrowserRouter>
-        <SalidaSegura />
-      </BrowserRouter>
-    )
-    expect(container).toBeDefined()
+  it('el botón de terminar sigue deshabilitado mientras falte algo', () => {
+    const telefono = empezar(<SalidaSegura />)
+
+    fireEvent.click(within(telefono).getByText('Contratos'))
+
+    expect(within(telefono).getByRole('button', { name: /Completa todo/ }).hasAttribute('disabled')).toBe(true)
   })
 
-  it('renderiza layout correctamente', () => {
-    render(
-      <BrowserRouter>
-        <SalidaSegura />
-      </BrowserRouter>
-    )
-    expect(screen.getByTestId('escenario-layout')).toBeDefined()
+  it('cerrar todo, guardar documentos y bloquear la computadora habilita terminar', () => {
+    const telefono = empezar(<SalidaSegura />)
+
+    asegurarEscritorio(telefono)
+
+    expect(within(telefono).getByRole('button', { name: 'Listo para irme' }).hasAttribute('disabled')).toBe(false)
   })
 
-  it('inicia cuando se hace click en Empezar', () => {
-    render(
-      <BrowserRouter>
-        <SalidaSegura />
-      </BrowserRouter>
-    )
-    const empezarBtn = screen.getByTestId('btn-empezar')
-    fireEvent.click(empezarBtn)
+  it('terminar con todo asegurado es la decisión segura', async () => {
+    const telefono = empezar(<SalidaSegura />)
 
-    expect(mocks.useScenarioRun).toHaveBeenCalled()
-  })
+    asegurarEscritorio(telefono)
+    fireEvent.click(within(telefono).getByRole('button', { name: 'Listo para irme' }))
 
-  it('muestra SVG después de Empezar', () => {
-    const { container } = render(
-      <BrowserRouter>
-        <SalidaSegura />
-      </BrowserRouter>
-    )
-    const empezarBtn = screen.getByTestId('btn-empezar')
-    fireEvent.click(empezarBtn)
-
-    const svgs = container.querySelectorAll('svg')
-    expect(svgs.length).toBeGreaterThan(0)
-  })
-
-  it('renderiza controles después de empezar', () => {
-    render(
-      <BrowserRouter>
-        <SalidaSegura />
-      </BrowserRouter>
-    )
-    const empezarBtn = screen.getByTestId('btn-empezar')
-    fireEvent.click(empezarBtn)
-
-    const buttons = screen.queryAllByRole('button')
-    expect(buttons.length).toBeGreaterThan(1)
-  })
-
-  it('usa el hook de trigger correctamente', () => {
-    render(
-      <BrowserRouter>
-        <SalidaSegura />
-      </BrowserRouter>
-    )
-    expect(triggerMock).toBeDefined()
-  })
-
-  it('integra hooks correctamente', () => {
-    render(
-      <BrowserRouter>
-        <SalidaSegura />
-      </BrowserRouter>
-    )
-    expect(mocks.useSiguienteEscenario).toHaveBeenCalled()
-    expect(mocks.useScenarioRun).toHaveBeenCalled()
-    expect(mocks.useFlashTransition).toHaveBeenCalled()
-  })
-
-  it('puede reiniciarse múltiples veces', () => {
-    const { rerender } = render(
-      <BrowserRouter>
-        <SalidaSegura />
-      </BrowserRouter>
-    )
-    expect(mocks.useScenarioRun).toHaveBeenCalledTimes(1)
-
-    rerender(
-      <BrowserRouter>
-        <SalidaSegura />
-      </BrowserRouter>
-    )
-    expect(mocks.useScenarioRun).toHaveBeenCalledTimes(2)
-  })
-
-  it('renderiza SVG con elementos interactivos', () => {
-    const { container } = render(
-      <BrowserRouter>
-        <SalidaSegura />
-      </BrowserRouter>
-    )
-    const empezarBtn = screen.getByTestId('btn-empezar')
-    fireEvent.click(empezarBtn)
-
-    const svgs = container.querySelectorAll('svg')
-    expect(svgs.length).toBeGreaterThan(0)
-  })
-
-  it('dispara finish al clickear Terminar', () => {
-    render(
-      <BrowserRouter>
-        <SalidaSegura />
-      </BrowserRouter>
-    )
-    const empezarBtn = screen.getByTestId('btn-empezar')
-    fireEvent.click(empezarBtn)
-
-    expect(mocks.useScenarioRun).toHaveBeenCalled()
-  })
-
-  it('permite abrir una pestaña y ver su contenido', () => {
-    const { container } = render(
-      <BrowserRouter>
-        <SalidaSegura />
-      </BrowserRouter>
-    )
-    const empezarBtn = screen.getByTestId('btn-empezar')
-    fireEvent.click(empezarBtn)
-
-    const svg = container.querySelector('svg')
-    const groups = svg?.querySelectorAll('g') ?? []
-    const clickable = Array.from(groups).find((g) => (g as SVGElement).style.cursor === 'pointer')
-    if (clickable) {
-      fireEvent.click(clickable)
-    }
-    expect(svg).toBeDefined()
-  })
-
-  it('bloquea la computadora y finaliza escenario', () => {
-    const { container } = render(
-      <BrowserRouter>
-        <SalidaSegura />
-      </BrowserRouter>
-    )
-    const empezarBtn = screen.getByTestId('btn-empezar')
-    fireEvent.click(empezarBtn)
-
-    const svg = container.querySelector('svg')
-    const rects = svg?.querySelectorAll('rect') ?? []
-    // Click en todos los rects clicables para cubrir handlers (tabs, docs, lock)
-    rects.forEach((rect) => {
-      if ((rect as SVGElement).style.cursor === 'pointer') {
-        fireEvent.click(rect)
-      }
-    })
-    expect(recordDecisionMock).toBeDefined()
+    expect(await screen.findByText('Decisión segura')).toBeDefined()
+    expect(screen.getByText(/4 pestañas cerradas/)).toBeDefined()
   })
 })
