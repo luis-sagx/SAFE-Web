@@ -405,8 +405,14 @@ que hay.
   sin intentar— derivados de `ultimoOutcome`. No revela la naturaleza del
   escenario a quien no lo jugó: sin intentar no muestra nada, y quien ya lo
   jugó ya recibió el debrief.
-- **Sin bloqueo de orden.** Los 8 escenarios siguen jugables en cualquier orden,
-  como manda el diseño pedagógico. El 6/8 es una meta, no una puerta secuencial.
+- ~~**Sin bloqueo de orden.** Los 8 escenarios siguen jugables en cualquier
+  orden, como manda el diseño pedagógico. El 6/8 es una meta, no una puerta
+  secuencial.~~ **Corregido en `2026-09-03-gamificacion-y-certificado-design.md`
+  §4.1:** el código implementó desbloqueo secuencial (`lib/bloqueoEscenarios.ts`,
+  `RequireEscenarioDisponible.tsx`) y ese spec resuelve la contradicción a favor
+  del código — un público no técnico ante ocho tarjetas iguales no sabe por
+  dónde entrar. Los 8 se ordenan por `dificultad` ascendente para que la
+  secuencia sea una curva, no un orden arbitrario.
 
 ---
 
@@ -569,23 +575,37 @@ nunca sea la única señal, lo que cubre el resto del riesgo.
 
 ## 11. Diferido: certificado
 
+> **Implementado con un diseño distinto al de esta sección** —
+> `2026-09-03-gamificacion-y-certificado-design.md` §5. Se deja el texto
+> original por su valor histórico, con lo que cambió anotado en cada punto.
+
 Se construye después de F4, en su propia fase, y arrastra consigo:
 
-- Servicio **`certificados` (:3003)**: genera el PDF con `pdfkit` (no un
+- ~~Servicio **`certificados` (:3003)**: genera el PDF con `pdfkit` (no un
   navegador headless: añadiría cientos de MB al contenedor). Consulta a
   `entrenamiento` el progreso y a `identidad` el nombre. Tabla `Certificate` con
-  `codigo` verificable y `revocadoAt`.
-- Servicio **`notificaciones` (:3004)**: única salida SMTP del sistema, con cola
-  de reintento. Se justifica cuando hay **dos** productores de correo; con uno
-  solo sería un contenedor de más.
-- **Verificación de correo por código** al registrarse (tabla
-  `CodigoVerificacion`, 6 dígitos, 15 min, máximo 5 intentos). Se difiere junto
-  al certificado porque su razón de ser es garantizar que el certificado llegue:
-  sin certificado, un correo con typo no causa daño, porque el participante
-  inicia sesión con lo mismo que escribió.
-- **Revocación:** si un participante ya certificado repite un escenario y baja de
-  6/8, la aplicación marca `revocadoAt` y deja de ofrecer la descarga. El PDF ya
-  enviado por correo no se persigue — no se promete lo imposible.
+  `codigo` verificable y `revocadoAt`.~~ **Descartado:** un tercer servicio que
+  llamara a `entrenamiento` por red viola §2 de `ARQUITECTURA.md` (los
+  servicios no se llaman entre sí). `identidad` genera el PDF con `pdfkit`
+  (eso sí se mantiene) a partir de una **atestación firmada por
+  `entrenamiento`** que el cliente lleva de un servicio a otro — la tabla
+  `Certificate` vive en `identidad`.
+- ~~Servicio **`notificaciones` (:3004)**: única salida SMTP del sistema, con
+  cola de reintento. Se justifica cuando hay **dos** productores de correo; con
+  uno solo sería un contenedor de más.~~ **Descartado por el propio criterio
+  de este punto:** sin envío por correo, hay cero productores, no dos.
+- ~~**Verificación de correo por código** al registrarse (…).~~ **Descartada:**
+  su razón de ser era garantizar que el certificado llegara por correo. Con
+  descarga en la aplicación, un correo con typo ya no impide que el
+  participante tenga su certificado.
+- **Revocación:** ~~si un participante ya certificado repite un escenario y
+  baja de 6/8, la aplicación marca `revocadoAt` y deja de ofrecer la
+  descarga.~~ **No es implementable así:** `identidad` no tiene forma de
+  enterarse de que alguien bajó de umbral sin llamar a `entrenamiento`, y eso
+  rompería §2. Se sustituye por exigir una atestación fresca en cada descarga
+  (quien bajó de umbral no la consigue) más `revocadoAt` como acción manual de
+  un supervisor. El PDF ya descargado no se persigue — no se promete lo
+  imposible.
 - El PDF **no se persiste**: se regenera de la fila de `Certificate` más el
   nombre pedido a `identidad`. Guardarlo crearía un archivo con datos personales
   en disco, reabriendo el problema que el diseño de la cédula acaba de cerrar.
