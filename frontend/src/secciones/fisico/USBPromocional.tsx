@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router'
 import EscenarioLayout from '../../components/EscenarioLayout'
 import FlashOverlay from '../../components/ui/FlashOverlay'
 import { useFlashTransition } from '../../hooks/useFlashTransition'
+import { useSiguienteEscenario } from '../../hooks/useSiguienteEscenario'
 import type { Contexto } from '../../components/ui/ContextoEscenario'
 import dossierTheme from '../../styles/dossier-theme.module.css'
 import { useScenarioRun } from '../../hooks/useScenarioRun'
@@ -195,6 +196,7 @@ function stampWord(level: Level) {
 function USBPromocional() {
   const navigate = useNavigate()
   const run = useScenarioRun('fisico/usb-promocional')
+  const { ruta: siguienteRuta } = useSiguienteEscenario('fisico/usb-promocional')
 
   const [choicesShown, setChoicesShown] = useState(false)
   const [shuffledChoices, setShuffledChoices] = useState<Choice[]>([])
@@ -214,7 +216,7 @@ function USBPromocional() {
   }
 
   function handleNext() {
-    navigate('/seccion/fisico')
+    if (siguienteRuta) navigate(siguienteRuta)
   }
 
   function handleFlashClick() {

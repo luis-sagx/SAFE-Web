@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router'
 import EscenarioLayout from '../../components/EscenarioLayout'
 import FlashOverlay from '../../components/ui/FlashOverlay'
 import { useFlashTransition } from '../../hooks/useFlashTransition'
+import { useSiguienteEscenario } from '../../hooks/useSiguienteEscenario'
 import type { Contexto } from '../../components/ui/ContextoEscenario'
 import dossierTheme from '../../styles/dossier-theme.module.css'
 import { useScenarioRun } from '../../hooks/useScenarioRun'
@@ -182,6 +183,7 @@ function stampWord(level: Level) {
 function ConexionPublica() {
   const navigate = useNavigate()
   const run = useScenarioRun('fisico/conexion-publica')
+  const { ruta: siguienteRuta } = useSiguienteEscenario('fisico/conexion-publica')
 
   const [choicesShown, setChoicesShown] = useState(false)
   const [shuffledChoices, setShuffledChoices] = useState<Choice[]>([])
@@ -201,7 +203,7 @@ function ConexionPublica() {
   }
 
   function handleNext() {
-    navigate('/seccion/fisico')
+    if (siguienteRuta) navigate(siguienteRuta)
   }
 
   function handleFlashClick() {
