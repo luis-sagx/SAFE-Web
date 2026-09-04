@@ -57,57 +57,21 @@ function verdictLabel(level: Level): string {
 function shuffled<T>(arr: T[]): T[] {
   const a = arr.slice()
   for (let i = a.length - 1; i > 0; i -= 1) {
-    const j = Math.floor(Math.random() * (i + 1))
+    const j = Math.floor(crypto.getRandomValues(new Uint32Array(1))[0]! / (2 ** 32) * (i + 1))
     ;[a[i], a[j]] = [a[j]!, a[i]!]
   }
   return a
 }
 
-export default function CodigoQRCafe() {
-  const run = useScenarioRun('fisico/qr-cafe-wifi')
-  const stampFlash = useFlashTransition()
+interface EscenaProps {
+  resolved: Resolved | null
+  shuffledChoices: Choice[]
+  revealPending: boolean
+  onChoice: (choice: Choice) => void
+}
 
-  const [resolved, setResolved] = useState<Resolved | null>(null)
-  const [revealPending, setRevealPending] = useState(false)
-  const [shuffledChoices, setShuffledChoices] = useState<Choice[]>([])
-
-  function onEmpezar() {
-    setResolved(null)
-    setShuffledChoices(shuffled(SCENARIO.choices))
-  }
-
-  function handleChoice(choice: Choice) {
-    setRevealPending(true)
-    run.recordDecision({ nivel: choice.level, riesgo: choice.risk })
-
-    stampFlash.trigger(() => {
-      setRevealPending(false)
-      setResolved({ level: choice.level, feedback: choice.feedback })
-      void run.finish({
-        endingId: choice.level,
-        outcome: choice.level === 'safe' ? 'CORRECTO' : choice.level === 'warn' ? 'PARCIAL' : 'INCORRECTO',
-      })
-    }, 750)
-  }
-
-  const contexto: Contexto = {
-    antes: (
-      <>
-        Los cafés y espacios públicos son lugares donde los atacantes dejan señales falsas. Un
-        código QR en la pared podría parecer legítimo pero en realidad redirigirte a un sitio
-        malicioso o iniciar una descarga no autorizada. La gente confía más en códigos QR que en
-        enlaces porque parecen "más seguros", pero el riesgo es el mismo.
-      </>
-    ),
-    ahora: (
-      <>
-        <strong>Ahora</strong> necesitas conectarte a internet en un café. Ves un código QR en la
-        pared. ¿Qué haces?
-      </>
-    ),
-  }
-
-  const ESCENA = () => (
+function Escena({ resolved, shuffledChoices, revealPending, onChoice }: EscenaProps) {
+  return (
     <div className="w-full space-y-4 flex flex-col h-full">
       <img
         src="/InternetCafe.jpeg"
@@ -135,7 +99,7 @@ export default function CodigoQRCafe() {
           {shuffledChoices.map((choice) => (
             <button
               key={choice.label}
-              onClick={() => handleChoice(choice)}
+              onClick={() => onChoice(choice)}
               disabled={revealPending || resolved !== null}
               className="w-full px-4 py-2 rounded font-semibold text-gray-800 bg-gray-300 hover:bg-gray-400 disabled:opacity-50 disabled:cursor-not-allowed transition text-sm text-left"
             >
@@ -146,8 +110,66 @@ export default function CodigoQRCafe() {
       )}
     </div>
   )
+}
 
-  const pantalla = <ESCENA />
+export default function CodigoQRCafe() {
+  const run = useScenarioRun('fisico/qr-cafe-wifi')
+  const stampFlash = useFlashTransition()
+
+  const [resolved, setResolved] = useState<Resolved | null>(null)
+  const [revealPending, setRevealPending] = useState(false)
+  const [shuffledChoices, setShuffledChoices] = useState<Choice[]>([])
+
+  function onEmpezar() {
+    setResolved(null)
+    setShuffledChoices(shuffled(SCENARIO.choices))
+  }
+
+  function handleChoice(choice: Choice) {
+    setRevealPending(true)
+    run.recordDecision({ nivel: choice.level, riesgo: choice.risk })
+
+    const getOutcome = (level: Level) => {
+      if (level === 'safe') return 'CORRECTO'
+      if (level === 'warn') return 'PARCIAL'
+      return 'INCORRECTO'
+    }
+
+    stampFlash.trigger(() => {
+      setRevealPending(false)
+      setResolved({ level: choice.level, feedback: choice.feedback })
+      void run.finish({
+        endingId: choice.level,
+        outcome: getOutcome(choice.level),
+      })
+    }, 750)
+  }
+
+  const contexto: Contexto = {
+    antes: (
+      <>
+        Los cafés y espacios públicos son lugares donde los atacantes dejan señales falsas. Un
+        código QR en la pared podría parecer legítimo pero en realidad redirigirte a un sitio
+        malicioso o iniciar una descarga no autorizada. La gente confía más en códigos QR que en
+        enlaces porque parecen "más seguros", pero el riesgo es el mismo.
+      </>
+    ),
+    ahora: (
+      <>
+        <strong>Ahora</strong> necesitas conectarte a internet en un café. Ves un código QR en la
+        pared. ¿Qué haces?
+      </>
+    ),
+  }
+
+  const pantalla = (
+    <Escena
+      resolved={resolved}
+      shuffledChoices={shuffledChoices}
+      revealPending={revealPending}
+      onChoice={handleChoice}
+    />
+  )
 
   const decisionPanel = resolved ? (
     <div className="space-y-4">
@@ -180,6 +202,13 @@ export default function CodigoQRCafe() {
     </div>
   )
 
+  const getResultado = () => {
+    if (!resolved) return undefined
+    if (resolved.level === 'safe') return 'good'
+    if (resolved.level === 'warn') return 'partial'
+    return 'bad'
+  }
+
   return (
     <EscenarioLayout
       escenarioId="fisico/qr-cafe-wifi"
@@ -190,7 +219,7 @@ export default function CodigoQRCafe() {
       pantalla={pantalla}
       decision={decisionPanel}
       ocultarDecision={false}
-      resultado={resolved ? (resolved.level === 'safe' ? 'good' : resolved.level === 'warn' ? 'partial' : 'bad') : undefined}
+      resultado={getResultado()}
       onEmpezar={onEmpezar}
       dispositivo="escritorio"
     />
