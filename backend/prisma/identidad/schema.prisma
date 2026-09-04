@@ -67,3 +67,42 @@ model Participant {
 
   createdAt DateTime @default(now())
 }
+
+/// Certificado de las 4 horas del entrenamiento. Se emite al canjear una
+/// atestación firmada por `entrenamiento` (spec 2026-09-03 §5): este servicio
+/// nunca consulta el progreso por su cuenta, solo verifica lo que el
+/// participante trae firmado.
+///
+/// Sin puntajes ni detalle por escenario: `identidad` guarda el hecho de la
+/// aprobación, no el rendimiento. Eso vive en `entrenamiento`, donde debe
+/// quedarse.
+model Certificate {
+  id String @id @default(uuid())
+
+  /// Único: un certificado por persona. `POST /api/certificados` es
+  /// idempotente sobre este campo (ver §5.4.1 del diseño).
+  participantId String @unique
+
+  /// Aleatorio, sin relación con `seq` ni con ningún dato personal: derivarlo
+  /// filtraría el orden de registro o el número de participantes a quien
+  /// reúna dos códigos. Formato "SW-XXXX-XXXX", alfabeto sin caracteres
+  /// ambiguos (sin O/0, sin I/1).
+  codigo String @unique
+
+  /// Los módulos que la atestación cubría al emitirse o al último recorrido
+  /// mayor. Es lo que evita que un certificado de cinco módulos y uno de seis
+  /// digan lo mismo el día que crezca UMBRALES.
+  modulos String[]
+
+  /// Constante hoy (`HORAS_CERTIFICADO`), guardada y no recalculada: un
+  /// certificado ya emitido no debe cambiar si el número cambia después.
+  horas Int @default(4)
+
+  emitidoAt DateTime @default(now())
+
+  /// Solo lo pone un supervisor (retiro de consentimiento, incidencia). No
+  /// existe revocación automática por bajar de umbral: `identidad` no tiene
+  /// forma de enterarse sin llamar a `entrenamiento`, y eso rompería la regla
+  /// de que los servicios no se llaman entre sí (§5.3 del diseño).
+  revocadoAt DateTime?
+}

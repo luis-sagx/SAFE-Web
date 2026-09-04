@@ -1,5 +1,5 @@
 import { Landmark, Paperclip, Search, SendHorizontal, UserRound } from 'lucide-react'
-import { useMemo } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import { CUENTA_FICTICIA, IDENTIDAD_FICTICIA } from '../../lib/identidadFicticia'
 import { AvisoSitio, CabeceraSitio, PieSitio } from './armazonSitio'
@@ -343,6 +343,21 @@ function DeviceScreen({
   // Si la cuenta ya está anonimizada no queda nombre que poner, y "tu nombre"
   // en minúscula sigue leyéndose dentro de la frase.
   const view = useMemo(() => conNombre(vista, displayName || 'tu nombre'), [vista, displayName])
+  const hiloRef = useRef<HTMLDivElement>(null)
+
+  // Al enviar una respuesta, el nodo siguiente añade esa burbuja y la réplica
+  // del remitente al final del hilo. Dejarlas fuera de la vista parece que no
+  // hubiera llegado respuesta, aunque esté debajo del pliegue.
+  useEffect(() => {
+    if (view.kind !== 'sms') return
+    const hilo = hiloRef.current
+    if (!hilo) return
+    if (typeof hilo.scrollTo === 'function') {
+      hilo.scrollTo({ top: hilo.scrollHeight, behavior: 'smooth' })
+    } else {
+      hilo.scrollTop = hilo.scrollHeight
+    }
+  }, [view])
 
   if (view.kind === 'mail') {
     return (
@@ -526,7 +541,7 @@ function DeviceScreen({
         <span className={styles.smsVolver} aria-hidden />
       </div>
 
-      <div className={styles.smsThread}>
+      <div ref={hiloRef} className={styles.smsThread}>
         {view.msgs.map((msg, i) => (
           <div
             key={msg.text}

@@ -7,8 +7,10 @@ Software, Departamento de Ciencias de la Computación.
 El participante se registra con su nombre, apellido, correo y cédula —esta
 última nunca se almacena, solo su huella, y solo sirve para que nadie se
 registre dos veces—, juega escenarios simulados de fraude que registran cada
-decisión, y el supervisor exporta esos resultados —identificados solo por un
-seudónimo— para compararlos con un pre-test y un post-test aplicados aparte.
+decisión, consulta su propio recorrido y descarga un certificado al aprobar
+todos los módulos, y el supervisor exporta esos resultados —identificados solo
+por un seudónimo— para compararlos con un pre-test y un post-test aplicados
+aparte.
 
 ## Estructura
 
@@ -23,7 +25,7 @@ seudónimo— para compararlos con un pre-test y un post-test aplicados aparte.
 
 | Servicio | Puerto | Rutas | Qué sabe |
 |---|---|---|---|
-| `identidad` | 3001 | `/api/auth/*` | Nombre, correo, contraseña. Firma el JWT. |
+| `identidad` | 3001 | `/api/auth/*`, `/api/admin/*`, `/api/certificados/*` | Nombre, correo, contraseña, certificados. Firma el JWT. |
 | `entrenamiento` | 3002 | `/api/runs/*` | Las corridas del estudio, identificadas solo por seudónimo. |
 
 No se llaman entre sí: el JWT lleva lo que ambos necesitan y cada uno lo verifica

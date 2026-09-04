@@ -1,9 +1,19 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { seudonimo, type JwtPayload } from '@comun';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import { seudonimo, type AtestacionPayload, type JwtPayload } from '@comun';
 import { Prisma } from '../../../../generated/entrenamiento/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateRunDto } from './dto/create-run.dto';
-import { calcularProgreso, UMBRALES } from './progreso';
+import { calcularProgreso, TOTALES, UMBRALES } from './progreso';
+
+/// Vida del pase entre servicios: un solo salto a través del cliente para
+/// emitir y descargar el certificado, no una credencial de sesión. Sin
+/// variable de entorno: no hay despliegue que necesite otro valor.
+const ATESTACION_EXPIRES_IN = '5m';
 
 export interface ResultadoCorrida {
   seudonimo: string;
@@ -19,7 +29,10 @@ export interface ResultadoCorrida {
 
 @Injectable()
 export class RunsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly jwt: JwtService,
+  ) {}
 
   create(participante: JwtPayload, dto: CreateRunDto) {
     return this.prisma.scenarioRun.create({
@@ -62,7 +75,8 @@ export class RunsService {
   /// nombre de módulo mal escrito no debe leerse como "cero avance".
   async progreso(participantId: string, modulo: string) {
     const requeridos = UMBRALES[modulo];
-    if (requeridos === undefined) {
+    const total = TOTALES[modulo];
+    if (requeridos === undefined || total === undefined) {
       throw new NotFoundException(`No existe el módulo "${modulo}".`);
     }
 
@@ -71,7 +85,44 @@ export class RunsService {
       select: { scenarioId: true, outcome: true, finishedAt: true },
     });
 
-    return calcularProgreso(modulo, requeridos, corridas);
+    return calcularProgreso(modulo, requeridos, total, corridas);
+  }
+
+  /// Atestación para el certificado: comprueba TODOS los módulos que declara
+  /// `UMBRALES` —no un número fijo— y firma un pase de un solo salto que
+  /// `identidad` verificará para emitirlo. Nunca lleva nombre ni correo: solo
+  /// lo que el análisis ya conoce del participante (ver `JwtPayload`).
+  ///
+  /// 409 y no 200-con-lista-vacía: quien pide una atestación sin cumplir
+  /// todavía no tiene nada que canjear, y el cliente necesita saber qué le
+  /// falta para mostrarlo, no solo que la petición "funcionó".
+  async atestacion(participante: JwtPayload): Promise<{ atestacion: string }> {
+    const modulos = Object.keys(UMBRALES);
+    const progresos = await Promise.all(
+      modulos.map((modulo) => this.progreso(participante.sub, modulo)),
+    );
+
+    const faltan = progresos.filter((p) => !p.aprobado).map((p) => p.modulo);
+
+    if (faltan.length > 0) {
+      throw new ConflictException({
+        message: 'Todavía no apruebas todos los módulos.',
+        faltan,
+      });
+    }
+
+    const payload: AtestacionPayload = {
+      sub: participante.sub,
+      seq: participante.seq,
+      modulos,
+      typ: 'atestacion',
+    };
+
+    const atestacion = await this.jwt.signAsync(payload, {
+      expiresIn: ATESTACION_EXPIRES_IN,
+    });
+
+    return { atestacion };
   }
 
   /// Todas las corridas del estudio para el supervisor, seudonimizadas. Se

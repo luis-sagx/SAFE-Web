@@ -378,6 +378,21 @@ function StoryEscenario({
       .appHilo
     if (hilo !== undefined) {
       if (!engine.isEnding) {
+        const cerrarGoto = engine.node.view.kind === 'web' ? engine.node.view.cerrarGoto : undefined
+        const cerrarLabel = engine.node.view.kind === 'web' ? engine.node.view.cerrarLabel : undefined
+        const destinoAlCerrar =
+          cerrarGoto && story[cerrarGoto]?.view.kind === hilo ? cerrarGoto : undefined
+
+        // Desde una app intermedia, Mensajes significa cerrarla para continuar
+        // el chat, igual que la flecha de salir. Volver al último hilo visto
+        // aquí repetiría el mensaje que abrió la app y dejaría el grafo atrás.
+        if (destinoAlCerrar) {
+          setAppAbierta(undefined)
+          setPestanaMirada(undefined)
+          engine.choose(destinoAlCerrar, cerrarLabel)
+          return
+        }
+
         // Cada icono vuelve a lo suyo; si esa app todavía no se ha visto en la
         // corrida, a lo último que hubo.
         const destino =

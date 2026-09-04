@@ -201,6 +201,43 @@ async function request<T>(
   return response.status === 204 ? (null as T) : ((await response.json()) as T)
 }
 
+/// Variante de `request` para la única respuesta del API que no es JSON: el
+/// PDF del certificado. Repite el mismo reintento de sesión que `request`
+/// —el access token puede vencer entre pedir la atestación y descargar el
+/// PDF— en vez de compartir código con ella, porque el cuerpo de la respuesta
+/// se lee de dos formas distintas y no hay una tercera función que las
+/// unifique sin complicar la que ya existe.
+async function requestBlob(
+  path: string,
+  body: unknown,
+  reintentado = false,
+): Promise<Blob> {
+  const token = getToken()
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+  if (token) {
+    headers.Authorization = `Bearer ${token}`
+  }
+
+  const response = await fetch(`${BASE_URL}${path}`, {
+    method: 'POST',
+    headers,
+    credentials: 'same-origin',
+    body: JSON.stringify(body),
+  })
+
+  if (!response.ok) {
+    if (response.status === 401 && !reintentado && (await renovarSesion())) {
+      return requestBlob(path, body, true)
+    }
+    if (response.status === 401) {
+      setToken(null)
+    }
+    throw new ApiError('No se pudo generar el certificado.', response.status)
+  }
+
+  return response.blob()
+}
+
 export function register(credentials: Credentials): Promise<Session> {
   return request<Session>('/auth/register', {
     method: 'POST',
@@ -291,4 +328,42 @@ export function eliminarParticipante(id: string): Promise<null> {
 
 export function fetchResultados(): Promise<ResultadoCorrida[]> {
   return request<ResultadoCorrida[]>('/runs/resultados')
+}
+
+// --- Certificado (spec 2026-09-03-gamificacion-y-certificado-design.md) ---
+
+/** Un solo salto a través del cliente: lo firma `entrenamiento` cuando todos
+ *  los módulos están aprobados, y `identidad` lo canjea. Vive 5 minutos; el
+ *  frontend no la guarda entre pantallas, la pide de nuevo cada vez. */
+export interface Certificado {
+  codigo: string
+  emitidoAt: string
+  modulos: string[]
+  horas: number
+}
+
+export interface VerificacionCertificado {
+  valido: boolean
+  emitidoAt?: string
+  horas?: number
+  modulos?: string[]
+}
+
+/** 409 (`ApiError`) si todavía falta algún módulo por aprobar; el mensaje del
+ *  servidor ya lo dice. */
+export function fetchAtestacion(): Promise<{ atestacion: string }> {
+  return request<{ atestacion: string }>('/runs/atestacion')
+}
+
+export function emitirCertificado(atestacion: string): Promise<Certificado> {
+  return request<Certificado>('/certificados', { method: 'POST', body: { atestacion } })
+}
+
+export function descargarCertificadoPdf(atestacion: string): Promise<Blob> {
+  return requestBlob('/certificados/pdf', { atestacion })
+}
+
+/** Pública, sin sesión: no pasa por `auth`. */
+export function verificarCertificado(codigo: string): Promise<VerificacionCertificado> {
+  return request<VerificacionCertificado>(`/certificados/verificar/${codigo}`, { auth: false })
 }

@@ -212,10 +212,12 @@ const RETIRO: ScreenView = {
   ],
   aviso:
     'Para retirar debes alcanzar el mínimo y abonar la comisión de liberación antes de que se procese la salida de fondos.',
+  button: 'No voy a invertir en esto.',
+  botonGoto: 'e_corta',
+  botonLabel: 'Cortó la inversión tras ver la comisión de liberación',
   cerrarGoto: 'n6',
   cerrarLabel: 'Volvió al panel después de ver las condiciones de retiro',
   fields: [],
-  button: '',
 }
 
 const REGISTRO: ScreenView = {
@@ -241,10 +243,12 @@ const REGISTRO: ScreenView = {
   ],
   aviso:
     'Captar dinero del público sin autorización es un delito. Si una plataforma no está en el registro, no hay a quién reclamarle.',
+  button: 'No voy a invertir en esto.',
+  botonGoto: 'e_corta',
+  botonLabel: 'Cortó la inversión tras comprobar el registro público',
   cerrarGoto: 'n3',
   cerrarLabel: 'Volvió al chat después de consultar el registro',
   fields: [],
-  button: '',
 }
 
 const TRANSFERENCIA: ScreenView = {

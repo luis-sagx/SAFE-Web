@@ -56,10 +56,10 @@ const CHAT: ScreenView = {
 
 const MENSAJES: ScreenView = {
   kind: 'web',
-  app: 'Mensajes de texto',
+  app: 'SMS',
   url: 'sms',
   secure: true,
-  brand: 'Recibidos',
+  brand: 'SMS · Recibidos',
   title: 'Hoy',
   datos: [
     {
@@ -163,10 +163,10 @@ const APPS: AppTelefono[] = [
   { Icono: MessageCircle, texto: 'Mensajes', color: '#2f9e44', hilo: 'sms' },
   {
     Icono: MessageSquareText,
-    texto: 'Mensajes de texto',
+    texto: 'SMS',
     color: '#7048e8',
     goto: 'n2',
-    label: 'Abrió los mensajes de texto para ver el código',
+    label: 'Abrió SMS para ver el código',
   },
   {
     Icono: Phone,
