@@ -60,6 +60,9 @@ services:
       JWT_SECRET: "${JWT_SECRET:?falta JWT_SECRET en .env, generar con openssl rand -base64 48}"
       # Solo este servicio lo recibe: es el único que ve una cédula.
       CEDULA_PEPPER: "${CEDULA_PEPPER:?falta CEDULA_PEPPER en .env, generar con openssl rand -base64 48}"
+      # Base de la URL de verificación que imprime el certificado. Opcional:
+      # sin ella, el certificado usa un valor por defecto.
+      CERTIFICADO_ORIGEN: ${CERTIFICADO_ORIGEN:-https://safeweb.espe.edu.ec}
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-15m}
       # Solo este servicio firma y verifica refresh tokens (POST /api/auth/refresh).
       REFRESH_TOKEN_EXPIRES_IN: ${REFRESH_TOKEN_EXPIRES_IN:-12h}
