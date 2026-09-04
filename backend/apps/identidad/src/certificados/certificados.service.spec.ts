@@ -1,4 +1,4 @@
-import { ForbiddenException } from '@nestjs/common';
+import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import type { ConfigService } from '@nestjs/config';
 import type { JwtService } from '@nestjs/jwt';
 import type { AtestacionPayload, JwtPayload } from '@comun';
@@ -98,6 +98,64 @@ describe('CertificadosService.emitir · el canje de la atestación', () => {
       PARTICIPANTE.sub,
     );
     expect((datosCreados as { codigo: string }).codigo).toMatch(/^SW-/);
+  });
+
+  // Astronómicamente raro con este alfabeto, pero si el código generado
+  // choca con uno ya existente, se reintenta con uno nuevo en vez de fallar
+  // la petición del participante.
+  it('reintenta con otro código si el generado choca con uno existente', async () => {
+    const jwt = jwtQueDevuelve(atestacionValida());
+    let intentos = 0;
+    const svc = servicio(
+      {
+        certificate: {
+          findUnique: () => Promise.resolve(null),
+          create: () => {
+            intentos += 1;
+            if (intentos === 1) {
+              const colision = { code: 'P2002' };
+              return Promise.reject(colision);
+            }
+            return Promise.resolve({
+              codigo: 'SW-SEGUNDO-OK',
+              modulos: atestacionValida().modulos,
+              horas: 4,
+              emitidoAt: new Date('2026-09-04T00:00:00.000Z'),
+            });
+          },
+        },
+      },
+      jwt,
+    );
+
+    const resultado = await svc.emitir(PARTICIPANTE, 'token');
+
+    expect(intentos).toBe(2);
+    expect(resultado.codigo).toBe('SW-SEGUNDO-OK');
+  });
+
+  // Un error que no es una colisión de índice único (o que ni siquiera trae
+  // forma de error de Prisma) no debe reintentarse: hay que dejarlo subir tal
+  // cual para que no se enmascare un fallo real de la base.
+  it('un error que no es una colisión de código se propaga sin reintentar', async () => {
+    const jwt = jwtQueDevuelve(atestacionValida());
+    let intentos = 0;
+    const fallo = 'la base no respondió';
+    const svc = servicio(
+      {
+        certificate: {
+          findUnique: () => Promise.resolve(null),
+          create: () => {
+            intentos += 1;
+            return Promise.reject(fallo);
+          },
+        },
+      },
+      jwt,
+    );
+
+    await expect(svc.emitir(PARTICIPANTE, 'token')).rejects.toBe(fallo);
+    expect(intentos).toBe(1);
   });
 
   // Idempotencia (§5.4 del diseño): pedirlo dos veces con el mismo recorrido
@@ -227,5 +285,90 @@ describe('CertificadosService.verificar', () => {
 
     expect(inexistente).toEqual({ valido: false });
     expect(revocado).toEqual({ valido: false });
+  });
+});
+
+describe('CertificadosService.generarPdf', () => {
+  const CERTIFICADO_EXISTENTE = {
+    codigo: 'SW-AAAA-BBBB',
+    modulos: ['phishing'],
+    horas: 4,
+    emitidoAt: new Date('2026-09-01T00:00:00.000Z'),
+    revocadoAt: null as Date | null,
+  };
+  const PERSONA = { nombre: 'Luis', apellido: 'Sagnay' };
+
+  function servicioConPersona(
+    certificado: typeof CERTIFICADO_EXISTENTE | null,
+    persona: typeof PERSONA | null,
+  ) {
+    return servicio(
+      {
+        certificate: { findUnique: () => Promise.resolve(certificado) },
+        participant: { findUnique: () => Promise.resolve(persona) },
+      },
+      jwtQueDevuelve(atestacionValida()),
+    );
+  }
+
+  it('regenera el PDF del certificado vigente con el nombre de la base', async () => {
+    const svc = servicioConPersona(CERTIFICADO_EXISTENTE, PERSONA);
+
+    const buffer = await svc.generarPdf(PARTICIPANTE, 'token');
+
+    expect(buffer.subarray(0, 5).toString('latin1')).toBe('%PDF-');
+  });
+
+  it('sin certificado emitido, 404', async () => {
+    const svc = servicioConPersona(null, PERSONA);
+
+    await expect(svc.generarPdf(PARTICIPANTE, 'token')).rejects.toBeInstanceOf(
+      NotFoundException,
+    );
+  });
+
+  it('un certificado revocado no genera PDF', async () => {
+    const svc = servicioConPersona(
+      { ...CERTIFICADO_EXISTENTE, revocadoAt: new Date() },
+      PERSONA,
+    );
+
+    await expect(svc.generarPdf(PARTICIPANTE, 'token')).rejects.toBeInstanceOf(
+      NotFoundException,
+    );
+  });
+
+  // Caso de borde: la cuenta se eliminó entre emitir el certificado y pedir
+  // el PDF. No debería poder pasar en operación normal, pero si pasa no debe
+  // reventar con un nombre `undefined`.
+  it('sin la cuenta del participante, 404', async () => {
+    const svc = servicioConPersona(CERTIFICADO_EXISTENTE, null);
+
+    await expect(svc.generarPdf(PARTICIPANTE, 'token')).rejects.toBeInstanceOf(
+      NotFoundException,
+    );
+  });
+});
+
+describe('CertificadosService.revocar', () => {
+  it('marca revocadoAt en la fila indicada', async () => {
+    let argumentos: unknown;
+    const svc = servicio(
+      {
+        certificate: {
+          update: (args: unknown) => {
+            argumentos = args;
+            return Promise.resolve({});
+          },
+        },
+      },
+      jwtQueDevuelve(atestacionValida()),
+    );
+
+    await svc.revocar('c1');
+
+    expect(argumentos).toMatchObject({ where: { id: 'c1' } });
+    const data = (argumentos as { data: { revocadoAt: Date } }).data;
+    expect(data.revocadoAt).toBeInstanceOf(Date);
   });
 });

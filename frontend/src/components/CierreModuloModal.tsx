@@ -17,6 +17,14 @@ interface CierreModuloModalProps {
  * la sección. Sin biblioteca de modales — es un único caso de uso y un
  * `<div>` con `role="dialog"` resuelve lo que hace falta: foco al abrir,
  * Escape para cerrar, clic fuera para cerrar.
+ *
+ * El fondo que cierra al hacer clic es un `<button>` de verdad, no un `<div>`
+ * con `onClick`: un elemento sin semántica interactiva y con manejador de
+ * clic no se puede operar con teclado, y por eso no puede ir como padre del
+ * panel del diálogo (un `<button>` solo admite contenido de fraseo, no los
+ * `<div>` del panel) — va detrás, del mismo tamaño que la pantalla, y el
+ * panel se dibuja encima con `z-10`. Así el panel no necesita su propio
+ * `onClick` para frenar la propagación.
  */
 function CierreModuloModal({ seccion, escenarios, progreso, onClose }: CierreModuloModalProps) {
   const cerrarRef = useRef<HTMLButtonElement>(null)
@@ -33,16 +41,19 @@ function CierreModuloModal({ seccion, escenarios, progreso, onClose }: CierreMod
   }, [onClose])
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-ink/40 px-4 py-10 sm:items-center"
-      onClick={onClose}
-    >
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto px-4 py-10 sm:items-center">
+      <button
+        type="button"
+        onClick={onClose}
+        aria-label="Cerrar resumen del módulo"
+        className="fixed inset-0 cursor-default appearance-none border-0 bg-ink/40 p-0"
+      />
+
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby="titulo-cierre"
-        className="w-full max-w-2xl rounded-lg bg-canvas shadow-card"
-        onClick={(evento) => evento.stopPropagation()}
+        className="relative z-10 w-full max-w-2xl rounded-lg bg-canvas shadow-card"
       >
         <div className="flex justify-end p-2">
           <button
