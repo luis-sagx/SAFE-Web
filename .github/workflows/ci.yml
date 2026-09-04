@@ -196,6 +196,15 @@ jobs:
       - run: pnpm --dir frontend install --frozen-lockfile
       - run: pnpm --dir backend install --frozen-lockfile
       - run: pnpm --dir frontend test:cov
+      - name: Debug frontend coverage
+        run: |
+          echo "=== Frontend coverage report ==="
+          ls -lh frontend/coverage/lcov.info || echo "lcov.info not found!"
+          head -20 frontend/coverage/lcov.info || echo "Cannot read lcov.info"
+          echo "=== Files in coverage ==="
+          grep "^SF:" frontend/coverage/lcov.info | wc -l
+          echo "=== New test files in coverage ==="
+          grep -E "Campo|Login|PoliticaDatos|Registro" frontend/coverage/lcov.info | head -5 || echo "New tests not found in coverage"
       - run: pnpm --dir backend prisma:generate
       - run: pnpm --dir backend test:cov
       - name: Análisis y Quality Gate
