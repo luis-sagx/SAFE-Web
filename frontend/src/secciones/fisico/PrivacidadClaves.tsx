@@ -165,6 +165,15 @@ function PrivacidadClaves() {
           Haz click en la X de cada pestaña. Luego bloquea la pantalla.
         </div>
       )}
+      <details className="text-sm leading-relaxed text-body">
+        <summary className="cursor-pointer list-none font-medium text-link underline decoration-dotted underline-offset-4">
+          ¿Cuándo termina el escenario?
+        </summary>
+        <p className="mt-2">
+          Cuando cierres todo y presiones "Terminar", o cuando se acabe el tiempo antes de que
+          termines. Los segundos corren mientras decides, igual que en la vida real.
+        </p>
+      </details>
     </div>
   )
 

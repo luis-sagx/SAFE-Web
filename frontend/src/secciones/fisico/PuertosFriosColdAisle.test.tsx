@@ -46,4 +46,12 @@ describe('PuertosFriosColdAisle', () => {
 
     expect(await screen.findByText('Fallo crítico - Equipos comprometidos')).toBeDefined()
   })
+
+  it('explica cuándo termina el escenario', () => {
+    empezar(<PuertosFriosColdAisle />)
+
+    fireEvent.click(screen.getByText('¿Cuándo termina el escenario?'))
+
+    expect(screen.getByText(/una de las tres acciones/)).toBeDefined()
+  })
 })

@@ -323,10 +323,21 @@ function DescargaProgramasPiratas() {
       rule={RULE}
       restartLabel="Repetir el escenario"
       instruccion={
-        <p className="text-lg leading-relaxed text-body">
-          Busca "descargar Adobe" en Google. En los resultados aparecerán varios sitios. Haz click en uno de ellos y
-          luego decide si descargar o no. El dominio del sitio es la clave: verifica que sea el oficial.
-        </p>
+        <>
+          <p className="text-lg leading-relaxed text-body">
+            Busca "descargar Adobe" en Google. En los resultados aparecerán varios sitios. Haz click en uno de ellos y
+            luego decide si descargar o no. El dominio del sitio es la clave: verifica que sea el oficial.
+          </p>
+          <details className="text-base leading-relaxed text-body">
+            <summary className="cursor-pointer list-none font-medium text-link underline decoration-dotted underline-offset-4">
+              ¿Cuándo termina el escenario?
+            </summary>
+            <p className="mt-2">
+              Cuando llegues a una descarga: desde el sitio pirata, el sitio falso de Flash, o
+              adobe.com oficial. Volver a los resultados de búsqueda no cuenta como una decisión.
+            </p>
+          </details>
+        </>
       }
       pista={
         <p>

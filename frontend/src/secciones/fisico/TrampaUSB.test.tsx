@@ -36,4 +36,12 @@ describe('TrampaUSB', () => {
 
     expect(await screen.findByText('Decisión segura')).toBeDefined()
   })
+
+  it('explica cuándo termina el escenario', () => {
+    empezar(<TrampaUSB />)
+
+    fireEvent.click(screen.getByText('¿Cuándo termina el escenario?'))
+
+    expect(screen.getByText(/agarrarlo o dejarlo donde está/)).toBeDefined()
+  })
 })

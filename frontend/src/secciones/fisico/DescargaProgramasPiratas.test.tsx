@@ -13,6 +13,14 @@ describe('DescargaProgramasPiratas', () => {
     expect(within(telefono).getAllByText(/Resultados para: descargar Adobe/).length).toBeGreaterThan(0)
   })
 
+  it('explica cuándo termina el escenario', () => {
+    empezar(<DescargaProgramasPiratas />)
+
+    fireEvent.click(screen.getByText('¿Cuándo termina el escenario?'))
+
+    expect(screen.getByText(/Volver a los resultados de búsqueda no cuenta/)).toBeDefined()
+  })
+
   const RUTAS_DE_DESCARGA: [string, RegExp, string, string][] = [
     [
       'sitio pirata',
