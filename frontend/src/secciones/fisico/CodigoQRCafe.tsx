@@ -64,10 +64,10 @@ function shuffled<T>(arr: T[]): T[] {
 }
 
 interface EscenaProps {
-  resolved: Resolved | null
-  shuffledChoices: Choice[]
-  revealPending: boolean
-  onChoice: (choice: Choice) => void
+  readonly resolved: Resolved | null
+  readonly shuffledChoices: Choice[]
+  readonly revealPending: boolean
+  readonly onChoice: (choice: Choice) => void
 }
 
 function Escena({ resolved, shuffledChoices, revealPending, onChoice }: EscenaProps) {
