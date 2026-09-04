@@ -3,10 +3,11 @@ import { useNavigate } from 'react-router'
 import EscenarioLayout from '../../components/EscenarioLayout'
 import FlashOverlay from '../../components/ui/FlashOverlay'
 import { useFlashTransition } from '../../hooks/useFlashTransition'
+import { useSiguienteEscenario } from '../../hooks/useSiguienteEscenario'
 import type { Contexto } from '../../components/ui/ContextoEscenario'
 import dossierTheme from '../../styles/dossier-theme.module.css'
 import { useScenarioRun } from '../../hooks/useScenarioRun'
-import styles from './Baiting.module.css'
+import styles from './fisico.module.css'
 
 type Level = 'safe' | 'warn' | 'danger'
 type Phase = 'break-room' | 'office' | 'resolved'
@@ -211,6 +212,7 @@ function stampWord(level: Level) {
 function CableComprometido() {
   const navigate = useNavigate()
   const run = useScenarioRun('fisico/cable-comprometido')
+  const { ruta: siguienteRuta } = useSiguienteEscenario('fisico/cable-comprometido')
 
   const [phase, setPhase] = useState<Phase>('break-room')
   const [choicesShown, setChoicesShown] = useState(false)
@@ -233,7 +235,7 @@ function CableComprometido() {
   }
 
   function handleNext() {
-    navigate('/seccion/fisico')
+    if (siguienteRuta) navigate(siguienteRuta)
   }
 
   function handleFlashClick() {

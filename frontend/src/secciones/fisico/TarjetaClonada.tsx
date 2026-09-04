@@ -3,10 +3,11 @@ import { useNavigate } from 'react-router'
 import EscenarioLayout from '../../components/EscenarioLayout'
 import FlashOverlay from '../../components/ui/FlashOverlay'
 import { useFlashTransition } from '../../hooks/useFlashTransition'
+import { useSiguienteEscenario } from '../../hooks/useSiguienteEscenario'
 import type { Contexto } from '../../components/ui/ContextoEscenario'
 import dossierTheme from '../../styles/dossier-theme.module.css'
 import { useScenarioRun } from '../../hooks/useScenarioRun'
-import styles from './Baiting.module.css'
+import styles from './fisico.module.css'
 
 const animationCSS = `
   @keyframes personApproaches {
@@ -342,6 +343,7 @@ function stampWord(level: Level) {
 function TarjetaClonada() {
   const navigate = useNavigate()
   const run = useScenarioRun('fisico/tarjeta-clonada')
+  const { ruta: siguienteRuta } = useSiguienteEscenario('fisico/tarjeta-clonada')
 
   const [phase, setPhase] = useState<Phase>('scenario')
   const [choicesShown, setChoicesShown] = useState(false)
@@ -364,7 +366,7 @@ function TarjetaClonada() {
   }
 
   function handleNext() {
-    navigate('/seccion/fisico')
+    if (siguienteRuta) navigate(siguienteRuta)
   }
 
   useEffect(() => {
