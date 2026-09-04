@@ -51,4 +51,14 @@ describe('CableComprometido', () => {
 
     expect(await screen.findByText('Decisión segura')).toBeDefined()
   })
+
+  it('el botón Siguiente tras resolver no rompe la navegación', async () => {
+    const telefono = empezar(<CableComprometido />)
+    tocarDestello(telefono)
+
+    fireEvent.click(within(telefono).getByRole('button', { name: /Usarlo para cargar/ }))
+    await screen.findByText('Riesgo detectado')
+
+    fireEvent.click(within(telefono).getByRole('button', { name: 'Siguiente' }))
+  })
 })

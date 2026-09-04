@@ -7,7 +7,13 @@ vi.mock('../../context/AuthContext', async () => (await import('../../test/escen
 vi.mock('../../lib/api', async () => (await import('../../test/escenario')).apiSinRed())
 
 async function llegarADescubrimiento(telefono: HTMLElement) {
-  await vi.advanceTimersByTimeAsync(6100)
+  // La fase cambia a los 6s, y el teléfono del banco tarda 1s más en sonar
+  // (que es cuando aparece el destello con las opciones). Se avanza en
+  // pasos para que los efectos encadenados (fase → temporizador del
+  // teléfono) alcancen a montarse entre uno y otro.
+  for (let i = 0; i < 73; i += 1) {
+    await vi.advanceTimersByTimeAsync(100)
+  }
   const destello = telefono.querySelector('.sceneFlash, g[class*="Flash"]')
   if (destello) fireEvent.click(destello)
 }
@@ -57,5 +63,16 @@ describe('TarjetaClonada', () => {
       await vi.advanceTimersByTimeAsync(800)
       expect(screen.getByText('Riesgo detectado')).toBeDefined()
     }
+  })
+
+  it('el botón Siguiente tras resolver no rompe la navegación', async () => {
+    const telefono = empezar(<TarjetaClonada />)
+    await llegarADescubrimiento(telefono)
+
+    const safeBtn = within(telefono).getByRole('button', { name: /Bloquear la tarjeta inmediatamente/ })
+    fireEvent.click(safeBtn)
+    await vi.advanceTimersByTimeAsync(800)
+
+    fireEvent.click(within(telefono).getByRole('button', { name: 'Siguiente' }))
   })
 })

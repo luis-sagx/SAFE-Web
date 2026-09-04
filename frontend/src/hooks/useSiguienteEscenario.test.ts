@@ -72,6 +72,17 @@ describe('useSiguienteEscenario', () => {
     expect(result.current.cargando).toBe(false)
   })
 
+  it('usa la sección si el fetch falla y ya no hay siguiente en el catálogo', async () => {
+    fetchProgresoMock.mockRejectedValue(new Error('sin red'))
+
+    const { result } = renderHook(() => useSiguienteEscenario('fisico/qr-cafe-wifi'))
+
+    await new Promise((resolve) => setTimeout(resolve, 50))
+
+    expect(result.current.ruta).toBe('/seccion/fisico')
+    expect(result.current.cargando).toBe(false)
+  })
+
   it('inicia con cargando=true', () => {
     fetchProgresoMock.mockImplementation(
       () => new Promise((resolve) => setTimeout(resolve, 100))
