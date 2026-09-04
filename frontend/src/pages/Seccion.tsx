@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { Link, Navigate, useLocation, useParams } from 'react-router'
 import AppHeader from '../components/AppHeader'
 import BarraProgreso from '../components/BarraProgreso'
+import CierreModulo from '../components/CierreModulo'
 import InfoLink from '../components/InfoLink'
 import { escenariosDeSeccion, getSeccion, SECCIONES, type Seccion as SeccionCatalogo } from '../data/catalogo'
 import { fetchProgreso, type Progreso } from '../lib/api'
@@ -237,16 +238,14 @@ function Seccion() {
               etiqueta={`Avance de ${seccion.titulo}`}
             />
 
-            <p className="mt-3 text-sm text-body">
-              {progreso.aprobado ? (
-                <span className="inline-flex items-center gap-1.5 font-medium text-success">
-                  <CheckCircle2 aria-hidden className="size-4" strokeWidth={2.5} />
-                  Módulo aprobado. Puedes repetir cualquier escenario si quieres.
-                </span>
-              ) : (
-                `Te ${faltan === 1 ? 'falta' : 'faltan'} ${faltan} para aprobar el módulo.`
-              )}
-            </p>
+            {/* El "Módulo aprobado" ya no se dice aquí: al aprobar,
+                `CierreModulo` lo dice con más contenido, al pie de la
+                sección. Una sola línea de estado no repetida dos veces. */}
+            {!progreso.aprobado && (
+              <p className="mt-3 text-sm text-body">
+                {`Te ${faltan === 1 ? 'falta' : 'faltan'} ${faltan} para aprobar el módulo.`}
+              </p>
+            )}
           </section>
         )}
 
@@ -345,6 +344,10 @@ function Seccion() {
               )
             })}
           </ol>
+        )}
+
+        {progreso?.aprobado && (
+          <CierreModulo seccion={seccion} escenarios={escenarios} progreso={progreso} />
         )}
 
         <SiguienteModulo seccion={seccion} progreso={progreso} />

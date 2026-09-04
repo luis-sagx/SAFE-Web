@@ -30,7 +30,7 @@ describe('Seccion', () => {
   it('solo deja como link activo el próximo escenario pendiente y bloquea los posteriores', async () => {
     fetchProgresoMock.mockResolvedValue({
       modulo: 'phishing',
-      escenarios: [{ id: 'phishing/factura-sri', ultimoOutcome: 'INCORRECTO' }],
+      escenarios: [{ id: 'phishing/loteria-premiada', ultimoOutcome: 'INCORRECTO' }],
       aprobados: 0,
       requeridos: 6,
       aprobado: false,
@@ -38,11 +38,11 @@ describe('Seccion', () => {
 
     const { container } = renderSeccion()
 
-    expect(await screen.findByText('Contraseña por caducar')).toBeDefined()
+    expect(await screen.findByText('Factura por validar')).toBeDefined()
     expect(
-      container.querySelector('a[href="/seccion/phishing/clave-caducada"]'),
+      container.querySelector('a[href="/seccion/phishing/factura-sri"]'),
     ).not.toBeNull()
-    expect(container.querySelector('a[href="/seccion/phishing/rol-de-pagos"]')).toBeNull()
+    expect(container.querySelector('a[href="/seccion/phishing/clave-caducada"]')).toBeNull()
     // El candado nombra el escenario que lo abre: el primero sin jugar es el
     // 02 (el 01 ya se intentó), así que los seis bloqueados apuntan ahí.
     expect(await screen.findAllByText('Se abre al terminar el 02')).toHaveLength(6)

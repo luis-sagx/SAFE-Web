@@ -9,8 +9,10 @@ import Bienvenida from './pages/Bienvenida'
 import Dashboard from './pages/Dashboard'
 import Login from './pages/Login'
 import PoliticaDatos from './pages/PoliticaDatos'
+import Recorrido from './pages/Recorrido'
 import Registro from './pages/Registro'
 import Seccion from './pages/Seccion'
+import Verificar from './pages/Verificar'
 
 function App() {
   return (
@@ -19,6 +21,7 @@ function App() {
         <Route path="/" element={<Login />} />
         <Route path="/registro" element={<Registro />} />
         <Route path="/politica-de-datos" element={<PoliticaDatos />} />
+        <Route path="/verificar/:codigo" element={<Verificar />} />
 
         <Route element={<RequireSupervisor />}>
           <Route path="/admin" element={<Admin />} />
@@ -27,6 +30,7 @@ function App() {
         <Route element={<RequireAuth />}>
           <Route path="/bienvenida" element={<Bienvenida />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/recorrido" element={<Recorrido />} />
           <Route path="/seccion/:seccionId" element={<Seccion />} />
 
           {/* Una ruta por entrada del catálogo: agregar un escenario no obliga
