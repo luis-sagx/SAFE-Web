@@ -39,4 +39,12 @@ describe('PrivacidadClaves', () => {
 
     expect(await screen.findByText('Información expuesta')).toBeDefined()
   })
+
+  it('explica cuándo termina el escenario', () => {
+    empezar(<PrivacidadClaves />)
+
+    fireEvent.click(screen.getByText('¿Cuándo termina el escenario?'))
+
+    expect(screen.getByText(/presiones "Terminar"/)).toBeDefined()
+  })
 })

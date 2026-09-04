@@ -143,6 +143,16 @@ function PuertosFriosColdAisle() {
           </div>
         )}
       </div>
+
+      <details className="text-sm leading-relaxed text-body">
+        <summary className="cursor-pointer list-none font-medium text-link underline decoration-dotted underline-offset-4">
+          ¿Cuándo termina el escenario?
+        </summary>
+        <p className="mt-2">
+          Cuando elijas una de las tres acciones frente a la puerta abierta. No hay confirmación
+          adicional: la decisión se toma en el momento.
+        </p>
+      </details>
     </div>
   )
 

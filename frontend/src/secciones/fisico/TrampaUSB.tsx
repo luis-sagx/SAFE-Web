@@ -200,6 +200,15 @@ function TrampaUSB() {
           Haz click en el USB en la imagen o selecciona una opción arriba.
         </div>
       )}
+      <details className="text-sm leading-relaxed text-body">
+        <summary className="cursor-pointer list-none font-medium text-link underline decoration-dotted underline-offset-4">
+          ¿Cuándo termina el escenario?
+        </summary>
+        <p className="mt-2">
+          Cuando decidas qué hacer con el USB: agarrarlo o dejarlo donde está. No hay vuelta atrás
+          una vez elijas.
+        </p>
+      </details>
     </div>
   )
 

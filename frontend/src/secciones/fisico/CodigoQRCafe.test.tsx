@@ -38,4 +38,12 @@ describe('CodigoQRCafe', () => {
 
     expect(await screen.findByText('◐ A medias')).toBeDefined()
   })
+
+  it('explica cuándo termina el escenario', () => {
+    empezar(<CodigoQRCafe />)
+
+    fireEvent.click(screen.getByText('¿Cuándo termina el escenario?'))
+
+    expect(screen.getByText(/La primera opción que toques/)).toBeDefined()
+  })
 })
