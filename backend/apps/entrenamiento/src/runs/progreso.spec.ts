@@ -12,7 +12,7 @@ function corrida(
 
 describe('calcularProgreso', () => {
   it('cuenta aprobado solo lo que terminó en CORRECTO', () => {
-    const progreso = calcularProgreso('phishing', 6, [
+    const progreso = calcularProgreso('phishing', 6, 8, [
       corrida({ scenarioId: 'phishing/a', outcome: 'CORRECTO' }),
       corrida({ scenarioId: 'phishing/b', outcome: 'PARCIAL' }),
       corrida({ scenarioId: 'phishing/c', outcome: 'INCORRECTO' }),
@@ -27,7 +27,7 @@ describe('calcularProgreso', () => {
   // las filas, ni cuántas veces se repita un escenario — solo cuenta la
   // corrida con el finishedAt más tardío de cada uno.
   it('usa la última corrida de cada escenario sin importar el orden de llegada', () => {
-    const progreso = calcularProgreso('phishing', 1, [
+    const progreso = calcularProgreso('phishing', 1, 1, [
       corrida({
         scenarioId: 'phishing/a',
         outcome: 'CORRECTO',
@@ -53,7 +53,7 @@ describe('calcularProgreso', () => {
   // El caso que motiva "el último intento manda": alguien ya aprobado repite
   // el escenario y falla. Debe perder el punto, no conservarlo.
   it('un escenario ya aprobado que se repite y falla baja el conteo', () => {
-    const progreso = calcularProgreso('phishing', 1, [
+    const progreso = calcularProgreso('phishing', 1, 1, [
       corrida({
         scenarioId: 'phishing/a',
         outcome: 'CORRECTO',
@@ -73,19 +73,32 @@ describe('calcularProgreso', () => {
     expect(progreso.aprobado).toBe(false);
   });
 
-  it('aprobado pasa a true al alcanzar el umbral, ni un escenario antes', () => {
+  it('aprobado exige el umbral y haber intentado los `total`, no solo el umbral', () => {
     const seis = Array.from({ length: 6 }, (_, i) =>
       corrida({ scenarioId: `phishing/${i}`, outcome: 'CORRECTO' }),
     );
 
-    expect(calcularProgreso('phishing', 6, seis.slice(0, 5)).aprobado).toBe(
+    // 5 de 6: no llega ni al umbral.
+    expect(calcularProgreso('phishing', 6, 8, seis.slice(0, 5)).aprobado).toBe(
       false,
     );
-    expect(calcularProgreso('phishing', 6, seis).aprobado).toBe(true);
+
+    // 6/6 correctos, pero solo 6 de los 8 escenarios del módulo intentados:
+    // antes esto ya daba "aprobado", y era el bug que dejaba dos escenarios
+    // sin jugar nunca. Ahora no basta.
+    expect(calcularProgreso('phishing', 6, 8, seis).aprobado).toBe(false);
+
+    // Los 8 intentados, 6 en CORRECTO y 2 en lo que sea: ahí sí aprueba.
+    const ocho = [
+      ...seis,
+      corrida({ scenarioId: 'phishing/6', outcome: 'INCORRECTO' }),
+      corrida({ scenarioId: 'phishing/7', outcome: 'PARCIAL' }),
+    ];
+    expect(calcularProgreso('phishing', 6, 8, ocho).aprobado).toBe(true);
   });
 
   it('sin corridas, progreso vacío y no aprobado', () => {
-    const progreso = calcularProgreso('phishing', 6, []);
+    const progreso = calcularProgreso('phishing', 6, 8, []);
 
     expect(progreso.escenarios).toEqual([]);
     expect(progreso.aprobados).toBe(0);

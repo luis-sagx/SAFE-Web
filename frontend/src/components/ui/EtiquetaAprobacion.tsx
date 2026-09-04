@@ -13,6 +13,11 @@ import type { StoryNode } from '../../hooks/useStoryEngine'
  * —`resultado` si el nodo lo fuerza, si no el que sale de `kind`— y no del tono
  * visual, para que la etiqueta no pueda contradecir a lo que quedó guardado.
  * La regla es la del backend: solo CORRECTO acredita (ver progreso.ts).
+ *
+ * No muestra el puntaje: es casi siempre el mismo número que ya dice esta
+ * etiqueta (0/50/100 según el resultado, con cuatro excepciones sueltas en
+ * 20/60), y sin ese contexto solo generaba la pregunta de qué lo movía y para
+ * qué servía. El número se sigue guardando para el análisis del supervisor.
  */
 function EtiquetaAprobacion({ node }: { node: StoryNode }) {
   const resultado = node.resultado ?? outcomeFromKind(node.kind)

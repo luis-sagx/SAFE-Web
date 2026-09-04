@@ -331,8 +331,8 @@ como error**.
 ## 5. Contrato del API
 
 Prefijo global `/api` en ambos servicios. Todas las respuestas son JSON.
-Nginx enruta por prefijo: `/api/auth/*` y `/api/admin/*` a `identidad`,
-`/api/runs/*` a `entrenamiento`.
+Nginx enruta por prefijo: `/api/auth/*`, `/api/admin/*` y `/api/certificados/*`
+a `identidad`, `/api/runs/*` a `entrenamiento`.
 
 | Método | Ruta | Servicio | Auth | Qué hace |
 |---|---|---|---|---|
@@ -351,13 +351,19 @@ Nginx enruta por prefijo: `/api/auth/*` y `/api/admin/*` a `identidad`,
 | `GET` | `/api/runs/me` | entrenamiento | JWT | Corridas del participante autenticado. |
 | `GET` | `/api/runs/progreso/:modulo` | entrenamiento | JWT | Gating: progreso del participante en un módulo. |
 | `GET` | `/api/runs/resultados` | entrenamiento | JWT + rol `SUPERVISOR` | Todas las corridas, seudonimizadas (JSON, se ve dentro de la app, no se descarga). |
+| `GET` | `/api/runs/atestacion` | entrenamiento | JWT | Certificado (§11): `200` con `{ atestacion }` si todos los módulos de `UMBRALES` están aprobados, `409` con `{ faltan }` si no. |
+| `POST` | `/api/certificados` | identidad | JWT | Body `{ atestacion }`. Canjea la atestación y emite (o actualiza) el certificado. → `{ codigo, emitidoAt, modulos, horas }`. |
+| `POST` | `/api/certificados/pdf` | identidad | JWT | Body `{ atestacion }`. → `application/pdf`. `POST` y no `GET`: la atestación es un JWT y en la query string acabaría en los logs de nginx. |
+| `GET` | `/api/certificados/verificar/:codigo` | identidad | — | Pública, 20/min por IP. → `{ valido, emitidoAt?, horas?, modulos? }`. Nunca el nombre (§7). |
+| `PATCH` | `/api/admin/certificados/:id/revocar` | identidad | JWT + rol `SUPERVISOR` | Marca `revocadoAt`. Sin revocación automática por bajar de umbral (§11). |
 
 ### 5.1 Contrato del token
 
-Dos tokens, ambos firmados con `JWT_SECRET`, distinguidos por `typ` — sin esa
+Tres tokens, todos firmados con `JWT_SECRET`, distinguidos por `typ` — sin esa
 marca, un refresh token (vida larga) serviría como access token en cualquier
 ruta protegida, y viceversa. `JwtAuthGuard` rechaza cualquiera cuyo `typ` no
-sea `'access'`.
+sea `'access'`; `CertificadosService` rechaza igual cualquiera cuyo `typ` no
+sea `'atestacion'`.
 
 ```json
 // Access token — JWT_EXPIRES_IN, por defecto 15 min. Viaja en cada petición,
@@ -367,6 +373,15 @@ sea `'access'`.
 // Refresh token — REFRESH_TOKEN_EXPIRES_IN, por defecto 12 h. Solo lo ve
 // `identidad`, únicamente en POST /api/auth/refresh.
 { "sub": "<uuid>", "typ": "refresh" }
+
+// Atestación — 5 min, constante en el código. La firma `entrenamiento`
+// (GET /api/runs/atestacion) y la verifica `identidad` (POST /api/certificados*):
+// es el único dato que cruza entre los dos servicios sin que se llamen entre
+// sí. Reutilizable dentro de sus 5 minutos, no de un solo uso — el flujo la
+// gasta dos veces seguidas (emitir el certificado, descargar el PDF).
+// `identidad` exige además que `sub` coincida con el del access token de
+// quien la presenta.
+{ "sub": "<uuid>", "seq": 42, "modulos": ["phishing", "…"], "typ": "atestacion" }
 ```
 
 `seq` viaja en el access token porque es el único campo del participante que
@@ -433,13 +448,20 @@ Reglas del API que no se relajan:
 
 ## 6. Modelo de datos
 
-Un schema de Prisma por servicio, y **una tabla en cada uno**:
+Un schema de Prisma por servicio. `identidad` tiene dos tablas, `entrenamiento`
+una:
 
 - `backend/prisma/identidad/schema.prisma` → **`Participant`**: `seq`
   (autoincremental, del que se deriva el seudónimo), `nombre`, `apellido`,
   `email` (único, es el usuario de login), `cedulaHash` (único, nullable —solo
   la cuenta de supervisor no tiene cédula—, §7.1), `passwordHash`, `role`,
   `onboardingVistoAt`, `disabledAt`.
+- `backend/prisma/identidad/schema.prisma` → **`Certificate`**: `participantId`
+  (único: un certificado por persona), `codigo` (único, aleatorio, sin relación
+  con `seq`), `modulos` (los que cubría al emitirse o al último recorrido
+  mayor), `horas` (constante, guardada y no recalculada), `emitidoAt`,
+  `revocadoAt` (solo lo pone un supervisor, §11). Sin puntajes ni detalle por
+  escenario: eso vive en `entrenamiento`, donde debe quedarse.
 - `backend/prisma/entrenamiento/schema.prisma` → **`ScenarioRun`**: una fila por
   escenario terminado, con `participantId`, `participantSeq`, `scenarioId`,
   `version`, `outcome`, `score`, `endingId`, `durationMs`, `startedAt`,
@@ -482,6 +504,13 @@ correo, cédula            nombre, apellido, email      participantSeq ──▶
                                                        (sin PII, y sin acceso
                                                         posible a ella)
 ```
+
+El certificado (§11) es el único caso donde un dato cruza en la otra
+dirección: el progreso entra a `identidad`, no un dato personal sale hacia
+`entrenamiento`. Viaja firmado por el cliente, dentro de la atestación
+(§5.1) —la misma regla que ya rige el JWT—, nunca por una llamada entre
+servicios. `identidad` guarda de ese progreso solo el hecho de la aprobación y
+qué módulos cubría (§6): ni puntajes ni detalle por escenario.
 
 ### 7.1 La cédula
 
@@ -686,6 +715,9 @@ Antes de escribir código en este repositorio:
 | Pre/post-test | Moodle, fuera de la plataforma | Ya resuelto y validado; construirlo dentro no aportaría al objetivo. |
 | Analítica dentro de la app | Fuera de alcance | El análisis se hace sobre los resultados que el supervisor consulta en `/api/runs/resultados`. |
 | Multi-idioma | Fuera de alcance | El estudio es en Ecuador, en español. |
+| Certificado | Atestación firmada por el cliente, sin servicio propio | Un tercer microservicio (`certificados` :3003) que llamara a `entrenamiento` violaría §2. La atestación es la misma regla que ya rige el JWT: lo que cruza entre servicios, viaja por el cliente. |
+| Revocación del certificado | Solo manual, por un supervisor | `identidad` no tiene forma de enterarse de que alguien bajó de umbral sin llamar a `entrenamiento` (spec 2026-09-03 §5.3). La atestación fresca en cada descarga es la revocación efectiva. |
+| Entrega del certificado | Descarga en la app, sin correo | Sin un segundo productor de correo no se justifica el servicio `notificaciones` que preveía el spec anterior (§11 de `2026-08-03…`). |
 
 ---
 
@@ -695,19 +727,48 @@ Implementado: el corte en dos microservicios con un rol de Postgres por
 servicio, registro y login por correo, seudonimización, registro y consulta de
 resultados sin datos personales, gestión de cuentas por el supervisor
 (`/api/admin/participantes`), access + refresh token (`/api/auth/refresh`,
-§5.1), catálogo con rutas generadas, sistema de diseño en Tailwind (marca
-verde `#006837`),
-contenerización y CI. Registro con nombre, apellido, correo y cédula validada
-por módulo 10 y guardada solo como HMAC. El MVP de solo phishing completo:
-catálogo recortado a 3 escenarios activos (las otras cinco secciones quedan
-"Pronto"), marco de escritorio para correo/web en vez de celular, gating 6/8
-(`GET /api/runs/progreso/:modulo`, último intento manda) reflejado en Dashboard
-y Seccion, y pantalla de bienvenida con el flag `onboardingVisto` persistido
+§5.1), sistema de diseño en Tailwind (marca verde `#006837`), contenerización y
+CI. Registro con nombre, apellido, correo y cédula validada por módulo 10 y
+guardada solo como HMAC.
+
+**Catálogo:** 48 escenarios activos, ocho por cada una de las seis secciones
+(phishing, smishing, vishing, suplantación, estafa electrónica, riesgo
+físico). Cinco secciones siguen el diseño pedagógico de 6 fraude / 2
+legítimos; `riesgo físico` está en 4/4 mientras esa sección se rediseña, sin
+que eso afecte el gating (que solo cuenta CORRECTO/total, no la proporción).
+Los escenarios de las cinco primeras secciones van ordenados por `dificultad`
+ascendente dentro de cada una; los de `riesgo físico` no, todavía. Gating 6/8
+(`GET /api/runs/progreso/:modulo`, último intento manda, y **exige haber
+jugado los 8**, no solo llegar al umbral — `TOTALES` en `progreso.ts`)
+reflejado en Dashboard y Seccion, con desbloqueo secuencial dentro del
+módulo. `UMBRALES` y `TOTALES` (`progreso.ts`) ya declaran las seis
+secciones.
+
+**Gamificación** (spec `2026-09-03-gamificacion-y-certificado-design.md`):
+pantalla `/recorrido` con el historial propio (`GET /api/runs/me`), estrellas
+de dificultad en `Seccion.tsx`, y resumen de módulo con los cuatro
+discriminadores del diseño pedagógico, en un modal que se abre por elección
+—no un bloque fijo en cada visita a una sección ya aprobada. El puntaje por
+escenario se probó visible en el debrief y se quitó: casi siempre repetía el
+resultado (0/50/100) y generaba la pregunta de para qué servía sin aportar
+nada; se sigue guardando para el análisis del supervisor.
+
+**Certificado:** de 4 horas, emitido cuando se aprueban las seis secciones
+que declara `UMBRALES` —riesgo físico incluido. Se canjea con una atestación
+firmada por `entrenamiento` (`GET /api/runs/atestacion`) que `identidad`
+verifica y convierte en PDF (`pdfkit`, sin persistir), con código verificable
+en `/verificar/:codigo` sin exponer el nombre, y revocación manual por un
+supervisor (`PATCH /api/admin/certificados/:id/revocar`). Sin envío por
+correo ni verificación de correo al registrarse — la descarga en la
+aplicación es toda la entrega.
+
+Pantalla de bienvenida con el flag `onboardingVisto` persistido
 (`PATCH /api/auth/me`) y accesible siempre desde el ícono ⓘ.
 
-Pendiente, en el orden del spec
-`docs/superpowers/specs/2026-08-03-safe-web-mvp-phishing-design.md`:
+Pendiente:
 
-1. Los 5 escenarios de phishing que faltan para llegar a 8 (F4).
-2. Certificado, verificación de correo y servicio `notificaciones`.
-3. Terminación TLS en el servidor propio y respaldo del volumen de la base.
+1. Terminación TLS en el servidor propio y respaldo del volumen de la base.
+2. Insignias por discriminador y repetición espaciada de escenarios fallados
+   (diferidas en el spec de gamificación, §3.2).
+3. El rediseño de `riesgo físico` (hoy en 4 fraude / 4 legítimos) y el orden
+   por dificultad de sus 8 escenarios, para igualar al resto del catálogo.

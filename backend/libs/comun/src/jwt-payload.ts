@@ -31,3 +31,25 @@ export interface RefreshTokenPayload {
   sub: string;
   typ: 'refresh';
 }
+
+/**
+ * Pase de un solo salto entre los dos servicios, para el certificado: lo
+ * firma `entrenamiento` (que conoce el progreso) y lo verifica `identidad`
+ * (que conoce el nombre). Es la única forma en que `2026-09-03…` permite que
+ * el progreso cruce hacia el otro servicio, sin que se llamen entre sí.
+ *
+ * Reutilizable dentro de sus 5 minutos de vida, no de un solo uso: el flujo la
+ * gasta dos veces seguidas (emitir el certificado, descargar el PDF).
+ * `identidad` exige además que `sub` coincida con el del access token de quien
+ * la presenta — sin eso, la atestación de otra persona serviría para
+ * emitirse un certificado con su progreso.
+ */
+export interface AtestacionPayload {
+  sub: string;
+  seq: number;
+  /** Los módulos que `entrenamiento` verificó aprobados al firmar, tomados de
+   *  `UMBRALES`. Es lo que el certificado imprime, y lo que decide si un
+   *  recorrido mayor debe actualizar uno ya emitido (ver §5.4.1 del diseño). */
+  modulos: string[];
+  typ: 'atestacion';
+}

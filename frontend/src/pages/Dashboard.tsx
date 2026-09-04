@@ -2,6 +2,7 @@ import { CheckCircle2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import AppHeader from '../components/AppHeader'
 import BarraProgreso from '../components/BarraProgreso'
+import CertificadoBoton from '../components/CertificadoBoton'
 import InfoLink from '../components/InfoLink'
 import { Link } from 'react-router'
 import { useAuth } from '../context/AuthContext'
@@ -85,6 +86,9 @@ function Dashboard() {
         <span className="text-sm font-semibold text-ink">SAFE Web</span>
         <div className="flex items-center gap-2">
           <span className="hidden text-sm text-body sm:inline">{displayName}</span>
+          <Link to="/recorrido" className="text-sm font-medium text-link underline">
+            Tu recorrido
+          </Link>
           <InfoLink />
           <button
             type="button"
@@ -151,6 +155,14 @@ function Dashboard() {
               aprobado={global.modulosAprobados === global.modulos}
               etiqueta="Avance del entrenamiento completo"
             />
+
+            {/* Solo cuando ya no queda ningún módulo pendiente: el botón pide
+                los mismos módulos que declara el servidor (UMBRALES), nunca
+                un número escrito aquí, así que aparece exactamente cuando
+                `GET /api/runs/atestacion` va a decir que sí. */}
+            {global.modulos > 0 && global.modulosAprobados === global.modulos && (
+              <CertificadoBoton />
+            )}
           </section>
         )}
 
@@ -212,16 +224,14 @@ function Dashboard() {
                     )}
                   </div>
 
-                  {/* Cuánto es el módulo y cuánto hay que aprobar, antes de
-                      entrar. Sin esta línea la tarjeta no decía a qué se estaba
-                      apuntando el participante y había que abrirla para
-                      averiguarlo. El total sale del catálogo; el umbral, del
-                      servidor, así que aparece en cuanto llega el progreso. */}
+                  {/* Cuánto es el módulo, antes de entrar. Sin esta línea la
+                      tarjeta no decía a qué se estaba apuntando el
+                      participante y había que abrirla para averiguarlo.
+                      El umbral no se repite aquí: ya lo marca el anillo de
+                      la barra de abajo, como en un curso que no imprime la
+                      nota mínima en cada tarjeta. */}
                   {disponible && (
-                    <p className="mt-1.5 text-sm text-muted">
-                      {escenarios.length} escenarios
-                      {progreso && ` · aprueba ${progreso.requeridos}`}
-                    </p>
+                    <p className="mt-1.5 text-sm text-muted">{escenarios.length} escenarios</p>
                   )}
 
                   {progreso && (

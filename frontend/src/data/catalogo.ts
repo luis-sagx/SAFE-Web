@@ -95,6 +95,32 @@ export const SECCIONES: Seccion[] = [
 
 const BASE: EscenarioBase[] = [
   {
+    // Sustituye a cobro-dirigido (paquete en aduana): los dos eran "paga poco
+    // para recibir algo", así que juntos repetían la lección en vez de
+    // ampliarla. Su .tsx sigue en el repositorio por si se quiere recuperar.
+    //
+    // Dificultad 1: es la puerta de entrada del módulo. La señal decisiva no
+    // está en la pantalla —se responde con "¿yo jugué?"— y eso la vuelve
+    // accesible para quien nunca ha mirado un dominio en su vida.
+    seccionId: "phishing",
+    escenarioId: "loteria-premiada",
+    titulo: "Premio de lotería",
+    descripcion:
+      "Un correo anuncia un premio millonario y pide un pago para poder liberarlo.",
+    // v2: se juega sobre la pantalla, sin lista de opciones.
+    // v3: el participante ve su cédula y su cuenta antes de empezar.
+    // v4: el briefing enseña los datos prestados en una tarjeta.
+    // v5: cerrar una pestaña ya no termina la corrida ni acredita;
+    // devuelve al correo, y la decisión es lo que se haga con el mensaje.
+    // v6: las páginas del escenario llevan cabecera, aviso y pie de
+    // sitio, la falsa igual que la real.
+    version: 6,
+    naturaleza: "fraude",
+    dificultad: 1,
+    espeja: "phishing/aviso-filtracion",
+    Component: lazy(() => import("../secciones/phishing/LoteriaPremiada")),
+  },
+  {
     seccionId: "phishing",
     escenarioId: "factura-sri",
     titulo: "Factura por validar",
@@ -174,32 +200,6 @@ const BASE: EscenarioBase[] = [
     Component: lazy(() => import("../secciones/phishing/RolDePagos")),
   },
   {
-    // Sustituye a cobro-dirigido (paquete en aduana): los dos eran "paga poco
-    // para recibir algo", así que juntos repetían la lección en vez de
-    // ampliarla. Su .tsx sigue en el repositorio por si se quiere recuperar.
-    //
-    // Dificultad 1: es la puerta de entrada del módulo. La señal decisiva no
-    // está en la pantalla —se responde con "¿yo jugué?"— y eso la vuelve
-    // accesible para quien nunca ha mirado un dominio en su vida.
-    seccionId: "phishing",
-    escenarioId: "loteria-premiada",
-    titulo: "Premio de lotería",
-    descripcion:
-      "Un correo anuncia un premio millonario y pide un pago para poder liberarlo.",
-    // v2: se juega sobre la pantalla, sin lista de opciones.
-    // v3: el participante ve su cédula y su cuenta antes de empezar.
-    // v4: el briefing enseña los datos prestados en una tarjeta.
-    // v5: cerrar una pestaña ya no termina la corrida ni acredita;
-    // devuelve al correo, y la decisión es lo que se haga con el mensaje.
-    // v6: las páginas del escenario llevan cabecera, aviso y pie de
-    // sitio, la falsa igual que la real.
-    version: 6,
-    naturaleza: "fraude",
-    dificultad: 1,
-    espeja: "phishing/aviso-filtracion",
-    Component: lazy(() => import("../secciones/phishing/LoteriaPremiada")),
-  },
-  {
     seccionId: "phishing",
     escenarioId: "quishing-actualice",
     titulo: "Código para actualizar datos",
@@ -241,6 +241,28 @@ const BASE: EscenarioBase[] = [
     Component: lazy(() => import("../secciones/phishing/SecuestroHilo")),
   },
   {
+    seccionId: "phishing",
+    escenarioId: "aviso-filtracion",
+    titulo: "Aviso de filtración de datos",
+    descripcion:
+      "Una tienda en línea comunica un incidente de seguridad que afecta a tu cuenta.",
+    // v3: se juega sobre la pantalla, sin lista de opciones.
+    // v4: el briefing enseña los datos prestados en una tarjeta.
+    // v5: cerrar una pestaña ya no termina la corrida ni acredita;
+    // devuelve al correo, y la decisión es lo que se haga con el mensaje.
+    // v6: las páginas del escenario llevan cabecera, aviso y pie de
+    // sitio, la falsa igual que la real.
+    // v7: responder o reenviar un correo real deja de leerse como un
+    // reproche; sigue siendo parcial porque el mensaje pedía algo.
+    // v8: el participante ve los datos que este escenario le pide, y los
+    // finales nombran lo que se entregó.
+    version: 8,
+    naturaleza: "legitimo",
+    dificultad: 4,
+    espeja: "phishing/sesion-bogota",
+    Component: lazy(() => import("../secciones/phishing/AvisoFiltracion")),
+  },
+  {
     // El más difícil del módulo: la redacción es impecable y el anzuelo está en
     // el dominio y en pedir el OTP fuera de la app. Espeja con aviso-filtracion,
     // que es la misma forma —una alerta de seguridad— pero verdadera.
@@ -268,28 +290,6 @@ const BASE: EscenarioBase[] = [
     Component: lazy(() => import("../secciones/phishing/SesionBogota")),
   },
   {
-    seccionId: "phishing",
-    escenarioId: "aviso-filtracion",
-    titulo: "Aviso de filtración de datos",
-    descripcion:
-      "Una tienda en línea comunica un incidente de seguridad que afecta a tu cuenta.",
-    // v3: se juega sobre la pantalla, sin lista de opciones.
-    // v4: el briefing enseña los datos prestados en una tarjeta.
-    // v5: cerrar una pestaña ya no termina la corrida ni acredita;
-    // devuelve al correo, y la decisión es lo que se haga con el mensaje.
-    // v6: las páginas del escenario llevan cabecera, aviso y pie de
-    // sitio, la falsa igual que la real.
-    // v7: responder o reenviar un correo real deja de leerse como un
-    // reproche; sigue siendo parcial porque el mensaje pedía algo.
-    // v8: el participante ve los datos que este escenario le pide, y los
-    // finales nombran lo que se entregó.
-    version: 8,
-    naturaleza: "legitimo",
-    dificultad: 4,
-    espeja: "phishing/sesion-bogota",
-    Component: lazy(() => import("../secciones/phishing/AvisoFiltracion")),
-  },
-  {
     // Puerta de entrada del módulo: el único SMS sin enlace ni formulario. La
     // decisión es si contestar, y eso se entiende sin haber mirado nunca una
     // dirección web.
@@ -307,23 +307,6 @@ const BASE: EscenarioBase[] = [
     Component: lazy(() => import("../secciones/smishing/BajaSuscripcion")),
   },
   {
-    // El más difícil del módulo: el código que llega es auténtico, así que todo
-    // lo que los otros enseñan a mirar sale bien en ese mensaje. Lo falso es el
-    // que pide reenviarlo.
-    seccionId: "smishing",
-    escenarioId: "codigo-reenviado",
-    titulo: "Código que piden reenviar",
-    descripcion:
-      "Alguien dice ser del banco y pide el código de verificación que acaba de llegarte.",
-    // v3: las opciones mirar (revisar intentos de acceso) ya no acreditan al cerrar
-    // la pantalla; el acierto se gana solo después de verificar (issue #74).
-    version: 3,
-    naturaleza: "fraude",
-    dificultad: 5,
-    espeja: "smishing/alerta-consumo",
-    Component: lazy(() => import("../secciones/smishing/CodigoReenviado")),
-  },
-  {
     seccionId: "smishing",
     escenarioId: "bono-estado",
     titulo: "Bono preseleccionado",
@@ -336,6 +319,22 @@ const BASE: EscenarioBase[] = [
     dificultad: 2,
     espeja: "smishing/alerta-consumo",
     Component: lazy(() => import("../secciones/smishing/BonoEstado")),
+  },
+  {
+    // El segundo legítimo: mismo courier y mismo envío que paquete-retenido,
+    // contados por quien de verdad los maneja.
+    seccionId: "smishing",
+    escenarioId: "entrega-programada",
+    titulo: "Entrega programada",
+    descripcion:
+      "El courier avisa la entrega de tu paquete para mañana, sin pedirte nada.",
+    // v3: las opciones mirar (ver detalle) ya no acreditan al cerrar
+    // la pantalla; el acierto se gana solo al dejar el aviso después de verificar (issue #74).
+    version: 3,
+    naturaleza: "legitimo",
+    dificultad: 2,
+    espeja: "smishing/paquete-retenido",
+    Component: lazy(() => import("../secciones/smishing/EntregaProgramada")),
   },
   {
     // El único del módulo cuyo anzuelo no es una dirección sino un número de
@@ -370,20 +369,6 @@ const BASE: EscenarioBase[] = [
   },
   {
     seccionId: "smishing",
-    escenarioId: "paquete-retenido",
-    titulo: "Paquete retenido",
-    descripcion:
-      "Un mensaje pide un pago pequeño para liberar un envío que sí estás esperando.",
-    // v3: las opciones mirar (rastrear guía) ya no acreditan al cerrar
-    // la pantalla; el acierto se gana solo al dejar el mensaje después de verificar (issue #74).
-    version: 3,
-    naturaleza: "fraude",
-    dificultad: 4,
-    espeja: "smishing/alerta-consumo",
-    Component: lazy(() => import("../secciones/smishing/PaqueteRetenido")),
-  },
-  {
-    seccionId: "smishing",
     escenarioId: "alerta-consumo",
     titulo: "Alerta de consumo",
     descripcion:
@@ -397,20 +382,35 @@ const BASE: EscenarioBase[] = [
     Component: lazy(() => import("../secciones/smishing/AlertaConsumo")),
   },
   {
-    // El segundo legítimo, y el que cierra el módulo: mismo courier y mismo
-    // envío que paquete-retenido, contados por quien de verdad los maneja.
     seccionId: "smishing",
-    escenarioId: "entrega-programada",
-    titulo: "Entrega programada",
+    escenarioId: "paquete-retenido",
+    titulo: "Paquete retenido",
     descripcion:
-      "El courier avisa la entrega de tu paquete para mañana, sin pedirte nada.",
-    // v3: las opciones mirar (ver detalle) ya no acreditan al cerrar
-    // la pantalla; el acierto se gana solo al dejar el aviso después de verificar (issue #74).
+      "Un mensaje pide un pago pequeño para liberar un envío que sí estás esperando.",
+    // v3: las opciones mirar (rastrear guía) ya no acreditan al cerrar
+    // la pantalla; el acierto se gana solo al dejar el mensaje después de verificar (issue #74).
     version: 3,
-    naturaleza: "legitimo",
-    dificultad: 2,
-    espeja: "smishing/paquete-retenido",
-    Component: lazy(() => import("../secciones/smishing/EntregaProgramada")),
+    naturaleza: "fraude",
+    dificultad: 4,
+    espeja: "smishing/alerta-consumo",
+    Component: lazy(() => import("../secciones/smishing/PaqueteRetenido")),
+  },
+  {
+    // El más difícil del módulo: el código que llega es auténtico, así que todo
+    // lo que los otros enseñan a mirar sale bien en ese mensaje. Lo falso es el
+    // que pide reenviarlo.
+    seccionId: "smishing",
+    escenarioId: "codigo-reenviado",
+    titulo: "Código que piden reenviar",
+    descripcion:
+      "Alguien dice ser del banco y pide el código de verificación que acaba de llegarte.",
+    // v3: las opciones mirar (revisar intentos de acceso) ya no acreditan al cerrar
+    // la pantalla; el acierto se gana solo después de verificar (issue #74).
+    version: 3,
+    naturaleza: "fraude",
+    dificultad: 5,
+    espeja: "smishing/alerta-consumo",
+    Component: lazy(() => import("../secciones/smishing/CodigoReenviado")),
   },
   {
     // La puerta de entrada del módulo, y la única señal que no está en la
@@ -681,23 +681,20 @@ const BASE: EscenarioBase[] = [
     Component: lazy(() => import("../secciones/estafa/MitadDePrecio")),
   },
   {
-    // El primero de los dos legítimos. Espeja a saldo-contable con la misma
-    // escena y las señales al revés: un módulo que solo enseña fraudes enseña
-    // a desconfiar de todo, y eso también hace daño.
-    //
-    // Ni el título ni el id dicen que sea el bueno, y va tercero y no último:
-    // un legítimo que se anuncia deja de medir nada, y dos legítimos seguidos
-    // al final del menú se reconocen por su posición.
+    // El primero de los dos legítimos: el mismo trato de arriendo-anticipado
+    // con el orden puesto del derecho (ver, firmar, pagar). Va tercero, y
+    // separado del otro legítimo por dos escenarios de fraude, para que dos
+    // legítimos seguidos no se reconozcan por su posición.
     seccionId: "estafa",
-    escenarioId: "pago-lavadora",
-    titulo: "Pago por la lavadora",
+    escenarioId: "visita-departamento",
+    titulo: "Visita al departamento",
     descripcion:
-      "Vendes una lavadora y la compradora dice que ya te transfirió.",
+      "Una agente inmobiliaria te da la dirección y tres horarios para ver un departamento.",
     version: 1,
     naturaleza: "legitimo",
-    dificultad: 3,
-    espeja: "estafa/saldo-contable",
-    Component: lazy(() => import("../secciones/estafa/PagoLavadora")),
+    dificultad: 2,
+    espeja: "estafa/arriendo-anticipado",
+    Component: lazy(() => import("../secciones/estafa/VisitaDepartamento")),
   },
   {
     seccionId: "estafa",
@@ -712,6 +709,24 @@ const BASE: EscenarioBase[] = [
     Component: lazy(() => import("../secciones/estafa/ArriendoAnticipado")),
   },
   {
+    // El primero de los dos legítimos. Espeja a saldo-contable con la misma
+    // escena y las señales al revés: un módulo que solo enseña fraudes enseña
+    // a desconfiar de todo, y eso también hace daño.
+    //
+    // Ni el título ni el id dicen que sea el bueno, y va quinto, no al final:
+    // un legítimo que se anuncia deja de medir nada.
+    seccionId: "estafa",
+    escenarioId: "pago-lavadora",
+    titulo: "Pago por la lavadora",
+    descripcion:
+      "Vendes una lavadora y la compradora dice que ya te transfirió.",
+    version: 1,
+    naturaleza: "legitimo",
+    dificultad: 3,
+    espeja: "estafa/saldo-contable",
+    Component: lazy(() => import("../secciones/estafa/PagoLavadora")),
+  },
+  {
     // El único del proyecto donde el dinero entra de verdad antes de perderse:
     // lo que se pierde es lo que devuelves tú.
     seccionId: "estafa",
@@ -724,21 +739,6 @@ const BASE: EscenarioBase[] = [
     dificultad: 3,
     espeja: "estafa/pago-lavadora",
     Component: lazy(() => import("../secciones/estafa/VueltoDeMas")),
-  },
-  {
-    // El segundo legítimo: el mismo trato de arriendo-anticipado con el orden
-    // puesto del derecho (ver, firmar, pagar). Va sexto, separado del otro
-    // legítimo y con dos fraudes detrás.
-    seccionId: "estafa",
-    escenarioId: "visita-departamento",
-    titulo: "Visita al departamento",
-    descripcion:
-      "Una agente inmobiliaria te da la dirección y tres horarios para ver un departamento.",
-    version: 1,
-    naturaleza: "legitimo",
-    dificultad: 2,
-    espeja: "estafa/arriendo-anticipado",
-    Component: lazy(() => import("../secciones/estafa/VisitaDepartamento")),
   },
   {
     // El más difícil: el primer retiro sí llega, y esa es toda la inversión
