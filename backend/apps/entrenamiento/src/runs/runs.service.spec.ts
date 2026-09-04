@@ -1,12 +1,48 @@
+import { ConflictException } from '@nestjs/common';
+import type { JwtService } from '@nestjs/jwt';
+import type { JwtPayload } from '@comun';
 import { RunsService } from './runs.service';
+import { UMBRALES } from './progreso';
 import type { PrismaService } from '../prisma/prisma.service';
 
-function serviceWith(runs: unknown[]) {
+/// Firma-simulada: guarda el último payload firmado para que los tests lo
+/// inspeccionen, sin depender de un secreto real.
+function jwtFake() {
+  let ultimoPayload: unknown;
+  const jwt = {
+    signAsync: (payload: unknown) => {
+      ultimoPayload = payload;
+      return Promise.resolve('token-simulado');
+    },
+  } as unknown as JwtService;
+  return { jwt, ultimoPayload: () => ultimoPayload };
+}
+
+interface CorridaFake {
+  scenarioId: string;
+  [k: string]: unknown;
+}
+
+/// Filtra por `scenarioId.startsWith`, igual que hace la consulta real de
+/// `progreso()`: sin esto, dos módulos distintos en la misma lista de corridas
+/// se contarían entre sí y el test no distinguiría "aprobado" de "no
+/// aprobado" por módulo.
+function serviceWith(runs: CorridaFake[], jwt?: JwtService) {
   const prisma = {
-    scenarioRun: { findMany: () => Promise.resolve(runs) },
+    scenarioRun: {
+      findMany: ({
+        where,
+      }: { where?: { scenarioId?: { startsWith?: string } } } = {}) => {
+        const prefijo = where?.scenarioId?.startsWith;
+        const filtradas = prefijo
+          ? runs.filter((r) => r.scenarioId.startsWith(prefijo))
+          : runs;
+        return Promise.resolve(filtradas);
+      },
+    },
   } as unknown as PrismaService;
 
-  return new RunsService(prisma);
+  return new RunsService(prisma, jwt ?? jwtFake().jwt);
 }
 
 function runFixture(overrides: Record<string, unknown> = {}) {
@@ -59,5 +95,70 @@ describe('RunsService.resultados', () => {
     expect(texto).not.toContain('maria@gmail.com');
     expect(texto).not.toContain('0991234567');
     expect(fila.seudonimo).toBe('P007');
+  });
+});
+
+/// 6 corridas CORRECTO en escenarios distintos del módulo: lo mínimo que
+/// `calcularProgreso` cuenta como aprobado (§7.1 del gating).
+function corridasAprobadas(modulo: string) {
+  return Array.from({ length: UMBRALES[modulo] }, (_, i) => ({
+    scenarioId: `${modulo}/e${i}`,
+    outcome: 'CORRECTO' as const,
+    finishedAt: new Date(`2026-08-01T10:00:${String(i).padStart(2, '0')}.000Z`),
+  }));
+}
+
+const PARTICIPANTE: JwtPayload = {
+  sub: 'uuid-participante',
+  seq: 7,
+  role: 'PARTICIPANT',
+  typ: 'access',
+};
+
+describe('RunsService.atestacion', () => {
+  it('firma la atestación cuando todos los módulos de UMBRALES están aprobados', async () => {
+    const modulos = Object.keys(UMBRALES);
+    const runs = modulos.flatMap((m) => corridasAprobadas(m));
+    const { jwt, ultimoPayload } = jwtFake();
+
+    const resultado = await serviceWith(runs, jwt).atestacion(PARTICIPANTE);
+
+    expect(resultado).toEqual({ atestacion: 'token-simulado' });
+    expect(ultimoPayload()).toEqual({
+      sub: PARTICIPANTE.sub,
+      seq: PARTICIPANTE.seq,
+      modulos,
+      typ: 'atestacion',
+    });
+  });
+
+  // El endpoint no exige un número fijo de módulos: exige TODOS los que
+  // declara UMBRALES. Si mañana se añade uno más, este test lo exigiría
+  // igual sin cambiar una línea (spec 2026-09-03 §5.1).
+  it('rechaza con 409 y nombra los módulos que faltan', async () => {
+    const modulos = Object.keys(UMBRALES);
+    const [primero, ...resto] = modulos;
+    // Al primer módulo le falta una corrida: 5 de 6.
+    const runsPrimero = corridasAprobadas(primero).slice(
+      0,
+      UMBRALES[primero] - 1,
+    );
+    const runs = [
+      ...runsPrimero,
+      ...resto.flatMap((m) => corridasAprobadas(m)),
+    ];
+
+    let error: unknown;
+    try {
+      await serviceWith(runs).atestacion(PARTICIPANTE);
+    } catch (e) {
+      error = e;
+    }
+
+    expect(error).toBeInstanceOf(ConflictException);
+    expect((error as ConflictException).getResponse()).toEqual({
+      message: 'Todavía no apruebas todos los módulos.',
+      faltan: [primero],
+    });
   });
 });

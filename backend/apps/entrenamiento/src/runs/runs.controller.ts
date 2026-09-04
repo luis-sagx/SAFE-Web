@@ -36,6 +36,14 @@ export class RunsController {
     return this.runs.progreso(participant.sub, modulo);
   }
 
+  /// Pase para el certificado: 409 con los módulos que faltan si no están
+  /// todos aprobados, o `{ atestacion }` firmada si lo están. `identidad` la
+  /// verifica y le pega el nombre; este servicio nunca lo conoce.
+  @Get('atestacion')
+  atestacion(@CurrentParticipant() participant: JwtPayload) {
+    return this.runs.atestacion(participant);
+  }
+
   /// Resultados del estudio para el supervisor: se ven dentro de la app, no se
   /// descargan. Solo sale el seudónimo (P001), nunca un dato personal — este
   /// servicio no tiene la tabla de participantes ni permiso para alcanzarla.
