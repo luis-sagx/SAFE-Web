@@ -8,7 +8,7 @@ import { seudonimo, type AtestacionPayload, type JwtPayload } from '@comun';
 import { Prisma } from '../../../../generated/entrenamiento/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateRunDto } from './dto/create-run.dto';
-import { calcularProgreso, UMBRALES } from './progreso';
+import { calcularProgreso, TOTALES, UMBRALES } from './progreso';
 
 /// Vida del pase entre servicios: un solo salto a través del cliente para
 /// emitir y descargar el certificado, no una credencial de sesión. Sin
@@ -75,7 +75,8 @@ export class RunsService {
   /// nombre de módulo mal escrito no debe leerse como "cero avance".
   async progreso(participantId: string, modulo: string) {
     const requeridos = UMBRALES[modulo];
-    if (requeridos === undefined) {
+    const total = TOTALES[modulo];
+    if (requeridos === undefined || total === undefined) {
       throw new NotFoundException(`No existe el módulo "${modulo}".`);
     }
 
@@ -84,7 +85,7 @@ export class RunsService {
       select: { scenarioId: true, outcome: true, finishedAt: true },
     });
 
-    return calcularProgreso(modulo, requeridos, corridas);
+    return calcularProgreso(modulo, requeridos, total, corridas);
   }
 
   /// Atestación para el certificado: comprueba TODOS los módulos que declara

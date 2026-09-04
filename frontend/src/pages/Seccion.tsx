@@ -1,9 +1,9 @@
-import { ArrowRight, CheckCircle2, LockKeyhole } from 'lucide-react'
+import { ArrowRight, CheckCircle2, LockKeyhole, Star } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link, Navigate, useLocation, useParams } from 'react-router'
 import AppHeader from '../components/AppHeader'
 import BarraProgreso from '../components/BarraProgreso'
-import CierreModulo from '../components/CierreModulo'
+import CierreModuloModal from '../components/CierreModuloModal'
 import InfoLink from '../components/InfoLink'
 import { escenariosDeSeccion, getSeccion, SECCIONES, type Seccion as SeccionCatalogo } from '../data/catalogo'
 import { fetchProgreso, type Progreso } from '../lib/api'
@@ -12,19 +12,33 @@ import { escenarioEstaDisponible, escenarioFueJugado } from '../lib/bloqueoEscen
 /// La dificultad no delata nada: un escenario legítimo puede ser tan difícil
 /// como uno de fraude, y de hecho los que espejan lo son.
 ///
-/// Va con la palabra y no con cinco puntos. Los puntos eran un código sin
-/// clave: el significado solo estaba en el `title` del navegador y en un
-/// `sr-only`, así que quien no pasa el cursor y no usa lector de pantalla
-/// —la mayoría del público— veía cinco círculos grises que intentaba
-/// descifrar. Tres nombres se leen sin explicación.
+/// Tres estrellas chicas junto al nombre, no cinco puntos ni el nombre solo:
+/// las estrellas solas no bastaban —nada en la tarjeta decía que eran una
+/// escala de dificultad y no otra cosa—, y el nombre solo no daba una imagen
+/// que se lea de un vistazo entre varias tarjetas. Van las dos, pequeñas.
+/// El ámbar y no el `ink` del texto: `ink` es el color del contenido de la
+/// tarjeta, y una estrella "llena" del mismo color que un título no se lee
+/// como calificación.
 const NOMBRE_DIFICULTAD = ['Fácil', 'Fácil', 'Media', 'Difícil', 'Difícil'] as const
+const ESTRELLAS_DIFICULTAD = [1, 1, 2, 3, 3] as const
 
 function Dificultad({ nivel }: { nivel: number }) {
   const nombre = NOMBRE_DIFICULTAD[nivel - 1] ?? 'Media'
+  const llenas = ESTRELLAS_DIFICULTAD[nivel - 1] ?? 2
 
   return (
-    <span className="text-sm text-muted" title={`Dificultad ${nivel} de 5`}>
-      {nombre}
+    <span className="inline-flex items-center gap-1" title={`Dificultad: ${nombre}`}>
+      <span className="inline-flex items-center gap-px">
+        {[1, 2, 3].map((i) => (
+          <Star
+            key={i}
+            aria-hidden
+            className={`size-2.5 ${i <= llenas ? 'fill-current text-warning' : 'text-hairline-strong'}`}
+            strokeWidth={1.75}
+          />
+        ))}
+      </span>
+      <span className="text-sm text-muted">{nombre}</span>
     </span>
   )
 }
@@ -127,6 +141,7 @@ function Seccion() {
   const { seccionId } = useParams()
   const seccion = getSeccion(seccionId)
   const [progreso, setProgreso] = useState<Progreso | null>(null)
+  const [mostrarCierre, setMostrarCierre] = useState(false)
   const bloqueado = (useLocation().state as { bloqueado?: string } | null)?.bloqueado
 
   // getSeccion() devuelve un objeto nuevo en cada render: la dependencia es
@@ -214,18 +229,12 @@ function Seccion() {
               >
                 Progreso del módulo
               </h2>
-              {/* El umbral va escrito junto al contador. La marca de meta de
-                  la barra es un contorno de un píxel que nadie interpreta, y
-                  sin ella la barra parece exigir los ocho. */}
+              {/* El umbral no se repite en texto: la barra ya lo marca con un
+                  anillo en su propia celda (BarraProgreso), como en un curso
+                  que no imprime la nota mínima en cada pantalla. */}
               <p className="text-sm font-medium text-ink">
                 <span className="text-lg font-semibold tabular-nums">{progreso.aprobados}</span>
                 <span className="text-muted">/{escenarios.length}</span>
-                <span aria-hidden className="mx-2 text-muted-soft">
-                  ·
-                </span>
-                <span className="font-normal text-body">
-                  meta: <span className="tabular-nums">{progreso.requeridos}</span>
-                </span>
               </p>
             </div>
 
@@ -238,15 +247,32 @@ function Seccion() {
               etiqueta={`Avance de ${seccion.titulo}`}
             />
 
-            {/* El "Módulo aprobado" ya no se dice aquí: al aprobar,
-                `CierreModulo` lo dice con más contenido, al pie de la
-                sección. Una sola línea de estado no repetida dos veces. */}
-            {!progreso.aprobado && (
+            {progreso.aprobado ? (
+              // El resumen completo vive en el modal, no aquí: un bloque de
+              // discriminadores permanentemente visible en cada visita a una
+              // sección ya aprobada competía con las tarjetas de escenarios.
+              <button
+                type="button"
+                onClick={() => setMostrarCierre(true)}
+                className="mt-3 text-sm font-medium text-link underline"
+              >
+                Ver resumen del módulo
+              </button>
+            ) : (
               <p className="mt-3 text-sm text-body">
                 {`Te ${faltan === 1 ? 'falta' : 'faltan'} ${faltan} para aprobar el módulo.`}
               </p>
             )}
           </section>
+        )}
+
+        {mostrarCierre && progreso?.aprobado && (
+          <CierreModuloModal
+            seccion={seccion}
+            escenarios={escenarios}
+            progreso={progreso}
+            onClose={() => setMostrarCierre(false)}
+          />
         )}
 
         {escenarios.length === 0 ? (
@@ -305,13 +331,15 @@ function Seccion() {
                         Sin jugar
                       </span>
                     ) : (
-                      /* El candado dice qué lo abre. "Bloqueado" a secas deja
-                         siete tarjetas muertas en la primera visita sin que
-                         nadie sepa qué hacer con ellas, cuando la condición es
-                         simple y el propio listado la conoce. */
+                      /* El candado dice qué lo abre: el escenario justo
+                         anterior en la lista, no el próximo pendiente del
+                         módulo. El 08 depende del 07, no del 03 — mostrar el
+                         mismo número en las cinco tarjetas bloqueadas decía
+                         que todas se abrían con el mismo paso, cuando cada
+                         una depende de que se termine la de al lado. */
                       <span className="inline-flex items-center gap-1 text-xs font-medium text-muted">
                         <LockKeyhole aria-hidden className="size-3.5" strokeWidth={2.5} />
-                        Se abre al terminar el {abre}
+                        Se abre al terminar el {String(indice).padStart(2, '0')}
                       </span>
                     )}
                     <span
@@ -344,10 +372,6 @@ function Seccion() {
               )
             })}
           </ol>
-        )}
-
-        {progreso?.aprobado && (
-          <CierreModulo seccion={seccion} escenarios={escenarios} progreso={progreso} />
         )}
 
         <SiguienteModulo seccion={seccion} progreso={progreso} />

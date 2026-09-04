@@ -224,16 +224,14 @@ function Dashboard() {
                     )}
                   </div>
 
-                  {/* Cuánto es el módulo y cuánto hay que aprobar, antes de
-                      entrar. Sin esta línea la tarjeta no decía a qué se estaba
-                      apuntando el participante y había que abrirla para
-                      averiguarlo. El total sale del catálogo; el umbral, del
-                      servidor, así que aparece en cuanto llega el progreso. */}
+                  {/* Cuánto es el módulo, antes de entrar. Sin esta línea la
+                      tarjeta no decía a qué se estaba apuntando el
+                      participante y había que abrirla para averiguarlo.
+                      El umbral no se repite aquí: ya lo marca el anillo de
+                      la barra de abajo, como en un curso que no imprime la
+                      nota mínima en cada tarjeta. */}
                   {disponible && (
-                    <p className="mt-1.5 text-sm text-muted">
-                      {escenarios.length} escenarios
-                      {progreso && ` · aprueba ${progreso.requeridos}`}
-                    </p>
+                    <p className="mt-1.5 text-sm text-muted">{escenarios.length} escenarios</p>
                   )}
 
                   {progreso && (

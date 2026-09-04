@@ -1,4 +1,4 @@
-import { outcomeFromKind, scoreFromOutcome } from '../../hooks/useScenarioRun'
+import { outcomeFromKind } from '../../hooks/useScenarioRun'
 import type { StoryNode } from '../../hooks/useStoryEngine'
 
 /**
@@ -14,20 +14,13 @@ import type { StoryNode } from '../../hooks/useStoryEngine'
  * visual, para que la etiqueta no pueda contradecir a lo que quedó guardado.
  * La regla es la del backend: solo CORRECTO acredita (ver progreso.ts).
  *
- * El puntaje que se muestra al lado es la misma derivación que usa
- * `useScenarioRun` para lo que envía al servidor (`node.score ?? scoreFromOutcome(...)`):
- * un solo cálculo, así que esta etiqueta no puede decir un número distinto del
- * que quedó guardado.
- *
- * Es la calidad de esta corrida, no un saldo. No hay total acumulado ni
- * "mejor intento": el gating cuenta el último intento (progreso.ts), y un
- * puntaje que se pudiera hacer crecer repitiendo sería una vía para inflar el
- * resultado sin haber aprendido nada — la misma razón por la que
- * `AccionesFinal` esconde "Repetir" hasta terminar el módulo.
+ * No muestra el puntaje: es casi siempre el mismo número que ya dice esta
+ * etiqueta (0/50/100 según el resultado, con cuatro excepciones sueltas en
+ * 20/60), y sin ese contexto solo generaba la pregunta de qué lo movía y para
+ * qué servía. El número se sigue guardando para el análisis del supervisor.
  */
 function EtiquetaAprobacion({ node }: { node: StoryNode }) {
   const resultado = node.resultado ?? outcomeFromKind(node.kind)
-  const puntaje = node.score ?? scoreFromOutcome(resultado)
   const aprobado = resultado === 'CORRECTO'
 
   return (
@@ -38,10 +31,6 @@ function EtiquetaAprobacion({ node }: { node: StoryNode }) {
         }`}
       >
         {aprobado ? 'Escenario aprobado' : 'Escenario no aprobado'}
-      </span>
-
-      <span className="ml-2 inline-flex items-center text-sm font-medium text-muted">
-        {puntaje}/100 puntos
       </span>
 
       {!aprobado && (

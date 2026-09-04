@@ -2,7 +2,7 @@ import { ConflictException } from '@nestjs/common';
 import type { JwtService } from '@nestjs/jwt';
 import type { JwtPayload } from '@comun';
 import { RunsService } from './runs.service';
-import { UMBRALES } from './progreso';
+import { TOTALES, UMBRALES } from './progreso';
 import type { PrismaService } from '../prisma/prisma.service';
 
 /// Firma-simulada: guarda el último payload firmado para que los tests lo
@@ -98,12 +98,15 @@ describe('RunsService.resultados', () => {
   });
 });
 
-/// 6 corridas CORRECTO en escenarios distintos del módulo: lo mínimo que
-/// `calcularProgreso` cuenta como aprobado (§7.1 del gating).
+/// Los `TOTALES[modulo]` (8) escenarios intentados, los primeros
+/// `UMBRALES[modulo]` (6) en CORRECTO y el resto en lo que sea: lo mínimo que
+/// `calcularProgreso` cuenta como aprobado desde que también exige haber
+/// jugado los 8, no solo llegar al umbral (progreso.ts).
 function corridasAprobadas(modulo: string) {
-  return Array.from({ length: UMBRALES[modulo] }, (_, i) => ({
+  return Array.from({ length: TOTALES[modulo] }, (_, i) => ({
     scenarioId: `${modulo}/e${i}`,
-    outcome: 'CORRECTO' as const,
+    outcome:
+      i < UMBRALES[modulo] ? ('CORRECTO' as const) : ('INCORRECTO' as const),
     finishedAt: new Date(`2026-08-01T10:00:${String(i).padStart(2, '0')}.000Z`),
   }));
 }

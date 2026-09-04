@@ -53,11 +53,15 @@ interface CierreModuloProps {
 }
 
 /**
- * Lo que se muestra al aprobar un módulo, en vez de la insignia suelta que
- * había antes. Contenido pedagógico —los cuatro discriminadores— y no una
- * animación de recompensa: es lo único del diseño que enseña a discriminar en
- * vez de a reconocer señales sueltas, y hasta ahora no aparecía en ninguna
- * pantalla de la aplicación.
+ * Contenido pedagógico —los cuatro discriminadores— y no una animación de
+ * recompensa: es lo único del diseño que enseña a discriminar en vez de a
+ * reconocer señales sueltas.
+ *
+ * Se muestra dentro de `CierreModuloModal` y no en el flujo de la página: un
+ * bloque de este tamaño permanentemente visible cada vez que se vuelve a la
+ * sección, ya aprobada, competía con las tarjetas de escenarios. Como modal,
+ * el participante lo abre cuando quiere repasarlo y no cuando la página
+ * decide mostrarlo.
  */
 function CierreModulo({ seccion, escenarios, progreso }: CierreModuloProps) {
   const [duracionMs, setDuracionMs] = useState<number | null>(null)
@@ -93,7 +97,7 @@ function CierreModulo({ seccion, escenarios, progreso }: CierreModuloProps) {
   return (
     <section
       aria-labelledby="titulo-cierre"
-      className="mt-8 rounded-lg border border-mint-mid bg-mint-light/40 p-5"
+      className="rounded-lg border border-mint-mid bg-mint-light/40 p-5"
     >
       <p
         id="titulo-cierre"
