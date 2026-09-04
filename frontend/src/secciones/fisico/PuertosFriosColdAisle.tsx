@@ -7,22 +7,6 @@ import styles from './Baiting.module.css'
 
 type Level = 'safe' | 'danger' | 'partial'
 
-function outcomeForLevel(level: Level): 'CORRECTO' | 'PARCIAL' | 'INCORRECTO' {
-  switch (level) {
-    case 'safe': return 'CORRECTO'
-    case 'partial': return 'PARCIAL'
-    case 'danger': return 'INCORRECTO'
-  }
-}
-
-function resultVariant(level: Level): 'good' | 'partial' | 'bad' {
-  switch (level) {
-    case 'safe': return 'good'
-    case 'partial': return 'partial'
-    case 'danger': return 'bad'
-  }
-}
-
 interface Resolved {
   level: Level
   feedback: string
@@ -67,7 +51,7 @@ function PuertosFriosColdAisle() {
     setResolved(result)
     void run.finish({
       endingId: result.level,
-      outcome: outcomeForLevel(result.level),
+      outcome: result.level === 'safe' ? 'CORRECTO' : result.level === 'partial' ? 'PARCIAL' : 'INCORRECTO',
     })
   }
 
@@ -162,7 +146,7 @@ function PuertosFriosColdAisle() {
     </div>
   )
 
-  const Escena = () => (
+  const ESCENA = () => (
     <div className="w-full h-full space-y-4 flex flex-col">
       {/* Imagen GRANDE ocupando todo el ancho */}
       <img
@@ -220,7 +204,7 @@ function PuertosFriosColdAisle() {
       <main className={styles.mainArea}>
         <div className={styles.sceneView}>
           <div className={styles.sceneCanvas}>
-        <Escena />
+            <ESCENA />
           </div>
         </div>
       </main>
@@ -246,7 +230,7 @@ function PuertosFriosColdAisle() {
       pantalla={pantalla}
       decision={decisionPanel}
       ocultarDecision={false}
-      resultado={resolved ? resultVariant(resolved.level) : undefined}
+      resultado={resolved ? (resolved.level === 'safe' ? 'good' : resolved.level === 'partial' ? 'partial' : 'bad') : undefined}
       onEmpezar={onEmpezar}
       dispositivo="escritorio"
     />

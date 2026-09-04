@@ -23,7 +23,7 @@ import { CUENTA_FICTICIA, IDENTIDAD_FICTICIA } from '../../lib/identidadFicticia
  * ejercicio, como el SRI en factura-sri.
  */
 
-const URL_FALSA = 'http://loteria-pacifico-premios.online/reclamo' // NOSONAR: protocolo inseguro intencional del ejercicio de phishing.
+const URL_FALSA = 'http://loteria-pacifico-premios.online/reclamo'
 
 const CORREO: ScreenView = {
   kind: 'mail',

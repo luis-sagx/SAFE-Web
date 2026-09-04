@@ -87,9 +87,9 @@ function NotaDeVoz({
       </span>
 
       {url && (
-        <audio ref={audioRef} src={url} onEnded={() => setSonando(false)}>
-          <track kind="captions" srcLang="es" label="Español" src="data:text/vtt,WEBVTT%0A" />
-        </audio>
+        // eslint-disable-next-line jsx-a11y/media-has-caption -- la
+        // transcripción va justo encima, siempre visible.
+        <audio ref={audioRef} src={url} onEnded={() => setSonando(false)} />
       )}
     </span>
   )

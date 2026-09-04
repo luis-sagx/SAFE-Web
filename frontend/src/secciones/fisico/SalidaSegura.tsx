@@ -33,22 +33,6 @@ const TAB_CONTENTS: TabContent[] = [
   { name: 'Reportes', content: 'Reportes financieros' },
 ]
 
-function tabFill(isClosed: boolean, isActive: boolean): string {
-  if (isClosed) return '#555'
-  if (isActive) return '#0078d4'
-  return '#666'
-}
-
-function tabTextFill(isClosed: boolean, isActive: boolean): string {
-  if (isClosed) return '#888'
-  if (isActive) return '#fff'
-  return '#ccc'
-}
-
-function tabCursor(isClosed: boolean): 'default' | 'pointer' {
-  return isClosed ? 'default' : 'pointer'
-}
-
 function SalidaSegura() {
   const navigate = useNavigate()
   const run = useScenarioRun('fisico/salida-segura')
@@ -149,7 +133,7 @@ function SalidaSegura() {
     ),
   }
 
-  const Escena = () => (
+  const ESCENA = () => (
     <svg viewBox="0 0 1000 700" className="w-full">
       {/* Fondo pared */}
       <rect width="1000" height="700" fill="#f5e6d3" />
@@ -207,11 +191,11 @@ function SalidaSegura() {
                 y="70"
                 width="100"
                 height="50"
-                fill={tabFill(isClosed, isActive)}
+                fill={isClosed ? '#555' : isActive ? '#0078d4' : '#666'}
                 rx="8"
                 stroke="#222"
                 strokeWidth="2"
-                style={{ cursor: tabCursor(isClosed) }}
+                style={{ cursor: isClosed ? 'default' : 'pointer' }}
                 onClick={() => !isClosed && handleTabClick(i)}
                 opacity={isClosed ? 0.5 : 1}
               />
@@ -221,9 +205,9 @@ function SalidaSegura() {
                 y="105"
                 textAnchor="middle"
                 fontSize="16"
-                fill={tabTextFill(isClosed, isActive)}
+                fill={isClosed ? '#888' : isActive ? '#fff' : '#ccc'}
                 fontWeight="bold"
-                style={{ cursor: tabCursor(isClosed), pointerEvents: 'none' }}
+                style={{ cursor: isClosed ? 'default' : 'pointer', pointerEvents: 'none' }}
               >
                 {tab.name.substring(0, 10)}
               </text>
@@ -379,7 +363,7 @@ function SalidaSegura() {
           ) : (
             <div className="space-y-6 mt-6">
               <div className={styles.sceneCanvas}>
-        <Escena />
+                <ESCENA />
               </div>
 
               <div className="flex gap-4">
