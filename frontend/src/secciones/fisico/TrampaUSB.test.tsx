@@ -13,12 +13,13 @@ vi.mock('../../hooks/useScenarioRun', () => ({ useScenarioRun: mocks.useScenario
 vi.mock('../../hooks/useFlashTransition', () => ({ useFlashTransition: mocks.useFlashTransition }))
 vi.mock('../../hooks/useSiguienteEscenario', () => ({ useSiguienteEscenario: mocks.useSiguienteEscenario }))
 vi.mock('../../components/EscenarioLayout', () => ({
-  default: ({ pantalla, onEmpezar }: any) => (
+  default: ({ pantalla, decision, onEmpezar }: any) => (
     <div data-testid="escenario-layout">
       <button onClick={onEmpezar} data-testid="btn-empezar">
         Empezar
       </button>
       {pantalla}
+      {decision}
     </div>
   ),
 }))
@@ -152,5 +153,32 @@ describe('TrampaUSB', () => {
       fireEvent.click(optionBtn)
       expect(finishMock).toHaveBeenCalled()
     }
+  })
+
+  it('muestra botón "No sé por dónde empezar"', () => {
+    render(
+      <BrowserRouter>
+        <TrampaUSB />
+      </BrowserRouter>
+    )
+    const empezarBtn = screen.getByTestId('btn-empezar')
+    fireEvent.click(empezarBtn)
+
+    const helpBtn = screen.getByText(/No sé por dónde empezar/)
+    expect(helpBtn).toBeDefined()
+  })
+
+  it('muestra pista después de click en ayuda', () => {
+    render(
+      <BrowserRouter>
+        <TrampaUSB />
+      </BrowserRouter>
+    )
+    const empezarBtn = screen.getByTestId('btn-empezar')
+    fireEvent.click(empezarBtn)
+
+    const helpBtn = screen.getByText(/No sé por dónde empezar/)
+    fireEvent.click(helpBtn)
+    expect(screen.getByText(/Haz click en el USB/)).toBeDefined()
   })
 })

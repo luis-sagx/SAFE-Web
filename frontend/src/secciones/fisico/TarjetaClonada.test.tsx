@@ -107,6 +107,65 @@ describe('TarjetaClonada', () => {
     }
   })
 
+  it('muestra opciones al hacer click en el destello', () => {
+    const { container } = render(
+      <BrowserRouter>
+        <TarjetaClonada />
+      </BrowserRouter>
+    )
+    const empezarBtn = screen.getByTestId('btn-empezar')
+    fireEvent.click(empezarBtn)
+
+    const flash = container.querySelector('.sceneFlash') || container.querySelector('g[class*="Flash"]')
+    if (flash) {
+      fireEvent.click(flash)
+      const buttons = screen.queryAllByRole('button')
+      expect(buttons.length).toBeGreaterThan(1)
+    }
+  })
+
+  it('registra decisión tras destello y selección', () => {
+    const { container } = render(
+      <BrowserRouter>
+        <TarjetaClonada />
+      </BrowserRouter>
+    )
+    const empezarBtn = screen.getByTestId('btn-empezar')
+    fireEvent.click(empezarBtn)
+
+    const flash = container.querySelector('.sceneFlash') || container.querySelector('g[class*="Flash"]')
+    if (flash) {
+      fireEvent.click(flash)
+      const allButtons = screen.queryAllByRole('button')
+      const optionBtn = allButtons.find(btn => btn !== empezarBtn && btn.textContent && btn.textContent.length > 5)
+      if (optionBtn) {
+        fireEvent.click(optionBtn)
+        expect(recordDecisionMock).toHaveBeenCalled()
+      }
+    }
+  })
+
+  it('finaliza escenario tras destello y selección', () => {
+    const { container } = render(
+      <BrowserRouter>
+        <TarjetaClonada />
+      </BrowserRouter>
+    )
+    const empezarBtn = screen.getByTestId('btn-empezar')
+    fireEvent.click(empezarBtn)
+
+    const flash = container.querySelector('.sceneFlash') || container.querySelector('g[class*="Flash"]')
+    if (flash) {
+      fireEvent.click(flash)
+      const allButtons = screen.queryAllByRole('button')
+      const optionBtn = allButtons.find(btn => btn !== empezarBtn && btn.textContent && btn.textContent.length > 5)
+      if (optionBtn) {
+        fireEvent.click(optionBtn)
+        expect(finishMock).toHaveBeenCalled()
+      }
+    }
+  })
+
   it('integra hooks correctamente', () => {
     render(
       <BrowserRouter>

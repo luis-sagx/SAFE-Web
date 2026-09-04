@@ -143,8 +143,8 @@ describe('CableComprometido', () => {
     expect(buttons).toBeDefined()
   })
 
-  it('registra decisión cuando selecciona una opción', () => {
-    render(
+  it('muestra opciones al hacer click en el destello', () => {
+    const { container } = render(
       <BrowserRouter>
         <CableComprometido />
       </BrowserRouter>
@@ -152,16 +152,16 @@ describe('CableComprometido', () => {
     const empezarBtn = screen.getByTestId('btn-empezar')
     fireEvent.click(empezarBtn)
 
-    const allButtons = screen.queryAllByRole('button')
-    const optionBtn = allButtons.find(btn => btn !== empezarBtn && btn.textContent && btn.textContent.length > 5)
-    if (optionBtn) {
-      fireEvent.click(optionBtn)
-      expect(recordDecisionMock).toHaveBeenCalled()
+    const flash = container.querySelector('.sceneFlash') || container.querySelector('g[class*="Flash"]')
+    if (flash) {
+      fireEvent.click(flash)
+      const buttons = screen.queryAllByRole('button')
+      expect(buttons.length).toBeGreaterThan(1)
     }
   })
 
-  it('finaliza escenario después de seleccionar', () => {
-    render(
+  it('registra decisión cuando selecciona una opción tras destello', () => {
+    const { container } = render(
       <BrowserRouter>
         <CableComprometido />
       </BrowserRouter>
@@ -169,11 +169,60 @@ describe('CableComprometido', () => {
     const empezarBtn = screen.getByTestId('btn-empezar')
     fireEvent.click(empezarBtn)
 
-    const allButtons = screen.queryAllByRole('button')
-    const optionBtn = allButtons.find(btn => btn !== empezarBtn && btn.textContent && btn.textContent.length > 5)
-    if (optionBtn) {
-      fireEvent.click(optionBtn)
-      expect(finishMock).toHaveBeenCalled()
+    const flash = container.querySelector('.sceneFlash') || container.querySelector('g[class*="Flash"]')
+    if (flash) {
+      fireEvent.click(flash)
+      const allButtons = screen.queryAllByRole('button')
+      const optionBtn = allButtons.find(btn => btn !== empezarBtn && btn.textContent && btn.textContent.length > 5)
+      if (optionBtn) {
+        fireEvent.click(optionBtn)
+        expect(recordDecisionMock).toHaveBeenCalled()
+      }
     }
+  })
+
+  it('finaliza escenario tras destello y selección', () => {
+    const { container } = render(
+      <BrowserRouter>
+        <CableComprometido />
+      </BrowserRouter>
+    )
+    const empezarBtn = screen.getByTestId('btn-empezar')
+    fireEvent.click(empezarBtn)
+
+    const flash = container.querySelector('.sceneFlash') || container.querySelector('g[class*="Flash"]')
+    if (flash) {
+      fireEvent.click(flash)
+      const optionBtn = screen.queryByRole('button', { name: /Usarlo para cargar/ })
+      if (optionBtn) {
+        fireEvent.click(optionBtn)
+        expect(finishMock).toHaveBeenCalled()
+      }
+    }
+  })
+
+  it('maneja múltiples fases del escenario', () => {
+    const { rerender } = render(
+      <BrowserRouter>
+        <CableComprometido />
+      </BrowserRouter>
+    )
+    expect(useScenarioRunMock).toHaveBeenCalledTimes(1)
+
+    rerender(
+      <BrowserRouter>
+        <CableComprometido />
+      </BrowserRouter>
+    )
+    expect(useScenarioRunMock).toHaveBeenCalledTimes(2)
+  })
+
+  it('configura hooks para transiciones visuales', () => {
+    render(
+      <BrowserRouter>
+        <CableComprometido />
+      </BrowserRouter>
+    )
+    expect(useFlashTransitionMock).toHaveBeenCalled()
   })
 })

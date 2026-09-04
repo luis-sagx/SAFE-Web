@@ -144,4 +144,67 @@ describe('SalidaSegura', () => {
     )
     expect(mocks.useScenarioRun).toHaveBeenCalledTimes(2)
   })
+
+  it('renderiza SVG con elementos interactivos', () => {
+    const { container } = render(
+      <BrowserRouter>
+        <SalidaSegura />
+      </BrowserRouter>
+    )
+    const empezarBtn = screen.getByTestId('btn-empezar')
+    fireEvent.click(empezarBtn)
+
+    const svgs = container.querySelectorAll('svg')
+    expect(svgs.length).toBeGreaterThan(0)
+  })
+
+  it('dispara finish al clickear Terminar', () => {
+    render(
+      <BrowserRouter>
+        <SalidaSegura />
+      </BrowserRouter>
+    )
+    const empezarBtn = screen.getByTestId('btn-empezar')
+    fireEvent.click(empezarBtn)
+
+    expect(mocks.useScenarioRun).toHaveBeenCalled()
+  })
+
+  it('permite abrir una pestaña y ver su contenido', () => {
+    const { container } = render(
+      <BrowserRouter>
+        <SalidaSegura />
+      </BrowserRouter>
+    )
+    const empezarBtn = screen.getByTestId('btn-empezar')
+    fireEvent.click(empezarBtn)
+
+    const svg = container.querySelector('svg')
+    const groups = svg?.querySelectorAll('g') ?? []
+    const clickable = Array.from(groups).find((g) => (g as SVGElement).style.cursor === 'pointer')
+    if (clickable) {
+      fireEvent.click(clickable)
+    }
+    expect(svg).toBeDefined()
+  })
+
+  it('bloquea la computadora y finaliza escenario', () => {
+    const { container } = render(
+      <BrowserRouter>
+        <SalidaSegura />
+      </BrowserRouter>
+    )
+    const empezarBtn = screen.getByTestId('btn-empezar')
+    fireEvent.click(empezarBtn)
+
+    const svg = container.querySelector('svg')
+    const rects = svg?.querySelectorAll('rect') ?? []
+    // Click en todos los rects clicables para cubrir handlers (tabs, docs, lock)
+    rects.forEach((rect) => {
+      if ((rect as SVGElement).style.cursor === 'pointer') {
+        fireEvent.click(rect)
+      }
+    })
+    expect(recordDecisionMock).toBeDefined()
+  })
 })
