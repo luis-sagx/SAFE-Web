@@ -152,4 +152,17 @@ describe('CodigoQRCafe', () => {
       expect(triggerMock).toHaveBeenCalled()
     }
   })
+
+  it('selecciona diferentes opciones correctamente', () => {
+    render(
+      <BrowserRouter>
+        <CodigoQRCafe />
+      </BrowserRouter>
+    )
+    const empezarBtn = screen.getByTestId('btn-empezar')
+    fireEvent.click(empezarBtn)
+
+    const options = screen.queryAllByRole('button', { name: /Escanear|Preguntar|Usar datos/ })
+    expect(options.length).toBe(3)
+  })
 })

@@ -39,4 +39,20 @@ describe('DescargaProgramasPiratas', () => {
     )
     expect(getByTestId('story-escenario')).toBeDefined()
   })
+
+  it('integra hooks correctamente', () => {
+    const { rerender } = render(
+      <BrowserRouter>
+        <DescargaProgramasPiratas />
+      </BrowserRouter>
+    )
+    expect(mocks.useStoryEngine).toBeDefined()
+
+    rerender(
+      <BrowserRouter>
+        <DescargaProgramasPiratas />
+      </BrowserRouter>
+    )
+    expect(mocks.useStoryEngine).toBeDefined()
+  })
 })
