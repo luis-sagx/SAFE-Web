@@ -180,27 +180,20 @@ export default function CodigoQRCafe() {
     </div>
   ) : (
     <Instrucciones
+      queHaces={<p className="text-base leading-relaxed text-body">{SCENARIO.narrative}</p>}
+      cuandoTermina={
+        <>
+          Cuando elijas cómo conectarte: escanear el código QR, preguntar al personal, o usar datos
+          móviles. La primera opción que toques es tu decisión.
+        </>
+      }
       pista={
         <p>
           Tienes tres caminos posibles: escanear el QR, pedir la contraseña al café, o usar datos móviles.
           Cuál de los tres es el más seguro es justamente lo que decides tú.
         </p>
       }
-    >
-      <div className="grid gap-3">
-        <p className="text-lg font-semibold text-ink">¿Qué haces?</p>
-        <p className="text-base leading-relaxed text-body">{SCENARIO.narrative}</p>
-        <details className="text-base leading-relaxed text-body">
-          <summary className="cursor-pointer list-none font-medium text-link underline decoration-dotted underline-offset-4">
-            ¿Cuándo termina el escenario?
-          </summary>
-          <p className="mt-2">
-            Cuando elijas cómo conectarte: escanear el código QR, preguntar al personal, o usar
-            datos móviles. La primera opción que toques es tu decisión.
-          </p>
-        </details>
-      </div>
-    </Instrucciones>
+    />
   )
 
   const nota = (

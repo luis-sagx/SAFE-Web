@@ -52,4 +52,31 @@ describe('CableComprometido', () => {
 
     expect(await screen.findByText('Decisión segura')).toBeDefined()
   })
+
+  it('muestra el panel "¿Qué haces?" con la pista de la sala de descanso', () => {
+    empezar(<CableComprometido />)
+
+    expect(screen.getByText('¿Qué haces?')).toBeDefined()
+    fireEvent.click(screen.getByText('No sé por dónde empezar'))
+    expect(screen.getByText(/Cuál es el más seguro es lo que decides tú/)).toBeDefined()
+  })
+
+  it('explica cuándo termina el escenario', () => {
+    empezar(<CableComprometido />)
+
+    fireEvent.click(screen.getByText('¿Cuándo termina el escenario?'))
+
+    expect(screen.getByText(/pasas a una.*segunda decisión/)).toBeDefined()
+  })
+
+  it('cambia la pista al pasar a la fase de escritorio', async () => {
+    const telefono = empezar(<CableComprometido />)
+    tocarDestello(telefono)
+    fireEvent.click(within(telefono).getByRole('button', { name: /Llevártelo/ }))
+    await within(telefono).findByText('Tu escritorio')
+
+    fireEvent.click(screen.getByText('No sé por dónde empezar'))
+
+    expect(screen.getByText(/conectarlo a tu celular/)).toBeDefined()
+  })
 })

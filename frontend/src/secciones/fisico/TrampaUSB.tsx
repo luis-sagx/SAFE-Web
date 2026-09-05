@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import EscenarioLayout from '../../components/EscenarioLayout'
+import Instrucciones from '../../components/ui/Instrucciones'
 import { useFlashTransition } from '../../hooks/useFlashTransition'
 import type { Contexto } from '../../components/ui/ContextoEscenario'
 import dossierTheme from '../../styles/dossier-theme.module.css'
@@ -63,7 +64,6 @@ function stampWord(level: Level) {
 function TrampaUSB() {
   const run = useScenarioRun('fisico/trampa-usb')
 
-  const [choicesShown, setChoicesShown] = useState(false)
   const [shuffledChoices, setShuffledChoices] = useState<Choice[]>([])
   const [revealPending, setRevealPending] = useState(false)
   const [resolved, setResolved] = useState<Resolved | null>(null)
@@ -73,8 +73,7 @@ function TrampaUSB() {
   const currentScenario = SCENARIO_PARKING
 
   function onEmpezar() {
-    setChoicesShown(false)
-    setShuffledChoices([])
+    setShuffledChoices(shuffled(SCENARIO_PARKING.choices as Choice[]))
     setRevealPending(false)
     setResolved(null)
   }
@@ -138,38 +137,19 @@ function TrampaUSB() {
         </div>
       </div>
 
-      {/* Opciones de acción - mostrar primero opciones de agarrar/dejar */}
-      {shuffledChoices.length === 0 ? (
-        <div className="flex gap-2 -mt-4">
+      {/* Opciones de acción */}
+      <div className="flex gap-2">
+        {shuffledChoices.map((choice) => (
           <button
-            onClick={() => handleChoice(SCENARIO_PARKING.choices[0]! as Choice)}
+            key={choice.label}
+            onClick={() => handleChoice(choice)}
             disabled={revealPending || resolved !== null}
             className="flex-1 px-3 py-3 rounded font-semibold text-gray-800 bg-gray-300 hover:bg-gray-400 disabled:opacity-50 disabled:cursor-not-allowed transition text-sm"
           >
-            Agarrarlo, alguien lo dejó
+            {choice.label}
           </button>
-          <button
-            onClick={() => handleChoice(SCENARIO_PARKING.choices[1]! as Choice)}
-            disabled={revealPending || resolved !== null}
-            className="flex-1 px-3 py-3 rounded font-semibold text-gray-800 bg-gray-300 hover:bg-gray-400 disabled:opacity-50 disabled:cursor-not-allowed transition text-sm"
-          >
-            Dejarlo ahí
-          </button>
-        </div>
-      ) : (
-        <div className="flex gap-2">
-          {shuffledChoices.map((choice) => (
-            <button
-              key={choice.label}
-              onClick={() => handleChoice(choice)}
-              disabled={revealPending || resolved !== null}
-              className="flex-1 px-3 py-3 rounded font-semibold text-gray-800 bg-gray-300 hover:bg-gray-400 disabled:opacity-50 disabled:cursor-not-allowed transition text-sm"
-            >
-              {choice.label}
-            </button>
-          ))}
-        </div>
-      )}
+        ))}
+      </div>
     </div>
   )
 
@@ -181,35 +161,20 @@ function TrampaUSB() {
       </div>
     </div>
   ) : (
-    <div className="space-y-6">
-      <div>
-        <h3 className="font-semibold text-ink mb-3">¿Qué haces?</h3>
-        <p className="text-sm text-body leading-relaxed">{currentScenario.narrative.replace(/<[^>]*>/g, '')}</p>
-      </div>
-      <button
-        onClick={() => {
-          setShuffledChoices(shuffled(currentScenario.choices as Choice[]))
-          setChoicesShown(true)
-        }}
-        className="text-sm font-medium text-link underline decoration-dotted"
-      >
-        No sé por dónde empezar
-      </button>
-      {choicesShown && (
-        <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded text-sm text-body">
-          Haz click en el USB en la imagen o selecciona una opción arriba.
-        </div>
-      )}
-      <details className="text-sm leading-relaxed text-body">
-        <summary className="cursor-pointer list-none font-medium text-link underline decoration-dotted underline-offset-4">
-          ¿Cuándo termina el escenario?
-        </summary>
-        <p className="mt-2">
+    <Instrucciones
+      queHaces={
+        <p className="text-base leading-relaxed text-body">
+          {currentScenario.narrative.replace(/<[^>]*>/g, '')}
+        </p>
+      }
+      cuandoTermina={
+        <>
           Cuando decidas qué hacer con el USB: agarrarlo o dejarlo donde está. No hay vuelta atrás
           una vez elijas.
-        </p>
-      </details>
-    </div>
+        </>
+      }
+      pista={<p>Haz click en el USB en la imagen o selecciona una de las dos opciones.</p>}
+    />
   )
 
   const pantalla = (

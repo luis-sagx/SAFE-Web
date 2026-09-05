@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router'
 import EscenarioLayout from '../../components/EscenarioLayout'
 import FlashOverlay from '../../components/ui/FlashOverlay'
+import Instrucciones from '../../components/ui/Instrucciones'
 import { useFlashTransition } from '../../hooks/useFlashTransition'
 import { useSiguienteEscenario } from '../../hooks/useSiguienteEscenario'
 import type { Contexto } from '../../components/ui/ContextoEscenario'
@@ -382,6 +383,35 @@ function CableComprometido() {
     </div>
   )
 
+  const decisionPanel = showFeedback ? null : (
+    <Instrucciones
+      queHaces={
+        <p className="text-base leading-relaxed text-body">
+          Toca el destello ⚡ sobre la escena para inspeccionar el cable y ver tus opciones.
+        </p>
+      }
+      cuandoTermina={
+        <>
+          Cuando elijas qué hacer con el cable. Si decides llevártelo a tu escritorio, pasas a una
+          segunda decisión: ahí sí termina el escenario, no antes.
+        </>
+      }
+      pista={
+        phase === 'break-room' ? (
+          <p>
+            Tienes dos caminos: usarlo para cargar aquí mismo, o llevártelo a tu escritorio. Cuál es
+            el más seguro es lo que decides tú.
+          </p>
+        ) : (
+          <p>
+            Tienes cuatro caminos: conectarlo a tu celular, conectarlo a tu computadora, entregarlo a
+            IT, o descartarlo. Cuál es el más seguro es lo que decides tú.
+          </p>
+        )
+      }
+    />
+  )
+
   return (
     <EscenarioLayout
       escenarioId="fisico/cable-comprometido"
@@ -390,8 +420,8 @@ function CableComprometido() {
       nota={nota}
       identidad={[]}
       pantalla={pantalla}
-      decision={null}
-      ocultarDecision={true}
+      decision={decisionPanel}
+      ocultarDecision={false}
       onEmpezar={onEmpezar}
       dispositivo="escritorio"
     />

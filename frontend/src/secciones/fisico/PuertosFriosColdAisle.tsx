@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import EscenarioLayout from '../../components/EscenarioLayout'
+import Instrucciones from '../../components/ui/Instrucciones'
 import type { Contexto } from '../../components/ui/ContextoEscenario'
 import dossierTheme from '../../styles/dossier-theme.module.css'
 import { useScenarioRun } from '../../hooks/useScenarioRun'
@@ -17,7 +18,6 @@ function PuertosFriosColdAisle() {
   const run = useScenarioRun('fisico/puertos-frios-datacenter')
 
   const [resolved, setResolved] = useState<Resolved | null>(null)
-  const [mostrarPista, setMostrarPista] = useState(false)
 
   function handleDecision(decision: 'cierra-reporta' | 'solo-cierra' | 'nada') {
     let result: Resolved
@@ -119,41 +119,33 @@ function PuertosFriosColdAisle() {
       </div>
     </div>
   ) : (
-    <div className="space-y-6">
-      <div>
-        <h3 className="font-semibold text-ink mb-3">¿Qué haces?</h3>
-        <p className="text-sm text-body leading-relaxed">
-          La puerta del puerto frío está abierta. El aire caliente está entrando y la temperatura sube rápidamente. Los servidores de producción están en riesgo.
-        </p>
-        <p className="text-sm text-body leading-relaxed font-semibold mt-2">
-          Tienes menos de 3 minutos para actuar antes que ocurra un shutdown automático por protección térmica.
-        </p>
-      </div>
-
-      <div>
-        <button
-          onClick={() => setMostrarPista(!mostrarPista)}
-          className="text-sm font-medium text-link underline decoration-dotted underline-offset-4 transition hover:decoration-solid"
-        >
-          No sé por dónde empezar
-        </button>
-        {mostrarPista && (
-          <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded text-sm text-body leading-relaxed">
-            En emergencias de refrigeración, la clave es actuar INMEDIATAMENTE. Tienes tres opciones: cerrar la puerta solamente, reportar al equipo de infraestructura, o hacer ambas cosas. La mejor respuesta es la que combina acción rápida con comunicación.
-          </div>
-        )}
-      </div>
-
-      <details className="text-sm leading-relaxed text-body">
-        <summary className="cursor-pointer list-none font-medium text-link underline decoration-dotted underline-offset-4">
-          ¿Cuándo termina el escenario?
-        </summary>
-        <p className="mt-2">
+    <Instrucciones
+      queHaces={
+        <>
+          <p className="text-base leading-relaxed text-body">
+            La puerta del puerto frío está abierta. El aire caliente está entrando y la temperatura
+            sube rápidamente. Los servidores de producción están en riesgo.
+          </p>
+          <p className="text-base leading-relaxed font-semibold text-body">
+            Tienes menos de 3 minutos para actuar antes que ocurra un shutdown automático por
+            protección térmica.
+          </p>
+        </>
+      }
+      cuandoTermina={
+        <>
           Cuando elijas una de las tres acciones frente a la puerta abierta. No hay confirmación
           adicional: la decisión se toma en el momento.
+        </>
+      }
+      pista={
+        <p>
+          En emergencias de refrigeración, la clave es actuar INMEDIATAMENTE. Tienes tres opciones:
+          cerrar la puerta solamente, reportar al equipo de infraestructura, o hacer ambas cosas. La
+          mejor respuesta es la que combina acción rápida con comunicación.
         </p>
-      </details>
-    </div>
+      }
+    />
   )
 
   const ESCENA = () => (

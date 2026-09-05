@@ -61,4 +61,39 @@ describe('TarjetaClonada', () => {
 
     expect(screen.getByText('Riesgo detectado')).toBeDefined()
   })
+
+  it('bloquear sin reportar es una observación, no la decisión completa', async () => {
+    const telefono = empezar(<TarjetaClonada />)
+    await llegarADescubrimiento(telefono)
+
+    fireEvent.click(within(telefono).getByRole('button', { name: /pero no reportar/ }))
+    await vi.advanceTimersByTimeAsync(800)
+
+    expect(screen.getByText('Observación')).toBeDefined()
+  })
+
+  it('muestra el panel "¿Qué haces?" con la pista de la fase inicial', () => {
+    empezar(<TarjetaClonada />)
+
+    expect(screen.getByText('¿Qué haces?')).toBeDefined()
+    fireEvent.click(screen.getByText('No sé por dónde empezar'))
+    expect(screen.getByText(/no hay nada que decidir todavía/)).toBeDefined()
+  })
+
+  it('explica cuándo termina el escenario', () => {
+    empezar(<TarjetaClonada />)
+
+    fireEvent.click(screen.getByText('¿Cuándo termina el escenario?'))
+
+    expect(screen.getByText(/una de las cuatro opciones/)).toBeDefined()
+  })
+
+  it('cambia la pista al llegar a la fase de descubrimiento', async () => {
+    const telefono = empezar(<TarjetaClonada />)
+    await llegarADescubrimiento(telefono)
+
+    fireEvent.click(screen.getByText('No sé por dónde empezar'))
+
+    expect(screen.getByText(/bloquear y denunciar, ignorar/)).toBeDefined()
+  })
 })
