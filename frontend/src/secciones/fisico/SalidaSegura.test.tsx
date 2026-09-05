@@ -1,4 +1,4 @@
-import { fireEvent, screen, within } from '@testing-library/react'
+import { fireEvent, screen, waitFor, within } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import { empezar } from '../../test/escenario'
 import SalidaSegura from './SalidaSegura'
@@ -6,51 +6,117 @@ import SalidaSegura from './SalidaSegura'
 vi.mock('../../context/AuthContext', async () => (await import('../../test/escenario')).authFalso())
 vi.mock('../../lib/api', async () => (await import('../../test/escenario')).apiSinRed())
 
-function asegurarEscritorio(telefono: HTMLElement) {
-  while (within(telefono).queryAllByText('✕').length > 0) {
-    fireEvent.click(within(telefono).getAllByText('✕')[0]!)
+function asegurarEscritorio(escena: HTMLElement) {
+  for (const cerrar of within(escena).getAllByRole('button', { name: /^Cerrar la pestaña/ })) {
+    fireEvent.click(cerrar)
   }
-  fireEvent.click(within(telefono).getByText('Contratos'))
-  fireEvent.click(within(telefono).getByText('Nóminas'))
-  fireEvent.click(within(telefono).getByText('Datos Bancarios'))
-  // El botón de bloquear es un <rect> con el onClick, no su <g>: el texto
-  // "⌨️ Bloquear" es un hermano y no burbujea hasta el manejador.
-  const lockRect = telefono.querySelector('rect[width="180"][height="50"]')
-  if (lockRect) fireEvent.click(lockRect)
+  for (const documento of within(escena).getAllByRole('button', { name: /^Guardar / })) {
+    fireEvent.click(documento)
+  }
+  fireEvent.click(within(escena).getByRole('button', { name: 'Bloquear la sesión' }))
 }
 
 describe('SalidaSegura', () => {
-  it('abre con pestañas, documentos y la computadora sin bloquear', () => {
-    const telefono = empezar(<SalidaSegura />)
+  it('abre con las cuatro pestañas, los tres documentos y la sesión sin bloquear', () => {
+    const escena = empezar(<SalidaSegura />)
 
-    expect(within(telefono).getByText(/Completa todo/)).toBeDefined()
+    expect(within(escena).getAllByRole('button', { name: /^Cerrar la pestaña/ })).toHaveLength(4)
+    expect(within(escena).getAllByRole('button', { name: /^Guardar / })).toHaveLength(3)
+    expect(within(escena).getByText(/0 de 3 guardados/)).toBeDefined()
   })
 
-  it('el botón de terminar sigue deshabilitado mientras falte algo', () => {
-    const telefono = empezar(<SalidaSegura />)
+  it('el checklist va marcando lo que ya está hecho', () => {
+    const escena = empezar(<SalidaSegura />)
 
-    fireEvent.click(within(telefono).getByText('Contratos'))
+    fireEvent.click(within(escena).getByRole('button', { name: 'Guardar Contratos en el cajón' }))
 
-    expect(within(telefono).getByRole('button', { name: /Completa todo/ }).hasAttribute('disabled')).toBe(true)
+    expect(screen.getByText('(1 de 3)')).toBeDefined()
+    expect(within(escena).getAllByRole('button', { name: /^Guardar / })).toHaveLength(2)
   })
 
-  it('cerrar todo, guardar documentos y bloquear la computadora habilita terminar', () => {
-    const telefono = empezar(<SalidaSegura />)
+  it('abre en la primera pestaña y muestra su URL', () => {
+    const escena = empezar(<SalidaSegura />)
 
-    asegurarEscritorio(telefono)
-
-    expect(within(telefono).getByRole('button', { name: 'Listo para irme' }).hasAttribute('disabled')).toBe(false)
+    expect(within(escena).getByText('https://intranet.andes.ec/rrhh/nominas')).toBeDefined()
   })
 
-  it('terminar con todo asegurado es la decisión segura, y Siguiente no rompe la navegación', async () => {
-    const telefono = empezar(<SalidaSegura />)
+  it('cerrar la pestaña del medio desliza las de la derecha y no deja hueco', () => {
+    const escena = empezar(<SalidaSegura />)
 
-    asegurarEscritorio(telefono)
-    fireEvent.click(within(telefono).getByRole('button', { name: 'Listo para irme' }))
+    fireEvent.click(within(escena).getByRole('button', { name: 'Cerrar la pestaña Clientes VIP' }))
 
-    expect(await screen.findByText('Decisión segura')).toBeDefined()
-    expect(screen.getByText(/4 pestañas cerradas/)).toBeDefined()
-    fireEvent.click(within(telefono).getByRole('button', { name: 'Siguiente' }))
+    // Las que quedan ocupan los tres primeros sitios de la barra, en orden.
+    const sitios = [...escena.querySelectorAll<SVGGElement>('g[style*="translateX"]')].map(
+      (g) => g.style.transform,
+    )
+    expect(sitios).toEqual(['translateX(244px)', 'translateX(372px)', 'translateX(500px)'])
+  })
+
+  it('cerrar la pestaña activa pasa a la de al lado, no a una ventana en blanco', () => {
+    const escena = empezar(<SalidaSegura />)
+
+    fireEvent.click(within(escena).getByRole('button', { name: 'Cerrar la pestaña Nóminas 2026' }))
+
+    expect(within(escena).getByText('https://vault.andes.ec/mis-claves')).toBeDefined()
+  })
+
+  it('con la sesión bloqueada no se puede tocar el navegador', () => {
+    const escena = empezar(<SalidaSegura />)
+
+    fireEvent.click(within(escena).getByRole('button', { name: 'Bloquear la sesión' }))
+
+    expect(within(escena).queryAllByRole('button', { name: /^Cerrar la pestaña/ })).toHaveLength(0)
+    expect(within(escena).getByText('SESIÓN BLOQUEADA')).toBeDefined()
+
+    // Desbloquear devuelve el navegador: bloquearse antes de tiempo no deja
+    // encerrado a nadie.
+    fireEvent.click(within(escena).getByRole('button', { name: 'Desbloquear la sesión' }))
+    expect(within(escena).getAllByRole('button', { name: /^Cerrar la pestaña/ })).toHaveLength(4)
+  })
+
+  it('el repaso de señales resalta la parte de la escena de la que habla', async () => {
+    const escena = empezar(<SalidaSegura />)
+
+    asegurarEscritorio(escena)
+    fireEvent.click(screen.getByRole('button', { name: 'Irme: el puesto está listo' }))
+    fireEvent.click(await screen.findByRole('button', { name: 'Ver las señales' }))
+
+    await waitFor(() => {
+      expect(
+        escena.querySelector('[data-signal="pestanas"]')?.classList.contains('senal-resaltada'),
+      ).toBe(true)
+    })
+    // Y la escena vuelve a mostrar lo que ya se había cerrado: si no, no habría
+    // nada que señalar.
+    expect(within(escena).getAllByRole('button', { name: /^Cerrar la pestaña/ })).toHaveLength(4)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Siguiente →' }))
+
+    await waitFor(() => {
+      expect(
+        escena.querySelector('[data-signal="papeles"]')?.classList.contains('senal-resaltada'),
+      ).toBe(true)
+    })
+  })
+
+  it('irse con todo asegurado cierra bien el escenario', async () => {
+    const escena = empezar(<SalidaSegura />)
+
+    asegurarEscritorio(escena)
+    fireEvent.click(screen.getByRole('button', { name: 'Irme: el puesto está listo' }))
+
+    expect(await screen.findByText('Puesto asegurado')).toBeDefined()
+  })
+
+  it('irse dejando cosas a la vista es un fallo, y dice qué quedó expuesto', async () => {
+    const escena = empezar(<SalidaSegura />)
+
+    fireEvent.click(within(escena).getByRole('button', { name: 'Bloquear la sesión' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Irme de la oficina' }))
+
+    expect(await screen.findByText('Dejaste tu puesto expuesto')).toBeDefined()
+    expect(screen.getByText(/4 pestañas abiertas/)).toBeDefined()
+    expect(screen.getByText(/3 documentos sobre el escritorio/)).toBeDefined()
   })
 
   it('muestra el panel "¿Qué haces?" con la pista de los tres pasos', () => {
