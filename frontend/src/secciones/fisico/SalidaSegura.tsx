@@ -2,6 +2,7 @@ import { useState, type ReactNode } from 'react'
 import EscenarioLayout from '../../components/EscenarioLayout'
 import FlashOverlay from '../../components/ui/FlashOverlay'
 import Instrucciones from '../../components/ui/Instrucciones'
+import PanelVeredicto, { type Senal } from '../../components/ui/PanelVeredicto'
 import { useFlashTransition } from '../../hooks/useFlashTransition'
 import type { Contexto } from '../../components/ui/ContextoEscenario'
 import { useScenarioRun } from '../../hooks/useScenarioRun'
@@ -532,6 +533,36 @@ function SalidaSegura() {
       <p className="text-lg font-semibold text-ink">Antes de irte, deja el puesto listo</p>
 
       <Instrucciones
+        queHaces={
+          <div className="grid gap-4">
+            <p className="text-lg leading-relaxed text-body">
+              Actúa sobre tu pantalla como lo harías con tu propio escritorio: cierra lo que deja
+              información sensible visible antes de irte.
+            </p>
+
+            <ul className="grid gap-2.5">
+              <Tarea hecho={pestanasAbiertas === 0}>
+                Cerrar las pestañas del navegador{' '}
+                <span className="tabular-nums text-muted">
+                  ({cerradas.size} de {PESTANAS.length})
+                </span>
+              </Tarea>
+              <Tarea hecho={papelesExpuestos === 0}>
+                Guardar los documentos en el cajón{' '}
+                <span className="tabular-nums text-muted">
+                  ({guardados.size} de {DOCUMENTOS.length})
+                </span>
+              </Tarea>
+              <Tarea hecho={bloqueada}>Bloquear la sesión</Tarea>
+            </ul>
+          </div>
+        }
+        cuandoTermina={
+          <>
+            Cuando presiones <strong>"Irme de la oficina"</strong>. Puedes hacerlo en cualquier
+            momento: el escenario registra si dejaste pestañas, documentos o la sesión expuestos.
+          </>
+        }
         pista={
           <p>
             Cada pestaña se cierra con su <strong>✕</strong>, como en tu navegador. Los documentos
@@ -539,28 +570,7 @@ function SalidaSegura() {
             irte cuando quieras: lo que dejes a la vista, ahí queda.
           </p>
         }
-      >
-        <p className="text-lg leading-relaxed text-body">
-          Actúa sobre tu puesto como lo harías al final de un día real. Nadie te va a avisar de lo
-          que falta.
-        </p>
-
-        <ul className="grid gap-2.5">
-          <Tarea hecho={pestanasAbiertas === 0}>
-            Cerrar las pestañas del navegador{' '}
-            <span className="tabular-nums text-muted">
-              ({cerradas.size} de {PESTANAS.length})
-            </span>
-          </Tarea>
-          <Tarea hecho={papelesExpuestos === 0}>
-            Guardar los documentos en el cajón{' '}
-            <span className="tabular-nums text-muted">
-              ({guardados.size} de {DOCUMENTOS.length})
-            </span>
-          </Tarea>
-          <Tarea hecho={bloqueada}>Bloquear la sesión</Tarea>
-        </ul>
-      </Instrucciones>
+      />
 
       {/* Siempre habilitado: irse dejando cosas a la vista es justamente la
           decisión que este escenario mide. Deshabilitarlo hasta tenerlo todo
@@ -584,30 +594,6 @@ function SalidaSegura() {
     </div>
   )
 
-  const decisionPanel = resolved ? null : (
-    <Instrucciones
-      queHaces={
-        <p className="text-base leading-relaxed text-body">
-          Actúa sobre la pantalla como lo harías con tu propio escritorio: cierra lo que deja
-          información sensible visible antes de irte.
-        </p>
-      }
-      cuandoTermina={
-        <>
-          Cuando presiones "Listo para irme". Ese botón solo se activa cuando completes las tres
-          tareas: cerrar todas las pestañas, guardar todos los documentos, y bloquear la
-          computadora.
-        </>
-      }
-      pista={
-        <p>
-          Cierra las 4 pestañas con la X, guarda los 3 documentos haciéndoles click, y bloquea la
-          computadora con el botón. "Listo para irme" se activa cuando completes los tres pasos.
-        </p>
-      }
-    />
-  )
-
   return (
     <EscenarioLayout
       escenarioId="fisico/salida-segura"
@@ -616,9 +602,9 @@ function SalidaSegura() {
       nota={nota}
       identidad={[]}
       pantalla={pantalla}
-      decision={decisionPanel}
-      ocultarDecision={false}
-      onEmpezar={onEmpezar}
+      decision={decision}
+      resultado={final?.kind === 'good' ? 'good' : final ? 'bad' : undefined}
+      onEmpezar={reiniciar}
       dispositivo="escritorio"
     />
   )
