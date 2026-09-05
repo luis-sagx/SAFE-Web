@@ -17,6 +17,198 @@
   gap: 1rem;
 }
 
+/* Escena a sangre: el dibujo ES la pantalla del dispositivo, así que ocupa el
+   marco entero. Encerrarla en una tarjeta blanca con cabecera la convertía en
+   una ilustración pegada dentro de una app, que es lo contrario de lo que se
+   quiere: el participante está mirando su propia oficina. El fondo repite el
+   color de la pared para que las bandas que sobran al ajustar la relación de
+   aspecto no se noten. */
+.escenaMarco {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background: #efe4d4;
+}
+
+.escena {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Lo que responde al clic se anuncia solo: cursor de mano y un halo que
+   aparece al pasar por encima. Sin esto había que adivinar qué era tocable, y
+   la gente probaba con doble clic.
+
+   El halo va en el verde del sistema (--color-primary), no en un azul suelto:
+   es el mismo color con el que la aplicación marca lo accionable. */
+.hotspot,
+.cerrar {
+  cursor: pointer;
+}
+
+/* Lo que aparece al pasar por encima. Separado del trazo del contorno a
+   propósito: cuando una sola clase llevaba `stroke` y opacidad a la vez, el
+   grupo de la pastilla le pasaba ese trazo verde de 3px por herencia al texto
+   y la letra blanca quedaba tapada por su propio borde. */
+.revelable {
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.hotspot:hover .revelable,
+.hotspot:focus-visible .revelable,
+.cerrar:hover .revelable,
+.cerrar:focus-visible .revelable {
+  opacity: 1;
+}
+
+.contorno {
+  fill: none;
+  stroke: var(--color-primary);
+  stroke-width: 3;
+}
+
+.pastilla {
+  fill: var(--color-primary);
+  stroke: none;
+}
+
+.pastillaTexto {
+  fill: var(--color-on-primary);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* Las pestañas se colocan con `transform`, así que al cerrar una del medio las
+   de la derecha se deslizan hasta su sitio en vez de dejar el hueco. */
+.pestana {
+  transition: transform 0.18s ease;
+}
+
+.pestanaTexto,
+.pestanaTextoActiva {
+  font-size: 14px;
+  pointer-events: none;
+}
+
+.pestanaTexto {
+  fill: #c2cad3;
+}
+
+.pestanaTextoActiva {
+  fill: #1f242b;
+  font-weight: 600;
+}
+
+/* El círculo gris de la ✕ al pasar por encima, como en un navegador. */
+.cerrarHalo {
+  fill: #7b838d;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.cerrar:hover .cerrarHalo {
+  opacity: 0.45;
+}
+
+.url {
+  fill: #98a1ab;
+  font-size: 14px;
+}
+
+.paginaTitulo {
+  fill: var(--color-ink);
+  font-size: 21px;
+  font-weight: 700;
+}
+
+.paginaLinea {
+  fill: var(--color-body);
+  font-family: var(--font-mono);
+  font-size: 15px;
+}
+
+.paginaAviso {
+  fill: var(--color-danger);
+  font-size: 15px;
+}
+
+.paginaVacia {
+  fill: var(--color-muted);
+  font-size: 17px;
+}
+
+.pantallaBloqueada {
+  fill: var(--color-success);
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+/* Papel: crema, no blanco puro, y el rótulo sobre una banda para que el texto
+   se lea sin depender del contraste contra la hoja. */
+.papel {
+  fill: #fbf7ef;
+  stroke: #cdbfa6;
+  stroke-width: 2;
+}
+
+.papelLinea {
+  stroke: #ddd4c4;
+  stroke-width: 3;
+}
+
+.papelBanda {
+  fill: #e7dcc6;
+}
+
+.papelRotulo {
+  fill: var(--color-ink);
+  font-size: 15px;
+  font-weight: 700;
+  pointer-events: none;
+}
+
+.rotuloMueble {
+  fill: #f6e9d6;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.contadorMueble {
+  fill: #f6e9d6;
+  font-size: 15px;
+}
+
+.rotuloTeclado {
+  fill: #f3e6d2;
+  font-size: 15px;
+  font-weight: 600;
+  pointer-events: none;
+}
+
+.pilotoOff {
+  fill: #9aa0a8;
+}
+
+.pilotoOk {
+  fill: var(--color-success);
+}
+
+/* El repaso de señales marca elementos del SVG, y ahí `background` no pinta
+   nada: el resalte se hace con el contorno ámbar del sistema más un halo que
+   sí funciona sobre vectores. */
+.escena :global(.senal-resaltada) {
+  outline: 3px solid var(--color-warning);
+  outline-offset: 6px;
+  filter: drop-shadow(0 0 0.6rem rgba(171, 100, 0, 0.9));
+}
+
 .sceneFlash {
   cursor: pointer;
   opacity: 1;
