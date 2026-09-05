@@ -53,6 +53,8 @@ interface StoryEscenarioProps {
   /** Qué se le dice al participante cuando el nodo no ofrece lista de opciones
    *  y hay que actuar sobre la propia pantalla. */
   instruccion?: ReactNode
+  /** Cuándo se da por terminada la corrida (ver Instrucciones). */
+  cuandoTermina?: ReactNode
   /** Los caminos posibles, para quien se atasca. No dice cuál es el bueno. */
   pista?: ReactNode
   /** Datos prestados que el escenario pone en juego (ver TarjetaIdentidad). */
@@ -161,6 +163,7 @@ function StoryEscenario({
   reloj,
   marcadores,
   instruccion,
+  cuandoTermina,
   pista,
   identidad,
   accionesEnPantalla = false,
@@ -469,7 +472,7 @@ function StoryEscenario({
       {engine.node.choices ? (
         <StoryChoices choices={engine.node.choices} onChoose={engine.choose} />
       ) : (
-        <Instrucciones pista={pista} fallo={tocoEnVacio}>
+        <Instrucciones pista={pista} cuandoTermina={cuandoTermina} fallo={tocoEnVacio}>
           {instruccion}
         </Instrucciones>
       )}

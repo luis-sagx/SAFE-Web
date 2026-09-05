@@ -2,7 +2,6 @@ import { useState, type ReactNode } from 'react'
 import EscenarioLayout from '../../components/EscenarioLayout'
 import FlashOverlay from '../../components/ui/FlashOverlay'
 import Instrucciones from '../../components/ui/Instrucciones'
-import PanelVeredicto, { type Senal } from '../../components/ui/PanelVeredicto'
 import { useFlashTransition } from '../../hooks/useFlashTransition'
 import type { Contexto } from '../../components/ui/ContextoEscenario'
 import { useScenarioRun } from '../../hooks/useScenarioRun'
@@ -585,6 +584,30 @@ function SalidaSegura() {
     </div>
   )
 
+  const decisionPanel = resolved ? null : (
+    <Instrucciones
+      queHaces={
+        <p className="text-base leading-relaxed text-body">
+          Actúa sobre la pantalla como lo harías con tu propio escritorio: cierra lo que deja
+          información sensible visible antes de irte.
+        </p>
+      }
+      cuandoTermina={
+        <>
+          Cuando presiones "Listo para irme". Ese botón solo se activa cuando completes las tres
+          tareas: cerrar todas las pestañas, guardar todos los documentos, y bloquear la
+          computadora.
+        </>
+      }
+      pista={
+        <p>
+          Cierra las 4 pestañas con la X, guarda los 3 documentos haciéndoles click, y bloquea la
+          computadora con el botón. "Listo para irme" se activa cuando completes los tres pasos.
+        </p>
+      }
+    />
+  )
+
   return (
     <EscenarioLayout
       escenarioId="fisico/salida-segura"
@@ -593,9 +616,9 @@ function SalidaSegura() {
       nota={nota}
       identidad={[]}
       pantalla={pantalla}
-      decision={decision}
-      resultado={final?.kind === 'good' ? 'good' : final ? 'bad' : undefined}
-      onEmpezar={reiniciar}
+      decision={decisionPanel}
+      ocultarDecision={false}
+      onEmpezar={onEmpezar}
       dispositivo="escritorio"
     />
   )

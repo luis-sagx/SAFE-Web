@@ -118,4 +118,20 @@ describe('SalidaSegura', () => {
     expect(screen.getByText(/4 pestañas abiertas/)).toBeDefined()
     expect(screen.getByText(/3 documentos sobre el escritorio/)).toBeDefined()
   })
+
+  it('muestra el panel "¿Qué haces?" con la pista de los tres pasos', () => {
+    empezar(<SalidaSegura />)
+
+    expect(screen.getByText('¿Qué haces?')).toBeDefined()
+    fireEvent.click(screen.getByText('No sé por dónde empezar'))
+    expect(screen.getByText(/se activa cuando completes los tres pasos/)).toBeDefined()
+  })
+
+  it('explica cuándo termina el escenario', () => {
+    empezar(<SalidaSegura />)
+
+    fireEvent.click(screen.getByText('¿Cuándo termina el escenario?'))
+
+    expect(screen.getByText(/presiones "Listo para irme"/)).toBeDefined()
+  })
 })

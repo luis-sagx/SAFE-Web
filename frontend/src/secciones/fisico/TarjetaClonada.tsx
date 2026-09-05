@@ -2,36 +2,13 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router'
 import EscenarioLayout from '../../components/EscenarioLayout'
 import FlashOverlay from '../../components/ui/FlashOverlay'
+import Instrucciones from '../../components/ui/Instrucciones'
 import { useFlashTransition } from '../../hooks/useFlashTransition'
 import { useSiguienteEscenario } from '../../hooks/useSiguienteEscenario'
 import type { Contexto } from '../../components/ui/ContextoEscenario'
 import dossierTheme from '../../styles/dossier-theme.module.css'
 import { useScenarioRun } from '../../hooks/useScenarioRun'
 import styles from './fisico.module.css'
-
-const animationCSS = `
-  @keyframes personApproaches {
-    0% { transform: translateX(-100px); opacity: 0; }
-    100% { transform: translateX(0); opacity: 1; }
-  }
-  @keyframes personLeavesQuietly {
-    0% { transform: translateX(0); opacity: 1; }
-    100% { transform: translateX(100px); opacity: 0; }
-  }
-  @keyframes scanCard {
-    0%, 100% { opacity: 0.3; }
-    50% { opacity: 1; }
-  }
-  .person-approaching {
-    animation: personApproaches 2s ease-in-out forwards;
-  }
-  .person-leaving {
-    animation: personLeavesQuietly 2s ease-in-out forwards;
-  }
-  .scan-effect {
-    animation: scanCard 1.5s ease-in-out infinite;
-  }
-`
 
 type Level = 'safe' | 'warn' | 'danger'
 type Phase = 'scenario' | 'discovery' | 'resolved'
@@ -60,109 +37,13 @@ function FlashSpark({ x, y, onClick }: { x: number; y: number; onClick: () => vo
   )
 }
 
-interface ScenePhase {
-  distractor: number
-  attacker: number
-  cloning: boolean
-}
-
-const SCENE_ART_SCENARIO = () => {
-  const [phase, setPhase] = useState<ScenePhase>({
-    distractor: -100,
-    attacker: 420,
-    cloning: false,
-  })
-
-  useEffect(() => {
-    const timeline = [
-      { delay: 600, update: { distractor: 90 } },
-      { delay: 2000, update: { attacker: 260 } },
-      { delay: 3000, update: { cloning: true } },
-      { delay: 4500, update: { attacker: 450 } },
-    ]
-
-    timeline.forEach(({ delay, update }) => {
-      setTimeout(() => {
-        setPhase((prev) => ({ ...prev, ...update }))
-      }, delay)
-    })
-  }, [])
-
-  return (
-    <>
-      <style>{animationCSS}</style>
-      <svg viewBox="0 0 400 220">
-        {/* Fondo calle/café */}
-        <rect width="400" height="220" fill="#e8dcc8" />
-        <rect y="160" width="400" height="60" fill="#c9b896" />
-
-        {/* Tú (víctima en el centro) */}
-        <circle cx="200" cy="100" r="15" fill="#d4a574" />
-        <rect x="185" y="115" width="30" height="40" fill="#2a5a9a" rx="2" />
-        <rect x="170" y="120" width="15" height="8" fill="#d4a574" rx="4" />
-        <rect x="215" y="120" width="15" height="8" fill="#d4a574" rx="4" />
-        <rect x="190" y="155" width="8" height="25" fill="#3a3a3a" />
-        <rect x="202" y="155" width="8" height="25" fill="#3a3a3a" />
-
-        {/* Tu billetera/tarjeta visible */}
-        <rect x="220" y="120" width="22" height="14" fill="#cc0000" rx="2" />
-        <text x="231" y="130" textAnchor="middle" fontSize="7" fill="#fff" fontWeight="bold">
-          VISA
-        </text>
-
-        {/* Persona 1 - Distractor (acercándose desde la izquierda) */}
-        <g transform={`translate(${phase.distractor}, 0)`}>
-          <circle cx="80" cy="70" r="15" fill="#d4a574" />
-          <rect x="65" y="85" width="30" height="40" fill="#4a6b8a" rx="2" />
-          <rect x="50" y="90" width="15" height="8" fill="#d4a574" rx="4" />
-          <rect x="95" y="90" width="15" height="8" fill="#d4a574" rx="4" />
-          <rect x="70" y="125" width="8" height="25" fill="#3a3a3a" />
-          <rect x="82" y="125" width="8" height="25" fill="#3a3a3a" />
-          {/* Burbuja de conversación */}
-          {phase.distractor > -50 && (
-            <text x="80" y="50" textAnchor="middle" fontSize="10" fill="#333">
-              ¿Qué hora es?
-            </text>
-          )}
-        </g>
-
-        {/* Persona 2 - Attacker (acercándose desde la derecha atrás) */}
-        {phase.attacker < 400 && (
-          <g transform={`translate(${phase.attacker - 280}, 20)`}>
-            <circle cx="280" cy="60" r="12" fill="#8a6a4a" />
-            <rect x="270" y="72" width="20" height="35" fill="#3a3a3a" rx="2" />
-            <rect x="260" y="78" width="8" height="5" fill="#8a6a4a" rx="1" />
-            <rect x="292" y="78" width="8" height="5" fill="#8a6a4a" rx="1" />
-
-            {/* Dispositivo de clonación en la mano del atacante */}
-            {phase.attacker < 300 && (
-              <g>
-                <rect x="285" y="85" width="16" height="10" fill="#1a1a1a" rx="2" />
-                <circle
-                  cx="293"
-                  cy="90"
-                  r="2.5"
-                  fill="#ff6b6b"
-                  className={phase.cloning ? 'scan-effect' : ''}
-                />
-              </g>
-            )}
-          </g>
-        )}
-
-        {/* Líneas de escaneo/clonación */}
-        {phase.cloning && phase.attacker < 320 && (
-          <g opacity="0.7">
-            <path d="M210 120 Q240 115 260 120" stroke="#ff6b6b" strokeWidth="1.5" fill="none" strokeDasharray="3" />
-            <path d="M210 130 Q240 125 260 130" stroke="#ff6b6b" strokeWidth="1.5" fill="none" strokeDasharray="3" />
-          </g>
-        )}
-
-        {/* No hay interacción en fase 1, es automática */}
-      </svg>
-    </>
-  )
-}
+const SCENE_ART_SCENARIO = () => (
+  <img
+    src="/EscaneoBilletera.jpeg"
+    alt="Calle - Un distractor te habla mientras alguien escanea tu billetera"
+    className="w-full h-170 object-cover rounded shadow-md"
+  />
+)
 
 const SCENE_ART_DISCOVERY = ({ flash, onFlashClick }: { flash: boolean; onFlashClick: () => void }) => {
   const [phoneRinging, setPhoneRinging] = useState(false)
@@ -173,51 +54,23 @@ const SCENE_ART_DISCOVERY = ({ flash, onFlashClick }: { flash: boolean; onFlashC
   }, [])
 
   return (
-    <svg viewBox="0 0 400 220">
-      {/* Fondo oficina */}
-      <rect width="400" height="220" fill="#f0ebe3" />
-      <rect y="160" width="400" height="60" fill="#b8a896" />
-
-      {/* Escritorio */}
-      <rect x="60" y="110" width="280" height="50" fill="#8a7a6a" stroke="#6a5a4a" strokeWidth="2" />
-      <rect x="80" y="85" width="240" height="28" fill="#d4cfc8" />
-
-      {/* Tú en el escritorio */}
-      <circle cx="200" cy="60" r="14" fill="#d4a574" />
-      <rect x="186" y="74" width="28" height="35" fill="#4a7aaa" rx="2" />
-      <rect x="170" y="79" width="12" height="7" fill="#d4a574" rx="2" />
-      <rect x="218" y="79" width="12" height="7" fill="#d4a574" rx="2" />
-
-      {/* Computadora en el escritorio */}
-      <g transform="translate(80, 100)">
-        <rect x="0" y="0" width="50" height="35" fill="#1a1a1a" stroke="#333" strokeWidth="1" rx="2" />
-        <rect x="1" y="1" width="48" height="33" fill="#0a0a2a" />
-      </g>
-
-      {/* Teléfono rojo (sonando) */}
-      <g transform={`translate(250, 115) ${phoneRinging ? 'scale(1.1)' : 'scale(1)'}`}>
-        <ellipse cx="0" cy="0" rx="12" ry="10" fill="#cc0000" />
-        <circle cx="-5" cy="-3" r="2" fill="#fff" />
-        <circle cx="5" cy="-3" r="2" fill="#fff" />
-      </g>
-
-      {/* Líneas de sonido si está sonando */}
+    <div className="relative w-full">
+      <img
+        src="/LlamadaBanco.jpeg"
+        alt="Escritorio - Llamada entrante del banco"
+        className="w-full h-170 object-cover rounded shadow-md"
+      />
       {phoneRinging && (
-        <g opacity="0.6">
-          <circle cx="250" cy="115" r="20" fill="none" stroke="#ff6b6b" strokeWidth="1" />
-          <circle cx="250" cy="115" r="28" fill="none" stroke="#ff6b6b" strokeWidth="1" opacity="0.4" />
-        </g>
-      )}
-
-      {/* Texto de alerta */}
-      {phoneRinging && (
-        <text x="200" y="180" textAnchor="middle" fontSize="12" fill="#cc0000" fontWeight="bold">
+        <p className="absolute inset-x-0 bottom-2 text-center text-sm font-bold text-red-600">
           ¡Llamada del banco!
-        </text>
+        </p>
       )}
-
-      {flash && phoneRinging && <FlashSpark x={200} y={140} onClick={onFlashClick} />}
-    </svg>
+      {flash && phoneRinging && (
+        <svg viewBox="0 0 400 220" preserveAspectRatio="xMidYMid slice" className="absolute inset-0 h-full w-full">
+          <FlashSpark x={195} y={110} onClick={onFlashClick} />
+        </svg>
+      )}
+    </div>
   )
 }
 
@@ -535,6 +388,34 @@ function TarjetaClonada() {
     </div>
   )
 
+  const decisionPanel = resolved ? null : (
+    <Instrucciones
+      queHaces={
+        <p className="text-base leading-relaxed text-body">
+          {phase === 'scenario'
+            ? 'Observa la escena. En unos segundos pasarás automáticamente a la siguiente fase.'
+            : 'Toca el destello ⚡ sobre el teléfono para responder a la llamada del banco.'}
+        </p>
+      }
+      cuandoTermina={
+        <>
+          Cuando el banco te llame y elijas una de las cuatro opciones frente a la notificación de
+          fraude. La fase inicial es solo observación y no cuenta como decisión.
+        </>
+      }
+      pista={
+        phase === 'scenario' ? (
+          <p>En esta fase solo observas: no hay nada que decidir todavía.</p>
+        ) : (
+          <p>
+            Tienes cuatro caminos posibles: bloquear y denunciar, ignorar la notificación, bloquear
+            sin reportar, o cambiar de banco. Cuál de ellos es el más completo es lo que decides tú.
+          </p>
+        )
+      }
+    />
+  )
+
   return (
     <EscenarioLayout
       escenarioId="fisico/tarjeta-clonada"
@@ -543,8 +424,8 @@ function TarjetaClonada() {
       nota={nota}
       identidad={[]}
       pantalla={pantalla}
-      decision={null}
-      ocultarDecision={true}
+      decision={decisionPanel}
+      ocultarDecision={false}
       onEmpezar={onEmpezar}
       dispositivo="escritorio"
     />

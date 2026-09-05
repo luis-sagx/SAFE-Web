@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import EscenarioLayout from '../../components/EscenarioLayout'
+import Instrucciones from '../../components/ui/Instrucciones'
 import type { Contexto } from '../../components/ui/ContextoEscenario'
 import dossierTheme from '../../styles/dossier-theme.module.css'
 import { useScenarioRun } from '../../hooks/useScenarioRun'
@@ -45,7 +46,6 @@ function PrivacidadClaves() {
 
   const [openTabs, setOpenTabs] = useState<Set<string>>(new Set(['contraseñas', 'emails', 'documentos']))
   const [resolved, setResolved] = useState<Resolved | null>(null)
-  const [mostrarPista, setMostrarPista] = useState(false)
   const [selectedTab, setSelectedTab] = useState<string>('contraseñas')
   const [timeLeft, setTimeLeft] = useState<number>(30)
   const [timerActive, setTimerActive] = useState(false)
@@ -149,32 +149,20 @@ function PrivacidadClaves() {
       </div>
     </div>
   ) : (
-    <div className="space-y-6">
-      <div>
-        <h3 className="font-semibold text-ink mb-3">¿Qué haces?</h3>
-        <p className="text-sm text-body">Tu compañero está llegando. Tienes segundos para actuar.</p>
-      </div>
-      <button
-        onClick={() => setMostrarPista(!mostrarPista)}
-        className="text-sm font-medium text-link underline decoration-dotted"
-      >
-        No sé por dónde empezar
-      </button>
-      {mostrarPista && (
-        <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded text-sm text-body">
-          Haz click en la X de cada pestaña. Luego bloquea la pantalla.
-        </div>
-      )}
-      <details className="text-sm leading-relaxed text-body">
-        <summary className="cursor-pointer list-none font-medium text-link underline decoration-dotted underline-offset-4">
-          ¿Cuándo termina el escenario?
-        </summary>
-        <p className="mt-2">
+    <Instrucciones
+      queHaces={
+        <p className="text-base leading-relaxed text-body">
+          Tu compañero está llegando. Tienes segundos para actuar.
+        </p>
+      }
+      cuandoTermina={
+        <>
           Cuando cierres todo y presiones "Terminar", o cuando se acabe el tiempo antes de que
           termines. Los segundos corren mientras decides, igual que en la vida real.
-        </p>
-      </details>
-    </div>
+        </>
+      }
+      pista={<p>Haz click en la X de cada pestaña. Luego bloquea la pantalla.</p>}
+    />
   )
 
   const pantalla = (
