@@ -50,7 +50,7 @@ interface EscenarioLayoutProps {
    *  escenarios (SMS, llamada, chat) se abren en el celular. 'escritorio' es
    *  para correo y web: el phishing se abre más en computador, y así se
    *  distingue de inmediato del resto de amenazas, que sí son de celular. */
-  dispositivo?: "telefono" | "escritorio";
+  dispositivo?: "telefono" | "escritorio" | "escena";
 }
 
 /**
@@ -94,6 +94,9 @@ const MARCO_TELEFONO =
  */
 const MARCO_ESCRITORIO =
   "sm:max-h-[min(88vh,60rem)] sm:w-[96vw] sm:max-w-[68.75rem] sm:rounded-xl sm:border sm:border-hairline-strong sm:shadow-[0_30px_70px_rgba(0,0,0,0.22)] lg:h-full lg:max-h-[60rem] lg:w-[calc(100vw-28.75rem)] lg:min-w-[35rem] lg:max-w-[75rem] lg:flex-none lg:self-center xl:w-[calc(100vw-33.75rem)]";
+
+const MARCO_ESCENA =
+  "sm:max-h-[min(88vh,60rem)] sm:w-[96vw] sm:max-w-[68.75rem] sm:rounded-xl sm:border sm:border-hairline-strong sm:shadow-[0_30px_70px_rgba(0,0,0,0.22)] lg:h-full lg:max-h-[60rem] lg:w-fit lg:max-w-full lg:flex-none lg:self-center";
 
 function EscenarioLayout({
   escenarioId,
@@ -325,7 +328,11 @@ function EscenarioLayout({
           // pantalla simulada dejaba de poder leerse. De sm en adelante manda
           // el alto de la ventana, como antes.
           className={`relative flex min-h-[34rem] w-full flex-1 overflow-hidden focus:outline-none sm:min-h-0 ${
-            dispositivo === "escritorio" ? MARCO_ESCRITORIO : MARCO_TELEFONO
+            dispositivo === "escena"
+              ? MARCO_ESCENA
+              : dispositivo === "escritorio"
+                ? MARCO_ESCRITORIO
+                : MARCO_TELEFONO
           }`}
         >
           {pantalla}

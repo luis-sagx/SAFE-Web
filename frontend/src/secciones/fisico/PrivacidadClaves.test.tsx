@@ -38,6 +38,7 @@ describe('PrivacidadClaves', () => {
     fireEvent.click(within(telefono).getByRole('button', { name: 'Terminar' }))
 
     expect(await screen.findByText('Información expuesta')).toBeDefined()
+    expect(screen.getByRole('button', { name: 'Ver las señales' })).toBeDefined()
   })
 
   it('explica cuándo termina el escenario', () => {

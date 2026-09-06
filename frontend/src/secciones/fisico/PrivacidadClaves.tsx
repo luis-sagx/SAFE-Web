@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react'
 import EscenarioLayout from '../../components/EscenarioLayout'
 import Instrucciones from '../../components/ui/Instrucciones'
+import PanelVeredicto, { type Senal } from '../../components/ui/PanelVeredicto'
 import type { Contexto } from '../../components/ui/ContextoEscenario'
-import dossierTheme from '../../styles/dossier-theme.module.css'
 import { useScenarioRun } from '../../hooks/useScenarioRun'
-import styles from './fisico.module.css'
+import type { StoryNode } from '../../hooks/useStoryEngine'
 
 type Level = 'safe' | 'danger'
 
@@ -40,6 +40,12 @@ const DOCUMENTS = [
   { nombre: 'contrato_negociacion.pdf', tamaño: '567 KB', modificado: 'Hace 1 semana' },
   { nombre: 'estrategia_2024.xlsx', tamaño: '3.4 MB', modificado: 'Hace 3 días' },
 ]
+
+const SENALES: Senal[] = [
+  { id: 'pestanas', targetId: 'pestanas-sensibles', texto: 'Las <b>pestañas con información sensible</b> deben cerrarse antes de dejar el puesto.' },
+]
+
+const REGLA = '<b>Escritorio limpio y pantalla bloqueada.</b> No dejes información sensible visible cuando alguien pueda ver tu pantalla.'
 
 function PrivacidadClaves() {
   const run = useScenarioRun('fisico/privacidad-claves')
@@ -142,12 +148,15 @@ function PrivacidadClaves() {
   }
 
   const decisionPanel = resolved ? (
-    <div className="space-y-4">
-      <div className="border-l-4 border-gray-400 pl-3 py-1">
-        <p className="text-xs font-bold uppercase text-gray-700 mb-2">{resolved.feedback}</p>
-        <p className="text-sm text-body leading-relaxed">{resolved.details}</p>
-      </div>
-    </div>
+    <PanelVeredicto
+      escenarioId="fisico/privacidad-claves"
+      node={{ kind: resolved.level === 'safe' ? 'good' : 'bad', verdict: resolved.feedback, outcome: resolved.details } satisfies StoryNode}
+      senales={SENALES}
+      regla={REGLA}
+      restartLabel="Intentar de nuevo"
+      onRestart={onEmpezar}
+      contenedorId="pantalla-escenario"
+    />
   ) : (
     <Instrucciones
       queHaces={
@@ -166,9 +175,8 @@ function PrivacidadClaves() {
   )
 
   const pantalla = (
-    <div className={`${dossierTheme.dossierTheme} ${styles.app}`}>
-      <main className={styles.mainArea}>
-        <div className={styles.sceneView} style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(to bottom, #f5f5f5 0%, #e0e0e0 100%)', minHeight: '600px' }}>
+    <div className="flex size-full items-center justify-center bg-canvas-soft p-4">
+        <div className="relative flex size-full min-h-0 items-center justify-center">
           {/* Monitor simulado */}
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '95%', height: '90vh', maxHeight: '800px', gap: '0.5rem' }}>
             {/* Marco del monitor */}
@@ -183,7 +191,7 @@ function PrivacidadClaves() {
               </div>
 
               {/* Pestañas */}
-              <div className="bg-gray-50 border-b border-gray-300 flex overflow-x-auto">
+              <div id="pestanas-sensibles" data-signal="pestanas-sensibles" className="bg-gray-50 border-b border-gray-300 flex overflow-x-auto">
                 {TABS.map((tab) =>
                   openTabs.has(tab.id) ? (
                     <button
@@ -292,7 +300,6 @@ function PrivacidadClaves() {
             </div>
           </div>
         </div>
-      </main>
     </div>
   )
 

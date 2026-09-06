@@ -666,7 +666,7 @@ function StoryEscenario({
       pantalla={
         accionesEnPantalla ? (
           pantallaTelefono
-        ) : vista.kind === 'sms' ? (
+        ) : vista.kind === 'sms' || vista.kind === 'escena' ? (
           <DeviceScreen
             view={vista}
             acciones={accionesCorreo}
@@ -698,7 +698,13 @@ function StoryEscenario({
       onEmpezar={reiniciar}
       // El correo y la web se abren más en computador que en celular; el SMS
       // se queda en celular, que es donde de verdad llegan los mensajes.
-      dispositivo={accionesEnPantalla || vista.kind === 'sms' ? 'telefono' : 'escritorio'}
+      dispositivo={
+        vista.kind === 'escena'
+          ? 'escena'
+          : accionesEnPantalla || vista.kind === 'sms'
+            ? 'telefono'
+            : 'escritorio'
+      }
     />
   )
 }
