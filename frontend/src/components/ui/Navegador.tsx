@@ -206,7 +206,7 @@ export function Navegador({
 
       {children}
 
-      <Taskbar app={{ Icono: Globe, texto: 'Navegador' }} reloj={reloj} />
+      <Taskbar apps={[{ Icono: Globe, texto: 'Navegador' }]} reloj={reloj} />
     </section>
   )
 }

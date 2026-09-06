@@ -6,6 +6,7 @@ import { AvisoSitio, CabeceraSitio, PieSitio } from './armazonSitio'
 import { CuerpoCorreo, type AccionCorreo, type CarpetaCorreo } from './DesktopChrome'
 import NotaDeVoz from './NotaDeVoz'
 import PantallaLlamada from './PantallaLlamada'
+import { EscenaFoto, type ZonaEscena } from '../../secciones/fisico/EscenaFoto'
 import styles from './DeviceScreen.module.css'
 
 /**
@@ -22,6 +23,13 @@ import styles from './DeviceScreen.module.css'
  * una pantalla, nunca escribe credenciales reales en ella.
  */
 export type ScreenView =
+  | {
+      /** El mundo real no cabe dentro de un dispositivo simulado. */
+      kind: 'escena'
+      src: string
+      alt: string
+      zonas?: ZonaEscena[]
+    }
   | {
       kind: 'mail'
       from: string
@@ -358,6 +366,10 @@ function DeviceScreen({
       hilo.scrollTop = hilo.scrollHeight
     }
   }, [view])
+
+  if (view.kind === 'escena') {
+    return <EscenaFoto src={view.src} alt={view.alt} zonas={view.zonas} />
+  }
 
   if (view.kind === 'mail') {
     return (
