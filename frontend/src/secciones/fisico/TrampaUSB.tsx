@@ -46,5 +46,5 @@ export default function TrampaUSB() {
     nota="Un USB encontrado no es un objeto perdido que debas conectar ni llevarte." story={STORY} senales={SENALES}
     rule="<b>No conectes ni recojas dispositivos desconocidos.</b> Déjalos donde están y avisa al área responsable."
     restartLabel="Intentar de nuevo" cuandoTermina="Cuando elijas qué hacer con el USB. La primera decisión cierra el escenario."
-    pista="Considera tanto tu seguridad como la de la siguiente persona que pase por el estacionamiento." />
+    pista="No hace falta tocar el USB para decidir: puedes dejarlo donde está y avisar a IT, sin arriesgarte tú ni dejarlo listo para que otra persona lo conecte." />
 }
