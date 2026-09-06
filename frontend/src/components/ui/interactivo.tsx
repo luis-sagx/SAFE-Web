@@ -21,6 +21,13 @@ interface HotspotBaseProps {
    *  con `[data-signal="…"]` para resaltarlo. */
   signalId?: string
   className?: string
+  /** Posición cuando el punto flota sobre una imagen en vez de fluir con el
+   *  resto del texto (ver EscenaFoto). */
+  style?: React.CSSProperties
+  /** Nombre accesible, para cuando el contenido visible no lo da (un ícono
+   *  con `aria-hidden`, no una palabra que ya se lee). Sin esto el botón
+   *  quedaría mudo para un lector de pantalla. */
+  ariaLabel?: string
   children: ReactNode
 }
 
@@ -53,7 +60,7 @@ export function EnlaceHotspot({
 
 /** Cualquier otro punto interactivo que no sea un enlace: el adjunto, el
  *  botón de enviar un formulario, un atajo del escritorio. */
-export function BotonHotspot({ goto, label, signalId, className, children }: HotspotBaseProps) {
+export function BotonHotspot({ goto, label, signalId, className, style, ariaLabel, children }: Readonly<HotspotBaseProps>) {
   return (
     <button
       type="button"
@@ -61,6 +68,8 @@ export function BotonHotspot({ goto, label, signalId, className, children }: Hot
       data-hotspot-label={label}
       data-signal={signalId}
       className={`${styles.hotspot} ${className ?? ''}`}
+      style={style}
+      aria-label={ariaLabel}
     >
       {children}
     </button>

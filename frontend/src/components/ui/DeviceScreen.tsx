@@ -6,7 +6,7 @@ import { AvisoSitio, CabeceraSitio, PieSitio } from './armazonSitio'
 import { CuerpoCorreo, type AccionCorreo, type CarpetaCorreo } from './DesktopChrome'
 import NotaDeVoz from './NotaDeVoz'
 import PantallaLlamada from './PantallaLlamada'
-import { EscenaFoto, type ZonaEscena } from '../../secciones/fisico/EscenaFoto'
+import { EscenaFoto, type DestelloEscena, type ProgresoEscena, type ZonaEscena } from '../../secciones/fisico/EscenaFoto'
 import styles from './DeviceScreen.module.css'
 
 /**
@@ -29,6 +29,12 @@ export type ScreenView =
       src: string
       alt: string
       zonas?: ZonaEscena[]
+      /** Punto que hay que tocar para que aparezcan las opciones. Sin esto el
+       *  nodo mostraría su lista de decisiones de entrada; con esto, primero
+       *  hay que inspeccionar la escena. */
+      destello?: DestelloEscena
+      /** Aviso de que la escena avanza sola (ver `autoAvanza` del nodo). */
+      progreso?: ProgresoEscena
     }
   | {
       kind: 'mail'
@@ -368,7 +374,9 @@ function DeviceScreen({
   }, [view])
 
   if (view.kind === 'escena') {
-    return <EscenaFoto src={view.src} alt={view.alt} zonas={view.zonas} />
+    return (
+      <EscenaFoto src={view.src} alt={view.alt} zonas={view.zonas} destello={view.destello} progreso={view.progreso} />
+    )
   }
 
   if (view.kind === 'mail') {

@@ -5,8 +5,10 @@ import type { Senal } from '../../components/ui/PanelVeredicto'
 import type { Story } from '../../hooks/useStoryEngine'
 
 const ESCENA: ScreenView = { kind: 'escena', src: '/PuertaAbiertaServidores.jpeg', alt: 'Puerta abierta del pasillo frío de servidores', zonas: [{ id: 'puerta-abierta', x: '41%', y: '10%', ancho: '30%', alto: '80%' }] }
+const ESCENA_CON_DESTELLO: ScreenView = { ...ESCENA, destello: { x: '56%', y: '45%', goto: 'n_opciones', label: 'Se acercó a la puerta' } }
 const STORY: Story<ScreenNode> = {
-  n1: { kind: 'scene', view: ESCENA, choices: [
+  n1: { kind: 'scene', view: ESCENA_CON_DESTELLO },
+  n_opciones: { kind: 'scene', view: ESCENA, choices: [
     { label: 'Cerrar la puerta y reportar a infraestructura', goto: 'e_cierra_reporta' },
     { label: 'Cerrar la puerta y seguir adelante', goto: 'e_solo_cierra' },
     { label: 'Seguir de largo, alguien se encargará', goto: 'e_nada' },

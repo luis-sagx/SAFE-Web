@@ -5,10 +5,15 @@ import type { Senal } from '../../components/ui/PanelVeredicto'
 import type { Story } from '../../hooks/useStoryEngine'
 
 const LLAMADA: ScreenView = { kind: 'escena', src: '/LlamadaBanco.jpeg', alt: 'Llamada del banco por fraude en la tarjeta', zonas: [{ id: 'alerta-banco', x: '31%', y: '28%', ancho: '38%', alto: '35%' }] }
-const RECUERDO: ScreenView = { kind: 'escena', src: '/EscaneoBilletera.jpeg', alt: 'Escaneo de una billetera en la calle', zonas: [{ id: 'billetera-escaneada', x: '37%', y: '40%', ancho: '30%', alto: '35%' }] }
+const LLAMADA_CON_DESTELLO: ScreenView = { ...LLAMADA, destello: { x: '53%', y: '57%', goto: 'n1', label: 'Atendió la llamada' } }
+const RECUERDO: ScreenView = { kind: 'escena', src: '/EscaneoBilletera.jpeg', alt: 'Escaneo de una billetera en la calle', zonas: [{ id: 'billetera-escaneada', x: '62%', y: '68%', ancho: '18%', alto: '20%' }] }
+const RECUERDO_CON_PROGRESO: ScreenView = { ...RECUERDO, progreso: { ms: 4000, texto: 'Recordando cómo pasó…' } }
 const SENALES: Senal[] = [{ id: 'alerta', targetId: 'alerta-banco', pantalla: 'n1', texto: 'Una <b>alerta del banco</b> por fraude exige actuar de inmediato: bloquea y reporta.' }, { id: 'escaneo', targetId: 'billetera-escaneada', pantalla: 'n_recuerdo', texto: 'Mientras te distraían, alguien pudo <b>escanear tu billetera</b>. La prevención física evita que el fraude empiece.' }]
 const STORY: Story<ScreenNode> = {
-  n_recuerdo: { kind: 'scene', view: RECUERDO, choices: [{ label: 'Continuar con la alerta del banco', goto: 'n1' }] },
+  // Puro recuerdo: no hay nada que decidir todavía, así que pasa solo, sin
+  // destello que tocar.
+  n_recuerdo: { kind: 'scene', view: RECUERDO_CON_PROGRESO, autoAvanza: { ms: 4000, goto: 'n1_ver' } },
+  n1_ver: { kind: 'scene', view: LLAMADA_CON_DESTELLO },
   n1: { kind: 'scene', view: LLAMADA, choices: [
     { label: 'Bloquear la tarjeta inmediatamente y denunciar el fraude', goto: 'e_bloquea_denuncia' },
     { label: 'Ignorar la notificación y esperar…', goto: 'e_ignora' },
