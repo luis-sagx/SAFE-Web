@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { Link, Navigate, useNavigate } from 'react-router'
 import AuthLayout from '../components/AuthLayout'
+import PantallaCarga from '../components/PantallaCarga'
 import Campo from '../components/Campo'
 import { useAuth } from '../context/AuthContext'
 
@@ -14,7 +15,7 @@ function Login() {
   const [submitting, setSubmitting] = useState(false)
 
   if (loading) {
-    return <p className="p-10 text-base text-muted">Cargando…</p>
+    return <PantallaCarga />
   }
 
   if (isAuthenticated) {

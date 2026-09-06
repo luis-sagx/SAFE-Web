@@ -1,8 +1,7 @@
-import { CheckCircle2, TriangleAlert, XCircle } from 'lucide-react'
+import { CheckCircle2, Loader2, TriangleAlert, XCircle } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router'
-import AppHeader from '../components/AppHeader'
-import InfoLink from '../components/InfoLink'
+import AppHeader, { CLASE_ATRAS } from '../components/AppHeader'
 import { escenariosDeSeccion, SECCIONES } from '../data/catalogo'
 import { fetchMyRuns, type RunOutcome, type RunSummary } from '../lib/api'
 
@@ -82,12 +81,13 @@ function Recorrido() {
 
   return (
     <div className="min-h-screen bg-canvas">
-      <AppHeader>
-        <Link to="/dashboard" className="text-sm font-medium text-link underline">
-          ← Volver
-        </Link>
-        <InfoLink />
-      </AppHeader>
+      <AppHeader
+        atras={
+          <Link to="/dashboard" className={CLASE_ATRAS}>
+            ← Volver
+          </Link>
+        }
+      />
 
       <main className="mx-auto max-w-6xl px-6 py-12">
         <p className="text-xs font-semibold uppercase tracking-[0.88px] text-muted">
@@ -105,7 +105,10 @@ function Recorrido() {
         )}
 
         {!error && runs === null && (
-          <p className="mt-10 text-base text-muted">Cargando…</p>
+          <p role="status" className="mt-10 flex items-center gap-2 text-base text-muted">
+            <Loader2 aria-hidden className="size-4 animate-spin motion-reduce:animate-none" />
+            Cargando…
+          </p>
         )}
 
         {!error && runs !== null && runs.length === 0 && (

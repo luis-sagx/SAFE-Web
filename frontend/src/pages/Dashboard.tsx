@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react'
 import AppHeader from '../components/AppHeader'
 import BarraProgreso from '../components/BarraProgreso'
 import CertificadoBoton from '../components/CertificadoBoton'
-import InfoLink from '../components/InfoLink'
 import { Link } from 'react-router'
 import { useAuth } from '../context/AuthContext'
 import { escenariosDeSeccion, SECCIONES } from '../data/catalogo'
@@ -47,7 +46,7 @@ function calcularGlobal(progresos: Record<string, Progreso>) {
 }
 
 function Dashboard() {
-  const { displayName, logout } = useAuth()
+  const { displayName } = useAuth()
   const [progresos, setProgresos] = useState<Record<string, Progreso>>({})
 
   useEffect(() => {
@@ -82,23 +81,7 @@ function Dashboard() {
 
   return (
     <div className="min-h-screen bg-canvas">
-      <AppHeader>
-        <span className="text-sm font-semibold text-ink">SAFE Web</span>
-        <div className="flex items-center gap-2">
-          <span className="hidden text-sm text-body sm:inline">{displayName}</span>
-          <Link to="/recorrido" className="text-sm font-medium text-link underline">
-            Tu recorrido
-          </Link>
-          <InfoLink />
-          <button
-            type="button"
-            onClick={logout}
-            className="h-9 rounded-md border border-hairline-strong bg-surface px-3 text-sm font-medium text-ink transition hover:bg-surface-strong"
-          >
-            Salir
-          </button>
-        </div>
-      </AppHeader>
+      <AppHeader />
 
       <main className="mx-auto max-w-6xl px-6 py-12">
         <p className="text-xs font-semibold uppercase tracking-[0.88px] text-muted">

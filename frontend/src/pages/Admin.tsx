@@ -8,7 +8,6 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import AppHeader from "../components/AppHeader";
-import { useAuth } from "../context/AuthContext";
 import {
   cambiarEstadoParticipante,
   eliminarParticipante,
@@ -156,7 +155,10 @@ function Participantes() {
     });
 
   if (cargando) {
-    return <p className="text-base text-muted">Cargando participantes…</p>;
+    return <p role="status" className="flex items-center gap-2 text-base text-muted">
+      <Loader2 aria-hidden className="size-4 animate-spin motion-reduce:animate-none" />
+      Cargando participantes…
+    </p>;
   }
 
   return (
@@ -361,7 +363,10 @@ function Resultados() {
   }, []);
 
   if (cargando) {
-    return <p className="text-base text-muted">Cargando resultados…</p>;
+    return <p role="status" className="flex items-center gap-2 text-base text-muted">
+      <Loader2 aria-hidden className="size-4 animate-spin motion-reduce:animate-none" />
+      Cargando resultados…
+    </p>;
   }
   if (error) {
     return (
@@ -430,7 +435,6 @@ function Resultados() {
 }
 
 function Admin() {
-  const { displayName, logout } = useAuth();
   const [pestana, setPestana] = useState<Pestana>("participantes");
 
   const tabClase = (activa: boolean) =>
@@ -440,26 +444,7 @@ function Admin() {
 
   return (
     <div className="min-h-screen bg-canvas">
-      <AppHeader>
-        <div className="flex items-baseline gap-2">
-          <span className="text-sm font-semibold text-ink">SAFE Web</span>
-          <span className="text-xs font-semibold uppercase tracking-[0.88px] text-muted">
-            Supervisión
-          </span>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="hidden text-sm text-body sm:inline">
-            {displayName || "Supervisor"}
-          </span>
-          <button
-            type="button"
-            onClick={logout}
-            className="h-9 rounded-md border border-hairline-strong bg-surface px-3 text-sm font-medium text-ink transition hover:bg-surface-strong"
-          >
-            Salir
-          </button>
-        </div>
-      </AppHeader>
+      <AppHeader etiqueta="Supervisión" />
 
       <main className="mx-auto max-w-6xl px-6 py-12">
         <p className="text-xs font-semibold uppercase tracking-[0.88px] text-muted">

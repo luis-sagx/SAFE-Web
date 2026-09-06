@@ -1,8 +1,7 @@
 import { Info } from "lucide-react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Link } from "react-router";
-import AppHeader from "./AppHeader";
-import InfoLink from "./InfoLink";
+import AppHeader, { CLASE_ATRAS } from "./AppHeader";
 import AvisoFinEscenario from "./ui/AvisoFinEscenario";
 import ContextoEscenario, { type Contexto } from "./ui/ContextoEscenario";
 import type { ResultadoEscenario } from "../hooks/useScenarioRun";
@@ -153,7 +152,7 @@ function EscenarioLayout({
   /** "Phishing · 3 de 8". Dentro del escenario no había forma de saber en qué
    *  punto del recorrido se estaba sin salirse de él. */
   const ubicacion = posicion > 0 && (
-    <p className="text-base text-muted">
+    <p className="shrink-0 text-muted">
       {seccion?.titulo}
       <span aria-hidden className="mx-1.5 text-muted-soft">
         ·
@@ -167,7 +166,7 @@ function EscenarioLayout({
   const volver = (
     <Link
       to={`/seccion/${escenario.seccionId}`}
-      className="text-base font-medium text-link underline"
+      className={CLASE_ATRAS}
     >
       ← Volver a la sección
     </Link>
@@ -181,7 +180,7 @@ function EscenarioLayout({
     <button
       type="button"
       onClick={() => salidaRef.current?.showModal()}
-      className="text-base font-medium text-link underline"
+      className={CLASE_ATRAS}
     >
       ← Salir sin terminar
     </button>
@@ -190,10 +189,7 @@ function EscenarioLayout({
   if (fase === "briefing") {
     return (
       <div className="min-h-dvh bg-canvas">
-        <AppHeader>
-          {volver}
-          <InfoLink />
-        </AppHeader>
+        <AppHeader atras={volver} />
 
         {/* Mismo ancho que el dashboard y las secciones. Con el contenido en
             una sola columna esa medida daría renglones larguísimos, así que a
@@ -295,15 +291,11 @@ function EscenarioLayout({
     // alto, encerrarlo todo en una pantalla dejaba al correo unas tres líneas
     // visibles dentro de una caja que había que desplazar por dentro.
     <div className="flex min-h-dvh flex-col bg-canvas-soft sm:h-dvh sm:overflow-hidden">
-      <AppHeader>
-        {salir}
-        <span className="lg:order-3">{ubicacion}</span>
-        <p className="w-full text-base leading-snug text-body lg:order-2 lg:w-auto lg:flex-1 lg:px-6">
-          {resumen}
-        </p>
-        <span className="lg:order-4">
-          <InfoLink />
-        </span>
+      <AppHeader atras={salir}>
+        {/* El resumen se queda con el hueco sobrante y la ubicación va pegada a
+            las acciones: el orden que se lee es salir → qué pasa → dónde estoy. */}
+        <p className="w-full min-w-0 leading-snug text-body lg:w-auto lg:flex-1">{resumen}</p>
+        {ubicacion}
       </AppHeader>
 
       {/* Apilado hasta 1024px; lado a lado arriba de eso. En una pantalla de

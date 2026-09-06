@@ -1,10 +1,9 @@
 import { ArrowRight, CheckCircle2, LockKeyhole, Star } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link, Navigate, useLocation, useParams } from 'react-router'
-import AppHeader from '../components/AppHeader'
+import AppHeader, { CLASE_ATRAS } from '../components/AppHeader'
 import BarraProgreso from '../components/BarraProgreso'
 import CierreModuloModal from '../components/CierreModuloModal'
-import InfoLink from '../components/InfoLink'
 import { escenariosDeSeccion, getSeccion, SECCIONES, type Seccion as SeccionCatalogo } from '../data/catalogo'
 import { fetchProgreso, type Progreso } from '../lib/api'
 import { escenarioEstaDisponible, escenarioFueJugado } from '../lib/bloqueoEscenarios'
@@ -180,12 +179,13 @@ function Seccion() {
 
   return (
     <div className="min-h-screen bg-canvas">
-      <AppHeader>
-        <Link to="/dashboard" className="text-sm font-medium text-link underline">
-          ← Volver
-        </Link>
-        <InfoLink />
-      </AppHeader>
+      <AppHeader
+        atras={
+          <Link to="/dashboard" className={CLASE_ATRAS}>
+            ← Volver
+          </Link>
+        }
+      />
 
       {/* Mismo ancho que el dashboard y que la barra superior: las tres
           pantallas de navegación se leen como una sola, sin que el contenido
