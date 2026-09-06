@@ -1,7 +1,8 @@
-import { useState, type ReactNode } from 'react'
+import { useState } from 'react'
 import EscenarioLayout from '../../components/EscenarioLayout'
 import FlashOverlay from '../../components/ui/FlashOverlay'
 import Instrucciones from '../../components/ui/Instrucciones'
+import Tarea from '../../components/ui/Tarea'
 import PanelVeredicto, { type Senal } from '../../components/ui/PanelVeredicto'
 import { useFlashTransition } from '../../hooks/useFlashTransition'
 import type { Contexto } from '../../components/ui/ContextoEscenario'
@@ -95,25 +96,6 @@ const ANCHO_PESTANA = 128
 const X_PESTANAS = 244
 
 const SIN_CERRAR: ReadonlySet<number> = new Set()
-
-/** Una línea del checklist: qué falta y qué ya está hecho. */
-function Tarea({ hecho, children }: { hecho: boolean; children: ReactNode }) {
-  return (
-    <li className="flex items-start gap-2.5">
-      <span
-        aria-hidden
-        className={`mt-1 flex size-5 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
-          hecho ? 'bg-success text-white' : 'border border-hairline-strong text-transparent'
-        }`}
-      >
-        ✓
-      </span>
-      <span className={`text-lg leading-relaxed ${hecho ? 'text-muted' : 'text-body'}`}>
-        {children}
-      </span>
-    </li>
-  )
-}
 
 function SalidaSegura() {
   const run = useScenarioRun('fisico/salida-segura')

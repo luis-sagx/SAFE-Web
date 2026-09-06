@@ -13,7 +13,7 @@ import {
 } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { useAuth } from '../../context/AuthContext'
-import { BotonesVentana, Taskbar, type Reloj } from './DesktopChrome'
+import { BotonesVentana, Taskbar, type AtajoTaskbar, type Reloj } from './DesktopChrome'
 import styles from './DeviceScreen.module.css'
 
 /**
@@ -63,6 +63,10 @@ interface NavegadorProps {
   /** Hora del sistema. Los escenarios cuya historia fija una hora la pasan
    *  para que el reloj de la ventana no la contradiga. */
   reloj?: Reloj
+  /** Acceso directo anclado en la barra de tareas del sistema, si el escenario
+   *  pone alguno. Lo pinta `Taskbar`, igual que en las ventanas que no son de
+   *  navegador. */
+  atajo?: AtajoTaskbar
   /** Final al que lleva cerrar la pestaña marcada como `pestanaCierreDinamico`
    *  cuando esa pestaña no trae su propio `cierra` fijo. */
   cierrePortal?: string
@@ -77,6 +81,7 @@ export function Navegador({
   activa,
   marcadores,
   reloj = 'vivo',
+  atajo,
   cierrePortal,
   pestanaCierreDinamico,
   onHotspot,
@@ -206,7 +211,7 @@ export function Navegador({
 
       {children}
 
-      <Taskbar app={{ Icono: Globe, texto: 'Navegador' }} reloj={reloj} />
+      <Taskbar app={{ Icono: Globe, texto: 'Navegador' }} atajo={atajo} reloj={reloj} />
     </section>
   )
 }

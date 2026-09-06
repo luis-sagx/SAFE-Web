@@ -1,326 +1,406 @@
-import { useState, useEffect } from 'react'
+import { Building2, Landmark, Lock, Newspaper } from 'lucide-react'
+import { useState } from 'react'
 import EscenarioLayout from '../../components/EscenarioLayout'
 import Instrucciones from '../../components/ui/Instrucciones'
 import PanelVeredicto, { type Senal } from '../../components/ui/PanelVeredicto'
+import Tarea from '../../components/ui/Tarea'
+import { AvisoSitio, CabeceraSitio, PieSitio } from '../../components/ui/armazonSitio'
+import { Navegador, type MarcadorNavegador, type PestanaConfig } from '../../components/ui/Navegador'
+import { manejarClicHotspot } from '../../components/ui/interactivo'
 import type { Contexto } from '../../components/ui/ContextoEscenario'
+import styles from '../../components/ui/DeviceScreen.module.css'
+import { useAuth } from '../../context/AuthContext'
 import { useScenarioRun } from '../../hooks/useScenarioRun'
 import type { StoryNode } from '../../hooks/useStoryEngine'
 
-type Level = 'safe' | 'danger'
+/** Id del atajo de la barra de tareas. No es una pestaña: se distingue del
+ *  resto de destinos por eso. */
+const BLOQUEAR = 'bloquear'
 
-interface Resolved {
-  level: Level
-  feedback: string
-  details: string
+const ORDEN = ['claves', 'correo', 'documentos'] as const
+type PestanaId = (typeof ORDEN)[number]
+
+/** La misma ventana de navegador que el resto de módulos, con tres pestañas
+ *  que ningún compañero debería poder leer por encima del hombro. */
+const PESTANAS: Record<PestanaId, PestanaConfig> = {
+  claves: {
+    titulo: 'Gestor de contraseñas',
+    url: 'vault.andes.ec/mis-claves',
+    segura: true,
+    cierra: 'claves',
+  },
+  correo: {
+    titulo: 'Correo — Recibidos',
+    url: 'correo.andes.ec/recibidos',
+    segura: true,
+    cierra: 'correo',
+  },
+  documentos: {
+    titulo: 'Mis documentos',
+    url: 'drive.andes.ec/mis-documentos',
+    segura: true,
+    cierra: 'documentos',
+  },
 }
 
-const TABS = [
-  { id: 'contraseñas', name: 'Contraseñas' },
-  { id: 'emails', name: 'Emails' },
-  { id: 'documentos', name: 'Documentos' },
+/** Decorativos, como en cualquier navegador: aquí no hay ningún sitio al que
+ *  ir, solo cosas que cerrar. */
+const MARCADORES: MarcadorNavegador[] = [
+  { Icono: Building2, texto: 'Intranet Andes' },
+  { Icono: Landmark, texto: 'Banco del Litoral' },
+  { Icono: Newspaper, texto: 'El Comercio' },
 ]
 
-const PASSWORDS = [
-  { servicio: 'Gmail', usuario: 'juan.garcia@empresa.com', pass: 'Abc123!@#G2024' },
-  { servicio: 'Banco Corporativo', usuario: 'juan.garcia', pass: 'SecurePass2024' },
-  { servicio: 'Sistema Interno', usuario: 'jgarcia', pass: 'InternalSys#99' },
-  { servicio: 'VPN Empresa', usuario: 'juan.garcia@vpn', pass: 'VPNPass2024!' },
+const CORREOS = [
+  { de: 'Dirección General', asunto: 'Aumento aprobado — confidencial' },
+  { de: 'Talento Humano', asunto: 'Reestructuración del área: borrador' },
+  { de: 'Finanzas', asunto: 'Presupuesto 2026 con cifras sin publicar' },
+  { de: 'Tu jefe directo', asunto: 'Tu evaluación de desempeño' },
 ]
 
-const EMAILS = [
-  { de: 'director@empresa.com', asunto: 'Aumento de salario aprobado', vista: 'no leído', importante: true },
-  { de: 'rrhh@empresa.com', asunto: 'Información confidencial - Reestructuración', vista: 'no leído', importante: true },
-  { de: 'finanzas@empresa.com', asunto: 'Presupuesto 2024 - Datos sensibles', vista: 'no leído', importante: true },
-  { de: 'jefe.directo@empresa.com', asunto: 'Evaluación de desempeño confidencial', vista: 'no leído', importante: true },
+const DOCUMENTOS = [
+  { nombre: 'mi_salario_2026.pdf', detalle: '245 KB · modificado hoy' },
+  { nombre: 'reestructuracion_borrador.docx', detalle: '1.2 MB · hace 2 días' },
+  { nombre: 'contrato_negociacion.pdf', detalle: '567 KB · la semana pasada' },
+  { nombre: 'estrategia_2026.xlsx', detalle: '3.4 MB · hace 3 días' },
 ]
 
-const DOCUMENTS = [
-  { nombre: 'salario_personal_2024.pdf', tamaño: '245 KB', modificado: 'Hoy' },
-  { nombre: 'informacion_confidencial.docx', tamaño: '1.2 MB', modificado: 'Hace 2 días' },
-  { nombre: 'contrato_negociacion.pdf', tamaño: '567 KB', modificado: 'Hace 1 semana' },
-  { nombre: 'estrategia_2024.xlsx', tamaño: '3.4 MB', modificado: 'Hace 3 días' },
-]
-
+/** Cada señal vuelve a abrir su pestaña antes de resaltarla: al terminar el
+ *  escenario están cerradas —eso es lo que se pedía— y sin esto el repaso
+ *  hablaría de algo que ya no se ve. */
 const SENALES: Senal[] = [
-  { id: 'pestanas', targetId: 'pestanas-sensibles', texto: 'Las <b>pestañas con información sensible</b> deben cerrarse antes de dejar el puesto.' },
+  {
+    id: 'claves',
+    targetId: 'claves',
+    pantalla: 'claves',
+    texto:
+      'Un gestor de contraseñas abierto muestra <b>usuario y clave en texto plano</b>. Quien mire dos segundos se lleva el acceso a tu correo, tu banca y tus sistemas.',
+  },
+  {
+    id: 'correo',
+    targetId: 'correo',
+    pantalla: 'correo',
+    texto:
+      'La bandeja de entrada delata sola: los <b>asuntos</b> se leen de un vistazo desde un metro de distancia, aunque no se abra ningún mensaje.',
+  },
+  {
+    id: 'documentos',
+    targetId: 'documentos',
+    pantalla: 'documentos',
+    texto:
+      'Los <b>nombres de archivo</b> cuentan lo que hay dentro sin necesidad de abrirlos: un listado a la vista es un índice de todo lo que guardas.',
+  },
 ]
 
-const REGLA = '<b>Escritorio limpio y pantalla bloqueada.</b> No dejes información sensible visible cuando alguien pueda ver tu pantalla.'
+const REGLA =
+  '<b>Escritorio limpio y pantalla bloqueada.</b> Si alguien se acerca a tu puesto, lo primero es bloquear; y lo que no debería ver, cerrado antes de volver a desbloquear delante de él.'
+
+function PaginaClaves() {
+  const { usuarioSimulado, correoSimulado } = useAuth()
+
+  const claves = [
+    { servicio: 'Correo corporativo', usuario: correoSimulado, clave: 'Abc123!@#G2026' },
+    { servicio: 'Banco Corporativo', usuario: usuarioSimulado, clave: 'SecurePass2026' },
+    { servicio: 'Sistema interno', usuario: usuarioSimulado, clave: 'InternalSys#99' },
+    { servicio: 'VPN de la empresa', usuario: `${usuarioSimulado}@vpn`, clave: 'VPNPass2026!' },
+  ]
+
+  return (
+    <div className={styles.page}>
+      <CabeceraSitio marca="Vault Andes" menu={['Bóveda', 'Generador', 'Compartidas', 'Ajustes']} />
+      <h2 className={styles.pageTitle}>Mis contraseñas</h2>
+      <p className={styles.pageSub}>Cuatro credenciales guardadas, visibles sin volver a pedir la clave maestra.</p>
+
+      <div className={styles.datos} data-signal="claves">
+        {claves.map((entrada) => (
+          <div key={entrada.servicio} className={styles.dato}>
+            <span className={styles.datoEtiqueta}>{entrada.servicio}</span>
+            <span className={styles.datoValor}>
+              {entrada.usuario} · {entrada.clave}
+            </span>
+          </div>
+        ))}
+      </div>
+
+      <AvisoSitio>
+        La bóveda se bloquea sola a los 30 minutos de inactividad.
+      </AvisoSitio>
+      <PieSitio texto="Vault Andes · Gestor de contraseñas corporativo" />
+    </div>
+  )
+}
+
+function PaginaCorreo() {
+  return (
+    <div className={styles.page}>
+      <CabeceraSitio marca="Correo Andes" menu={['Recibidos', 'Enviados', 'Borradores', 'Spam']} />
+      <h2 className={styles.pageTitle}>Recibidos</h2>
+      <p className={styles.pageSub}>Cuatro mensajes sin leer.</p>
+
+      <div className={styles.datos} data-signal="correo">
+        {CORREOS.map((correo) => (
+          <div key={correo.asunto} className={styles.dato}>
+            <span className={styles.datoEtiqueta}>{correo.de}</span>
+            <span className={styles.datoValor}>{correo.asunto}</span>
+          </div>
+        ))}
+      </div>
+
+      <PieSitio texto="Correo Andes · Corporación Andes" />
+    </div>
+  )
+}
+
+function PaginaDocumentos() {
+  return (
+    <div className={styles.page}>
+      <CabeceraSitio marca="Drive Andes" menu={['Mi unidad', 'Compartidos', 'Recientes', 'Papelera']} />
+      <h2 className={styles.pageTitle}>Mi unidad</h2>
+      <p className={styles.pageSub}>Archivos de este equipo.</p>
+
+      <div className={styles.datos} data-signal="documentos">
+        {DOCUMENTOS.map((documento) => (
+          <div key={documento.nombre} className={styles.dato}>
+            <span className={styles.datoEtiqueta}>{documento.nombre}</span>
+            <span className={styles.datoValor}>{documento.detalle}</span>
+          </div>
+        ))}
+      </div>
+
+      <PieSitio texto="Drive Andes · Corporación Andes" />
+    </div>
+  )
+}
 
 function PrivacidadClaves() {
   const run = useScenarioRun('fisico/privacidad-claves')
+  const { displayName } = useAuth()
 
-  const [openTabs, setOpenTabs] = useState<Set<string>>(new Set(['contraseñas', 'emails', 'documentos']))
-  const [resolved, setResolved] = useState<Resolved | null>(null)
-  const [selectedTab, setSelectedTab] = useState<string>('contraseñas')
-  const [timeLeft, setTimeLeft] = useState<number>(30)
-  const [timerActive, setTimerActive] = useState(false)
+  const [abiertas, setAbiertas] = useState<PestanaId[]>([...ORDEN])
+  const [activa, setActiva] = useState<PestanaId>('claves')
+  const [bloqueada, setBloqueada] = useState(false)
+  const [final, setFinal] = useState<StoryNode | null>(null)
+  /** Pestaña que el repaso de señales quiere enseñar, o nada fuera del repaso.
+   *  Mientras dura, la ventana vuelve a como estaba al empezar. */
+  const [repaso, setRepaso] = useState<PestanaId | null>(null)
 
-  function closeTab(id: string) {
-    const newTabs = new Set(openTabs)
-    newTabs.delete(id)
-    setOpenTabs(newTabs)
+  const enRepaso = repaso !== null
+  const vistaAbiertas = enRepaso ? [...ORDEN] : abiertas
+  const vistaActiva = repaso ?? activa
+  const vistaBloqueada = enRepaso ? false : bloqueada
 
-    // Si cerramos el tab seleccionado, cambiar a otro disponible
-    if (selectedTab === id && newTabs.size > 0) {
-      const firstAvailable = Array.from(newTabs)[0]!
-      setSelectedTab(firstAvailable)
+  function onHotspot(event: React.MouseEvent) {
+    if (final) return
+
+    // Cerrar una pestaña se resuelve aquí y no por el `goto`: el botón lleva
+    // los dos atributos, y sin este corte cerrarla la dejaría además activa.
+    const cerrada = (event.target as HTMLElement).closest<HTMLElement>('[data-cierra]')?.dataset
+      .cierra as PestanaId | undefined
+
+    if (cerrada) {
+      const quedan = abiertas.filter((id) => id !== cerrada)
+      setAbiertas(quedan)
+      if (activa === cerrada && quedan[0]) setActiva(quedan[0])
+      return
     }
+
+    manejarClicHotspot(event, (goto) => {
+      if (goto === BLOQUEAR) {
+        setBloqueada(true)
+        return
+      }
+      if (ORDEN.includes(goto as PestanaId)) setActiva(goto as PestanaId)
+    })
   }
 
-  useEffect(() => {
-    if (!timerActive || resolved) return
+  function atender() {
+    if (final) return
 
-    const interval = setInterval(() => {
-      setTimeLeft((prev) => {
-        if (prev <= 1) {
-          setTimerActive(false)
-          // Se acabó el tiempo
-          const result: Resolved = {
-            level: 'danger',
-            feedback: 'Se acabó el tiempo',
-            details: 'Tu compañero llegó antes de que cerraras la información. Vio todo: contraseñas, emails confidenciales y documentos personales. Esto pone en riesgo tu seguridad personal y la de la empresa.',
+    const expuestas = abiertas.length
+    run.recordDecision({ pestanasAbiertas: expuestas, bloqueada })
+
+    // Tres desenlaces y no dos: bloquear con las pestañas puestas no es lo
+    // mismo que dejarlo todo a la vista, pero tampoco está resuelto — en
+    // cuanto desbloquees delante de él vuelve a estar todo ahí.
+    const nodo: StoryNode =
+      expuestas === 0 && bloqueada
+        ? {
+            kind: 'good',
+            verdict: 'Nada que mirar',
+            outcome: `Cerraste las tres pestañas y bloqueaste antes de girarte. Tu compañero se encontró una pantalla de bloqueo y tú atendiste su pregunta sin dejar nada expuesto.`,
           }
-          setResolved(result)
-          run.recordDecision({ nivel: 'danger', riesgo: 5 })
-          void run.finish({ endingId: 'peligro', outcome: 'INCORRECTO' })
-          return 0
-        }
-        return prev - 1
-      })
-    }, 1000)
+        : expuestas === 0 || bloqueada
+          ? {
+              kind: 'partial',
+              verdict: 'A medio resolver',
+              outcome: bloqueada
+                ? `Bloqueaste la pantalla, pero las tres pestañas siguen abiertas detrás. En cuanto desbloquees para enseñarle algo, vuelve a estar todo a la vista.`
+                : `Cerraste las pestañas, pero dejaste la sesión abierta. Si te levantas un momento a buscar algo, cualquiera se sienta en tu sitio.`,
+            }
+          : {
+              kind: 'bad',
+              verdict: 'Lo vio todo',
+              outcome: `Te giraste con ${expuestas === 1 ? 'una pestaña abierta' : `${expuestas} pestañas abiertas`} y la sesión sin bloquear. Tus contraseñas, tus correos y tus archivos estuvieron delante de él todo el rato que duró la conversación.`,
+            }
 
-    return () => clearInterval(interval)
-  }, [timerActive, resolved, run])
-
-  function handleFinish() {
-    if (openTabs.size === 0) {
-      const result: Resolved = {
-        level: 'safe',
-        feedback: 'Excelente. Privacidad protegida',
-        details: 'Cerraste todas las pestañas con información sensible antes de que tu compañero llegara. No vio nada comprometedor. Actuaste correctamente bajo presión.',
-      }
-      setResolved(result)
-      setTimerActive(false)
-      run.recordDecision({ nivel: 'safe', riesgo: 0 })
-      void run.finish({ endingId: 'seguro', outcome: 'CORRECTO' })
-    } else {
-      const result: Resolved = {
-        level: 'danger',
-        feedback: 'Información expuesta',
-        details: 'No cerraste toda la información antes de que tu compañero llegara. Vio contraseñas, emails confidenciales y documentos personales. Esto pone en riesgo tu seguridad personal y la de la empresa.',
-      }
-      setResolved(result)
-      setTimerActive(false)
-      run.recordDecision({ nivel: 'danger', riesgo: 5 })
-      void run.finish({ endingId: 'peligro', outcome: 'INCORRECTO' })
-    }
+    setFinal(nodo)
+    void run.finish({
+      endingId: nodo.kind,
+      outcome: nodo.kind === 'good' ? 'CORRECTO' : nodo.kind === 'partial' ? 'PARCIAL' : 'INCORRECTO',
+    })
   }
 
-  function onEmpezar() {
-    setOpenTabs(new Set(['contraseñas', 'emails', 'documentos']))
-    setResolved(null)
-    setTimeLeft(30)
-    setTimerActive(true)
+  function reiniciar() {
+    run.restart()
+    setAbiertas([...ORDEN])
+    setActiva('claves')
+    setBloqueada(false)
+    setFinal(null)
+    setRepaso(null)
   }
 
   const contexto: Contexto = {
     antes: (
-      <>
-        <p className="mb-3">
-          En una oficina compartida, otros pueden ver tu pantalla fácilmente. Si dejas información sensible visible, corres el riesgo de que alguien vea lo que no debería.
-        </p>
-        <p className="font-semibold mb-2">Cómo protegerte:</p>
-        <ol className="list-decimal list-inside space-y-1 text-sm">
-          <li>Haz click en la X de cada pestaña para cerrarla</li>
-          <li>Bloquea tu pantalla cuando todas estén cerradas</li>
-          <li>Presiona "Terminar" para completar</li>
-        </ol>
-      </>
+      <p>
+        En una oficina compartida no hace falta que nadie toque tu equipo: lo que tengas en
+        pantalla lo lee cualquiera que se acerque a hablar contigo, y se lee entero en los segundos
+        que tarda en llegar a tu silla.
+      </p>
     ),
     ahora: (
       <>
-        <strong>Un compañero se acerca a tu escritorio</strong>{' '}para hacerte una pregunta.
-        Tu pantalla tiene <strong>tres pestañas abiertas con información sensible</strong>.
-        <strong>¿Las cierras y bloqueas la pantalla?</strong>
+        <strong>Un compañero se levanta y viene hacia tu escritorio</strong> a preguntarte algo. En
+        tu navegador están abiertos tu gestor de contraseñas, tu correo y tus documentos, y la
+        sesión está desbloqueada.
       </>
     ),
   }
 
-  const decisionPanel = resolved ? (
-    <PanelVeredicto
-      escenarioId="fisico/privacidad-claves"
-      node={{ kind: resolved.level === 'safe' ? 'good' : 'bad', verdict: resolved.feedback, outcome: resolved.details } satisfies StoryNode}
-      senales={SENALES}
-      regla={REGLA}
-      restartLabel="Intentar de nuevo"
-      onRestart={onEmpezar}
-      contenedorId="pantalla-escenario"
-    />
+  const pantalla = vistaBloqueada ? (
+    // La pantalla de bloqueo tapa la ventana entera, como el sistema real: con
+    // la sesión bloqueada no se puede cerrar una pestaña sin desbloquear antes.
+    <section
+      className={`${styles.screen} ${styles.desktop}`}
+      aria-label="Pantalla bloqueada"
+    >
+      <button
+        type="button"
+        onClick={() => !final && setBloqueada(false)}
+        className="flex size-full flex-col items-center justify-center gap-3 bg-ink text-center"
+      >
+        <span className="flex size-16 items-center justify-center rounded-full bg-white/10" aria-hidden>
+          <Lock className="size-8 text-white" strokeWidth={2} />
+        </span>
+        <span className="text-xl font-semibold text-white">{displayName}</span>
+        <span className="text-base text-white/70">
+          Sesión bloqueada · haz clic para volver a entrar
+        </span>
+      </button>
+    </section>
   ) : (
-    <Instrucciones
-      queHaces={
-        <p className="text-base leading-relaxed text-body">
-          Tu compañero está llegando. Tienes segundos para actuar.
-        </p>
-      }
-      cuandoTermina={
-        <>
-          Cuando cierres todo y presiones "Terminar", o cuando se acabe el tiempo antes de que
-          termines. Los segundos corren mientras decides, igual que en la vida real.
-        </>
-      }
-      pista={<p>Haz click en la X de cada pestaña. Luego bloquea la pantalla.</p>}
-    />
+    <Navegador
+      pestanas={PESTANAS}
+      abiertas={vistaAbiertas}
+      activa={vistaActiva}
+      marcadores={MARCADORES}
+      atajo={{
+        texto: 'Bloquear pantalla',
+        goto: BLOQUEAR,
+        label: 'Bloqueó la pantalla desde la barra de tareas',
+      }}
+      onHotspot={onHotspot}
+    >
+      {vistaActiva === 'claves' && <PaginaClaves />}
+      {vistaActiva === 'correo' && <PaginaCorreo />}
+      {vistaActiva === 'documentos' && <PaginaDocumentos />}
+      {vistaAbiertas.length === 0 && (
+        <div className={styles.page}>
+          <h2 className={styles.pageTitle}>No queda ninguna pestaña abierta</h2>
+          <p className={styles.pageSub}>
+            Ya no hay nada que leer en tu pantalla. Falta la sesión.
+          </p>
+        </div>
+      )}
+    </Navegador>
   )
 
-  const pantalla = (
-    <div className="flex size-full items-center justify-center bg-canvas-soft p-4">
-        <div className="relative flex size-full min-h-0 items-center justify-center">
-          {/* Monitor simulado */}
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '95%', height: '90vh', maxHeight: '800px', gap: '0.5rem' }}>
-            {/* Marco del monitor */}
-            <div style={{ background: '#1a1a1a', padding: '15px', borderRadius: '12px', boxShadow: '0 10px 40px rgba(0,0,0,0.3)', width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
-              {/* Pantalla del navegador */}
-              <div className="overflow-hidden flex flex-col bg-white shadow-2xl relative" style={{ width: '100%', height: '100%', border: '8px solid #333', flex: 1 }}>
-              {/* Barra de dirección */}
-              <div className="bg-gray-100 border-b border-gray-300 px-3 py-2 flex items-center gap-2 text-xs">
-                <span className="text-gray-600 cursor-pointer">◀</span>
-                <span className="text-gray-600 cursor-pointer">▶</span>
-                <span className="text-gray-700 font-mono flex-1 px-2 py-1 bg-white rounded border border-gray-300">escritorio.local</span>
-              </div>
+  const decision = final ? (
+    <PanelVeredicto
+      estadoGuardado={run.status}
+      escenarioId="fisico/privacidad-claves"
+      node={final}
+      senales={SENALES}
+      regla={REGLA}
+      restartLabel="↻ Repetir el escenario"
+      onRestart={reiniciar}
+      contenedorId="pantalla-escenario"
+      onPantalla={(id) => setRepaso((id ?? null) as PestanaId | null)}
+    />
+  ) : (
+    <div className="grid gap-4">
+      <Instrucciones
+        queHaces={
+          <>
+            <p className="text-lg leading-relaxed text-body">
+              Actúa sobre la ventana como lo harías si alguien viniera hacia tu sitio ahora mismo.
+              Cuando estés listo, te giras a atenderlo.
+            </p>
 
-              {/* Pestañas */}
-              <div id="pestanas-sensibles" data-signal="pestanas-sensibles" className="bg-gray-50 border-b border-gray-300 flex overflow-x-auto">
-                {TABS.map((tab) =>
-                  openTabs.has(tab.id) ? (
-                    <button
-                      key={tab.id}
-                      onClick={() => setSelectedTab(tab.id)}
-                      className={`flex items-center gap-2 px-3 py-2 border-r border-gray-300 min-w-max group transition ${
-                        selectedTab === tab.id
-                          ? 'bg-white border-b-2 border-blue-500'
-                          : 'bg-gray-50 hover:bg-gray-100'
-                      }`}
-                    >
-                      <span className="text-sm font-medium text-gray-700">{tab.name}</span>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          closeTab(tab.id)
-                        }}
-                        className="ml-1 text-gray-400 hover:text-red-600 hover:bg-red-100 rounded px-1 text-sm transition"
-                      >
-                        ×
-                      </button>
-                    </button>
-                  ) : null
-                )}
-              </div>
+            <ul className="grid gap-2.5">
+              <Tarea hecho={abiertas.length === 0}>
+                Cerrar las pestañas que no debería ver{' '}
+                <span className="tabular-nums text-muted">
+                  ({ORDEN.length - abiertas.length} de {ORDEN.length})
+                </span>
+              </Tarea>
+              <Tarea hecho={bloqueada}>Bloquear la pantalla</Tarea>
+            </ul>
+          </>
+        }
+        cuandoTermina={
+          <>
+            Cuando te gires a atender a tu compañero. Lo que en ese momento siga en pantalla es lo
+            que él ve; no hay confirmación ni vuelta atrás, igual que en la vida real.
+          </>
+        }
+        pista={
+          <p>
+            Cada pestaña se cierra con su ✕, como en tu navegador. La pantalla se bloquea desde la
+            barra de tareas, abajo. Puedes girarte cuando quieras: lo que dejes abierto, lo lee.
+          </p>
+        }
+      />
 
-              {/* Contenido */}
-              <div className="flex-1 bg-white p-4 overflow-y-auto">
-                {openTabs.size > 0 ? (
-                  <>
-                    {selectedTab === 'contraseñas' && openTabs.has('contraseñas') && (
-                      <div className="space-y-3">
-                        <h3 className="font-bold text-sm text-gray-800 mb-4">Contraseñas guardadas</h3>
-                        {PASSWORDS.map((pwd, idx) => (
-                          <div key={idx} className="border border-gray-300 rounded p-3 bg-red-50">
-                            <p className="font-semibold text-sm text-red-900">{pwd.servicio}</p>
-                            <p className="text-xs text-gray-700 mt-2">
-                              <span className="font-mono">Usuario: {pwd.usuario}</span>
-                            </p>
-                            <p className="text-xs text-gray-700">
-                              <span className="font-mono">Contraseña: {pwd.pass}</span>
-                            </p>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-                    {selectedTab === 'emails' && openTabs.has('emails') && (
-                      <div className="space-y-2">
-                        <h3 className="font-bold text-sm text-gray-800 mb-4">Bandeja de entrada</h3>
-                        {EMAILS.map((email, idx) => (
-                          <div key={idx} className="border border-gray-300 rounded p-3 bg-blue-50 hover:bg-blue-100 transition cursor-pointer">
-                            <div className="flex items-start justify-between">
-                              <div className="flex-1">
-                                <p className="font-semibold text-sm text-gray-900">{email.de}</p>
-                                <p className="text-xs text-gray-700 mt-1">{email.asunto}</p>
-                              </div>
-                              {email.importante && <span className="text-red-500 font-bold text-lg">!</span>}
-                            </div>
-                            <p className="text-xs text-gray-500 mt-2">{email.vista}</p>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-                    {selectedTab === 'documentos' && openTabs.has('documentos') && (
-                      <div className="space-y-2">
-                        <h3 className="font-bold text-sm text-gray-800 mb-4">Documentos</h3>
-                        {DOCUMENTS.map((doc, idx) => (
-                          <div key={idx} className="border border-gray-300 rounded p-3 bg-yellow-50 hover:bg-yellow-100 transition cursor-pointer">
-                            <div className="flex items-center gap-2">
-                              <div className="flex-1">
-                                <p className="font-semibold text-sm text-gray-900">{doc.nombre}</p>
-                                <p className="text-xs text-gray-600">{doc.tamaño} • {doc.modificado}</p>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  <div className="text-center py-6 text-gray-500">
-                    <p className="font-semibold">Todas las pestañas cerradas</p>
-                    <p className="text-sm">Ahora bloquea tu pantalla antes de que tu compañero llegue</p>
-                  </div>
-                )}
-              </div>
-
-              {/* Controles */}
-              <div className="bg-gray-100 border-t border-gray-300 p-3 flex gap-2 relative z-10">
-                <div className={`flex-1 px-3 py-2 rounded font-semibold text-white text-center text-sm ${
-                  timeLeft > 10 ? 'bg-green-500' : timeLeft > 5 ? 'bg-yellow-500' : 'bg-red-500'
-                }`}>
-                  Tiempo: {timeLeft}s
-                </div>
-                <button
-                  onClick={handleFinish}
-                  disabled={resolved !== null}
-                  className="flex-1 px-3 py-2 rounded font-semibold text-white bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition text-sm"
-                >
-                  Terminar
-                </button>
-              </div>
-            </div>
-            </div>
-          </div>
-        </div>
+      <button
+        type="button"
+        onClick={atender}
+        className="min-h-12 w-full rounded-md bg-primary px-4 py-3 text-lg font-medium text-on-primary transition hover:bg-primary-active focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link"
+      >
+        Girarme a atenderlo
+      </button>
     </div>
   )
 
   const nota = (
     <div className="text-base leading-relaxed text-body">
-      <p>Protege tu información sensible cerrando pestañas y bloqueando tu pantalla cuando alguien se acerca.</p>
+      <p>
+        Vas a ver tu propia pantalla, con las pestañas tal como las dejaste. Puedes tocar lo que
+        quieras de la ventana; el escenario termina cuando te giras a atender a tu compañero.
+      </p>
     </div>
   )
 
   return (
     <EscenarioLayout
       escenarioId="fisico/privacidad-claves"
-      resumen="Privacidad: Protege tu pantalla cuando alguien se acerca"
+      resumen="Privacidad — Alguien se acerca a tu escritorio"
       contexto={contexto}
       nota={nota}
       identidad={[]}
       pantalla={pantalla}
-      decision={decisionPanel}
-      ocultarDecision={false}
-      resultado={resolved ? (resolved.level === 'safe' ? 'good' : 'bad') : undefined}
-      onEmpezar={onEmpezar}
+      decision={decision}
+      resultado={final?.kind === 'scene' ? undefined : final?.kind}
+      onEmpezar={reiniciar}
       dispositivo="escritorio"
     />
   )
