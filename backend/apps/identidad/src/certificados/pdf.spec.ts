@@ -13,6 +13,7 @@ function datosBase(
   return {
     nombreCompleto: 'Luis Sagnay',
     modulos: ['phishing', 'smishing', 'vishing', 'suplantacion', 'estafa'],
+    calificacion: 30,
     horas: 4,
     emitidoAt: new Date('2026-09-04T00:00:00.000Z'),
     codigo: 'SW-RQFS-XBC2',

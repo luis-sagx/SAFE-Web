@@ -1,5 +1,6 @@
 import { Suspense } from 'react'
 import { Navigate, Route, Routes } from 'react-router'
+import PantallaCarga from './components/PantallaCarga'
 import RequireEscenarioDisponible from './components/RequireEscenarioDisponible'
 import RequireAuth from './components/RequireAuth'
 import RequireSupervisor from './components/RequireSupervisor'
@@ -16,7 +17,7 @@ import Verificar from './pages/Verificar'
 
 function App() {
   return (
-    <Suspense fallback={<p className="p-10 text-base text-muted">Cargando…</p>}>
+    <Suspense fallback={<PantallaCarga />}>
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/registro" element={<Registro />} />

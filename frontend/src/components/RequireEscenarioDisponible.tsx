@@ -1,5 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { Navigate } from 'react-router'
+import PantallaCarga from './PantallaCarga'
 import { escenariosDeSeccion, type Escenario } from '../data/catalogo'
 import { fetchProgreso, type Progreso } from '../lib/api'
 import { escenarioEstaDisponible } from '../lib/bloqueoEscenarios'
@@ -37,7 +38,7 @@ function RequireEscenarioDisponible({
   }, [escenario.seccionId])
 
   if (loading) {
-    return <p className="p-10 text-base text-muted">Cargando…</p>
+    return <PantallaCarga />
   }
 
   if (!error) {

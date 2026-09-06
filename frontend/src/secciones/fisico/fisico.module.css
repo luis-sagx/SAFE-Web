@@ -1,233 +1,197 @@
-.app {
+/* Escena a sangre: el dibujo ES la pantalla del dispositivo, así que ocupa el
+   marco entero. Encerrarla en una tarjeta blanca con cabecera la convertía en
+   una ilustración pegada dentro de una app, que es lo contrario de lo que se
+   quiere: el participante está mirando su propia oficina. El fondo repite el
+   color de la pared para que las bandas que sobran al ajustar la relación de
+   aspecto no se noten. */
+.escenaMarco {
+  position: relative;
   display: flex;
-  flex-direction: column;
-  height: 100%;
+  align-items: center;
+  justify-content: center;
   width: 100%;
+  height: 100%;
+  background: #efe4d4;
 }
 
-.mainArea {
-  flex: 1;
-  overflow-y: auto;
-  padding: 1rem;
+.escena {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 
-.sceneView {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
+/* Lo que responde al clic se anuncia solo: cursor de mano y un halo que
+   aparece al pasar por encima. Sin esto había que adivinar qué era tocable, y
+   la gente probaba con doble clic.
 
-.sceneFlash {
+   El halo va en el verde del sistema (--color-primary), no en un azul suelto:
+   es el mismo color con el que la aplicación marca lo accionable. */
+.hotspot,
+.cerrar {
   cursor: pointer;
-  opacity: 1;
-  transition: opacity 0.2s ease;
 }
 
-.sceneFlash:hover {
-  opacity: 0.8;
-}
-
-.flashPulseSpark {
-  animation: pulse 0.6s ease-in-out infinite;
-}
-
-.flashDot {
-  fill: #fbbf24;
-}
-
-.flashBoltText {
-  font-size: 1.2rem;
-}
-
-.flashHint {
-  color: #6b7280;
-  font-size: 0.875rem;
-  text-align: center;
-  padding: 1rem;
-}
-
-.sceneCanvas {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 300px;
-}
-
-.sceneNarrative {
-  line-height: 1.6;
-  color: #374151;
-}
-
-.sceneObject {
-  color: #6b7280;
-  font-size: 0.875rem;
-  font-weight: 600;
-}
-
-.choices {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.choiceBtn {
-  padding: 0.75rem 1rem;
-  border: 1px solid #d1d5db;
-  border-radius: 0.375rem;
-  background: white;
-  cursor: pointer;
-  text-align: left;
-  transition: all 0.2s ease;
-}
-
-.choiceBtn:hover:not(:disabled) {
-  background: #f3f4f6;
-  border-color: #9ca3af;
-}
-
-.choiceBtn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.feedbackPanel {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  padding: 1rem;
-  border-radius: 0.375rem;
-  background: #f9fafb;
-}
-
-.verdictRow {
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
-}
-
-.badge {
-  display: inline-block;
-  padding: 0.25rem 0.75rem;
-  border-radius: 0.25rem;
-  font-size: 0.875rem;
-  font-weight: 600;
-}
-
-.badge.safe {
-  background: #d1fae5;
-  color: #065f46;
-}
-
-.badge.warn {
-  background: #fef3c7;
-  color: #92400e;
-}
-
-.badge.danger {
-  background: #fee2e2;
-  color: #991b1b;
-}
-
-.feedbackText {
-  line-height: 1.6;
-  color: #374151;
-}
-
-.nextBtn {
-  padding: 0.75rem 1rem;
-  background: #1d4ed8;
-  color: white;
-  border: none;
-  border-radius: 0.375rem;
-  cursor: pointer;
-  font-weight: 500;
-  transition: background 0.2s ease;
-}
-
-.nextBtn:hover {
-  background: #1e40af;
-}
-
-.stampOverlay {
-  position: fixed;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(0, 0, 0, 0.5);
+/* Lo que aparece al pasar por encima. Separado del trazo del contorno a
+   propósito: cuando una sola clase llevaba `stroke` y opacidad a la vez, el
+   grupo de la pastilla le pasaba ese trazo verde de 3px por herencia al texto
+   y la letra blanca quedaba tapada por su propio borde. */
+.revelable {
   opacity: 0;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.15s ease;
+}
+
+.hotspot:hover .revelable,
+.hotspot:focus-visible .revelable,
+.cerrar:hover .revelable,
+.cerrar:focus-visible .revelable {
+  opacity: 1;
+}
+
+.contorno {
+  fill: none;
+  stroke: var(--color-primary);
+  stroke-width: 3;
+}
+
+.pastilla {
+  fill: var(--color-primary);
+  stroke: none;
+}
+
+.pastillaTexto {
+  fill: var(--color-on-primary);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* Las pestañas se colocan con `transform`, así que al cerrar una del medio las
+   de la derecha se deslizan hasta su sitio en vez de dejar el hueco. */
+.pestana {
+  transition: transform 0.18s ease;
+}
+
+.pestanaTexto,
+.pestanaTextoActiva {
+  font-size: 14px;
   pointer-events: none;
 }
 
-.stampOverlay.show {
-  opacity: 1;
-  pointer-events: auto;
+.pestanaTexto {
+  fill: #c2cad3;
 }
 
-.stamp {
-  padding: 2rem;
-  border-radius: 0.5rem;
-  font-size: 2rem;
-  font-weight: 900;
-  text-align: center;
-  transform: rotate(-15deg);
-}
-
-.stamp.safe {
-  background: #d1fae5;
-  color: #065f46;
-  border: 3px solid #065f46;
-}
-
-.stamp.warn {
-  background: #fef3c7;
-  color: #92400e;
-  border: 3px solid #92400e;
-}
-
-.stamp.danger {
-  background: #fee2e2;
-  color: #991b1b;
-  border: 3px solid #991b1b;
-}
-
-.sceneMeta {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.75rem;
-  color: #9ca3af;
-  text-transform: uppercase;
-}
-
-.sceneLocation {
-  margin: 0;
-  font-size: 1.25rem;
+.pestanaTextoActiva {
+  fill: #1f242b;
   font-weight: 600;
 }
 
-.glitchBar {
-  animation: glitch 0.1s ease infinite;
+/* El círculo gris de la ✕ al pasar por encima, como en un navegador. */
+.cerrarHalo {
+  fill: #7b838d;
+  opacity: 0;
+  transition: opacity 0.15s ease;
 }
 
-.glitchText {
-  animation: glitch 0.1s ease infinite;
+.cerrar:hover .cerrarHalo {
+  opacity: 0.45;
 }
 
-@keyframes pulse {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
-  }
+.url {
+  fill: #98a1ab;
+  font-size: 14px;
 }
 
-@keyframes glitch {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.7;
-  }
+.paginaTitulo {
+  fill: var(--color-ink);
+  font-size: 21px;
+  font-weight: 700;
+}
+
+.paginaLinea {
+  fill: var(--color-body);
+  font-family: var(--font-mono);
+  font-size: 15px;
+}
+
+.paginaVacia {
+  fill: var(--color-muted);
+  font-size: 17px;
+}
+
+.pantallaBloqueada {
+  fill: var(--color-success);
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+/* Papel: crema, no blanco puro, y el rótulo sobre una banda para que el texto
+   se lea sin depender del contraste contra la hoja. */
+.papel {
+  fill: #fbf7ef;
+  stroke: #cdbfa6;
+  stroke-width: 2;
+}
+
+.papelLinea {
+  stroke: #ddd4c4;
+  stroke-width: 3;
+}
+
+.papelBanda {
+  fill: #e7dcc6;
+}
+
+.papelRotulo {
+  fill: var(--color-ink);
+  font-size: 15px;
+  font-weight: 700;
+  pointer-events: none;
+}
+
+.rotuloMueble {
+  fill: #f6e9d6;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.contadorMueble {
+  fill: #f6e9d6;
+  font-size: 15px;
+}
+
+.rotuloTeclado {
+  fill: #f3e6d2;
+  font-size: 15px;
+  font-weight: 600;
+  pointer-events: none;
+}
+
+.pilotoOff {
+  fill: #9aa0a8;
+}
+
+.pilotoOk {
+  fill: var(--color-success);
+}
+
+/* El repaso de señales marca elementos del SVG, y ahí `background` no pinta
+   nada: el resalte se hace con el contorno ámbar del sistema más un halo que
+   sí funciona sobre vectores. */
+.escenaMarco :global(.senal-resaltada) {
+  outline: 3px solid var(--color-warning);
+  outline-offset: 6px;
+  filter: drop-shadow(0 0 0.6rem rgba(171, 100, 0, 0.9));
+}
+
+.escenaFoto {
+  display: block;
+  object-fit: contain;
+}
+
+.zonaSenal {
+  position: absolute;
+  border-radius: 0.5rem;
+  pointer-events: none;
 }

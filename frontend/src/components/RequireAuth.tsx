@@ -1,5 +1,6 @@
 import { Navigate, Outlet, useLocation } from 'react-router'
 import { useAuth } from '../context/AuthContext'
+import PantallaCarga from './PantallaCarga'
 
 const BIENVENIDA = '/bienvenida'
 
@@ -10,7 +11,7 @@ function RequireAuth() {
   const location = useLocation()
 
   if (loading) {
-    return <p className="p-10 text-base text-muted">Cargando…</p>
+    return <PantallaCarga />
   }
 
   if (!isAuthenticated) {

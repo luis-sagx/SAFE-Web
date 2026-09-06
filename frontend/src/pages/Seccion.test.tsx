@@ -13,6 +13,8 @@ vi.mock('../lib/api', async () => {
   return { ...actual, fetchProgreso: fetchProgresoMock, fetchMyRuns: fetchMyRunsMock }
 })
 
+vi.mock('../context/AuthContext', async () => (await import('../test/escenario')).authFalso())
+
 function renderSeccion() {
   return render(
     <MemoryRouter initialEntries={['/seccion/phishing']}>

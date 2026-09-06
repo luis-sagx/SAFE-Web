@@ -14,9 +14,13 @@ function AuthLayout({ titulo, subtitulo, children, pie }: AuthLayoutProps) {
     <div className="min-h-screen bg-gradient-to-b from-mint-light to-canvas">
       <div className="mx-auto flex min-h-screen max-w-5xl flex-col justify-center gap-12 px-6 py-12 lg:flex-row lg:items-center lg:gap-16">
         <div className="flex-1">
-          <p className="text-xs font-semibold uppercase tracking-[0.88px] text-ink">
-            SAFE Web
-          </p>
+          <img
+            src="/marca/logo-safeweb.webp"
+            alt="SafeWeb"
+            width={2171}
+            height={723}
+            className="h-12 w-auto"
+          />
           <h1 className="mt-4 text-4xl font-semibold leading-[1.1] tracking-tight text-ink sm:text-5xl">
             Aprende a reconocer un engaño antes de caer en uno.
           </h1>

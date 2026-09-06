@@ -20,6 +20,8 @@ import styles from './ui/DeviceScreen.module.css'
  *  el resultado se lee al lado de la pantalla que lo provocó. */
 export interface ScreenNode extends StoryNode {
   view: ScreenView
+  /** Señales aplicables a este desenlace; evita revisar escenas no recorridas. */
+  senales?: Senal[]
   /** Lo que el teléfono anuncia al llegar a esta escena. Va en el nodo y no en
    *  la vista porque una notificación no es contenido de una pantalla: es algo
    *  que pasa en un momento del guion. Dos nodos que enseñan la misma pantalla
@@ -34,6 +36,8 @@ interface StoryEscenarioProps {
   /** Cómo se juega. Solo se muestra en el briefing. */
   nota?: ReactNode
   story: Story<ScreenNode>
+  /** Nodo inicial; por defecto los escenarios comienzan en `n1`. */
+  initialNode?: string
   /** Las pistas que había en la pantalla. El repaso las recorre una a una y
    *  resalta el elemento real de la simulación al que apunta cada una. */
   senales: Senal[]
@@ -154,6 +158,7 @@ function StoryEscenario({
   contexto,
   nota,
   story,
+  initialNode = 'n1',
   senales,
   rule,
   restartLabel,
@@ -169,7 +174,7 @@ function StoryEscenario({
   accionesEnPantalla = false,
   apps,
 }: StoryEscenarioProps) {
-  const engine = useStoryEngine(story, 'n1', escenarioId)
+  const engine = useStoryEngine(story, initialNode, escenarioId)
   const { usuarioSimulado } = useAuth()
   const destinatario = dominioCorreo ? `${usuarioSimulado}@${dominioCorreo}` : undefined
 
@@ -459,7 +464,7 @@ function StoryEscenario({
       estadoGuardado={engine.runStatus}
       escenarioId={escenarioId}
       node={engine.node}
-      senales={senales}
+      senales={engine.node.senales ?? senales}
       regla={rule}
       restartLabel={restartLabel}
       onRestart={reiniciar}
@@ -666,7 +671,7 @@ function StoryEscenario({
       pantalla={
         accionesEnPantalla ? (
           pantallaTelefono
-        ) : vista.kind === 'sms' ? (
+        ) : vista.kind === 'sms' || vista.kind === 'escena' ? (
           <DeviceScreen
             view={vista}
             acciones={accionesCorreo}
@@ -698,7 +703,13 @@ function StoryEscenario({
       onEmpezar={reiniciar}
       // El correo y la web se abren más en computador que en celular; el SMS
       // se queda en celular, que es donde de verdad llegan los mensajes.
-      dispositivo={accionesEnPantalla || vista.kind === 'sms' ? 'telefono' : 'escritorio'}
+      dispositivo={
+        vista.kind === 'escena'
+          ? 'escena'
+          : accionesEnPantalla || vista.kind === 'sms'
+            ? 'telefono'
+            : 'escritorio'
+      }
     />
   )
 }

@@ -34,6 +34,7 @@ export function authFalso() {
       },
       loading: false,
       isAuthenticated: true,
+      isSupervisor: false,
       login: vi.fn(),
       register: vi.fn(),
       logout: vi.fn(),

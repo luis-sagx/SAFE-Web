@@ -22,6 +22,7 @@ export interface DatosCertificado {
   nombreCompleto: string;
   modulos: string[];
   horas: number;
+  calificacion: number;
   emitidoAt: Date;
   codigo: string;
   /// Base para armar la URL de verificación, sin barra final
@@ -389,17 +390,20 @@ export function generarCertificadoPdf(
       .stroke();
     y += 34;
 
-    // Fila de tres columnas: duración, emitido, temas de estudio — separadas
+    // Fila de cuatro columnas: duración, calificación, emitido y temas de
+    // estudio — separadas
     // por una línea vertical fina, como en la referencia. Los separadores se
     // calculan a partir del mismo punto medio entre columnas que limita el
     // ancho del texto, para que uno nunca pueda quedar más adentro que el
     // otro (era el bug de la v1: la fecha se metía debajo de la línea).
-    const xCol1 = ancho * 0.08;
-    const xCol2 = ancho * 0.26;
-    const xCol3 = ancho * 0.56;
+    const xCol1 = ancho * 0.055;
+    const xCol2 = ancho * 0.22;
+    const xCol3 = ancho * 0.38;
+    const xCol4 = ancho * 0.56;
     const xFinTemas = ancho * 0.92;
     const separador1 = (xCol1 + xCol2) / 2 + 4;
-    const separador2 = (xCol2 + xCol3) / 2 + 20;
+    const separador2 = (xCol2 + xCol3) / 2 + 4;
+    const separador3 = (xCol3 + xCol4) / 2 + 16;
     const yColBase = y;
 
     dibujarReloj(doc, xCol1 + 9, yColBase + 9, 9);
@@ -414,18 +418,31 @@ export function generarCertificadoPdf(
       .fontSize(13)
       .text(`${datos.horas} horas`, xCol1 + 24, yColBase + 13);
 
-    dibujarCalendario(doc, xCol2 + 9, yColBase + 9, 9);
     doc
       .fillColor(GRIS_TEXTO)
       .font('Helvetica-Bold')
       .fontSize(9)
-      .text('EMITIDO', xCol2 + 24, yColBase);
+      .text('CALIFICACIÓN', xCol2, yColBase, {
+        width: separador2 - xCol2 - 10,
+      });
+    doc
+      .fillColor(TINTA)
+      .font('Helvetica-Bold')
+      .fontSize(13)
+      .text(`${datos.calificacion}/48`, xCol2, yColBase + 13);
+
+    dibujarCalendario(doc, xCol3 + 9, yColBase + 9, 9);
+    doc
+      .fillColor(GRIS_TEXTO)
+      .font('Helvetica-Bold')
+      .fontSize(9)
+      .text('EMITIDO', xCol3 + 24, yColBase);
     doc
       .fillColor(TINTA)
       .font('Helvetica-Bold')
       .fontSize(12)
-      .text(FORMATO_FECHA.format(datos.emitidoAt), xCol2 + 24, yColBase + 13, {
-        width: separador2 - (xCol2 + 24) - 10,
+      .text(FORMATO_FECHA.format(datos.emitidoAt), xCol3 + 24, yColBase + 13, {
+        width: separador3 - (xCol3 + 24) - 10,
       });
 
     doc
@@ -440,18 +457,24 @@ export function generarCertificadoPdf(
       .lineWidth(0.75)
       .strokeColor(GRIS_LINEA)
       .stroke();
+    doc
+      .moveTo(separador3, yColBase - 4)
+      .lineTo(separador3, yColBase + 46)
+      .lineWidth(0.75)
+      .strokeColor(GRIS_LINEA)
+      .stroke();
 
     doc
       .fillColor(GRIS_TEXTO)
       .font('Helvetica-Bold')
       .fontSize(9)
-      .text('TEMAS DE ESTUDIO', xCol3, yColBase);
+      .text('TEMAS DE ESTUDIO', xCol4, yColBase);
 
     // Dos columnas dentro de la tercera: los módulos se reparten alternados
     // (0 y 1 en la primera fila, 2 y 3 en la segunda...), así que la lista
     // crece o se achica sola con cinco o con seis módulos, sin coordenadas
     // fijas por escenario.
-    const anchoSubcol = (xFinTemas - xCol3 - 18) / 2;
+    const anchoSubcol = (xFinTemas - xCol4 - 18) / 2;
     const iconoTema = 11;
     let yTemas = yColBase + 18;
     for (let i = 0; i < datos.modulos.length; i += 2) {
@@ -459,7 +482,7 @@ export function generarCertificadoPdf(
         (m): m is string => m !== undefined,
       );
       par.forEach((modulo, offset) => {
-        const xItem = xCol3 + offset * (anchoSubcol + 18);
+        const xItem = xCol4 + offset * (anchoSubcol + 18);
         dibujarIconoTema(doc, modulo, xItem, yTemas + 1, iconoTema);
         doc
           .fillColor(TINTA)

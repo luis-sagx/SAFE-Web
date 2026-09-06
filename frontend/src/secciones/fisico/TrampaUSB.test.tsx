@@ -1,4 +1,4 @@
-import { fireEvent, screen, within } from '@testing-library/react'
+import { fireEvent, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import { empezar } from '../../test/escenario'
 import TrampaUSB from './TrampaUSB'
@@ -8,40 +8,36 @@ vi.mock('../../lib/api', async () => (await import('../../test/escenario')).apiS
 
 describe('TrampaUSB', () => {
   it('abre en el estacionamiento con el USB en el suelo', () => {
-    const telefono = empezar(<TrampaUSB />)
-
-    expect(within(telefono).getByText('Estacionamiento')).toBeDefined()
-  })
-
-  it('la pista explica dónde tocar sin revelar la respuesta', () => {
     empezar(<TrampaUSB />)
 
-    fireEvent.click(screen.getByText(/No sé por dónde empezar/))
+    expect(screen.getByAltText('USB abandonado en el estacionamiento')).toBeDefined()
+  })
 
-    expect(screen.getByText(/Haz click en el USB/)).toBeDefined()
+  it('ofrece las decisiones en la columna de decisión', () => {
+    empezar(<TrampaUSB />)
+
+    expect(screen.getByRole('button', { name: /Dejarlo donde está y avisar a IT/ })).toBeDefined()
   })
 
   it('agarrar el USB es la decisión de riesgo', async () => {
-    const telefono = empezar(<TrampaUSB />)
+    empezar(<TrampaUSB />)
 
-    fireEvent.click(within(telefono).getByRole('button', { name: /Agarrarlo, alguien lo dejó/ }))
+    fireEvent.click(screen.getByRole('button', { name: /Agarrarlo, alguien lo dejó/ }))
 
-    expect(await screen.findByText('Observación')).toBeDefined()
+    expect(await screen.findByText('Riesgo detectado')).toBeDefined()
   })
 
-  it('dejar el USB en el suelo es la decisión segura', async () => {
-    const telefono = empezar(<TrampaUSB />)
+  it('reportar el USB es la decisión segura', async () => {
+    empezar(<TrampaUSB />)
 
-    fireEvent.click(within(telefono).getByRole('button', { name: /Dejarlo ahí/ }))
+    fireEvent.click(screen.getByRole('button', { name: /Dejarlo donde está y avisar a IT/ }))
 
     expect(await screen.findByText('Decisión segura')).toBeDefined()
   })
 
-  it('explica cuándo termina el escenario', () => {
+  it('dejarlo ahí sin reportar queda como decisión parcial', async () => {
     empezar(<TrampaUSB />)
-
-    fireEvent.click(screen.getByText('¿Cuándo termina el escenario?'))
-
-    expect(screen.getByText(/agarrarlo o dejarlo donde está/)).toBeDefined()
+    fireEvent.click(screen.getByRole('button', { name: /Dejarlo ahí, no es asunto tuyo/ }))
+    expect(await screen.findByText('Respuesta incompleta')).toBeDefined()
   })
 })

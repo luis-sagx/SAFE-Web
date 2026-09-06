@@ -26,7 +26,14 @@ interface VerificacionBody {
   modulos?: string[];
 }
 
-const MODULOS = ['phishing', 'smishing', 'vishing', 'suplantacion', 'estafa'];
+const MODULOS = [
+  'phishing',
+  'smishing',
+  'vishing',
+  'suplantacion',
+  'estafa',
+  'fisico',
+];
 
 describe('Certificados (e2e)', () => {
   let app: INestApplication;
@@ -54,6 +61,7 @@ describe('Certificados (e2e)', () => {
       sub: 'sin-usar',
       seq: 0,
       modulos: MODULOS,
+      calificacion: 36,
       typ: 'atestacion',
       ...payload,
     } satisfies AtestacionPayload);

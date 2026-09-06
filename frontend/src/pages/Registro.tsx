@@ -2,6 +2,7 @@ import { useState, type FormEvent } from "react";
 import { Link, Navigate, useNavigate } from "react-router";
 import AuthLayout from "../components/AuthLayout";
 import Campo from "../components/Campo";
+import PantallaCarga from "../components/PantallaCarga";
 import { useAuth } from "../context/AuthContext";
 import { esCedulaEcuatoriana, normalizarCedula } from "../lib/cedula";
 
@@ -25,7 +26,7 @@ function Registro() {
     cedulaLimpia.length === 10 && !esCedulaEcuatoriana(cedulaLimpia);
 
   if (loading) {
-    return <p className="p-10 text-base text-muted">Cargando…</p>;
+    return <PantallaCarga />;
   }
 
   if (isAuthenticated) {
