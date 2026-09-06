@@ -164,15 +164,17 @@ export function generarCertificadoPdf(
     const insigniaY = yLockup - insigniaLado / 2 - 4;
     doc
       .save()
-      .circle(xGrupo + insigniaLado / 2, insigniaY + insigniaLado / 2, insigniaLado / 2)
+      .circle(
+        xGrupo + insigniaLado / 2,
+        insigniaY + insigniaLado / 2,
+        insigniaLado / 2,
+      )
       .fill('#ffffff');
     const relleno = 9;
-    doc.image(
-      ISOTIPO_SAFEWEB,
-      xGrupo + relleno / 2,
-      insigniaY + relleno / 2,
-      { width: insigniaLado - relleno, height: insigniaLado - relleno },
-    );
+    doc.image(ISOTIPO_SAFEWEB, xGrupo + relleno / 2, insigniaY + relleno / 2, {
+      width: insigniaLado - relleno,
+      height: insigniaLado - relleno,
+    });
     doc.restore();
 
     doc
