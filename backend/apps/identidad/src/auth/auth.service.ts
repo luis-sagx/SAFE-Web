@@ -62,8 +62,7 @@ const CAMPOS_SESION = { ...CAMPOS_PERFIL, seq: true } as const;
 
 /// El perfil se construye campo por campo en vez de descartando los que
 /// sobran: así, agregar una columna al modelo nunca la filtra a la respuesta
-/// por olvidarse de excluirla. `onboardingVistoAt` se traduce a un booleano:
-/// el cliente solo necesita saber si ya la vio, no cuándo.
+/// por olvidarse de excluirla.
 function perfilPublico(participant: ParticipantConOnboarding): Perfil {
   return {
     id: participant.id,

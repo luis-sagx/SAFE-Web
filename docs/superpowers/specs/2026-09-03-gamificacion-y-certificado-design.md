@@ -15,6 +15,25 @@
 > correctamente el mecanismo — solo cambió el número real de módulos que
 > `UMBRALES` declara hoy.
 
+> **Segunda actualización posterior:** §3.2 y §9 descartaban el envío del
+> certificado por correo "sin `nodemailer`, sin SMTP en producción". Esa parte
+> se revirtió: `identidad` manda el certificado por Resend
+> (`apps/identidad/src/mail/`), gratis (300–3000 correos/mes según proveedor)
+> y sin operar infraestructura propia — el motivo original era el costo
+> operativo, no un problema de diseño. La entrega en la aplicación (§9, fila
+> "Entrega") sigue existiendo tal cual — el correo es un canal adicional, no
+> un reemplazo: si Resend falla, el certificado sigue descargándose desde la
+> app sin que el participante note nada. Diferencias con lo descartado:
+>
+> - **No** se agregó verificación de correo — se evaluó y se descartó: la
+>   cédula (spec `2026-08-22-...`) ya garantiza una cuenta por persona, un
+>   paso extra en el registro no sumaba nada. El certificado se manda al
+>   correo que el participante puso, verificado o no.
+> - Sin cola de reintento, tal como preveía la fila "Entrega" de §9: un envío
+>   fallido no se reintenta, se registra con `Logger.warn` y ya.
+> - `Certificate.certificadoEnviadoAt` evita reenviar en cada re-emisión
+>   idempotente de `POST /certificados`.
+
 ---
 
 ## 1. Problema

@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { AuthJwtModule } from '@comun';
+import { MailModule } from '../mail/mail.module';
 import { CertificadosController } from './certificados.controller';
 import { CertificadosService } from './certificados.service';
 
@@ -8,7 +9,7 @@ import { CertificadosService } from './certificados.service';
 /// secreto, sin llamada de red. `CertificadosService` se exporta porque
 /// `AdminModule` la reutiliza para la revocación.
 @Module({
-  imports: [AuthJwtModule],
+  imports: [AuthJwtModule, MailModule],
   controllers: [CertificadosController],
   providers: [CertificadosService],
   exports: [CertificadosService],

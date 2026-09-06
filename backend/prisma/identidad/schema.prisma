@@ -108,4 +108,9 @@ model Certificate {
   /// forma de enterarse sin llamar a `entrenamiento`, y eso rompería la regla
   /// de que los servicios no se llaman entre sí (§5.3 del diseño).
   revocadoAt DateTime?
+
+  /// Cuándo se mandó por correo. Null = nunca (correo sin verificar, envío
+  /// fallido, o certificado emitido antes de existir este campo). Evita
+  /// reenviarlo en cada re-emisión idempotente de `emitir()`.
+  certificadoEnviadoAt DateTime?
 }
