@@ -40,7 +40,12 @@ function AppHeader({
   atras?: ReactNode
   /** Rótulo junto al logo, p. ej. "Supervisión" en el panel del supervisor. */
   etiqueta?: string
-  /** Contexto de la pantalla actual: resumen, ubicación en el módulo… */
+  /** Dato corto de ubicación, p. ej. "Phishing · 1 de 8". Va al fondo de la
+   *  fila, junto a la cuenta: es del mismo tamaño que el resto del cromo de
+   *  navegación, así que no pesa más que un ítem más de él. Una frase entera
+   *  —el resumen de un escenario— no va aquí: eso se relee bajo demanda en
+   *  "Ver contexto y mis datos", no se deja fijo compitiendo con salir,
+   *  ubicación y cuenta. */
   children?: ReactNode
 }) {
   const { isSupervisor } = useAuth()
@@ -82,9 +87,10 @@ function AppHeader({
           {atras}
         </div>
 
-        {/* Empuja las acciones al extremo derecho y se queda con el hueco que
-            sobra, que es donde cabe el resumen largo de los escenarios. */}
-        <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-5 gap-y-1">{children}</div>
+        {/* Empuja los datos cortos y la cuenta al extremo derecho. */}
+        <div className="flex min-w-0 flex-1 flex-wrap items-center justify-end gap-x-5 gap-y-1">
+          {children}
+        </div>
 
         <div className="flex shrink-0 items-center gap-1">
           {/* La bienvenida explica los tipos de engaño y qué pasa con los

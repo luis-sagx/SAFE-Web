@@ -291,12 +291,12 @@ function EscenarioLayout({
     // alto, encerrarlo todo en una pantalla dejaba al correo unas tres líneas
     // visibles dentro de una caja que había que desplazar por dentro.
     <div className="flex min-h-dvh flex-col bg-canvas-soft sm:h-dvh sm:overflow-hidden">
-      <AppHeader atras={salir}>
-        {/* El resumen se queda con el hueco sobrante y la ubicación va pegada a
-            las acciones: el orden que se lee es salir → qué pasa → dónde estoy. */}
-        <p className="w-full min-w-0 leading-snug text-body lg:w-auto lg:flex-1">{resumen}</p>
-        {ubicacion}
-      </AppHeader>
+      {/* El resumen dejó de vivir en el header: entre logo, salir, ubicación
+          y cuenta ya hay suficiente que leer, y una frase entera ahí encima
+          era contexto de más para algo que el participante puede releer
+          cuando lo necesite. Sigue disponible en el diálogo "Ver contexto y
+          mis datos", junto a la situación completa. */}
+      <AppHeader atras={salir}>{ubicacion}</AppHeader>
 
       {/* Apilado hasta 1024px; lado a lado arriba de eso. En una pantalla de
           900px de alto no entran a la vez un dispositivo creíble y un bloque de
@@ -380,7 +380,7 @@ function EscenarioLayout({
           Tu situación
         </h2>
         <p className="mt-2 text-lg leading-relaxed text-ink">
-          Hola, <strong className="font-semibold">{displayName}</strong>.
+          Hola, <strong className="font-semibold">{displayName}</strong>. {resumen}
         </p>
         <div className="mt-3">
           <ContextoEscenario contexto={contexto} />
