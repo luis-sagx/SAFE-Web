@@ -157,8 +157,23 @@ describe('RunsService.atestacion', () => {
       sub: PARTICIPANTE.sub,
       seq: PARTICIPANTE.seq,
       modulos,
+      calificacion: 36,
       typ: 'atestacion',
     });
+  });
+
+  it('incluye riesgo físico entre los módulos exigidos para el certificado', async () => {
+    const modulos = Object.keys(UMBRALES);
+    const { jwt, ultimoPayload } = jwtFake();
+
+    await serviceWith(
+      modulos.flatMap((m) => corridasAprobadas(m)),
+      jwt,
+    ).atestacion(PARTICIPANTE);
+
+    expect((ultimoPayload() as { modulos: string[] }).modulos).toContain(
+      'fisico',
+    );
   });
 
   // El endpoint no exige un número fijo de módulos: exige TODOS los que

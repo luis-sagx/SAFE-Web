@@ -19,6 +19,7 @@ function atestacionValida(
     sub: PARTICIPANTE.sub,
     seq: PARTICIPANTE.seq,
     modulos: ['phishing', 'smishing', 'vishing', 'suplantacion', 'estafa'],
+    calificacion: 30,
     typ: 'atestacion',
     ...overrides,
   };
@@ -94,6 +95,7 @@ describe('CertificadosService.emitir · el canje de la atestación', () => {
 
     expect(resultado.horas).toBe(4);
     expect(resultado.modulos).toEqual(atestacionValida().modulos);
+    expect((datosCreados as { calificacion: number }).calificacion).toBe(30);
     expect((datosCreados as { participantId: string }).participantId).toBe(
       PARTICIPANTE.sub,
     );
@@ -172,6 +174,7 @@ describe('CertificadosService.emitir · el canje de la atestación', () => {
       codigo: 'SW-AAAA-BBBB',
       modulos: atestacionValida().modulos,
       horas: 4,
+      calificacion: 30,
       emitidoAt: new Date('2026-09-01T00:00:00.000Z'),
     };
     let seLlamoCreate = false;
@@ -211,6 +214,7 @@ describe('CertificadosService.emitir · el canje de la atestación', () => {
       codigo: 'SW-AAAA-BBBB',
       modulos: ['phishing', 'smishing'],
       horas: 4,
+      calificacion: 12,
       emitidoAt: new Date('2026-09-01T00:00:00.000Z'),
     };
     let datosActualizados: unknown;
@@ -234,6 +238,9 @@ describe('CertificadosService.emitir · el canje de la atestación', () => {
     expect((datosActualizados as { modulos: string[] }).modulos).toEqual(
       atestacionValida().modulos,
     );
+    expect((datosActualizados as { calificacion: number }).calificacion).toBe(
+      30,
+    );
   });
 });
 
@@ -247,6 +254,7 @@ describe('CertificadosService.verificar', () => {
               codigo: 'SW-AAAA-BBBB',
               modulos: ['phishing'],
               horas: 4,
+              calificacion: 6,
               emitidoAt: new Date('2026-09-01T00:00:00.000Z'),
               revocadoAt: null,
             }),
@@ -298,6 +306,7 @@ describe('CertificadosService.generarPdf', () => {
     codigo: 'SW-AAAA-BBBB',
     modulos: ['phishing'],
     horas: 4,
+    calificacion: 6,
     emitidoAt: new Date('2026-09-01T00:00:00.000Z'),
     revocadoAt: null as Date | null,
   };

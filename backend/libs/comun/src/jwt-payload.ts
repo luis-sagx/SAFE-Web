@@ -51,5 +51,9 @@ export interface AtestacionPayload {
    *  `UMBRALES`. Es lo que el certificado imprime, y lo que decide si un
    *  recorrido mayor debe actualizar uno ya emitido (ver §5.4.1 del diseño). */
   modulos: string[];
+  /// Escenarios cuyo último intento terminó en CORRECTO, sobre los 48 del
+  /// entrenamiento completo. `entrenamiento` lo calcula y lo firma porque
+  /// identidad no puede ni debe consultar las corridas por su cuenta.
+  calificacion: number;
   typ: 'atestacion';
 }
