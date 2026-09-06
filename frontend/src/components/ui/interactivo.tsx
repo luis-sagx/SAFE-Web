@@ -60,7 +60,7 @@ export function EnlaceHotspot({
 
 /** Cualquier otro punto interactivo que no sea un enlace: el adjunto, el
  *  botón de enviar un formulario, un atajo del escritorio. */
-export function BotonHotspot({ goto, label, signalId, className, style, ariaLabel, children }: HotspotBaseProps) {
+export function BotonHotspot({ goto, label, signalId, className, style, ariaLabel, children }: Readonly<HotspotBaseProps>) {
   return (
     <button
       type="button"

@@ -690,8 +690,11 @@ function StoryEscenario({
         ) : vista.kind === 'sms' || vista.kind === 'escena' ? (
           // Sin el marco del teléfono no hay `pantallaTelefono` que delegue el
           // clic: sin este `onClick` los puntos interactivos de la escena (el
-          // destello, en 'escena') no dispararían nada.
-          <div className="contents" onClick={onHotspot}>
+          // destello, en 'escena') no dispararían nada. El propio div no es
+          // el control interactivo — lo son los `<button>`/`<a>` nativos que
+          // contiene (BotonHotspot, EnlaceHotspot), que ya manejan teclado
+          // por sí solos; el clic solo se delega hacia arriba.
+          <div className="contents" onClick={onHotspot}> {/* NOSONAR: delega el clic a los <button>/<a> nativos que contiene, que ya manejan teclado por sí solos */}
             <DeviceScreen
               view={vista}
               acciones={accionesCorreo}

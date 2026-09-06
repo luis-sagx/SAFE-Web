@@ -37,7 +37,7 @@ interface EscenaFotoProps {
 }
 
 /** Fotografía del mundo real: no imita ninguna app ni fuerza una proporción. */
-export function EscenaFoto({ src, alt, zonas = [], destello, progreso }: EscenaFotoProps) {
+export function EscenaFoto({ src, alt, zonas = [], destello, progreso }: Readonly<EscenaFotoProps>) {
   return (
     <div className="relative w-full lg:h-full lg:w-fit lg:max-w-full lg:flex-none">
       <img src={src} alt={alt} className={`${styles.escenaFoto} h-auto w-full lg:h-full lg:w-auto lg:max-w-full`} />
