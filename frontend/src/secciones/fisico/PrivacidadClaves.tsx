@@ -1,58 +1,69 @@
-import { Building2, Landmark, Lock, Newspaper } from 'lucide-react'
+import {
+  ArrowLeft,
+  ArrowRight,
+  Globe,
+  HardDrive,
+  KeyRound,
+  Lock,
+  Minus,
+  RotateCw,
+  Square,
+  X,
+  type LucideIcon,
+} from 'lucide-react'
 import { useState } from 'react'
 import EscenarioLayout from '../../components/EscenarioLayout'
 import Instrucciones from '../../components/ui/Instrucciones'
 import PanelVeredicto, { type Senal } from '../../components/ui/PanelVeredicto'
 import Tarea from '../../components/ui/Tarea'
-import { AvisoSitio, CabeceraSitio, PieSitio } from '../../components/ui/armazonSitio'
-import { MailNav } from '../../components/ui/DesktopChrome'
-import { Navegador, type MarcadorNavegador, type PestanaConfig } from '../../components/ui/Navegador'
-import { manejarClicHotspot } from '../../components/ui/interactivo'
+import { MailNav, Taskbar } from '../../components/ui/DesktopChrome'
 import type { Contexto } from '../../components/ui/ContextoEscenario'
 import styles from '../../components/ui/DeviceScreen.module.css'
 import { useAuth } from '../../context/AuthContext'
 import { useScenarioRun } from '../../hooks/useScenarioRun'
 import type { StoryNode } from '../../hooks/useStoryEngine'
 
-const ORDEN = ['claves', 'correo', 'documentos'] as const
-type PestanaId = (typeof ORDEN)[number]
+type AppId = 'credenciales' | 'archivos' | 'correo'
 
-/** La pestaña en blanco que queda cuando se cierran todas. Un navegador nunca
- *  se queda sin ninguna: al cerrar la última abre una nueva vacía. Sin ella la
- *  barra quedaba sin pestañas pero la ventana seguía enseñando la última
- *  página, con su URL y todo. */
-const NUEVA = 'nueva'
-
-/** La misma ventana de navegador que el resto de módulos, con tres pestañas
- *  que ningún compañero debería poder leer por encima del hombro. */
-const PESTANAS: Record<PestanaId | typeof NUEVA, PestanaConfig> = {
-  [NUEVA]: { titulo: 'Nueva pestaña', url: '', segura: true },
-  claves: {
-    titulo: 'Gestor de contraseñas',
-    url: 'vault.andes.ec/mis-claves',
-    segura: true,
-    cierra: 'claves',
-  },
-  correo: {
-    titulo: 'Correo — Recibidos',
-    url: 'correo.andes.ec/recibidos',
-    segura: true,
-    cierra: 'correo',
-  },
-  documentos: {
-    titulo: 'Mis documentos',
-    url: 'drive.andes.ec/mis-documentos',
-    segura: true,
-    cierra: 'documentos',
-  },
+interface App {
+  id: AppId
+  /** Lo que dice la barra de título de la ventana. */
+  titulo: string
+  Icono: LucideIcon
+  /** Nombre corto: el de la pastilla de la barra de tareas. */
+  nombre: string
+  /** Cómo se la nombra dentro de la frase del checklist ("Cerrar …"). */
+  corto: string
+  /** Sitio en el escritorio. Las tres arrancan sin taparse la barra de título
+   *  unas a otras: si no se ve el ✕, no hay forma de saber que se cierra. */
+  sitio: { left: string; top: string; width: string; height: string }
 }
 
-/** Decorativos, como en cualquier navegador: aquí no hay ningún sitio al que
- *  ir, solo cosas que cerrar. */
-const MARCADORES: MarcadorNavegador[] = [
-  { Icono: Building2, texto: 'Intranet Andes' },
-  { Icono: Landmark, texto: 'Banco del Litoral' },
-  { Icono: Newspaper, texto: 'El Comercio' },
+const APPS: App[] = [
+  {
+    id: 'credenciales',
+    titulo: 'Bóveda Andes — Mis credenciales',
+    Icono: KeyRound,
+    nombre: 'Credenciales',
+    corto: 'la bóveda de credenciales',
+    sitio: { left: '3%', top: '5%', width: '38%', height: '43%' },
+  },
+  {
+    id: 'archivos',
+    titulo: 'Explorador de archivos',
+    Icono: HardDrive,
+    nombre: 'Archivos',
+    corto: 'el explorador de archivos',
+    sitio: { left: '6%', top: '51%', width: '38%', height: '43%' },
+  },
+  {
+    id: 'correo',
+    titulo: 'Navegador — Correo Andes',
+    Icono: Globe,
+    nombre: 'Navegador',
+    corto: 'el correo en el navegador',
+    sitio: { left: '46%', top: '13%', width: '51%', height: '74%' },
+  },
 ]
 
 const CORREOS = [
@@ -89,14 +100,14 @@ const DOCUMENTOS = [
   { nombre: 'estrategia_2026.xlsx', detalle: '3.4 MB · hace 3 días' },
 ]
 
-/** Cada señal vuelve a abrir su pestaña antes de resaltarla: al terminar el
+/** Cada señal vuelve a abrir su aplicación antes de resaltarla: al terminar el
  *  escenario están cerradas —eso es lo que se pedía— y sin esto el repaso
  *  hablaría de algo que ya no se ve. */
 const SENALES: Senal[] = [
   {
-    id: 'claves',
-    targetId: 'claves',
-    pantalla: 'claves',
+    id: 'credenciales',
+    targetId: 'credenciales',
+    pantalla: 'credenciales',
     texto:
       'Un gestor de contraseñas abierto muestra <b>usuario y clave en texto plano</b>. Quien mire dos segundos se lleva el acceso a tu correo, tu banca y tus sistemas.',
   },
@@ -108,18 +119,77 @@ const SENALES: Senal[] = [
       'La bandeja de entrada delata sola: los <b>asuntos</b> se leen de un vistazo desde un metro de distancia, aunque no se abra ningún mensaje.',
   },
   {
-    id: 'documentos',
-    targetId: 'documentos',
-    pantalla: 'documentos',
+    id: 'archivos',
+    targetId: 'archivos',
+    pantalla: 'archivos',
     texto:
-      'Los <b>nombres de archivo</b> cuentan lo que hay dentro sin necesidad de abrirlos: un listado a la vista es un índice de todo lo que guardas.',
+      'Los <b>nombres de archivo</b> cuentan lo que hay dentro sin necesidad de abrirlos: una carpeta a la vista es un índice de todo lo que guardas.',
   },
 ]
 
 const REGLA =
   '<b>Escritorio limpio y pantalla bloqueada.</b> Si alguien se acerca a tu puesto, lo primero es bloquear; y lo que no debería ver, cerrado antes de volver a desbloquear delante de él.'
 
-function PaginaClaves() {
+/** Marco de ventana: barra de título con su ✕ y el contenido debajo.
+ *
+ *  Minimizar y maximizar se ven pero no responden, como los botones de ventana
+ *  del resto de pantallas: son lo que hace que una ventana se lea como una
+ *  ventana. El que cierra es el único vivo, y se pinta rojo al pasar por
+ *  encima porque esa es la señal que todo el mundo ya conoce.
+ */
+function Ventana({
+  app,
+  alFrente,
+  z,
+  onFocus,
+  onCerrar,
+  children,
+}: {
+  app: App
+  alFrente: boolean
+  z: number
+  onFocus: () => void
+  onCerrar: () => void
+  children: React.ReactNode
+}) {
+  return (
+    <section
+      className={styles.ventana}
+      style={{ ...app.sitio, zIndex: z }}
+      aria-label={app.titulo}
+      onMouseDown={onFocus}
+      data-signal={app.id}
+    >
+      <div className={styles.ventanaBarra}>
+        <app.Icono aria-hidden className={styles.ventanaIcono} strokeWidth={1.75} />
+        <p className={styles.ventanaTitulo}>{app.titulo}</p>
+        <span className={styles.ventanaBotones}>
+          <span aria-hidden className={styles.ventanaBoton}>
+            <Minus className={styles.ventanaBotonIcono} strokeWidth={2} />
+          </span>
+          <span aria-hidden className={styles.ventanaBoton}>
+            <Square className={styles.ventanaBotonIcono} strokeWidth={2} />
+          </span>
+          <button
+            type="button"
+            className={`${styles.ventanaBoton} ${styles.ventanaCerrar}`}
+            title={`Cerrar ${app.titulo}`}
+            aria-label={`Cerrar ${app.titulo}`}
+            onClick={onCerrar}
+          >
+            <X className={styles.ventanaBotonIcono} strokeWidth={2.5} />
+          </button>
+        </span>
+      </div>
+
+      <div className={styles.ventanaCuerpo} aria-current={alFrente ? 'true' : undefined}>
+        {children}
+      </div>
+    </section>
+  )
+}
+
+function AppCredenciales() {
   const { usuarioSimulado, correoSimulado } = useAuth()
 
   const claves = [
@@ -130,12 +200,8 @@ function PaginaClaves() {
   ]
 
   return (
-    <div className={styles.page}>
-      <CabeceraSitio marca="Vault Andes" menu={['Bóveda', 'Generador', 'Compartidas', 'Ajustes']} />
-      <h2 className={styles.pageTitle}>Mis contraseñas</h2>
-      <p className={styles.pageSub}>Cuatro credenciales guardadas, visibles sin volver a pedir la clave maestra.</p>
-
-      <div className={styles.datos} data-signal="claves">
+    <div className={styles.ventanaPagina}>
+      <div className={styles.datos}>
         {claves.map((entrada) => (
           <div key={entrada.servicio} className={styles.dato}>
             <span className={styles.datoEtiqueta}>{entrada.servicio}</span>
@@ -145,29 +211,60 @@ function PaginaClaves() {
           </div>
         ))}
       </div>
-
-      <AvisoSitio>
-        La bóveda se bloquea sola a los 30 minutos de inactividad.
-      </AvisoSitio>
-      <PieSitio texto="Vault Andes · Gestor de contraseñas corporativo" />
     </div>
   )
 }
 
-function PaginaCorreo() {
+function AppArchivos() {
   return (
-    /* El mismo cliente que el resto de módulos: columna de carpetas y lista de
-       mensajes con avatar, remitente y asunto. Como tabla de dos columnas no se
-       leía como un correo, y lo que este escenario enseña es justamente que un
-       correo se lee de un vistazo desde atrás. */
-    <div className={styles.desktopBody}>
-      <MailNav activa="Recibidos" />
+    <>
+      <div className={styles.ventanaRuta}>Este equipo › Documentos</div>
+      <div className={styles.ventanaPagina}>
+        <div className="flex flex-col items-start gap-3">
+          {DOCUMENTOS.map((documento) => (
+            <span key={documento.nombre} className={styles.attachment}>
+              <span className={styles.attachmentTipo} aria-hidden>
+                {documento.nombre.split('.').pop()?.toUpperCase()}
+              </span>
+              <span className={styles.attachmentNombre}>
+                {documento.nombre}
+                <span className={styles.attachmentPeso}>{documento.detalle}</span>
+              </span>
+            </span>
+          ))}
+        </div>
+      </div>
+    </>
+  )
+}
 
-      <div className={styles.mailPane}>
-        <div className={styles.mailbody}>
-          <h1 className={styles.subject}>Recibidos</h1>
+function AppCorreo() {
+  return (
+    <>
+      {/* El navegador dentro de su ventana: una pestaña y su barra de
+          dirección. Cerrar la pestaña no es lo que pide el escenario —lo que
+          hay que cerrar es la ventana entera—, así que no lleva ✕. */}
+      <div className={styles.tabstrip}>
+        <span className={styles.tab}>
+          <Globe aria-hidden className={styles.tabIcono} strokeWidth={1.75} />
+          <span className={styles.tabTexto}>Correo Andes</span>
+        </span>
+      </div>
+      <div className={styles.urlbar}>
+        <span className={styles.navBotones} aria-hidden>
+          <ArrowLeft className={styles.navIcono} strokeWidth={2} />
+          <ArrowRight className={styles.navIcono} strokeWidth={2} />
+          <RotateCw className={styles.navIcono} strokeWidth={2} />
+        </span>
+        <Lock aria-hidden className={`${styles.urlIcono} ${styles.lock}`} strokeWidth={2} />
+        <span className={styles.url}>correo.andes.ec/recibidos</span>
+      </div>
 
-          <div data-signal="correo">
+      <div className={styles.desktopBody}>
+        <MailNav activa="Recibidos" />
+        <div className={styles.mailPane}>
+          <div className={styles.mailbody}>
+            <h1 className={styles.subject}>Recibidos</h1>
             {CORREOS.map((correo) => (
               <div key={correo.asunto} className={styles.senderRow}>
                 <div className={styles.avatar} aria-hidden>
@@ -184,87 +281,58 @@ function PaginaCorreo() {
           </div>
         </div>
       </div>
-    </div>
+    </>
   )
 }
 
-function PaginaDocumentos() {
-  return (
-    <div className={styles.page}>
-      <CabeceraSitio marca="Drive Andes" menu={['Mi unidad', 'Compartidos', 'Recientes', 'Papelera']} />
-      <h2 className={styles.pageTitle}>Mi unidad</h2>
-      <p className={styles.pageSub}>Archivos de este equipo.</p>
-
-      {/* Fichas de archivo y no la rejilla de etiqueta/valor: un nombre de
-          archivo no tiene espacios donde partir y desbordaba su columna encima
-          del texto de al lado. */}
-      <div className="mt-6 flex flex-col items-start gap-3" data-signal="documentos">
-        {DOCUMENTOS.map((documento) => (
-          <span key={documento.nombre} className={styles.attachment}>
-            <span className={styles.attachmentTipo} aria-hidden>
-              {documento.nombre.split('.').pop()?.toUpperCase()}
-            </span>
-            <span className={styles.attachmentNombre}>
-              {documento.nombre}
-              <span className={styles.attachmentPeso}>{documento.detalle}</span>
-            </span>
-          </span>
-        ))}
-      </div>
-
-      <PieSitio texto="Drive Andes · Corporación Andes" />
-    </div>
-  )
+const CONTENIDO: Record<AppId, () => React.JSX.Element> = {
+  credenciales: AppCredenciales,
+  archivos: AppArchivos,
+  correo: AppCorreo,
 }
 
 function PrivacidadClaves() {
   const run = useScenarioRun('fisico/privacidad-claves')
   const { displayName } = useAuth()
 
-  const [abiertas, setAbiertas] = useState<PestanaId[]>([...ORDEN])
-  const [activa, setActiva] = useState<PestanaId>('claves')
+  /** Las que siguen abiertas, de atrás hacia adelante: la última es la que
+   *  está al frente. */
+  const [abiertas, setAbiertas] = useState<AppId[]>(APPS.map((app) => app.id))
   const [bloqueada, setBloqueada] = useState(false)
   const [final, setFinal] = useState<StoryNode | null>(null)
-  /** Pestaña que el repaso de señales quiere enseñar, o nada fuera del repaso.
-   *  Mientras dura, la ventana vuelve a como estaba al empezar. */
-  const [repaso, setRepaso] = useState<PestanaId | null>(null)
+  /** Aplicación que el repaso de señales quiere enseñar, o nada fuera del
+   *  repaso. Mientras dura, el escritorio vuelve a como estaba al empezar. */
+  const [repaso, setRepaso] = useState<AppId | null>(null)
 
   const enRepaso = repaso !== null
-  const abiertasAhora = enRepaso ? [...ORDEN] : abiertas
+  const vistaAbiertas = enRepaso
+    ? [...APPS.map((app) => app.id).filter((id) => id !== repaso), repaso]
+    : abiertas
   const vistaBloqueada = enRepaso ? false : bloqueada
-  // Con todo cerrado la ventana enseña una pestaña en blanco, no la última
-  // página que hubo: la pestaña ya no existe, su contenido tampoco.
-  const sinPestanas = abiertasAhora.length === 0
-  const vistaAbiertas = sinPestanas ? [NUEVA] : abiertasAhora
-  const vistaActiva = sinPestanas ? NUEVA : (repaso ?? activa)
 
-  function onHotspot(event: React.MouseEvent) {
+  function alFrente(id: AppId) {
     if (final) return
+    setAbiertas((previas) => [...previas.filter((otra) => otra !== id), id])
+  }
 
-    // Cerrar una pestaña se resuelve aquí y no por el `goto`: el botón lleva
-    // los dos atributos, y sin este corte cerrarla la dejaría además activa.
-    const cerrada = (event.target as HTMLElement).closest<HTMLElement>('[data-cierra]')?.dataset
-      .cierra as PestanaId | undefined
+  function cerrar(id: AppId) {
+    if (final) return
+    setAbiertas((previas) => previas.filter((otra) => otra !== id))
+  }
 
-    if (cerrada) {
-      const quedan = abiertas.filter((id) => id !== cerrada)
-      setAbiertas(quedan)
-      if (activa === cerrada && quedan[0]) setActiva(quedan[0])
-      return
-    }
-
-    manejarClicHotspot(event, (goto) => {
-      if (ORDEN.includes(goto as PestanaId)) setActiva(goto as PestanaId)
-    })
+  function bloquear() {
+    if (final) return
+    run.recordDecision({ accion: 'bloqueó la sesión desde el menú de encendido' })
+    setBloqueada(true)
   }
 
   function atender() {
     if (final) return
 
     const expuestas = abiertas.length
-    run.recordDecision({ pestanasAbiertas: expuestas, bloqueada })
+    run.recordDecision({ ventanasAbiertas: expuestas, bloqueada })
 
-    // Tres desenlaces y no dos: bloquear con las pestañas puestas no es lo
+    // Tres desenlaces y no dos: bloquear con las ventanas puestas no es lo
     // mismo que dejarlo todo a la vista, pero tampoco está resuelto — en
     // cuanto desbloquees delante de él vuelve a estar todo ahí.
     const nodo: StoryNode =
@@ -272,33 +340,34 @@ function PrivacidadClaves() {
         ? {
             kind: 'good',
             verdict: 'Nada que mirar',
-            outcome: `Cerraste las tres pestañas y bloqueaste antes de girarte. Tu compañero se encontró una pantalla de bloqueo y tú atendiste su pregunta sin dejar nada expuesto.`,
+            outcome:
+              'Cerraste las tres aplicaciones y bloqueaste antes de girarte. Tu compañero se encontró una pantalla de bloqueo y tú atendiste su pregunta sin dejar nada expuesto.',
           }
         : expuestas === 0 || bloqueada
           ? {
               kind: 'partial',
               verdict: 'A medio resolver',
               outcome: bloqueada
-                ? `Bloqueaste la pantalla, pero las tres pestañas siguen abiertas detrás. En cuanto desbloquees para enseñarle algo, vuelve a estar todo a la vista.`
-                : `Cerraste las pestañas, pero dejaste la sesión abierta. Si te levantas un momento a buscar algo, cualquiera se sienta en tu sitio.`,
+                ? 'Bloqueaste la pantalla, pero las aplicaciones siguen abiertas detrás. En cuanto desbloquees para enseñarle algo, vuelve a estar todo a la vista.'
+                : 'Cerraste las aplicaciones, pero dejaste la sesión abierta. Si te levantas un momento a buscar algo, cualquiera se sienta en tu sitio.',
             }
           : {
               kind: 'bad',
               verdict: 'Lo vio todo',
-              outcome: `Te giraste con ${expuestas === 1 ? 'una pestaña abierta' : `${expuestas} pestañas abiertas`} y la sesión sin bloquear. Tus contraseñas, tus correos y tus archivos estuvieron delante de él todo el rato que duró la conversación.`,
+              outcome: `Te giraste con ${expuestas === 1 ? 'una aplicación abierta' : `${expuestas} aplicaciones abiertas`} y la sesión sin bloquear. Tus contraseñas, tus correos y tus archivos estuvieron delante de él todo el rato que duró la conversación.`,
             }
 
     setFinal(nodo)
     void run.finish({
       endingId: nodo.kind,
-      outcome: nodo.kind === 'good' ? 'CORRECTO' : nodo.kind === 'partial' ? 'PARCIAL' : 'INCORRECTO',
+      outcome:
+        nodo.kind === 'good' ? 'CORRECTO' : nodo.kind === 'partial' ? 'PARCIAL' : 'INCORRECTO',
     })
   }
 
   function reiniciar() {
     run.restart()
-    setAbiertas([...ORDEN])
-    setActiva('claves')
+    setAbiertas(APPS.map((app) => app.id))
     setBloqueada(false)
     setFinal(null)
     setRepaso(null)
@@ -315,25 +384,25 @@ function PrivacidadClaves() {
     ahora: (
       <>
         <strong>Un compañero se levanta y viene hacia tu escritorio</strong> a preguntarte algo. En
-        tu navegador están abiertos tu gestor de contraseñas, tu correo y tus documentos, y la
-        sesión está desbloqueada.
+        tu pantalla están abiertas tres aplicaciones: tu gestor de credenciales, el explorador con
+        tus documentos y el correo. La sesión está desbloqueada.
       </>
     ),
   }
 
   const pantalla = vistaBloqueada ? (
-    // La pantalla de bloqueo tapa la ventana entera, como el sistema real: con
-    // la sesión bloqueada no se puede cerrar una pestaña sin desbloquear antes.
-    <section
-      className={`${styles.screen} ${styles.desktop}`}
-      aria-label="Pantalla bloqueada"
-    >
+    // La pantalla de bloqueo tapa el escritorio entero, como el sistema real:
+    // con la sesión bloqueada no se puede cerrar nada sin desbloquear antes.
+    <section className={`${styles.screen} ${styles.desktop}`} aria-label="Pantalla bloqueada">
       <button
         type="button"
         onClick={() => !final && setBloqueada(false)}
         className="flex size-full flex-col items-center justify-center gap-3 bg-ink text-center"
       >
-        <span className="flex size-16 items-center justify-center rounded-full bg-white/10" aria-hidden>
+        <span
+          className="flex size-16 items-center justify-center rounded-full bg-white/10"
+          aria-hidden
+        >
           <Lock className="size-8 text-white" strokeWidth={2} />
         </span>
         <span className="text-xl font-semibold text-white">{displayName}</span>
@@ -343,29 +412,49 @@ function PrivacidadClaves() {
       </button>
     </section>
   ) : (
-    <Navegador
-      pestanas={PESTANAS}
-      abiertas={vistaAbiertas}
-      activa={vistaActiva}
-      marcadores={MARCADORES}
-      onBloquear={() => {
-        run.recordDecision({ accion: 'bloqueó la sesión desde el menú de encendido' })
-        setBloqueada(true)
-      }}
-      onHotspot={onHotspot}
-    >
-      {vistaActiva === 'claves' && <PaginaClaves />}
-      {vistaActiva === 'correo' && <PaginaCorreo />}
-      {vistaActiva === 'documentos' && <PaginaDocumentos />}
-      {vistaActiva === NUEVA && (
-        <div className={styles.page}>
-          <h2 className={styles.pageTitle}>Nueva pestaña</h2>
-          <p className={styles.pageSub}>
-            Ya no queda nada abierto en tu navegador.
+    <section className={`${styles.screen} ${styles.desktop}`} aria-label="Tu escritorio">
+      <div className={styles.escritorio}>
+        {vistaAbiertas.length === 0 && (
+          <p className={styles.escritorioVacio}>
+            <span className={styles.escritorioVacioTitulo}>Escritorio despejado</span>
+            <span>No queda ninguna aplicación abierta. Falta la sesión.</span>
           </p>
-        </div>
-      )}
-    </Navegador>
+        )}
+
+        {APPS.map((app) => {
+          const z = vistaAbiertas.indexOf(app.id)
+          if (z === -1) return null
+          const Contenido = CONTENIDO[app.id]
+
+          return (
+            <Ventana
+              key={app.id}
+              app={app}
+              z={z + 1}
+              alFrente={z === vistaAbiertas.length - 1}
+              onFocus={() => alFrente(app.id)}
+              onCerrar={() => cerrar(app.id)}
+            >
+              <Contenido />
+            </Ventana>
+          )
+        })}
+      </div>
+
+      {/* La barra lista lo que está abierto, como en cualquier escritorio: es
+          la forma más rápida de ver que todavía quedan aplicaciones sin
+          cerrar, y de saltar a la que quedó tapada. */}
+      <Taskbar
+        apps={APPS.filter((app) => vistaAbiertas.includes(app.id)).map((app) => ({
+          Icono: app.Icono,
+          texto: app.nombre,
+          activa: vistaAbiertas.at(-1) === app.id,
+          onClick: () => alFrente(app.id),
+        }))}
+        onBloquear={bloquear}
+        reloj="vivo"
+      />
+    </section>
   )
 
   const decision = final ? (
@@ -378,7 +467,7 @@ function PrivacidadClaves() {
       restartLabel="↻ Repetir el escenario"
       onRestart={reiniciar}
       contenedorId="pantalla-escenario"
-      onPantalla={(id) => setRepaso((id ?? null) as PestanaId | null)}
+      onPantalla={(id) => setRepaso((id ?? null) as AppId | null)}
     />
   ) : (
     <div className="grid gap-4">
@@ -386,18 +475,17 @@ function PrivacidadClaves() {
         queHaces={
           <>
             <p className="text-lg leading-relaxed text-body">
-              Actúa sobre la ventana como lo harías si alguien viniera hacia tu sitio ahora mismo.
-              Cuando estés listo, te giras a atenderlo.
+              Actúa sobre tu escritorio como lo harías si alguien viniera hacia tu sitio ahora
+              mismo. Cuando estés listo, te giras a atenderlo.
             </p>
 
             <ul className="grid gap-2.5">
-              <Tarea hecho={abiertas.length === 0}>
-                Cerrar las pestañas que no debería ver{' '}
-                <span className="tabular-nums text-muted">
-                  ({ORDEN.length - abiertas.length} de {ORDEN.length})
-                </span>
-              </Tarea>
-              <Tarea hecho={bloqueada}>Bloquear la pantalla</Tarea>
+              {APPS.map((app) => (
+                <Tarea key={app.id} hecho={!abiertas.includes(app.id)}>
+                  Cerrar {app.corto}
+                </Tarea>
+              ))}
+              <Tarea hecho={bloqueada}>Bloquear la sesión</Tarea>
             </ul>
           </>
         }
@@ -409,9 +497,10 @@ function PrivacidadClaves() {
         }
         pista={
           <p>
-            Cada pestaña se cierra con su ✕, como en tu navegador. La sesión se bloquea desde el
-            botón de encendido de la barra de tareas, abajo a la derecha. Puedes girarte cuando
-            quieras: lo que dejes abierto, lo lee.
+            Cada aplicación se cierra con la <strong>✕</strong> de su barra de título, arriba a la
+            derecha de su ventana. La sesión se bloquea desde el botón de encendido de la barra de
+            tareas, abajo a la izquierda. Puedes girarte cuando quieras: lo que dejes abierto, lo
+            lee.
           </p>
         }
       />
@@ -429,8 +518,8 @@ function PrivacidadClaves() {
   const nota = (
     <div className="text-base leading-relaxed text-body">
       <p>
-        Vas a ver tu propia pantalla, con las pestañas tal como las dejaste. Puedes tocar lo que
-        quieras de la ventana; el escenario termina cuando te giras a atender a tu compañero.
+        Vas a ver tu propio escritorio, con las aplicaciones tal como las dejaste. Puedes tocar lo
+        que quieras; el escenario termina cuando te giras a atender a tu compañero.
       </p>
     </div>
   )

@@ -173,6 +173,16 @@
 .taskbarApp {
   cursor: default;
 }
+/* La ventana que está al frente, marcada como la marca cualquier escritorio:
+   el fondo más claro y la rayita del pie encendida. */
+.taskbar .taskbarAppActiva {
+  background: rgba(255, 255, 255, 0.22);
+  border-color: rgba(255, 255, 255, 0.34);
+  color: #fff;
+}
+.taskbar .taskbarAppActiva::after {
+  background: rgba(255, 255, 255, 0.85);
+}
 .taskbarAppIcono {
   width: 1rem;
   height: 1rem;
@@ -2931,4 +2941,145 @@ button.mailNavItem {
   outline: 2px solid #1a73e8;
   outline-offset: 2px;
   background: #d9e6fd;
+}
+
+
+/* ---------- Escritorio con varias ventanas ----------
+   Para los escenarios donde lo que hay que cerrar son *aplicaciones*, no
+   pestañas: cada una es su propia ventana, con su barra de título y su ✕, y
+   todas descansan sobre el fondo del escritorio. */
+.escritorio {
+  --line: #e3e6ea;
+  --dim: #5f6b7a;
+  --cromo: #d5dbe3;
+  --cromo-suave: #eef1f5;
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  background: linear-gradient(155deg, #1d3350 0%, #294263 45%, #3d6288 100%);
+  font-family: 'Manrope', system-ui, Arial, sans-serif;
+}
+.escritorioVacio {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  color: rgb(255 255 255 / 78%);
+  text-align: center;
+}
+.escritorioVacioTitulo {
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
+.ventana {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+  border-radius: 0.625rem;
+  border: 1px solid #b9c3ce;
+  background: #fff;
+  color: #16202c;
+  box-shadow: 0 1.25rem 2.5rem rgb(8 16 28 / 38%);
+}
+.ventanaBarra {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.375rem 0.375rem 0.375rem 0.75rem;
+  background: var(--cromo-suave);
+  border-bottom: 1px solid var(--line);
+}
+.ventanaIcono {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+  color: var(--dim);
+}
+.ventanaTitulo {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  font-size: 0.90625rem;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ventanaBotones {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+.ventanaBoton {
+  appearance: none;
+  border: none;
+  background: none;
+  color: var(--dim);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.5rem;
+  border-radius: 0.25rem;
+  cursor: default;
+}
+.ventanaBotonIcono {
+  width: 0.875rem;
+  height: 0.875rem;
+}
+/* El único que hace algo, y se pinta como en cualquier sistema: rojo al pasar
+   por encima. Es la señal universal de "esto cierra la ventana". */
+.ventanaCerrar {
+  cursor: pointer;
+}
+.ventanaCerrar:hover,
+.ventanaCerrar:focus-visible {
+  background: #d92d20;
+  color: #fff;
+}
+.ventanaCuerpo {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.ventanaPagina {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 0.875rem 1rem 1.125rem;
+}
+/* Barra de ruta del gestor de archivos. */
+.ventanaRuta {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.4375rem;
+  padding: 0.4375rem 0.75rem;
+  background: var(--cromo);
+  border-bottom: 1px solid rgb(16 32 44 / 8%);
+  font-size: 0.875rem;
+  color: #3b4553;
+}
+/* En una ventana estrecha no caben las dos columnas de la ficha de datos: la
+   etiqueta se comería la mitad del ancho. Se apilan, como en el teléfono. */
+.ventana .dato {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.125rem;
+}
+.ventana .datos {
+  margin-top: 0;
+  gap: 0.625rem;
 }

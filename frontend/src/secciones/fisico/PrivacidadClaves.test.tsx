@@ -12,40 +12,62 @@ function bloquear(pantalla: HTMLElement) {
 }
 
 function cerrarTodo(pantalla: HTMLElement) {
-  for (const cerrar of within(pantalla).getAllByRole('button', { name: /^Cerrar la pestaña/ })) {
+  for (const cerrar of within(pantalla).getAllByRole('button', { name: /^Cerrar / })) {
     fireEvent.click(cerrar)
   }
 }
 
 describe('PrivacidadClaves', () => {
-  it('abre con las tres pestañas sensibles y la sesión desbloqueada', () => {
+  it('abre con las tres aplicaciones y la sesión desbloqueada', () => {
     const pantalla = empezar(<PrivacidadClaves />)
 
-    expect(within(pantalla).getAllByRole('button', { name: /^Cerrar la pestaña/ })).toHaveLength(3)
-    expect(within(pantalla).getByText('vault.andes.ec/mis-claves')).toBeDefined()
+    expect(within(pantalla).getByRole('region', { name: 'Bóveda Andes — Mis credenciales' })).toBeDefined()
+    expect(within(pantalla).getByRole('region', { name: 'Explorador de archivos' })).toBeDefined()
+    expect(within(pantalla).getByRole('region', { name: 'Navegador — Correo Andes' })).toBeDefined()
+    expect(within(pantalla).getAllByRole('button', { name: /^Cerrar / })).toHaveLength(3)
   })
 
-  it('cerrar la última pestaña deja el navegador en blanco, sin la página anterior', () => {
+  it('cerrar una ventana deja las otras dos en pie', () => {
     const pantalla = empezar(<PrivacidadClaves />)
 
-    cerrarTodo(pantalla)
+    fireEvent.click(within(pantalla).getByRole('button', { name: 'Cerrar Explorador de archivos' }))
 
-    expect(within(pantalla).queryByText('Mis contraseñas')).toBeNull()
-    expect(within(pantalla).queryByText('vault.andes.ec/mis-claves')).toBeNull()
-    // El título de la pestaña y el de la página en blanco.
-    expect(within(pantalla).getAllByText('Nueva pestaña')).toHaveLength(2)
+    expect(within(pantalla).queryByRole('region', { name: 'Explorador de archivos' })).toBeNull()
+    expect(within(pantalla).queryByText('mi_salario_2026.pdf')).toBeNull()
+    expect(within(pantalla).getAllByRole('button', { name: /^Cerrar / })).toHaveLength(2)
   })
 
-  it('cambiar de pestaña muestra su página y su URL', () => {
+  it('la barra de tareas lista lo abierto y salta a esa ventana', () => {
     const pantalla = empezar(<PrivacidadClaves />)
 
-    fireEvent.click(within(pantalla).getByText('Mis documentos'))
+    expect(within(pantalla).getByRole('button', { name: 'Credenciales' })).toBeDefined()
+    expect(within(pantalla).getByRole('button', { name: 'Archivos' })).toBeDefined()
+    expect(within(pantalla).getByRole('button', { name: 'Navegador' })).toBeDefined()
 
-    expect(within(pantalla).getByText('drive.andes.ec/mis-documentos')).toBeDefined()
-    expect(within(pantalla).getByText('mi_salario_2026.pdf')).toBeDefined()
+    const boveda = within(pantalla).getByRole('region', { name: 'Bóveda Andes — Mis credenciales' })
+    const correo = within(pantalla).getByRole('region', { name: 'Navegador — Correo Andes' })
+    fireEvent.click(within(pantalla).getByRole('button', { name: 'Credenciales' }))
+    expect(Number(boveda.style.zIndex)).toBeGreaterThan(Number(correo.style.zIndex))
+
+    // Y al cerrarla desaparece de la barra.
+    fireEvent.click(within(pantalla).getByRole('button', { name: 'Cerrar Explorador de archivos' }))
+    expect(within(pantalla).queryByRole('button', { name: 'Archivos' })).toBeNull()
   })
 
-  it('el menú de encendido bloquea, y sus otras opciones no responden', () => {
+  it('pulsar una ventana la trae al frente', () => {
+    const pantalla = empezar(<PrivacidadClaves />)
+
+    const boveda = within(pantalla).getByRole('region', { name: 'Bóveda Andes — Mis credenciales' })
+    const correo = within(pantalla).getByRole('region', { name: 'Navegador — Correo Andes' })
+    // El correo arranca al frente: es la última de la pila.
+    expect(Number(correo.style.zIndex)).toBeGreaterThan(Number(boveda.style.zIndex))
+
+    fireEvent.mouseDown(boveda)
+
+    expect(Number(boveda.style.zIndex)).toBeGreaterThan(Number(correo.style.zIndex))
+  })
+
+  it('el menú de encendido bloquea, y apagar no responde', () => {
     const pantalla = empezar(<PrivacidadClaves />)
 
     fireEvent.click(within(pantalla).getByRole('button', { name: 'Inicio y apagado' }))
@@ -54,7 +76,7 @@ describe('PrivacidadClaves', () => {
     ).toBe('true')
     fireEvent.click(within(pantalla).getByRole('menuitem', { name: 'Bloquear' }))
 
-    expect(within(pantalla).queryAllByRole('button', { name: /^Cerrar la pestaña/ })).toHaveLength(0)
+    expect(within(pantalla).queryAllByRole('button', { name: /^Cerrar / })).toHaveLength(0)
     expect(within(pantalla).getByText(/Sesión bloqueada/)).toBeDefined()
   })
 
@@ -62,13 +84,14 @@ describe('PrivacidadClaves', () => {
     const pantalla = empezar(<PrivacidadClaves />)
 
     cerrarTodo(pantalla)
+    expect(within(pantalla).getByText('Escritorio despejado')).toBeDefined()
     bloquear(pantalla)
     fireEvent.click(screen.getByRole('button', { name: 'Girarme a atenderlo' }))
 
     expect(await screen.findByText('Nada que mirar')).toBeDefined()
   })
 
-  it('bloquear con las pestañas puestas queda a medias, no aprobado', async () => {
+  it('bloquear con las aplicaciones puestas queda a medias, no aprobado', async () => {
     const pantalla = empezar(<PrivacidadClaves />)
 
     bloquear(pantalla)
@@ -84,10 +107,10 @@ describe('PrivacidadClaves', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Girarme a atenderlo' }))
 
     expect(await screen.findByText('Lo vio todo')).toBeDefined()
-    expect(screen.getByText(/3 pestañas abiertas/)).toBeDefined()
+    expect(screen.getByText(/3 aplicaciones abiertas/)).toBeDefined()
   })
 
-  it('el repaso de señales reabre la pestaña de la que habla y la resalta', async () => {
+  it('el repaso de señales reabre la aplicación de la que habla y la resalta', async () => {
     const pantalla = empezar(<PrivacidadClaves />)
 
     cerrarTodo(pantalla)
@@ -97,7 +120,7 @@ describe('PrivacidadClaves', () => {
 
     await waitFor(() => {
       expect(
-        pantalla.querySelector('[data-signal="claves"]')?.classList.contains('senal-resaltada'),
+        pantalla.querySelector('[data-signal="credenciales"]')?.classList.contains('senal-resaltada'),
       ).toBe(true)
     })
 

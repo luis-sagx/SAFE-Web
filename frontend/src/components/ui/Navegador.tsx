@@ -63,9 +63,6 @@ interface NavegadorProps {
   /** Hora del sistema. Los escenarios cuya historia fija una hora la pasan
    *  para que el reloj de la ventana no la contradiga. */
   reloj?: Reloj
-  /** Si se pasa, la bandeja del sistema lleva el botón de encendido y su
-   *  entrada "Bloquear" llama a esto. */
-  onBloquear?: () => void
   /** Final al que lleva cerrar la pestaña marcada como `pestanaCierreDinamico`
    *  cuando esa pestaña no trae su propio `cierra` fijo. */
   cierrePortal?: string
@@ -80,7 +77,6 @@ export function Navegador({
   activa,
   marcadores,
   reloj = 'vivo',
-  onBloquear,
   cierrePortal,
   pestanaCierreDinamico,
   onHotspot,
@@ -210,7 +206,7 @@ export function Navegador({
 
       {children}
 
-      <Taskbar app={{ Icono: Globe, texto: 'Navegador' }} onBloquear={onBloquear} reloj={reloj} />
+      <Taskbar apps={[{ Icono: Globe, texto: 'Navegador' }]} reloj={reloj} />
     </section>
   )
 }

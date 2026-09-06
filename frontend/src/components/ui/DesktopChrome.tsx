@@ -18,6 +18,17 @@ import { formatoFecha, formatoHora, useRelojDelSistema } from '../../hooks/useRe
 import { useAuth } from '../../context/AuthContext'
 import styles from './DeviceScreen.module.css'
 
+/** Ventana abierta, tal como la lista la barra de tareas. */
+export interface AppTaskbar {
+  Icono: LucideIcon
+  texto: string
+  /** La que está al frente. La barra la marca, como cualquier escritorio. */
+  activa?: boolean
+  /** Traerla al frente. Sin esto la pastilla es decorativa: es lo que pasa en
+   *  los escenarios de una sola ventana, donde no hay a qué cambiar. */
+  onClick?: () => void
+}
+
 /** Acceso directo anclado en la barra de tareas. */
 export interface AtajoTaskbar {
   texto: string
@@ -271,14 +282,16 @@ export function BotonEnergia({ onBloquear }: { onBloquear: () => void }) {
 }
 
 export function Taskbar({
-  app,
+  apps = [],
   atajo,
   onBloquear,
   reloj = { hora: '10:41' },
 }: {
-  /** Programa en el que ya se está, anclado y sin acción: pulsar el icono de la
-   *  app que tienes delante no hace nada en ningún sistema. */
-  app?: { Icono: LucideIcon; texto: string }
+  /** Las ventanas abiertas. Con una sola —el navegador, el correo— es el
+   *  programa en el que ya estás y no hace nada al pulsarlo, como en cualquier
+   *  sistema. Con varias, la barra es la lista de lo que tienes abierto: la
+   *  forma más rápida de ver que quedan tres aplicaciones sin cerrar. */
+  apps?: AppTaskbar[]
   atajo?: AtajoTaskbar
   /** Si se pasa, la bandeja lleva el botón de encendido con su menú, y
    *  "Bloquear" llama a esto. Ver BotonEnergia. */
@@ -310,11 +323,28 @@ export function Taskbar({
       {onBloquear && <BotonEnergia onBloquear={onBloquear} />}
       <span className={styles.taskbarDivider} aria-hidden />
 
-      {app && (
-        <span className={`${styles.taskbarAtajo} ${styles.taskbarApp}`}>
-          <app.Icono aria-hidden className={styles.taskbarAppIcono} strokeWidth={1.75} />
-          {app.texto}
-        </span>
+      {apps.map(({ Icono, texto, activa, onClick }) =>
+        onClick ? (
+          <button
+            key={texto}
+            type="button"
+            className={`${styles.taskbarAtajo} ${activa ? styles.taskbarAppActiva : ''}`}
+            title={`Ir a ${texto}`}
+            aria-current={activa ? 'true' : undefined}
+            onClick={(evento) => {
+              evento.stopPropagation()
+              onClick()
+            }}
+          >
+            <Icono aria-hidden className={styles.taskbarAppIcono} strokeWidth={1.75} />
+            {texto}
+          </button>
+        ) : (
+          <span key={texto} className={`${styles.taskbarAtajo} ${styles.taskbarApp}`}>
+            <Icono aria-hidden className={styles.taskbarAppIcono} strokeWidth={1.75} />
+            {texto}
+          </span>
+        ),
       )}
 
       {atajo && (
