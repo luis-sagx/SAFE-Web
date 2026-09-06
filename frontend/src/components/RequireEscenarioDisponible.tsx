@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react'
-import { Navigate } from 'react-router'
+import { Navigate, useLocation } from 'react-router'
 import PantallaCarga from './PantallaCarga'
 import { escenariosDeSeccion, type Escenario } from '../data/catalogo'
 import { fetchProgreso, type Progreso } from '../lib/api'
@@ -12,6 +12,13 @@ function RequireEscenarioDisponible({
   escenario: Escenario
   children: ReactNode
 }) {
+  // Viene del botón "Siguiente escenario": esa corrida se guarda en paralelo
+  // y esta pantalla puede montarse antes de que el servidor la registre. Sin
+  // esto, la comprobación de abajo vería el escenario recién terminado como
+  // "sin intentar" y rebotaría de vuelta a la sección aunque sí se completó.
+  const location = useLocation()
+  const recienCompletado = (location.state as { recienCompletado?: string } | null)
+    ?.recienCompletado
   const [progreso, setProgreso] = useState<Progreso | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
@@ -42,9 +49,19 @@ function RequireEscenarioDisponible({
   }
 
   if (!error) {
+    const yaLoContabaProgreso =
+      !recienCompletado || progreso?.escenarios.some((e) => e.id === recienCompletado)
+    const progresoEfectivo: Progreso | null =
+      progreso && recienCompletado && !yaLoContabaProgreso
+        ? {
+            ...progreso,
+            escenarios: [...progreso.escenarios, { id: recienCompletado, ultimoOutcome: 'CORRECTO' }],
+          }
+        : progreso
+
     const disponible = escenarioEstaDisponible(
       escenariosDeSeccion(escenario.seccionId),
-      progreso,
+      progresoEfectivo,
       escenario.id,
     )
 

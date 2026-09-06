@@ -115,6 +115,14 @@ function AccionesFinal({ escenarioId, onRestart, restartLabel, autoFocus }: Acci
         <Link
           ref={principalRef as React.Ref<HTMLAnchorElement>}
           to={`/seccion/${siguiente.seccionId}/${siguiente.escenarioId}`}
+          // El guardado de esta corrida es async y no se espera antes de
+          // mostrar este botón: si la petición todavía no llegó al servidor
+          // cuando se navega, la comprobación de disponibilidad de la
+          // siguiente pantalla vería este escenario como "sin intentar" y
+          // rebotaría a la sección. Este aviso deja que esa comprobación
+          // confíe en que sí se completó, igual que ya hace `intentados` aquí
+          // mismo, sin depender de que el servidor ya lo sepa.
+          state={{ recienCompletado: escenarioId }}
           className="mt-5 flex min-h-11 items-center justify-center rounded-md bg-primary px-4 py-3 text-lg font-medium text-on-primary transition hover:bg-primary-active focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link"
         >
           Siguiente escenario →
