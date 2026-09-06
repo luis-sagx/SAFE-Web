@@ -13,6 +13,8 @@ vi.mock('../lib/api', async () => {
   return { ...actual, fetchMyRuns: fetchMyRunsMock }
 })
 
+vi.mock('../context/AuthContext', async () => (await import('../test/escenario')).authFalso())
+
 function renderRecorrido() {
   return render(
     <MemoryRouter>

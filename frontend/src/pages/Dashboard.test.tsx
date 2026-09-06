@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import Dashboard from './Dashboard'
@@ -12,9 +12,7 @@ vi.mock('../lib/api', async () => {
   return { ...actual, fetchProgreso: fetchProgresoMock }
 })
 
-vi.mock('../context/AuthContext', () => ({
-  useAuth: () => ({ displayName: 'María', logout: vi.fn() }),
-}))
+vi.mock('../context/AuthContext', async () => (await import('../test/escenario')).authFalso())
 
 function renderDashboard() {
   return render(
@@ -29,6 +27,8 @@ describe('Dashboard', () => {
     fetchProgresoMock.mockReset()
   })
 
+  // El recorrido propio vive en el menú de cuenta del header, que es el mismo
+  // en todas las pantallas: se llega a él desde cualquier punto, no solo aquí.
   it('siempre ofrece el enlace al recorrido propio', async () => {
     fetchProgresoMock.mockResolvedValue({
       modulo: 'phishing',
@@ -40,7 +40,8 @@ describe('Dashboard', () => {
 
     renderDashboard()
 
-    expect(await screen.findByRole('link', { name: 'Tu recorrido' })).toBeDefined()
+    fireEvent.click(await screen.findByRole('button', { name: /María/ }))
+    expect(screen.getByRole('menuitem', { name: 'Tu recorrido' })).toBeDefined()
   })
 
   it('sin aprobar todos los módulos, no ofrece el certificado', async () => {
