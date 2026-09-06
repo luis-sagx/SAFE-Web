@@ -13,7 +13,7 @@ export const UMBRALES: Record<string, number> = {
   vishing: 6,
   suplantacion: 6,
   estafa: 6,
-  // fisico: 6,
+  fisico: 6,
 };
 
 /// Cuántos escenarios tiene el módulo en total. A diferencia de `UMBRALES`,

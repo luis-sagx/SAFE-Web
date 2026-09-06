@@ -73,9 +73,8 @@ model Participant {
 /// nunca consulta el progreso por su cuenta, solo verifica lo que el
 /// participante trae firmado.
 ///
-/// Sin puntajes ni detalle por escenario: `identidad` guarda el hecho de la
-/// aprobación, no el rendimiento. Eso vive en `entrenamiento`, donde debe
-/// quedarse.
+/// La calificación total llega firmada desde `entrenamiento`; se guarda aquí
+/// solo para que el PDF conserve exactamente lo que acreditó al emitirse.
 model Certificate {
   id String @id @default(uuid())
 
@@ -97,6 +96,10 @@ model Certificate {
   /// Constante hoy (`HORAS_CERTIFICADO`), guardada y no recalculada: un
   /// certificado ya emitido no debe cambiar si el número cambia después.
   horas Int @default(4)
+
+  /// Últimos resultados CORRECTO del participante, sobre los 48 escenarios
+  /// que componen los seis módulos del certificado.
+  calificacion Int @default(0)
 
   emitidoAt DateTime @default(now())
 

@@ -340,12 +340,14 @@ export interface Certificado {
   emitidoAt: string
   modulos: string[]
   horas: number
+  calificacion: number
 }
 
 export interface VerificacionCertificado {
   valido: boolean
   emitidoAt?: string
   horas?: number
+  calificacion?: number
   modulos?: string[]
 }
 

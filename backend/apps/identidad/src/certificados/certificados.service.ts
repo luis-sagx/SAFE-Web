@@ -30,6 +30,7 @@ export interface CertificadoPublico {
   emitidoAt: string;
   modulos: string[];
   horas: number;
+  calificacion: number;
 }
 
 /// Un código revocado responde exactamente igual que uno inexistente
@@ -39,6 +40,7 @@ export interface VerificacionCertificado {
   valido: boolean;
   emitidoAt?: string;
   horas?: number;
+  calificacion?: number;
   modulos?: string[];
 }
 
@@ -91,14 +93,22 @@ export class CertificadosService {
       where: { participantId: participant.sub },
     });
 
-    if (existente && payload.modulos.length <= existente.modulos.length) {
+    if (
+      existente &&
+      payload.modulos.length <= existente.modulos.length &&
+      payload.calificacion === existente.calificacion
+    ) {
       return this.aPublico(existente);
     }
 
     if (existente) {
       const actualizado = await this.prisma.certificate.update({
         where: { id: existente.id },
-        data: { modulos: payload.modulos, emitidoAt: new Date() },
+        data: {
+          modulos: payload.modulos,
+          calificacion: payload.calificacion,
+          emitidoAt: new Date(),
+        },
       });
       return this.aPublico(actualizado);
     }
@@ -111,6 +121,7 @@ export class CertificadosService {
             codigo: generarCodigoCertificado(),
             modulos: payload.modulos,
             horas: HORAS_CERTIFICADO,
+            calificacion: payload.calificacion,
           },
         });
         return this.aPublico(creado);
@@ -152,6 +163,7 @@ export class CertificadosService {
       nombreCompleto: `${persona.nombre} ${persona.apellido}`.trim(),
       modulos: certificado.modulos,
       horas: certificado.horas,
+      calificacion: certificado.calificacion,
       emitidoAt: certificado.emitidoAt,
       codigo: certificado.codigo,
       origen: this.config.get(
@@ -182,6 +194,7 @@ export class CertificadosService {
       valido: true,
       emitidoAt: certificado.emitidoAt.toISOString(),
       horas: certificado.horas,
+      calificacion: certificado.calificacion,
       modulos: certificado.modulos,
     };
   }
@@ -201,12 +214,14 @@ export class CertificadosService {
     emitidoAt: Date;
     modulos: string[];
     horas: number;
+    calificacion: number;
   }): CertificadoPublico {
     return {
       codigo: certificado.codigo,
       emitidoAt: certificado.emitidoAt.toISOString(),
       modulos: certificado.modulos,
       horas: certificado.horas,
+      calificacion: certificado.calificacion,
     };
   }
 }

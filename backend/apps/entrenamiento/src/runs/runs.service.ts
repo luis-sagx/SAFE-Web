@@ -115,6 +115,10 @@ export class RunsService {
       sub: participante.sub,
       seq: participante.seq,
       modulos,
+      calificacion: progresos.reduce(
+        (total, progreso) => total + progreso.aprobados,
+        0,
+      ),
       typ: 'atestacion',
     };
 
