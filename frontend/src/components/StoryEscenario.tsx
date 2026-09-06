@@ -27,6 +27,10 @@ export interface ScreenNode extends StoryNode {
    *  que pasa en un momento del guion. Dos nodos que enseñan la misma pantalla
    *  pueden diferir en si el mensaje ya llegó. */
   notificacion?: Notificacion
+  /** Pantallas que se observan y no se tocan: pasado este tiempo, el grafo
+   *  avanza solo, sin destello ni opción que pulsar. Para la escena en la que
+   *  sí hay algo que decidir, se usa un punto interactivo (destello), no esto. */
+  autoAvanza?: { ms: number; goto: string }
 }
 
 interface StoryEscenarioProps {
@@ -261,6 +265,18 @@ function StoryEscenario({
       setHilos((previos) => ({ ...previos, [kind]: engine.current }))
     }
   }, [engine.current, engine.node.view])
+
+  // Pantallas que solo se observan: pasado `ms`, el grafo avanza solo. El
+  // timer se reinicia con cada nodo (la dependencia es `engine.current`, no
+  // el nodo entero) y se cancela si el participante ya salió de esa pantalla
+  // o el escenario terminó antes de que corriera el tiempo completo.
+  useEffect(() => {
+    const auto = engine.node.autoAvanza
+    if (!auto || engine.isEnding) return
+    const timer = setTimeout(() => engine.choose(auto.goto), auto.ms)
+    return () => clearTimeout(timer)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [engine.current, engine.isEnding])
 
   // La notificación pertenece a la posición del grafo (engine.current), no a
   // la pantalla que se está mirando: que siga ahí mientras se abre la cámara
@@ -672,12 +688,17 @@ function StoryEscenario({
         accionesEnPantalla ? (
           pantallaTelefono
         ) : vista.kind === 'sms' || vista.kind === 'escena' ? (
-          <DeviceScreen
-            view={vista}
-            acciones={accionesCorreo}
-            carpetas={carpetas}
-            destinatario={destinatario}
-          />
+          // Sin el marco del teléfono no hay `pantallaTelefono` que delegue el
+          // clic: sin este `onClick` los puntos interactivos de la escena (el
+          // destello, en 'escena') no dispararían nada.
+          <div className="contents" onClick={onHotspot}>
+            <DeviceScreen
+              view={vista}
+              acciones={accionesCorreo}
+              carpetas={carpetas}
+              destinatario={destinatario}
+            />
+          </div>
         ) : (
           <Navegador
             pestanas={pestanas}

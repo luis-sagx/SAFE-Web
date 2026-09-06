@@ -14,8 +14,14 @@ const ESCENA: ScreenView = {
   ],
 }
 
+const ESCENA_CON_DESTELLO: ScreenView = {
+  ...ESCENA,
+  destello: { x: '55%', y: '64%', goto: 'n_opciones', label: 'Inspeccionó el USB' },
+}
+
 const STORY: Story<ScreenNode> = {
-  n1: { kind: 'scene', view: ESCENA, choices: [
+  n1: { kind: 'scene', view: ESCENA_CON_DESTELLO },
+  n_opciones: { kind: 'scene', view: ESCENA, choices: [
     { label: 'Agarrarlo, alguien lo dejó y probablemente lo necesita', goto: 'e_agarra' },
     { label: 'Dejarlo ahí, no es asunto tuyo', goto: 'e_deja' },
     { label: 'Dejarlo donde está y avisar a IT', goto: 'e_reporta' },
