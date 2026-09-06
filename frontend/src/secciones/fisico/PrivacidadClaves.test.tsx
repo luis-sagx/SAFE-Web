@@ -6,6 +6,11 @@ import PrivacidadClaves from './PrivacidadClaves'
 vi.mock('../../context/AuthContext', async () => (await import('../../test/escenario')).authFalso())
 vi.mock('../../lib/api', async () => (await import('../../test/escenario')).apiSinRed())
 
+function bloquear(pantalla: HTMLElement) {
+  fireEvent.click(within(pantalla).getByRole('button', { name: 'Inicio y apagado' }))
+  fireEvent.click(within(pantalla).getByRole('menuitem', { name: 'Bloquear' }))
+}
+
 function cerrarTodo(pantalla: HTMLElement) {
   for (const cerrar of within(pantalla).getAllByRole('button', { name: /^Cerrar la pestaña/ })) {
     fireEvent.click(cerrar)
@@ -20,6 +25,17 @@ describe('PrivacidadClaves', () => {
     expect(within(pantalla).getByText('vault.andes.ec/mis-claves')).toBeDefined()
   })
 
+  it('cerrar la última pestaña deja el navegador en blanco, sin la página anterior', () => {
+    const pantalla = empezar(<PrivacidadClaves />)
+
+    cerrarTodo(pantalla)
+
+    expect(within(pantalla).queryByText('Mis contraseñas')).toBeNull()
+    expect(within(pantalla).queryByText('vault.andes.ec/mis-claves')).toBeNull()
+    // El título de la pestaña y el de la página en blanco.
+    expect(within(pantalla).getAllByText('Nueva pestaña')).toHaveLength(2)
+  })
+
   it('cambiar de pestaña muestra su página y su URL', () => {
     const pantalla = empezar(<PrivacidadClaves />)
 
@@ -29,10 +45,14 @@ describe('PrivacidadClaves', () => {
     expect(within(pantalla).getByText('mi_salario_2026.pdf')).toBeDefined()
   })
 
-  it('bloquear tapa la ventana entera: no se puede cerrar nada sin desbloquear', () => {
+  it('el menú de encendido bloquea, y sus otras opciones no responden', () => {
     const pantalla = empezar(<PrivacidadClaves />)
 
-    fireEvent.click(within(pantalla).getByRole('button', { name: 'Bloquear pantalla' }))
+    fireEvent.click(within(pantalla).getByRole('button', { name: 'Inicio y apagado' }))
+    expect(
+      within(pantalla).getByRole('menuitem', { name: 'Apagar' }).getAttribute('aria-disabled'),
+    ).toBe('true')
+    fireEvent.click(within(pantalla).getByRole('menuitem', { name: 'Bloquear' }))
 
     expect(within(pantalla).queryAllByRole('button', { name: /^Cerrar la pestaña/ })).toHaveLength(0)
     expect(within(pantalla).getByText(/Sesión bloqueada/)).toBeDefined()
@@ -42,7 +62,7 @@ describe('PrivacidadClaves', () => {
     const pantalla = empezar(<PrivacidadClaves />)
 
     cerrarTodo(pantalla)
-    fireEvent.click(within(pantalla).getByRole('button', { name: 'Bloquear pantalla' }))
+    bloquear(pantalla)
     fireEvent.click(screen.getByRole('button', { name: 'Girarme a atenderlo' }))
 
     expect(await screen.findByText('Nada que mirar')).toBeDefined()
@@ -51,7 +71,7 @@ describe('PrivacidadClaves', () => {
   it('bloquear con las pestañas puestas queda a medias, no aprobado', async () => {
     const pantalla = empezar(<PrivacidadClaves />)
 
-    fireEvent.click(within(pantalla).getByRole('button', { name: 'Bloquear pantalla' }))
+    bloquear(pantalla)
     fireEvent.click(screen.getByRole('button', { name: 'Girarme a atenderlo' }))
 
     expect(await screen.findByText('A medio resolver')).toBeDefined()
@@ -71,7 +91,7 @@ describe('PrivacidadClaves', () => {
     const pantalla = empezar(<PrivacidadClaves />)
 
     cerrarTodo(pantalla)
-    fireEvent.click(within(pantalla).getByRole('button', { name: 'Bloquear pantalla' }))
+    bloquear(pantalla)
     fireEvent.click(screen.getByRole('button', { name: 'Girarme a atenderlo' }))
     fireEvent.click(await screen.findByRole('button', { name: 'Ver las señales' }))
 

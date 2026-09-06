@@ -191,6 +191,76 @@
   height: 1rem;
   flex-shrink: 0;
 }
+/* ---------- Encendido de la barra de tareas ----------
+   El botón de apagado y su menú. Vive en la bandeja, a la izquierda del reloj,
+   que es donde lo pone cualquier escritorio. */
+.energia {
+  position: relative;
+  display: inline-flex;
+}
+.energiaBoton {
+  appearance: none;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  /* Con fondo propio: como icono suelto sobre la franja oscura no se veía. */
+  background: rgba(255, 255, 255, 0.12);
+  color: #eaeef4;
+  font: inherit;
+  display: inline-flex;
+  padding: 0.3125rem;
+  border-radius: 0.375rem;
+  cursor: pointer;
+}
+.energiaBoton:hover {
+  background: rgba(255, 255, 255, 0.24);
+  color: #fff;
+}
+.energiaMenu {
+  position: absolute;
+  bottom: calc(100% + 0.625rem);
+  left: 0;
+  z-index: 5;
+  min-width: 11rem;
+  padding: 0.375rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: #20262e;
+  box-shadow: 0 0.625rem 1.875rem rgba(0, 0, 0, 0.45);
+}
+.energiaItem {
+  appearance: none;
+  border: none;
+  background: none;
+  font: inherit;
+  font-size: 0.875rem;
+  color: #e6eaf0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.625rem;
+  border-radius: 0.375rem;
+  text-align: left;
+  cursor: pointer;
+}
+.energiaItem:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+/* Suspender, reiniciar y apagar: se ven, no responden. */
+.energiaItemApagado {
+  color: #7f8b99;
+  cursor: default;
+}
+.energiaItemApagado:hover {
+  background: none;
+}
+.energiaIcono {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+}
+
 .taskbarClock {
   display: flex;
   flex-direction: column;
@@ -749,10 +819,14 @@ button.mailNavItem {
 .datoEtiqueta {
   font-size: 1rem;
   color: var(--dim);
+  /* Un nombre de archivo o una dirección no tienen espacios donde partir: sin
+     esto desbordaban su columna y se pintaban encima del valor de al lado. */
+  overflow-wrap: anywhere;
 }
 .datoValor {
   font-size: 1.1875rem;
   color: #16202c;
+  overflow-wrap: anywhere;
 }
 
 /* En el teléfono no caben dos columnas: la etiqueta se comería un tercio del

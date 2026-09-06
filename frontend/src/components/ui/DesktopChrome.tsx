@@ -1,6 +1,8 @@
 import {
   Inbox,
+  Lock,
   Minus,
+  Power,
   Square,
   X,
   LayoutGrid,
@@ -11,7 +13,7 @@ import {
   Wifi,
   type LucideIcon,
 } from 'lucide-react'
-import { useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { formatoFecha, formatoHora, useRelojDelSistema } from '../../hooks/useRelojDelSistema'
 import { useAuth } from '../../context/AuthContext'
 import styles from './DeviceScreen.module.css'
@@ -196,15 +198,91 @@ export function Titlebar({ texto }: { texto: string }) {
  *  no como un pie de página: menú de inicio, apps ancladas y bandeja con reloj.
  *  Sin ellas, el atajo quedaba como una etiqueta suelta sobre una franja oscura
  *  y nadie lo tomaba por algo que se puede usar. */
+/**
+ * El botón de encendido de la barra de tareas y su menú.
+ *
+ * Bloquear la sesión no es un botón suelto en ninguna parte: se hace desde
+ * aquí, desde el teclado, o desde el menú de inicio. Un botón "Bloquear
+ * pantalla" flotando en la barra no existe en ningún sistema, y un escenario
+ * que enseña a bloquear no puede enseñarlo con un control inventado.
+ *
+ * Apagar se ve pero no responde, como el botón de inicio: es lo que hace que
+ * el menú se lea como el del sistema. Apagar de verdad sacaría al participante
+ * del ejercicio. Es la única entrada inerte que queda: un menú con tres
+ * opciones grises y una viva era una lista de adorno con un botón dentro.
+ */
+export function BotonEnergia({ onBloquear }: { onBloquear: () => void }) {
+  const [abierto, setAbierto] = useState(false)
+  const caja = useRef<HTMLSpanElement>(null)
+
+  useEffect(() => {
+    if (!abierto) return
+    function fuera(evento: MouseEvent) {
+      if (!caja.current?.contains(evento.target as Node)) setAbierto(false)
+    }
+    document.addEventListener('mousedown', fuera)
+    return () => document.removeEventListener('mousedown', fuera)
+  }, [abierto])
+
+  return (
+    <span className={styles.energia} ref={caja}>
+      {abierto && (
+        <span className={styles.energiaMenu} role="menu">
+          <button
+            type="button"
+            role="menuitem"
+            className={styles.energiaItem}
+            onClick={(evento) => {
+              evento.stopPropagation()
+              setAbierto(false)
+              onBloquear()
+            }}
+          >
+            <Lock aria-hidden className={styles.energiaIcono} strokeWidth={2} />
+            Bloquear
+          </button>
+          <span
+            role="menuitem"
+            aria-disabled
+            className={`${styles.energiaItem} ${styles.energiaItemApagado}`}
+          >
+            <Power aria-hidden className={styles.energiaIcono} strokeWidth={2} />
+            Apagar
+          </span>
+        </span>
+      )}
+
+      <button
+        type="button"
+        className={styles.energiaBoton}
+        title="Inicio / apagado"
+        aria-label="Inicio y apagado"
+        aria-expanded={abierto}
+        aria-haspopup="menu"
+        onClick={(evento) => {
+          evento.stopPropagation()
+          setAbierto((estaba) => !estaba)
+        }}
+      >
+        <Power aria-hidden className={styles.energiaIcono} strokeWidth={2.25} />
+      </button>
+    </span>
+  )
+}
+
 export function Taskbar({
   app,
   atajo,
+  onBloquear,
   reloj = { hora: '10:41' },
 }: {
   /** Programa en el que ya se está, anclado y sin acción: pulsar el icono de la
    *  app que tienes delante no hace nada en ningún sistema. */
   app?: { Icono: LucideIcon; texto: string }
   atajo?: AtajoTaskbar
+  /** Si se pasa, la bandeja lleva el botón de encendido con su menú, y
+   *  "Bloquear" llama a esto. Ver BotonEnergia. */
+  onBloquear?: () => void
   /** La hora del sistema.
    *
    *  `'vivo'` toma la hora real del equipo y la deja avanzar, que es lo que
@@ -226,6 +304,10 @@ export function Taskbar({
       <span className={styles.taskbarStart} aria-hidden>
         <LayoutGrid className={styles.taskbarStartIcono} strokeWidth={2} />
       </span>
+      {/* Junto al de inicio, que es de donde cuelga apagar en cualquier
+          escritorio. En la bandeja, entre el wifi y el volumen, era un icono
+          gris de dieciséis píxeles que nadie encontraba. */}
+      {onBloquear && <BotonEnergia onBloquear={onBloquear} />}
       <span className={styles.taskbarDivider} aria-hidden />
 
       {app && (

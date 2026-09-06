@@ -5,6 +5,7 @@ import Instrucciones from '../../components/ui/Instrucciones'
 import PanelVeredicto, { type Senal } from '../../components/ui/PanelVeredicto'
 import Tarea from '../../components/ui/Tarea'
 import { AvisoSitio, CabeceraSitio, PieSitio } from '../../components/ui/armazonSitio'
+import { MailNav } from '../../components/ui/DesktopChrome'
 import { Navegador, type MarcadorNavegador, type PestanaConfig } from '../../components/ui/Navegador'
 import { manejarClicHotspot } from '../../components/ui/interactivo'
 import type { Contexto } from '../../components/ui/ContextoEscenario'
@@ -13,16 +14,19 @@ import { useAuth } from '../../context/AuthContext'
 import { useScenarioRun } from '../../hooks/useScenarioRun'
 import type { StoryNode } from '../../hooks/useStoryEngine'
 
-/** Id del atajo de la barra de tareas. No es una pestaña: se distingue del
- *  resto de destinos por eso. */
-const BLOQUEAR = 'bloquear'
-
 const ORDEN = ['claves', 'correo', 'documentos'] as const
 type PestanaId = (typeof ORDEN)[number]
 
+/** La pestaña en blanco que queda cuando se cierran todas. Un navegador nunca
+ *  se queda sin ninguna: al cerrar la última abre una nueva vacía. Sin ella la
+ *  barra quedaba sin pestañas pero la ventana seguía enseñando la última
+ *  página, con su URL y todo. */
+const NUEVA = 'nueva'
+
 /** La misma ventana de navegador que el resto de módulos, con tres pestañas
  *  que ningún compañero debería poder leer por encima del hombro. */
-const PESTANAS: Record<PestanaId, PestanaConfig> = {
+const PESTANAS: Record<PestanaId | typeof NUEVA, PestanaConfig> = {
+  [NUEVA]: { titulo: 'Nueva pestaña', url: '', segura: true },
   claves: {
     titulo: 'Gestor de contraseñas',
     url: 'vault.andes.ec/mis-claves',
@@ -52,10 +56,30 @@ const MARCADORES: MarcadorNavegador[] = [
 ]
 
 const CORREOS = [
-  { de: 'Dirección General', asunto: 'Aumento aprobado — confidencial' },
-  { de: 'Talento Humano', asunto: 'Reestructuración del área: borrador' },
-  { de: 'Finanzas', asunto: 'Presupuesto 2026 con cifras sin publicar' },
-  { de: 'Tu jefe directo', asunto: 'Tu evaluación de desempeño' },
+  {
+    de: 'Dirección General',
+    direccion: 'direccion@andes.ec',
+    asunto: 'Aumento aprobado — confidencial',
+    hora: '16:52',
+  },
+  {
+    de: 'Talento Humano',
+    direccion: 'talento.humano@andes.ec',
+    asunto: 'Reestructuración del área: borrador',
+    hora: '15:20',
+  },
+  {
+    de: 'Finanzas',
+    direccion: 'finanzas@andes.ec',
+    asunto: 'Presupuesto 2026 con cifras sin publicar',
+    hora: '11:04',
+  },
+  {
+    de: 'Tu jefe directo',
+    direccion: 'r.paredes@andes.ec',
+    asunto: 'Tu evaluación de desempeño',
+    hora: 'Ayer',
+  },
 ]
 
 const DOCUMENTOS = [
@@ -132,21 +156,34 @@ function PaginaClaves() {
 
 function PaginaCorreo() {
   return (
-    <div className={styles.page}>
-      <CabeceraSitio marca="Correo Andes" menu={['Recibidos', 'Enviados', 'Borradores', 'Spam']} />
-      <h2 className={styles.pageTitle}>Recibidos</h2>
-      <p className={styles.pageSub}>Cuatro mensajes sin leer.</p>
+    /* El mismo cliente que el resto de módulos: columna de carpetas y lista de
+       mensajes con avatar, remitente y asunto. Como tabla de dos columnas no se
+       leía como un correo, y lo que este escenario enseña es justamente que un
+       correo se lee de un vistazo desde atrás. */
+    <div className={styles.desktopBody}>
+      <MailNav activa="Recibidos" />
 
-      <div className={styles.datos} data-signal="correo">
-        {CORREOS.map((correo) => (
-          <div key={correo.asunto} className={styles.dato}>
-            <span className={styles.datoEtiqueta}>{correo.de}</span>
-            <span className={styles.datoValor}>{correo.asunto}</span>
+      <div className={styles.mailPane}>
+        <div className={styles.mailbody}>
+          <h1 className={styles.subject}>Recibidos</h1>
+
+          <div data-signal="correo">
+            {CORREOS.map((correo) => (
+              <div key={correo.asunto} className={styles.senderRow}>
+                <div className={styles.avatar} aria-hidden>
+                  {correo.de.slice(0, 1)}
+                </div>
+                <div className={styles.senderId}>
+                  <p className={styles.senderName}>{correo.de}</p>
+                  <p className={styles.senderAddr}>{correo.direccion}</p>
+                  <p className={styles.mailFolderAsunto}>{correo.asunto}</p>
+                </div>
+                <span className={styles.date}>{correo.hora}</span>
+              </div>
+            ))}
           </div>
-        ))}
+        </div>
       </div>
-
-      <PieSitio texto="Correo Andes · Corporación Andes" />
     </div>
   )
 }
@@ -158,12 +195,20 @@ function PaginaDocumentos() {
       <h2 className={styles.pageTitle}>Mi unidad</h2>
       <p className={styles.pageSub}>Archivos de este equipo.</p>
 
-      <div className={styles.datos} data-signal="documentos">
+      {/* Fichas de archivo y no la rejilla de etiqueta/valor: un nombre de
+          archivo no tiene espacios donde partir y desbordaba su columna encima
+          del texto de al lado. */}
+      <div className="mt-6 flex flex-col items-start gap-3" data-signal="documentos">
         {DOCUMENTOS.map((documento) => (
-          <div key={documento.nombre} className={styles.dato}>
-            <span className={styles.datoEtiqueta}>{documento.nombre}</span>
-            <span className={styles.datoValor}>{documento.detalle}</span>
-          </div>
+          <span key={documento.nombre} className={styles.attachment}>
+            <span className={styles.attachmentTipo} aria-hidden>
+              {documento.nombre.split('.').pop()?.toUpperCase()}
+            </span>
+            <span className={styles.attachmentNombre}>
+              {documento.nombre}
+              <span className={styles.attachmentPeso}>{documento.detalle}</span>
+            </span>
+          </span>
         ))}
       </div>
 
@@ -185,9 +230,13 @@ function PrivacidadClaves() {
   const [repaso, setRepaso] = useState<PestanaId | null>(null)
 
   const enRepaso = repaso !== null
-  const vistaAbiertas = enRepaso ? [...ORDEN] : abiertas
-  const vistaActiva = repaso ?? activa
+  const abiertasAhora = enRepaso ? [...ORDEN] : abiertas
   const vistaBloqueada = enRepaso ? false : bloqueada
+  // Con todo cerrado la ventana enseña una pestaña en blanco, no la última
+  // página que hubo: la pestaña ya no existe, su contenido tampoco.
+  const sinPestanas = abiertasAhora.length === 0
+  const vistaAbiertas = sinPestanas ? [NUEVA] : abiertasAhora
+  const vistaActiva = sinPestanas ? NUEVA : (repaso ?? activa)
 
   function onHotspot(event: React.MouseEvent) {
     if (final) return
@@ -205,10 +254,6 @@ function PrivacidadClaves() {
     }
 
     manejarClicHotspot(event, (goto) => {
-      if (goto === BLOQUEAR) {
-        setBloqueada(true)
-        return
-      }
       if (ORDEN.includes(goto as PestanaId)) setActiva(goto as PestanaId)
     })
   }
@@ -303,21 +348,20 @@ function PrivacidadClaves() {
       abiertas={vistaAbiertas}
       activa={vistaActiva}
       marcadores={MARCADORES}
-      atajo={{
-        texto: 'Bloquear pantalla',
-        goto: BLOQUEAR,
-        label: 'Bloqueó la pantalla desde la barra de tareas',
+      onBloquear={() => {
+        run.recordDecision({ accion: 'bloqueó la sesión desde el menú de encendido' })
+        setBloqueada(true)
       }}
       onHotspot={onHotspot}
     >
       {vistaActiva === 'claves' && <PaginaClaves />}
       {vistaActiva === 'correo' && <PaginaCorreo />}
       {vistaActiva === 'documentos' && <PaginaDocumentos />}
-      {vistaAbiertas.length === 0 && (
+      {vistaActiva === NUEVA && (
         <div className={styles.page}>
-          <h2 className={styles.pageTitle}>No queda ninguna pestaña abierta</h2>
+          <h2 className={styles.pageTitle}>Nueva pestaña</h2>
           <p className={styles.pageSub}>
-            Ya no hay nada que leer en tu pantalla. Falta la sesión.
+            Ya no queda nada abierto en tu navegador.
           </p>
         </div>
       )}
@@ -365,8 +409,9 @@ function PrivacidadClaves() {
         }
         pista={
           <p>
-            Cada pestaña se cierra con su ✕, como en tu navegador. La pantalla se bloquea desde la
-            barra de tareas, abajo. Puedes girarte cuando quieras: lo que dejes abierto, lo lee.
+            Cada pestaña se cierra con su ✕, como en tu navegador. La sesión se bloquea desde el
+            botón de encendido de la barra de tareas, abajo a la derecha. Puedes girarte cuando
+            quieras: lo que dejes abierto, lo lee.
           </p>
         }
       />
