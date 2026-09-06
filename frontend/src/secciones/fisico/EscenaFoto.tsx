@@ -51,18 +51,23 @@ export function EscenaFoto({ src, alt, zonas = [], destello, progreso }: Readonl
         />
       ))}
       {destello && (
-        <BotonHotspot
-          goto={destello.goto}
-          label={destello.label}
-          className={styles.destello}
-          style={{ left: destello.x, top: destello.y }}
-          ariaLabel="Inspeccionar"
-        >
-          <span className={styles.destelloPulso} aria-hidden />
-          <span className={styles.destelloPunto} aria-hidden>
-            ⚡
-          </span>
-        </BotonHotspot>
+        <>
+          <BotonHotspot
+            goto={destello.goto}
+            label={destello.label}
+            className={styles.destello}
+            style={{ left: destello.x, top: destello.y }}
+            ariaLabel="Inspeccionar"
+          >
+            <span className={styles.destelloPulso} aria-hidden />
+            <span className={styles.destelloPunto} aria-hidden>
+              ⚡
+            </span>
+          </BotonHotspot>
+          <div className={styles.destelloAviso}>
+            <p className={styles.destelloAvisoTexto}>Da clic en el destello ⚡ para ver las opciones</p>
+          </div>
+        </>
       )}
       {progreso && (
         <div className={styles.progresoAviso}>

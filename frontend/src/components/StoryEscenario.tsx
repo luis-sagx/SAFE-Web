@@ -487,16 +487,21 @@ function StoryEscenario({
       contenedorId="pantalla-escenario"
       onPantalla={setPantallaRepaso}
     />
+  ) : vista.kind === 'escena' && vista.destello && !engine.node.choices ? (
+    // Antes de tocar el destello no hay nada que decidir todavía: la escena
+    // misma ya avisa qué tocar (ver EscenaFoto), así que preguntar "¿Qué
+    // haces?" y ofrecer una pista aquí sería adelantar una pregunta que
+    // todavía no aplica.
+    null
   ) : (
     <div className="grid gap-3">
       <p className="text-lg font-semibold text-ink">{pregunta}</p>
-      {engine.node.choices ? (
-        <StoryChoices choices={engine.node.choices} onChoose={engine.choose} />
-      ) : (
-        <Instrucciones pista={pista} cuandoTermina={cuandoTermina} fallo={tocoEnVacio}>
-          {instruccion}
-        </Instrucciones>
-      )}
+      {engine.node.choices && <StoryChoices choices={engine.node.choices} onChoose={engine.choose} />}
+      {/* "Cuándo termina" y la pista viven aquí sin importar si ya hay
+          opciones a la vista: son ayuda de contexto, no parte de la lista. */}
+      <Instrucciones pista={pista} cuandoTermina={cuandoTermina} fallo={tocoEnVacio}>
+        {engine.node.choices ? undefined : instruccion}
+      </Instrucciones>
     </div>
   )
 
