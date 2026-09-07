@@ -3,7 +3,7 @@ import { Navigate, useLocation } from 'react-router'
 import PantallaCarga from './PantallaCarga'
 import { escenariosDeSeccion, type Escenario } from '../data/catalogo'
 import { fetchProgreso, type Progreso } from '../lib/api'
-import { escenarioEstaDisponible } from '../lib/bloqueoEscenarios'
+import { conEscenarioIntentado, escenarioEstaDisponible } from '../lib/bloqueoEscenarios'
 
 function RequireEscenarioDisponible({
   escenario,
@@ -59,24 +59,9 @@ function RequireEscenarioDisponible({
     // inmediato. Durante esa ventana el POST puede seguir en vuelo; no hay
     // motivo para devolver al participante a la lista por una lectura vieja.
     const siguienteTrasUnaCorrida = indiceCompletado >= 0 && indiceDestino === indiceCompletado + 1
-    const yaLoContabaProgreso = !recienCompletado || Boolean(
-      progreso?.escenarios.some((e) => e.id === recienCompletado) ||
-      progreso?.rondaEnCurso?.escenarios.some((e) => e.id === recienCompletado),
-    )
     const progresoEfectivo: Progreso | null =
-      progreso && recienCompletado && !yaLoContabaProgreso
-        ? progreso.rondaEnCurso
-          ? {
-              ...progreso,
-              rondaEnCurso: {
-                ...progreso.rondaEnCurso,
-                escenarios: [...progreso.rondaEnCurso.escenarios, { id: recienCompletado, ultimoOutcome: 'CORRECTO' }],
-              },
-            }
-          : {
-              ...progreso,
-              escenarios: [...progreso.escenarios, { id: recienCompletado, ultimoOutcome: 'CORRECTO' }],
-            }
+      progreso && recienCompletado
+        ? conEscenarioIntentado(progreso, recienCompletado)
         : progreso
 
     const disponible = siguienteTrasUnaCorrida || escenarioEstaDisponible(

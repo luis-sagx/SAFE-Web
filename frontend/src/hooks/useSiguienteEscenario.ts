@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { escenariosDeSeccion } from '../data/catalogo'
 import { fetchProgreso } from '../lib/api'
-import { siguienteEnRonda } from '../lib/bloqueoEscenarios'
+import { conEscenarioIntentado, siguienteEnRonda } from '../lib/bloqueoEscenarios'
 
 interface SiguienteEscenarioResult {
   ruta: string | null
@@ -27,23 +27,7 @@ export function useSiguienteEscenario(escenarioId: string): SiguienteEscenarioRe
       .then((progreso) => {
         if (cancelado) return
 
-        const progresoEfectivo = progreso.rondaEnCurso
-          ? {
-              ...progreso,
-              rondaEnCurso: {
-                ...progreso.rondaEnCurso,
-                escenarios: progreso.rondaEnCurso.escenarios.some((e) => e.id === escenarioId)
-                  ? progreso.rondaEnCurso.escenarios
-                  : [...progreso.rondaEnCurso.escenarios, { id: escenarioId, ultimoOutcome: 'CORRECTO' as const }],
-              },
-            }
-          : {
-              ...progreso,
-              escenarios: progreso.escenarios.some((e) => e.id === escenarioId)
-                ? progreso.escenarios
-                : [...progreso.escenarios, { id: escenarioId, ultimoOutcome: 'CORRECTO' as const }],
-            }
-        const siguiente = siguienteEnRonda(escenarios, progresoEfectivo)
+        const siguiente = siguienteEnRonda(escenarios, conEscenarioIntentado(progreso, escenarioId))
 
         if (siguiente) {
           setRuta(`/seccion/${siguiente.seccionId}/${siguiente.escenarioId}`)

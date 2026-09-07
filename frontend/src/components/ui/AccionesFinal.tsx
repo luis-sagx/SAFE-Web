@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { escenariosDeSeccion, getSeccion } from '../../data/catalogo'
 import { fetchProgreso } from '../../lib/api'
-import { siguienteEnRonda } from '../../lib/bloqueoEscenarios'
+import { conEscenarioIntentado, siguienteEnRonda } from '../../lib/bloqueoEscenarios'
 import ConfirmarRepeticionModal from '../ConfirmarRepeticionModal'
 
 interface AccionesFinalProps {
@@ -77,24 +77,7 @@ function AccionesFinal({ escenarioId, autoFocus }: AccionesFinalProps) {
   }, [autoFocus])
 
   const indiceActual = escenarios.findIndex((e) => e.id === escenarioId)
-  const progresoEfectivo = progreso
-    ? progreso.rondaEnCurso
-      ? {
-          ...progreso,
-          rondaEnCurso: {
-            ...progreso.rondaEnCurso,
-            escenarios: progreso.rondaEnCurso.escenarios.some((e) => e.id === escenarioId)
-              ? progreso.rondaEnCurso.escenarios
-              : [...progreso.rondaEnCurso.escenarios, { id: escenarioId, ultimoOutcome: 'CORRECTO' as const }],
-          },
-        }
-      : {
-          ...progreso,
-          escenarios: progreso.escenarios.some((e) => e.id === escenarioId)
-            ? progreso.escenarios
-            : [...progreso.escenarios, { id: escenarioId, ultimoOutcome: 'CORRECTO' as const }],
-        }
-    : null
+  const progresoEfectivo = progreso ? conEscenarioIntentado(progreso, escenarioId) : null
   const siguiente = progresoEfectivo
     ? siguienteEnRonda(escenarios, progresoEfectivo)
     : intentados
