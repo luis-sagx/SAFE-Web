@@ -30,7 +30,7 @@ export function setup() {
     JSON.stringify({
       nombre: 'Carga',
       apellido: 'CI',
-      email: `carga-${suffix}@ejemplo.com`,
+      email: `carga-${suffix}@ejemplo.ec`,
       // Distinta de la usada por el smoke previo del pipeline, pero igual de
       // válida: la cédula se indexa de forma única incluso como HMAC.
       cedula: '1710034073',
