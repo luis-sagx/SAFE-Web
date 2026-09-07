@@ -1,4 +1,4 @@
-import { render } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import { BrowserRouter } from 'react-router'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import AccionesFinal from './AccionesFinal'
@@ -38,6 +38,21 @@ describe('AccionesFinal', () => {
     )
 
     expect(container).toBeDefined()
+  })
+
+  it('apunta al siguiente escenario del catálogo', async () => {
+    fetchProgresoMock.mockResolvedValue({
+      escenarios: [{ id: 'fisico/salida-segura', ultimoOutcome: 'CORRECTO' }],
+      aprobados: 1,
+      requeridos: 5,
+      aprobado: false,
+      ronda: 1,
+      rondaEnCurso: null,
+    })
+    render(<BrowserRouter><AccionesFinal escenarioId="fisico/salida-segura" /></BrowserRouter>)
+    expect((await screen.findByRole('link', { name: 'Siguiente escenario →' })).getAttribute('href')).toBe(
+      '/seccion/fisico/trampa-usb',
+    )
   })
 
   it('renderiza sin errores cuando no hay progreso', async () => {

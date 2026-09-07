@@ -50,6 +50,15 @@ function RequireEscenarioDisponible({
   }
 
   if (!error) {
+    const catalogo = escenariosDeSeccion(escenario.seccionId)
+    const indiceDestino = catalogo.findIndex((e) => e.id === escenario.id)
+    const indiceCompletado = recienCompletado
+      ? catalogo.findIndex((e) => e.id === recienCompletado)
+      : -1
+    // La acción "Siguiente escenario" ya validó el orden y navega al vecino
+    // inmediato. Durante esa ventana el POST puede seguir en vuelo; no hay
+    // motivo para devolver al participante a la lista por una lectura vieja.
+    const siguienteTrasUnaCorrida = indiceCompletado >= 0 && indiceDestino === indiceCompletado + 1
     const yaLoContabaProgreso = !recienCompletado || Boolean(
       progreso?.escenarios.some((e) => e.id === recienCompletado) ||
       progreso?.rondaEnCurso?.escenarios.some((e) => e.id === recienCompletado),
@@ -70,8 +79,8 @@ function RequireEscenarioDisponible({
             }
         : progreso
 
-    const disponible = escenarioEstaDisponible(
-      escenariosDeSeccion(escenario.seccionId),
+    const disponible = siguienteTrasUnaCorrida || escenarioEstaDisponible(
+      catalogo,
       progresoEfectivo,
       escenario.id,
       { iniciandoRepeticion: iniciarRepeticion },
