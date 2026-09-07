@@ -50,8 +50,10 @@ function RequireEscenarioDisponible({
   }
 
   if (!error) {
-    const yaLoContabaProgreso =
-      !recienCompletado || progreso?.escenarios.some((e) => e.id === recienCompletado)
+    const yaLoContabaProgreso = !recienCompletado || Boolean(
+      progreso?.escenarios.some((e) => e.id === recienCompletado) ||
+      progreso?.rondaEnCurso?.escenarios.some((e) => e.id === recienCompletado),
+    )
     const progresoEfectivo: Progreso | null =
       progreso && recienCompletado && !yaLoContabaProgreso
         ? progreso.rondaEnCurso
@@ -84,7 +86,7 @@ function RequireEscenarioDisponible({
         <Navigate
           to={`/seccion/${escenario.seccionId}`}
           replace
-          state={{ bloqueado: escenario.titulo }}
+          state={null}
         />
       )
     }

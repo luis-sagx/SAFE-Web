@@ -1,6 +1,6 @@
 import { ArrowRight, CheckCircle2, LockKeyhole, Star } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { Link, Navigate, useLocation, useNavigate, useParams } from 'react-router'
+import { Link, Navigate, useNavigate, useParams } from 'react-router'
 import AppHeader, { CLASE_ATRAS } from '../components/AppHeader'
 import BarraProgreso from '../components/BarraProgreso'
 import CierreModuloModal from '../components/CierreModuloModal'
@@ -147,7 +147,6 @@ function Seccion() {
   const [mostrarCierre, setMostrarCierre] = useState(false)
   const [mostrarRepeticion, setMostrarRepeticion] = useState(false)
   const navigate = useNavigate()
-  const bloqueado = (useLocation().state as { bloqueado?: string } | null)?.bloqueado
 
   // getSeccion() devuelve un objeto nuevo en cada render: la dependencia es
   // seccion?.id, no seccion, para no pedir el progreso de nuevo en cada uno.
@@ -178,11 +177,6 @@ function Seccion() {
   const escenarios = escenariosDeSeccion(seccion.id)
   const faltan = progreso ? Math.max(progreso.requeridos - progreso.aprobados, 0) : 0
 
-  // El único escenario abierto de los que faltan: es el que hay que terminar
-  // para que se abra el siguiente, y por eso es el que nombran los candados.
-  const jugadosActuales = progreso?.rondaEnCurso?.escenarios ?? progreso?.escenarios ?? []
-  const pendiente = escenarios.findIndex((e) => !jugadosActuales.some((j) => j.id === e.id))
-  const abre = String(pendiente + 1).padStart(2, '0')
 
   return (
     <div className="min-h-screen bg-canvas">
@@ -209,17 +203,6 @@ function Seccion() {
 
         <h1 className="mt-3 text-4xl font-semibold tracking-tight text-ink">{seccion.titulo}</h1>
         <p className="mt-3 max-w-2xl text-base leading-relaxed text-body">{seccion.descripcion}</p>
-
-        {/* Por qué la página cambió sola. Lo pone RequireEscenarioDisponible al
-            redirigir; `role="status"` para que un lector de pantalla lo anuncie
-            al llegar, que es justo cuando hace falta. */}
-        {bloqueado && (
-          <output
-            className="mt-6 max-w-2xl rounded-lg border border-hairline-strong bg-canvas-soft px-4 py-3 text-base text-body"
-          >
-            «{bloqueado}» todavía no está abierto. Termina el escenario {abre} para llegar a él.
-          </output>
-        )}
 
         {/* El bloque de avance va antes que las tarjetas y ocupa el ancho
             completo: es lo que el participante viene a consultar cuando vuelve
