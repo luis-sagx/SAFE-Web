@@ -1,12 +1,13 @@
 import { ArrowRight, CheckCircle2, LockKeyhole, Star } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { Link, Navigate, useLocation, useParams } from 'react-router'
+import { Link, Navigate, useLocation, useNavigate, useParams } from 'react-router'
 import AppHeader, { CLASE_ATRAS } from '../components/AppHeader'
 import BarraProgreso from '../components/BarraProgreso'
 import CierreModuloModal from '../components/CierreModuloModal'
 import { escenariosDeSeccion, getSeccion, SECCIONES, type Seccion as SeccionCatalogo } from '../data/catalogo'
 import { fetchProgreso, type Progreso } from '../lib/api'
 import { escenarioEstaDisponible, escenarioFueJugado } from '../lib/bloqueoEscenarios'
+import ConfirmarRepeticionModal from '../components/ConfirmarRepeticionModal'
 
 /// La dificultad no delata nada: un escenario legítimo puede ser tan difícil
 /// como uno de fraude, y de hecho los que espejan lo son.
@@ -141,6 +142,8 @@ function Seccion() {
   const seccion = getSeccion(seccionId)
   const [progreso, setProgreso] = useState<Progreso | null>(null)
   const [mostrarCierre, setMostrarCierre] = useState(false)
+  const [mostrarRepeticion, setMostrarRepeticion] = useState(false)
+  const navigate = useNavigate()
   const bloqueado = (useLocation().state as { bloqueado?: string } | null)?.bloqueado
 
   // getSeccion() devuelve un objeto nuevo en cada render: la dependencia es
@@ -247,6 +250,13 @@ function Seccion() {
               etiqueta={`Avance de ${seccion.titulo}`}
             />
 
+            {progreso.rondaEnCurso && (
+              <p className="mt-2 text-sm text-muted">Repetición en curso: {progreso.rondaEnCurso.jugados}/{escenarios.length}</p>
+            )}
+            {progreso.rondaEnCurso && (
+              <p className="mt-2 text-sm text-body">Tu nota se mantiene en {progreso.aprobados}/{escenarios.length} hasta que termines los {escenarios.length} de esta repetición.</p>
+            )}
+
             {progreso.aprobado ? (
               // El resumen completo vive en el modal, no aquí: un bloque de
               // discriminadores permanentemente visible en cada visita a una
@@ -264,6 +274,17 @@ function Seccion() {
               </p>
             )}
           </section>
+        )}
+
+        {progreso && progreso.rondaEnCurso === null && progreso.escenarios.length >= escenarios.length && (
+          <div className="mt-8 flex items-center justify-between rounded-lg border border-hairline-strong bg-canvas-soft p-5">
+            <p className="text-base text-body">Ya recorriste todos los escenarios del módulo.</p>
+            <button type="button" onClick={() => setMostrarRepeticion(true)} className="rounded-md bg-primary px-4 py-2 font-medium text-on-primary">Repetir el módulo</button>
+          </div>
+        )}
+
+        {mostrarRepeticion && progreso && (
+          <ConfirmarRepeticionModal seccionId={seccion.id} titulo={seccion.titulo} aprobados={progreso.aprobados} aprobado={progreso.aprobado} onClose={() => setMostrarRepeticion(false)} onConfirm={() => navigate(`/seccion/${seccion.id}/${escenarios[0]?.escenarioId}`, { state: { iniciarRepeticion: true } })} />
         )}
 
         {mostrarCierre && progreso?.aprobado && (

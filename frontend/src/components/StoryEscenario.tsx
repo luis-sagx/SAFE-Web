@@ -46,7 +46,8 @@ interface StoryEscenarioProps {
    *  resalta el elemento real de la simulación al que apunta cada una. */
   senales: Senal[]
   rule: string
-  restartLabel: string
+  /** @deprecated La repetición ahora se inicia a nivel de módulo. */
+  restartLabel?: string
   pregunta?: string
   /** Acciones del cliente de correo. El escenario que las pasa tiene que
    *  declarar también sus finales en el grafo (ver finalesDeBarra). */

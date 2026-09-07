@@ -49,6 +49,11 @@ export interface Progreso {
   aprobados: number;
   requeridos: number;
   aprobado: boolean;
+  ronda: number;
+  rondaEnCurso: {
+    jugados: number;
+    escenarios: ProgresoEscenario[];
+  } | null;
 }
 
 /**
@@ -77,19 +82,27 @@ export function calcularProgreso(
   total: number,
   corridas: CorridaMinima[],
 ): Progreso {
-  const ultimoPorEscenario = new Map<string, RunOutcomeValue>();
-
   // Ordenadas de más antigua a más reciente: lo último que se escribe en el
   // mapa para cada escenario es siempre su corrida más reciente, sin importar
   // en qué orden llegaron de la base ni cuántas veces se haya repetido.
   const ordenadas = [...corridas].sort(
     (a, b) => a.finishedAt.getTime() - b.finishedAt.getTime(),
   );
+  const rondasCerradas: Map<string, RunOutcomeValue>[] = [];
+  let rondaAbierta = new Map<string, RunOutcomeValue>();
+  let idsRonda = new Set<string>();
   for (const corrida of ordenadas) {
-    ultimoPorEscenario.set(corrida.scenarioId, corrida.outcome);
+    idsRonda.add(corrida.scenarioId);
+    rondaAbierta.set(corrida.scenarioId, corrida.outcome);
+    if (idsRonda.size >= total) {
+      rondasCerradas.push(rondaAbierta);
+      rondaAbierta = new Map<string, RunOutcomeValue>();
+      idsRonda = new Set<string>();
+    }
   }
 
-  const escenarios: ProgresoEscenario[] = [...ultimoPorEscenario.entries()].map(
+  const rondaOficial = rondasCerradas.at(-1) ?? rondaAbierta;
+  const escenarios: ProgresoEscenario[] = [...rondaOficial.entries()].map(
     ([id, ultimoOutcome]) => ({ id, ultimoOutcome }),
   );
 
@@ -97,11 +110,19 @@ export function calcularProgreso(
     (e) => e.ultimoOutcome === 'CORRECTO',
   ).length;
 
+  const escenariosAbiertos: ProgresoEscenario[] = [...rondaAbierta.entries()].map(
+    ([id, ultimoOutcome]) => ({ id, ultimoOutcome }),
+  );
   return {
     modulo,
     escenarios,
     aprobados,
     requeridos,
     aprobado: aprobados >= requeridos && escenarios.length >= total,
+    ronda: Math.max(1, rondasCerradas.length + (rondaAbierta.size > 0 ? 1 : 0)),
+    rondaEnCurso:
+      rondasCerradas.length > 0 && rondaAbierta.size > 0
+        ? { jugados: rondaAbierta.size, escenarios: escenariosAbiertos }
+        : null,
   };
 }

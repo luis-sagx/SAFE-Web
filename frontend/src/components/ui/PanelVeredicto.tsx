@@ -29,8 +29,10 @@ interface PanelVeredictoProps {
   senales: Senal[]
   /** Lleva negritas <b>; contenido fijo del código. */
   regla: string
-  restartLabel: string
-  onRestart: () => void
+  /** @deprecated Se conserva por compatibilidad con escenarios existentes. */
+  restartLabel?: string
+  /** @deprecated La repetición ahora se inicia a nivel de módulo. */
+  onRestart?: () => void
   /** id del contenedor de la pantalla (ver EscenarioLayout), para ubicar el
    *  elemento que corresponde a cada señal. */
   contenedorId: string

@@ -103,5 +103,31 @@ describe('calcularProgreso', () => {
     expect(progreso.escenarios).toEqual([]);
     expect(progreso.aprobados).toBe(0);
     expect(progreso.aprobado).toBe(false);
+    expect(progreso.ronda).toBe(1);
+    expect(progreso.rondaEnCurso).toBeNull();
+  });
+
+  it('congela la ronda oficial mientras una repetición está abierta', () => {
+    const primera = Array.from({ length: 8 }, (_, i) =>
+      corrida({ scenarioId: `phishing/${i}`, outcome: i < 6 ? 'CORRECTO' : 'INCORRECTO', finishedAt: new Date(2026, 7, 1, 0, i) }),
+    );
+    const repeticion = [
+      corrida({ scenarioId: 'phishing/0', outcome: 'INCORRECTO', finishedAt: new Date(2026, 7, 2) }),
+      corrida({ scenarioId: 'phishing/1', outcome: 'INCORRECTO', finishedAt: new Date(2026, 7, 2, 0, 1) }),
+      corrida({ scenarioId: 'phishing/2', outcome: 'INCORRECTO', finishedAt: new Date(2026, 7, 2, 0, 2) }),
+    ];
+    const progreso = calcularProgreso('phishing', 6, 8, [...primera, ...repeticion]);
+    expect(progreso.aprobados).toBe(6);
+    expect(progreso.ronda).toBe(2);
+    expect(progreso.rondaEnCurso?.jugados).toBe(3);
+  });
+
+  it('cierra una ronda solo con escenarios distintos', () => {
+    const corridas = [
+      ...Array.from({ length: 7 }, (_, i) => corrida({ scenarioId: `phishing/${i}`, finishedAt: new Date(2026, 7, 1, 0, i) })),
+      corrida({ scenarioId: 'phishing/0', outcome: 'INCORRECTO', finishedAt: new Date(2026, 7, 1, 0, 8) }),
+      corrida({ scenarioId: 'phishing/7', finishedAt: new Date(2026, 7, 1, 0, 9) }),
+    ];
+    expect(calcularProgreso('phishing', 6, 8, corridas).ronda).toBe(1);
   });
 });

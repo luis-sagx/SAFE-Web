@@ -19,6 +19,7 @@ function RequireEscenarioDisponible({
   const location = useLocation()
   const recienCompletado = (location.state as { recienCompletado?: string } | null)
     ?.recienCompletado
+  const iniciarRepeticion = (location.state as { iniciarRepeticion?: boolean } | null)?.iniciarRepeticion
   const [progreso, setProgreso] = useState<Progreso | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
@@ -53,16 +54,25 @@ function RequireEscenarioDisponible({
       !recienCompletado || progreso?.escenarios.some((e) => e.id === recienCompletado)
     const progresoEfectivo: Progreso | null =
       progreso && recienCompletado && !yaLoContabaProgreso
-        ? {
-            ...progreso,
-            escenarios: [...progreso.escenarios, { id: recienCompletado, ultimoOutcome: 'CORRECTO' }],
-          }
+        ? progreso.rondaEnCurso
+          ? {
+              ...progreso,
+              rondaEnCurso: {
+                ...progreso.rondaEnCurso,
+                escenarios: [...progreso.rondaEnCurso.escenarios, { id: recienCompletado, ultimoOutcome: 'CORRECTO' }],
+              },
+            }
+          : {
+              ...progreso,
+              escenarios: [...progreso.escenarios, { id: recienCompletado, ultimoOutcome: 'CORRECTO' }],
+            }
         : progreso
 
     const disponible = escenarioEstaDisponible(
       escenariosDeSeccion(escenario.seccionId),
       progresoEfectivo,
       escenario.id,
+      { iniciandoRepeticion: iniciarRepeticion },
     )
 
     if (!disponible) {

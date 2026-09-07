@@ -69,6 +69,11 @@ export interface Progreso {
    *  da el catálogo, que es el único lugar donde existen de verdad. */
   requeridos: number
   aprobado: boolean
+  ronda?: number
+  rondaEnCurso?: {
+    jugados: number
+    escenarios: ProgresoEscenario[]
+  } | null
 }
 
 export interface Credentials {

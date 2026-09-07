@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { escenariosDeSeccion } from '../data/catalogo'
 import { fetchProgreso } from '../lib/api'
+import { siguienteEnRonda } from '../lib/bloqueoEscenarios'
 
 interface SiguienteEscenarioResult {
   ruta: string | null
@@ -14,7 +15,6 @@ export function useSiguienteEscenario(escenarioId: string): SiguienteEscenarioRe
   useEffect(() => {
     const seccionId = escenarioId.split('/')[0] ?? ''
     const escenarios = escenariosDeSeccion(seccionId)
-    const indiceActual = escenarios.findIndex((e) => e.id === escenarioId)
 
     if (escenarios.length === 0) {
       setCargando(false)
@@ -27,8 +27,23 @@ export function useSiguienteEscenario(escenarioId: string): SiguienteEscenarioRe
       .then((progreso) => {
         if (cancelado) return
 
-        const intentados = new Set([...progreso.escenarios.map((e) => e.id), escenarioId])
-        const siguiente = escenarios.find((e) => !intentados.has(e.id))
+        const progresoEfectivo = progreso.rondaEnCurso
+          ? {
+              ...progreso,
+              rondaEnCurso: {
+                ...progreso.rondaEnCurso,
+                escenarios: progreso.rondaEnCurso.escenarios.some((e) => e.id === escenarioId)
+                  ? progreso.rondaEnCurso.escenarios
+                  : [...progreso.rondaEnCurso.escenarios, { id: escenarioId, ultimoOutcome: 'CORRECTO' as const }],
+              },
+            }
+          : {
+              ...progreso,
+              escenarios: progreso.escenarios.some((e) => e.id === escenarioId)
+                ? progreso.escenarios
+                : [...progreso.escenarios, { id: escenarioId, ultimoOutcome: 'CORRECTO' as const }],
+            }
+        const siguiente = siguienteEnRonda(escenarios, progresoEfectivo)
 
         if (siguiente) {
           setRuta(`/seccion/${siguiente.seccionId}/${siguiente.escenarioId}`)
@@ -40,7 +55,7 @@ export function useSiguienteEscenario(escenarioId: string): SiguienteEscenarioRe
       .catch(() => {
         if (cancelado) return
 
-        const siguiente = escenarios[indiceActual + 1]
+        const siguiente = escenarios[escenarios.findIndex((e) => e.id === escenarioId) + 1]
         if (siguiente) {
           setRuta(`/seccion/${siguiente.seccionId}/${siguiente.escenarioId}`)
         } else {
