@@ -111,9 +111,20 @@ function CierreModulo({ seccion, escenarios, progreso }: CierreModuloProps) {
         Aprobaste <span className="font-semibold text-ink tabular-nums">{progreso.aprobados}</span>{' '}
         de los <span className="tabular-nums">{escenarios.length}</span> escenarios de{' '}
         {seccion.titulo}
-        {duracionMs !== null && <> en {formatearDuracion(duracionMs)}</>}. Puedes repetir cualquiera
+        {duracionMs !== null && <> en {formatearDuracion(duracionMs)}</>}. Puedes repetir el módulo completo
         cuando quieras.
       </p>
+
+      <ul aria-label="Resultado por escenario" className="mt-4 grid gap-2 sm:grid-cols-2">
+        {escenarios.map((escenario) => {
+          const resultado = progreso.escenarios.find((e) => e.id === escenario.id)
+          const ok = resultado?.ultimoOutcome === 'CORRECTO'
+          return <li key={escenario.id} className="flex items-center gap-2 text-sm text-body">
+            <span aria-hidden className={ok ? 'text-success' : 'text-danger'}>{ok ? '✓' : '✗'}</span>
+            {escenario.titulo}
+          </li>
+        })}
+      </ul>
 
       <div className="mt-5 overflow-x-auto">
         <p className="text-xs font-semibold uppercase tracking-[0.88px] text-muted">

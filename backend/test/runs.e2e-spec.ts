@@ -194,6 +194,8 @@ describe('Corridas (e2e)', () => {
         aprobados: 0,
         requeridos: 6,
         aprobado: false,
+        ronda: 1,
+        rondaEnCurso: null,
       });
     });
 

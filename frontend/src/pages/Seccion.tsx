@@ -1,12 +1,13 @@
 import { ArrowRight, CheckCircle2, LockKeyhole, Star } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { Link, Navigate, useLocation, useParams } from 'react-router'
+import { Link, Navigate, useNavigate, useParams } from 'react-router'
 import AppHeader, { CLASE_ATRAS } from '../components/AppHeader'
 import BarraProgreso from '../components/BarraProgreso'
 import CierreModuloModal from '../components/CierreModuloModal'
 import { escenariosDeSeccion, getSeccion, SECCIONES, type Seccion as SeccionCatalogo } from '../data/catalogo'
 import { fetchProgreso, type Progreso } from '../lib/api'
-import { escenarioEstaDisponible, escenarioFueJugado } from '../lib/bloqueoEscenarios'
+import { escenarioEstaDisponible } from '../lib/bloqueoEscenarios'
+import ConfirmarRepeticionModal from '../components/ConfirmarRepeticionModal'
 
 /// La dificultad no delata nada: un escenario legítimo puede ser tan difícil
 /// como uno de fraude, y de hecho los que espejan lo son.
@@ -70,13 +71,16 @@ function SiguienteModulo({
   // "bloqueado" y se corrige sola un segundo después miente en el intervalo.
   if (!siguiente || !progreso) return null
 
-  const abierto = progreso.aprobado
+  // El recorrido entre módulos exige haber visto todos los escenarios del
+  // módulo anterior, no aprobar una nota mínima. La nota sigue siendo útil
+  // para el certificado, pero nunca debe impedir avanzar al siguiente módulo.
+  const abierto = progreso.escenarios.length >= escenariosDeSeccion(seccion.id).length
   const listo = escenariosDeSeccion(siguiente.id).length > 0
-  const faltan = Math.max(progreso.requeridos - progreso.aprobados, 0)
+  const faltan = Math.max(escenariosDeSeccion(seccion.id).length - progreso.escenarios.length, 0)
   const Icono = siguiente.Icono
 
   const estado = !abierto
-    ? `Se abre al aprobar ${progreso.requeridos} escenarios de ${seccion.titulo}. Te ${faltan === 1 ? 'falta' : 'faltan'} ${faltan}.`
+    ? `Se abre al completar todos los escenarios de ${seccion.titulo}. Te ${faltan === 1 ? 'falta' : 'faltan'} ${faltan}.`
     : listo
       ? siguiente.descripcion
       : 'Ya lo desbloqueaste. Estamos preparando sus escenarios.'
@@ -141,7 +145,8 @@ function Seccion() {
   const seccion = getSeccion(seccionId)
   const [progreso, setProgreso] = useState<Progreso | null>(null)
   const [mostrarCierre, setMostrarCierre] = useState(false)
-  const bloqueado = (useLocation().state as { bloqueado?: string } | null)?.bloqueado
+  const [mostrarRepeticion, setMostrarRepeticion] = useState(false)
+  const navigate = useNavigate()
 
   // getSeccion() devuelve un objeto nuevo en cada render: la dependencia es
   // seccion?.id, no seccion, para no pedir el progreso de nuevo en cada uno.
@@ -172,10 +177,6 @@ function Seccion() {
   const escenarios = escenariosDeSeccion(seccion.id)
   const faltan = progreso ? Math.max(progreso.requeridos - progreso.aprobados, 0) : 0
 
-  // El único escenario abierto de los que faltan: es el que hay que terminar
-  // para que se abra el siguiente, y por eso es el que nombran los candados.
-  const pendiente = escenarios.findIndex((e) => !escenarioFueJugado(progreso, e.id))
-  const abre = String(pendiente + 1).padStart(2, '0')
 
   return (
     <div className="min-h-screen bg-canvas">
@@ -202,17 +203,6 @@ function Seccion() {
 
         <h1 className="mt-3 text-4xl font-semibold tracking-tight text-ink">{seccion.titulo}</h1>
         <p className="mt-3 max-w-2xl text-base leading-relaxed text-body">{seccion.descripcion}</p>
-
-        {/* Por qué la página cambió sola. Lo pone RequireEscenarioDisponible al
-            redirigir; `role="status"` para que un lector de pantalla lo anuncie
-            al llegar, que es justo cuando hace falta. */}
-        {bloqueado && (
-          <output
-            className="mt-6 max-w-2xl rounded-lg border border-hairline-strong bg-canvas-soft px-4 py-3 text-base text-body"
-          >
-            «{bloqueado}» todavía no está abierto. Termina el escenario {abre} para llegar a él.
-          </output>
-        )}
 
         {/* El bloque de avance va antes que las tarjetas y ocupa el ancho
             completo: es lo que el participante viene a consultar cuando vuelve
@@ -247,6 +237,13 @@ function Seccion() {
               etiqueta={`Avance de ${seccion.titulo}`}
             />
 
+            {progreso.rondaEnCurso && (
+              <p className="mt-2 text-sm text-muted">Repetición en curso: {progreso.rondaEnCurso.jugados}/{escenarios.length}</p>
+            )}
+            {progreso.rondaEnCurso && (
+              <p className="mt-2 text-sm text-body">Tu nota se mantiene en {progreso.aprobados}/{escenarios.length} hasta que termines los {escenarios.length} de esta repetición.</p>
+            )}
+
             {progreso.aprobado ? (
               // El resumen completo vive en el modal, no aquí: un bloque de
               // discriminadores permanentemente visible en cada visita a una
@@ -264,6 +261,17 @@ function Seccion() {
               </p>
             )}
           </section>
+        )}
+
+        {progreso && progreso.rondaEnCurso === null && progreso.escenarios.length >= escenarios.length && (
+          <div className="mt-8 flex items-center justify-between rounded-lg border border-hairline-strong bg-canvas-soft p-5">
+            <p className="text-base text-body">Ya recorriste todos los escenarios del módulo.</p>
+            <button type="button" onClick={() => setMostrarRepeticion(true)} className="rounded-md bg-primary px-4 py-2 font-medium text-on-primary">Repetir el módulo</button>
+          </div>
+        )}
+
+        {mostrarRepeticion && progreso && (
+          <ConfirmarRepeticionModal seccionId={seccion.id} titulo={seccion.titulo} aprobados={progreso.aprobados} aprobado={progreso.aprobado} onClose={() => setMostrarRepeticion(false)} onConfirm={() => navigate(`/seccion/${seccion.id}/${escenarios[0]?.escenarioId}`, { state: { iniciarRepeticion: true } })} />
         )}
 
         {mostrarCierre && progreso?.aprobado && (
@@ -286,7 +294,9 @@ function Seccion() {
               // algo distinto de "aprobado"/"falta" antes de jugarlo delataría
               // si el escenario es fraude o legítimo, y el menú no puede hacer
               // eso. "Sin jugar" es seguro porque no habla del contenido.
-              const ultimo = progreso?.escenarios.find((e) => e.id === escenario.id)?.ultimoOutcome
+              const ultimo = progreso?.rondaEnCurso
+                ? progreso.rondaEnCurso.escenarios.find((e) => e.id === escenario.id)?.ultimoOutcome
+                : progreso?.escenarios.find((e) => e.id === escenario.id)?.ultimoOutcome
               const aprobado = ultimo === 'CORRECTO'
               const disponible = escenarioEstaDisponible(escenarios, progreso, escenario.id)
               const cardClassName = `group flex w-full flex-col rounded-lg border bg-surface p-5 transition ${

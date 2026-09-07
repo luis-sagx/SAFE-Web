@@ -96,7 +96,7 @@ function Dashboard() {
             las dos, la que se recuerda es la segunda. */}
         <p className="mt-3 max-w-xl text-base leading-relaxed text-body">
           Elige un tipo de engaño y enfréntate a una situación como las de todos los días. Puedes
-          fallar y repetir: lo que cuenta es tu último intento en cada escenario.
+          fallar y repetir el módulo completo: lo que cuenta es tu última ronda completa.
         </p>
 
         {global.total > 0 && (

@@ -212,7 +212,7 @@ function Bienvenida() {
                   </strong>.
                 </li>
                 <li>
-                  Puedes fallar y repetir. Cuenta tu último intento en cada
+                  Puedes fallar y repetir el módulo completo. Cuenta tu última ronda completa.
                   escenario.
                 </li>
               </ul>

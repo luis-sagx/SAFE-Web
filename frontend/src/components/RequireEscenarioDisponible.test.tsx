@@ -82,4 +82,17 @@ describe('RequireEscenarioDisponible', () => {
 
     expect(await screen.findByText('Contenido del escenario')).toBeDefined()
   })
+
+  it('deja pasar el siguiente inmediato aunque el progreso todavía no refleje corridas previas', async () => {
+    fetchProgresoMock.mockResolvedValue({
+      escenarios: [],
+      aprobados: 0,
+      requeridos: 5,
+      aprobado: false,
+    })
+
+    renderConEstado({ recienCompletado: primero.id })
+
+    expect(await screen.findByText('Contenido del escenario')).toBeDefined()
+  })
 })

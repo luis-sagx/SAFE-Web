@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { escenariosDeSeccion } from '../data/catalogo'
 import { fetchProgreso } from '../lib/api'
+import { conEscenarioIntentado, siguienteEnRonda } from '../lib/bloqueoEscenarios'
 
 interface SiguienteEscenarioResult {
   ruta: string | null
@@ -14,7 +15,6 @@ export function useSiguienteEscenario(escenarioId: string): SiguienteEscenarioRe
   useEffect(() => {
     const seccionId = escenarioId.split('/')[0] ?? ''
     const escenarios = escenariosDeSeccion(seccionId)
-    const indiceActual = escenarios.findIndex((e) => e.id === escenarioId)
 
     if (escenarios.length === 0) {
       setCargando(false)
@@ -27,8 +27,7 @@ export function useSiguienteEscenario(escenarioId: string): SiguienteEscenarioRe
       .then((progreso) => {
         if (cancelado) return
 
-        const intentados = new Set([...progreso.escenarios.map((e) => e.id), escenarioId])
-        const siguiente = escenarios.find((e) => !intentados.has(e.id))
+        const siguiente = siguienteEnRonda(escenarios, conEscenarioIntentado(progreso, escenarioId))
 
         if (siguiente) {
           setRuta(`/seccion/${siguiente.seccionId}/${siguiente.escenarioId}`)
@@ -40,7 +39,7 @@ export function useSiguienteEscenario(escenarioId: string): SiguienteEscenarioRe
       .catch(() => {
         if (cancelado) return
 
-        const siguiente = escenarios[indiceActual + 1]
+        const siguiente = escenarios[escenarios.findIndex((e) => e.id === escenarioId) + 1]
         if (siguiente) {
           setRuta(`/seccion/${siguiente.seccionId}/${siguiente.escenarioId}`)
         } else {

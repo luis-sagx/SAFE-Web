@@ -3,7 +3,7 @@ import { Navigate, useLocation } from 'react-router'
 import PantallaCarga from './PantallaCarga'
 import { escenariosDeSeccion, type Escenario } from '../data/catalogo'
 import { fetchProgreso, type Progreso } from '../lib/api'
-import { escenarioEstaDisponible } from '../lib/bloqueoEscenarios'
+import { conEscenarioIntentado, escenarioEstaDisponible } from '../lib/bloqueoEscenarios'
 
 function RequireEscenarioDisponible({
   escenario,
@@ -19,6 +19,7 @@ function RequireEscenarioDisponible({
   const location = useLocation()
   const recienCompletado = (location.state as { recienCompletado?: string } | null)
     ?.recienCompletado
+  const iniciarRepeticion = (location.state as { iniciarRepeticion?: boolean } | null)?.iniciarRepeticion
   const [progreso, setProgreso] = useState<Progreso | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
@@ -49,20 +50,25 @@ function RequireEscenarioDisponible({
   }
 
   if (!error) {
-    const yaLoContabaProgreso =
-      !recienCompletado || progreso?.escenarios.some((e) => e.id === recienCompletado)
+    const catalogo = escenariosDeSeccion(escenario.seccionId)
+    const indiceDestino = catalogo.findIndex((e) => e.id === escenario.id)
+    const indiceCompletado = recienCompletado
+      ? catalogo.findIndex((e) => e.id === recienCompletado)
+      : -1
+    // La acción "Siguiente escenario" ya validó el orden y navega al vecino
+    // inmediato. Durante esa ventana el POST puede seguir en vuelo; no hay
+    // motivo para devolver al participante a la lista por una lectura vieja.
+    const siguienteTrasUnaCorrida = indiceCompletado >= 0 && indiceDestino === indiceCompletado + 1
     const progresoEfectivo: Progreso | null =
-      progreso && recienCompletado && !yaLoContabaProgreso
-        ? {
-            ...progreso,
-            escenarios: [...progreso.escenarios, { id: recienCompletado, ultimoOutcome: 'CORRECTO' }],
-          }
+      progreso && recienCompletado
+        ? conEscenarioIntentado(progreso, recienCompletado)
         : progreso
 
-    const disponible = escenarioEstaDisponible(
-      escenariosDeSeccion(escenario.seccionId),
+    const disponible = siguienteTrasUnaCorrida || escenarioEstaDisponible(
+      catalogo,
       progresoEfectivo,
       escenario.id,
+      { iniciandoRepeticion: iniciarRepeticion },
     )
 
     if (!disponible) {
@@ -74,7 +80,7 @@ function RequireEscenarioDisponible({
         <Navigate
           to={`/seccion/${escenario.seccionId}`}
           replace
-          state={{ bloqueado: escenario.titulo }}
+          state={null}
         />
       )
     }
