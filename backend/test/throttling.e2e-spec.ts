@@ -4,6 +4,7 @@ import request from 'supertest';
 import type { App } from 'supertest/types';
 import { AppModule } from '../apps/identidad/src/app.module';
 import { configurarApp } from '@comun';
+import { MailService } from '../apps/identidad/src/mail/mail.service';
 import { PrismaService } from '../apps/identidad/src/prisma/prisma.service';
 import { cuerpo, limpiar, type ErrorBody } from './identidad.e2e';
 
@@ -18,7 +19,12 @@ describe('Límite de peticiones (e2e)', () => {
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
       imports: [AppModule],
-    }).compile();
+    })
+      // Sin RESEND_API_KEY en CI, MailService.getOrThrow tumbaría el arranque
+      // (ver crearApp() en identidad.e2e.ts, mismo override).
+      .overrideProvider(MailService)
+      .useValue({ enviarCertificado: () => Promise.resolve(true) })
+      .compile();
 
     app = configurarApp(moduleRef.createNestApplication());
     await app.init();
