@@ -35,7 +35,7 @@ describe('Límite de peticiones (e2e)', () => {
     const intento = () =>
       server()
         .post('/api/auth/login')
-        .send({ email: 'atacante@ejemplo.com', password: 'adivinando' });
+        .send({ email: 'atacante@ejemplo.ec', password: 'adivinando' });
 
     const respuestas: Awaited<ReturnType<typeof intento>>[] = [];
     for (let i = 0; i < 6; i++) {
@@ -62,7 +62,7 @@ describe('Límite de peticiones (e2e)', () => {
       server()
         .post('/api/auth/login')
         .set('X-Forwarded-For', ip)
-        .send({ email: 'otro@ejemplo.com', password: 'adivinando' });
+        .send({ email: 'otro@ejemplo.ec', password: 'adivinando' });
 
     // Agota el cubo de una IP.
     for (let i = 0; i < 6; i++) await login('203.0.113.10');

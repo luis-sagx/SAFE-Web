@@ -80,9 +80,9 @@ describe('Gestión de cuentas por el supervisor (e2e)', () => {
       const lista = cuerpo<Array<Record<string, unknown>>>(res);
       expect(lista.every((p) => p.activo === true)).toBe(true);
       // El supervisor no aparece: la lista es solo de participantes.
-      expect(
-        lista.some((p) => p.email === 'maria.supervisor@ejemplo.com'),
-      ).toBe(false);
+      expect(lista.some((p) => p.email === 'maria.supervisor@ejemplo.ec')).toBe(
+        false,
+      );
     });
   });
 
