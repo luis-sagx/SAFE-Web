@@ -70,7 +70,10 @@ export interface ProgresoBody {
   requeridos: number;
   aprobado: boolean;
   ronda: number;
-  rondaEnCurso: { jugados: number; escenarios: { id: string; ultimoOutcome: string }[] } | null;
+  rondaEnCurso: {
+    jugados: number;
+    escenarios: { id: string; ultimoOutcome: string }[];
+  } | null;
 }
 
 export function cuerpo<T>(res: { body: unknown }): T {

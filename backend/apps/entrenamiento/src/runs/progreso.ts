@@ -110,9 +110,9 @@ export function calcularProgreso(
     (e) => e.ultimoOutcome === 'CORRECTO',
   ).length;
 
-  const escenariosAbiertos: ProgresoEscenario[] = [...rondaAbierta.entries()].map(
-    ([id, ultimoOutcome]) => ({ id, ultimoOutcome }),
-  );
+  const escenariosAbiertos: ProgresoEscenario[] = [
+    ...rondaAbierta.entries(),
+  ].map(([id, ultimoOutcome]) => ({ id, ultimoOutcome }));
   return {
     modulo,
     escenarios,
