@@ -6,7 +6,7 @@ import BarraProgreso from '../components/BarraProgreso'
 import CierreModuloModal from '../components/CierreModuloModal'
 import { escenariosDeSeccion, getSeccion, SECCIONES, type Seccion as SeccionCatalogo } from '../data/catalogo'
 import { fetchProgreso, type Progreso } from '../lib/api'
-import { escenarioEstaDisponible, escenarioFueJugado } from '../lib/bloqueoEscenarios'
+import { escenarioEstaDisponible } from '../lib/bloqueoEscenarios'
 import ConfirmarRepeticionModal from '../components/ConfirmarRepeticionModal'
 
 /// La dificultad no delata nada: un escenario legítimo puede ser tan difícil
@@ -71,13 +71,16 @@ function SiguienteModulo({
   // "bloqueado" y se corrige sola un segundo después miente en el intervalo.
   if (!siguiente || !progreso) return null
 
-  const abierto = progreso.aprobado
+  // El recorrido entre módulos exige haber visto todos los escenarios del
+  // módulo anterior, no aprobar una nota mínima. La nota sigue siendo útil
+  // para el certificado, pero nunca debe impedir avanzar al siguiente módulo.
+  const abierto = progreso.escenarios.length >= escenariosDeSeccion(seccion.id).length
   const listo = escenariosDeSeccion(siguiente.id).length > 0
-  const faltan = Math.max(progreso.requeridos - progreso.aprobados, 0)
+  const faltan = Math.max(escenariosDeSeccion(seccion.id).length - progreso.escenarios.length, 0)
   const Icono = siguiente.Icono
 
   const estado = !abierto
-    ? `Se abre al aprobar ${progreso.requeridos} escenarios de ${seccion.titulo}. Te ${faltan === 1 ? 'falta' : 'faltan'} ${faltan}.`
+    ? `Se abre al completar todos los escenarios de ${seccion.titulo}. Te ${faltan === 1 ? 'falta' : 'faltan'} ${faltan}.`
     : listo
       ? siguiente.descripcion
       : 'Ya lo desbloqueaste. Estamos preparando sus escenarios.'
@@ -177,7 +180,8 @@ function Seccion() {
 
   // El único escenario abierto de los que faltan: es el que hay que terminar
   // para que se abra el siguiente, y por eso es el que nombran los candados.
-  const pendiente = escenarios.findIndex((e) => !escenarioFueJugado(progreso, e.id))
+  const jugadosActuales = progreso?.rondaEnCurso?.escenarios ?? progreso?.escenarios ?? []
+  const pendiente = escenarios.findIndex((e) => !jugadosActuales.some((j) => j.id === e.id))
   const abre = String(pendiente + 1).padStart(2, '0')
 
   return (
@@ -307,7 +311,9 @@ function Seccion() {
               // algo distinto de "aprobado"/"falta" antes de jugarlo delataría
               // si el escenario es fraude o legítimo, y el menú no puede hacer
               // eso. "Sin jugar" es seguro porque no habla del contenido.
-              const ultimo = progreso?.escenarios.find((e) => e.id === escenario.id)?.ultimoOutcome
+              const ultimo = progreso?.rondaEnCurso
+                ? progreso.rondaEnCurso.escenarios.find((e) => e.id === escenario.id)?.ultimoOutcome
+                : progreso?.escenarios.find((e) => e.id === escenario.id)?.ultimoOutcome
               const aprobado = ultimo === 'CORRECTO'
               const disponible = escenarioEstaDisponible(escenarios, progreso, escenario.id)
               const cardClassName = `group flex w-full flex-col rounded-lg border bg-surface p-5 transition ${

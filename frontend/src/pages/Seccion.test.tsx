@@ -72,4 +72,19 @@ describe('Seccion', () => {
 
     expect(await screen.findByRole('dialog')).toBeDefined()
   })
+
+  it('considera desbloqueado el módulo siguiente al terminar todos los escenarios aunque la nota sea menor a 6', async () => {
+    fetchProgresoMock.mockResolvedValue({
+      modulo: 'phishing',
+      escenarios: Array.from({ length: 8 }, (_, i) => ({ id: `phishing/e${i}`, ultimoOutcome: 'INCORRECTO' })),
+      aprobados: 4,
+      requeridos: 6,
+      aprobado: false,
+      ronda: 1,
+      rondaEnCurso: null,
+    })
+    renderSeccion()
+    expect(await screen.findByText('Smishing')).toBeDefined()
+    expect(screen.getByRole('link', { name: /Smishing/ })).toBeDefined()
+  })
 })
