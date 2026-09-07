@@ -3,6 +3,7 @@ import AccionesFinal from './AccionesFinal'
 import EtiquetaAprobacion from './EtiquetaAprobacion'
 import type { StoryNode } from '../../hooks/useStoryEngine'
 import type { RunStatus } from '../../hooks/useScenarioRun'
+import { outcomeFromKind } from '../../hooks/useScenarioRun'
 
 export interface Senal {
   id: string
@@ -239,6 +240,7 @@ function PanelVeredicto({
 
           <AccionesFinal
             escenarioId={escenarioId}
+            outcome={node.resultado ?? outcomeFromKind(node.kind)}
             onRestart={onRestart}
             restartLabel={restartLabel}
             autoFocus={!haySenales}
