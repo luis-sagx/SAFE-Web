@@ -1,6 +1,7 @@
 import { IsEmail, IsString, MaxLength, MinLength } from 'class-validator';
 import { NormalizarEmail, TransformarTexto } from '@comun';
 import { EsCedulaEcuatoriana } from '../../cedula/cedula';
+import { EsDominioPermitido } from '../dominios-correo';
 
 export class RegisterDto {
   @IsString()
@@ -16,6 +17,7 @@ export class RegisterDto {
   apellido: string;
 
   @IsEmail({}, { message: 'El correo no tiene un formato válido.' })
+  @EsDominioPermitido()
   @MaxLength(120)
   @NormalizarEmail()
   email: string;

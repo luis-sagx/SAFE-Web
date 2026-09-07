@@ -3,6 +3,7 @@ import type { ConfigService } from '@nestjs/config';
 import type { JwtService } from '@nestjs/jwt';
 import type { AtestacionPayload, JwtPayload } from '@comun';
 import { CertificadosService } from './certificados.service';
+import type { MailService } from '../mail/mail.service';
 import type { PrismaService } from '../prisma/prisma.service';
 
 const PARTICIPANTE: JwtPayload = {
@@ -37,14 +38,27 @@ function configFake() {
   } as unknown as ConfigService;
 }
 
+/// Se devuelve el mock aparte del objeto: usarlo como `mail.enviarCertificado`
+/// en una aserción dispara `@typescript-eslint/unbound-method` (el método se
+/// separa de su "this" al pasarlo a `expect`).
+function mailFake(): { mail: MailService; enviarCertificado: jest.Mock } {
+  const enviarCertificado = jest.fn().mockResolvedValue(true);
+  return {
+    mail: { enviarCertificado } as unknown as MailService,
+    enviarCertificado,
+  };
+}
+
 function servicio(
   prisma: Partial<{ certificate: unknown; participant: unknown }>,
   jwt: JwtService,
+  mail: MailService = mailFake().mail,
 ) {
   return new CertificadosService(
     prisma as unknown as PrismaService,
     jwt,
     configFake(),
+    mail,
   );
 }
 
@@ -100,6 +114,106 @@ describe('CertificadosService.emitir · el canje de la atestación', () => {
       PARTICIPANTE.sub,
     );
     expect((datosCreados as { codigo: string }).codigo).toMatch(/^SW-/);
+  });
+
+  // `intentarEnviarPorCorreo` es privado y se llama sin `await` desde
+  // `emitir()` (fire-and-forget a propósito, ver el comentario ahí): la
+  // prueba espera a que su cadena de promesas resuelva en vez de asumir que
+  // ya terminó cuando `emitir()` devuelve.
+  // `generarCertificadoPdf` usa streams reales de pdfkit por debajo: no
+  // resuelve en un puñado de microtasks, así que un poll con `setImmediate`
+  // no basta de forma confiable. `setTimeout` sí le da tiempo real a las
+  // fases de I/O de Node entre cada intento.
+  async function esperarLlamada(mock: jest.Mock, intentosMax = 40) {
+    for (let i = 0; i < intentosMax && mock.mock.calls.length === 0; i++) {
+      await new Promise((resolver) => setTimeout(resolver, 5));
+    }
+  }
+
+  it('manda el certificado por correo la primera vez que hay algo que mandar', async () => {
+    const jwt = jwtQueDevuelve(atestacionValida());
+    const { mail, enviarCertificado } = mailFake();
+    let datosActualizados: unknown;
+    const svc = servicio(
+      {
+        certificate: {
+          findUnique: () => Promise.resolve(null),
+          create: ({ data }: { data: unknown }) =>
+            Promise.resolve({
+              id: 'cert-1',
+              ...(data as object),
+              emitidoAt: new Date('2026-09-04T00:00:00.000Z'),
+              certificadoEnviadoAt: null,
+            }),
+          update: ({ data }: { data: unknown }) => {
+            datosActualizados = data;
+            return Promise.resolve({});
+          },
+        },
+        participant: {
+          findUnique: () =>
+            Promise.resolve({
+              nombre: 'Ana',
+              apellido: 'Pérez',
+              email: 'ana@gmail.com',
+            }),
+        },
+      },
+      jwt,
+      mail,
+    );
+
+    await svc.emitir(PARTICIPANTE, 'token');
+    await esperarLlamada(enviarCertificado);
+
+    expect(enviarCertificado).toHaveBeenCalledWith(
+      'ana@gmail.com',
+      'Ana Pérez',
+      expect.any(Buffer),
+    );
+    expect(
+      (datosActualizados as { certificadoEnviadoAt: Date })
+        .certificadoEnviadoAt,
+    ).toBeInstanceOf(Date);
+  });
+
+  it('no reenvía si el certificado ya se mandó por correo antes', async () => {
+    const jwt = jwtQueDevuelve(atestacionValida());
+    const { mail, enviarCertificado } = mailFake();
+    const svc = servicio(
+      {
+        certificate: {
+          findUnique: () =>
+            Promise.resolve({
+              id: 'cert-1',
+              participantId: PARTICIPANTE.sub,
+              modulos: atestacionValida().modulos,
+              calificacion: atestacionValida().calificacion,
+              horas: 4,
+              codigo: 'SW-AAAA-BBBB',
+              emitidoAt: new Date('2026-09-04T00:00:00.000Z'),
+              certificadoEnviadoAt: new Date('2026-09-04T00:00:00.000Z'),
+            }),
+        },
+        participant: {
+          findUnique: () =>
+            Promise.resolve({
+              nombre: 'Ana',
+              apellido: 'Pérez',
+              email: 'ana@gmail.com',
+            }),
+        },
+      },
+      jwt,
+      mail,
+    );
+
+    await svc.emitir(PARTICIPANTE, 'token');
+    // No hay un segundo envío que esperar: si `intentarEnviarPorCorreo`
+    // llamara a `enviarCertificado` igual, ya habría corrido para cuando
+    // `emitir()` termina (el chequeo de `certificadoEnviadoAt` es lo primero
+    // que hace, sin ningún `await` antes).
+    expect(enviarCertificado).not.toHaveBeenCalled();
   });
 
   // Astronómicamente raro con este alfabeto, pero si el código generado

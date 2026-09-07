@@ -1,14 +1,16 @@
 import {
   ForbiddenException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import type { AtestacionPayload, JwtPayload } from '@comun';
+import { MailService } from '../mail/mail.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { generarCodigoCertificado } from './codigo';
-import { generarCertificadoPdf } from './pdf';
+import { generarCertificadoPdf, type DatosCertificado } from './pdf';
 
 /// Guardada en cada fila (§5.4 del diseño): un certificado ya emitido no debe
 /// cambiar de duración si esta constante cambia después.
@@ -46,11 +48,18 @@ export interface VerificacionCertificado {
 
 @Injectable()
 export class CertificadosService {
+  private readonly logger = new Logger(CertificadosService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwt: JwtService,
     private readonly config: ConfigService,
+    private readonly mail: MailService,
   ) {}
+
+  private origenCertificado(): string {
+    return this.config.get('CERTIFICADO_ORIGEN', 'https://safeweb.espe.edu.ec');
+  }
 
   /// Verifica el pase que firmó `entrenamiento` y exige que sea del mismo
   /// participante que lo presenta. Sin esto, la atestación de otra persona
@@ -98,6 +107,9 @@ export class CertificadosService {
       payload.modulos.length <= existente.modulos.length &&
       payload.calificacion === existente.calificacion
     ) {
+      // Sin cambios en el recorrido: igual se intenta el envío, por si la
+      // primera vez el correo no estaba verificado todavía.
+      void this.intentarEnviarPorCorreo(existente);
       return this.aPublico(existente);
     }
 
@@ -110,6 +122,7 @@ export class CertificadosService {
           emitidoAt: new Date(),
         },
       });
+      void this.intentarEnviarPorCorreo(actualizado);
       return this.aPublico(actualizado);
     }
 
@@ -124,6 +137,7 @@ export class CertificadosService {
             calificacion: payload.calificacion,
           },
         });
+        void this.intentarEnviarPorCorreo(creado);
         return this.aPublico(creado);
       } catch (error) {
         if (!esColisionDeUnicidad(error) || intento === 4) throw error;
@@ -132,6 +146,64 @@ export class CertificadosService {
 
     // Inalcanzable: el bucle siempre retorna o lanza antes de agotarse.
     throw new Error('No se pudo generar el certificado.');
+  }
+
+  /// Manda el PDF por correo la primera vez que hay algo que mandar (§ mail
+  /// design): correo verificado y aún no enviado. Fire-and-forget desde
+  /// `emitir` a propósito — el participante no debe esperar a Resend para
+  /// obtener su respuesta, y ya puede descargar el PDF en la app sin esto.
+  private async intentarEnviarPorCorreo(certificado: {
+    id: string;
+    participantId: string;
+    certificadoEnviadoAt: Date | null;
+    modulos: string[];
+    horas: number;
+    calificacion: number;
+    emitidoAt: Date;
+    codigo: string;
+  }): Promise<void> {
+    // Envuelto entero: se llama sin `await` desde `emitir()`, así que un
+    // rechazo aquí sería una promesa no manejada, no un error que alguien
+    // pueda capturar. El certificado ya se guardó; que el correo falle no
+    // debe afectar nada más.
+    try {
+      if (certificado.certificadoEnviadoAt) return;
+
+      const persona = await this.prisma.participant.findUnique({
+        where: { id: certificado.participantId },
+        select: { nombre: true, apellido: true, email: true },
+      });
+
+      if (!persona?.email) return;
+
+      const datos: DatosCertificado = {
+        nombreCompleto: `${persona.nombre} ${persona.apellido}`.trim(),
+        modulos: certificado.modulos,
+        horas: certificado.horas,
+        calificacion: certificado.calificacion,
+        emitidoAt: certificado.emitidoAt,
+        codigo: certificado.codigo,
+        origen: this.origenCertificado(),
+      };
+
+      const pdf = await generarCertificadoPdf(datos);
+      const enviado = await this.mail.enviarCertificado(
+        persona.email,
+        datos.nombreCompleto,
+        pdf,
+      );
+
+      if (enviado) {
+        await this.prisma.certificate.update({
+          where: { id: certificado.id },
+          data: { certificadoEnviadoAt: new Date() },
+        });
+      }
+    } catch (error) {
+      this.logger.warn(
+        `No se pudo enviar el certificado de ${certificado.participantId}: ${String(error)}`,
+      );
+    }
   }
 
   /// Regenera el PDF de la fila existente. No lo persiste (§5.4 del diseño):
@@ -166,10 +238,7 @@ export class CertificadosService {
       calificacion: certificado.calificacion,
       emitidoAt: certificado.emitidoAt,
       codigo: certificado.codigo,
-      origen: this.config.get(
-        'CERTIFICADO_ORIGEN',
-        'https://safeweb.espe.edu.ec',
-      ),
+      origen: this.origenCertificado(),
     });
   }
 

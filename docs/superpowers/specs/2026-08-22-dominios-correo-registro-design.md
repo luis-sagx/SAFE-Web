@@ -14,9 +14,12 @@ registros falsos y contamina los datos del estudio.
 **Resuelve:** dominios inventados y proveedores desechables conocidos.
 
 **No resuelve:** que la casilla exista ni que la persona la controle. Una cuenta
-Gmail nueva se crea en treinta segundos y pasa esta validación. La única defensa
-real contra eso es verificación por enlace (token, mailer, endpoint de
-confirmación), que hoy no existe en `identidad` y queda como issue aparte.
+Gmail nueva se crea en treinta segundos y pasa esta validación. La defensa real
+contra eso sería verificación por enlace o código — evaluada y descartada
+(ver `2026-09-03-gamificacion-y-certificado-design.md`): la cédula ya
+garantiza una cuenta por persona, y un paso extra en el registro no sumaba
+nada frente a ese costo. El certificado se manda al correo que el
+participante puso, se haya podido comprobar o no que lo controla.
 
 Este límite se documenta en el código con el mismo formato de `cedula.ts`
 ("LO QUE ESTO HACE / LO QUE NO HACE"), para que nadie lea la validación como una
@@ -32,39 +35,56 @@ garantía que no da.
 
 Dos mecanismos complementarios:
 
-**1. Sufijos institucionales (regla, no lista).**
+**1. Sufijo `.ec` (regla, no lista).**
 
 ```ts
-const SUFIJOS_INSTITUCIONALES = ['.edu.ec'];
+const SUFIJOS_PERMITIDOS = ['.ec'];
 ```
 
-`.edu.ec` es un dominio de segundo nivel restringido: NIC.EC solo lo asigna a
-instituciones educativas registradas. Un sufijo cubre ESPE, EPN, PUCE, USFQ,
-UDLA, UTPL, Yachay y cualquier institución futura, sin mantener un catálogo de
-sesenta universidades que envejece al primer convenio nuevo.
+Revisión sobre el diseño original: en vez de restringir al de segundo nivel
+`.edu.ec`, se acepta el ccTLD `.ec` completo — NIC.EC lo asigna a cualquier
+persona o entidad ecuatoriana, no solo instituciones educativas. Un sufijo
+cubre `.edu.ec` (ESPE, EPN, PUCE, USFQ, UDLA, UTPL, Yachay…), `.com.ec`,
+`.gob.ec`, `.med.ec` y cualquier dominio propio registrado en Ecuador, sin
+mantener un catálogo que envejece al primer convenio nuevo. La verificación
+por correo (ver más abajo) es lo que sigue evitando que esto se convierta en
+"cualquier dominio inventado que termine en .ec sirve": el correo tiene que
+responder al link de todos modos.
 
-`endsWith('.edu.ec')` incluye el punto inicial, así que `midominio-edu.ec` y
-`edu.ec.atacante.com` no pasan. `mail.usfq.edu.ec` sí pasa, sin registrarlo.
+`endsWith('.ec')` incluye el punto inicial, así que `midominio-ec.com` no pasa
+y `mail.usfq.edu.ec` sí, sin registrarlo aparte.
 
 **2. Proveedores libres (lista explícita).**
 
 ```ts
 const DOMINIOS_PERMITIDOS = new Set([
+  // Google, Microsoft, Yahoo, Apple, Proton (con variantes regionales/legadas)
   'gmail.com', 'googlemail.com',
-  'hotmail.com', 'hotmail.es', 'outlook.com', 'outlook.es', 'live.com',
-  'yahoo.com', 'yahoo.es',
-  'icloud.com', 'proton.me', 'protonmail.com',
+  'hotmail.com', 'hotmail.es', 'hotmail.co.uk', 'hotmail.com.mx',
+  'outlook.com', 'outlook.es', 'live.com', 'live.com.mx', 'msn.com',
+  'yahoo.com', 'yahoo.es', 'yahoo.com.mx', 'ymail.com',
+  'icloud.com', 'me.com',
+  'proton.me', 'protonmail.com', 'protonmail.ch',
+  // Otros proveedores internacionales de uso corriente
+  'aol.com', 'mail.com', 'gmx.com', 'gmx.net', 'zoho.com', 'yandex.com',
+  'fastmail.com',
 ]);
 ```
 
 Aquí no hay regla posible; hay que enumerar. Añadir un proveedor = editar este
 Set. Es el único lugar.
 
+Revisión sobre la primera versión de este spec: la lista original (12
+dominios) se quedaba corta y arriesgaba bloquear a alguien legítimo que no usa
+ninguno de los cuatro grandes. Se amplió a ~28 sin volverse una lista negra de
+desechables — sigue siendo allowlist pura: todo lo que no está aquí ni termina
+en `.ec` queda fuera.
+
 **Predicado:**
 
 ```ts
 permitido = DOMINIOS_PERMITIDOS.has(dominio)
-         || SUFIJOS_INSTITUCIONALES.some((sufijo) => dominio.endsWith(sufijo));
+         || SUFIJOS_PERMITIDOS.some((sufijo) => dominio.endsWith(sufijo));
 ```
 
 ### `register.dto.ts`
@@ -120,12 +140,14 @@ y queda fuera de este alcance.
 |---|---|
 | `ana@espe.edu.ec` | pasa |
 | `ana@epn.edu.ec` | pasa (sufijo, no está listado) |
+| `ana@miempresa.com.ec` | pasa (`.ec` no se limita a `.edu.ec`) |
+| `ana@algo.ec` | pasa |
 | `ana@mail.usfq.edu.ec` | pasa (subdominio) |
 | `ana@gmail.com` | pasa |
 | `  Ana@GMAIL.com ` | pasa (cubre normalización antes de validación) |
 | `ana@mailinator.com` | error en `email` |
 | `ana@dominioinventado.xyz` | error en `email` |
-| `ana@midominio-edu.ec` | error en `email` (el sufijo no engaña) |
+| `ana@midominio-ec.com` | error en `email` (el sufijo no engaña) |
 | `noesuncorreo` | **un solo** error, el de formato |
 
 ## Criterios de aceptación del issue

@@ -49,7 +49,7 @@ describe('Autenticación (e2e)', () => {
       expect(sesion.participant).toMatchObject({
         nombre: 'María',
         apellido: 'Pérez',
-        email: 'maria.alta@ejemplo.com',
+        email: 'maria.alta@ejemplo.ec',
         role: 'PARTICIPANT',
       });
     });
@@ -91,13 +91,13 @@ describe('Autenticación (e2e)', () => {
         .post('/api/auth/register')
         .send({
           ...datos,
-          email: '  Maria.NORMALIZA@Ejemplo.com ',
+          email: '  Maria.NORMALIZA@Ejemplo.ec ',
           cedula: `${datos.cedula.slice(0, 9)}-${datos.cedula.slice(9)}`,
         })
         .expect(201);
 
       const guardado = await prisma.participant.findUnique({
-        where: { email: 'maria.normaliza@ejemplo.com' },
+        where: { email: 'maria.normaliza@ejemplo.ec' },
       });
 
       expect(guardado?.cedulaHash).toEqual(expect.any(String));
@@ -112,7 +112,7 @@ describe('Autenticación (e2e)', () => {
         .post('/api/auth/register')
         .send({
           ...registro('duplicado-2'),
-          email: 'MARIA.DUPLICADO@ejemplo.com',
+          email: 'MARIA.DUPLICADO@ejemplo.ec',
         })
         .expect(409);
     });
@@ -186,7 +186,7 @@ describe('Autenticación (e2e)', () => {
     it('entrega un token con las credenciales correctas', async () => {
       const res = await server()
         .post('/api/auth/login')
-        .send({ email: 'maria.login@ejemplo.com', password: PASSWORD_PRUEBA })
+        .send({ email: 'maria.login@ejemplo.ec', password: PASSWORD_PRUEBA })
         .expect(200);
 
       expect(typeof cuerpo<SesionBody>(res).accessToken).toBe('string');
@@ -197,7 +197,7 @@ describe('Autenticación (e2e)', () => {
     it('tampoco devuelve el hash de la contraseña ni la huella de la cédula', async () => {
       const res = await server()
         .post('/api/auth/login')
-        .send({ email: 'maria.login@ejemplo.com', password: PASSWORD_PRUEBA })
+        .send({ email: 'maria.login@ejemplo.ec', password: PASSWORD_PRUEBA })
         .expect(200);
 
       const sesion = cuerpo<SesionBody>(res);
@@ -211,12 +211,12 @@ describe('Autenticación (e2e)', () => {
     it('no distingue entre correo inexistente y contraseña incorrecta', async () => {
       const inexistente = await server()
         .post('/api/auth/login')
-        .send({ email: 'nadie@ejemplo.com', password: PASSWORD_PRUEBA })
+        .send({ email: 'nadie@ejemplo.ec', password: PASSWORD_PRUEBA })
         .expect(401);
 
       const claveMala = await server()
         .post('/api/auth/login')
-        .send({ email: 'maria.login@ejemplo.com', password: PASSWORD_INVALIDA })
+        .send({ email: 'maria.login@ejemplo.ec', password: PASSWORD_INVALIDA })
         .expect(401);
 
       expect(cuerpo<ErrorBody>(inexistente).message).toBe(
@@ -242,7 +242,7 @@ describe('Autenticación (e2e)', () => {
         .expect(200);
 
       const perfil = cuerpo<PerfilBody>(res);
-      expect(perfil.email).toBe('maria.perfil@ejemplo.com');
+      expect(perfil.email).toBe('maria.perfil@ejemplo.ec');
       expect(perfil.passwordHash).toBeUndefined();
     });
 

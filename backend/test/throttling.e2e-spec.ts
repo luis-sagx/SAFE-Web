@@ -4,6 +4,7 @@ import request from 'supertest';
 import type { App } from 'supertest/types';
 import { AppModule } from '../apps/identidad/src/app.module';
 import { configurarApp } from '@comun';
+import { MailService } from '../apps/identidad/src/mail/mail.service';
 import { PrismaService } from '../apps/identidad/src/prisma/prisma.service';
 import { cuerpo, limpiar, type ErrorBody } from './identidad.e2e';
 
@@ -18,7 +19,12 @@ describe('Límite de peticiones (e2e)', () => {
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
       imports: [AppModule],
-    }).compile();
+    })
+      // Sin RESEND_API_KEY en CI, MailService.getOrThrow tumbaría el arranque
+      // (ver crearApp() en identidad.e2e.ts, mismo override).
+      .overrideProvider(MailService)
+      .useValue({ enviarCertificado: () => Promise.resolve(true) })
+      .compile();
 
     app = configurarApp(moduleRef.createNestApplication());
     await app.init();
@@ -35,7 +41,7 @@ describe('Límite de peticiones (e2e)', () => {
     const intento = () =>
       server()
         .post('/api/auth/login')
-        .send({ email: 'atacante@ejemplo.com', password: 'adivinando' });
+        .send({ email: 'atacante@ejemplo.ec', password: 'adivinando' });
 
     const respuestas: Awaited<ReturnType<typeof intento>>[] = [];
     for (let i = 0; i < 6; i++) {
@@ -62,7 +68,7 @@ describe('Límite de peticiones (e2e)', () => {
       server()
         .post('/api/auth/login')
         .set('X-Forwarded-For', ip)
-        .send({ email: 'otro@ejemplo.com', password: 'adivinando' });
+        .send({ email: 'otro@ejemplo.ec', password: 'adivinando' });
 
     // Agota el cubo de una IP.
     for (let i = 0; i < 6; i++) await login('203.0.113.10');

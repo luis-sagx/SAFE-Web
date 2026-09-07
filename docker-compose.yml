@@ -63,6 +63,9 @@ services:
       # Base de la URL de verificación que imprime el certificado. Opcional:
       # sin ella, el certificado usa un valor por defecto.
       CERTIFICADO_ORIGEN: ${CERTIFICADO_ORIGEN:-https://safeweb.espe.edu.ec}
+      # Correo de verificación de cuenta y entrega del certificado (Resend).
+      RESEND_API_KEY: "${RESEND_API_KEY:?falta RESEND_API_KEY en .env, generar en resend.com/api-keys}"
+      MAIL_FROM: ${MAIL_FROM:-SAFE-Web <noreply@luis-sagx.xyz>}
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-15m}
       # Solo este servicio firma y verifica refresh tokens (POST /api/auth/refresh).
       REFRESH_TOKEN_EXPIRES_IN: ${REFRESH_TOKEN_EXPIRES_IN:-12h}

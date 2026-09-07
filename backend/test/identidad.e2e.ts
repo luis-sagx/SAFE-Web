@@ -3,6 +3,7 @@ import { Test } from '@nestjs/testing';
 import { ThrottlerStorage } from '@nestjs/throttler';
 import { configurarApp } from '@comun';
 import { AppModule } from '../apps/identidad/src/app.module';
+import { MailService } from '../apps/identidad/src/mail/mail.service';
 import { PrismaService } from '../apps/identidad/src/prisma/prisma.service';
 
 // Credenciales sintéticas exclusivas de e2e; no son secretos de ningún entorno.
@@ -29,6 +30,11 @@ export async function crearApp(): Promise<{
           timeToBlockExpire: 0,
         }),
     })
+    // Sin esto, cada certificado emitido en un e2e intentaría mandar un
+    // correo real por Resend: red de por medio en CI, y necesitaría
+    // RESEND_API_KEY solo para que el servicio arrancara.
+    .overrideProvider(MailService)
+    .useValue({ enviarCertificado: () => Promise.resolve(true) })
     .compile();
 
   const app = configurarApp(moduleRef.createNestApplication());
@@ -118,7 +124,10 @@ export function registro(sufijo: string) {
   return {
     nombre: 'María',
     apellido: 'Pérez',
-    email: `maria.${sufijo}@ejemplo.com`,
+    // .ec y no .com: EsDominioPermitido (dominios-correo.ts) rechaza
+    // dominios inventados fuera del ccTLD ecuatoriano o la allowlist de
+    // proveedores libres.
+    email: `maria.${sufijo}@ejemplo.ec`,
     cedula: cedulaDePrueba(),
     password: PASSWORD_PRUEBA,
   };
