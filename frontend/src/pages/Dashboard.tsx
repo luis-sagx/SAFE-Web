@@ -255,6 +255,28 @@ function Dashboard() {
             )
           })}
         </div>
+
+        {/* Deshabilitado hasta completar el entrenamiento a propósito: antes
+            de eso no hay una experiencia completa sobre la que opinar, y un
+            link activo invitaría a un feedback a medias. Sigue visible igual
+            —no oculto— para que se sepa que existe y qué falta para usarlo. */}
+        <p className="mt-10 text-center text-sm text-muted">
+          {global.modulos > 0 && global.modulosAprobados === global.modulos ? (
+            <>
+              ¿Qué te pareció el entrenamiento?{' '}
+              <a
+                href="https://forms.gle/jdqLTpKyPH2eYzBk7"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium text-link underline"
+              >
+                Cuéntanos tu opinión
+              </a>
+            </>
+          ) : (
+            `Completa las ${global.modulos || SECCIONES_ACTIVAS.length} secciones y se habilitará un formulario para valorar tu opinión.`
+          )}
+        </p>
       </main>
     </div>
   )
