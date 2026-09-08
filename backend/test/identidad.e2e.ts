@@ -7,8 +7,9 @@ import { MailService } from '../apps/identidad/src/mail/mail.service';
 import { PrismaService } from '../apps/identidad/src/prisma/prisma.service';
 
 // Credenciales sintéticas exclusivas de e2e; no son secretos de ningún entorno.
-export const PASSWORD_PRUEBA = ['clave', 'larga', '123'].join('-');
-export const PASSWORD_INVALIDA = ['otra', 'clave', '123'].join('-');
+// Mayúscula, número y símbolo: la misma política que exige RegisterDto.
+export const PASSWORD_PRUEBA = ['Clave', 'Larga', '123!'].join('-');
+export const PASSWORD_INVALIDA = ['Otra', 'Clave', '123!'].join('-');
 
 /// Levanta el servicio de identidad contra la base de pruebas, sin el límite
 /// por IP: todas las peticiones salen de la misma y el tope de 5/min haría

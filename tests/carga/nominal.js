@@ -34,7 +34,7 @@ export function setup() {
       // Distinta de la usada por el smoke previo del pipeline, pero igual de
       // válida: la cédula se indexa de forma única incluso como HMAC.
       cedula: '1710034073',
-      password: 'clave-larga-123',
+      password: 'Clave-Larga-123!',
     }),
     { headers: { 'Content-Type': 'application/json' }, responseType: 'text' },
   )

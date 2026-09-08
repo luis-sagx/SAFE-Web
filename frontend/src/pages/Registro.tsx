@@ -46,8 +46,34 @@ function Registro() {
   // pagar el viaje al servidor.
   const EMAIL_FORMATO = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const emailInvalido = emailTocado && email.length > 0 && !EMAIL_FORMATO.test(email);
-  const passwordCorta =
-    passwordTocado && password.length > 0 && password.length < PASSWORD_MIN;
+
+  // Misma política que `register.dto.ts`: 8 caracteres, una mayúscula, un
+  // número y un carácter especial. Repetida aquí a propósito —a diferencia
+  // del dominio del correo, esta regla sí necesita reflejarse en el cliente
+  // para el indicador de fortaleza en vivo, que no tiene ningún equivalente
+  // en el servidor al que consultarle mientras se escribe.
+  const PASSWORD_POLITICA = /^(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
+  const passwordInvalida =
+    passwordTocado && password.length > 0 && !PASSWORD_POLITICA.test(password);
+
+  // Cuenta criterios cumplidos y no todo-o-nada: alguien que ya puso
+  // mayúscula y número pero le falta el símbolo está más cerca de una buena
+  // contraseña que alguien que recién empezó a escribir, y verlo moverse un
+  // paso a la vez anima a completarla en vez de rendirse en el primer intento.
+  const criteriosPassword = [
+    password.length >= PASSWORD_MIN,
+    /[A-Z]/.test(password),
+    /\d/.test(password),
+    /[^A-Za-z0-9]/.test(password),
+  ].filter(Boolean).length;
+  const fortalezaPassword =
+    password.length === 0
+      ? null
+      : criteriosPassword <= 2
+        ? { texto: "Débil", clase: "text-danger" }
+        : criteriosPassword === 3
+          ? { texto: "Media", clase: "text-warning" }
+          : { texto: "Fuerte", clase: "text-success" };
 
   // Solo se avisa de la cédula cuando ya está completa: marcarla en rojo
   // mientras la escribe convierte cada tecla en un reproche.
@@ -86,9 +112,11 @@ function Registro() {
       return;
     }
 
-    if (password.length < PASSWORD_MIN) {
+    if (!PASSWORD_POLITICA.test(password)) {
       setPasswordTocado(true);
-      setError(`La contraseña debe tener al menos ${PASSWORD_MIN} caracteres.`);
+      setError(
+        `La contraseña debe tener al menos ${PASSWORD_MIN} caracteres, una mayúscula, un número y un carácter especial.`,
+      );
       return;
     }
 
@@ -180,22 +208,32 @@ function Registro() {
           maxLength={120}
           error={emailInvalido ? "El correo no tiene un formato válido." : undefined}
         />
-        <Campo
-          id="password"
-          label="Contraseña"
-          type="password"
-          value={password}
-          onChange={setPassword}
-          onBlur={() => setPasswordTocado(true)}
-          autoComplete="new-password"
-          maxLength={128}
-          ayuda="Mínimo 8 caracteres."
-          error={
-            passwordCorta
-              ? `Debe tener al menos ${PASSWORD_MIN} caracteres.`
-              : undefined
-          }
-        />
+        <div>
+          <Campo
+            id="password"
+            label="Contraseña"
+            type="password"
+            value={password}
+            onChange={setPassword}
+            onBlur={() => setPasswordTocado(true)}
+            autoComplete="new-password"
+            maxLength={128}
+            ayuda={`Al menos ${PASSWORD_MIN} caracteres, una mayúscula, un número y un carácter especial.`}
+            error={
+              passwordInvalida
+                ? `No cumple los requisitos: al menos ${PASSWORD_MIN} caracteres, una mayúscula, un número y un carácter especial.`
+                : undefined
+            }
+          />
+          {/* En vivo y no al salir del campo: a diferencia del error, que
+              espera a que termine de escribir, la fortaleza se lee mejor como
+              algo que responde tecla a tecla. */}
+          {fortalezaPassword && (
+            <p className={`mt-1.5 text-sm font-medium ${fortalezaPassword.clase}`}>
+              Fortaleza de la contraseña: {fortalezaPassword.texto}
+            </p>
+          )}
+        </div>
 
         <div className="flex items-start gap-3">
           <input
