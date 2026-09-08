@@ -4,6 +4,9 @@ interface CampoProps {
   type?: string
   value: string
   onChange: (value: string) => void
+  /** Marca el campo como "ya se fue de aquí": el aviso de mínimo de
+   *  caracteres espera a este momento, para no regañar a medio escribir. */
+  onBlur?: () => void
   autoComplete?: string
   placeholder?: string
   ayuda?: string
@@ -19,6 +22,7 @@ function Campo({
   type = 'text',
   value,
   onChange,
+  onBlur,
   autoComplete,
   placeholder,
   ayuda,
@@ -40,6 +44,7 @@ function Campo({
         type={type}
         value={value}
         onChange={(event) => onChange(event.target.value)}
+        onBlur={onBlur}
         autoComplete={autoComplete}
         placeholder={placeholder}
         maxLength={maxLength}
