@@ -11,6 +11,7 @@ import {
 import { AvisoSitio, CabeceraSitio, ENLACES_PIE, PieSitio } from '../../components/ui/armazonSitio'
 import styles from '../../components/ui/DeviceScreen.module.css'
 import { IDENTIDAD_FICTICIA } from '../../lib/identidadFicticia'
+import { crearSenal } from '../../lib/crearSenal'
 import Instrucciones from '../../components/ui/Instrucciones'
 import { BotonHotspot, manejarClicHotspot } from '../../components/ui/interactivo'
 import {
@@ -127,34 +128,30 @@ const DIRECCION = 'notificaciones@bancodel1itoral.com'
 const MENSAJE = { nombre: REMITENTE_NOMBRE, direccion: DIRECCION, asunto: ASUNTO }
 
 const SENALES: Senal[] = [
-  {
-    id: 's1',
-    targetId: 'qr',
-    pantalla: 'n1',
-    texto:
-      'Un <b>código QR es un enlace escondido dentro de un dibujo</b>: no hay texto que leer, así que no puedes ver a dónde te lleva hasta que ya lo abriste.',
-  },
-  {
-    id: 's2',
-    targetId: 'remitente',
-    pantalla: 'n1',
-    texto:
-      'El dominio del remitente escribe <b>bancodel1itoral.com</b> con el número <b>1</b> en lugar de la letra <b>l</b>. Es una imitación de la dirección del banco: un cambio mínimo que puede pasar desapercibido.',
-  },
-  {
-    id: 's3',
-    targetId: 'campo-clave',
-    pantalla: 'n2',
-    texto:
-      'El formulario pide la <b>clave de acceso</b>. Actualizar unos datos no necesita tu clave: la clave es lo que se usa para entrar a la cuenta, y es justo lo que buscan.',
-  },
-  {
-    id: 's4',
-    targetId: 'plazo',
-    pantalla: 'n1',
-    texto:
-      'Mete <b>prisa</b> con un plazo de 72 horas, para que actúes antes de comprobar nada con el banco.',
-  },
+  crearSenal(
+    's1',
+    'n1',
+    'qr',
+    'Un <b>código QR es un enlace escondido dentro de un dibujo</b>: no hay texto que leer, así que no puedes ver a dónde te lleva hasta que ya lo abriste.',
+  ),
+  crearSenal(
+    's2',
+    'n1',
+    'remitente',
+    'El dominio del remitente escribe <b>bancodel1itoral.com</b> con el número <b>1</b> en lugar de la letra <b>l</b>. Es una imitación de la dirección del banco: un cambio mínimo que puede pasar desapercibido.',
+  ),
+  crearSenal(
+    's3',
+    'n2',
+    'campo-clave',
+    'El formulario pide la <b>clave de acceso</b>. Actualizar unos datos no necesita tu clave: la clave es lo que se usa para entrar a la cuenta, y es justo lo que buscan.',
+  ),
+  crearSenal(
+    's4',
+    'n1',
+    'plazo',
+    'Mete <b>prisa</b> con un plazo de 72 horas, para que actúes antes de comprobar nada con el banco.',
+  ),
 ]
 
 const RULE =
