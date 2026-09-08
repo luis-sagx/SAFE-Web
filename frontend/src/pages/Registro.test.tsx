@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import { BrowserRouter } from 'react-router'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import Registro from './Registro'
@@ -69,5 +69,47 @@ describe('Registro', () => {
     )
 
     expect(screen.getByText(/Ya tienes cuenta/)).toBeDefined()
+  })
+
+  it('avisa que el nombre es muy corto solo al salir del campo, no mientras escribe', () => {
+    useAuthMock.mockReturnValue({
+      isAuthenticated: false,
+      loading: false,
+      register: vi.fn(),
+    })
+
+    render(
+      <BrowserRouter>
+        <Registro />
+      </BrowserRouter>
+    )
+
+    const campoNombre = screen.getByLabelText(/Nombre/)
+    fireEvent.change(campoNombre, { target: { value: 'A' } })
+    expect(screen.queryByText(/al menos 2 caracteres/)).toBeNull()
+
+    fireEvent.blur(campoNombre)
+    expect(screen.getByText(/al menos 2 caracteres/)).toBeDefined()
+  })
+
+  it('muestra el contador de caracteres solo cerca del límite', () => {
+    useAuthMock.mockReturnValue({
+      isAuthenticated: false,
+      loading: false,
+      register: vi.fn(),
+    })
+
+    render(
+      <BrowserRouter>
+        <Registro />
+      </BrowserRouter>
+    )
+
+    const campoNombre = screen.getByLabelText(/Nombre/)
+    fireEvent.change(campoNombre, { target: { value: 'María' } })
+    expect(screen.queryByText(/\/60/)).toBeNull()
+
+    fireEvent.change(campoNombre, { target: { value: 'M'.repeat(52) } })
+    expect(screen.getByText('52/60')).toBeDefined()
   })
 })

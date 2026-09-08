@@ -18,6 +18,23 @@ function Registro() {
   const [acceptedPolicy, setAcceptedPolicy] = useState(false);
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  // "Tocado" y no "no vacío": un campo vacío también está por debajo del
+  // mínimo, pero marcarlo en rojo antes de que el usuario haya escrito una
+  // sola letra es regañar por adelantado. Se activa al salir del campo, no
+  // en cada tecla, igual que ya hace la cédula con su propio criterio.
+  const [nombreTocado, setNombreTocado] = useState(false);
+  const [apellidoTocado, setApellidoTocado] = useState(false);
+
+  const NOMBRE_MIN = 2;
+  const NOMBRE_MAX = 60;
+  const nombreCorto = nombreTocado && nombre.length > 0 && nombre.length < NOMBRE_MIN;
+  const apellidoCorto = apellidoTocado && apellido.length > 0 && apellido.length < NOMBRE_MIN;
+  // Cerca del límite y no siempre: un contador pegado a un campo que recién
+  // empieza a llenarse es ruido que nadie necesita todavía.
+  const contadorNombre =
+    nombre.length >= NOMBRE_MAX - 10 ? `${nombre.length}/${NOMBRE_MAX}` : undefined;
+  const contadorApellido =
+    apellido.length >= NOMBRE_MAX - 10 ? `${apellido.length}/${NOMBRE_MAX}` : undefined;
 
   // Solo se avisa de la cédula cuando ya está completa: marcarla en rojo
   // mientras la escribe convierte cada tecla en un reproche.
@@ -40,6 +57,13 @@ function Registro() {
     // El backend valida igual; esto solo evita un viaje al servidor.
     if (!esCedulaEcuatoriana(cedulaLimpia)) {
       setError("Revisa tu número de cédula: son 10 dígitos.");
+      return;
+    }
+
+    if (nombre.length < NOMBRE_MIN || apellido.length < NOMBRE_MIN) {
+      setNombreTocado(true);
+      setApellidoTocado(true);
+      setError(`El nombre y el apellido deben tener al menos ${NOMBRE_MIN} caracteres.`);
       return;
     }
 
@@ -86,18 +110,24 @@ function Registro() {
             label="Nombre"
             value={nombre}
             onChange={setNombre}
+            onBlur={() => setNombreTocado(true)}
             autoComplete="given-name"
             placeholder="María"
-            maxLength={60}
+            maxLength={NOMBRE_MAX}
+            ayuda={contadorNombre}
+            error={nombreCorto ? `Debe tener al menos ${NOMBRE_MIN} caracteres.` : undefined}
           />
           <Campo
             id="apellido"
             label="Apellido"
             value={apellido}
             onChange={setApellido}
+            onBlur={() => setApellidoTocado(true)}
             autoComplete="family-name"
             placeholder="Pérez"
-            maxLength={60}
+            maxLength={NOMBRE_MAX}
+            ayuda={contadorApellido}
+            error={apellidoCorto ? `Debe tener al menos ${NOMBRE_MIN} caracteres.` : undefined}
           />
         </div>
         <Campo
