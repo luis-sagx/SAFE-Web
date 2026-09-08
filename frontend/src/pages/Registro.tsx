@@ -32,6 +32,24 @@ function Registro() {
   const PASSWORD_MIN = 8;
   const nombreCorto = nombreTocado && nombre.length > 0 && nombre.length < NOMBRE_MIN;
   const apellidoCorto = apellidoTocado && apellido.length > 0 && apellido.length < NOMBRE_MIN;
+
+  // Solo letras (con tildes y ñ), espacios, guiones y apóstrofes, y ninguno
+  // de estos tres al principio, al final, ni dos seguidos: lo mismo que
+  // "María José" o "D'Ángelo" tienen y "nombre'" —el caso reportado— no.
+  // Duplicado a propósito de `register.dto.ts` (NOMBRE_PATRON): es el mismo
+  // caso que la cédula, no el del dominio del correo — aquí sí hace falta la
+  // regla en el cliente para el error antes de enviar.
+  const NOMBRE_PATRON = /^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+(?:[ '-][A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+)*$/;
+  const NOMBRE_PATRON_MENSAJE = "No se permiten números ni símbolos, salvo guiones y apóstrofes.";
+  // En vivo y no al salir del campo: a diferencia de "muy corto" —que se
+  // resuelve solo con seguir escribiendo, y por eso sí espera al blur para no
+  // regañar a medio nombre—, un número o símbolo no se arregla solo. Que siga
+  // ahí una tecla más tarde no es información nueva; avisar de inmediato sí
+  // lo es. Una sola letra ya cumple el patrón (son "una o más letras"), así
+  // que esto no compite con el aviso de mínimo: nunca se disparan los dos a
+  // la vez por el mismo motivo.
+  const nombrePatronInvalido = nombre.length > 0 && !NOMBRE_PATRON.test(nombre);
+  const apellidoPatronInvalido = apellido.length > 0 && !NOMBRE_PATRON.test(apellido);
   // Cerca del límite y no siempre: un contador pegado a un campo que recién
   // empieza a llenarse es ruido que nadie necesita todavía.
   const contadorNombre =
@@ -106,6 +124,15 @@ function Registro() {
       return;
     }
 
+    if (!NOMBRE_PATRON.test(nombre) || !NOMBRE_PATRON.test(apellido)) {
+      setNombreTocado(true);
+      setApellidoTocado(true);
+      setError(
+        `El nombre y el apellido no pueden tener números ni símbolos, salvo guiones y apóstrofes.`,
+      );
+      return;
+    }
+
     if (!EMAIL_FORMATO.test(email)) {
       setEmailTocado(true);
       setError("El correo no tiene un formato válido.");
@@ -168,7 +195,13 @@ function Registro() {
             placeholder="María"
             maxLength={NOMBRE_MAX}
             ayuda={contadorNombre}
-            error={nombreCorto ? `Debe tener al menos ${NOMBRE_MIN} caracteres.` : undefined}
+            error={
+              nombreCorto
+                ? `Debe tener al menos ${NOMBRE_MIN} caracteres.`
+                : nombrePatronInvalido
+                  ? NOMBRE_PATRON_MENSAJE
+                  : undefined
+            }
           />
           <Campo
             id="apellido"
@@ -180,7 +213,13 @@ function Registro() {
             placeholder="Pérez"
             maxLength={NOMBRE_MAX}
             ayuda={contadorApellido}
-            error={apellidoCorto ? `Debe tener al menos ${NOMBRE_MIN} caracteres.` : undefined}
+            error={
+              apellidoCorto
+                ? `Debe tener al menos ${NOMBRE_MIN} caracteres.`
+                : apellidoPatronInvalido
+                  ? NOMBRE_PATRON_MENSAJE
+                  : undefined
+            }
           />
         </div>
         <Campo
