@@ -445,4 +445,94 @@ describe('Registro', () => {
 
     expect(await screen.findByText('Ese correo ya está registrado.')).toBeDefined()
   })
+
+  it('rechaza una comilla suelta en el nombre, el caso reportado, de inmediato', () => {
+    useAuthMock.mockReturnValue({
+      isAuthenticated: false,
+      loading: false,
+      register: vi.fn(),
+    })
+
+    render(
+      <BrowserRouter>
+        <Registro />
+      </BrowserRouter>
+    )
+
+    const campoNombre = screen.getByLabelText(/Nombre/)
+    // A diferencia de "muy corto", este no espera al blur: un carácter
+    // inválido no se resuelve solo con seguir escribiendo.
+    fireEvent.change(campoNombre, { target: { value: "nombre'" } })
+    expect(
+      screen.getByText('No se permiten números ni símbolos, salvo guiones y apóstrofes.'),
+    ).toBeDefined()
+  })
+
+  it('acepta nombres compuestos reales: con espacio, guion o apóstrofe interno', () => {
+    useAuthMock.mockReturnValue({
+      isAuthenticated: false,
+      loading: false,
+      register: vi.fn(),
+    })
+
+    render(
+      <BrowserRouter>
+        <Registro />
+      </BrowserRouter>
+    )
+
+    const campoNombre = screen.getByLabelText(/Nombre/)
+    const campoApellido = screen.getByLabelText(/Apellido/)
+
+    fireEvent.change(campoNombre, { target: { value: "D'Ángelo" } })
+    fireEvent.blur(campoNombre)
+    expect(screen.queryByText(/guiones y apóstrofes/)).toBeNull()
+
+    fireEvent.change(campoApellido, { target: { value: 'García-Torres' } })
+    fireEvent.blur(campoApellido)
+    expect(screen.queryByText(/guiones y apóstrofes/)).toBeNull()
+  })
+
+  it('rechaza dígitos y puntuación de código en el apellido', () => {
+    useAuthMock.mockReturnValue({
+      isAuthenticated: false,
+      loading: false,
+      register: vi.fn(),
+    })
+
+    render(
+      <BrowserRouter>
+        <Registro />
+      </BrowserRouter>
+    )
+
+    const campoApellido = screen.getByLabelText(/Apellido/)
+    fireEvent.change(campoApellido, { target: { value: 'Perez123' } })
+    fireEvent.blur(campoApellido)
+    expect(screen.getByText('No se permiten números ni símbolos, salvo guiones y apóstrofes.')).toBeDefined()
+  })
+
+  it('bloquea el envío si el nombre o el apellido tienen caracteres inválidos', () => {
+    const registerMock = vi.fn()
+    useAuthMock.mockReturnValue({
+      isAuthenticated: false,
+      loading: false,
+      register: registerMock,
+    })
+
+    render(
+      <BrowserRouter>
+        <Registro />
+      </BrowserRouter>
+    )
+
+    llenarCamposValidos()
+    fireEvent.change(screen.getByLabelText(/Nombre/), { target: { value: "nombre'" } })
+    fireEvent.click(screen.getByRole('button', { name: 'Crear cuenta' }))
+
+    expect(
+      screen.getAllByText(/no pueden tener números ni símbolos/).length,
+    ).toBeGreaterThan(0)
+    expect(registerMock).not.toHaveBeenCalled()
+  })
 })

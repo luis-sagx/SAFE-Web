@@ -80,3 +80,53 @@ describe('RegisterDto.password — política de fortaleza', () => {
     expect(validar({ password: 'Ab1!' })).toContain('password');
   });
 });
+
+describe('RegisterDto.nombre / apellido — caracteres permitidos', () => {
+  it('acepta un nombre simple', () => {
+    expect(validar({ nombre: 'Ana' })).toEqual([]);
+  });
+
+  it('acepta tildes y ñ', () => {
+    expect(validar({ nombre: 'José' })).toEqual([]);
+    expect(validar({ nombre: 'Iñaki' })).toEqual([]);
+  });
+
+  it('acepta un nombre compuesto con espacio', () => {
+    expect(validar({ nombre: 'María José' })).toEqual([]);
+  });
+
+  it('acepta un apellido con guion', () => {
+    expect(validar({ apellido: 'García-Torres' })).toEqual([]);
+  });
+
+  it('acepta un apóstrofe interno, como en un nombre compuesto real', () => {
+    expect(validar({ nombre: "D'Ángelo" })).toEqual([]);
+  });
+
+  it('rechaza una comilla simple suelta al final, el caso reportado', () => {
+    expect(validar({ nombre: "nombre'" })).toContain('nombre');
+  });
+
+  it('rechaza dígitos', () => {
+    expect(validar({ nombre: 'Ana123' })).toContain('nombre');
+  });
+
+  it('rechaza comillas dobles', () => {
+    expect(validar({ nombre: '"Ana"' })).toContain('nombre');
+  });
+
+  it('rechaza puntuación de código', () => {
+    expect(validar({ nombre: 'Ana;DROP' })).toContain('nombre');
+    expect(validar({ apellido: '<script>' })).toContain('apellido');
+  });
+
+  it('rechaza un guion o apóstrofe como primer o último carácter', () => {
+    expect(validar({ nombre: '-Ana' })).toContain('nombre');
+    expect(validar({ nombre: 'Ana-' })).toContain('nombre');
+    expect(validar({ nombre: "'Ana" })).toContain('nombre');
+  });
+
+  it('rechaza separadores repetidos, como un espacio doble', () => {
+    expect(validar({ nombre: 'Ana  María' })).toContain('nombre');
+  });
+});

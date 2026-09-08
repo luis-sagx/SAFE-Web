@@ -9,16 +9,34 @@ import { NormalizarEmail, TransformarTexto } from '@comun';
 import { EsCedulaEcuatoriana } from '../../cedula/cedula';
 import { EsDominioPermitido } from '../dominios-correo';
 
+/// Solo letras (con tildes y ñ), espacios, guiones y apóstrofes — y ninguno
+/// de estos tres como primer o último carácter, ni dos seguidos: eso es lo
+/// que distingue un nombre compuesto real ("D'Ángelo", "María José") de basura
+/// como "nombre'" o "--". Dígitos, comillas dobles y el resto de la
+/// puntuación de código (`;`, `<`, `>`, etc.) quedan fuera por no estar en la
+/// lista, sin necesidad de enumerarlos aparte.
+///
+/// Duplicado a propósito en `frontend/src/pages/Registro.tsx`: es el mismo
+/// caso que `esCedulaEcuatoriana` (cedula.ts en los dos lados), no el del
+/// dominio de correo — aquí sí hace falta la regla en el cliente para el
+/// error antes de enviar, y no hay ningún endpoint al que consultarla.
+export const NOMBRE_PATRON =
+  /^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+(?:[ '-][A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+)*$/;
+const NOMBRE_MENSAJE =
+  'No se permiten números ni símbolos, salvo guiones y apóstrofes.';
+
 export class RegisterDto {
   @IsString()
   @MinLength(2)
   @MaxLength(60)
+  @Matches(NOMBRE_PATRON, { message: NOMBRE_MENSAJE })
   @TransformarTexto((valor) => valor.trim())
   nombre: string;
 
   @IsString()
   @MinLength(2)
   @MaxLength(60)
+  @Matches(NOMBRE_PATRON, { message: NOMBRE_MENSAJE })
   @TransformarTexto((valor) => valor.trim())
   apellido: string;
 
