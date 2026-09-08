@@ -60,6 +60,9 @@ describe('Dashboard', () => {
     // los números entre varios `<span>`.
     await screen.findByText('Tu avance')
     expect(screen.queryByRole('button', { name: 'Descargar certificado' })).toBeNull()
+    // Sigue visible en el pie, solo que sin ser un enlace todavía.
+    expect(screen.getByText(/Completa las .* secciones/)).toBeDefined()
+    expect(screen.queryByRole('link', { name: 'Cuéntanos tu opinión' })).toBeNull()
   })
 
   // El botón no depende de un número escrito en el componente: aparece
@@ -81,5 +84,6 @@ describe('Dashboard', () => {
 
     await screen.findByText('Tu avance')
     expect(await screen.findByRole('button', { name: 'Descargar certificado' })).toBeDefined()
+    expect(screen.getByRole('link', { name: 'Cuéntanos tu opinión' })).toBeDefined()
   })
 })
