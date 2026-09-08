@@ -21,6 +21,7 @@ import type { Senal } from '../../components/ui/PanelVeredicto'
  */
 
 const GUIA = '8842-EC'
+const RESPUESTA = '¿A qué hora exactamente? No voy a estar en la mañana.'
 
 const SMS: ScreenView = {
   kind: 'sms',
@@ -34,18 +35,22 @@ const SMS: ScreenView = {
       senal: 'mensaje',
     },
   ],
-  composerGoto: 'n2',
-  composerLabel: 'Fue a escribir una respuesta al aviso',
+  respuestas: [
+    {
+      texto: RESPUESTA,
+      goto: 'e_responde',
+      label: 'Contestó al número del aviso preguntando por la hora',
+    },
+  ],
   volverGoto: 'e_ignora',
   volverLabel: 'Salió del hilo sin hacer nada',
 }
 
-const SMS_BORRADOR: ScreenView = {
+const SMS_RESPONDIDO: ScreenView = {
   ...SMS,
-  borrador: '¿A qué hora exactamente? No voy a estar en la mañana.',
-  composerGoto: undefined,
-  enviarGoto: 'e_responde',
-  enviarLabel: 'Contestó al número del aviso preguntando por la hora',
+  respuestas: undefined,
+  volverGoto: undefined,
+  msgs: [...SMS.msgs, { text: RESPUESTA, time: '18:06', mine: true }],
 }
 
 /// El inicio de la app. Abrirla no es todavía haber comprobado: desde aquí se
@@ -131,7 +136,6 @@ const APPS: AppTelefono[] = [
 
 const STORY: Story<ScreenNode> = {
   n1: { kind: 'scene', view: SMS },
-  n2: { kind: 'scene', view: SMS_BORRADOR },
   n3: { kind: 'scene', view: APP_INICIO },
   e_app: {
     kind: 'good',
@@ -149,7 +153,7 @@ const STORY: Story<ScreenNode> = {
   },
   e_responde: {
     kind: 'partial',
-    view: SMS_BORRADOR,
+    view: SMS_RESPONDIDO,
     verdict: 'Contestaste a un número que no lee',
     outcome:
       'No pasó nada malo: el remitente era el de siempre. Pero los avisos automáticos salen de un número que no recibe respuestas, así que tu pregunta no llegó a ninguna parte. La franja horaria estaba en la app, a un toque de distancia.',

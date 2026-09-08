@@ -10,6 +10,20 @@ vi.mock('../../context/AuthContext', async () => (await import('../../test/escen
 vi.mock('../../lib/api', async () => (await import('../../test/escenario')).apiSinRed())
 
 describe('AlertaConsumo', () => {
+  it('permite escoger y enviar directamente el mensaje predeterminado', () => {
+    const telefono = empezar(<AlertaConsumo />)
+
+    expect(within(telefono).queryByRole('button', { name: 'Mensaje de texto' })).toBeNull()
+    fireEvent.click(
+      within(telefono).getByRole('button', {
+        name: 'No reconozco ese consumo, mi tarjeta es la 4539 0011 8842 4417',
+      }),
+    )
+
+    expect(within(telefono).getByText(/4539 0011 8842 4417/)).toBeDefined()
+    expect(screen.getByText('Aviso legítimo, reacción peligrosa')).toBeDefined()
+  })
+
   // Las dos frases piden algo a un número que no lee, y cada una falla
   // distinto: una escribe la tarjeta entera, la otra deja al participante
   // esperando una llamada del banco que nunca va a llegar.

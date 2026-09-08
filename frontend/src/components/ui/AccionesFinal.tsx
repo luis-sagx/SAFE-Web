@@ -1,13 +1,16 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link, useNavigate } from 'react-router'
-import { escenariosDeSeccion, getSeccion } from '../../data/catalogo'
+import { Link, useLocation, useNavigate } from 'react-router'
+import { escenariosDeSeccion, getSeccion, SECCIONES } from '../../data/catalogo'
 import { fetchProgreso } from '../../lib/api'
+import type { RunOutcome } from '../../lib/api'
 import { conEscenarioIntentado, siguienteEnRonda } from '../../lib/bloqueoEscenarios'
 import ConfirmarRepeticionModal from '../ConfirmarRepeticionModal'
 
 interface AccionesFinalProps {
   /** 'phishing/factura-sri'. De aquí sale la sección y el orden del módulo. */
   escenarioId: string
+  /** Resultado recién decidido; puede llegar antes de que el servidor guarde la corrida. */
+  outcome: RunOutcome
   onRestart?: () => void
   /** Texto del botón de repetir, cuando repetir está disponible. */
   restartLabel?: string
@@ -32,10 +35,12 @@ interface AccionesFinalProps {
  * al lado: quien entra por el tercero no debería quedarse sin los dos
  * primeros.
  */
-function AccionesFinal({ escenarioId, autoFocus }: AccionesFinalProps) {
+function AccionesFinal({ escenarioId, outcome, autoFocus }: AccionesFinalProps) {
   const navigate = useNavigate()
+  const location = useLocation()
   const seccionId = escenarioId.split('/')[0] ?? ''
   const escenarios = escenariosDeSeccion(seccionId)
+  const siguienteModulo = SECCIONES[SECCIONES.findIndex((seccion) => seccion.id === seccionId) + 1]
 
   // null mientras no se sabe: hasta que llegue el progreso se usa el orden del
   // catálogo, que da un "siguiente" razonable sin dejar la pantalla en blanco.
@@ -77,7 +82,26 @@ function AccionesFinal({ escenarioId, autoFocus }: AccionesFinalProps) {
   }, [autoFocus])
 
   const indiceActual = escenarios.findIndex((e) => e.id === escenarioId)
-  const progresoEfectivo = progreso ? conEscenarioIntentado(progreso, escenarioId) : null
+  const estadoNavegacion = location.state as {
+    iniciarRepeticion?: boolean
+    repeticionIntentados?: { id: string; outcome: RunOutcome }[]
+  } | null
+  const enRepeticion = estadoNavegacion?.iniciarRepeticion === true
+  const intentadosEnRepeticion = estadoNavegacion?.repeticionIntentados ?? []
+  const progresoAntesDelActual = progreso && enRepeticion
+    ? intentadosEnRepeticion.reduce(
+        (actual, intento) => conEscenarioIntentado(actual, intento.id, intento.outcome, true),
+        progreso,
+      )
+    : progreso
+  const progresoEfectivo = progreso
+    ? conEscenarioIntentado(progresoAntesDelActual!, escenarioId, outcome, enRepeticion)
+    : null
+  const resultadosEnCurso = progresoEfectivo?.rondaEnCurso?.escenarios ?? progresoEfectivo?.escenarios ?? []
+  const aprobadosEfectivos = resultadosEnCurso.filter((resultado) => resultado.ultimoOutcome === 'CORRECTO').length
+  const aprobadoEfectivo = progresoEfectivo
+    ? aprobadosEfectivos >= progresoEfectivo.requeridos && resultadosEnCurso.length >= escenarios.length
+    : false
   const siguiente = progresoEfectivo
     ? siguienteEnRonda(escenarios, progresoEfectivo)
     : intentados
@@ -98,14 +122,14 @@ function AccionesFinal({ escenarioId, autoFocus }: AccionesFinalProps) {
   // umbral lo dice, en vez de seguir contando contra una meta ya cumplida.
   const marcador = avance && (
     <p className="mt-4 text-center text-base text-body">
-      {avance.aprobados >= avance.requeridos ? (
+      {(progresoEfectivo ? aprobadosEfectivos : avance.aprobados) >= avance.requeridos ? (
         <>
-          Llevas <span className="font-semibold text-ink tabular-nums">{avance.aprobados}</span>{' '}
+          Llevas <span className="font-semibold text-ink tabular-nums">{progresoEfectivo ? aprobadosEfectivos : avance.aprobados}</span>{' '}
           aprobados en este módulo: ya superaste los {avance.requeridos} que hacían falta.
         </>
       ) : (
         <>
-          Llevas <span className="font-semibold text-ink tabular-nums">{avance.aprobados}</span> de
+          Llevas <span className="font-semibold text-ink tabular-nums">{progresoEfectivo ? aprobadosEfectivos : avance.aprobados}</span> de
           los <span className="tabular-nums">{avance.requeridos}</span> que necesitas para aprobar
           el módulo.
         </>
@@ -131,7 +155,13 @@ function AccionesFinal({ escenarioId, autoFocus }: AccionesFinalProps) {
           // rebotaría a la sección. Este aviso deja que esa comprobación
           // confíe en que sí se completó, igual que ya hace `intentados` aquí
           // mismo, sin depender de que el servidor ya lo sepa.
-          state={{ recienCompletado: escenarioId }}
+          state={{
+            recienCompletado: escenarioId,
+            iniciarRepeticion: enRepeticion || progresoEfectivo?.rondaEnCurso != null,
+            repeticionIntentados: enRepeticion
+              ? [...intentadosEnRepeticion, { id: escenarioId, outcome }]
+              : undefined,
+          }}
           className="mt-5 flex min-h-11 items-center justify-center rounded-md bg-primary px-4 py-3 text-lg font-medium text-on-primary transition hover:bg-primary-active focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link"
         >
           Siguiente escenario →
@@ -152,23 +182,36 @@ function AccionesFinal({ escenarioId, autoFocus }: AccionesFinalProps) {
       {marcador}
       {escenarios.length > 0 && (
         <p className="mt-5 text-center text-base text-body">
-          Ya recorriste los {escenarios.length} escenarios del módulo. Ahora puedes repetir el módulo completo.
+          Ya recorriste los {escenarios.length} escenarios del módulo.
         </p>
       )}
-      <button
-        ref={principalRef as React.Ref<HTMLButtonElement>}
-        type="button"
+      <Link
+        ref={principalRef as React.Ref<HTMLAnchorElement>}
+        to={siguienteModulo ? `/seccion/${siguienteModulo.id}` : '/dashboard'}
         className="mt-3 min-h-11 w-full rounded-md bg-primary px-4 py-3 text-lg font-medium text-on-primary transition hover:bg-primary-active focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link"
-        onClick={() => setMostrarRepeticion(true)}
       >
-        Repetir el módulo
-      </button>
-      {mostrarRepeticion && progreso && (
+        {siguienteModulo ? 'Ir al siguiente módulo →' : 'Volver al panel →'}
+      </Link>
+      {progreso && !aprobadoEfectivo && (
+        <>
+          <p className="mt-4 text-center text-base text-body">
+            Aún no alcanzas la nota mínima. Puedes repetir el módulo completo para intentarlo de nuevo.
+          </p>
+          <button
+            type="button"
+            className="mt-3 min-h-11 w-full rounded-md border border-hairline-strong px-4 py-3 text-lg font-medium text-body transition hover:bg-surface-strong focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link"
+            onClick={() => setMostrarRepeticion(true)}
+          >
+            Repetir el módulo
+          </button>
+        </>
+      )}
+      {mostrarRepeticion && progreso && !aprobadoEfectivo && (
         <ConfirmarRepeticionModal
           seccionId={seccionId}
           titulo={getSeccion(seccionId)?.titulo ?? seccionId}
-          aprobados={progreso.aprobados}
-          aprobado={progreso.aprobado}
+          aprobados={aprobadosEfectivos}
+          aprobado={aprobadoEfectivo}
           onClose={() => setMostrarRepeticion(false)}
           onConfirm={() => navigate(`/seccion/${seccionId}/${escenarios[0]?.escenarioId}`, { state: { iniciarRepeticion: true } })}
         />

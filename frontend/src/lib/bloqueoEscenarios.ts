@@ -1,5 +1,5 @@
 import type { Escenario } from '../data/catalogo'
-import type { Progreso, ProgresoEscenario } from './api'
+import type { Progreso, ProgresoEscenario, RunOutcome } from './api'
 
 /**
  * `progreso` con `escenarioId` contado como intentado (CORRECTO), en la ronda
@@ -10,9 +10,14 @@ import type { Progreso, ProgresoEscenario } from './api'
  * registre, el gating y el cálculo de "siguiente escenario" tienen que darla
  * por hecha en vez de rebotar al participante por una lectura vieja.
  */
-export function conEscenarioIntentado(progreso: Progreso, escenarioId: string): Progreso {
+export function conEscenarioIntentado(
+  progreso: Progreso,
+  escenarioId: string,
+  outcome: RunOutcome = 'CORRECTO',
+  iniciandoRepeticion = false,
+): Progreso {
   const figura = (lista: ProgresoEscenario[]) => lista.some((e) => e.id === escenarioId)
-  const nuevo: ProgresoEscenario = { id: escenarioId, ultimoOutcome: 'CORRECTO' }
+  const nuevo: ProgresoEscenario = { id: escenarioId, ultimoOutcome: outcome }
 
   if (progreso.rondaEnCurso) {
     if (figura(progreso.rondaEnCurso.escenarios)) return progreso
@@ -25,7 +30,15 @@ export function conEscenarioIntentado(progreso: Progreso, escenarioId: string): 
     }
   }
 
-  if (figura(progreso.escenarios)) return progreso
+  // En una repetición, el GET puede devolver todavía la ronda oficial
+  // completa. Conservar el contexto explícito de la navegación permite crear
+  // la ronda provisional y continuar al siguiente escenario.
+  if (figura(progreso.escenarios)) {
+    if (iniciandoRepeticion) {
+      return { ...progreso, rondaEnCurso: { jugados: 1, escenarios: [nuevo] } }
+    }
+    return progreso
+  }
   return { ...progreso, escenarios: [...progreso.escenarios, nuevo] }
 }
 

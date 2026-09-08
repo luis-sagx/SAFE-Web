@@ -24,6 +24,13 @@
   --color-surface: #ffffff;
   --color-surface-strong: #f0f0f3;
 
+  /* Fondo informativo del repaso de señales: lo separa del veredicto sin
+     asociarlo con éxito, advertencia o error. El borde mantiene 3:1 contra
+     este fondo para conservar la distinción visual del panel. */
+  --color-signal: #fff7e6;
+  --color-signal-border: #a66a00;
+  --color-signal-body: #4b5563;
+
   --color-hairline: #f0f0f3;
   --color-hairline-soft: #f5f5f7;
   --color-hairline-strong: #dcdee0;

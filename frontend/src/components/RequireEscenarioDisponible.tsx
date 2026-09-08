@@ -3,6 +3,7 @@ import { Navigate, useLocation } from 'react-router'
 import PantallaCarga from './PantallaCarga'
 import { escenariosDeSeccion, type Escenario } from '../data/catalogo'
 import { fetchProgreso, type Progreso } from '../lib/api'
+import type { RunOutcome } from '../lib/api'
 import { conEscenarioIntentado, escenarioEstaDisponible } from '../lib/bloqueoEscenarios'
 
 function RequireEscenarioDisponible({
@@ -17,9 +18,13 @@ function RequireEscenarioDisponible({
   // esto, la comprobación de abajo vería el escenario recién terminado como
   // "sin intentar" y rebotaría de vuelta a la sección aunque sí se completó.
   const location = useLocation()
-  const recienCompletado = (location.state as { recienCompletado?: string } | null)
-    ?.recienCompletado
-  const iniciarRepeticion = (location.state as { iniciarRepeticion?: boolean } | null)?.iniciarRepeticion
+  const estadoNavegacion = location.state as {
+    recienCompletado?: string
+    iniciarRepeticion?: boolean
+    repeticionIntentados?: { id: string; outcome: RunOutcome }[]
+  } | null
+  const recienCompletado = estadoNavegacion?.recienCompletado
+  const iniciarRepeticion = estadoNavegacion?.iniciarRepeticion
   const [progreso, setProgreso] = useState<Progreso | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
@@ -59,10 +64,15 @@ function RequireEscenarioDisponible({
     // inmediato. Durante esa ventana el POST puede seguir en vuelo; no hay
     // motivo para devolver al participante a la lista por una lectura vieja.
     const siguienteTrasUnaCorrida = indiceCompletado >= 0 && indiceDestino === indiceCompletado + 1
-    const progresoEfectivo: Progreso | null =
-      progreso && recienCompletado
-        ? conEscenarioIntentado(progreso, recienCompletado)
-        : progreso
+    const intentosProvisionales = iniciarRepeticion
+      ? estadoNavegacion?.repeticionIntentados ?? []
+      : recienCompletado ? [{ id: recienCompletado, outcome: 'CORRECTO' as const }] : []
+    const progresoEfectivo: Progreso | null = progreso
+      ? intentosProvisionales.reduce(
+          (actual, intento) => conEscenarioIntentado(actual, intento.id, intento.outcome, iniciarRepeticion),
+          progreso,
+        )
+      : progreso
 
     const disponible = siguienteTrasUnaCorrida || escenarioEstaDisponible(
       catalogo,

@@ -27,7 +27,10 @@ export function useSiguienteEscenario(escenarioId: string): SiguienteEscenarioRe
       .then((progreso) => {
         if (cancelado) return
 
-        const siguiente = siguienteEnRonda(escenarios, conEscenarioIntentado(progreso, escenarioId))
+        const siguiente = siguienteEnRonda(
+          escenarios,
+          conEscenarioIntentado(progreso, escenarioId),
+        )
 
         if (siguiente) {
           setRuta(`/seccion/${siguiente.seccionId}/${siguiente.escenarioId}`)

@@ -29,8 +29,13 @@ const SMS: ScreenView = {
   sender: 'BancoLitoral',
   sub: 'Remitente verificado · mismo hilo de siempre',
   msgs: [...HISTORIAL, NUEVO],
-  composerGoto: 'n1b',
-  composerLabel: 'Escribió una respuesta al SMS del banco',
+  respuestas: [
+    {
+      texto: BORRADOR,
+      goto: 'e_responde',
+      label: 'Envió por SMS el número completo de su tarjeta',
+    },
+  ],
   // Salir del hilo es el gesto real de "lo dejo pasar": sin él, no verificar
   // no tendría forma de expresarse en la pantalla y el escenario obligaría a
   // actuar, que es justo lo contrario de lo que este caso mide.
@@ -38,21 +43,9 @@ const SMS: ScreenView = {
   volverLabel: 'Salió del hilo sin verificar el consumo',
 }
 
-/// Lo escrito y todavía sin enviar. Que el número completo esté a la vista
-/// antes de pulsar enviar es media lección del escenario: el error no es el
-/// aviso, es lo que uno está a punto de mandar por el mismo canal.
-const SMS_BORRADOR: ScreenView = {
-  ...SMS,
-  composerGoto: undefined,
-  borrador: BORRADOR,
-  senalBorrador: 'respuesta',
-  enviarGoto: 'e_responde',
-  enviarLabel: 'Envió por SMS el número completo de su tarjeta',
-}
-
 const SMS_RESPONDIDO: ScreenView = {
   ...SMS,
-  composerGoto: undefined,
+  respuestas: undefined,
   volverGoto: undefined,
   msgs: [...HISTORIAL, NUEVO, { text: BORRADOR, time: '19:16', mine: true, senal: 'respuesta' }],
 }
@@ -135,7 +128,6 @@ const APPS: AppTelefono[] = [
 
 const STORY: Story<ScreenNode> = {
   n1: { kind: 'scene', view: SMS },
-  n1b: { kind: 'scene', view: SMS_BORRADOR },
   n2: { kind: 'scene', view: APP_INICIO },
   e_bloquea: {
     kind: 'partial',

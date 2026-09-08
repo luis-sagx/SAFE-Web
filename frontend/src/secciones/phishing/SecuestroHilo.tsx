@@ -7,6 +7,7 @@ import { ACCIONES_BARRA, finalesDeBarra } from './barraDeCorreo'
 import type { Story } from '../../hooks/useStoryEngine'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
 import type { Senal } from '../../components/ui/PanelVeredicto'
+import { crearSenal } from '../../lib/crearSenal'
 
 /**
  * El hilo secuestrado: el correo es auténtico y el remitente también.
@@ -69,7 +70,11 @@ const BANCA: ScreenView = {
     // empezar: sin ella la pantalla enseña a dónde va el dinero pero no de
     // dónde sale, que es lo que hace propia la pérdida.
     { label: 'Cuenta de origen', placeholder: '', valor: 'cuenta' },
-    { label: 'Beneficiario', placeholder: 'Unidad Educativa San Rafael' },
+    {
+      label: 'Beneficiario',
+      placeholder: 'Carlos Andrés Mena',
+      senal: 'beneficiario-ajeno',
+    },
     {
       label: 'Cuenta destino',
       placeholder: 'Banco Austral · 2200418877 (nueva)',
@@ -224,41 +229,42 @@ const PISTA = (
 )
 
 const SENALES: Senal[] = [
-  {
-    id: 's0',
-    pantalla: 'n4',
-    targetId: 'cuenta-pdf',
-    texto:
-      'El comprobante tiene membrete, fecha y monto correctos, y aun así <b>solo repite el número de cuenta nuevo</b>. Un archivo adjunto no confirma nada: lo escribió quien mandó el correo.',
-  },
-  {
-    id: 's1',
-    pantalla: 'n1',
-    targetId: 'remitente',
-    texto:
-      'No hay una dirección imitada, ni errores de redacción, ni urgencia artificial: el hilo es <b>real</b> y la dirección también. La cuenta de la secretaría estaba hackeada, así que todo lo que sueles mirar salía bien.',
-  },
-  {
-    id: 's2',
-    pantalla: 'n1',
-    targetId: 'cuenta',
-    texto:
-      'La única anomalía es el hecho en sí: <b>un cambio de número de cuenta</b>. Eso, por sí solo, ya obliga a confirmar por otra vía.',
-  },
-  {
-    id: 's3',
-    pantalla: 'n2',
-    targetId: 'cuenta-nueva',
-    texto:
-      'La cuenta destino <b>no es la de siempre</b>, y es lo último que ves antes de que el dinero salga. Ese es el momento de parar, no después.',
-  },
-  {
-    id: 's4',
-    pantalla: 'n3',
-    targetId: 'telefono',
-    texto:
-      'El teléfono del colegio <b>ya lo tenías</b>, y está en su sitio oficial: un número que no salió del correo sospechoso es lo que convierte la duda en respuesta.',
-  },
+  crearSenal(
+    's0',
+    'n4',
+    'cuenta-pdf',
+    'El comprobante tiene membrete, fecha y monto correctos, y aun así <b>solo repite el número de cuenta nuevo</b>. Un archivo adjunto no confirma nada: lo escribió quien mandó el correo.',
+  ),
+  crearSenal(
+    's1',
+    'n1',
+    'remitente',
+    'No hay una dirección imitada, ni errores de redacción, ni urgencia artificial: el hilo es <b>real</b> y la dirección también. La cuenta de la secretaría estaba hackeada, así que todo lo que sueles mirar salía bien.',
+  ),
+  crearSenal(
+    's2',
+    'n1',
+    'cuenta',
+    'La única anomalía es el hecho en sí: <b>un cambio de número de cuenta</b>. Eso, por sí solo, ya obliga a confirmar por otra vía.',
+  ),
+  crearSenal(
+    's3',
+    'n2',
+    'beneficiario-ajeno',
+    'El beneficiario es <b>una persona ajena a la escuela</b>. Aunque el número de cuenta pareciera correcto, ese nombre distinto confirma que no debes transferir.',
+  ),
+  crearSenal(
+    's4',
+    'n2',
+    'cuenta-nueva',
+    'La cuenta destino <b>no es la de siempre</b>, y es lo último que ves antes de que el dinero salga. Ese es el momento de parar, no después.',
+  ),
+  crearSenal(
+    's5',
+    'n3',
+    'telefono',
+    'El teléfono del colegio <b>ya lo tenías</b>, y está en su sitio oficial: un número que no salió del correo sospechoso es lo que convierte la duda en respuesta.',
+  ),
 ]
 
 const RULE =

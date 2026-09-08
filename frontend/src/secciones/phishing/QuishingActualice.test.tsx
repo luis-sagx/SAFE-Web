@@ -43,6 +43,12 @@ function renderEscenario() {
 }
 
 describe('QuishingActualice', () => {
+  it('muestra el dominio del remitente con la sustitución de l por 1', () => {
+    renderEscenario()
+
+    expect(screen.getByText('notificaciones@bancodel1itoral.com')).toBeDefined()
+  })
+
   it('escanear el QR y enviar el formulario cuenta como caer en la trampa', () => {
     renderEscenario()
 
