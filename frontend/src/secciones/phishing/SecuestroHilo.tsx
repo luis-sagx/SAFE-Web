@@ -69,7 +69,11 @@ const BANCA: ScreenView = {
     // empezar: sin ella la pantalla enseña a dónde va el dinero pero no de
     // dónde sale, que es lo que hace propia la pérdida.
     { label: 'Cuenta de origen', placeholder: '', valor: 'cuenta' },
-    { label: 'Beneficiario', placeholder: 'Unidad Educativa San Rafael' },
+    {
+      label: 'Beneficiario',
+      placeholder: 'Carlos Andrés Mena',
+      senal: 'beneficiario-ajeno',
+    },
     {
       label: 'Cuenta destino',
       placeholder: 'Banco Austral · 2200418877 (nueva)',
@@ -248,12 +252,19 @@ const SENALES: Senal[] = [
   {
     id: 's3',
     pantalla: 'n2',
+    targetId: 'beneficiario-ajeno',
+    texto:
+      'El beneficiario es <b>una persona ajena a la escuela</b>. Aunque el número de cuenta pareciera correcto, ese nombre distinto confirma que no debes transferir.',
+  },
+  {
+    id: 's4',
+    pantalla: 'n2',
     targetId: 'cuenta-nueva',
     texto:
       'La cuenta destino <b>no es la de siempre</b>, y es lo último que ves antes de que el dinero salga. Ese es el momento de parar, no después.',
   },
   {
-    id: 's4',
+    id: 's5',
     pantalla: 'n3',
     targetId: 'telefono',
     texto:

@@ -137,7 +137,7 @@ function PanelVeredicto({
         : { borde: 'border-danger/40', fondo: 'bg-danger', icono: '✕' }
 
   return (
-    <div className={`rounded-lg border bg-surface p-5 ${tono.borde}`}>
+    <div className={`rounded-lg border bg-surface p-4 ${tono.borde}`}>
       <p className="flex items-center gap-2 text-lg font-semibold text-ink">
         <span
           className={`flex size-6 shrink-0 items-center justify-center rounded-full text-sm text-white ${tono.fondo}`}
@@ -147,7 +147,7 @@ function PanelVeredicto({
         </span>
         {node.verdict}
       </p>
-      <p className="mt-3 text-lg leading-relaxed text-body">{node.outcome}</p>
+      <p className="mt-2 text-base leading-relaxed text-body">{node.outcome}</p>
 
       <EtiquetaAprobacion node={node} />
 
@@ -172,7 +172,11 @@ function PanelVeredicto({
       )}
 
       {enSenal && (
-        <div className="mt-5 rounded-md bg-canvas-soft p-4">
+        <div
+          role="region"
+          aria-label="Repaso de señales"
+          className="mt-4 rounded-md border border-signal-border bg-signal p-4"
+        >
           <div className="flex items-center justify-between">
             <h4 className="text-base font-semibold text-ink">
               Señal {paso + 1} de {senales.length}
@@ -199,7 +203,7 @@ function PanelVeredicto({
               dangerouslySetInnerHTML={{ __html: masLarga }}
             />
             <p
-              className="absolute inset-0 text-lg leading-relaxed text-body"
+              className="absolute inset-0 text-lg leading-relaxed text-signal-body"
               dangerouslySetInnerHTML={{ __html: senales[paso]?.texto ?? '' }}
             />
           </div>

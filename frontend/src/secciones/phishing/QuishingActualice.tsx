@@ -119,7 +119,7 @@ const ACCIONES: AccionCorreo[] = [
 
 const ASUNTO = 'Actualice sus datos antes de que se limite su cuenta'
 const REMITENTE_NOMBRE = 'Banco del Litoral · Actualización de datos'
-const DIRECCION = 'notificaciones@bancodellitoral.com'
+const DIRECCION = 'notificaciones@bancodel1itoral.com'
 
 /// El mensaje tal como lo muestran las carpetas cuando una acción de la barra
 /// lo mueve de bandeja. Lo pinta `carpetasCorreo`, compartido por todos los
@@ -139,7 +139,7 @@ const SENALES: Senal[] = [
     targetId: 'remitente',
     pantalla: 'n1',
     texto:
-      'El QR abre <b>litoral-actualiza.web.app</b>. Menciona al banco en el nombre, pero no es la dirección del banco: es un sitio gratuito que cualquiera puede crear en minutos con el nombre que quiera.',
+      'El dominio del remitente escribe <b>bancodel1itoral.com</b> con el número <b>1</b> en lugar de la letra <b>l</b>. Es una imitación de la dirección del banco: un cambio mínimo que puede pasar desapercibido.',
   },
   {
     id: 's3',

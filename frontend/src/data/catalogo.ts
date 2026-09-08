@@ -216,7 +216,7 @@ const BASE: EscenarioBase[] = [
     // sitio, la falsa igual que la real.
     // v7: el participante ve los datos que este escenario le pide, y los
     // finales nombran lo que se entregó.
-    version: 7,
+    version: 8,
     naturaleza: "fraude",
     dificultad: 4,
     espeja: "phishing/aviso-filtracion",
@@ -234,7 +234,7 @@ const BASE: EscenarioBase[] = [
     // devuelve al correo, y la decisión es lo que se haga con el mensaje.
     // v6: las páginas del escenario llevan cabecera, aviso y pie de
     // sitio, la falsa igual que la real.
-    version: 6,
+    version: 7,
     naturaleza: "fraude",
     dificultad: 4,
     espeja: "phishing/rol-de-pagos",
