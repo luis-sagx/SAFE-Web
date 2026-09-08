@@ -9,7 +9,7 @@ function llenarCamposValidos() {
   fireEvent.change(screen.getByLabelText(/Apellido/), { target: { value: 'Pérez' } })
   fireEvent.change(screen.getByLabelText(/Cédula/), { target: { value: '1710034065' } })
   fireEvent.change(screen.getByLabelText(/Correo/), { target: { value: 'maria@correo.com' } })
-  fireEvent.change(screen.getByLabelText(/Contraseña/), { target: { value: 'unaClaveLarga123' } })
+  fireEvent.change(screen.getByLabelText(/Contraseña/), { target: { value: 'UnaClaveLarga123!' } })
   fireEvent.click(screen.getByRole('checkbox'))
 }
 
@@ -206,7 +206,7 @@ describe('Registro', () => {
     expect(screen.queryByText(/no tiene un formato válido/)).toBeNull()
   })
 
-  it('avisa que la contraseña es muy corta solo al salir del campo', () => {
+  it('avisa que la contraseña no cumple la política solo al salir del campo', () => {
     useAuthMock.mockReturnValue({
       isAuthenticated: false,
       loading: false,
@@ -221,10 +221,59 @@ describe('Registro', () => {
 
     const campoPassword = screen.getByLabelText(/Contraseña/)
     fireEvent.change(campoPassword, { target: { value: '123' } })
-    expect(screen.queryByText('Debe tener al menos 8 caracteres.')).toBeNull()
+    expect(screen.queryByText(/No cumple los requisitos/)).toBeNull()
 
     fireEvent.blur(campoPassword)
-    expect(screen.getByText('Debe tener al menos 8 caracteres.')).toBeDefined()
+    expect(screen.getByText(/No cumple los requisitos/)).toBeDefined()
+  })
+
+  it('no marca error cuando la contraseña cumple los 4 requisitos', () => {
+    useAuthMock.mockReturnValue({
+      isAuthenticated: false,
+      loading: false,
+      register: vi.fn(),
+    })
+
+    render(
+      <BrowserRouter>
+        <Registro />
+      </BrowserRouter>
+    )
+
+    const campoPassword = screen.getByLabelText(/Contraseña/)
+    fireEvent.change(campoPassword, { target: { value: 'UnaClaveLarga123!' } })
+    fireEvent.blur(campoPassword)
+
+    expect(screen.queryByText(/No cumple los requisitos/)).toBeNull()
+  })
+
+  it('muestra la fortaleza de la contraseña en vivo, sin esperar a salir del campo', () => {
+    useAuthMock.mockReturnValue({
+      isAuthenticated: false,
+      loading: false,
+      register: vi.fn(),
+    })
+
+    render(
+      <BrowserRouter>
+        <Registro />
+      </BrowserRouter>
+    )
+
+    const campoPassword = screen.getByLabelText(/Contraseña/)
+    expect(screen.queryByText(/Fortaleza de la contraseña/)).toBeNull()
+
+    // Solo minúsculas: cumple nada más el largo, es débil.
+    fireEvent.change(campoPassword, { target: { value: 'clavesola' } })
+    expect(screen.getByText(/Fortaleza de la contraseña: Débil/)).toBeDefined()
+
+    // Le falta el carácter especial: 3 de 4 criterios, media.
+    fireEvent.change(campoPassword, { target: { value: 'ClaveConNumero1' } })
+    expect(screen.getByText(/Fortaleza de la contraseña: Media/)).toBeDefined()
+
+    // Los 4 criterios: fuerte.
+    fireEvent.change(campoPassword, { target: { value: 'ClaveSegura1!' } })
+    expect(screen.getByText(/Fortaleza de la contraseña: Fuerte/)).toBeDefined()
   })
 
   it('bloquea el envío con un correo sin formato válido', () => {
@@ -251,7 +300,7 @@ describe('Registro', () => {
     expect(registerMock).not.toHaveBeenCalled()
   })
 
-  it('bloquea el envío con una contraseña muy corta', () => {
+  it('bloquea el envío con una contraseña que no cumple la política', () => {
     const registerMock = vi.fn()
     useAuthMock.mockReturnValue({
       isAuthenticated: false,
@@ -266,15 +315,11 @@ describe('Registro', () => {
     )
 
     llenarCamposValidos()
-    fireEvent.change(screen.getByLabelText(/Contraseña/), { target: { value: '123' } })
+    // Cumple el largo pero le falta mayúscula, número y símbolo.
+    fireEvent.change(screen.getByLabelText(/Contraseña/), { target: { value: 'claveinsegura' } })
     fireEvent.click(screen.getByRole('button', { name: 'Crear cuenta' }))
 
-    expect(
-      screen.getByText('La contraseña debe tener al menos 8 caracteres.'),
-    ).toBeDefined()
-    // El aviso propio del campo usa otro texto ("Debe tener...", sin
-    // repetir "La contraseña"), así que no colisiona con el de arriba.
-    expect(screen.getByText('Debe tener al menos 8 caracteres.')).toBeDefined()
+    expect(screen.getAllByText(/al menos 8 caracteres, una mayúscula/).length).toBeGreaterThan(0)
     expect(registerMock).not.toHaveBeenCalled()
   })
 
@@ -376,7 +421,7 @@ describe('Registro', () => {
         apellido: 'Pérez',
         email: 'maria@correo.com',
         cedula: '1710034065',
-        password: 'unaClaveLarga123',
+        password: 'UnaClaveLarga123!',
       }),
     )
   })

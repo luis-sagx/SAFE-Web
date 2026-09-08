@@ -8,7 +8,7 @@ function validar(overrides: Record<string, unknown>) {
     apellido: 'Pérez',
     email: 'ana@gmail.com',
     cedula: '1710034065',
-    password: 'contraseña-larga',
+    password: 'Contraseña-larga1!',
   };
   const dto = plainToInstance(RegisterDto, { ...base, ...overrides });
   return validateSync(dto).map((e) => e.property);
@@ -52,5 +52,31 @@ describe('RegisterDto.email — dominios permitidos', () => {
 
   it('un correo con formato inválido da un solo error', () => {
     expect(validar({ email: 'noesuncorreo' })).toEqual(['email']);
+  });
+});
+
+describe('RegisterDto.password — política de fortaleza', () => {
+  it('acepta una contraseña con mayúscula, número y carácter especial', () => {
+    expect(validar({ password: 'Contraseña-larga1!' })).toEqual([]);
+  });
+
+  it('rechaza una contraseña solo con minúsculas y números', () => {
+    expect(validar({ password: 'contraseñalarga1' })).toContain('password');
+  });
+
+  it('rechaza una contraseña sin número', () => {
+    expect(validar({ password: 'Contraseña-larga!' })).toContain('password');
+  });
+
+  it('rechaza una contraseña sin carácter especial', () => {
+    expect(validar({ password: 'Contrasenalarga1' })).toContain('password');
+  });
+
+  it('rechaza una contraseña débil aunque cumpla el largo mínimo', () => {
+    expect(validar({ password: '12345678' })).toContain('password');
+  });
+
+  it('sigue exigiendo el mínimo de 8 caracteres', () => {
+    expect(validar({ password: 'Ab1!' })).toContain('password');
   });
 });
