@@ -24,9 +24,12 @@ function Registro() {
   // en cada tecla, igual que ya hace la cédula con su propio criterio.
   const [nombreTocado, setNombreTocado] = useState(false);
   const [apellidoTocado, setApellidoTocado] = useState(false);
+  const [emailTocado, setEmailTocado] = useState(false);
+  const [passwordTocado, setPasswordTocado] = useState(false);
 
   const NOMBRE_MIN = 2;
   const NOMBRE_MAX = 60;
+  const PASSWORD_MIN = 8;
   const nombreCorto = nombreTocado && nombre.length > 0 && nombre.length < NOMBRE_MIN;
   const apellidoCorto = apellidoTocado && apellido.length > 0 && apellido.length < NOMBRE_MIN;
   // Cerca del límite y no siempre: un contador pegado a un campo que recién
@@ -35,6 +38,16 @@ function Registro() {
     nombre.length >= NOMBRE_MAX - 10 ? `${nombre.length}/${NOMBRE_MAX}` : undefined;
   const contadorApellido =
     apellido.length >= NOMBRE_MAX - 10 ? `${apellido.length}/${NOMBRE_MAX}` : undefined;
+
+  // Forma, no dominio: qué dominios se aceptan lo decide `EsDominioPermitido`
+  // en el backend (spec 2026-08-22) y esa lista solo tiene sentido mantenida
+  // en un lugar. Repetirla aquí la duplicaría con el riesgo de que las dos
+  // copias diverjan; esto solo atrapa el "se me olvidó la arroba" antes de
+  // pagar el viaje al servidor.
+  const EMAIL_FORMATO = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const emailInvalido = emailTocado && email.length > 0 && !EMAIL_FORMATO.test(email);
+  const passwordCorta =
+    passwordTocado && password.length > 0 && password.length < PASSWORD_MIN;
 
   // Solo se avisa de la cédula cuando ya está completa: marcarla en rojo
   // mientras la escribe convierte cada tecla en un reproche.
@@ -64,6 +77,18 @@ function Registro() {
       setNombreTocado(true);
       setApellidoTocado(true);
       setError(`El nombre y el apellido deben tener al menos ${NOMBRE_MIN} caracteres.`);
+      return;
+    }
+
+    if (!EMAIL_FORMATO.test(email)) {
+      setEmailTocado(true);
+      setError("El correo no tiene un formato válido.");
+      return;
+    }
+
+    if (password.length < PASSWORD_MIN) {
+      setPasswordTocado(true);
+      setError(`La contraseña debe tener al menos ${PASSWORD_MIN} caracteres.`);
       return;
     }
 
@@ -149,9 +174,11 @@ function Registro() {
           type="email"
           value={email}
           onChange={setEmail}
+          onBlur={() => setEmailTocado(true)}
           autoComplete="email"
           placeholder="tu@correo.com"
           maxLength={120}
+          error={emailInvalido ? "El correo no tiene un formato válido." : undefined}
         />
         <Campo
           id="password"
@@ -159,9 +186,15 @@ function Registro() {
           type="password"
           value={password}
           onChange={setPassword}
+          onBlur={() => setPasswordTocado(true)}
           autoComplete="new-password"
           maxLength={128}
           ayuda="Mínimo 8 caracteres."
+          error={
+            passwordCorta
+              ? `Debe tener al menos ${PASSWORD_MIN} caracteres.`
+              : undefined
+          }
         />
 
         <div className="flex items-start gap-3">
