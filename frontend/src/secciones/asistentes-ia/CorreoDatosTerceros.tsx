@@ -15,8 +15,26 @@ const HORA = '10:14'
 
 const BORRADOR =
   'Mejora este correo: Estimado Sebastián, le escribo para indicarle que el estudiante Luis Andrango, con cédula 1723456789 y correo luis.andrango99@gmail.com, solicita el cambio de horario de la materia de Redes.'
+const BORRADOR_ANONIMIZADO =
+  'Mejora este correo: Estimado Sebastián, le escribo para indicarle que el estudiante [nombre del compañero], con cédula [cédula] y correo [correo], solicita el cambio de horario de la materia de Redes.'
 
-const CHAT = crearChatIA('Redactor de mensajes · servicio externo', BORRADOR, HORA)
+// El chat arranca con el saludo, no con el mensaje ya mandado: recién en las
+// burbujas de respuesta aparece el texto completo que se está por enviar, que
+// es donde vive la decisión.
+const CHAT = crearChatIA(
+  'Redactor de mensajes · servicio externo',
+  [
+    { texto: 'Hola', mio: true },
+    { texto: 'Hola, ¿en qué puedo ayudarte?' },
+    { texto: 'Ayúdame a mejorar la redacción de un correo', mio: true },
+  ],
+  HORA,
+  [
+    { texto: BORRADOR, goto: 'e_datos_completos' },
+    { texto: BORRADOR_ANONIMIZADO, goto: 'e_anonimizado' },
+    { texto: 'Mejor lo redacto yo mismo, gracias', goto: 'e_no_usa_ia' },
+  ],
+)
 
 const ENVIO_COMPLETO = conRespuestaIA(
   CHAT,
@@ -27,29 +45,18 @@ const ENVIO_COMPLETO = conRespuestaIA(
 const ENVIO_ANONIMIZADO = conRespuestaIA(
   CHAT,
   HORA,
-  'Mejora este correo: Estimado Sebastián, le escribo para indicarle que el estudiante [nombre del compañero], con cédula [cédula] y correo [correo], solicita el cambio de horario de la materia de Redes.',
+  BORRADOR_ANONIMIZADO,
   'Aquí tienes una versión más formal: "Estimado Sebastián: le escribo para solicitar, en representación de [nombre del compañero] ([cédula], [correo]), el cambio de horario de la materia de Redes." Reemplaza los corchetes con los datos antes de enviarlo.',
+)
+const SIN_IA = conRespuestaIA(
+  CHAT,
+  HORA,
+  'Mejor lo redacto yo mismo, gracias',
+  'Como quieras, aquí estaré si cambias de opinión.',
 )
 
 const STORY: Story<ScreenNode> = {
-  n1: {
-    kind: 'scene',
-    view: CHAT,
-    choices: [
-      {
-        label: 'Enviar el mensaje tal cual, para que la IA lo mejore',
-        goto: 'e_datos_completos',
-      },
-      {
-        label: 'Quitar el nombre, la cédula y el correo de Luis antes de enviarlo, y pedir solo que mejore el texto',
-        goto: 'e_anonimizado',
-      },
-      {
-        label: 'No usar la IA para este correo y escribirlo tú mismo',
-        goto: 'e_no_usa_ia',
-      },
-    ],
-  },
+  n1: { kind: 'scene', view: CHAT },
   e_datos_completos: {
     kind: 'bad',
     view: ENVIO_COMPLETO,
@@ -84,7 +91,7 @@ const STORY: Story<ScreenNode> = {
   },
   e_no_usa_ia: {
     kind: 'partial',
-    view: CHAT,
+    view: SIN_IA,
     verdict: 'Evitaste el riesgo, pero no hacía falta',
     outcome:
       'No compartiste ningún dato, pero tampoco hacía falta perder la ayuda de redacción: bastaba con quitar el nombre, la cédula y el correo de Luis antes de pedirla.',
@@ -93,11 +100,10 @@ const STORY: Story<ScreenNode> = {
 
 const SENALES: Senal[] = [
   {
-    id: 'borrador',
-    targetId: 'borrador',
+    id: 'datos-en-juego',
     pantalla: 'n1',
     texto:
-      'El borrador ya trae el <b>nombre completo</b>, la <b>cédula</b> y el <b>correo</b> de otra persona. Pedirle a una IA que "mejore la redacción" no exige entregarle esos datos.',
+      'El correo que quieres mejorar trae el <b>nombre completo</b>, la <b>cédula</b> y el <b>correo</b> de otra persona. Pedirle a una IA que "mejore la redacción" no exige entregarle esos datos.',
   },
 ]
 
@@ -126,8 +132,12 @@ function CorreoDatosTerceros() {
       senales={SENALES}
       rule={RULE}
       accionesEnPantalla
-      pregunta="¿Qué haces con el borrador?"
-      cuandoTermina="Cuando decidas qué hacer con el borrador antes de pedirle ayuda a la IA."
+      cuandoTermina="Cuando toques una de las respuestas del chat."
+      instruccion={
+        <p className="text-lg leading-relaxed text-body">
+          Toca una de las respuestas para elegir qué escribirle a la IA.
+        </p>
+      }
       pista={
         <p>
           La IA puede mejorar la redacción sin saber de quién habla el texto. Lo que decides es si se lo
