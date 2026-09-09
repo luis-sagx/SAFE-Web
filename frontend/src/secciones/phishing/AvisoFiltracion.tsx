@@ -30,6 +30,7 @@ const CORREO: ScreenView = {
   date: 'hoy 08:15',
   body: `
     <p>Estimado(a) cliente:</p>
+    <img src="/AlertaFiltracion.jpeg" alt="" />
     <p>
       El pasado 2 de agosto detectamos un <b>incidente de seguridad</b> que expuso los correos,
       teléfonos e historial de pedidos de un grupo de clientes, incluido el suyo.

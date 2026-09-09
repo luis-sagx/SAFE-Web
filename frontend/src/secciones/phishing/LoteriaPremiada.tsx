@@ -36,6 +36,7 @@ const CORREO: ScreenView = {
   date: 'hoy 07:14',
   body: `
     <p><span data-signal="saludo">Estimado(a) ganador(a):</span></p>
+    <img src="/LoteriaPremio.jpeg" alt="" />
     <p>
       Nos complace informarle que su correo electrónico resultó
       <b>preseleccionado</b> en el sorteo internacional del mes y le corresponde un premio de

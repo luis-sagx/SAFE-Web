@@ -327,6 +327,7 @@ function ContenidoCorreo({ recibido, carpetas }: { recibido: string; carpetas: C
       }
     >
       <p>Estimado(a) contribuyente:</p>
+      <img src="/FacturaAdjunta.jpeg" alt="" />
       <p>
         Nuestro sistema detectó una <b>factura electrónica no validada</b> asociada a su RUC. Si no
         completa la validación en las próximas{' '}
