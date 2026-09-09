@@ -35,6 +35,10 @@ function jwtQueDevuelve(payload: unknown) {
 function configFake() {
   return {
     get: () => 'https://safeweb.espe.edu.ec',
+    // Valor fijo cualquiera: los fixtures de este archivo son texto plano
+    // sin el prefijo "v1:", así que `descifrarOpcional()` los deja pasar tal
+    // cual sin necesitar la clave real.
+    getOrThrow: () => 'clave-de-prueba',
   } as unknown as ConfigService;
 }
 

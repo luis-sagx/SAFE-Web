@@ -8,6 +8,7 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import type { AtestacionPayload, JwtPayload } from '@comun';
 import { MailService } from '../mail/mail.service';
+import { descifrarOpcional } from '../pii/pii';
 import { PrismaService } from '../prisma/prisma.service';
 import { generarCodigoCertificado } from './codigo';
 import { generarCertificadoPdf, type DatosCertificado } from './pdf';
@@ -49,13 +50,16 @@ export interface VerificacionCertificado {
 @Injectable()
 export class CertificadosService {
   private readonly logger = new Logger(CertificadosService.name);
+  private readonly piiKey: string;
 
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwt: JwtService,
     private readonly config: ConfigService,
     private readonly mail: MailService,
-  ) {}
+  ) {
+    this.piiKey = config.getOrThrow<string>('PII_ENCRYPTION_KEY');
+  }
 
   private origenCertificado(): string {
     return this.config.get('CERTIFICADO_ORIGEN', 'https://safeweb.espe.edu.ec');
@@ -174,10 +178,12 @@ export class CertificadosService {
         select: { nombre: true, apellido: true, email: true },
       });
 
-      if (!persona?.email) return;
+      const email = descifrarOpcional(persona?.email ?? null, this.piiKey);
+      if (!email) return;
 
       const datos: DatosCertificado = {
-        nombreCompleto: `${persona.nombre} ${persona.apellido}`.trim(),
+        nombreCompleto:
+          `${descifrarOpcional(persona?.nombre ?? null, this.piiKey) ?? ''} ${descifrarOpcional(persona?.apellido ?? null, this.piiKey) ?? ''}`.trim(),
         modulos: certificado.modulos,
         horas: certificado.horas,
         calificacion: certificado.calificacion,
@@ -188,7 +194,7 @@ export class CertificadosService {
 
       const pdf = await generarCertificadoPdf(datos);
       const enviado = await this.mail.enviarCertificado(
-        persona.email,
+        email,
         datos.nombreCompleto,
         pdf,
       );
@@ -232,7 +238,8 @@ export class CertificadosService {
     }
 
     return generarCertificadoPdf({
-      nombreCompleto: `${persona.nombre} ${persona.apellido}`.trim(),
+      nombreCompleto:
+        `${descifrarOpcional(persona.nombre, this.piiKey) ?? ''} ${descifrarOpcional(persona.apellido, this.piiKey) ?? ''}`.trim(),
       modulos: certificado.modulos,
       horas: certificado.horas,
       calificacion: certificado.calificacion,

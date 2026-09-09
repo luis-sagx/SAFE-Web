@@ -11,6 +11,18 @@ import { PrismaPg } from '@prisma/adapter-pg';
 import { hash } from 'bcryptjs';
 // Extensión .js: Node lo ejecuta como ESM y la resolución la exige.
 import { PrismaClient } from '../generated/identidad/client.js';
+import { cifrar, huellaEmail } from '../apps/identidad/src/pii/pii.ts';
+
+function secreto(nombre: string): string {
+  const valor = process.env[nombre];
+  if (!valor) {
+    throw new Error(`Falta ${nombre} en el entorno (ver .env.example).`);
+  }
+  return valor;
+}
+
+const emailPepper = secreto('EMAIL_PEPPER');
+const piiKey = secreto('PII_ENCRYPTION_KEY');
 
 const prisma = new PrismaClient({
   // El schema va como segundo argumento, no como `?schema=` en la URL: el
@@ -39,8 +51,14 @@ function makePassword(): string {
 async function main() {
   const email = arg('email', 'supervisor@espe.edu.ec').toLowerCase();
   const reset = process.argv.includes('--reset');
+  const emailHash = huellaEmail(email, emailPepper);
 
-  const existente = await prisma.participant.findUnique({ where: { email } });
+  // `OR` con `email` por si la cuenta se creó antes del cifrado (issue #95)
+  // y `backfill-pii.mts` todavía no la alcanzó: esas filas no tienen huella
+  // todavía, solo el correo en claro.
+  const existente = await prisma.participant.findFirst({
+    where: { OR: [{ emailHash }, { email }] },
+  });
 
   // Solo se imprime una contraseña que quedó guardada de verdad.
   if (existente && !reset) {
@@ -55,13 +73,17 @@ Para generar una nueva:  pnpm seed -- --email ${email} --reset
   const passwordHash = await hash(password, 12);
 
   if (existente) {
-    await prisma.participant.update({ where: { email }, data: { passwordHash } });
+    await prisma.participant.update({
+      where: { id: existente.id },
+      data: { passwordHash },
+    });
   } else {
     await prisma.participant.create({
       data: {
-        email,
-        nombre: 'Supervisor',
-        apellido: 'del estudio',
+        email: cifrar(email, piiKey),
+        emailHash,
+        nombre: cifrar('Supervisor', piiKey),
+        apellido: cifrar('del estudio', piiKey),
         // Sin cédula: no es participante, gestiona el estudio.
         passwordHash,
         role: 'SUPERVISOR',

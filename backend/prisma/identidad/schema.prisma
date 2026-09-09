@@ -35,9 +35,36 @@ model Participant {
   seq Int @unique @default(autoincrement())
 
   // --- Datos personales: solo para el acceso. Nunca se exportan. ---
+  //
+  // Cifrados en reposo (issue #95, ver apps/identidad/src/pii/pii.ts): lo que
+  // vive en `nombre`, `apellido` y `email` es AES-256-GCM, no texto plano.
+  // La aplicación cifra al escribir y descifra al leer con
+  // PII_ENCRYPTION_KEY (.env); alguien que se lleve solo el volumen de
+  // Postgres —un backup, un dump— no puede leerlos.
+  //
+  // Una fila creada antes de este cambio, si todavía no pasó por
+  // `backfill-pii.mts`, guarda estos tres campos en texto plano: `descifrar()`
+  // lo reconoce por la falta del prefijo "v1:" y lo devuelve tal cual, así
+  // que sigue siendo legible mientras el backfill no ha corrido. Es
+  // deliberado, no un descuido: evita una ventana de login roto entre
+  // desplegar este cambio de esquema y correr el script.
   nombre   String
   apellido String
-  email    String @unique
+  email    String
+
+  /// HMAC-SHA256(correo normalizado, EMAIL_PEPPER): el índice único para
+  /// encontrar la cuenta al iniciar sesión, ahora que `email` guarda texto
+  /// cifrado (con IV aleatorio, así que el mismo correo nunca cifra igual dos
+  /// veces y no podría servir de índice por sí solo). Mismo patrón que
+  /// `cedulaHash`, con su propio secreto: un pepper por tipo de dato, para
+  /// que la filtración de uno no arrastre al otro.
+  ///
+  /// Nullable en vez de exigirlo desde ya: una fila sin migrar todavía no
+  /// tiene huella, y `login()` cae a buscar por el `email` en claro de esas
+  /// filas mientras tanto (ver auth.service.ts). Se puede volver obligatorio
+  /// en una migración futura, una vez que `backfill-pii.mts` corrió en todos
+  /// los entornos.
+  emailHash String? @unique
 
   /// HMAC-SHA256(cédula, CEDULA_PEPPER). La cédula EN CLARO NUNCA SE GUARDA:
   /// no entra a la base, no sale en ninguna respuesta y no va a los logs.

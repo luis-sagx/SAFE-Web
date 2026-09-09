@@ -1,7 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { randomBytes } from 'node:crypto';
 import { hash } from 'bcryptjs';
 import { seudonimo } from '@comun';
+import { descifrarOpcional } from '../pii/pii';
 import { PrismaService } from '../prisma/prisma.service';
 
 /// Mismo factor que el registro (OWASP Password Storage >= 10).
@@ -43,13 +45,17 @@ interface FilaAdmin {
   createdAt: Date;
 }
 
-function vista(p: FilaAdmin): ParticipanteAdmin {
+/// El supervisor sí necesita ver el nombre y el correo reales para poder
+/// gestionar cuentas (a quién reactivar, a quién resetearle la contraseña):
+/// se descifran aquí, el único punto por el que pasa la lista de camino a
+/// la pantalla de administración.
+function vista(p: FilaAdmin, piiKey: string): ParticipanteAdmin {
   return {
     id: p.id,
     seudonimo: seudonimo(p.seq),
-    nombre: p.nombre,
-    apellido: p.apellido,
-    email: p.email,
+    nombre: descifrarOpcional(p.nombre, piiKey),
+    apellido: descifrarOpcional(p.apellido, piiKey),
+    email: descifrarOpcional(p.email, piiKey),
     activo: p.disabledAt === null,
     createdAt: p.createdAt.toISOString(),
   };
@@ -67,7 +73,14 @@ function generarPassword(): string {
 
 @Injectable()
 export class AdminService {
-  constructor(private readonly prisma: PrismaService) {}
+  private readonly piiKey: string;
+
+  constructor(
+    private readonly prisma: PrismaService,
+    config: ConfigService,
+  ) {
+    this.piiKey = config.getOrThrow<string>('PII_ENCRYPTION_KEY');
+  }
 
   /// Solo participantes. Un supervisor no aparece en la lista ni puede ser
   /// gestionado por otro: las cuentas de supervisor se crean por script.
@@ -77,7 +90,7 @@ export class AdminService {
       orderBy: { createdAt: 'asc' },
       select: CAMPOS_ADMIN,
     });
-    return filas.map(vista);
+    return filas.map((p) => vista(p, this.piiKey));
   }
 
   /// Busca una cuenta que sea PARTICIPANT. Devolver el mismo 404 para "no
@@ -101,7 +114,7 @@ export class AdminService {
       data: { disabledAt: activo ? null : new Date() },
       select: CAMPOS_ADMIN,
     });
-    return vista(p);
+    return vista(p, this.piiKey);
   }
 
   /// Genera una contraseña nueva y la devuelve UNA vez: no se guarda en claro,
