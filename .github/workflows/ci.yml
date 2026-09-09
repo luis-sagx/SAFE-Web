@@ -90,6 +90,14 @@ jobs:
       ENTRENAMIENTO_DATABASE_URL: postgresql://entrenamiento:ci@localhost:5432/ci_test?schema=entrenamiento
       JWT_SECRET: secreto-solo-para-pruebas-de-ci
       CEDULA_PEPPER: pepper-solo-para-pruebas-de-ci
+      EMAIL_PEPPER: email-pepper-solo-para-pruebas-de-ci
+      # 32 bytes en base64 de verdad: pii.ts exige ese largo exacto para
+      # AES-256-GCM, no vale cualquier cadena como con los peppers de HMAC.
+      PII_ENCRYPTION_KEY: x/JbHUIAkT9Ma25gaiyx36wmbuGoAK54pmYLeGFqGE0=
+      # No hace falta un dominio verificado ni una API key real: solo dos
+      # servicios instancian MailModule al arrancar (identidad y su
+      # test module), y ningún test de este job dispara un envío de verdad.
+      RESEND_API_KEY: re_dummy_solo_para_que_arranque_en_ci
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - uses: pnpm/action-setup@f40ffcd9367d9f12939873eb1018b921a783ffaa # v4
@@ -231,6 +239,10 @@ jobs:
       ENTRENAMIENTO_DB_PASSWORD: ci-entrenamiento
       JWT_SECRET: ci-secret-solo-para-pruebas
       CEDULA_PEPPER: ci-pepper-solo-para-pruebas
+      EMAIL_PEPPER: ci-email-pepper-solo-para-pruebas
+      # 32 bytes en base64 de verdad: pii.ts exige ese largo exacto para
+      # AES-256-GCM, no vale cualquier cadena como con los peppers de HMAC.
+      PII_ENCRYPTION_KEY: mpq/ulhvUPNvL338nlw/zfHifGEPPcMXI3vGoSZ8WYo=
       WEB_PORT: 8080
       # Dummy: este job levanta el compose real, así que MailService.getOrThrow
       # exige que la variable exista. No hace falta que sea válida — si algo

@@ -1,4 +1,5 @@
 import { NotFoundException } from '@nestjs/common';
+import type { ConfigService } from '@nestjs/config';
 import { compare } from 'bcryptjs';
 import { AdminService } from './admin.service';
 import type { PrismaService } from '../prisma/prisma.service';
@@ -16,9 +17,15 @@ function fila(overrides: Record<string, unknown> = {}) {
   };
 }
 
-/// Mock mínimo: cada test pasa las funciones de Prisma que necesita.
+/// Mock mínimo: cada test pasa las funciones de Prisma que necesita. El
+/// `ConfigService` es un valor fijo cualquiera: los fixtures de este archivo
+/// son texto plano sin el prefijo "v1:", así que `descifrarOpcional()` los
+/// deja pasar tal cual sin necesitar la clave real.
 function servicio(prisma: Partial<Record<string, unknown>>) {
-  return new AdminService({ participant: prisma } as unknown as PrismaService);
+  return new AdminService(
+    { participant: prisma } as unknown as PrismaService,
+    { getOrThrow: () => 'clave-de-prueba' } as unknown as ConfigService,
+  );
 }
 
 describe('AdminService.listar', () => {
@@ -70,6 +77,22 @@ describe('AdminService.cambiarEstado', () => {
     await expect(admin.cambiarEstado('sup', true)).rejects.toBeInstanceOf(
       NotFoundException,
     );
+  });
+
+  it('reactiva limpiando disabledAt', async () => {
+    let dataRecibido: { disabledAt: Date | null } | undefined;
+    const admin = servicio({
+      findFirst: () => Promise.resolve(fila({ disabledAt: new Date() })),
+      update: (args: { data: { disabledAt: Date | null } }) => {
+        dataRecibido = args.data;
+        return Promise.resolve(fila({ disabledAt: args.data.disabledAt }));
+      },
+    });
+
+    const res = await admin.cambiarEstado('p1', true);
+
+    expect(dataRecibido?.disabledAt).toBeNull();
+    expect(res.activo).toBe(true);
   });
 });
 

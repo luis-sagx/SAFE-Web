@@ -74,10 +74,14 @@ describe('Autenticación (e2e)', () => {
     // acaso", esto lo atrapa.
     it('nunca guarda la cédula en claro, solo su huella', async () => {
       const datos = registro('cedula');
-      await server().post('/api/auth/register').send(datos).expect(201);
+      const res = await server()
+        .post('/api/auth/register')
+        .send(datos)
+        .expect(201);
+      const { id } = cuerpo<SesionBody>(res).participant;
 
       const guardado = await prisma.participant.findUnique({
-        where: { email: datos.email },
+        where: { id },
       });
 
       expect(guardado?.cedulaHash).toEqual(expect.any(String));
@@ -85,9 +89,34 @@ describe('Autenticación (e2e)', () => {
       expect(JSON.stringify(guardado)).not.toContain(datos.cedula);
     });
 
+    // La regla que sostiene el issue #95: quien se lleve solo la base no
+    // debe poder leer nombre, apellido ni correo — aunque la app sí pueda,
+    // descifrándolos con la clave que vive solo en el servidor.
+    it('nunca guarda nombre, apellido ni correo en claro', async () => {
+      const datos = registro('cifrado');
+      const res = await server()
+        .post('/api/auth/register')
+        .send(datos)
+        .expect(201);
+      const { id } = cuerpo<SesionBody>(res).participant;
+
+      const guardado = await prisma.participant.findUnique({ where: { id } });
+
+      expect(guardado?.nombre).toMatch(/^v1:/);
+      expect(guardado?.apellido).toMatch(/^v1:/);
+      expect(guardado?.email).toMatch(/^v1:/);
+      expect(guardado?.nombre).not.toBe(datos.nombre);
+      expect(guardado?.email).not.toBe(datos.email);
+      expect(JSON.stringify(guardado)).not.toContain(datos.email);
+
+      // Pero la app sí lo descifra de vuelta para quien tiene sesión.
+      expect(cuerpo<SesionBody>(res).participant.email).toBe(datos.email);
+      expect(cuerpo<SesionBody>(res).participant.nombre).toBe(datos.nombre);
+    });
+
     it('normaliza el correo y acepta la cédula con guiones', async () => {
       const datos = registro('normaliza');
-      await server()
+      const res = await server()
         .post('/api/auth/register')
         .send({
           ...datos,
@@ -96,8 +125,15 @@ describe('Autenticación (e2e)', () => {
         })
         .expect(201);
 
+      // El correo normalizado se ve en la propia respuesta —descifrado de
+      // vuelta por el servidor—, así que no hace falta releer la base para
+      // comprobar que se guardó en minúsculas y sin espacios.
+      expect(cuerpo<SesionBody>(res).participant.email).toBe(
+        'maria.normaliza@ejemplo.ec',
+      );
+
       const guardado = await prisma.participant.findUnique({
-        where: { email: 'maria.normaliza@ejemplo.ec' },
+        where: { id: cuerpo<SesionBody>(res).participant.id },
       });
 
       expect(guardado?.cedulaHash).toEqual(expect.any(String));
@@ -423,7 +459,7 @@ describe('Autenticación (e2e)', () => {
       const cookie = cookieRefresh(res);
 
       await prisma.participant.update({
-        where: { email: datos.email },
+        where: { id: cuerpo<SesionBody>(res).participant.id },
         data: { disabledAt: new Date() },
       });
 

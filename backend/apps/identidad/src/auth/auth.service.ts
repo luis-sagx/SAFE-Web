@@ -9,6 +9,7 @@ import { JwtService, type JwtSignOptions } from '@nestjs/jwt';
 import { compare, hash } from 'bcryptjs';
 import type { JwtPayload, RefreshTokenPayload } from '@comun';
 import { huellaCedula } from '../cedula/cedula';
+import { cifrar, descifrarOpcional, huellaEmail } from '../pii/pii';
 import { PrismaService } from '../prisma/prisma.service';
 import { LoginDto } from './dto/login.dto';
 import { PatchMeDto } from './dto/patch-me.dto';
@@ -62,13 +63,18 @@ const CAMPOS_SESION = { ...CAMPOS_PERFIL, seq: true } as const;
 
 /// El perfil se construye campo por campo en vez de descartando los que
 /// sobran: así, agregar una columna al modelo nunca la filtra a la respuesta
-/// por olvidarse de excluirla.
-function perfilPublico(participant: ParticipantConOnboarding): Perfil {
+/// por olvidarse de excluirla. Descifra antes de devolver: lo que sale de
+/// Prisma es el texto cifrado (o, en una fila sin migrar, texto plano —
+/// `descifrarOpcional` reconoce cuál es cuál).
+function perfilPublico(
+  participant: ParticipantConOnboarding,
+  piiKey: string,
+): Perfil {
   return {
     id: participant.id,
-    nombre: participant.nombre,
-    apellido: participant.apellido,
-    email: participant.email,
+    nombre: descifrarOpcional(participant.nombre, piiKey),
+    apellido: descifrarOpcional(participant.apellido, piiKey),
+    email: descifrarOpcional(participant.email, piiKey),
     role: participant.role,
     onboardingVisto: participant.onboardingVistoAt !== null,
   };
@@ -86,6 +92,8 @@ function esColisionDeUnicidad(error: unknown): boolean {
 @Injectable()
 export class AuthService {
   private readonly cedulaPepper: string;
+  private readonly emailPepper: string;
+  private readonly piiKey: string;
   private readonly refreshExpiresIn: string;
 
   constructor(
@@ -93,17 +101,25 @@ export class AuthService {
     private readonly jwt: JwtService,
     config: ConfigService,
   ) {
-    // getOrThrow y no get: sin pepper, las huellas de cédula serían
-    // reversibles por fuerza bruta. Mejor que el servicio no arranque.
+    // getOrThrow y no get: sin estos secretos, las huellas serían reversibles
+    // por fuerza bruta o los datos cifrados no se podrían leer nunca más.
+    // Mejor que el servicio no arranque a que arranque roto.
     this.cedulaPepper = config.getOrThrow<string>('CEDULA_PEPPER');
+    this.emailPepper = config.getOrThrow<string>('EMAIL_PEPPER');
+    this.piiKey = config.getOrThrow<string>('PII_ENCRYPTION_KEY');
     this.refreshExpiresIn = config.get('REFRESH_TOKEN_EXPIRES_IN', '12h');
   }
 
   async register(dto: RegisterDto) {
     const cedulaHash = huellaCedula(dto.cedula, this.cedulaPepper);
+    const emailHash = huellaEmail(dto.email, this.emailPepper);
 
+    // El `OR` con `email` cubre las cuentas que ya existían antes del
+    // cifrado y que `backfill-pii.mts` todavía no alcanzó: esas todavía
+    // guardan el correo en claro, sin huella con la que compararlas por
+    // `emailHash`.
     const yaExiste = await this.prisma.participant.findFirst({
-      where: { OR: [{ email: dto.email }, { cedulaHash }] },
+      where: { OR: [{ emailHash }, { email: dto.email }, { cedulaHash }] },
       select: { id: true },
     });
 
@@ -115,9 +131,10 @@ export class AuthService {
     try {
       participant = await this.prisma.participant.create({
         data: {
-          nombre: dto.nombre,
-          apellido: dto.apellido,
-          email: dto.email,
+          nombre: cifrar(dto.nombre, this.piiKey),
+          apellido: cifrar(dto.apellido, this.piiKey),
+          email: cifrar(dto.email, this.piiKey),
+          emailHash,
           cedulaHash,
           passwordHash: await hash(dto.password, BCRYPT_ROUNDS),
         },
@@ -137,8 +154,19 @@ export class AuthService {
   }
 
   async login(dto: LoginDto) {
-    const participant = await this.prisma.participant.findUnique({
-      where: { email: dto.email },
+    // `findFirst` con `OR` y no `findUnique` por `emailHash`: una cuenta
+    // creada antes del cifrado, que `backfill-pii.mts` todavía no alcanzó,
+    // no tiene huella todavía y solo se encuentra por el `email` en claro
+    // que aún conserva. Una vez migrada, esa segunda rama nunca vuelve a
+    // igualar nada —"email" pasa a guardar texto cifrado, no el correo—, así
+    // que dejarla no tiene costo ni riesgo.
+    const participant = await this.prisma.participant.findFirst({
+      where: {
+        OR: [
+          { emailHash: huellaEmail(dto.email, this.emailPepper) },
+          { email: dto.email },
+        ],
+      },
       // `select` explícito, no el registro entero: sin esto el passwordHash
       // viaja hasta `sesion()` y termina en la respuesta al cliente.
       select: { ...CAMPOS_SESION, passwordHash: true, disabledAt: true },
@@ -184,7 +212,7 @@ export class AuthService {
       throw new UnauthorizedException('Tu cuenta está desactivada.');
     }
 
-    return perfilPublico(participant);
+    return perfilPublico(participant, this.piiKey);
   }
 
   /// `onboardingVisto: true` marca la fecha (no vuelve a aparecer sola);
@@ -197,7 +225,7 @@ export class AuthService {
       select: CAMPOS_PERFIL,
     });
 
-    return perfilPublico(participant);
+    return perfilPublico(participant, this.piiKey);
   }
 
   /// Cambia el access token (vida corta) por uno nuevo, junto con un refresh
@@ -268,7 +296,7 @@ export class AuthService {
       accessToken,
       refreshToken,
       refreshTokenExpiresAt: new Date(exp * 1000),
-      participant: perfilPublico(participant),
+      participant: perfilPublico(participant, this.piiKey),
     };
   }
 }

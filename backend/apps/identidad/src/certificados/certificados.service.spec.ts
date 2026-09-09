@@ -35,6 +35,10 @@ function jwtQueDevuelve(payload: unknown) {
 function configFake() {
   return {
     get: () => 'https://safeweb.espe.edu.ec',
+    // Valor fijo cualquiera: los fixtures de este archivo son texto plano
+    // sin el prefijo "v1:", así que `descifrarOpcional()` los deja pasar tal
+    // cual sin necesitar la clave real.
+    getOrThrow: () => 'clave-de-prueba',
   } as unknown as ConfigService;
 }
 
@@ -63,6 +67,19 @@ function servicio(
 }
 
 describe('CertificadosService.emitir · el canje de la atestación', () => {
+  // Firma inválida, vencida, o simplemente basura: `jwt.verifyAsync` la
+  // rechaza antes de que el servicio llegue a mirar ningún campo del payload.
+  it('rechaza una atestación que no verifica (vencida o con firma inválida)', async () => {
+    const jwt = {
+      verifyAsync: () => Promise.reject(new Error('jwt expired')),
+    } as unknown as JwtService;
+    const svc = servicio({ certificate: {} }, jwt);
+
+    await expect(svc.emitir(PARTICIPANTE, 'token')).rejects.toBeInstanceOf(
+      ForbiddenException,
+    );
+  });
+
   // La comprobación que sostiene todo el flujo (§5.2.2 del diseño): sin ella,
   // la atestación de otra persona serviría para emitirse un certificado con
   // su progreso.
@@ -175,6 +192,39 @@ describe('CertificadosService.emitir · el canje de la atestación', () => {
       (datosActualizados as { certificadoEnviadoAt: Date })
         .certificadoEnviadoAt,
     ).toBeInstanceOf(Date);
+  });
+
+  // La cuenta existe pero el correo no se pudo descifrar a nada útil (caso de
+  // borde defensivo, no un flujo real): sin destinatario no hay a quién
+  // mandarle el PDF, así que no debe intentarlo.
+  it('sin correo del participante, no manda nada', async () => {
+    const jwt = jwtQueDevuelve(atestacionValida());
+    const { mail, enviarCertificado } = mailFake();
+    const svc = servicio(
+      {
+        certificate: {
+          findUnique: () => Promise.resolve(null),
+          create: ({ data }: { data: unknown }) =>
+            Promise.resolve({
+              id: 'cert-1',
+              ...(data as object),
+              emitidoAt: new Date('2026-09-04T00:00:00.000Z'),
+              certificadoEnviadoAt: null,
+            }),
+        },
+        participant: {
+          findUnique: () =>
+            Promise.resolve({ nombre: 'Ana', apellido: 'Pérez', email: '' }),
+        },
+      },
+      jwt,
+      mail,
+    );
+
+    await svc.emitir(PARTICIPANTE, 'token');
+    await esperarLlamada(enviarCertificado);
+
+    expect(enviarCertificado).not.toHaveBeenCalled();
   });
 
   it('no reenvía si el certificado ya se mandó por correo antes', async () => {

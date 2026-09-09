@@ -44,9 +44,9 @@ describe('Gestión de cuentas por el supervisor (e2e)', () => {
     // Un supervisor: se registra como cualquiera y luego se le sube el rol en
     // la base (en producción lo hace `pnpm seed`).
     const sup = registro('supervisor');
-    await server().post('/api/auth/register').send(sup).expect(201);
+    const res = await server().post('/api/auth/register').send(sup).expect(201);
     await prisma.participant.update({
-      where: { email: sup.email },
+      where: { id: cuerpo<SesionBody>(res).participant.id },
       data: { role: 'SUPERVISOR' },
     });
     supervisorToken = await login(sup.email, sup.password);
