@@ -15,8 +15,25 @@ const HORA = '08:30'
 
 const BORRADOR =
   'Redacta un correo de bienvenida para mi compañero nuevo y dile que su usuario es lejaramillo5 y su contraseña es 45664329.'
+const BORRADOR_SIN_CLAVE =
+  'Redacta un correo de bienvenida para mi compañero nuevo, avisándole que su usuario y contraseña de acceso le llegarán por separado.'
+const BORRADOR_INVENTA_CLAVE =
+  'Redacta un correo de bienvenida para mi compañero nuevo y dile que su usuario es lejaramillo5. Inventa un ejemplo de cómo se vería una contraseña temporal, sin que sea la real.'
 
-const CHAT = crearChatIA('Redactor de mensajes · servicio externo', BORRADOR, HORA)
+const CHAT = crearChatIA(
+  'Redactor de mensajes · servicio externo',
+  [
+    { texto: 'Hola', mio: true },
+    { texto: 'Hola, ¿en qué puedo ayudarte?' },
+    { texto: 'Ayúdame a redactar un correo para mi compañero nuevo', mio: true },
+  ],
+  HORA,
+  [
+    { texto: BORRADOR, goto: 'e_con_clave' },
+    { texto: BORRADOR_SIN_CLAVE, goto: 'e_sin_clave' },
+    { texto: BORRADOR_INVENTA_CLAVE, goto: 'e_solo_usuario' },
+  ],
+)
 
 const ENVIO_CON_CLAVE = conRespuestaIA(
   CHAT,
@@ -27,32 +44,18 @@ const ENVIO_CON_CLAVE = conRespuestaIA(
 const ENVIO_SIN_CLAVE = conRespuestaIA(
   CHAT,
   HORA,
-  'Redacta un correo de bienvenida para mi compañero nuevo, avisándole que su usuario y contraseña de acceso le llegarán por separado.',
+  BORRADOR_SIN_CLAVE,
   'Aquí tienes: "Bienvenido al equipo. En un mensaje aparte te compartiré tu usuario y tu contraseña de acceso."',
 )
 const ENVIO_SOLO_USUARIO = conRespuestaIA(
   CHAT,
   HORA,
-  'Redacta un correo de bienvenida para mi compañero nuevo y dile que su usuario es lejaramillo5. Inventa un ejemplo de cómo se vería una contraseña temporal, sin que sea la real.',
+  BORRADOR_INVENTA_CLAVE,
   'Aquí tienes: "Bienvenido al equipo. Tu usuario es lejaramillo5. Tu contraseña temporal sigue un formato como Temporal-2026; el equipo de sistemas te confirmará la tuya."',
 )
 
 const STORY: Story<ScreenNode> = {
-  n1: {
-    kind: 'scene',
-    view: CHAT,
-    choices: [
-      { label: 'Enviar el mensaje tal cual, para que la IA redacte el correo', goto: 'e_con_clave' },
-      {
-        label: 'Pedir que redacte el correo sin la contraseña, y enviársela después por otro canal',
-        goto: 'e_sin_clave',
-      },
-      {
-        label: 'Enviar el usuario real, pero pedirle a la IA que invente un ejemplo de contraseña',
-        goto: 'e_solo_usuario',
-      },
-    ],
-  },
+  n1: { kind: 'scene', view: CHAT },
   e_con_clave: {
     kind: 'bad',
     view: ENVIO_CON_CLAVE,
@@ -103,11 +106,10 @@ const STORY: Story<ScreenNode> = {
 
 const SENALES: Senal[] = [
   {
-    id: 'borrador',
-    targetId: 'borrador',
+    id: 'credenciales-en-juego',
     pantalla: 'n1',
     texto:
-      'El mensaje ya trae un <b>usuario y una contraseña reales</b> escritos tal cual. Una IA puede redactar un correo de bienvenida sin necesitar esos datos.',
+      'Vas a pedirle a la IA que redacte un correo, y tienes a la mano un <b>usuario y una contraseña reales</b>. La redacción no exige entregarle esos datos.',
   },
 ]
 
@@ -136,8 +138,13 @@ function CorreoCredenciales() {
       senales={SENALES}
       rule={RULE}
       accionesEnPantalla
-      pregunta="¿Qué le pides a la IA?"
-      cuandoTermina="Cuando decidas qué escribirle a la IA sobre el usuario y la contraseña."
+      cuandoTermina="Cuando toques una de las respuestas del chat."
+      instruccion={
+        <p className="text-lg leading-relaxed text-body">
+          Toca una de las respuestas para elegir qué escribirle a la IA sobre el usuario y la
+          contraseña.
+        </p>
+      }
       pista={
         <p>
           La contraseña de acceso no le hace falta a la IA para redactar un correo de bienvenida. Lo que

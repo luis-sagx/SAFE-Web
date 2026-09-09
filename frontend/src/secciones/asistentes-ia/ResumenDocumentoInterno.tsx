@@ -15,8 +15,23 @@ const HORA = '15:02'
 
 const BORRADOR =
   'Resume esto en un párrafo claro: "En el tercer trimestre la empresa tuvo pérdidas de $340.000 y planea reducir el 15% del personal de planta en enero. Todavía no se ha comunicado a los empleados."'
+const BORRADOR_SIN_CIFRAS =
+  'Ayúdame a estructurar un resumen ejecutivo de un informe trimestral: necesito un párrafo que mencione el resultado financiero del período y una decisión operativa pendiente de anunciar, sin que yo te dé las cifras todavía.'
 
-const CHAT = crearChatIA('Redactor de resúmenes · servicio externo', BORRADOR, HORA)
+const CHAT = crearChatIA(
+  'Redactor de resúmenes · servicio externo',
+  [
+    { texto: 'Hola', mio: true },
+    { texto: 'Hola, ¿en qué puedo ayudarte?' },
+    { texto: 'Ayúdame a resumir un informe interno', mio: true },
+  ],
+  HORA,
+  [
+    { texto: BORRADOR, goto: 'e_con_cifras' },
+    { texto: BORRADOR_SIN_CIFRAS, goto: 'e_sin_cifras' },
+    { texto: 'Mejor lo redacto yo mismo, gracias', goto: 'e_no_usa_ia' },
+  ],
+)
 
 const ENVIO_CON_CIFRAS = conRespuestaIA(
   CHAT,
@@ -27,23 +42,18 @@ const ENVIO_CON_CIFRAS = conRespuestaIA(
 const ENVIO_SIN_CIFRAS = conRespuestaIA(
   CHAT,
   HORA,
-  'Ayúdame a estructurar un resumen ejecutivo de un informe trimestral: necesito un párrafo que mencione el resultado financiero del período y una decisión operativa pendiente de anunciar, sin que yo te dé las cifras todavía.',
+  BORRADOR_SIN_CIFRAS,
   'Aquí tienes una estructura: "En el tercer trimestre, [resultado financiero]. Como parte de los ajustes del período, se evalúa [decisión operativa], que será comunicada oportunamente al personal." Completa los corchetes con tus cifras al final.',
+)
+const SIN_IA = conRespuestaIA(
+  CHAT,
+  HORA,
+  'Mejor lo redacto yo mismo, gracias',
+  'Como quieras, aquí estaré si cambias de opinión.',
 )
 
 const STORY: Story<ScreenNode> = {
-  n1: {
-    kind: 'scene',
-    view: CHAT,
-    choices: [
-      { label: 'Pegar el fragmento completo del informe y pedir el resumen', goto: 'e_con_cifras' },
-      {
-        label: 'Pedir solo la estructura del resumen, sin pegar las cifras ni el plan de despidos',
-        goto: 'e_sin_cifras',
-      },
-      { label: 'No usar ninguna IA y redactar el resumen tú mismo, por si acaso', goto: 'e_no_usa_ia' },
-    ],
-  },
+  n1: { kind: 'scene', view: CHAT },
   e_con_cifras: {
     kind: 'bad',
     view: ENVIO_CON_CIFRAS,
@@ -77,7 +87,7 @@ const STORY: Story<ScreenNode> = {
   },
   e_no_usa_ia: {
     kind: 'partial',
-    view: CHAT,
+    view: SIN_IA,
     verdict: 'Evitaste el riesgo, pero no hacía falta',
     outcome:
       'No compartiste nada, pero tampoco hacía falta perder la ayuda de redacción: bastaba con no pegar las cifras ni el plan de despidos todavía sin publicar.',
@@ -86,11 +96,10 @@ const STORY: Story<ScreenNode> = {
 
 const SENALES: Senal[] = [
   {
-    id: 'borrador',
-    targetId: 'borrador',
+    id: 'informe-en-juego',
     pantalla: 'n1',
     texto:
-      'El fragmento trae <b>cifras financieras sin publicar</b> y un <b>plan de despidos</b> que la propia empresa no ha comunicado. Pedir ayuda para redactar no exige entregar ese contenido.',
+      'El informe que quieres resumir trae <b>cifras financieras sin publicar</b> y un <b>plan de despidos</b> que la propia empresa no ha comunicado. Pedir ayuda para redactar no exige entregar ese contenido.',
   },
 ]
 
@@ -119,8 +128,12 @@ function ResumenDocumentoInterno() {
       senales={SENALES}
       rule={RULE}
       accionesEnPantalla
-      pregunta="¿Qué le pides a la IA?"
-      cuandoTermina="Cuando decidas qué parte del informe pedirle a la IA."
+      cuandoTermina="Cuando toques una de las respuestas del chat."
+      instruccion={
+        <p className="text-lg leading-relaxed text-body">
+          Toca una de las respuestas para elegir qué pedirle a la IA.
+        </p>
+      }
       pista={
         <p>
           La IA puede ayudarte con la estructura de un resumen sin conocer las cifras reales. Lo que

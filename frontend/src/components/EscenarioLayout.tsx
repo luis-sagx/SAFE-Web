@@ -59,10 +59,11 @@ interface EscenarioLayoutProps {
  */
 /** Alto y angosto, como se sostiene un celular.
  *
- *  27.5rem de ancho por 46rem de alto: relación 0.60. Las medidas anteriores
- *  —31.25 × 44rem, relación 0.71— daban un aparato ancho y corto que se leía
- *  como una tableta, justo en los módulos (SMS, llamada, chat) donde toda la
- *  enseñanza depende de que se sienta como el propio teléfono.
+ *  30rem de ancho por 50rem de alto: misma relación 0.60 que antes (27.5 ×
+ *  46rem), solo que un 9% más grande en cada lado. Los chats con burbujas de
+ *  respuesta largas (asistentes-ia) se leían apretados en el tamaño previo.
+ *  `lg:max-h-full` sigue protegiendo las pantallas bajas: el alto pedido es
+ *  un máximo, no un mínimo, así que nunca desborda un viewport chico.
  *
  *  No se baja hasta la relación real de un celular (~0.46): estas pantallas
  *  tienen que caber formularios, hilos largos y el dock, y a 0.46 el contenido
@@ -70,7 +71,7 @@ interface EscenarioLayoutProps {
  *  lo que el escenario necesita.
  */
 const MARCO_TELEFONO =
-  "sm:max-h-[46rem] sm:w-[27.5rem] sm:rounded-[1.75rem] sm:border sm:border-hairline-strong sm:shadow-[0_30px_70px_rgba(0,0,0,0.22)] lg:h-[46rem] lg:max-h-full lg:flex-none lg:self-center";
+  "sm:max-h-[50rem] sm:w-[30rem] sm:rounded-[1.75rem] sm:border sm:border-hairline-strong sm:shadow-[0_30px_70px_rgba(0,0,0,0.22)] lg:h-[50rem] lg:max-h-full lg:flex-none lg:self-center";
 
 /** Ancho y bajo, como una ventana de escritorio. Los anchos con vw + min/max
  *

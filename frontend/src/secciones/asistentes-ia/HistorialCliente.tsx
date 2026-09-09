@@ -15,8 +15,24 @@ const HORA = '11:47'
 
 const BORRADOR =
   'Ayúdame a responder este correo. Datos de la cuenta: cliente María Fuentes, cuenta 0102345678, saldo $2.340,15, teléfono 099 456 7890. Pregunta por qué se le cobró $45 de más este mes.'
+const BORRADOR_SOLO_MOTIVO =
+  'Ayúdame a responder un correo de un cliente que reclama un cobro de $45 de más este mes en su cuenta. Escribe un tono formal y empático, sin inventar datos de la cuenta.'
+const BORRADOR_PIDE_SECRETO = `${BORRADOR} No uses estos datos para nada más, son confidenciales.`
 
-const CHAT = crearChatIA('Redactor de respuestas · servicio externo', BORRADOR, HORA)
+const CHAT = crearChatIA(
+  'Redactor de respuestas · servicio externo',
+  [
+    { texto: 'Hola', mio: true },
+    { texto: 'Hola, ¿en qué puedo ayudarte?' },
+    { texto: 'Ayúdame a responder el correo de un cliente', mio: true },
+  ],
+  HORA,
+  [
+    { texto: BORRADOR, goto: 'e_con_datos' },
+    { texto: BORRADOR_SOLO_MOTIVO, goto: 'e_solo_motivo' },
+    { texto: BORRADOR_PIDE_SECRETO, goto: 'e_pide_secreto' },
+  ],
+)
 
 const ENVIO_CON_DATOS = conRespuestaIA(
   CHAT,
@@ -27,32 +43,18 @@ const ENVIO_CON_DATOS = conRespuestaIA(
 const ENVIO_SOLO_MOTIVO = conRespuestaIA(
   CHAT,
   HORA,
-  'Ayúdame a responder un correo de un cliente que reclama un cobro de $45 de más este mes en su cuenta. Escribe un tono formal y empático, sin inventar datos de la cuenta.',
+  BORRADOR_SOLO_MOTIVO,
   'Aquí tienes: "Estimado/a cliente, gracias por escribirnos. Estamos revisando el cobro adicional de $45 que menciona y le confirmaremos el motivo a la brevedad." Agrega el nombre y los datos de la cuenta al enviarlo.',
 )
 const ENVIO_PIDE_SECRETO = conRespuestaIA(
   CHAT,
   HORA,
-  `${BORRADOR} No uses estos datos para nada más, son confidenciales.`,
+  BORRADOR_PIDE_SECRETO,
   'Entendido, no los usaré para otra cosa. Aquí tienes la respuesta: "Estimada María Fuentes, revisamos el cobro adicional de $45 en su cuenta 0102345678 y le confirmaremos el motivo a la brevedad."',
 )
 
 const STORY: Story<ScreenNode> = {
-  n1: {
-    kind: 'scene',
-    view: CHAT,
-    choices: [
-      { label: 'Pegar todos los datos de la cuenta y pedir la respuesta', goto: 'e_con_datos' },
-      {
-        label: 'Pedir la respuesta solo con el motivo del reclamo, sin los datos de la cuenta',
-        goto: 'e_solo_motivo',
-      },
-      {
-        label: 'Pegar todos los datos, pero pedirle a la IA que no los use para nada más',
-        goto: 'e_pide_secreto',
-      },
-    ],
-  },
+  n1: { kind: 'scene', view: CHAT },
   e_con_datos: {
     kind: 'bad',
     view: ENVIO_CON_DATOS,
@@ -104,11 +106,10 @@ const STORY: Story<ScreenNode> = {
 
 const SENALES: Senal[] = [
   {
-    id: 'borrador',
-    targetId: 'borrador',
+    id: 'cuenta-en-juego',
     pantalla: 'n1',
     texto:
-      'El mensaje trae el <b>número de cuenta</b>, el <b>saldo</b> y el <b>teléfono</b> de un cliente. Para responder por qué hubo un cobro de más, la IA no necesita esos datos.',
+      'Tienes a la mano el <b>número de cuenta</b>, el <b>saldo</b> y el <b>teléfono</b> del cliente. Para responder por qué hubo un cobro de más, la IA no necesita esos datos.',
   },
 ]
 
@@ -137,8 +138,12 @@ function HistorialCliente() {
       senales={SENALES}
       rule={RULE}
       accionesEnPantalla
-      pregunta="¿Qué le pides a la IA?"
-      cuandoTermina="Cuando decidas qué datos del cliente incluir en el mensaje a la IA."
+      cuandoTermina="Cuando toques una de las respuestas del chat."
+      instruccion={
+        <p className="text-lg leading-relaxed text-body">
+          Toca una de las respuestas para elegir qué datos del cliente incluir en el mensaje a la IA.
+        </p>
+      }
       pista={
         <p>
           La IA puede redactar la respuesta sabiendo solo el motivo del reclamo. Lo que decides es si le das

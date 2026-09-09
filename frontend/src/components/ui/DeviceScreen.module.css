@@ -2942,8 +2942,8 @@ button.mailNavItem {
   background: #e8f0fe;
   color: #16202c;
   font: inherit;
-  font-size: 0.9375rem;
-  line-height: 1.35;
+  font-size: 1.0625rem;
+  line-height: 1.4;
   cursor: pointer;
 }
 
