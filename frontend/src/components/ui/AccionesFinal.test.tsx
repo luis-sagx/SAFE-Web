@@ -188,15 +188,15 @@ describe('AccionesFinal', () => {
 
   it('lleva al panel al terminar el último módulo', async () => {
     fetchProgresoMock.mockResolvedValue({
-      escenarios: escenariosDeSeccion('fisico').map(({ id }) => ({ id, ultimoOutcome: 'CORRECTO' })),
-      aprobados: 8,
-      requeridos: 5,
+      escenarios: escenariosDeSeccion('asistentes-ia').map(({ id }) => ({ id, ultimoOutcome: 'CORRECTO' })),
+      aprobados: 4,
+      requeridos: 3,
       aprobado: true,
       ronda: 1,
       rondaEnCurso: null,
     })
 
-    render(<BrowserRouter><AccionesFinal escenarioId="fisico/qr-cafe-wifi" outcome="CORRECTO" /></BrowserRouter>)
+    render(<BrowserRouter><AccionesFinal escenarioId="asistentes-ia/historial-cliente" outcome="CORRECTO" /></BrowserRouter>)
 
     expect((await screen.findByRole('link', { name: 'Volver al panel →' })).getAttribute('href')).toBe('/dashboard')
   })

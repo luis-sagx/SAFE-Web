@@ -1,4 +1,5 @@
 import {
+  Bot,
   Mail,
   MessageSquareText,
   Phone,
@@ -90,6 +91,14 @@ export const SECCIONES: Seccion[] = [
       "Una nota con la clave pegada al monitor o una memoria USB que alguien dejó ahí a propósito.",
     canal: "Oficina y entorno",
     Icono: StickyNote,
+  },
+  {
+    id: "asistentes-ia",
+    titulo: "Asistentes de IA",
+    descripcion:
+      "Pegar un correo, un informe o una conversación en una IA para que la mejore también comparte lo que llevan adentro.",
+    canal: "Herramientas de IA",
+    Icono: Bot,
   },
 ];
 
@@ -869,6 +878,54 @@ const BASE: EscenarioBase[] = [
     dificultad: 2,
     espeja: null,
     Component: lazy(() => import('../secciones/fisico/CodigoQRCafe')),
+  },
+  {
+    seccionId: 'asistentes-ia',
+    escenarioId: 'correo-datos-terceros',
+    titulo: 'Correo con datos de un compañero',
+    descripcion:
+      'Quieres que una IA mejore la redacción de un correo que ya trae el nombre, la cédula y el correo de otra persona.',
+    version: 1,
+    naturaleza: 'legitimo',
+    dificultad: 1,
+    espeja: null,
+    Component: lazy(() => import('../secciones/asistentes-ia/CorreoDatosTerceros')),
+  },
+  {
+    seccionId: 'asistentes-ia',
+    escenarioId: 'correo-credenciales',
+    titulo: 'Correo con tu usuario y clave',
+    descripcion:
+      'Un compañero nuevo necesita sus datos de acceso, y le pides a una IA que te ayude a redactar el correo.',
+    version: 1,
+    naturaleza: 'legitimo',
+    dificultad: 2,
+    espeja: null,
+    Component: lazy(() => import('../secciones/asistentes-ia/CorreoCredenciales')),
+  },
+  {
+    seccionId: 'asistentes-ia',
+    escenarioId: 'resumen-documento-interno',
+    titulo: 'Resumen de un informe interno',
+    descripcion:
+      'Preparas un resumen de un informe con cifras sin publicar y un plan que la empresa todavía no comunicó.',
+    version: 1,
+    naturaleza: 'legitimo',
+    dificultad: 3,
+    espeja: null,
+    Component: lazy(() => import('../secciones/asistentes-ia/ResumenDocumentoInterno')),
+  },
+  {
+    seccionId: 'asistentes-ia',
+    escenarioId: 'historial-cliente',
+    titulo: 'Responder a un cliente con su historial',
+    descripcion:
+      'Un cliente reclama un cobro de más y tienes a la mano el número de cuenta, el saldo y el teléfono para redactar la respuesta.',
+    version: 1,
+    naturaleza: 'legitimo',
+    dificultad: 4,
+    espeja: null,
+    Component: lazy(() => import('../secciones/asistentes-ia/HistorialCliente')),
   },
 ];
 

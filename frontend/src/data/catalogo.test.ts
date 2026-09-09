@@ -18,6 +18,7 @@ const UMBRALES_ESPERADOS: Record<string, number> = {
   suplantacion: 6,
   estafa: 6,
   fisico: 6,
+  'asistentes-ia': 3,
 }
 
 describe('catálogo de escenarios', () => {
@@ -59,7 +60,7 @@ describe('catálogo de escenarios', () => {
   // El MVP empieza con phishing y suma smishing y vishing. Las otras secciones
   // se quedan declaradas pero sin escenarios, y Dashboard.tsx las marca
   // "Pronto". Es un estado deliberado, no un olvido. Riesgo físico se desbloqueó después.
-  it('phishing, smishing, vishing, suplantación, estafa y riesgo físico son las secciones activas', () => {
+  it('phishing, smishing, vishing, suplantación, estafa, riesgo físico y asistentes de IA son las secciones activas', () => {
     const activas = SECCIONES.filter((seccion) => escenariosDeSeccion(seccion.id).length > 0)
     expect(activas.map((seccion) => seccion.id)).toEqual([
       'phishing',
@@ -68,6 +69,7 @@ describe('catálogo de escenarios', () => {
       'suplantacion',
       'estafa',
       'fisico',
+      'asistentes-ia',
     ])
   })
 
@@ -123,6 +125,15 @@ describe('catálogo de escenarios', () => {
     expect(estafa.filter((e) => e.naturaleza === 'legitimo')).toHaveLength(2)
   })
 
+
+  // La sección más chica del catálogo: no hay un tercero que engañe, así que
+  // sus 4 escenarios son todos 'legitimo' (issue #162), y el umbral (3/4) es
+  // el mismo 75% que exigen los módulos de 8.
+  it('asistentes-ia tiene 4 escenarios, todos de criterio propio (sin espejo)', () => {
+    const asistentesIa = escenariosDeSeccion('asistentes-ia')
+    expect(asistentesIa).toHaveLength(4)
+    expect(asistentesIa.every((e) => e.naturaleza === 'legitimo')).toBe(true)
+  })
 
   // Guarda contra la regresión que tuvo la pantalla: el catálogo se redujo a 3
   // escenarios y el umbral del backend se quedó en 6, así que la insignia

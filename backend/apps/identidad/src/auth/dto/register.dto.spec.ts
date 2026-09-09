@@ -95,12 +95,12 @@ describe('RegisterDto.nombre / apellido — caracteres permitidos', () => {
     expect(validar({ nombre: 'María José' })).toEqual([]);
   });
 
-  it('acepta un apellido con guion', () => {
-    expect(validar({ apellido: 'García-Torres' })).toEqual([]);
+  it('rechaza un apellido con guion', () => {
+    expect(validar({ apellido: 'García-Torres' })).toContain('apellido');
   });
 
-  it('acepta un apóstrofe interno, como en un nombre compuesto real', () => {
-    expect(validar({ nombre: "D'Ángelo" })).toEqual([]);
+  it('rechaza un apóstrofe interno, aunque sea de un nombre compuesto real', () => {
+    expect(validar({ nombre: "D'Ángelo" })).toContain('nombre');
   });
 
   it('rechaza una comilla simple suelta al final, el caso reportado', () => {
@@ -120,7 +120,7 @@ describe('RegisterDto.nombre / apellido — caracteres permitidos', () => {
     expect(validar({ apellido: '<script>' })).toContain('apellido');
   });
 
-  it('rechaza un guion o apóstrofe como primer o último carácter', () => {
+  it('rechaza un guion o apóstrofe en cualquier posición', () => {
     expect(validar({ nombre: '-Ana' })).toContain('nombre');
     expect(validar({ nombre: 'Ana-' })).toContain('nombre');
     expect(validar({ nombre: "'Ana" })).toContain('nombre');

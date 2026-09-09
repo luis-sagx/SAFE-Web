@@ -188,7 +188,7 @@ function AccionesFinal({ escenarioId, outcome, autoFocus }: AccionesFinalProps) 
       <Link
         ref={principalRef as React.Ref<HTMLAnchorElement>}
         to={siguienteModulo ? `/seccion/${siguienteModulo.id}` : '/dashboard'}
-        className="mt-3 min-h-11 w-full rounded-md bg-primary px-4 py-3 text-lg font-medium text-on-primary transition hover:bg-primary-active focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link"
+        className="mt-3 flex min-h-11 w-full items-center justify-center rounded-md bg-primary px-4 py-3 text-lg font-medium text-on-primary transition hover:bg-primary-active focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link"
       >
         {siguienteModulo ? 'Ir al siguiente módulo →' : 'Volver al panel →'}
       </Link>

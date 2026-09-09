@@ -14,6 +14,7 @@ export const UMBRALES: Record<string, number> = {
   suplantacion: 6,
   estafa: 6,
   fisico: 6,
+  'asistentes-ia': 3,
 };
 
 /// Cuántos escenarios tiene el módulo en total. A diferencia de `UMBRALES`,
@@ -30,6 +31,7 @@ export const TOTALES: Record<string, number> = {
   suplantacion: 8,
   estafa: 8,
   fisico: 8,
+  'asistentes-ia': 4,
 };
 
 export interface CorridaMinima {
