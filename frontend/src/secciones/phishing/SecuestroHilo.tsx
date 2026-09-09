@@ -41,6 +41,7 @@ const CORREO: ScreenView = {
   date: 'hoy 11:15',
   body: `
     <p>Buenas de nuevo:</p>
+    <img src="/ComprobanteTransferencia.jpeg" alt="" />
     <p>
       Antes de que transfiera, le cuento que
       <mark class="marca" data-signal="cuenta">cambiamos de banco</mark> este mes. Adjunto el

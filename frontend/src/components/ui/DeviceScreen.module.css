@@ -568,6 +568,17 @@ button.mailNavItem {
   font-size: 0.90625rem;
   color: var(--dim);
 }
+/* Imagen decorativa dentro del cuerpo del correo (issue #158): nunca lleva la
+   información que decide el escenario -eso sigue siendo texto, para que un
+   lector de pantalla lo lea igual-, solo ilustra. max-width en vez de un
+   ancho fijo: la ventana de correo cambia de tamaño según el dispositivo. */
+.prose img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 0.75rem 0;
+  border-radius: 0.5rem;
+}
 
 /* Zona de adjuntos: franja propia separada del cuerpo, con su rótulo y su
    recuento, como en cualquier cliente real. Antes el adjunto quedaba flotando
