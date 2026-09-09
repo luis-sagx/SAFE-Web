@@ -20,3 +20,7 @@ overrides:
   # dos servicios; los ajustes de la raíz no se heredan aquí.
   mysql2: '>=3.22.0'
   fast-uri: '>=3.1.6'
+  # @nestjs/platform-express trae multer 2.2.0, con tres CVE de denegación de
+  # servicio (GHSA-wc9g-mqfw-jrwm, GHSA-qfvm-cv95-jqjf, GHSA-535w-7cp7-47q4).
+  # 2.3.0 los corrige a todos.
+  multer: '>=2.3.0'
