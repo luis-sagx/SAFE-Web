@@ -1,8 +1,8 @@
 import StoryEscenario, { type ScreenNode } from '../../components/StoryEscenario'
 import type { Contexto } from '../../components/ui/ContextoEscenario'
-import type { ScreenView } from '../../components/ui/DeviceScreen'
 import type { Senal } from '../../components/ui/PanelVeredicto'
 import type { Story } from '../../hooks/useStoryEngine'
+import { crearChatIA, conRespuestaIA } from './chatIA'
 
 /**
  * Puerta de entrada de la sección: la IA no engaña a nadie, es una herramienta
@@ -11,35 +11,22 @@ import type { Story } from '../../hooks/useStoryEngine'
  * compañero, que no hacen falta para mejorar la redacción de un texto.
  */
 
+const HORA = '10:14'
+
 const BORRADOR =
   'Mejora este correo: Estimado Sebastián, le escribo para indicarle que el estudiante Luis Andrango, con cédula 1723456789 y correo luis.andrango99@gmail.com, solicita el cambio de horario de la materia de Redes.'
 
-const CHAT: Extract<ScreenView, { kind: 'sms' }> = {
-  kind: 'sms',
-  sender: 'Asistente IA',
-  sub: 'Redactor de mensajes · servicio externo',
-  msgs: [{ text: BORRADOR, time: '10:14', mine: true, senal: 'borrador' }],
-}
-
-/// La burbuja de respuesta de la IA, para mostrar que la ayuda de redacción no
-/// depende de saber quién es Luis. Se añade sobre el borrador que sí se llegó
-/// a enviar, igual que en los escenarios de SMS que muestran lo que salió del
-/// teléfono.
-function conRespuestaIA(textoEnviado: string, respuestaIA: string): Extract<ScreenView, { kind: 'sms' }> {
-  return {
-    ...CHAT,
-    msgs: [
-      { text: textoEnviado, time: '10:14', mine: true, senal: 'borrador-enviado' },
-      { text: respuestaIA, time: '10:14' },
-    ],
-  }
-}
+const CHAT = crearChatIA('Redactor de mensajes · servicio externo', BORRADOR, HORA)
 
 const ENVIO_COMPLETO = conRespuestaIA(
+  CHAT,
+  HORA,
   BORRADOR,
   'Aquí tienes una versión más formal: "Estimado Sebastián: le escribo para solicitar, en representación del estudiante Luis Andrango (CI 1723456789, luis.andrango99@gmail.com), el cambio de horario de la materia de Redes."',
 )
 const ENVIO_ANONIMIZADO = conRespuestaIA(
+  CHAT,
+  HORA,
   'Mejora este correo: Estimado Sebastián, le escribo para indicarle que el estudiante [nombre del compañero], con cédula [cédula] y correo [correo], solicita el cambio de horario de la materia de Redes.',
   'Aquí tienes una versión más formal: "Estimado Sebastián: le escribo para solicitar, en representación de [nombre del compañero] ([cédula], [correo]), el cambio de horario de la materia de Redes." Reemplaza los corchetes con los datos antes de enviarlo.',
 )

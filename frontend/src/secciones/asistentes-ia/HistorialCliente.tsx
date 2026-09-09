@@ -1,8 +1,8 @@
 import StoryEscenario, { type ScreenNode } from '../../components/StoryEscenario'
 import type { Contexto } from '../../components/ui/ContextoEscenario'
-import type { ScreenView } from '../../components/ui/DeviceScreen'
 import type { Senal } from '../../components/ui/PanelVeredicto'
 import type { Story } from '../../hooks/useStoryEngine'
+import { crearChatIA, conRespuestaIA } from './chatIA'
 
 /**
  * El más difícil de la sección: los datos no son propios ni de un compañero,
@@ -11,35 +11,28 @@ import type { Story } from '../../hooks/useStoryEngine'
  * pegarlos no deshace que ya salieron.
  */
 
+const HORA = '11:47'
+
 const BORRADOR =
   'Ayúdame a responder este correo. Datos de la cuenta: cliente María Fuentes, cuenta 0102345678, saldo $2.340,15, teléfono 099 456 7890. Pregunta por qué se le cobró $45 de más este mes.'
 
-const CHAT: Extract<ScreenView, { kind: 'sms' }> = {
-  kind: 'sms',
-  sender: 'Asistente IA',
-  sub: 'Redactor de respuestas · servicio externo',
-  msgs: [{ text: BORRADOR, time: '11:47', mine: true, senal: 'borrador' }],
-}
-
-function conRespuestaIA(textoEnviado: string, respuestaIA: string): Extract<ScreenView, { kind: 'sms' }> {
-  return {
-    ...CHAT,
-    msgs: [
-      { text: textoEnviado, time: '11:47', mine: true, senal: 'borrador-enviado' },
-      { text: respuestaIA, time: '11:47' },
-    ],
-  }
-}
+const CHAT = crearChatIA('Redactor de respuestas · servicio externo', BORRADOR, HORA)
 
 const ENVIO_CON_DATOS = conRespuestaIA(
+  CHAT,
+  HORA,
   BORRADOR,
   'Aquí tienes una respuesta: "Estimada María Fuentes, revisamos el cobro adicional de $45 en su cuenta 0102345678 y le confirmaremos el motivo a la brevedad."',
 )
 const ENVIO_SOLO_MOTIVO = conRespuestaIA(
+  CHAT,
+  HORA,
   'Ayúdame a responder un correo de un cliente que reclama un cobro de $45 de más este mes en su cuenta. Escribe un tono formal y empático, sin inventar datos de la cuenta.',
   'Aquí tienes: "Estimado/a cliente, gracias por escribirnos. Estamos revisando el cobro adicional de $45 que menciona y le confirmaremos el motivo a la brevedad." Agrega el nombre y los datos de la cuenta al enviarlo.',
 )
 const ENVIO_PIDE_SECRETO = conRespuestaIA(
+  CHAT,
+  HORA,
   `${BORRADOR} No uses estos datos para nada más, son confidenciales.`,
   'Entendido, no los usaré para otra cosa. Aquí tienes la respuesta: "Estimada María Fuentes, revisamos el cobro adicional de $45 en su cuenta 0102345678 y le confirmaremos el motivo a la brevedad."',
 )

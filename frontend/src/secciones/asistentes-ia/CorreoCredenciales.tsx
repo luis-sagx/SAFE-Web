@@ -1,8 +1,8 @@
 import StoryEscenario, { type ScreenNode } from '../../components/StoryEscenario'
 import type { Contexto } from '../../components/ui/ContextoEscenario'
-import type { ScreenView } from '../../components/ui/DeviceScreen'
 import type { Senal } from '../../components/ui/PanelVeredicto'
 import type { Story } from '../../hooks/useStoryEngine'
+import { crearChatIA, conRespuestaIA } from './chatIA'
 
 /**
  * El caso más directo de la sección: no hay un tercero de por medio, es tu
@@ -11,35 +11,28 @@ import type { Story } from '../../hooks/useStoryEngine'
  * dato personal, sino la llave de un sistema.
  */
 
+const HORA = '08:30'
+
 const BORRADOR =
   'Redacta un correo de bienvenida para mi compañero nuevo y dile que su usuario es lejaramillo5 y su contraseña es 45664329.'
 
-const CHAT: Extract<ScreenView, { kind: 'sms' }> = {
-  kind: 'sms',
-  sender: 'Asistente IA',
-  sub: 'Redactor de mensajes · servicio externo',
-  msgs: [{ text: BORRADOR, time: '08:30', mine: true, senal: 'borrador' }],
-}
-
-function conRespuestaIA(textoEnviado: string, respuestaIA: string): Extract<ScreenView, { kind: 'sms' }> {
-  return {
-    ...CHAT,
-    msgs: [
-      { text: textoEnviado, time: '08:30', mine: true, senal: 'borrador-enviado' },
-      { text: respuestaIA, time: '08:30' },
-    ],
-  }
-}
+const CHAT = crearChatIA('Redactor de mensajes · servicio externo', BORRADOR, HORA)
 
 const ENVIO_CON_CLAVE = conRespuestaIA(
+  CHAT,
+  HORA,
   BORRADOR,
   '¡Con gusto! Aquí tienes: "Bienvenido al equipo. Tu usuario es lejaramillo5 y tu contraseña es 45664329. Puedes cambiarla en tu primer ingreso."',
 )
 const ENVIO_SIN_CLAVE = conRespuestaIA(
+  CHAT,
+  HORA,
   'Redacta un correo de bienvenida para mi compañero nuevo, avisándole que su usuario y contraseña de acceso le llegarán por separado.',
   'Aquí tienes: "Bienvenido al equipo. En un mensaje aparte te compartiré tu usuario y tu contraseña de acceso."',
 )
 const ENVIO_SOLO_USUARIO = conRespuestaIA(
+  CHAT,
+  HORA,
   'Redacta un correo de bienvenida para mi compañero nuevo y dile que su usuario es lejaramillo5. Inventa un ejemplo de cómo se vería una contraseña temporal, sin que sea la real.',
   'Aquí tienes: "Bienvenido al equipo. Tu usuario es lejaramillo5. Tu contraseña temporal sigue un formato como Temporal-2026; el equipo de sistemas te confirmará la tuya."',
 )

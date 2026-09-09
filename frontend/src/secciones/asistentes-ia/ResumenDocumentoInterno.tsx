@@ -1,8 +1,8 @@
 import StoryEscenario, { type ScreenNode } from '../../components/StoryEscenario'
 import type { Contexto } from '../../components/ui/ContextoEscenario'
-import type { ScreenView } from '../../components/ui/DeviceScreen'
 import type { Senal } from '../../components/ui/PanelVeredicto'
 import type { Story } from '../../hooks/useStoryEngine'
+import { crearChatIA, conRespuestaIA } from './chatIA'
 
 /**
  * El único de la sección donde lo que se filtra no es de una persona sino de
@@ -11,31 +11,22 @@ import type { Story } from '../../hooks/useStoryEngine'
  * datos de otros" también se aplica cuando el dato es institucional.
  */
 
+const HORA = '15:02'
+
 const BORRADOR =
   'Resume esto en un párrafo claro: "En el tercer trimestre la empresa tuvo pérdidas de $340.000 y planea reducir el 15% del personal de planta en enero. Todavía no se ha comunicado a los empleados."'
 
-const CHAT: Extract<ScreenView, { kind: 'sms' }> = {
-  kind: 'sms',
-  sender: 'Asistente IA',
-  sub: 'Redactor de resúmenes · servicio externo',
-  msgs: [{ text: BORRADOR, time: '15:02', mine: true, senal: 'borrador' }],
-}
-
-function conRespuestaIA(textoEnviado: string, respuestaIA: string): Extract<ScreenView, { kind: 'sms' }> {
-  return {
-    ...CHAT,
-    msgs: [
-      { text: textoEnviado, time: '15:02', mine: true, senal: 'borrador-enviado' },
-      { text: respuestaIA, time: '15:02' },
-    ],
-  }
-}
+const CHAT = crearChatIA('Redactor de resúmenes · servicio externo', BORRADOR, HORA)
 
 const ENVIO_CON_CIFRAS = conRespuestaIA(
+  CHAT,
+  HORA,
   BORRADOR,
   'Resumen: "La empresa cerró el tercer trimestre con pérdidas de $340.000 y planea un recorte del 15% de la planta en enero, aún no comunicado al personal."',
 )
 const ENVIO_SIN_CIFRAS = conRespuestaIA(
+  CHAT,
+  HORA,
   'Ayúdame a estructurar un resumen ejecutivo de un informe trimestral: necesito un párrafo que mencione el resultado financiero del período y una decisión operativa pendiente de anunciar, sin que yo te dé las cifras todavía.',
   'Aquí tienes una estructura: "En el tercer trimestre, [resultado financiero]. Como parte de los ajustes del período, se evalúa [decisión operativa], que será comunicada oportunamente al personal." Completa los corchetes con tus cifras al final.',
 )

@@ -294,8 +294,16 @@ function Seccion() {
               // algo distinto de "aprobado"/"falta" antes de jugarlo delataría
               // si el escenario es fraude o legítimo, y el menú no puede hacer
               // eso. "Sin jugar" es seguro porque no habla del contenido.
-              const ultimo = progreso?.rondaEnCurso
-                ? progreso.rondaEnCurso.escenarios.find((e) => e.id === escenario.id)?.ultimoOutcome
+              // La ronda en curso solo trae los escenarios que ya se
+              // rejugaron esta vez: los que todavía no se tocan en esta
+              // repetición siguen mostrando su resultado de la ronda
+              // cerrada, no "sin jugar" — si no, repetir uno solo apagaba la
+              // insignia de los otros siete (issue reportado en asistentes-ia).
+              const enRondaActual = progreso?.rondaEnCurso?.escenarios.find(
+                (e) => e.id === escenario.id,
+              )
+              const ultimo = enRondaActual
+                ? enRondaActual.ultimoOutcome
                 : progreso?.escenarios.find((e) => e.id === escenario.id)?.ultimoOutcome
               const aprobado = ultimo === 'CORRECTO'
               const disponible = escenarioEstaDisponible(escenarios, progreso, escenario.id)
