@@ -33,14 +33,14 @@ function Registro() {
   const nombreCorto = nombreTocado && nombre.length > 0 && nombre.length < NOMBRE_MIN;
   const apellidoCorto = apellidoTocado && apellido.length > 0 && apellido.length < NOMBRE_MIN;
 
-  // Solo letras (con tildes y ñ), espacios, guiones y apóstrofes, y ninguno
-  // de estos tres al principio, al final, ni dos seguidos: lo mismo que
-  // "María José" o "D'Ángelo" tienen y "nombre'" —el caso reportado— no.
+  // Solo letras (con tildes y ñ) y espacios entre palabras, y ningún espacio
+  // al principio, al final, ni dos seguidos: lo mismo que "María José" tiene
+  // y "nombre " o "nombre  José" no.
   // Duplicado a propósito de `register.dto.ts` (NOMBRE_PATRON): es el mismo
   // caso que la cédula, no el del dominio del correo — aquí sí hace falta la
   // regla en el cliente para el error antes de enviar.
-  const NOMBRE_PATRON = /^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+(?:[ '-][A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+)*$/;
-  const NOMBRE_PATRON_MENSAJE = "No se permiten números ni símbolos, salvo guiones y apóstrofes.";
+  const NOMBRE_PATRON = /^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+(?: [A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+)*$/;
+  const NOMBRE_PATRON_MENSAJE = "Solo se permiten letras y espacios entre palabras.";
   // En vivo y no al salir del campo: a diferencia de "muy corto" —que se
   // resuelve solo con seguir escribiendo, y por eso sí espera al blur para no
   // regañar a medio nombre—, un número o símbolo no se arregla solo. Que siga
@@ -127,9 +127,7 @@ function Registro() {
     if (!NOMBRE_PATRON.test(nombre) || !NOMBRE_PATRON.test(apellido)) {
       setNombreTocado(true);
       setApellidoTocado(true);
-      setError(
-        `El nombre y el apellido no pueden tener números ni símbolos, salvo guiones y apóstrofes.`,
-      );
+      setError(`El nombre y el apellido solo pueden tener letras y espacios entre palabras.`);
       return;
     }
 

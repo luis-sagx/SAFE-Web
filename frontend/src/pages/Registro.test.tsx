@@ -464,11 +464,30 @@ describe('Registro', () => {
     // inválido no se resuelve solo con seguir escribiendo.
     fireEvent.change(campoNombre, { target: { value: "nombre'" } })
     expect(
-      screen.getByText('No se permiten números ni símbolos, salvo guiones y apóstrofes.'),
+      screen.getByText('Solo se permiten letras y espacios entre palabras.'),
     ).toBeDefined()
   })
 
-  it('acepta nombres compuestos reales: con espacio, guion o apóstrofe interno', () => {
+  it('acepta un nombre compuesto real: con espacio interno', () => {
+    useAuthMock.mockReturnValue({
+      isAuthenticated: false,
+      loading: false,
+      register: vi.fn(),
+    })
+
+    render(
+      <BrowserRouter>
+        <Registro />
+      </BrowserRouter>
+    )
+
+    const campoNombre = screen.getByLabelText(/Nombre/)
+    fireEvent.change(campoNombre, { target: { value: 'María José' } })
+    fireEvent.blur(campoNombre)
+    expect(screen.queryByText(/Solo se permiten letras/)).toBeNull()
+  })
+
+  it('rechaza un guion o un apóstrofe interno, ya no son válidos', () => {
     useAuthMock.mockReturnValue({
       isAuthenticated: false,
       loading: false,
@@ -485,12 +504,10 @@ describe('Registro', () => {
     const campoApellido = screen.getByLabelText(/Apellido/)
 
     fireEvent.change(campoNombre, { target: { value: "D'Ángelo" } })
-    fireEvent.blur(campoNombre)
-    expect(screen.queryByText(/guiones y apóstrofes/)).toBeNull()
+    expect(screen.getByText('Solo se permiten letras y espacios entre palabras.')).toBeDefined()
 
     fireEvent.change(campoApellido, { target: { value: 'García-Torres' } })
-    fireEvent.blur(campoApellido)
-    expect(screen.queryByText(/guiones y apóstrofes/)).toBeNull()
+    expect(screen.getAllByText('Solo se permiten letras y espacios entre palabras.').length).toBeGreaterThan(0)
   })
 
   it('rechaza dígitos y puntuación de código en el apellido', () => {
@@ -509,7 +526,7 @@ describe('Registro', () => {
     const campoApellido = screen.getByLabelText(/Apellido/)
     fireEvent.change(campoApellido, { target: { value: 'Perez123' } })
     fireEvent.blur(campoApellido)
-    expect(screen.getByText('No se permiten números ni símbolos, salvo guiones y apóstrofes.')).toBeDefined()
+    expect(screen.getByText('Solo se permiten letras y espacios entre palabras.')).toBeDefined()
   })
 
   it('bloquea el envío si el nombre o el apellido tienen caracteres inválidos', () => {
@@ -531,7 +548,7 @@ describe('Registro', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Crear cuenta' }))
 
     expect(
-      screen.getAllByText(/no pueden tener números ni símbolos/).length,
+      screen.getAllByText(/solo pueden tener letras y espacios/i).length,
     ).toBeGreaterThan(0)
     expect(registerMock).not.toHaveBeenCalled()
   })

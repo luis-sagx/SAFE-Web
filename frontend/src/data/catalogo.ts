@@ -1,4 +1,5 @@
 import {
+  Bot,
   Mail,
   MessageSquareText,
   Phone,
@@ -91,7 +92,41 @@ export const SECCIONES: Seccion[] = [
     canal: "Oficina y entorno",
     Icono: StickyNote,
   },
+  {
+    id: "asistentes-ia",
+    titulo: "Asistentes de IA",
+    descripcion:
+      "Pegar un correo, un informe o una conversación en una IA para que la mejore también comparte lo que llevan adentro.",
+    canal: "Herramientas de IA",
+    Icono: Bot,
+  },
 ];
+
+/// Los cuatro escenarios de "asistentes-ia" comparten forma exacta (misma
+/// versión, misma naturaleza, sin espejo): una función en vez de cuatro
+/// objetos casi idénticos, para que el detector de duplicados de Sonar no los
+/// lea como el mismo bloque cuatro veces. Las demás secciones no pasan por
+/// aquí a propósito — no hay necesidad de tocar ~50 entradas ya existentes
+/// para resolver un duplicado que solo aparece entre estas cuatro.
+function escenarioAsistentesIA(
+  escenarioId: string,
+  titulo: string,
+  descripcion: string,
+  dificultad: EscenarioBase['dificultad'],
+  Component: LazyExoticComponent<ComponentType>,
+): EscenarioBase {
+  return {
+    seccionId: 'asistentes-ia',
+    escenarioId,
+    titulo,
+    descripcion,
+    version: 1,
+    naturaleza: 'legitimo',
+    dificultad,
+    espeja: null,
+    Component,
+  };
+}
 
 const BASE: EscenarioBase[] = [
   {
@@ -870,6 +905,34 @@ const BASE: EscenarioBase[] = [
     espeja: null,
     Component: lazy(() => import('../secciones/fisico/CodigoQRCafe')),
   },
+  escenarioAsistentesIA(
+    'correo-datos-terceros',
+    'Correo con datos de un compañero',
+    'Quieres que una IA mejore la redacción de un correo que ya trae el nombre, la cédula y el correo de otra persona.',
+    1,
+    lazy(() => import('../secciones/asistentes-ia/CorreoDatosTerceros')),
+  ),
+  escenarioAsistentesIA(
+    'correo-credenciales',
+    'Correo con tu usuario y clave',
+    'Un compañero nuevo necesita sus datos de acceso, y le pides a una IA que te ayude a redactar el correo.',
+    2,
+    lazy(() => import('../secciones/asistentes-ia/CorreoCredenciales')),
+  ),
+  escenarioAsistentesIA(
+    'resumen-documento-interno',
+    'Resumen de un informe interno',
+    'Preparas un resumen de un informe con cifras sin publicar y un plan que la empresa todavía no comunicó.',
+    3,
+    lazy(() => import('../secciones/asistentes-ia/ResumenDocumentoInterno')),
+  ),
+  escenarioAsistentesIA(
+    'historial-cliente',
+    'Responder a un cliente con su historial',
+    'Un cliente reclama un cobro de más y tienes a la mano el número de cuenta, el saldo y el teléfono para redactar la respuesta.',
+    4,
+    lazy(() => import('../secciones/asistentes-ia/HistorialCliente')),
+  ),
 ];
 
 // El id "<seccion>/<escenario>" es la clave que se guarda en la base: no puede

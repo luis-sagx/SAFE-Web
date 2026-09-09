@@ -73,6 +73,32 @@ describe('Seccion', () => {
     expect(await screen.findByRole('dialog')).toBeDefined()
   })
 
+  // Bug reportado: al repetir un solo escenario después de terminar el
+  // módulo completo, el servidor abre una ronda nueva con ese único
+  // escenario (`rondaEnCurso`). Los otros siete no dejan de estar aprobados
+  // solo porque todavía no se repitieron en esta ronda.
+  it('repetir un escenario no borra la insignia de "Aprobado" de los demás', async () => {
+    fetchProgresoMock.mockResolvedValue({
+      modulo: 'phishing',
+      escenarios: Array.from({ length: 8 }, (_, i) => ({
+        id: `phishing/${['loteria-premiada', 'factura-sri', 'clave-caducada', 'rol-de-pagos', 'quishing-actualice', 'secuestro-hilo', 'aviso-filtracion', 'sesion-bogota'][i]}`,
+        ultimoOutcome: 'CORRECTO',
+      })),
+      aprobados: 8,
+      requeridos: 6,
+      aprobado: true,
+      ronda: 2,
+      rondaEnCurso: {
+        jugados: 1,
+        escenarios: [{ id: 'phishing/loteria-premiada', ultimoOutcome: 'CORRECTO' }],
+      },
+    })
+
+    renderSeccion()
+
+    expect(await screen.findAllByText('Aprobado')).toHaveLength(8)
+  })
+
   it('considera desbloqueado el módulo siguiente al terminar todos los escenarios aunque la nota sea menor a 6', async () => {
     fetchProgresoMock.mockResolvedValue({
       modulo: 'phishing',

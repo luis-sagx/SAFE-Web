@@ -157,7 +157,10 @@ describe('RunsService.atestacion', () => {
       sub: PARTICIPANTE.sub,
       seq: PARTICIPANTE.seq,
       modulos,
-      calificacion: 36,
+      // Suma de UMBRALES[modulo] para cada módulo: `corridasAprobadas` deja
+      // exactamente ese número en CORRECTO por módulo. Calculado y no fijo,
+      // para no romper cada vez que se añade o cambia un módulo.
+      calificacion: modulos.reduce((total, m) => total + UMBRALES[m], 0),
       typ: 'atestacion',
     });
   });
