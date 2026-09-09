@@ -23,7 +23,7 @@ const ALGORITMO = 'aes-256-gcm';
 const LARGO_IV = 12;
 const LARGO_ETIQUETA = 16;
 
-/// Todo valor cifrado por esta versión lleva este prefijo. Es lo que permite
+/// Cada valor cifrado por esta versión lleva este prefijo. Es lo que permite
 /// migrar en caliente: un valor sin el prefijo es texto plano de antes de
 /// este cambio, y `descifrar()` lo devuelve tal cual en vez de fallar. Así
 /// una fila que el script de `backfill-pii.mts` todavía no alcanzó sigue

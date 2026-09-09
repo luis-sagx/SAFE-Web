@@ -78,6 +78,22 @@ describe('AdminService.cambiarEstado', () => {
       NotFoundException,
     );
   });
+
+  it('reactiva limpiando disabledAt', async () => {
+    let dataRecibido: { disabledAt: Date | null } | undefined;
+    const admin = servicio({
+      findFirst: () => Promise.resolve(fila({ disabledAt: new Date() })),
+      update: (args: { data: { disabledAt: Date | null } }) => {
+        dataRecibido = args.data;
+        return Promise.resolve(fila({ disabledAt: args.data.disabledAt }));
+      },
+    });
+
+    const res = await admin.cambiarEstado('p1', true);
+
+    expect(dataRecibido?.disabledAt).toBeNull();
+    expect(res.activo).toBe(true);
+  });
 });
 
 describe('AdminService.restablecerPassword', () => {
