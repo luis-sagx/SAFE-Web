@@ -24,7 +24,34 @@ endurecen.
 | 1 · `correo-datos-terceros` | `CorreoDatosTerceros.tsx` | 2 | ninguno |
 | 2 · `correo-credenciales` | `HojaDeVida.tsx` | 2 | ninguno |
 | 3 · `resumen-documento-interno` | `ResumenDocumentoInterno.tsx` | **3** | palancas A + B |
-| 4 · `historial-cliente` | `HistorialCliente.tsx` | **4** | palancas A + B + C + D |
+| 4 · `historial-cliente` | `HistorialCliente.tsx` | **4** | palancas B + C + D |
+
+> Nota (revisión posterior — versión final del escenario 4):
+> - Se descartó la palanca A en el escenario 4: con botones neutros no se veía
+>   el mensaje que se enviaba y resultaba confuso. Las burbujas del 4 muestran
+>   el prompt completo. El escenario 3 sí conserva la palanca A.
+> - El segundo paso (D) dejó de ser una repregunta seca. Ahora la IA devuelve
+>   un **borrador genérico que ya sirve** y **ofrece** "dejártelo listo para
+>   enviar" a cambio del nombre y la cuenta. Resistir un favor con un resultado
+>   usable en la mano es más difícil que resistir un pedido descarado.
+> - `n1` tiene **3 opciones**, `n2_generico` otras **3** (la intermedia C vive
+>   en el segundo paso, no en el primero).
+>
+> El resto de este documento describe la versión intermedia; la sección
+> "Escenario 4" de abajo queda sustituida por lo que hay implementado en
+> `HistorialCliente.tsx` y su grafo:
+>
+> ```
+> n1 (scene)
+>  ├── PROMPT_CON_DATOS      -> e_con_datos    (bad)
+>  ├── PROMPT_SIN_DATOS      -> n2_generico    (scene)
+>  └── PROMPT_PIDE_SECRETO   -> e_pide_secreto (bad)
+>
+> n2_generico (scene) — IA dio borrador genérico + oferta de completarlo
+>  ├── PROMPT_ARMA_COMPLETA  -> e_recae        (bad)     [cedió a la oferta]
+>  ├── PROMPT_SOLO_NOMBRE    -> e_solo_nombre  (partial) [dio solo el nombre]
+>  └── PROMPT_ASI_ESTA_BIEN  -> e_sin_datos    (good)    [rechazó la oferta]
+> ```
 
 En `catalogo.ts` (`escenarioAsistentesIA(...)`, líneas ~908-937) el 4.º argumento
 vuelve a `3` para `resumen-documento-interno` y a `4` para `historial-cliente`
