@@ -9,7 +9,6 @@ import {
 } from 'react'
 import * as api from '../lib/api'
 import type { Credentials, Participant } from '../lib/api'
-import { flushPendingRuns } from '../lib/pendingRuns'
 
 interface AuthValue {
   participant: Participant | null
@@ -113,12 +112,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       cancelled = true
     }
   }, [])
-
-  useEffect(() => {
-    if (participant) {
-      void flushPendingRuns()
-    }
-  }, [participant])
 
   const login = useCallback(async (email: string, password: string) => {
     const session = await api.login(email, password)

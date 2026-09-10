@@ -1,6 +1,7 @@
 import { Suspense } from 'react'
 import { Navigate, Route, Routes } from 'react-router'
 import PantallaCarga from './components/PantallaCarga'
+import RunNotifications from './components/RunNotifications'
 import RequireEscenarioDisponible from './components/RequireEscenarioDisponible'
 import RequireAuth from './components/RequireAuth'
 import RequireSupervisor from './components/RequireSupervisor'
@@ -14,48 +15,54 @@ import Recorrido from './pages/Recorrido'
 import Registro from './pages/Registro'
 import Seccion from './pages/Seccion'
 import Verificar from './pages/Verificar'
+import { useAuth } from './context/AuthContext'
 
 function App() {
+  const { isAuthenticated } = useAuth()
+
   return (
-    <Suspense fallback={<PantallaCarga />}>
-      <Routes>
-        <Route path="/" element={<Login />} />
-        <Route path="/registro" element={<Registro />} />
-        <Route path="/politica-de-datos" element={<PoliticaDatos />} />
-        <Route path="/verificar/:codigo" element={<Verificar />} />
+    <>
+      <RunNotifications enabled={isAuthenticated} />
+      <Suspense fallback={<PantallaCarga />}>
+        <Routes>
+          <Route path="/" element={<Login />} />
+          <Route path="/registro" element={<Registro />} />
+          <Route path="/politica-de-datos" element={<PoliticaDatos />} />
+          <Route path="/verificar/:codigo" element={<Verificar />} />
 
-        <Route element={<RequireSupervisor />}>
-          <Route path="/admin" element={<Admin />} />
-        </Route>
+          <Route element={<RequireSupervisor />}>
+            <Route path="/admin" element={<Admin />} />
+          </Route>
 
-        <Route element={<RequireAuth />}>
-          <Route path="/bienvenida" element={<Bienvenida />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/recorrido" element={<Recorrido />} />
-          <Route path="/seccion/:seccionId" element={<Seccion />} />
+          <Route element={<RequireAuth />}>
+            <Route path="/bienvenida" element={<Bienvenida />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/recorrido" element={<Recorrido />} />
+            <Route path="/seccion/:seccionId" element={<Seccion />} />
 
-          {/* Una ruta por entrada del catálogo: agregar un escenario no obliga
-              a tocar este archivo. */}
-          {ESCENARIOS.map((escenario) => {
-            const { id, seccionId, escenarioId, Component } = escenario
+            {/* Una ruta por entrada del catálogo: agregar un escenario no obliga
+                a tocar este archivo. */}
+            {ESCENARIOS.map((escenario) => {
+              const { id, seccionId, escenarioId, Component } = escenario
 
-            return (
-              <Route
-                key={id}
-                path={`/seccion/${seccionId}/${escenarioId}`}
-                element={
-                  <RequireEscenarioDisponible escenario={escenario}>
-                    <Component />
-                  </RequireEscenarioDisponible>
-                }
-              />
-            )
-          })}
-        </Route>
+              return (
+                <Route
+                  key={id}
+                  path={`/seccion/${seccionId}/${escenarioId}`}
+                  element={
+                    <RequireEscenarioDisponible escenario={escenario}>
+                      <Component />
+                    </RequireEscenarioDisponible>
+                  }
+                />
+              )
+            })}
+          </Route>
 
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </Suspense>
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </Suspense>
+    </>
   )
 }
 

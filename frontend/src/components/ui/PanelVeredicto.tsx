@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { toast } from 'sonner'
 import AccionesFinal from './AccionesFinal'
 import EtiquetaAprobacion from './EtiquetaAprobacion'
 import type { StoryNode } from '../../hooks/useStoryEngine'
@@ -89,6 +90,26 @@ function PanelVeredicto({
   }, [])
 
   useEffect(() => {
+    const id = `run-status-${escenarioId}`
+
+    if (estadoGuardado === 'queued') {
+      toast.warning('No pudimos enviar el intento.', {
+        id,
+        description:
+          'Quedó guardado en este equipo y lo reintentaremos automáticamente.',
+      })
+    }
+
+    if (estadoGuardado === 'failed') {
+      toast.error('No se pudo registrar este intento.', {
+        id,
+        description: 'Vuelve a iniciar sesión e inténtalo nuevamente.',
+      })
+    }
+
+  }, [escenarioId, estadoGuardado])
+
+  useEffect(() => {
     onPantalla?.(enSenal ? senales[paso]?.pantalla : undefined)
   }, [enSenal, paso, senales, onPantalla])
 
@@ -150,15 +171,6 @@ function PanelVeredicto({
       <p className="mt-2 text-base leading-relaxed text-body">{node.outcome}</p>
 
       <EtiquetaAprobacion node={node} />
-
-      {/* Solo cuando hay algo que decir: "guardado" es lo esperado y no merece
-          una línea, pero una corrida en cola sí, porque el participante cree
-          que ya contó. */}
-      {estadoGuardado === 'queued' && (
-        <output className="mt-3 text-base text-warning">
-          Sin conexión: este intento se guardó en el equipo y se enviará solo cuando vuelva la red.
-        </output>
-      )}
 
       {enVeredicto && (
         <button
