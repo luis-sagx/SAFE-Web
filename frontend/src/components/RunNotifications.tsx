@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 import { Toaster, toast } from 'sonner'
 import { flushPendingRuns } from '../lib/pendingRuns'
 
@@ -7,14 +7,40 @@ interface RunNotificationsProps {
 }
 
 function RunNotifications({ enabled }: RunNotificationsProps) {
+  const requestedSync = useRef(0)
+  const syncing = useRef(false)
+
   const sync = useCallback(async () => {
     if (!enabled) return
 
-    const result = await flushPendingRuns()
-    if (result.sent > 0 && result.remaining === 0) {
-      toast.success('Los intentos pendientes se enviaron correctamente.', {
-        id: 'pending-runs-sent',
-      })
+    requestedSync.current += 1
+    if (syncing.current) return
+
+    syncing.current = true
+    try {
+      let handledRequest: number
+
+      do {
+        handledRequest = requestedSync.current
+        const result = await flushPendingRuns()
+
+        if (result.rejected > 0) {
+          const message =
+            result.rejected === 1
+              ? 'Un intento pendiente fue rechazado.'
+              : `${result.rejected} intentos pendientes fueron rechazados.`
+          toast.error(message, {
+            id: 'pending-runs-rejected',
+            description: 'No volverán a enviarse automáticamente.',
+          })
+        } else if (result.sent > 0 && result.remaining === 0) {
+          toast.success('Los intentos pendientes se enviaron correctamente.', {
+            id: 'pending-runs-sent',
+          })
+        }
+      } while (handledRequest !== requestedSync.current)
+    } finally {
+      syncing.current = false
     }
   }, [enabled])
 
@@ -24,7 +50,11 @@ function RunNotifications({ enabled }: RunNotificationsProps) {
 
   useEffect(() => {
     window.addEventListener('online', sync)
-    return () => window.removeEventListener('online', sync)
+    window.addEventListener('focus', sync)
+    return () => {
+      window.removeEventListener('online', sync)
+      window.removeEventListener('focus', sync)
+    }
   }, [sync])
 
   return (

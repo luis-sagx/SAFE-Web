@@ -69,5 +69,8 @@ describe('PanelVeredicto', () => {
 
     const aviso = await screen.findByText(/no se pudo registrar este intento/i)
     expect(aviso.closest('[data-sonner-toast]')).not.toBeNull()
+    expect(
+      await screen.findByText(/fue rechazado y no volverá a enviarse automáticamente/i),
+    ).toBeDefined()
   })
 })

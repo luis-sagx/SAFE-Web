@@ -3,9 +3,11 @@
 import { ApiError, createRun, type RunPayload } from './api'
 
 const KEY = 'mic-pending-runs'
+const LOCK_NAME = 'mic-pending-runs-flush'
 
 export interface FlushPendingRunsResult {
   sent: number
+  rejected: number
   remaining: number
 }
 
@@ -48,11 +50,12 @@ async function flush(): Promise<FlushPendingRunsResult> {
   const pending = read()
 
   if (pending.length === 0) {
-    return { sent: 0, remaining: 0 }
+    return { sent: 0, rejected: 0, remaining: 0 }
   }
 
   const failed: RunPayload[] = []
   let sent = 0
+  let rejected = 0
 
   for (const run of pending) {
     try {
@@ -61,6 +64,8 @@ async function flush(): Promise<FlushPendingRunsResult> {
     } catch (error) {
       if (isRetryableRunError(error)) {
         failed.push(run)
+      } else {
+        rejected += 1
       }
     }
   }
@@ -71,7 +76,7 @@ async function flush(): Promise<FlushPendingRunsResult> {
   const queuedWhileFlushing = read().slice(pending.length)
   const remaining = [...failed, ...queuedWhileFlushing]
   write(remaining)
-  return { sent, remaining: remaining.length }
+  return { sent, rejected, remaining: remaining.length }
 }
 
 export function flushPendingRuns(): Promise<FlushPendingRunsResult> {
@@ -79,7 +84,10 @@ export function flushPendingRuns(): Promise<FlushPendingRunsResult> {
     return flushInProgress
   }
 
-  flushInProgress = flush().finally(() => {
+  const locks = navigator.locks
+  const currentFlush = locks ? locks.request(LOCK_NAME, flush) : flush()
+
+  flushInProgress = currentFlush.finally(() => {
     flushInProgress = null
   })
 

@@ -1,8 +1,9 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { ApiError, type RunPayload } from './api'
 import { flushPendingRuns, pendingCount, queueRun } from './pendingRuns'
 
 const { createRunMock } = vi.hoisted(() => ({ createRunMock: vi.fn() }))
+const originalLocks = Object.getOwnPropertyDescriptor(navigator, 'locks')
 
 vi.mock('./api', async () => {
   const actual = await vi.importActual<typeof import('./api')>('./api')
@@ -28,6 +29,14 @@ describe('cola de corridas pendientes', () => {
     createRunMock.mockReset()
   })
 
+  afterEach(() => {
+    if (originalLocks) {
+      Object.defineProperty(navigator, 'locks', originalLocks)
+    } else {
+      Reflect.deleteProperty(navigator, 'locks')
+    }
+  })
+
   it('vacía la cola cuando el envío funciona', async () => {
     createRunMock.mockResolvedValue({})
     queueRun(run('phishing/factura-sri'))
@@ -37,7 +46,7 @@ describe('cola de corridas pendientes', () => {
 
     expect(createRunMock).toHaveBeenCalledTimes(2)
     expect(pendingCount()).toBe(0)
-    expect(result).toEqual({ sent: 2, remaining: 0 })
+    expect(result).toEqual({ sent: 2, rejected: 0, remaining: 0 })
   })
 
   it('conserva la corrida si el servidor falla', async () => {
@@ -47,7 +56,7 @@ describe('cola de corridas pendientes', () => {
     const result = await flushPendingRuns()
 
     expect(pendingCount()).toBe(1)
-    expect(result).toEqual({ sent: 0, remaining: 1 })
+    expect(result).toEqual({ sent: 0, rejected: 0, remaining: 1 })
   })
 
   it('conserva la corrida ante un error de red sin respuesta', async () => {
@@ -57,7 +66,7 @@ describe('cola de corridas pendientes', () => {
     const result = await flushPendingRuns()
 
     expect(pendingCount()).toBe(1)
-    expect(result).toEqual({ sent: 0, remaining: 1 })
+    expect(result).toEqual({ sent: 0, rejected: 0, remaining: 1 })
   })
 
   // El token se renueva al volver a entrar; la corrida sigue siendo válida.
@@ -78,7 +87,7 @@ describe('cola de corridas pendientes', () => {
     const result = await flushPendingRuns()
 
     expect(pendingCount()).toBe(0)
-    expect(result).toEqual({ sent: 0, remaining: 0 })
+    expect(result).toEqual({ sent: 0, rejected: 1, remaining: 0 })
   })
 
   it('separa las que fallan de las que pasan en el mismo vaciado', async () => {
@@ -91,7 +100,19 @@ describe('cola de corridas pendientes', () => {
     const result = await flushPendingRuns()
 
     expect(pendingCount()).toBe(1)
-    expect(result).toEqual({ sent: 1, remaining: 1 })
+    expect(result).toEqual({ sent: 1, rejected: 0, remaining: 1 })
+  })
+
+  it('informa los rechazos definitivos sin confundirlos con envíos exitosos', async () => {
+    createRunMock
+      .mockResolvedValueOnce({})
+      .mockRejectedValueOnce(new ApiError('scenarioId inválido', 400))
+    queueRun(run('phishing/factura-sri'))
+    queueRun(run('mal-formado'))
+
+    const result = await flushPendingRuns()
+
+    expect(result).toEqual({ sent: 1, rejected: 1, remaining: 0 })
   })
 
   it('comparte un vaciado concurrente para no duplicar envíos', async () => {
@@ -101,7 +122,7 @@ describe('cola de corridas pendientes', () => {
     const [first, second] = await Promise.all([flushPendingRuns(), flushPendingRuns()])
 
     expect(createRunMock).toHaveBeenCalledTimes(1)
-    expect(first).toEqual({ sent: 1, remaining: 0 })
+    expect(first).toEqual({ sent: 1, rejected: 0, remaining: 0 })
     expect(second).toEqual(first)
   })
 
@@ -120,20 +141,45 @@ describe('cola de corridas pendientes', () => {
     finishRequest()
     const result = await flushing
 
-    expect(result).toEqual({ sent: 1, remaining: 1 })
+    expect(result).toEqual({ sent: 1, rejected: 0, remaining: 1 })
     expect(pendingCount()).toBe(1)
+  })
+
+  it('espera el bloqueo compartido del navegador antes de enviar la cola', async () => {
+    let enterLock!: () => void
+    const request = vi.fn(
+      (_name: string, callback: () => Promise<unknown>) =>
+        new Promise<unknown>((resolve) => {
+          enterLock = () => resolve(callback())
+        }),
+    )
+    Object.defineProperty(navigator, 'locks', {
+      configurable: true,
+      value: { request },
+    })
+    createRunMock.mockResolvedValue({})
+    queueRun(run('phishing/factura-sri'))
+
+    const flushing = flushPendingRuns()
+    await Promise.resolve()
+    expect(createRunMock).not.toHaveBeenCalled()
+
+    enterLock()
+    await flushing
+
+    expect(pendingCount()).toBe(0)
   })
 
   it('no llama al servidor cuando no hay nada pendiente', async () => {
     const result = await flushPendingRuns()
     expect(createRunMock).not.toHaveBeenCalled()
-    expect(result).toEqual({ sent: 0, remaining: 0 })
+    expect(result).toEqual({ sent: 0, rejected: 0, remaining: 0 })
   })
 
   it('se recupera de un localStorage corrupto', async () => {
     localStorage.setItem('mic-pending-runs', '{no es json')
 
     expect(pendingCount()).toBe(0)
-    await expect(flushPendingRuns()).resolves.toEqual({ sent: 0, remaining: 0 })
+    await expect(flushPendingRuns()).resolves.toEqual({ sent: 0, rejected: 0, remaining: 0 })
   })
 })

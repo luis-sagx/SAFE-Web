@@ -103,10 +103,9 @@ function PanelVeredicto({
     if (estadoGuardado === 'failed') {
       toast.error('No se pudo registrar este intento.', {
         id,
-        description: 'Vuelve a iniciar sesión e inténtalo nuevamente.',
+        description: 'El intento fue rechazado y no volverá a enviarse automáticamente.',
       })
     }
-
   }, [escenarioId, estadoGuardado])
 
   useEffect(() => {
