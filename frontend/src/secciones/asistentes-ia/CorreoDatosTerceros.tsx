@@ -7,22 +7,24 @@ import { crearChatIA, conRespuestaIA, marcar } from './chatIA'
 /**
  * Puerta de entrada de la sección: la IA no engaña a nadie, es una herramienta
  * legítima. El riesgo está en lo que el propio participante le escribe antes de
- * pedir ayuda — aquí, el nombre completo, la cédula y el correo de una
- * compañera, que no hacen falta para redactar un texto.
+ * pedir ayuda — aquí, el docente al que va el correo y el nombre, la cédula y
+ * el correo de una compañera, que no hacen falta para redactar un texto.
  */
 
 const HORA = '10:14'
 
 /// Imposible por construcción, como la del participante: tercer dígito 9, que
 /// el Registro Civil no le da a ninguna persona natural (ver identidadFicticia).
-const CEDULA = '1798765432'
+const CEDULA = '1799999990'
 const NOMBRE = 'Andrea Cedeño'
-const CORREO = 'andrea.cedeno02@gmail.com'
+/// Dominio del entrenamiento, no uno de verdad: una dirección de gmail escrita
+/// aquí podría existir y llegarle a alguien.
+const CORREO = 'andrea.cedeno02@safeweb.com'
+const DOCENTE = 'Ing. Marcelo Tapia'
 
-const PROMPT_CON_DATOS =
-  `Es para pedirle al ingeniero un cambio de horario a nombre de mi compañera ${NOMBRE}, cédula ${CEDULA}, correo ${CORREO}. Es de la materia de Redes.`
+const PROMPT_CON_DATOS = `Es para el ${DOCENTE}, para pedirle un cambio de horario a nombre de mi compañera ${NOMBRE}, cédula ${CEDULA}, correo ${CORREO}. Es de la materia de Redes.`
 const PROMPT_SIN_DATOS =
-  'Es para pedirle al ingeniero un cambio de horario a nombre de una compañera, en la materia de Redes. Deja en blanco los datos de ella, que yo los lleno después.'
+  'Es para un docente, para pedirle un cambio de horario a nombre de una compañera, en la materia de Redes. Deja en blanco los datos de ella y del profe, que yo los lleno después.'
 const PROMPT_SIN_IA = 'Mejor lo escribo yo, gracias.'
 
 // El chat arranca con un saludo que ya dice a qué vienes y una respuesta de la
@@ -35,7 +37,7 @@ const CHAT = crearChatIA(
     { texto: 'Hola, ayúdame a redactar un correo.', mio: true },
     {
       texto:
-        'Claro que sí. ¿Sobre qué asunto es el correo, a quién va dirigido y qué información debe incluir? Con esos datos puedo entregarte una versión formal y lista para enviar.',
+        'Claro que sí. ¿Sobre qué asunto es el correo, a quién va dirigido y qué debe incluir? Con esos datos te lo entrego formal y listo para enviar.',
     },
   ],
   HORA,
@@ -46,23 +48,62 @@ const CHAT = crearChatIA(
   ],
 )
 
+// La IA no contesta con una línea entre comillas: devuelve el correo armado,
+// con su asunto, su saludo y su despedida, y cierra ofreciendo más. Escrito de
+// un tirón no se reconocía como lo que un asistente de verdad entrega.
+const CORREO_CON_DATOS = [
+  'Aquí tienes el correo:',
+  '',
+  `<b>Asunto:</b> Solicitud de cambio de horario – Redes de Computadores / ${NOMBRE}`,
+  '',
+  `Estimado ${DOCENTE}:`,
+  '',
+  'Reciba un cordial saludo.',
+  '',
+  `Por medio del presente me dirijo a usted de manera respetuosa con el fin de solicitar formalmente un cambio de horario en la asignatura de Redes, a nombre de mi compañera ${NOMBRE}, identificada con número de cédula ${CEDULA} y correo ${CORREO}.`,
+  '',
+  'Quedo atento a su respuesta.',
+  '',
+  'Atentamente,',
+  '',
+  '¿Quieres que agregue el horario que solicita o el motivo del cambio?',
+].join('<br>')
+
+const CORREO_SIN_DATOS = [
+  'Aquí tienes el correo, con los espacios listos para completar:',
+  '',
+  '<b>Asunto:</b> Solicitud de cambio de horario – Redes de Computadores / [nombre de la estudiante]',
+  '',
+  'Estimado Ing. [apellido del docente]:',
+  '',
+  'Reciba un cordial saludo.',
+  '',
+  'Por medio del presente me dirijo a usted de manera respetuosa con el fin de solicitar formalmente un cambio de horario en la asignatura de Redes, a nombre de mi compañera [nombre completo], identificada con número de cédula [cédula] y correo [correo].',
+  '',
+  'Quedo atento a su respuesta.',
+  '',
+  'Atentamente,',
+  '',
+  'Reemplaza los corchetes antes de enviarlo.',
+].join('<br>')
+
 const ENVIO_COMPLETO = conRespuestaIA(
   CHAT,
   HORA,
-  marcar(PROMPT_CON_DATOS, { 'dato-nombre': NOMBRE, 'dato-cedula': CEDULA, 'dato-correo': CORREO }),
-  `Con gusto. Aquí tiene una versión formal: «Estimado ingeniero: reciba un cordial saludo. Me dirijo a usted para solicitar, en representación de la estudiante ${NOMBRE} (cédula ${CEDULA}, correo ${CORREO}), el cambio de horario en la materia de Redes. Quedo atento a su respuesta. Atentamente,». Si lo prefiere, puedo entregarle también una versión más breve.`,
+  marcar(PROMPT_CON_DATOS, {
+    'dato-docente': DOCENTE,
+    'dato-nombre': NOMBRE,
+    'dato-cedula': CEDULA,
+    'dato-correo': CORREO,
+  }),
+  CORREO_CON_DATOS,
 )
-const ENVIO_SIN_DATOS = conRespuestaIA(
-  CHAT,
-  HORA,
-  PROMPT_SIN_DATOS,
-  'Con gusto. Aquí tiene una versión formal con los espacios listos para completar: «Estimado ingeniero: reciba un cordial saludo. Me dirijo a usted para solicitar, en representación de la estudiante [nombre completo] (cédula [cédula], correo [correo]), el cambio de horario en la materia de Redes. Quedo atento a su respuesta. Atentamente,». Reemplace los corchetes antes de enviarlo.',
-)
+const ENVIO_SIN_DATOS = conRespuestaIA(CHAT, HORA, PROMPT_SIN_DATOS, CORREO_SIN_DATOS)
 const SIN_IA = conRespuestaIA(
   CHAT,
   HORA,
   PROMPT_SIN_IA,
-  'Entendido. Si más adelante desea que revise la redacción o el tono del correo, quedo a su disposición.',
+  'Entendido. Si más adelante quieres que revise la redacción o el tono del correo, aquí estaré.',
 )
 
 const STORY: Story<ScreenNode> = {
@@ -72,10 +113,18 @@ const STORY: Story<ScreenNode> = {
     view: ENVIO_COMPLETO,
     senales: [
       {
+        id: 'dato-docente',
+        targetId: 'dato-docente',
+        pantalla: 'e_datos_completos',
+        texto:
+          'El <b>nombre del docente</b>. Por sí solo no es un secreto, pero es el que convierte el mensaje en un caso real: quién pide qué, y a quién.',
+      },
+      {
         id: 'dato-nombre',
         targetId: 'dato-nombre',
         pantalla: 'e_datos_completos',
-        texto: `El <b>nombre completo</b> de tu compañera. Para redactar el correo bastaba con "una compañera": quién es no cambia ni una palabra del texto.`,
+        texto:
+          'El <b>nombre completo</b> de tu compañera. Para redactar el correo bastaba con "una compañera": quién es no cambia ni una palabra del texto.',
       },
       {
         id: 'dato-cedula',
@@ -89,12 +138,12 @@ const STORY: Story<ScreenNode> = {
         targetId: 'dato-correo',
         pantalla: 'e_datos_completos',
         texto:
-          'Su <b>correo personal</b>. La IA no lo necesitaba para escribir la solicitud: es a ella a quien le llegará el spam si esa conversación se filtra.',
+          'Su <b>correo</b>. La IA no lo necesitaba para escribir la solicitud: es a ella a quien le llegará el spam si esa conversación se filtra.',
       },
     ],
     verdict: 'Datos de una compañera compartidos con la IA',
     outcome:
-      'Para redactar un texto, la IA no necesita el nombre completo, la cédula ni el correo de la persona involucrada. Esos tres datos ya quedaron en un servicio externo, fuera de tu control y sin que ella se enterara.',
+      'Para redactar un texto, la IA no necesita el nombre completo, la cédula ni el correo de la persona involucrada, ni saber a qué docente va dirigido. Todo eso quedó en un servicio externo, fuera de tu control y sin que ninguno de los dos se enterara.',
   },
   e_sin_datos: {
     kind: 'good',
@@ -105,12 +154,12 @@ const STORY: Story<ScreenNode> = {
         targetId: 'borrador-enviado',
         pantalla: 'e_sin_datos',
         texto:
-          'Le contaste a la IA lo que necesitaba saber —el asunto, el destinatario, la materia— y nada más. Ni un nombre, ni una cédula, ni un correo.',
+          'Le contaste a la IA lo que necesitaba saber —el asunto, que va a un docente, la materia— y nada más. Ni un nombre, ni una cédula, ni un correo.',
       },
     ],
     verdict: 'Correo redactado sin compartir datos de nadie',
     outcome:
-      'La IA armó el correo con espacios en blanco donde van los datos de tu compañera, y esos los completas tú al final. Conseguiste la misma ayuda sin entregar nada de ella.',
+      'La IA armó el correo con espacios en blanco donde van los nombres y los datos de tu compañera, y esos los completas tú al final. Conseguiste la misma ayuda sin entregar nada de ella.',
   },
   e_no_usa_ia: {
     kind: 'partial',

@@ -2,113 +2,172 @@ import StoryEscenario, { type ScreenNode } from '../../components/StoryEscenario
 import type { Contexto } from '../../components/ui/ContextoEscenario'
 import type { Senal } from '../../components/ui/PanelVeredicto'
 import type { Story } from '../../hooks/useStoryEngine'
-import { IDENTIDAD_FICTICIA } from '../../lib/identidadFicticia'
 import { crearChatIA, conRespuestaIA, marcar } from './chatIA'
 
 /**
- * El caso más directo de la sección: no hay un tercero de por medio, es tu
- * propio acceso. Y es el único donde lo compartido no es un dato personal sino
- * la llave de un sistema — con el agravante de que la IA la repite de vuelta,
- * así que la contraseña termina escrita dos veces en una conversación que no
- * es tuya.
+ * Una hoja de vida es un documento de identidad disfrazado de currículum:
+ * cédula, fecha de nacimiento, domicilio y teléfono, todo junto en el mismo
+ * archivo que cualquiera pega entero cuando quiere que le mejoren la
+ * redacción. Y la IA lo devuelve maquetado, con esos datos copiados otra vez.
  *
- * El escenarioId sigue siendo `correo-credenciales` aunque ya no haya correo:
- * es la clave con la que están guardadas las corridas y no puede cambiar.
+ * Se diferencia del correo del compañero (el primero de la sección) en el
+ * gesto, no en el tema: allí un dato de más se cuela dentro de un texto que
+ * escribiste tú; aquí se pega un documento completo de un copiar y pegar, sin
+ * leer qué lleva adentro. Es la forma en que de verdad se filtra más.
+ *
+ * El escenarioId sigue siendo `correo-credenciales` —el que tuvo este hueco
+ * antes— porque es la clave con la que están guardadas las corridas.
  */
 
-const HORA = '08:30'
+const HORA = '19:40'
 
-const CLAVE = IDENTIDAD_FICTICIA.clave
-const PATRON = 'mi apellido y el año'
+const NOMBRE = 'Paola Guamán'
+/// Imposible por construcción: tercer dígito 9, que el Registro Civil no le da
+/// a ninguna persona natural (ver identidadFicticia).
+const CEDULA = '1799999980'
+const NACIMIENTO = '12/03/1999'
+const DIRECCION = 'Av. Napo y Quimiag, casa 214'
+const TELEFONO = '099 000 0011'
+/// Dominio del entrenamiento, no uno de verdad: una dirección de gmail escrita
+/// aquí podría existir y llegarle a alguien.
+const CORREO = 'paola.guaman@safeweb.com'
 
-const REQUISITO = 'Pide 12 caracteres con número y símbolo.'
-const PROMPT_CON_CLAVE = `${REQUISITO} Mi clave de ahora es ${CLAVE}, hazme una parecida para no olvidarme.`
-const PROMPT_CON_PATRON = `${REQUISITO} Mi clave de ahora es ${PATRON}, hazme una con el mismo patrón pero más larga.`
-const PROMPT_SIN_NADA = `${REQUISITO} Dame tres ejemplos que sean fáciles de recordar y difíciles de adivinar.`
+const TRAYECTORIA =
+  'Experiencia: asistencia administrativa 2023–2026 en Comercial Andes. Estudios: Tecnología en Administración.'
 
-// Este chat va en el computador y no en el celular: la clave del sistema de la
-// oficina se cambia frente al equipo de trabajo, y en la barra de direcciones
-// se ve además de quién es el sitio al que le estás escribiendo.
+const PROMPT_CV_COMPLETO = `Aquí va: ${NOMBRE}, cédula ${CEDULA}, fecha de nacimiento ${NACIMIENTO}, domicilio ${DIRECCION}, teléfono ${TELEFONO}, correo ${CORREO}. ${TRAYECTORIA}`
+const PROMPT_SOLO_CONTACTO = `Aquí va: ${NOMBRE}, teléfono ${TELEFONO}, correo ${CORREO}. ${TRAYECTORIA}`
+const PROMPT_SIN_DATOS = `Aquí va solo la parte que hay que mejorar. ${TRAYECTORIA} Los datos de contacto los pongo yo al final.`
+
+// Va en el computador: una hoja de vida se arma frente al equipo, con el
+// archivo abierto al lado — que es de donde sale, de un copiar y pegar, todo
+// lo que termina en el chat.
 const CHAT = crearChatIA(
   'Asistente de escritura · servicio externo',
   [
-    { texto: 'Hola, necesito una contraseña nueva para el sistema del trabajo.', mio: true },
+    { texto: 'Hola, ayúdame a mejorar la hoja de vida de mi prima.', mio: true },
     {
       texto:
-        'Con gusto puedo ayudarte. Para proponerte una contraseña adecuada, indícame qué requisitos exige el sistema: la longitud mínima y si pide mayúsculas, números o símbolos.',
+        'Con gusto. Pégame el contenido que quieres mejorar y te lo devuelvo ordenado, con mejor redacción y un perfil profesional al inicio.',
     },
   ],
   HORA,
   [
-    { texto: PROMPT_CON_CLAVE, goto: 'e_con_clave' },
-    { texto: PROMPT_CON_PATRON, goto: 'e_con_patron' },
-    { texto: PROMPT_SIN_NADA, goto: 'e_sin_datos' },
+    { texto: PROMPT_CV_COMPLETO, goto: 'e_cv_completo' },
+    { texto: PROMPT_SOLO_CONTACTO, goto: 'e_solo_contacto' },
+    { texto: PROMPT_SIN_DATOS, goto: 'e_sin_datos' },
   ],
   { titulo: 'Asistente IA', url: 'https://chat.asistente-ia.com/nuevo' },
 )
 
-const ENVIO_CON_CLAVE = conRespuestaIA(
+/// La hoja de vida como la devuelve la IA: maquetada por secciones, no en un
+/// párrafo. Es lo que hace que valga la pena pegarla — y también lo que
+/// convierte el chat en una segunda copia del documento.
+const hojaMejorada = (contacto: string[], cierre: string) =>
+  [
+    'Aquí tienes la hoja de vida mejorada:',
+    '',
+    '<b>Perfil profesional</b>',
+    'Profesional con tres años de experiencia en gestión documental y atención al cliente, con orientación al orden y al cumplimiento de plazos.',
+    ...(contacto.length > 0 ? ['', ...contacto] : []),
+    '',
+    '<b>Experiencia</b>',
+    'Comercial Andes — Asistencia administrativa (2023–2026)',
+    '',
+    '<b>Formación</b>',
+    'Tecnología en Administración',
+    '',
+    cierre,
+  ].join('<br>')
+
+const ENVIO_CV_COMPLETO = conRespuestaIA(
   CHAT,
   HORA,
-  marcar(PROMPT_CON_CLAVE, { 'clave-escrita': CLAVE }),
-  marcar(
-    `Entendido. Partiendo de la estructura de ${CLAVE}, le propongo tres variantes que cumplen los requisitos: «${CLAVE}!», «Clave-De-Practica-26#» y «ClaveDePractica2026$». Las tres conservan su formato original, de modo que le resultará sencillo recordarlas.`,
-    { 'clave-repetida': `${CLAVE}!` },
+  marcar(PROMPT_CV_COMPLETO, {
+    'dato-cedula': CEDULA,
+    'dato-nacimiento': NACIMIENTO,
+    'dato-direccion': DIRECCION,
+    'dato-telefono': TELEFONO,
+  }),
+  hojaMejorada(
+    [
+      '<b>Datos personales</b>',
+      `${NOMBRE} · C.I. ${CEDULA} · ${NACIMIENTO}`,
+      `${DIRECCION} · ${TELEFONO} · ${CORREO}`,
+    ],
+    '¿Quieres que le dé un tono más formal o que la ajuste a una vacante en concreto?',
   ),
 )
-const ENVIO_CON_PATRON = conRespuestaIA(
+const ENVIO_SOLO_CONTACTO = conRespuestaIA(
   CHAT,
   HORA,
-  marcar(PROMPT_CON_PATRON, { 'patron-escrito': PATRON }),
-  'Entendido. Manteniendo la estructura de apellido y año, le propongo: «Apellido-2026-Bodega!», «Apellido.2026.Inventario#» y «Apellido_2026_Central$». Le advierto, eso sí, que la combinación de apellido y año es de las primeras que prueba quien intenta adivinar una contraseña.',
+  marcar(PROMPT_SOLO_CONTACTO, { 'dato-telefono': TELEFONO }),
+  hojaMejorada(
+    ['<b>Contacto</b>', `${NOMBRE} · ${TELEFONO} · ${CORREO}`],
+    '¿Quieres que la ajuste a una vacante en concreto?',
+  ),
 )
 const ENVIO_SIN_DATOS = conRespuestaIA(
   CHAT,
   HORA,
-  PROMPT_SIN_NADA,
-  'Con gusto. Aquí tiene tres opciones de más de doce caracteres, sin relación con datos personales: «Mango-Verde-41!», «Tren-Azul-Lunes#» y «Cinco-Gatos-Grises$». Le recomiendo cambiar una letra o un número de la que elija, para que sea únicamente suya.',
+  PROMPT_SIN_DATOS,
+  hojaMejorada([], 'Agrega los datos de contacto al inicio antes de enviarla.'),
 )
 
 const STORY: Story<ScreenNode> = {
   n1: { kind: 'scene', view: CHAT },
-  e_con_clave: {
+  e_cv_completo: {
     kind: 'bad',
-    view: ENVIO_CON_CLAVE,
+    view: ENVIO_CV_COMPLETO,
     senales: [
       {
-        id: 'clave-escrita',
-        targetId: 'clave-escrita',
-        pantalla: 'e_con_clave',
+        id: 'dato-cedula',
+        targetId: 'dato-cedula',
+        pantalla: 'e_cv_completo',
         texto:
-          'Tu <b>contraseña real</b>, escrita entera. Es la que todavía abre el sistema de inventario ahora mismo, mientras no la cambies.',
+          'La <b>cédula</b> de tu prima. Es el número con el que se abre una cuenta, se firma un contrato o se pide un crédito a su nombre — y no mejora en nada la redacción de su hoja de vida.',
       },
       {
-        id: 'clave-repetida',
-        targetId: 'clave-repetida',
-        pantalla: 'e_con_clave',
+        id: 'dato-nacimiento',
+        targetId: 'dato-nacimiento',
+        pantalla: 'e_cv_completo',
         texto:
-          'Y la IA la repitió de vuelta. Ya no está escrita una vez sino dos, en un historial que se guarda en el servidor de otra empresa.',
+          'Su <b>fecha de nacimiento</b>. Junto a la cédula es la pareja que piden casi todos los formularios para comprobar que alguien es quien dice ser.',
+      },
+      {
+        id: 'dato-direccion',
+        targetId: 'dato-direccion',
+        pantalla: 'e_cv_completo',
+        texto:
+          'Su <b>domicilio</b>, con casa y número. Es el único dato de la lista que dice dónde duerme.',
+      },
+      {
+        id: 'dato-telefono',
+        targetId: 'dato-telefono',
+        pantalla: 'e_cv_completo',
+        texto:
+          'Su <b>teléfono</b>. Cierra el paquete: quién es, cuándo nació, dónde vive y por dónde contactarla, todo en un solo mensaje.',
       },
     ],
-    verdict: 'Tu contraseña real quedó escrita en la IA',
+    verdict: 'La hoja de vida entera de tu prima quedó en un servicio externo',
     outcome:
-      'Le entregaste tu contraseña actual a un servicio externo. Para proponerte una nueva, la IA solo necesitaba saber cuántos caracteres pide el sistema — nunca cuál era la anterior.',
+      'Una hoja de vida es un documento de identidad disfrazado de currículum. Para mejorar la redacción, la IA no necesitaba la cédula, la fecha de nacimiento, el domicilio ni el teléfono de tu prima — y te los devolvió maquetados, así que ahora están dos veces en esa conversación. Ella nunca decidió compartirlos.',
   },
-  e_con_patron: {
+  e_solo_contacto: {
     kind: 'partial',
-    view: ENVIO_CON_PATRON,
+    view: ENVIO_SOLO_CONTACTO,
     senales: [
       {
-        id: 'patron-escrito',
-        targetId: 'patron-escrito',
-        pantalla: 'e_con_patron',
+        id: 'dato-telefono',
+        targetId: 'dato-telefono',
+        pantalla: 'e_solo_contacto',
         texto:
-          'No es la contraseña, pero es <b>la receta con la que la armas</b>. Tu apellido está en tu correo y el año lo sabe cualquiera: con eso, adivinarla deja de ser azar y pasa a ser una lista corta.',
+          'Quitaste la cédula, la fecha y el domicilio, pero dejaste el <b>teléfono</b> y el correo: no dicen quién es ante un trámite, pero sí por dónde llegar hasta ella.',
       },
     ],
-    verdict: 'Diste el patrón, no la contraseña',
+    verdict: 'Quitaste lo peor, pero dejaste cómo encontrarla',
     outcome:
-      'No escribiste tu clave, pero sí la fórmula con la que la construyes — y es la misma que probablemente usas en otras cuentas. Un patrón contado es una contraseña a medio entregar.',
+      'Lo grave —cédula, fecha de nacimiento y domicilio— se quedó fuera. El teléfono y el correo tampoco hacían falta para mejorar la redacción, y son con los que empieza cualquier intento de estafa dirigida.',
   },
   e_sin_datos: {
     kind: 'good',
@@ -119,40 +178,40 @@ const STORY: Story<ScreenNode> = {
         targetId: 'borrador-enviado',
         pantalla: 'e_sin_datos',
         texto:
-          'Le diste a la IA solo los requisitos del sistema: cuántos caracteres y qué tipos. Nada de eso sirve para entrar a ningún lado.',
+          'Le pegaste a la IA solo lo que había que mejorar: la experiencia y los estudios. Ninguna de las dos cosas identifica a nadie.',
       },
     ],
-    verdict: 'Contraseña nueva sin entregar la anterior',
+    verdict: 'Hoja de vida mejorada sin entregar los datos de nadie',
     outcome:
-      'Conseguiste tres opciones que cumplen los requisitos sin decirle a la IA cuál era tu clave ni cómo la armas. Cambiarle una letra a la que elijas termina de hacerla tuya.',
+      'La IA devolvió el perfil, la experiencia y la formación mejor redactados. La cabecera con el nombre y el contacto de tu prima la pegas tú en el documento que se envía — donde sí corresponde.',
   },
 }
 
 const SENALES: Senal[] = [
   {
-    id: 'clave-en-juego',
+    id: 'cv-en-juego',
     pantalla: 'n1',
     texto:
-      'La IA te pregunta por los <b>requisitos del sistema</b>: cuántos caracteres y de qué tipo. Eso es todo lo que necesita — tu contraseña actual no entra en la cuenta.',
+      'La IA te pide el <b>contenido que quieres mejorar</b>. La hoja de vida trae además la cédula, la fecha de nacimiento, el domicilio y el teléfono de tu prima — y ninguno de esos cambia cómo se redacta su experiencia.',
   },
 ]
 
 const RULE =
-  'Regla de oro: una contraseña no se escribe en una IA. Ni la actual, ni <b>el patrón con el que la armas</b>: pide los ejemplos en limpio y cámbiale algo a la que elijas.'
+  'Regla de oro: una hoja de vida es un documento de identidad disfrazado de currículum. Antes de pegar una en una IA —la tuya o la de alguien más— quítale la <b>cédula, la fecha de nacimiento, el domicilio y el teléfono</b>: en la que se envía, esos los pones tú.'
 
-const RESUMEN = 'Le pides a una IA que te sugiera una contraseña nueva para el sistema del trabajo.'
+const RESUMEN = 'Le pides a una IA que mejore la hoja de vida de tu prima, con la cédula y la dirección dentro.'
 
 const CONTEXTO: Contexto = {
-  antes: 'El sistema de inventario de la oficina obliga a cambiar la contraseña cada tres meses, y hoy te tocó.',
+  antes: 'Tu prima está postulando a una vacante y te pidió que le arregles la hoja de vida antes de mandarla.',
   ahora: (
     <>
-      <strong>Abres el asistente de IA</strong> en el computador de la oficina para que te sugiera la
-      contraseña nueva.
+      <strong>Abres el asistente de IA</strong> en el computador, con el archivo que ella te pasó abierto
+      al lado, listo para copiar y pegar.
     </>
   ),
 }
 
-function ClaveNueva() {
+function HojaDeVida() {
   return (
     <StoryEscenario
       escenarioId="asistentes-ia/correo-credenciales"
@@ -161,22 +220,21 @@ function ClaveNueva() {
       story={STORY}
       senales={SENALES}
       rule={RULE}
-      identidad={['clave']}
       accionesEnPantalla
       cuandoTermina="Cuando toques una de las respuestas del chat."
       instruccion={
         <p className="text-lg leading-relaxed text-body">
-          Toca una de las respuestas para contestarle a la IA.
+          Toca una de las respuestas para elegir qué le pegas a la IA.
         </p>
       }
       pista={
         <p>
-          La IA puede proponerte una contraseña sabiendo solo los requisitos del sistema. Lo que decides
-          es cuánto le cuentas de la que ya tienes.
+          La IA puede mejorar la experiencia y los estudios sin saber la cédula de tu prima ni dónde vive.
+          Lo que decides es cuánto del documento le pegas.
         </p>
       }
     />
   )
 }
 
-export default ClaveNueva
+export default HojaDeVida

@@ -33,7 +33,7 @@ const CHAT = crearChatIA(
     { texto: 'Hola, ayúdame a responder el reclamo de una clienta.', mio: true },
     {
       texto:
-        'Con gusto. Cuénteme qué reclama la clienta y en qué tono desea responder. Con esa información puedo preparar una respuesta clara y cordial.',
+        'Con gusto. Cuéntame qué reclama la clienta y en qué tono quieres responder. Con eso te preparo una respuesta clara y cordial.',
     },
   ],
   HORA,
@@ -52,20 +52,52 @@ const MARCAS = {
   'dato-telefono': TELEFONO,
 }
 
-const RESPUESTA_CON_DATOS = `Con gusto. Aquí tiene la respuesta: «Estimada señora ${NOMBRE}: reciba un cordial saludo. Hemos recibido su reclamo por el cobro adicional de $45 registrado en su cuenta ${CUENTA} durante el presente mes. Nuestro equipo ya se encuentra revisando el detalle y le confirmaremos el motivo a la brevedad. Agradecemos su paciencia.» Puedo ajustar el tono si lo prefiere más breve.`
+// Un reclamo se contesta por el mismo canal por el que llegó —un mensaje—, no
+// con un correo formal de asunto y firma: la IA devuelve algo que se pega y se
+// manda tal cual. Y de paso vuelve a escribir la cuenta, el saldo y el teléfono
+// que le diste: ese eco es media lección del escenario, así que la respuesta
+// lleva su propia señal.
+const RESPUESTA_CON_DATOS = marcar(
+  [
+    'Aquí tienes la respuesta:',
+    '',
+    `Hola, ${NOMBRE.split(' ')[0]}. Buenas tardes.`,
+    '',
+    `Lamentamos la confusión ocasionada por el cobro adicional de $45,00 en su cuenta ${CUENTA}, cuyo saldo disponible es de ${SALDO}. Vamos a revisar el detalle de la facturación de este mes para verificar a qué corresponde ese valor y confirmar si el cobro fue realizado correctamente.`,
+    '',
+    `Una vez que tengamos el detalle le informaremos el motivo y, de existir algún error, procederemos con la corrección. Si necesita más información puede escribirnos o llamarnos al ${TELEFONO}.`,
+    '',
+    'Gracias por comunicarnos su inquietud y disculpe las molestias.',
+    '',
+    '¿Quieres que la deje más corta o con un tono más cercano?',
+  ].join('<br>'),
+  { 'dato-devuelto': `cuyo saldo disponible es de ${SALDO}` },
+)
 
 const ENVIO_CON_DATOS = conRespuestaIA(CHAT, HORA, marcar(PROMPT_CON_DATOS, MARCAS), RESPUESTA_CON_DATOS)
 const ENVIO_SIN_DATOS = conRespuestaIA(
   CHAT,
   HORA,
   PROMPT_SIN_DATOS,
-  'Con gusto. Aquí tiene la respuesta: «Estimada clienta: reciba un cordial saludo. Hemos recibido su reclamo por el cobro adicional de $45 registrado durante el presente mes. Nuestro equipo ya se encuentra revisando el detalle y le confirmaremos el motivo a la brevedad. Agradecemos su paciencia.» Complete el nombre y los datos de la cuenta antes de enviarla.',
+  [
+    'Aquí tienes la respuesta:',
+    '',
+    'Hola, buenas tardes.',
+    '',
+    'Lamentamos la confusión ocasionada por el cobro adicional de $45,00. Vamos a revisar el detalle de la facturación de este mes para verificar a qué corresponde ese valor y confirmar si el cobro fue realizado correctamente.',
+    '',
+    'Una vez que tengamos el detalle le informaremos el motivo y, de existir algún error, procederemos con la corrección.',
+    '',
+    'Gracias por comunicarnos su inquietud y disculpe las molestias.',
+    '',
+    'Agrega su nombre al inicio antes de enviarla.',
+  ].join('<br>'),
 )
 const ENVIO_PIDE_SECRETO = conRespuestaIA(
   CHAT,
   HORA,
   marcar(PROMPT_PIDE_SECRETO, MARCAS),
-  `Entendido, trataré la información como confidencial. ${RESPUESTA_CON_DATOS}`,
+  `Entendido, trataré la información como confidencial.<br><br>${RESPUESTA_CON_DATOS}`,
 )
 
 const STORY: Story<ScreenNode> = {
@@ -101,6 +133,13 @@ const STORY: Story<ScreenNode> = {
         pantalla: 'e_con_datos',
         texto:
           'Su <b>teléfono</b>. Junto con lo anterior deja armado el paquete completo para llamarla, saber cuánto tiene y decirle su número de cuenta.',
+      },
+      {
+        id: 'dato-devuelto',
+        targetId: 'dato-devuelto',
+        pantalla: 'e_con_datos',
+        texto:
+          'Y la IA los escribió otra vez en su respuesta. Ya no están una vez en la conversación sino dos, en un historial guardado en el servidor de otra empresa.',
       },
     ],
     verdict: 'Datos financieros de una clienta compartidos con la IA',

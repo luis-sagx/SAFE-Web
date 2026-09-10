@@ -15,23 +15,23 @@ describe('CorreoDatosTerceros', () => {
 
   it('las respuestas muestran el texto completo que se enviaría', () => {
     const pantalla = empezar(<CorreoDatosTerceros />)
-    expect(within(pantalla).getByText(/Andrea Cedeño, cédula 1798765432/)).toBeDefined()
+    expect(within(pantalla).getByText(/Andrea Cedeño, cédula 1799999990/)).toBeDefined()
     expect(within(pantalla).getByText(/Deja en blanco los datos de ella/)).toBeDefined()
   })
 
   it('enviar los datos tal cual expone el nombre, la cédula y el correo', () => {
     const pantalla = empezar(<CorreoDatosTerceros />)
-    fireEvent.click(within(pantalla).getByRole('button', { name: /Andrea Cedeño, cédula 1798765432/ }))
+    fireEvent.click(within(pantalla).getByRole('button', { name: /Andrea Cedeño, cédula 1799999990/ }))
     expect(screen.getByText('Datos de una compañera compartidos con la IA')).toBeDefined()
   })
 
   it('cada dato sensible se señala por separado, no la burbuja entera', () => {
     const pantalla = empezar(<CorreoDatosTerceros />)
-    fireEvent.click(within(pantalla).getByRole('button', { name: /Andrea Cedeño, cédula 1798765432/ }))
-    for (const senal of ['dato-nombre', 'dato-cedula', 'dato-correo']) {
+    fireEvent.click(within(pantalla).getByRole('button', { name: /Andrea Cedeño, cédula 1799999990/ }))
+    for (const senal of ['dato-docente', 'dato-nombre', 'dato-cedula', 'dato-correo']) {
       expect(pantalla.querySelector(`[data-signal="${senal}"]`)).not.toBeNull()
     }
-    expect(pantalla.querySelector('[data-signal="dato-cedula"]')?.textContent).toBe('1798765432')
+    expect(pantalla.querySelector('[data-signal="dato-cedula"]')?.textContent).toBe('1799999990')
   })
 
   it('quitar los datos antes de enviar es el acierto', () => {

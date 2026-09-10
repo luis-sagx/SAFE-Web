@@ -10,7 +10,7 @@ describe('HistorialCliente', () => {
   it('el chat alterna: escribes tú, contesta la IA, y recién entonces eliges', () => {
     const pantalla = empezar(<HistorialCliente />)
     expect(within(pantalla).getByText('Hola, ayúdame a responder el reclamo de una clienta.')).toBeDefined()
-    expect(within(pantalla).getByText(/Cuénteme qué reclama la clienta/)).toBeDefined()
+    expect(within(pantalla).getByText(/Cuéntame qué reclama la clienta/)).toBeDefined()
   })
 
   it('se abre en el computador, con la dirección del servicio a la vista', () => {
@@ -27,6 +27,10 @@ describe('HistorialCliente', () => {
     expect(pantalla.querySelector('[data-signal="dato-cuenta"]')?.textContent).toBe('2100-0000-45')
     expect(pantalla.querySelector('[data-signal="dato-saldo"]')?.textContent).toBe('$2.340,15')
     expect(pantalla.querySelector('[data-signal="dato-telefono"]')?.textContent).toBe('099 000 0045')
+    // La IA repite el saldo en su propia respuesta: ese eco también se señala.
+    expect(pantalla.querySelector('[data-signal="dato-devuelto"]')?.textContent).toBe(
+      'cuyo saldo disponible es de $2.340,15',
+    )
   })
 
   it('pedir la respuesta solo con el motivo del reclamo es el acierto', () => {

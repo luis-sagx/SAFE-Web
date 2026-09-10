@@ -10,7 +10,7 @@ describe('ResumenDocumentoInterno', () => {
   it('el chat alterna: escribes tú, contesta la IA, y recién entonces eliges', () => {
     const pantalla = empezar(<ResumenDocumentoInterno />)
     expect(within(pantalla).getByText('Hola, necesito resumir un informe del trabajo.')).toBeDefined()
-    expect(within(pantalla).getByText(/Cuénteme de qué trata el informe/)).toBeDefined()
+    expect(within(pantalla).getByText(/Cuéntame de qué trata el informe/)).toBeDefined()
   })
 
   it('las respuestas muestran el texto completo que se enviaría', () => {

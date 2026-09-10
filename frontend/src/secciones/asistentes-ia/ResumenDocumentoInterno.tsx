@@ -28,7 +28,7 @@ const CHAT = crearChatIA(
     { texto: 'Hola, necesito resumir un informe del trabajo.', mio: true },
     {
       texto:
-        'Con gusto. Cuénteme de qué trata el informe y qué extensión debe tener el resumen. Si me indica además para quién es —directivos, personal o clientes—, puedo ajustar el tono.',
+        'Con gusto. Cuéntame de qué trata el informe y qué extensión debe tener el resumen. Si me dices además para quién es —directivos, personal o clientes—, ajusto el tono.',
     },
   ],
   HORA,
@@ -47,19 +47,31 @@ const ENVIO_CON_CIFRAS = conRespuestaIA(
     'dato-recorte': RECORTE,
     'dato-sin-avisar': SIN_AVISAR,
   }),
-  `Con gusto. Aquí tiene el resumen en un párrafo: «Durante el tercer trimestre la empresa registró pérdidas por ${PERDIDAS}. Como medida de ajuste, se ha previsto una reducción del 15% del personal de planta a partir de enero, decisión que aún no ha sido comunicada al personal.» Si la reunión es breve, puedo entregarle también una versión de dos líneas.`,
+  [
+    'Aquí tienes el resumen para la reunión:',
+    '',
+    `Durante este trimestre la empresa registró una pérdida de ${PERDIDAS}, por lo que se implementará una reducción del 15% del personal de planta en enero para optimizar la estructura de costos; esta decisión se mantiene bajo estricta confidencialidad hasta la notificación formal a los empleados.`,
+    '',
+    '¿Necesitas que prepare también los puntos clave para la presentación?',
+  ].join('<br>'),
 )
 const ENVIO_SIN_CIFRAS = conRespuestaIA(
   CHAT,
   HORA,
   PROMPT_SIN_CIFRAS,
-  'Con gusto. Aquí tiene el párrafo modelo: «Durante el tercer trimestre la empresa registró [resultado financiero]. Como medida de ajuste, se ha previsto [decisión de personal], que será comunicada oportunamente al equipo.» Complete los corchetes con sus cifras antes de presentarlo.',
+  [
+    'Aquí tienes el párrafo modelo:',
+    '',
+    'Durante este trimestre la empresa registró [resultado financiero], por lo que se implementará [decisión de personal] para optimizar la estructura de costos; esta decisión se mantiene bajo estricta confidencialidad hasta la notificación formal a los empleados.',
+    '',
+    'Completa los corchetes con tus cifras antes de presentarlo.',
+  ].join('<br>'),
 )
 const SIN_IA = conRespuestaIA(
   CHAT,
   HORA,
   PROMPT_SIN_IA,
-  'Entendido. Si más adelante desea que revise la estructura o el tono del resumen, quedo a su disposición.',
+  'Entendido. Si más adelante quieres que revise la estructura o el tono del resumen, aquí estaré.',
 )
 
 const STORY: Story<ScreenNode> = {

@@ -1,4 +1,4 @@
-import { Landmark, Paperclip, Search, SendHorizontal, UserRound } from 'lucide-react'
+import { Bot, Landmark, Paperclip, Search, SendHorizontal, UserRound } from 'lucide-react'
 import { useEffect, useMemo, useRef } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import { CUENTA_FICTICIA, IDENTIDAD_FICTICIA } from '../../lib/identidadFicticia'
@@ -531,6 +531,10 @@ function DeviceScreen({
       className={`${styles.screen} ${styles.sms} ${view.sitio ? styles.smsAncho : ''}`}
       aria-label={view.sitio ? 'Chat con el asistente' : 'Mensajes de texto'}
     >
+      {/* Un chat web no lleva cabecera de hilo: el nombre del servicio ya está
+          en la pestaña y en la barra de direcciones, y esa franja se comía el
+          alto que necesitan las respuestas largas del asistente. */}
+      {!view.sitio && (
       <div className={styles.smsbar}>
         {view.volverGoto ? (
           <button
@@ -570,6 +574,7 @@ function DeviceScreen({
             centrado en la cabecera y no corrido hacia la derecha. */}
         <span className={styles.smsVolver} aria-hidden />
       </div>
+      )}
 
       <div ref={hiloRef} className={styles.smsThread}>
         {view.msgs.map((msg, i) => (
@@ -580,6 +585,13 @@ function DeviceScreen({
             }`}
             style={i > ultimoMio ? { animationDelay: `${(i - ultimoMio - 1) * 0.6}s` } : undefined}
           >
+            {/* Sin cabecera que diga quién escribe, el avatar es lo que
+                distingue al asistente: cada respuesta suya sale firmada. */}
+            {view.sitio && !msg.mine && (
+              <span className={styles.smsAvatar} aria-hidden>
+                <Bot className={styles.smsAvatarIcono} strokeWidth={2} />
+              </span>
+            )}
             <div className={styles.smsBubble}>
               {msg.voz ? (
                 <NotaDeVoz texto={msg.text} duracion={msg.voz} senal={msg.senal} />
@@ -687,7 +699,9 @@ function DeviceScreen({
             Mensaje de texto
           </button>
         ) : (
-          <div className={styles.smsField}>Mensaje de texto</div>
+          <div className={styles.smsField}>
+            {view.sitio ? 'Escríbele al asistente' : 'Mensaje de texto'}
+          </div>
         )}
       </div>
     </section>
