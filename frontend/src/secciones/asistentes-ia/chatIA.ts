@@ -63,6 +63,31 @@ export function conRespuestaIA(chat: ChatIA, hora: string, textoEnviado: string,
   }
 }
 
+/// Continúa el hilo dejando el chat abierto: agrega [tu mensaje, respuesta de la
+/// IA] y mantiene nuevas `respuestas` para elegir. Como `conRespuestaIA`, pero
+/// la conversación no ha terminado — la IA contestó y además repreguntó, y lo
+/// que se elige a continuación es la respuesta a esa segunda pregunta.
+///
+/// Las ramas que salen de ese segundo paso se arman con `conRespuestaIA` sobre
+/// el chat que devuelve esta función.
+export function conSeguimientoIA(
+  chat: ChatIA,
+  hora: string,
+  textoEnviado: string,
+  respuestaIA: string,
+  respuestas: RespuestaIA[],
+): ChatIA {
+  return {
+    ...chat,
+    respuestas,
+    msgs: [
+      ...chat.msgs,
+      { text: textoEnviado, time: hora, mine: true, senal: 'borrador-enviado' },
+      { text: respuestaIA, time: hora },
+    ],
+  }
+}
+
 /// Envuelve fragmentos sueltos del mensaje en `<b data-signal="…">` para que el
 /// repaso resalte **la palabra exacta** —la cédula, el número de cuenta, la
 /// contraseña— y no la burbuja entera. Señalar el mensaje completo obligaba a

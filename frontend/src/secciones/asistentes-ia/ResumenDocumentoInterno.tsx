@@ -22,6 +22,13 @@ const PROMPT_SIN_CIFRAS =
   'Es el informe trimestral, para la reunión de gerencia. Dame un párrafo modelo que mencione el resultado financiero del período y una decisión de personal todavía sin anunciar, con espacios en blanco que yo lleno con las cifras.'
 const PROMPT_SIN_IA = 'Mejor lo resumo yo, gracias.'
 
+// La burbuja que se toca dice qué se hace, no qué se comparte: "le paso el
+// informe" no delata que el informe trae las cifras sin publicar. Lo que sale
+// de verdad —el prompt completo, con los datos marcados— aparece como mensaje
+// enviado recién en el nodo destino, que es donde el repaso lo señala.
+const BURBUJA_CON_CIFRAS = 'Le paso el informe y le pido que lo resuma.'
+const BURBUJA_SIN_CIFRAS = 'Le pido un párrafo modelo y yo pongo las cifras aparte.'
+
 const CHAT = crearChatIA(
   'Redactor de resúmenes · servicio externo',
   [
@@ -33,8 +40,8 @@ const CHAT = crearChatIA(
   ],
   HORA,
   [
-    { texto: PROMPT_CON_CIFRAS, goto: 'e_con_cifras' },
-    { texto: PROMPT_SIN_CIFRAS, goto: 'e_sin_cifras' },
+    { texto: BURBUJA_CON_CIFRAS, goto: 'e_con_cifras' },
+    { texto: BURBUJA_SIN_CIFRAS, goto: 'e_sin_cifras' },
     { texto: PROMPT_SIN_IA, goto: 'e_no_usa_ia' },
   ],
 )
@@ -169,12 +176,6 @@ function ResumenDocumentoInterno() {
       instruccion={
         <p className="text-lg leading-relaxed text-body">
           Toca una de las respuestas para contestarle a la IA.
-        </p>
-      }
-      pista={
-        <p>
-          La IA puede darte la estructura del resumen sin conocer las cifras reales. Lo que decides es si
-          se las das de todos modos.
         </p>
       }
     />

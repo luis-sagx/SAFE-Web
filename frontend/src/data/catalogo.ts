@@ -909,7 +909,7 @@ const BASE: EscenarioBase[] = [
     'correo-datos-terceros',
     'Correo con datos de una compañera',
     'Le pides a una IA que redacte un correo a nombre de una compañera, con el nombre, la cédula y el correo de ella a la mano.',
-    1,
+    2,
     lazy(() => import('../secciones/asistentes-ia/CorreoDatosTerceros')),
   ),
   // El id sigue siendo `correo-credenciales`, el que tuvo este hueco antes: es
