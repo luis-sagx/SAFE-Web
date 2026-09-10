@@ -193,6 +193,36 @@ describe('cola de corridas pendientes', () => {
     expect(pendingCount()).toBe(0)
   })
 
+  it('conserva la cola anterior si la migración se queda sin espacio', () => {
+    const legacyRuns = [run('phishing/factura-sri'), run('smishing/bono-estado')]
+    localStorage.setItem('mic-pending-runs', JSON.stringify(legacyRuns))
+    const setItem = Storage.prototype.setItem
+    let entryWrites = 0
+    const setItemSpy = vi
+      .spyOn(Storage.prototype, 'setItem')
+      .mockImplementation(function (this: Storage, key, value) {
+        if (key.startsWith('mic-pending-run:') && ++entryWrites === 2) {
+          throw new DOMException('Storage full', 'QuotaExceededError')
+        }
+        setItem.call(this, key, value)
+      })
+
+    expect(pendingCount()).toBe(0)
+    expect(localStorage.getItem('mic-pending-runs')).toBe(JSON.stringify(legacyRuns))
+
+    setItemSpy.mockRestore()
+    expect(pendingCount()).toBe(2)
+  })
+
+  it('no sobrescribe una migración previa si reaparece la cola anterior', () => {
+    localStorage.setItem('mic-pending-runs', JSON.stringify([run('phishing/factura-sri')]))
+    expect(pendingCount()).toBe(1)
+
+    localStorage.setItem('mic-pending-runs', JSON.stringify([run('smishing/bono-estado')]))
+
+    expect(pendingCount()).toBe(2)
+  })
+
   it('no llama al servidor cuando no hay nada pendiente', async () => {
     const result = await flushPendingRuns()
     expect(createRunMock).not.toHaveBeenCalled()

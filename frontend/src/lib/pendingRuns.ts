@@ -4,6 +4,7 @@ import { ApiError, createRun, type RunPayload } from './api'
 
 const LEGACY_KEY = 'mic-pending-runs'
 const ENTRY_PREFIX = 'mic-pending-run:'
+const MIGRATION_ID_KEY = 'mic-pending-runs-migration-id'
 const LOCK_NAME = 'mic-pending-runs-flush'
 
 export interface FlushPendingRunsResult {
@@ -19,22 +20,48 @@ interface StoredRun {
   run: RunPayload
 }
 
-function migrateLegacyQueue(): void {
+function newEntryId(): string {
+  return typeof crypto.randomUUID === 'function'
+    ? crypto.randomUUID()
+    : `${Date.now()}-${Math.random().toString(36).slice(2)}`
+}
+
+function migrateLegacyQueue(): boolean {
   const raw = localStorage.getItem(LEGACY_KEY)
-  if (!raw) return
+  if (!raw) return true
+
+  let runs: RunPayload[]
 
   try {
-    const runs = JSON.parse(raw) as RunPayload[]
+    runs = JSON.parse(raw) as RunPayload[]
     if (!Array.isArray(runs)) throw new Error('Cola inválida')
-
-    runs.forEach((run, index) => {
-      localStorage.setItem(`${ENTRY_PREFIX}legacy-${index}`, JSON.stringify(run))
-    })
   } catch {
     // Una cola ilegible no puede recuperarse. Se elimina para que no rompa
     // cada carga posterior de la aplicación.
-  } finally {
     localStorage.removeItem(LEGACY_KEY)
+    localStorage.removeItem(MIGRATION_ID_KEY)
+    return true
+  }
+
+  let migrationId = localStorage.getItem(MIGRATION_ID_KEY)
+  if (!migrationId) migrationId = newEntryId()
+  const keys = runs.map((_, index) => `${ENTRY_PREFIX}legacy-${migrationId}-${index}`)
+
+  try {
+    localStorage.setItem(MIGRATION_ID_KEY, migrationId)
+    runs.forEach((run, index) => {
+      localStorage.setItem(keys[index]!, JSON.stringify(run))
+    })
+    // El origen solo se elimina después de haber escrito la migración completa.
+    localStorage.removeItem(LEGACY_KEY)
+    localStorage.removeItem(MIGRATION_ID_KEY)
+    return true
+  } catch {
+    // Revierte una migración parcial: la cola original queda intacta y puede
+    // volver a intentarse cuando haya espacio disponible.
+    keys.forEach((key) => localStorage.removeItem(key))
+    localStorage.removeItem(MIGRATION_ID_KEY)
+    return false
   }
 }
 
@@ -57,11 +84,7 @@ function read(): StoredRun[] {
 }
 
 export function queueRun(run: RunPayload): void {
-  const id =
-    typeof crypto.randomUUID === 'function'
-      ? crypto.randomUUID()
-      : `${Date.now()}-${Math.random().toString(36).slice(2)}`
-  localStorage.setItem(`${ENTRY_PREFIX}${id}`, JSON.stringify(run))
+  localStorage.setItem(`${ENTRY_PREFIX}${newEntryId()}`, JSON.stringify(run))
 }
 
 /** Los errores temporales conservan la corrida; un rechazo definitivo del
