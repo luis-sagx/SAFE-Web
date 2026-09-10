@@ -152,6 +152,13 @@ export type ScreenView =
       kind: 'sms'
       sender: string
       sub: string
+      /** Sitio en el que vive este chat, cuando no es una app del celular sino
+       *  una página que se abre en el computador (un asistente de IA, p. ej.).
+       *  Con esto el escenario deja el marco del teléfono y se pinta dentro del
+       *  navegador, con su pestaña y su barra de direcciones: en la oficina la
+       *  IA se usa en el computador, y ver el dominio ajeno en la barra es la
+       *  mitad de la lección. */
+      sitio?: { titulo: string; url: string }
       /** El `text` es HTML fijo del escenario: el enlace del mensaje va como
        *  `<a href>` con `data-hotspot-goto`, para que tocarlo sea la decisión y
        *  el navegador revele el destino al pasar el cursor. */
@@ -520,7 +527,10 @@ function DeviceScreen({
   const ultimoMio = view.msgs.map((msg) => Boolean(msg.mine)).lastIndexOf(true)
 
   return (
-    <section className={`${styles.screen} ${styles.sms}`} aria-label="Mensajes de texto">
+    <section
+      className={`${styles.screen} ${styles.sms} ${view.sitio ? styles.smsAncho : ''}`}
+      aria-label={view.sitio ? 'Chat con el asistente' : 'Mensajes de texto'}
+    >
       <div className={styles.smsbar}>
         {view.volverGoto ? (
           <button

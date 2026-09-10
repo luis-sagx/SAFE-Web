@@ -2,7 +2,7 @@ import StoryEscenario, { type ScreenNode } from '../../components/StoryEscenario
 import type { Contexto } from '../../components/ui/ContextoEscenario'
 import type { Senal } from '../../components/ui/PanelVeredicto'
 import type { Story } from '../../hooks/useStoryEngine'
-import { crearChatIA, conRespuestaIA } from './chatIA'
+import { crearChatIA, conRespuestaIA, marcar } from './chatIA'
 
 /**
  * El único de la sección donde lo que se filtra no es de una persona sino de
@@ -13,43 +13,53 @@ import { crearChatIA, conRespuestaIA } from './chatIA'
 
 const HORA = '15:02'
 
-const BORRADOR =
-  'Resume esto en un párrafo claro: "En el tercer trimestre la empresa tuvo pérdidas de $340.000 y planea reducir el 15% del personal de planta en enero. Todavía no se ha comunicado a los empleados."'
-const BORRADOR_SIN_CIFRAS =
-  'Ayúdame a estructurar un resumen ejecutivo de un informe trimestral: necesito un párrafo que mencione el resultado financiero del período y una decisión operativa pendiente de anunciar, sin que yo te dé las cifras todavía.'
+const PERDIDAS = '$340.000'
+const RECORTE = 'va a recortar el 15% del personal de planta en enero'
+const SIN_AVISAR = 'Todavía no se les avisa a los empleados'
+
+const PROMPT_CON_CIFRAS = `Es el informe trimestral, para la reunión de gerencia. Dice que la empresa tuvo pérdidas de ${PERDIDAS} y ${RECORTE}. ${SIN_AVISAR}. Resúmelo en un párrafo.`
+const PROMPT_SIN_CIFRAS =
+  'Es el informe trimestral, para la reunión de gerencia. Dame un párrafo modelo que mencione el resultado financiero del período y una decisión de personal todavía sin anunciar, con espacios en blanco que yo lleno con las cifras.'
+const PROMPT_SIN_IA = 'Mejor lo resumo yo, gracias.'
 
 const CHAT = crearChatIA(
   'Redactor de resúmenes · servicio externo',
   [
-    { texto: 'Hola', mio: true },
-    { texto: 'Hola, ¿en qué puedo ayudarte?' },
-    { texto: 'Ayúdame a resumir un informe interno', mio: true },
+    { texto: 'Hola, necesito resumir un informe del trabajo.', mio: true },
+    {
+      texto:
+        'Con gusto. Cuénteme de qué trata el informe y qué extensión debe tener el resumen. Si me indica además para quién es —directivos, personal o clientes—, puedo ajustar el tono.',
+    },
   ],
   HORA,
   [
-    { texto: BORRADOR, goto: 'e_con_cifras' },
-    { texto: BORRADOR_SIN_CIFRAS, goto: 'e_sin_cifras' },
-    { texto: 'Mejor lo redacto yo mismo, gracias', goto: 'e_no_usa_ia' },
+    { texto: PROMPT_CON_CIFRAS, goto: 'e_con_cifras' },
+    { texto: PROMPT_SIN_CIFRAS, goto: 'e_sin_cifras' },
+    { texto: PROMPT_SIN_IA, goto: 'e_no_usa_ia' },
   ],
 )
 
 const ENVIO_CON_CIFRAS = conRespuestaIA(
   CHAT,
   HORA,
-  BORRADOR,
-  'Resumen: "La empresa cerró el tercer trimestre con pérdidas de $340.000 y planea un recorte del 15% de la planta en enero, aún no comunicado al personal."',
+  marcar(PROMPT_CON_CIFRAS, {
+    'dato-perdidas': PERDIDAS,
+    'dato-recorte': RECORTE,
+    'dato-sin-avisar': SIN_AVISAR,
+  }),
+  `Con gusto. Aquí tiene el resumen en un párrafo: «Durante el tercer trimestre la empresa registró pérdidas por ${PERDIDAS}. Como medida de ajuste, se ha previsto una reducción del 15% del personal de planta a partir de enero, decisión que aún no ha sido comunicada al personal.» Si la reunión es breve, puedo entregarle también una versión de dos líneas.`,
 )
 const ENVIO_SIN_CIFRAS = conRespuestaIA(
   CHAT,
   HORA,
-  BORRADOR_SIN_CIFRAS,
-  'Aquí tienes una estructura: "En el tercer trimestre, [resultado financiero]. Como parte de los ajustes del período, se evalúa [decisión operativa], que será comunicada oportunamente al personal." Completa los corchetes con tus cifras al final.',
+  PROMPT_SIN_CIFRAS,
+  'Con gusto. Aquí tiene el párrafo modelo: «Durante el tercer trimestre la empresa registró [resultado financiero]. Como medida de ajuste, se ha previsto [decisión de personal], que será comunicada oportunamente al equipo.» Complete los corchetes con sus cifras antes de presentarlo.',
 )
 const SIN_IA = conRespuestaIA(
   CHAT,
   HORA,
-  'Mejor lo redacto yo mismo, gracias',
-  'Como quieras, aquí estaré si cambias de opinión.',
+  PROMPT_SIN_IA,
+  'Entendido. Si más adelante desea que revise la estructura o el tono del resumen, quedo a su disposición.',
 )
 
 const STORY: Story<ScreenNode> = {
@@ -59,38 +69,53 @@ const STORY: Story<ScreenNode> = {
     view: ENVIO_CON_CIFRAS,
     senales: [
       {
-        id: 'cifras',
-        targetId: 'borrador-enviado',
+        id: 'dato-perdidas',
+        targetId: 'dato-perdidas',
         pantalla: 'e_con_cifras',
         texto:
-          'Cifras financieras sin publicar y un plan de despidos que <b>todavía no se comunicó a los empleados</b> salieron hacia un servicio externo, antes que a las propias personas afectadas.',
+          'La <b>cifra de pérdidas</b> del trimestre, que todavía no se publica. Para armar un párrafo, a la IA le bastaba con saber que hubo un resultado negativo.',
+      },
+      {
+        id: 'dato-recorte',
+        targetId: 'dato-recorte',
+        pantalla: 'e_con_cifras',
+        texto:
+          'El <b>plan de despidos</b>, con su porcentaje y su fecha. Es la clase de dato con el que se opera en bolsa o se negocia un contrato antes de tiempo.',
+      },
+      {
+        id: 'dato-sin-avisar',
+        targetId: 'dato-sin-avisar',
+        pantalla: 'e_con_cifras',
+        texto:
+          'Y lo que lo agrava: <b>la empresa no ha avisado todavía</b>. La noticia salió antes hacia un servicio externo que hacia las personas que van a perder el trabajo.',
       },
     ],
     verdict: 'Información confidencial de la empresa compartida con la IA',
     outcome:
-      'El resultado financiero del trimestre y el plan de reducción de personal —que ni el propio personal conoce todavía— quedaron en manos de un servicio externo.',
+      'El resultado financiero del trimestre y el plan de reducción de personal —que ni el propio personal conoce— quedaron en manos de un servicio externo, escritos por ti.',
   },
   e_sin_cifras: {
     kind: 'good',
     view: ENVIO_SIN_CIFRAS,
     senales: [
       {
-        id: 'sin-cifras',
+        id: 'borrador-enviado',
         targetId: 'borrador-enviado',
         pantalla: 'e_sin_cifras',
-        texto: 'Pediste ayuda con la forma del resumen, sin entregar el contenido confidencial.',
+        texto:
+          'Le pediste a la IA la <b>forma</b> del resumen, no el contenido: para qué reunión es, qué debe mencionar y dónde van los huecos.',
       },
     ],
     verdict: 'Resumen armado sin exponer datos de la empresa',
     outcome:
-      'Pediste ayuda con la estructura del resumen, no con el contenido: las cifras y el plan de despidos los agregaste tú mismo, después, fuera de la conversación con la IA.',
+      'La IA te dio la estructura del párrafo y las cifras las pusiste tú, fuera de la conversación. Ni las pérdidas ni el plan de despidos salieron de la empresa.',
   },
   e_no_usa_ia: {
     kind: 'partial',
     view: SIN_IA,
     verdict: 'Evitaste el riesgo, pero no hacía falta',
     outcome:
-      'No compartiste nada, pero tampoco hacía falta perder la ayuda de redacción: bastaba con no pegar las cifras ni el plan de despidos todavía sin publicar.',
+      'No compartiste nada, pero tampoco hacía falta renunciar a la ayuda: bastaba con pedir el párrafo modelo sin pegar las cifras ni el plan de despidos.',
   },
 }
 
@@ -99,21 +124,21 @@ const SENALES: Senal[] = [
     id: 'informe-en-juego',
     pantalla: 'n1',
     texto:
-      'El informe que quieres resumir trae <b>cifras financieras sin publicar</b> y un <b>plan de despidos</b> que la propia empresa no ha comunicado. Pedir ayuda para redactar no exige entregar ese contenido.',
+      'La IA te pregunta de qué trata el informe. El que tienes delante trae <b>cifras sin publicar</b> y un <b>plan de despidos que nadie ha anunciado</b> — y contar de qué trata no obliga a copiarlo entero.',
   },
 ]
 
 const RULE =
-  'Regla de oro: la información <b>confidencial de tu empresa</b> —cifras sin publicar, planes sin anunciar— no se pega en una IA externa. Pide ayuda con la forma del texto, y completa los datos sensibles tú mismo, aparte.'
+  'Regla de oro: la información <b>confidencial de tu empresa</b> —cifras sin publicar, planes sin anunciar— no se pega en una IA externa. Pide la forma del texto, y completa tú los datos sensibles aparte.'
 
-const RESUMEN = 'Un informe trimestral trae cifras sin publicar y un plan de despidos sin anunciar.'
+const RESUMEN = 'Le pides a una IA que resuma un informe con cifras sin publicar y un plan de despidos sin anunciar.'
 
 const CONTEXTO: Contexto = {
-  antes: 'Te piden preparar un resumen ejecutivo de un informe financiero interno para la próxima reunión.',
+  antes: 'Te pidieron preparar un resumen ejecutivo del informe financiero interno para la reunión de gerencia.',
   ahora: (
     <>
-      <strong>El informe trae cifras</strong> que todavía no se publicaron y un plan que la empresa no ha
-      comunicado, y quieres que la IA te ayude a resumirlo más claro.
+      <strong>Abres el chat de la IA</strong> para que te ayude a resumir el informe, que trae cifras sin
+      publicar y un plan que la empresa todavía no ha comunicado.
     </>
   ),
 }
@@ -131,13 +156,13 @@ function ResumenDocumentoInterno() {
       cuandoTermina="Cuando toques una de las respuestas del chat."
       instruccion={
         <p className="text-lg leading-relaxed text-body">
-          Toca una de las respuestas para elegir qué pedirle a la IA.
+          Toca una de las respuestas para contestarle a la IA.
         </p>
       }
       pista={
         <p>
-          La IA puede ayudarte con la estructura de un resumen sin conocer las cifras reales. Lo que
-          decides es si se las das de todos modos.
+          La IA puede darte la estructura del resumen sin conocer las cifras reales. Lo que decides es si
+          se las das de todos modos.
         </p>
       }
     />

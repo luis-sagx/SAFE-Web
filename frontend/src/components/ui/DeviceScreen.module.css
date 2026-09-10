@@ -2917,6 +2917,18 @@ button.mailNavItem {
 
 /* Lo que puedes escribir en un hilo con varias salidas. Mismo papel que las
    frases de la pantalla de llamada: son del hilo, no de un cuestionario. */
+/* El mismo chat, dentro de la ventana del navegador. A 1100px de ancho las
+   burbujas al 84% se estiran hasta volverse ilegibles y el hilo deja de
+   parecer una conversación: se le pone a la columna el ancho de lectura y se
+   centra, que es lo que hace cualquier asistente de IA en el escritorio. */
+.smsAncho .smsThread,
+.smsAncho .smsRespuestas,
+.smsAncho .smsComposer {
+  width: 100%;
+  max-width: 46rem;
+  margin-inline: auto;
+}
+
 .smsRespuestas {
   flex-shrink: 0;
   display: flex;

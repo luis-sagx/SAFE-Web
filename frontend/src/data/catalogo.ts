@@ -907,17 +907,19 @@ const BASE: EscenarioBase[] = [
   },
   escenarioAsistentesIA(
     'correo-datos-terceros',
-    'Correo con datos de un compañero',
-    'Quieres que una IA mejore la redacción de un correo que ya trae el nombre, la cédula y el correo de otra persona.',
+    'Correo con datos de una compañera',
+    'Le pides a una IA que redacte un correo a nombre de una compañera, con el nombre, la cédula y el correo de ella a la mano.',
     1,
     lazy(() => import('../secciones/asistentes-ia/CorreoDatosTerceros')),
   ),
+  // El id sigue siendo `correo-credenciales` aunque el escenario ya no sea un
+  // correo: es la clave con la que están guardadas las corridas.
   escenarioAsistentesIA(
     'correo-credenciales',
-    'Correo con tu usuario y clave',
-    'Un compañero nuevo necesita sus datos de acceso, y le pides a una IA que te ayude a redactar el correo.',
+    'Contraseña nueva con ayuda de la IA',
+    'Te toca cambiar la clave del sistema y le pides a una IA que te sugiera una nueva.',
     2,
-    lazy(() => import('../secciones/asistentes-ia/CorreoCredenciales')),
+    lazy(() => import('../secciones/asistentes-ia/ClaveNueva')),
   ),
   escenarioAsistentesIA(
     'resumen-documento-interno',
@@ -929,7 +931,7 @@ const BASE: EscenarioBase[] = [
   escenarioAsistentesIA(
     'historial-cliente',
     'Responder a un cliente con su historial',
-    'Un cliente reclama un cobro de más y tienes a la mano el número de cuenta, el saldo y el teléfono para redactar la respuesta.',
+    'Una clienta reclama un cobro de más y tienes a la mano su número de cuenta, su saldo y su teléfono para redactar la respuesta.',
     4,
     lazy(() => import('../secciones/asistentes-ia/HistorialCliente')),
   ),
