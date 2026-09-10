@@ -43,6 +43,9 @@ describe('RunNotifications', () => {
     fireEvent(window, new Event('online'))
 
     expect(await screen.findByText(/intentos pendientes se enviaron correctamente/i)).toBeDefined()
+    const toaster = document.querySelector('[data-sonner-toaster]')
+    expect(toaster?.getAttribute('data-x-position')).toBe('right')
+    expect(toaster?.getAttribute('data-y-position')).toBe('top')
     expect(pendingCount()).toBe(0)
   })
 
@@ -83,7 +86,7 @@ describe('RunNotifications', () => {
     expect(pendingCount()).toBe(0)
   })
 
-  it('avisa si el servidor rechaza una corrida pendiente sin anunciar éxito total', async () => {
+  it('resume envíos y rechazos de un lote sin anunciar éxito total', async () => {
     createRunMock
       .mockResolvedValueOnce({})
       .mockRejectedValueOnce(new ApiError('scenarioId inválido', 400))
@@ -93,6 +96,8 @@ describe('RunNotifications', () => {
     render(<RunNotifications enabled />)
 
     expect(await screen.findByText(/un intento pendiente fue rechazado/i)).toBeDefined()
+    expect(await screen.findByText(/1 intento sí se envió/i)).toBeDefined()
+    expect(await screen.findByText(/no volverá a enviarse automáticamente/i)).toBeDefined()
     expect(screen.queryByText(/intentos pendientes se enviaron correctamente/i)).toBeNull()
   })
 })

@@ -29,14 +29,36 @@ function RunNotifications({ enabled }: RunNotificationsProps) {
             result.rejected === 1
               ? 'Un intento pendiente fue rechazado.'
               : `${result.rejected} intentos pendientes fueron rechazados.`
+          const details = [
+            result.sent > 0
+              ? `${result.sent} ${
+                  result.sent === 1 ? 'intento sí se envió' : 'intentos sí se enviaron'
+                }.`
+              : '',
+            result.rejected === 1
+              ? 'El rechazado no volverá a enviarse automáticamente.'
+              : 'Los rechazados no volverán a enviarse automáticamente.',
+            result.remaining > 0
+              ? `${result.remaining} ${result.remaining === 1 ? 'intento sigue pendiente' : 'intentos siguen pendientes'}.`
+              : '',
+          ].filter(Boolean)
           toast.error(message, {
             id: 'pending-runs-rejected',
-            description: 'No volverán a enviarse automáticamente.',
+            description: details.join(' '),
           })
-        } else if (result.sent > 0 && result.remaining === 0) {
-          toast.success('Los intentos pendientes se enviaron correctamente.', {
-            id: 'pending-runs-sent',
-          })
+        } else if (result.sent > 0) {
+          if (result.remaining === 0) {
+            toast.success('Los intentos pendientes se enviaron correctamente.', {
+              id: 'pending-runs-sent',
+            })
+          } else {
+            toast.info('Algunos intentos pendientes se enviaron.', {
+              id: 'pending-runs-partial',
+              description: `${result.remaining} ${
+                result.remaining === 1 ? 'intento sigue pendiente' : 'intentos siguen pendientes'
+              }.`,
+            })
+          }
         }
       } while (handledRequest !== requestedSync.current)
     } finally {

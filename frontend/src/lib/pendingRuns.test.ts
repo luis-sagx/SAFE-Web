@@ -170,6 +170,29 @@ describe('cola de corridas pendientes', () => {
     expect(pendingCount()).toBe(0)
   })
 
+  it('conserva dos escrituras que parten de la misma cola desactualizada', () => {
+    const getItem = Storage.prototype.getItem
+    vi.spyOn(Storage.prototype, 'getItem').mockImplementation(function (this: Storage, key) {
+      if (key === 'mic-pending-runs') return null
+      return getItem.call(this, key)
+    })
+
+    queueRun(run('phishing/factura-sri'))
+    queueRun(run('smishing/bono-estado'))
+
+    expect(pendingCount()).toBe(2)
+  })
+
+  it('envía los intentos guardados con el formato anterior de la cola', async () => {
+    createRunMock.mockResolvedValue({})
+    localStorage.setItem('mic-pending-runs', JSON.stringify([run('phishing/factura-sri')]))
+
+    const result = await flushPendingRuns()
+
+    expect(result).toEqual({ sent: 1, rejected: 0, remaining: 0 })
+    expect(pendingCount()).toBe(0)
+  })
+
   it('no llama al servidor cuando no hay nada pendiente', async () => {
     const result = await flushPendingRuns()
     expect(createRunMock).not.toHaveBeenCalled()

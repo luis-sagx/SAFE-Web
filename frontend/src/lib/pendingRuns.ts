@@ -2,7 +2,8 @@
 // porque el servidor no respondiera al terminar un escenario.
 import { ApiError, createRun, type RunPayload } from './api'
 
-const KEY = 'mic-pending-runs'
+const LEGACY_KEY = 'mic-pending-runs'
+const ENTRY_PREFIX = 'mic-pending-run:'
 const LOCK_NAME = 'mic-pending-runs-flush'
 
 export interface FlushPendingRunsResult {
@@ -13,22 +14,54 @@ export interface FlushPendingRunsResult {
 
 let flushInProgress: Promise<FlushPendingRunsResult> | null = null
 
-function read(): RunPayload[] {
+interface StoredRun {
+  key: string
+  run: RunPayload
+}
+
+function migrateLegacyQueue(): void {
+  const raw = localStorage.getItem(LEGACY_KEY)
+  if (!raw) return
+
   try {
-    const raw = localStorage.getItem(KEY)
-    return raw ? (JSON.parse(raw) as RunPayload[]) : []
+    const runs = JSON.parse(raw) as RunPayload[]
+    if (!Array.isArray(runs)) throw new Error('Cola inválida')
+
+    runs.forEach((run, index) => {
+      localStorage.setItem(`${ENTRY_PREFIX}legacy-${index}`, JSON.stringify(run))
+    })
   } catch {
-    localStorage.removeItem(KEY)
-    return []
+    // Una cola ilegible no puede recuperarse. Se elimina para que no rompa
+    // cada carga posterior de la aplicación.
+  } finally {
+    localStorage.removeItem(LEGACY_KEY)
   }
 }
 
-function write(runs: RunPayload[]): void {
-  localStorage.setItem(KEY, JSON.stringify(runs))
+function read(): StoredRun[] {
+  migrateLegacyQueue()
+
+  const keys = Array.from({ length: localStorage.length }, (_, index) =>
+    localStorage.key(index),
+  ).filter((key): key is string => Boolean(key?.startsWith(ENTRY_PREFIX)))
+
+  return keys.flatMap((key) => {
+    try {
+      const raw = localStorage.getItem(key)
+      return raw ? [{ key, run: JSON.parse(raw) as RunPayload }] : []
+    } catch {
+      localStorage.removeItem(key)
+      return []
+    }
+  })
 }
 
 export function queueRun(run: RunPayload): void {
-  write([...read(), run])
+  const id =
+    typeof crypto.randomUUID === 'function'
+      ? crypto.randomUUID()
+      : `${Date.now()}-${Math.random().toString(36).slice(2)}`
+  localStorage.setItem(`${ENTRY_PREFIX}${id}`, JSON.stringify(run))
 }
 
 /** Los errores temporales conservan la corrida; un rechazo definitivo del
@@ -53,30 +86,23 @@ async function flush(): Promise<FlushPendingRunsResult> {
     return { sent: 0, rejected: 0, remaining: 0 }
   }
 
-  const failed: RunPayload[] = []
   let sent = 0
   let rejected = 0
 
-  for (const run of pending) {
+  for (const entry of pending) {
     try {
-      await createRun(run)
+      await createRun(entry.run)
+      localStorage.removeItem(entry.key)
       sent += 1
     } catch (error) {
-      if (isRetryableRunError(error)) {
-        failed.push(run)
-      } else {
+      if (!isRetryableRunError(error)) {
+        localStorage.removeItem(entry.key)
         rejected += 1
       }
     }
   }
 
-  // queueRun siempre agrega al final. Si terminó otra corrida mientras este
-  // vaciado esperaba al servidor, se conserva esa cola nueva en vez de
-  // sobrescribirla con la fotografía tomada al inicio.
-  const queuedWhileFlushing = read().slice(pending.length)
-  const remaining = [...failed, ...queuedWhileFlushing]
-  write(remaining)
-  return { sent, rejected, remaining: remaining.length }
+  return { sent, rejected, remaining: read().length }
 }
 
 export function flushPendingRuns(): Promise<FlushPendingRunsResult> {
