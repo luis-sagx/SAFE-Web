@@ -27,15 +27,11 @@ type AppId = 'credenciales' | 'archivos' | 'correo'
 
 interface App {
   id: AppId
-  /** Lo que dice la barra de título de la ventana. */
   titulo: string
   Icono: LucideIcon
-  /** Nombre corto: el de la pastilla de la barra de tareas. */
   nombre: string
-  /** Cómo se la nombra dentro de la frase del checklist ("Cerrar …"). */
   corto: string
-  /** Sitio en el escritorio. Las tres arrancan sin taparse la barra de título
-   *  unas a otras: si no se ve el ✕, no hay forma de saber que se cierra. */
+  // Las tres arrancan sin taparse la barra de título: si no se ve el ✕, no hay forma de cerrarla.
   sitio: { left: string; top: string; width: string; height: string }
 }
 
@@ -100,9 +96,8 @@ const DOCUMENTOS = [
   { nombre: 'estrategia_2026.xlsx', detalle: '3.4 MB · hace 3 días' },
 ]
 
-/** Cada señal vuelve a abrir su aplicación antes de resaltarla: al terminar el
- *  escenario están cerradas —eso es lo que se pedía— y sin esto el repaso
- *  hablaría de algo que ya no se ve. */
+// Cada señal reabre su app antes de resaltarla: al terminar están cerradas
+// (eso es lo que se pedía) y sin esto el repaso hablaría de algo que ya no se ve.
 const SENALES: Senal[] = [
   {
     id: 'credenciales',
@@ -130,13 +125,8 @@ const SENALES: Senal[] = [
 const REGLA =
   '<b>Escritorio limpio y pantalla bloqueada.</b> Si alguien se acerca a tu puesto, lo primero es bloquear; y lo que no debería ver, cerrado antes de volver a desbloquear delante de él.'
 
-/** Marco de ventana: barra de título con su ✕ y el contenido debajo.
- *
- *  Minimizar y maximizar se ven pero no responden, como los botones de ventana
- *  del resto de pantallas: son lo que hace que una ventana se lea como una
- *  ventana. El que cierra es el único vivo, y se pinta rojo al pasar por
- *  encima porque esa es la señal que todo el mundo ya conoce.
- */
+// Minimizar/maximizar se ven pero no responden, como en el resto de pantallas:
+// solo el ✕ está vivo, y se pinta rojo al pasar por encima (señal conocida).
 function Ventana({
   app,
   alFrente,
@@ -241,9 +231,7 @@ function AppArchivos() {
 function AppCorreo() {
   return (
     <>
-      {/* El navegador dentro de su ventana: una pestaña y su barra de
-          dirección. Cerrar la pestaña no es lo que pide el escenario —lo que
-          hay que cerrar es la ventana entera—, así que no lleva ✕. */}
+      {/* Sin ✕ en la pestaña: lo que pide el escenario es cerrar la ventana entera. */}
       <div className={styles.tabstrip}>
         <span className={styles.tab}>
           <Globe aria-hidden className={styles.tabIcono} strokeWidth={1.75} />
@@ -295,13 +283,10 @@ function PrivacidadClaves() {
   const run = useScenarioRun('fisico/privacidad-claves')
   const { displayName } = useAuth()
 
-  /** Las que siguen abiertas, de atrás hacia adelante: la última es la que
-   *  está al frente. */
+  // Orden de atrás hacia adelante: la última es la que está al frente.
   const [abiertas, setAbiertas] = useState<AppId[]>(APPS.map((app) => app.id))
   const [bloqueada, setBloqueada] = useState(false)
   const [final, setFinal] = useState<StoryNode | null>(null)
-  /** Aplicación que el repaso de señales quiere enseñar, o nada fuera del
-   *  repaso. Mientras dura, el escritorio vuelve a como estaba al empezar. */
   const [repaso, setRepaso] = useState<AppId | null>(null)
 
   const enRepaso = repaso !== null
@@ -441,9 +426,6 @@ function PrivacidadClaves() {
         })}
       </div>
 
-      {/* La barra lista lo que está abierto, como en cualquier escritorio: es
-          la forma más rápida de ver que todavía quedan aplicaciones sin
-          cerrar, y de saltar a la que quedó tapada. */}
       <Taskbar
         apps={APPS.filter((app) => vistaAbiertas.includes(app.id)).map((app) => ({
           Icono: app.Icono,

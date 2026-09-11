@@ -8,18 +8,8 @@ import type { Story } from '../../hooks/useStoryEngine'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
 import type { Senal } from '../../components/ui/PanelVeredicto'
 
-/**
- * El aviso que sí era de verdad.
- *
- * Cierra el módulo con la lección que le falta a los otros siete: desconfiar de
- * todo también se paga. El correo no trae enlace a propósito —dice que entres
- * tú al sitio— así que la única forma de actuar bien es abrirlo por los
- * marcadores, que es exactamente el hábito que se quiere dejar instalado.
- *
- * Y el acierto completo no termina en la tienda: la contraseña filtrada abre
- * todas las puertas donde se repitió, así que el escenario obliga a dar ese
- * segundo paso.
- */
+// Cierra el módulo con la lección que falta a los otros siete: desconfiar de
+// todo también se paga. Sin enlace a propósito, para forzar el hábito de entrar por marcadores.
 
 const CORREO: ScreenView = {
   kind: 'mail',
@@ -97,11 +87,8 @@ const REPETIDA: ScreenView = {
   button: 'Cambiarla también en esos dos sitios',
   botonGoto: 'e_todos_lados',
   botonLabel: 'Cambió también la contraseña repetida en los otros sitios',
-  // La excepción a la regla del issue #24, y a propósito: aquí cerrar llega
-  // *después* de haber cambiado la contraseña, que sí fue una decisión y ya
-  // está tomada. Lo que se registra no es el cierre sino haberse quedado en
-  // un solo sitio, que es lo que la corrida tiene que poder distinguir de
-  // haberla cambiado en todos.
+  // Excepción a la regla del issue #24: aquí cerrar llega después de ya haber
+  // cambiado la contraseña, y registra haberse quedado en un solo sitio.
   cerrarGoto: 'e_una_tienda',
   cerrarLabel: 'Dejó la misma contraseña en los otros sitios',
 }
