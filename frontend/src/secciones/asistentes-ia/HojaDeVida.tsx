@@ -1,8 +1,8 @@
-import StoryEscenario, { type ScreenNode } from '../../components/StoryEscenario'
+import type { ScreenNode } from '../../components/StoryEscenario'
 import type { Contexto } from '../../components/ui/ContextoEscenario'
-import type { Senal } from '../../components/ui/PanelVeredicto'
 import type { Story } from '../../hooks/useStoryEngine'
-import { crearChatIA, conRespuestaIA, marcar } from './chatIA'
+import EscenarioChatIA from './EscenarioChatIA'
+import { crearChatIA, conRespuestaIA, marcar, senal } from './chatIA'
 
 /**
  * Una hoja de vida es un documento de identidad disfrazado de currículum:
@@ -120,34 +120,26 @@ const STORY: Story<ScreenNode> = {
     kind: 'bad',
     view: ENVIO_CV_COMPLETO,
     senales: [
-      {
-        id: 'dato-cedula',
-        targetId: 'dato-cedula',
-        pantalla: 'e_cv_completo',
-        texto:
-          'La <b>cédula</b> de tu prima. Es el número con el que se abre una cuenta, se firma un contrato o se pide un crédito a su nombre — y no mejora en nada la redacción de su hoja de vida.',
-      },
-      {
-        id: 'dato-nacimiento',
-        targetId: 'dato-nacimiento',
-        pantalla: 'e_cv_completo',
-        texto:
-          'Su <b>fecha de nacimiento</b>. Junto a la cédula es la pareja que piden casi todos los formularios para comprobar que alguien es quien dice ser.',
-      },
-      {
-        id: 'dato-direccion',
-        targetId: 'dato-direccion',
-        pantalla: 'e_cv_completo',
-        texto:
-          'Su <b>domicilio</b>, con casa y número. Es el único dato de la lista que dice dónde duerme.',
-      },
-      {
-        id: 'dato-telefono',
-        targetId: 'dato-telefono',
-        pantalla: 'e_cv_completo',
-        texto:
-          'Su <b>teléfono</b>. Cierra el paquete: quién es, cuándo nació, dónde vive y por dónde contactarla, todo en un solo mensaje.',
-      },
+      senal(
+        'dato-cedula',
+        'e_cv_completo',
+        'La <b>cédula</b> de tu prima. Es el número con el que se abre una cuenta, se firma un contrato o se pide un crédito a su nombre — y no mejora en nada la redacción de su hoja de vida.',
+      ),
+      senal(
+        'dato-nacimiento',
+        'e_cv_completo',
+        'Su <b>fecha de nacimiento</b>. Junto a la cédula es la pareja que piden casi todos los formularios para comprobar que alguien es quien dice ser.',
+      ),
+      senal(
+        'dato-direccion',
+        'e_cv_completo',
+        'Su <b>domicilio</b>, con casa y número. Es el único dato de la lista que dice dónde duerme.',
+      ),
+      senal(
+        'dato-telefono',
+        'e_cv_completo',
+        'Su <b>teléfono</b>. Cierra el paquete: quién es, cuándo nació, dónde vive y por dónde contactarla, todo en un solo mensaje.',
+      ),
     ],
     verdict: 'La hoja de vida entera de tu prima quedó en un servicio externo',
     outcome:
@@ -157,13 +149,11 @@ const STORY: Story<ScreenNode> = {
     kind: 'partial',
     view: ENVIO_SOLO_CONTACTO,
     senales: [
-      {
-        id: 'dato-telefono',
-        targetId: 'dato-telefono',
-        pantalla: 'e_solo_contacto',
-        texto:
-          'Quitaste la cédula, la fecha y el domicilio, pero dejaste el <b>teléfono</b> y el correo: no dicen quién es ante un trámite, pero sí por dónde llegar hasta ella.',
-      },
+      senal(
+        'dato-telefono',
+        'e_solo_contacto',
+        'Quitaste la cédula, la fecha y el domicilio, pero dejaste el <b>teléfono</b> y el correo: no dicen quién es ante un trámite, pero sí por dónde llegar hasta ella.',
+      ),
     ],
     verdict: 'Quitaste lo peor, pero dejaste cómo encontrarla',
     outcome:
@@ -173,13 +163,11 @@ const STORY: Story<ScreenNode> = {
     kind: 'good',
     view: ENVIO_SIN_DATOS,
     senales: [
-      {
-        id: 'borrador-enviado',
-        targetId: 'borrador-enviado',
-        pantalla: 'e_sin_datos',
-        texto:
-          'Le pegaste a la IA solo lo que había que mejorar: la experiencia y los estudios. Ninguna de las dos cosas identifica a nadie.',
-      },
+      senal(
+        'borrador-enviado',
+        'e_sin_datos',
+        'Le pegaste a la IA solo lo que había que mejorar: la experiencia y los estudios. Ninguna de las dos cosas identifica a nadie.',
+      ),
     ],
     verdict: 'Hoja de vida mejorada sin entregar los datos de nadie',
     outcome:
@@ -187,13 +175,12 @@ const STORY: Story<ScreenNode> = {
   },
 }
 
-const SENALES: Senal[] = [
-  {
-    id: 'cv-en-juego',
-    pantalla: 'n1',
-    texto:
-      'La IA te pide el <b>contenido que quieres mejorar</b>. La hoja de vida trae además la cédula, la fecha de nacimiento, el domicilio y el teléfono de tu prima — y ninguno de esos cambia cómo se redacta su experiencia.',
-  },
+const SENALES = [
+  senal(
+    'cv-en-juego',
+    'n1',
+    'La IA te pide el <b>contenido que quieres mejorar</b>. La hoja de vida trae además la cédula, la fecha de nacimiento, el domicilio y el teléfono de tu prima — y ninguno de esos cambia cómo se redacta su experiencia.',
+  ),
 ]
 
 const RULE =
@@ -213,15 +200,13 @@ const CONTEXTO: Contexto = {
 
 function HojaDeVida() {
   return (
-    <StoryEscenario
+    <EscenarioChatIA
       escenarioId="asistentes-ia/correo-credenciales"
       resumen={RESUMEN}
       contexto={CONTEXTO}
       story={STORY}
       senales={SENALES}
       rule={RULE}
-      accionesEnPantalla
-      cuandoTermina="Cuando toques una de las respuestas del chat."
       instruccion={
         <p className="text-lg leading-relaxed text-body">
           Toca una de las respuestas para elegir qué le pegas a la IA.

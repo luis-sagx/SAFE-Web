@@ -1,8 +1,8 @@
-import StoryEscenario, { type ScreenNode } from '../../components/StoryEscenario'
+import type { ScreenNode } from '../../components/StoryEscenario'
 import type { Contexto } from '../../components/ui/ContextoEscenario'
-import type { Senal } from '../../components/ui/PanelVeredicto'
 import type { Story } from '../../hooks/useStoryEngine'
-import { crearChatIA, conRespuestaIA, marcar } from './chatIA'
+import EscenarioChatIA from './EscenarioChatIA'
+import { crearChatIA, conRespuestaIA, marcar, senal } from './chatIA'
 
 /**
  * Puerta de entrada de la sección: la IA no engaña a nadie, es una herramienta
@@ -112,34 +112,26 @@ const STORY: Story<ScreenNode> = {
     kind: 'bad',
     view: ENVIO_COMPLETO,
     senales: [
-      {
-        id: 'dato-docente',
-        targetId: 'dato-docente',
-        pantalla: 'e_datos_completos',
-        texto:
-          'El <b>nombre del docente</b>. Por sí solo no es un secreto, pero es el que convierte el mensaje en un caso real: quién pide qué, y a quién.',
-      },
-      {
-        id: 'dato-nombre',
-        targetId: 'dato-nombre',
-        pantalla: 'e_datos_completos',
-        texto:
-          'El <b>nombre completo</b> de tu compañera. Para redactar el correo bastaba con "una compañera": quién es no cambia ni una palabra del texto.',
-      },
-      {
-        id: 'dato-cedula',
-        targetId: 'dato-cedula',
-        pantalla: 'e_datos_completos',
-        texto:
-          'Su <b>cédula</b>. Es el dato que la identifica ante cualquier trámite del país, y salió hacia un servicio externo sin que nadie se lo pidiera.',
-      },
-      {
-        id: 'dato-correo',
-        targetId: 'dato-correo',
-        pantalla: 'e_datos_completos',
-        texto:
-          'Su <b>correo</b>. La IA no lo necesitaba para escribir la solicitud: es a ella a quien le llegará el spam si esa conversación se filtra.',
-      },
+      senal(
+        'dato-docente',
+        'e_datos_completos',
+        'El <b>nombre del docente</b>. Por sí solo no es un secreto, pero es el que convierte el mensaje en un caso real: quién pide qué, y a quién.',
+      ),
+      senal(
+        'dato-nombre',
+        'e_datos_completos',
+        'El <b>nombre completo</b> de tu compañera. Para redactar el correo bastaba con "una compañera": quién es no cambia ni una palabra del texto.',
+      ),
+      senal(
+        'dato-cedula',
+        'e_datos_completos',
+        'Su <b>cédula</b>. Es el dato que la identifica ante cualquier trámite del país, y salió hacia un servicio externo sin que nadie se lo pidiera.',
+      ),
+      senal(
+        'dato-correo',
+        'e_datos_completos',
+        'Su <b>correo</b>. La IA no lo necesitaba para escribir la solicitud: es a ella a quien le llegará el spam si esa conversación se filtra.',
+      ),
     ],
     verdict: 'Datos de una compañera compartidos con la IA',
     outcome:
@@ -149,13 +141,11 @@ const STORY: Story<ScreenNode> = {
     kind: 'good',
     view: ENVIO_SIN_DATOS,
     senales: [
-      {
-        id: 'borrador-enviado',
-        targetId: 'borrador-enviado',
-        pantalla: 'e_sin_datos',
-        texto:
-          'Le contaste a la IA lo que necesitaba saber —el asunto, que va a un docente, la materia— y nada más. Ni un nombre, ni una cédula, ni un correo.',
-      },
+      senal(
+        'borrador-enviado',
+        'e_sin_datos',
+        'Le contaste a la IA lo que necesitaba saber —el asunto, que va a un docente, la materia— y nada más. Ni un nombre, ni una cédula, ni un correo.',
+      ),
     ],
     verdict: 'Correo redactado sin compartir datos de nadie',
     outcome:
@@ -170,13 +160,12 @@ const STORY: Story<ScreenNode> = {
   },
 }
 
-const SENALES: Senal[] = [
-  {
-    id: 'datos-en-juego',
-    pantalla: 'n1',
-    texto:
-      'La IA te pregunta qué debe incluir el correo. Tienes a la mano el <b>nombre completo</b>, la <b>cédula</b> y el <b>correo</b> de tu compañera — y ninguno de los tres cambia cómo se redacta la solicitud.',
-  },
+const SENALES = [
+  senal(
+    'datos-en-juego',
+    'n1',
+    'La IA te pregunta qué debe incluir el correo. Tienes a la mano el <b>nombre completo</b>, la <b>cédula</b> y el <b>correo</b> de tu compañera — y ninguno de los tres cambia cómo se redacta la solicitud.',
+  ),
 ]
 
 const RULE =
@@ -196,20 +185,13 @@ const CONTEXTO: Contexto = {
 
 function CorreoDatosTerceros() {
   return (
-    <StoryEscenario
+    <EscenarioChatIA
       escenarioId="asistentes-ia/correo-datos-terceros"
       resumen={RESUMEN}
       contexto={CONTEXTO}
       story={STORY}
       senales={SENALES}
       rule={RULE}
-      accionesEnPantalla
-      cuandoTermina="Cuando toques una de las respuestas del chat."
-      instruccion={
-        <p className="text-lg leading-relaxed text-body">
-          Toca una de las respuestas para contestarle a la IA.
-        </p>
-      }
       pista={
         <p>
           La IA puede redactar el correo sin saber de quién habla. Lo que decides es si se lo dices de

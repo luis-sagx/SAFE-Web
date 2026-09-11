@@ -1,4 +1,13 @@
 import type { ScreenView } from '../../components/ui/DeviceScreen'
+import { crearSenal } from '../../lib/crearSenal'
+import type { Senal } from '../../components/ui/PanelVeredicto'
+
+/// Casi todas las señales de esta sección resaltan el elemento que lleva su
+/// mismo id (`data-signal`). El helper evita repetir `id` y `targetId` con el
+/// mismo valor en cada objeto, cuatro escenarios seguidos — que es como la
+/// duplicación estructural terminaba fallando el Quality Gate.
+export const senal = (id: string, pantalla: string, texto: string): Senal =>
+  crearSenal(id, pantalla, id, texto)
 
 export type ChatIA = Extract<ScreenView, { kind: 'sms' }>
 export type RespuestaIA = NonNullable<ChatIA['respuestas']>[number]

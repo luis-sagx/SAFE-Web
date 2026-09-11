@@ -1,8 +1,8 @@
-import StoryEscenario, { type ScreenNode } from '../../components/StoryEscenario'
+import type { ScreenNode } from '../../components/StoryEscenario'
 import type { Contexto } from '../../components/ui/ContextoEscenario'
-import type { Senal } from '../../components/ui/PanelVeredicto'
 import type { Story } from '../../hooks/useStoryEngine'
-import { crearChatIA, conRespuestaIA, marcar } from './chatIA'
+import EscenarioChatIA from './EscenarioChatIA'
+import { crearChatIA, conRespuestaIA, marcar, senal } from './chatIA'
 
 /**
  * El único de la sección donde lo que se filtra no es de una persona sino de
@@ -87,27 +87,21 @@ const STORY: Story<ScreenNode> = {
     kind: 'bad',
     view: ENVIO_CON_CIFRAS,
     senales: [
-      {
-        id: 'dato-perdidas',
-        targetId: 'dato-perdidas',
-        pantalla: 'e_con_cifras',
-        texto:
-          'La <b>cifra de pérdidas</b> del trimestre, que todavía no se publica. Para armar un párrafo, a la IA le bastaba con saber que hubo un resultado negativo.',
-      },
-      {
-        id: 'dato-recorte',
-        targetId: 'dato-recorte',
-        pantalla: 'e_con_cifras',
-        texto:
-          'El <b>plan de despidos</b>, con su porcentaje y su fecha. Es la clase de dato con el que se opera en bolsa o se negocia un contrato antes de tiempo.',
-      },
-      {
-        id: 'dato-sin-avisar',
-        targetId: 'dato-sin-avisar',
-        pantalla: 'e_con_cifras',
-        texto:
-          'Y lo que lo agrava: <b>la empresa no ha avisado todavía</b>. La noticia salió antes hacia un servicio externo que hacia las personas que van a perder el trabajo.',
-      },
+      senal(
+        'dato-perdidas',
+        'e_con_cifras',
+        'La <b>cifra de pérdidas</b> del trimestre, que todavía no se publica. Para armar un párrafo, a la IA le bastaba con saber que hubo un resultado negativo.',
+      ),
+      senal(
+        'dato-recorte',
+        'e_con_cifras',
+        'El <b>plan de despidos</b>, con su porcentaje y su fecha. Es la clase de dato con el que se opera en bolsa o se negocia un contrato antes de tiempo.',
+      ),
+      senal(
+        'dato-sin-avisar',
+        'e_con_cifras',
+        'Y lo que lo agrava: <b>la empresa no ha avisado todavía</b>. La noticia salió antes hacia un servicio externo que hacia las personas que van a perder el trabajo.',
+      ),
     ],
     verdict: 'Información confidencial de la empresa compartida con la IA',
     outcome:
@@ -117,13 +111,11 @@ const STORY: Story<ScreenNode> = {
     kind: 'good',
     view: ENVIO_SIN_CIFRAS,
     senales: [
-      {
-        id: 'borrador-enviado',
-        targetId: 'borrador-enviado',
-        pantalla: 'e_sin_cifras',
-        texto:
-          'Le pediste a la IA la <b>forma</b> del resumen, no el contenido: para qué reunión es, qué debe mencionar y dónde van los huecos.',
-      },
+      senal(
+        'borrador-enviado',
+        'e_sin_cifras',
+        'Le pediste a la IA la <b>forma</b> del resumen, no el contenido: para qué reunión es, qué debe mencionar y dónde van los huecos.',
+      ),
     ],
     verdict: 'Resumen armado sin exponer datos de la empresa',
     outcome:
@@ -138,13 +130,12 @@ const STORY: Story<ScreenNode> = {
   },
 }
 
-const SENALES: Senal[] = [
-  {
-    id: 'informe-en-juego',
-    pantalla: 'n1',
-    texto:
-      'La IA te pregunta de qué trata el informe. El que tienes delante trae <b>cifras sin publicar</b> y un <b>plan de despidos que nadie ha anunciado</b> — y contar de qué trata no obliga a copiarlo entero.',
-  },
+const SENALES = [
+  senal(
+    'informe-en-juego',
+    'n1',
+    'La IA te pregunta de qué trata el informe. El que tienes delante trae <b>cifras sin publicar</b> y un <b>plan de despidos que nadie ha anunciado</b> — y contar de qué trata no obliga a copiarlo entero.',
+  ),
 ]
 
 const RULE =
@@ -164,20 +155,13 @@ const CONTEXTO: Contexto = {
 
 function ResumenDocumentoInterno() {
   return (
-    <StoryEscenario
+    <EscenarioChatIA
       escenarioId="asistentes-ia/resumen-documento-interno"
       resumen={RESUMEN}
       contexto={CONTEXTO}
       story={STORY}
       senales={SENALES}
       rule={RULE}
-      accionesEnPantalla
-      cuandoTermina="Cuando toques una de las respuestas del chat."
-      instruccion={
-        <p className="text-lg leading-relaxed text-body">
-          Toca una de las respuestas para contestarle a la IA.
-        </p>
-      }
     />
   )
 }

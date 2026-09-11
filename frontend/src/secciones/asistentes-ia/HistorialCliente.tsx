@@ -1,8 +1,8 @@
-import StoryEscenario, { type ScreenNode } from '../../components/StoryEscenario'
+import type { ScreenNode } from '../../components/StoryEscenario'
 import type { Contexto } from '../../components/ui/ContextoEscenario'
-import type { Senal } from '../../components/ui/PanelVeredicto'
 import type { Story } from '../../hooks/useStoryEngine'
-import { crearChatIA, conRespuestaIA, conSeguimientoIA, marcar } from './chatIA'
+import EscenarioChatIA from './EscenarioChatIA'
+import { crearChatIA, conRespuestaIA, conSeguimientoIA, marcar, senal } from './chatIA'
 
 /**
  * El más difícil de la sección. Lo que lo separa del resto:
@@ -166,41 +166,31 @@ const STORY: Story<ScreenNode> = {
     kind: 'bad',
     view: ENVIO_CON_DATOS,
     senales: [
-      {
-        id: 'dato-nombre',
-        targetId: 'dato-nombre',
-        pantalla: 'e_con_datos',
-        texto:
-          'El <b>nombre completo</b> de la clienta. Es lo que convierte al resto de la línea en los datos de una persona concreta y no en un ejemplo.',
-      },
-      {
-        id: 'dato-cuenta',
-        targetId: 'dato-cuenta',
-        pantalla: 'e_con_datos',
-        texto:
-          'Su <b>número de cuenta</b>. Es el dato con el que alguien que llame haciéndose pasar por el banco suena creíble desde la primera frase.',
-      },
-      {
-        id: 'dato-saldo',
-        targetId: 'dato-saldo',
-        pantalla: 'e_con_datos',
-        texto:
-          'Su <b>saldo</b>. No hace falta para explicar un cobro de $45, y es información que ni siquiera todos dentro de la empresa deberían ver.',
-      },
-      {
-        id: 'dato-telefono',
-        targetId: 'dato-telefono',
-        pantalla: 'e_con_datos',
-        texto:
-          'Su <b>teléfono</b>. Junto con lo anterior deja armado el paquete completo para llamarla, saber cuánto tiene y decirle su número de cuenta.',
-      },
-      {
-        id: 'dato-devuelto',
-        targetId: 'dato-devuelto',
-        pantalla: 'e_con_datos',
-        texto:
-          'Y la IA los escribió otra vez en su respuesta. Ya no están una vez en la conversación sino dos, en un historial guardado en el servidor de otra empresa.',
-      },
+      senal(
+        'dato-nombre',
+        'e_con_datos',
+        'El <b>nombre completo</b> de la clienta. Es lo que convierte al resto de la línea en los datos de una persona concreta y no en un ejemplo.',
+      ),
+      senal(
+        'dato-cuenta',
+        'e_con_datos',
+        'Su <b>número de cuenta</b>. Es el dato con el que alguien que llame haciéndose pasar por el banco suena creíble desde la primera frase.',
+      ),
+      senal(
+        'dato-saldo',
+        'e_con_datos',
+        'Su <b>saldo</b>. No hace falta para explicar un cobro de $45, y es información que ni siquiera todos dentro de la empresa deberían ver.',
+      ),
+      senal(
+        'dato-telefono',
+        'e_con_datos',
+        'Su <b>teléfono</b>. Junto con lo anterior deja armado el paquete completo para llamarla, saber cuánto tiene y decirle su número de cuenta.',
+      ),
+      senal(
+        'dato-devuelto',
+        'e_con_datos',
+        'Y la IA los escribió otra vez en su respuesta. Ya no están una vez en la conversación sino dos, en un historial guardado en el servidor de otra empresa.',
+      ),
     ],
     verdict: 'Datos financieros de una clienta compartidos con la IA',
     outcome:
@@ -210,20 +200,16 @@ const STORY: Story<ScreenNode> = {
     kind: 'bad',
     view: ENVIO_PIDE_SECRETO,
     senales: [
-      {
-        id: 'dato-cuenta',
-        targetId: 'dato-cuenta',
-        pantalla: 'e_pide_secreto',
-        texto:
-          'La cuenta ya está escrita. La frase que pide confidencialidad viene <b>después</b>, y el mensaje se envió entero de una sola vez.',
-      },
-      {
-        id: 'dato-saldo',
-        targetId: 'dato-saldo',
-        pantalla: 'e_pide_secreto',
-        texto:
-          'El saldo también. Pedir que "no lo guarde" es una instrucción dentro del texto, no un permiso que puedas retirar después.',
-      },
+      senal(
+        'dato-cuenta',
+        'e_pide_secreto',
+        'La cuenta ya está escrita. La frase que pide confidencialidad viene <b>después</b>, y el mensaje se envió entero de una sola vez.',
+      ),
+      senal(
+        'dato-saldo',
+        'e_pide_secreto',
+        'El saldo también. Pedir que "no lo guarde" es una instrucción dentro del texto, no un permiso que puedas retirar después.',
+      ),
     ],
     verdict: 'Pedir confidencialidad no deshace haber compartido el dato',
     outcome:
@@ -233,27 +219,21 @@ const STORY: Story<ScreenNode> = {
     kind: 'bad',
     view: ENVIO_RECAE,
     senales: [
-      {
-        id: 'dato-nombre',
-        targetId: 'dato-nombre',
-        pantalla: 'e_recae',
-        texto:
-          'El <b>nombre completo</b>, que la oferta de "dejártela lista" te sacó. El borrador genérico que la IA ya te había dado servía para enviar tal cual.',
-      },
-      {
-        id: 'dato-cuenta',
-        targetId: 'dato-cuenta',
-        pantalla: 'e_recae',
-        texto:
-          'Y el <b>número de cuenta</b>, justo lo que habías evitado dar en el primer mensaje. Una respuesta a un reclamo no necesita el número de cuenta para nada.',
-      },
-      {
-        id: 'dato-devuelto',
-        targetId: 'dato-devuelto',
-        pantalla: 'e_recae',
-        texto:
-          'La IA los escribió de vuelta en el borrador final. El nombre y la cuenta de Mónica quedaron en un historial guardado en el servidor de otra empresa.',
-      },
+      senal(
+        'dato-nombre',
+        'e_recae',
+        'El <b>nombre completo</b>, que la oferta de "dejártela lista" te sacó. El borrador genérico que la IA ya te había dado servía para enviar tal cual.',
+      ),
+      senal(
+        'dato-cuenta',
+        'e_recae',
+        'Y el <b>número de cuenta</b>, justo lo que habías evitado dar en el primer mensaje. Una respuesta a un reclamo no necesita el número de cuenta para nada.',
+      ),
+      senal(
+        'dato-devuelto',
+        'e_recae',
+        'La IA los escribió de vuelta en el borrador final. El nombre y la cuenta de Mónica quedaron en un historial guardado en el servidor de otra empresa.',
+      ),
     ],
     verdict: 'La oferta de "dejártela lista" te sacó los datos',
     outcome:
@@ -263,20 +243,16 @@ const STORY: Story<ScreenNode> = {
     kind: 'partial',
     view: ENVIO_SOLO_NOMBRE,
     senales: [
-      {
-        id: 'dato-nombre',
-        targetId: 'dato-nombre',
-        pantalla: 'e_solo_nombre',
-        texto:
-          'El <b>nombre completo</b> de la clienta. Frenaste el número de cuenta, pero el nombre tampoco hacía falta: el saludo lo pones tú al enviar la respuesta.',
-      },
-      {
-        id: 'dato-devuelto',
-        targetId: 'dato-devuelto',
-        pantalla: 'e_solo_nombre',
-        texto:
-          'Y la IA lo repitió en el saludo. Un nombre junto a un reclamo por un cobro ya identifica a una clienta concreta en un servicio externo.',
-      },
+      senal(
+        'dato-nombre',
+        'e_solo_nombre',
+        'El <b>nombre completo</b> de la clienta. Frenaste el número de cuenta, pero el nombre tampoco hacía falta: el saludo lo pones tú al enviar la respuesta.',
+      ),
+      senal(
+        'dato-devuelto',
+        'e_solo_nombre',
+        'Y la IA lo repitió en el saludo. Un nombre junto a un reclamo por un cobro ya identifica a una clienta concreta en un servicio externo.',
+      ),
     ],
     verdict: 'Cediste el nombre a la oferta',
     outcome:
@@ -286,13 +262,11 @@ const STORY: Story<ScreenNode> = {
     kind: 'good',
     view: ENVIO_SIN_DATOS,
     senales: [
-      {
-        id: 'borrador-enviado',
-        targetId: 'borrador-enviado',
-        pantalla: 'n2_generico',
-        texto:
-          'Le contaste a la IA solo el motivo del reclamo — y cuando te ofreció "dejarla lista" a cambio del nombre y la cuenta, dijiste que así estaba bien. Nada de lo que le diste identifica a la clienta.',
-      },
+      senal(
+        'borrador-enviado',
+        'n2_generico',
+        'Le contaste a la IA solo el motivo del reclamo — y cuando te ofreció "dejarla lista" a cambio del nombre y la cuenta, dijiste que así estaba bien. Nada de lo que le diste identifica a la clienta.',
+      ),
     ],
     verdict: 'Te quedaste con el borrador genérico',
     outcome:
@@ -300,13 +274,12 @@ const STORY: Story<ScreenNode> = {
   },
 }
 
-const SENALES: Senal[] = [
-  {
-    id: 'cuenta-en-juego',
-    pantalla: 'n1',
-    texto:
-      'La IA te pregunta <b>qué reclama la clienta</b> y en qué tono responder. Tienes el sistema abierto al lado con su cuenta, su saldo y su teléfono — y nada de eso contesta esas dos preguntas.',
-  },
+const SENALES = [
+  senal(
+    'cuenta-en-juego',
+    'n1',
+    'La IA te pregunta <b>qué reclama la clienta</b> y en qué tono responder. Tienes el sistema abierto al lado con su cuenta, su saldo y su teléfono — y nada de eso contesta esas dos preguntas.',
+  ),
 ]
 
 const RULE =
@@ -326,20 +299,13 @@ const CONTEXTO: Contexto = {
 
 function HistorialCliente() {
   return (
-    <StoryEscenario
+    <EscenarioChatIA
       escenarioId="asistentes-ia/historial-cliente"
       resumen={RESUMEN}
       contexto={CONTEXTO}
       story={STORY}
       senales={SENALES}
       rule={RULE}
-      accionesEnPantalla
-      cuandoTermina="Cuando toques una de las respuestas del chat."
-      instruccion={
-        <p className="text-lg leading-relaxed text-body">
-          Toca una de las respuestas para contestarle a la IA.
-        </p>
-      }
     />
   )
 }

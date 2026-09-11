@@ -3,6 +3,28 @@
 Fecha: 2026-09-10
 Rama: `mejora-escenarios-ai`
 
+## Addendum — SonarCloud Quality Gate (PR #168)
+
+Tras subir los cambios, el Quality Gate falló por
+`new_duplicated_lines_density = 8.4%` (umbral 3%). La causa: los cuatro archivos
+de la sección repetían token por token el esqueleto estructural —los objetos
+`{ id, targetId, pantalla, texto }` de cada señal (Sonar cuenta cada string como
+un solo token) y el envoltorio `function X() { return <StoryEscenario .../> }`,
+idéntico en los cuatro.
+
+Refactor para bajar la duplicación (sin cambiar comportamiento):
+
+- `chatIA.ts` — helper `senal(id, pantalla, texto)` = `crearSenal(id, pantalla,
+  id, texto)` (ya existía `crearSenal` en `src/lib/`). Cada señal pasa de un
+  objeto de 6 líneas a una llamada con su texto único.
+- `EscenarioChatIA.tsx` (nuevo) — envuelve `<StoryEscenario>` con los valores
+  fijos de la sección (`accionesEnPantalla`, `cuandoTermina`, `instruccion` por
+  defecto). `instruccion` y `pista` quedan como props opcionales.
+- Los cuatro escenarios (incluidos 1 y 2, que "no se tocaban") ahora usan
+  `senal()` y `<EscenarioChatIA>`.
+
+Verificado con `jscpd` local (0 clones) + suite completa (402 pass).
+
 ## Problema
 
 Los cuatro escenarios de la sección `asistentes-ia` comparten mecánica exacta:
