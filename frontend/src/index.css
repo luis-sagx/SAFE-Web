@@ -1,6 +1,8 @@
 @import "tailwindcss";
 
-/* Tokens del sistema de diseño. Ver DESIGN.md — solo modo claro. */
+/* Tokens del sistema de diseño. Ver DESIGN.md.
+   Tema claro y oscuro, los dos verificados a AA — ver
+   docs/superpowers/specs/2026-09-10-tema-oscuro-design.md §5. */
 @theme {
   --color-primary: #006837;
   --color-primary-active: #00522b;
@@ -8,10 +10,11 @@
 
   --color-ink: #171717;
   --color-body: #60646c;
-  /* 4.9:1 sobre blanco. El #999999 anterior daba 2.85:1 y no llegaba al
-     mínimo AA, y no se usa en adornos: lo llevan "BLOQUEADO", "Pronto", el
-     canal de cada módulo y todos los rótulos de sección. */
-  --color-muted: #6b6f76;
+  /* 4.85:1 en el peor caso (sobre mint-light). El #999999 original daba
+     2.85:1 y no llegaba al mínimo AA, y no se usa en adornos: lo llevan
+     "BLOQUEADO", "Pronto", el canal de cada módulo y todos los rótulos de
+     sección. */
+  --color-muted: #63676e;
   /* Solo para lo que no es texto que haya que leer: placeholders, controles
      deshabilitados, separadores y rellenos. Nunca para un rótulo. */
   --color-muted-soft: #a8acb3;
@@ -34,16 +37,34 @@
   --color-hairline: #f0f0f3;
   --color-hairline-soft: #f5f5f7;
   --color-hairline-strong: #dcdee0;
+  /* Borde de control real (input, select, textarea): 3:1 mínimo contra las
+     seis superficies del sistema — SC 1.4.11. hairline-strong es decorativo
+     (el contenido ya delimita la tarjeta) y no alcanza 3:1; border-control sí,
+     y es el único que debe usarse en el borde en reposo de un campo. */
+  --color-border-control: #7d828a;
 
   --color-mint-light: #d9ede2;
   --color-mint-mid: #a9d1ba;
 
-  /* Más claro y saturado que --color-primary a propósito: en una app donde
-     verde significa "acertaste", el verde del acierto no puede ser el mismo
-     verde del cromo. */
+  /* success es dos tokens: el relleno vivo (el círculo del ✓, cumple 1.4.11
+     como objeto gráfico) y success-ink, la variante oscurecida a 4.5:1 para
+     cuando el verde es texto. Ver DESIGN.md y el spec de tema oscuro §5.4:
+     cualquier verde que llegue a 4.5:1 sobre blanco cae cerca de --primary a
+     propósito, el acierto se distingue por el glifo y la palabra, no por el
+     matiz. */
   --color-success: #16a34a;
+  --color-success-ink: #0d7038;
+  --color-on-success: #06210f;
   --color-danger: #b4342f;
-  --color-warning: #ab6400;
+  --color-on-danger: #ffffff;
+  /* Oscurecido de #ab6400: aquel pasaba sobre blanco pero fallaba sobre
+     canvas-soft, surface-strong, mint-light y signal. */
+  --color-warning: #945700;
+  --color-on-warning: #ffffff;
+
+  /* Velo de fondo de un modal. No es bg-ink/40: en oscuro ink es casi blanco,
+     y ese velo se aclararía en vez de oscurecer. */
+  --color-scrim: rgb(0 0 0 / 0.45);
 
   --font-sans: "Inter", -apple-system, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", "Fira Code", monospace;
@@ -55,6 +76,69 @@
   --radius-xl: 16px;
 
   --shadow-card: 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+
+:root {
+  color-scheme: light;
+}
+
+/* Tema oscuro: solo se redefinen tokens de color y la sombra. Tipografía,
+   radios y espaciado no dependen del tema.
+
+   El cromo (pages/, components/*.tsx salvo los .module.css) sigue estos
+   tokens porque las utilidades de Tailwind ya resuelven a var(...). Los
+   escenarios simulados (todo lo que se estiliza con un .module.css) NO
+   siguen el tema: se congelaron con valores literales a propósito, porque un
+   WhatsApp falso tiene que parecerse a WhatsApp, no al tema del usuario. */
+:root[data-tema="oscuro"] {
+  color-scheme: dark;
+
+  --color-primary: #2fbf71;
+  --color-primary-active: #25a862;
+  /* El botón primario invierte polaridad en oscuro: ningún verde alcanza a
+     la vez 3:1 contra el lienzo oscuro y 4.5:1 bajo texto blanco con margen
+     seguro. Relleno claro + tinta oscura encima, como Material 3. Ver
+     spec §5.3 — text-on-primary se usa solo junto a bg-primary, en los 16
+     sitios verificados. */
+  --color-on-primary: #06170d;
+
+  --color-ink: #eef2f6;
+  --color-body: #bcc5d0;
+  --color-muted: #98a2ae;
+  --color-muted-soft: #6b7480;
+  --color-link: #4fd08a;
+
+  --color-canvas: #0f1317;
+  --color-canvas-soft: #161b21;
+  --color-surface: #161b21;
+  --color-surface-strong: #222932;
+
+  --color-signal: #251d10;
+  --color-signal-border: #d9a441;
+  --color-signal-body: #c4ccd6;
+
+  --color-hairline: #242b34;
+  --color-hairline-soft: #1c222a;
+  --color-hairline-strong: #3a4450;
+  --color-border-control: #697687;
+
+  --color-mint-light: #13301f;
+  --color-mint-mid: #2a5c3f;
+
+  --color-success: #3ddc84;
+  --color-success-ink: #3ddc84;
+  --color-on-success: #06170d;
+  --color-danger: #f0736f;
+  --color-on-danger: #2a0b0a;
+  --color-warning: #e8a33d;
+  --color-on-warning: #241705;
+
+  --color-scrim: rgb(0 0 0 / 0.65);
+
+  /* Sobre un lienzo casi negro una sombra negra no eleva nada: lo que separa
+     una tarjeta es hairline-strong. Se sube la opacidad solo para no tener
+     que retirar shadow-card de los 13 sitios que la usan. */
+  --shadow-card: 0 4px 12px rgba(0, 0, 0, 0.5);
 }
 
 * {

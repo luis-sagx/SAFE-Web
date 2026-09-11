@@ -5,6 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/webp" href="/marca/isotipo-safeweb.webp" />
     <title>MIC · Entrenamiento de Ciberataques</title>
+    <script>
+      // Pone data-tema antes del primer pintado: si se esperara a que React
+      // monte, alguien con el sistema en oscuro vería un destello blanco en
+      // cada carga. Bloqueante a propósito — son microsegundos y es lo único
+      // que lo garantiza. Ver ThemeContext.tsx y el spec de tema oscuro §4.3.
+      try {
+        var t = localStorage.getItem('tema') || 'sistema'
+        var oscuro =
+          t === 'oscuro' || (t === 'sistema' && matchMedia('(prefers-color-scheme: dark)').matches)
+        if (oscuro) document.documentElement.dataset.tema = 'oscuro'
+      } catch (e) {}
+    </script>
   </head>
   <body>
     <div id="root"></div>
