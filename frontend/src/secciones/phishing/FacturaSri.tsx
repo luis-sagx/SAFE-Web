@@ -37,28 +37,14 @@ import PanelVeredicto, { type Senal } from '../../components/ui/PanelVeredicto'
 import { formatoHora } from '../../hooks/useRelojDelSistema'
 import { useStoryEngine, type Story, type StoryNode } from '../../hooks/useStoryEngine'
 
-/**
- * Primer escenario interactivo del proyecto: en vez de elegir de una lista de
- * acciones descritas, el participante actúa directamente sobre el correo y la
- * página falsa —el enlace, el adjunto, el formulario, un atajo al portal
- * real— igual que lo haría frente a su bandeja de verdad. Ver
- * docs/superpowers/specs/2026-08-04-escenario-interactivo-factura-sri-design.md.
- *
- * Por eso no usa StoryEscenario/DeviceScreen/StoryChoices:
- * esos siguen sirviendo tal cual a los escenarios que todavía eligen de una
- * lista (ClaveCaducada, RolDePagos). Este es la plantilla para cuando se
- * repliquen.
- */
+// Primer escenario interactivo: el participante actúa directamente sobre el correo y la página
+// falsa en vez de elegir de una lista. No usa StoryEscenario/DeviceScreen/StoryChoices por eso.
 
-/// El grafo no necesita `choices`: cada punto interactivo lleva su propio
-/// `goto`/`label` en la pantalla, no en una lista aparte que haya que
-/// mantener sincronizada.
+// El grafo no usa `choices`: cada punto interactivo lleva su propio `goto`/`label` en la pantalla.
 const STORY: Story<StoryNode> = {
   n1: { kind: 'scene' },
   n2: { kind: 'scene' },
-  // El portal legítimo. Un solo nodo, aunque el final dependa de por dónde se
-  // llegó: con dos nodos, el marcador abría una segunda pestaña del mismo sitio
-  // en vez de ir a la que ya estaba abierta. Cuál de los dos finales acredita
+  // Portal legítimo: un solo nodo, para que el marcador vaya a la pestaña ya abierta en vez de duplicarla.
   n3: { kind: 'scene' },
   e_adjunto: {
     kind: 'bad',
@@ -101,8 +87,7 @@ const STORY: Story<StoryNode> = {
   },
 }
 
-/// Todas llevan a un final: en la barra de un cliente de correo no puede haber
-/// botones de adorno. Ver MailToolbar.
+// Todas llevan a un final: en la barra de un cliente de correo no puede haber botones de adorno.
 const ACCIONES: AccionCorreo[] = [
   {
     Icono: Reply,
@@ -138,11 +123,8 @@ const ASUNTO = 'Factura electrónica pendiente de validación'
 const REMITENTE_NOMBRE = 'SRI · Facturación Electrónica'
 const DIRECCION = 'notificaciones@sri-facturacion-ec.com'
 
-/// A dónde va el correo según qué botón de la barra terminó el escenario, y
-/// si eso lo saca de Recibidos.
-/// Cada señal apunta, cuando puede, al elemento real marcado con
-/// data-signal en una de las dos pantallas. Si esa pantalla no es la que
-/// llevó a este final, el recorrido igual muestra el texto, sin resaltar.
+// Cada señal apunta a su data-signal en una de las dos pantallas; si esa
+// pantalla no es la que llevó al final, el recorrido igual muestra el texto sin resaltar.
 const SENALES: Senal[] = [
   {
     id: 'dominio',
@@ -214,8 +196,7 @@ const CONTEXTO: Contexto = {
   ),
 }
 
-/// Solo mecánica, y solo antes de entrar: dentro del escenario el bloque de
-/// decisión ya la explica, y repetirla ahí robaría espacio a la historia.
+// Solo mecánica: el bloque de decisión ya explica la historia dentro del escenario.
 const NOTA = (
   <>
     <p>
@@ -229,11 +210,8 @@ const NOTA = (
   </>
 )
 
-/// Cinco minutos antes de abrir el escenario. La hora del correo se calcula a
-/// partir del ahora porque la barra de tareas muestra la hora real y avanza:
-/// con una hora fija el mensaje quedaría fechado en un momento que el reloj de
-/// la propia ventana desmiente. "Hace unos minutos" es además lo que dice el
-/// contexto, y lo que hace verosímil que todavía no lo hubieras visto.
+// Se calcula a partir del ahora porque la barra de tareas muestra la hora real y avanza:
+// con una hora fija el mensaje quedaría fechado en un momento que el reloj desmiente.
 const MINUTOS_DE_ANTIGUEDAD = 5
 
 function horaDeLlegada(): string {
@@ -241,9 +219,7 @@ function horaDeLlegada(): string {
   return `hoy ${formatoHora(llegada)}`
 }
 
-/// Lo que muestra la barra de direcciones y la pestaña de cada pantalla. La
-/// dirección es la señal principal del escenario, así que vive junto al nodo y
-/// no dentro de cada componente.
+// La dirección es la señal principal del escenario, así que vive junto al nodo, no en cada componente.
 const PESTANAS: Record<string, PestanaConfig> = {
   n1: { titulo: 'Correo', url: 'https://correo.safeweb.com/u/0/#recibidos', segura: true },
   n2: {
@@ -292,6 +268,12 @@ function ContenidoCorreo({ recibido, carpetas }: { recibido: string; carpetas: C
         senalEtiqueta: 'externo',
       }}
       recibido={recibido}
+      marca={{
+        nombre: 'Servicio de Rentas Internas',
+        detalle: 'Facturación electrónica',
+        icono: 'empresa',
+        variante: 'institucional',
+      }}
       adjunto={
         <BotonHotspot
           goto="e_adjunto"
@@ -299,18 +281,13 @@ function ContenidoCorreo({ recibido, carpetas }: { recibido: string; carpetas: C
           signalId="adjunto"
           className={styles.attachment}
         >
-          {/* Icono genérico y no uno de código o de advertencia: los de
-              advertencia delatarían la trampa, y este escenario mide si la
-              persona lee la extensión. Un cliente real tampoco distingue: a un
-              tipo que no sabe previsualizar le pone el icono de siempre. */}
+          {/* Icono genérico y no de advertencia: eso delataría la trampa, y el escenario mide si se lee la extensión. */}
           <span className={styles.attachmentTipo} aria-hidden>
             <File className={styles.attachmentIcono} strokeWidth={1.75} />
           </span>
           <span className={styles.attachmentNombre}>
             Factura_004521.pdf.vbs
-            {/* 12 KB y no los 34 de antes: un script de estas campañas pesa
-                unos pocos kilobytes, mientras que una factura en PDF pesa
-                bastante más. El tamaño es una señal más, aunque no se explique. */}
+            {/* 12 KB: un script pesa unos pocos KB, no lo que pesa un PDF real — señal implícita. */}
             <span className={styles.attachmentPeso}>12 KB</span>
           </span>
         </BotonHotspot>
@@ -327,7 +304,6 @@ function ContenidoCorreo({ recibido, carpetas }: { recibido: string; carpetas: C
       }
     >
       <p>Estimado(a) contribuyente:</p>
-      <img src="/FacturaAdjunta.jpeg" alt="" />
       <p>
         Nuestro sistema detectó una <b>factura electrónica no validada</b> asociada a su RUC. Si no
         completa la validación en las próximas{' '}
@@ -367,9 +343,7 @@ function ContenidoPortalFalso() {
         <div className={styles.form}>
           <fieldset className={styles.field}>
             <legend>RUC o cédula</legend>
-            {/* No editable a propósito, y con un valor que no es el de nadie:
-                el participante juzga la pantalla, nunca escribe credenciales
-                reales en ella. */}
+            {/* No editable y con un RUC que no es el de nadie: el participante nunca escribe credenciales reales. */}
             <span className={styles.input}>
               <span className="sr-only">Tu RUC, ya completado: </span>
               {' '}{IDENTIDAD_FICTICIA.ruc}
@@ -405,22 +379,8 @@ function ContenidoPortalFalso() {
   )
 }
 
-/**
- * Instrucción del escenario. Tiene que responder tres preguntas que la versión
- * anterior dejaba abiertas, y por eso el participante se quedaba mirando la
- * pantalla sin saber qué hacer:
- *
- *   1. ¿Qué se espera de mí? — decidir y actuar, no "resolver un acertijo".
- *   2. ¿Con qué puedo interactuar? — con la ventana entera, correo y barra de
- *      tareas incluidas, no solo con el cuerpo del mensaje.
- *   3. ¿Qué pasa cuando toco algo? — la corrida termina ahí mismo, sin
- *      confirmación (spec §2.1). Avisarlo evita terminar sin querer.
- *
- * Lo que NO dice: cuáles son los puntos accionables. Señalarlos convertiría el
- * escenario en una lista de opciones y borraría lo que mide — si la persona
- * reconoce sola el anzuelo. Para quien de verdad se atasca está la pista
- * desplegable, que es opt-in.
- */
+// No dice cuáles son los puntos accionables: señalarlos borraría lo que se mide
+// (si la persona reconoce sola el anzuelo). Quien se atasca tiene la pista opt-in.
 function DecisionEnCurso({
   fallo,
   enPortal,
@@ -456,9 +416,7 @@ function DecisionEnCurso({
           </p>
         )}
 
-        {/* Va aquí y no dentro de la página: el marco de los escenarios separa lo
-          que la app real mostraría de lo que explica el ejercicio, y una página
-          de phishing jamás avisaría de qué son sus campos. */}
+        {/* Va aquí y no en la página: una página de phishing real jamás avisaría de qué son sus campos. */}
         {enPortal && (
           <p className="rounded-md border border-hairline-strong bg-canvas-soft px-3 py-2 text-base leading-relaxed text-body">
             El formulario ya aparece con{' '}
@@ -467,9 +425,7 @@ function DecisionEnCurso({
           </p>
         )}
 
-        {/* Detrás de un resumen: esto es mecánica, no la tarea. De corrido,
-            los dos párrafos sumaban unas sesenta palabras antes de poder tocar
-            nada, y para empezar solo hace falta el primero. */}
+        {/* Detrás de un resumen: es mecánica, no la tarea, y para empezar solo hace falta lo de arriba. */}
         <details className="text-base leading-relaxed text-body">
           <summary className="cursor-pointer list-none font-medium text-link underline decoration-dotted underline-offset-4">
             ¿Cuándo termina el escenario?
@@ -485,18 +441,8 @@ function DecisionEnCurso({
   )
 }
 
-/**
- * El portal verdadero del SRI.
- *
- * Existe para que el camino acertado se *vea* y no solo se cuente. Aquí está el
- * hecho que desmiente al correo —no hay ningún comprobante pendiente ni ninguna
- * multa— y el contraste con la página falsa: dominio sri.gob.ec, conexión
- * segura y una sesión ya iniciada, sin ningún formulario pidiendo la clave.
- *
- * Cerrar su pestaña es lo que acredita, y el final depende de si la página
- * falsa llegó a abrirse: entrar por cuenta propia sin tocarla, o haberla
- * dejado sin escribir nada (ver `cierrePortal`).
- */
+// El portal verdadero: existe para que el camino acertado se vea y no solo se cuente,
+// en contraste con la página falsa (dominio real, sesión iniciada, sin formulario de clave).
 function ContenidoPortalReal() {
   return (
     <>
@@ -547,26 +493,16 @@ function ContenidoPortalReal() {
 function FacturaSri() {
   const engine = useStoryEngine(STORY, 'n1', 'phishing/factura-sri')
 
-  // El nodo final (p. ej. "e_adjunto") no es una pantalla: es la consecuencia
-  // de una. Se recuerda cuál era la pantalla activa para que el recorrido de
-  // señales tenga sobre qué resaltar.
-  // Guarda el id del nodo, no una lista cerrada de dos valores: con el portal
-  // real ya son cuatro pantallas y la lista habría que ampliarla cada vez.
+  // El nodo final no es una pantalla, sino la consecuencia de una; se guarda su
+  // id (no una lista cerrada de valores) para que el repaso tenga sobre qué resaltar.
   const [pantallaActual, setPantallaActual] = useState('n1')
-  /// Se enciende con el primer clic que no cae en ningún punto interactivo y
-  /// ya no se apaga: quien exploró a ciegas una vez agradece tener la pista a
-  /// la vista el resto del escenario.
+  // Se enciende con el primer clic en el vacío y ya no se apaga.
   const [tocoEnVacio, setTocoEnVacio] = useState(false)
-  /// Se calcula una vez al montar y no en cada render: si no, el correo se
-  /// "rejuvenecería" solo cada quince segundos, al ritmo del reloj de la barra.
+  // Se calcula una vez al montar, no en cada render, o el correo "rejuvenecería" con el reloj.
   const [recibido, setRecibido] = useState(horaDeLlegada)
-  /// Las pestañas abiertas, en su orden. Se abren al navegar, como en un
-  /// navegador de verdad: al principio solo está el correo.
   const [pestanas, setPestanas] = useState(['n1'])
-  /// Cierto mientras el repaso va señal por señal. Durante el repaso el mensaje
-  /// vuelve a Recibidos: las acciones que lo mueven a Spam o a la Papelera
-  /// dejaban la bandeja vacía, y el recorrido acababa explicando señales sobre
-  /// una pantalla donde ya no había nada que señalar.
+  // Durante el repaso el mensaje vuelve a Recibidos: Spam/Papelera dejaban la
+  // bandeja vacía y sin nada que señalar.
   const [repasando, setRepasando] = useState(false)
 
   function elegir(goto: string, label?: string) {
@@ -574,8 +510,6 @@ function FacturaSri() {
       return
     }
     engine.choose(goto, label)
-    // Toda escena es una pantalla; los finales no lo son, y por eso se conserva
-    // la última para que el repaso de señales tenga sobre qué resaltar.
     if (STORY[goto]?.kind === 'scene') {
       setPantallaActual(goto)
       setPestanas((abiertas) => (abiertas.includes(goto) ? abiertas : [...abiertas, goto]))
@@ -597,17 +531,13 @@ function FacturaSri() {
   const onHotspot = (event: React.MouseEvent) => {
     evitarNavegacion(event)
 
-    // Cerrar una pestaña la quita de la barra además de llevar a donde diga su
-    // `goto`: para el correo, de vuelta a él; para el portal real, al final.
     const cerrada = (event.target as HTMLElement).closest<HTMLElement>('[data-cierra]')?.dataset
       .cierra
     if (cerrada) {
       const quedan = pestanas.filter((id) => id !== cerrada)
       setPestanas(quedan)
-      // Cerrar la pestaña que se está viendo devuelve el navegador a la que
-      // quede abierta (el correo). Con el escenario ya terminado `elegir` sale
-      // sin tocar la pantalla, así que sin esto la página cerrada seguía a la
-      // vista aunque su pestaña ya no estuviera en la barra (issue #26).
+      // issue #26: con el escenario terminado `elegir` no toca la pantalla, así que sin
+      // esto la pestaña cerrada seguía a la vista aunque ya no estuviera en la barra.
       if (cerrada === pantallaActual) setPantallaActual(quedan.at(-1) ?? 'n1')
     }
 
@@ -616,10 +546,8 @@ function FacturaSri() {
     }
   }
 
-  // La pantalla que se está viendo siempre tiene su pestaña en la barra. Importa
-  // en el repaso: las señales llevan a pantallas que se cerraron, o que nunca se
-  // llegaron a abrir, y sin esto se explicaba el portal con la pestaña del
-  // correo marcada como activa.
+  // Importa en el repaso: las señales llevan a pantallas cerradas o nunca abiertas,
+  // y sin esto se explicaba el portal con la pestaña del correo marcada como activa.
   const abiertas = pestanas.includes(pantallaActual) ? pestanas : [...pestanas, pantallaActual]
 
   const pantalla = (

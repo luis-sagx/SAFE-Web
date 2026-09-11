@@ -27,13 +27,9 @@ interface AuthValue {
   displayName: string
   roleLabel: string
   initials: string
-  /** Dirección de correo ficticia del participante dentro de los escenarios. */
   correoSimulado: string
-  /** Solo la parte de usuario, sin dominio. Un escenario ambientado en una
-   *  empresa necesita que el participante esté en el dominio de esa empresa:
-   *  si la historia dice que trabajas en Corporación Andes, recibir el correo
-   *  en otro dominio contradice al propio escenario, y en este módulo el
-   *  dominio es justo lo que hay que aprender a mirar. */
+  /** Solo la parte de usuario, sin dominio: el dominio es lo que hay que
+   *  aprender a mirar en este módulo. */
   usuarioSimulado: string
 }
 
@@ -43,14 +39,10 @@ function firstName(participant: Participant | null): string {
   return participant?.nombre?.trim().split(/\s+/)[0] ?? ''
 }
 
-/// Dominio inventado. Nunca existe fuera de la simulación: los escenarios no
-/// envían ni reciben correo de verdad, y el participante tiene que poder
-/// distinguir de un vistazo lo que pasa dentro del ejercicio de lo que pasa en
-/// su bandeja real.
+// Dominio inventado, para distinguir de un vistazo el ejercicio de la bandeja real.
 const DOMINIO_SIMULADO = 'safeweb.com'
 
-/// Deja solo letras sin tilde: la dirección tiene que poder escribirse y
-/// leerse en voz alta, y "sebastián" o "peña" no sobreviven a un buzón real.
+// Deja solo letras sin tilde: "sebastián" o "peña" no sobreviven a un buzón real.
 function normalizar(texto: string | null | undefined): string {
   return (texto ?? '')
     .normalize('NFD')
@@ -59,9 +51,7 @@ function normalizar(texto: string | null | undefined): string {
     .replace(/[^a-z]/g, '')
 }
 
-/// nombreapellido@safeweb.com, con la primera palabra de cada uno. Si la cuenta
-/// no tiene nombre —una ya anonimizada— cae a "participante", para que la
-/// dirección nunca quede vacía ni a medias.
+// Si la cuenta no tiene nombre (ya anonimizada), cae a "participante" para no quedar vacía.
 function usuarioSimuladoDe(participant: Participant | null): string {
   const nombre = normalizar(participant?.nombre?.trim().split(/\s+/)[0])
   const apellido = normalizar(participant?.apellido?.trim().split(/\s+/)[0])
@@ -69,9 +59,7 @@ function usuarioSimuladoDe(participant: Participant | null): string {
   return `${nombre}${apellido}` || 'participante'
 }
 
-/// Inicial del nombre + inicial del apellido. Si falta el apellido —una cuenta
-/// ya anonimizada— cae a las dos primeras palabras del nombre, que es lo que
-/// hacía antes de que el apellido existiera.
+// Si falta el apellido (cuenta anonimizada), cae a las dos primeras palabras del nombre.
 function initialsOf(participant: Participant | null): string {
   const nombre = participant?.nombre?.trim().split(/\s+/) ?? []
   const apellido = participant?.apellido?.trim().split(/\s+/) ?? []
@@ -87,8 +75,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(Boolean(api.getToken()))
   const [onboardingDismissed, setOnboardingDismissed] = useState(false)
 
-  // Tras recargar hay token pero no participante en memoria: se rehidrata
-  // contra el API, que de paso valida que el token siga vivo.
+  // Tras recargar hay token pero no participante en memoria: se rehidrata contra el API.
   useEffect(() => {
     if (!api.getToken()) {
       return
@@ -129,10 +116,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return session.participant
   }, [])
 
-  // La cookie httpOnly del refresh token no la puede borrar este código —no
-  // es legible ni escribible desde JS—, así que hay que pedírselo al
-  // servidor. Se dispara sin esperar: la UI cierra sesión de inmediato pase
-  // lo que pase con la red, y si la llamada falla la cookie igual expira sola.
+  // La cookie httpOnly del refresh token no la puede borrar JS: hay que pedirlo al
+  // servidor, sin esperar la respuesta para cerrar sesión de inmediato.
   const logout = useCallback(() => {
     void api.logout().catch(() => {})
     api.setToken(null)
@@ -140,9 +125,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setOnboardingDismissed(false)
   }, [])
 
-  // Se marca "visto" para esta sesión sin importar el valor elegido: el
-  // participante ya pasó por la bienvenida ahora mismo, así que dejarla
-  // desmarcada solo debe reactivarla en el próximo ingreso, no atraparlo aquí.
+  // Se marca "visto" para esta sesión sin importar el valor elegido: desmarcada
+  // solo reactiva la bienvenida en el próximo ingreso, no en esta sesión.
   const marcarOnboardingVisto = useCallback(async (visto: boolean) => {
     const actualizado = await api.patchMe({ onboardingVisto: visto })
     setParticipant(actualizado)

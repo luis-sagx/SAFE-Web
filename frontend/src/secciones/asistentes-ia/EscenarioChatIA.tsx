@@ -19,12 +19,7 @@ interface EscenarioChatIAProps {
   pista?: ReactNode
 }
 
-/**
- * Marco común de los cuatro escenarios de `asistentes-ia`. Todos abren el mismo
- * chat con un asistente externo, deciden dentro de la pantalla y cierran cuando
- * se toca una burbuja de respuesta: ese envoltorio de `<StoryEscenario>` era
- * idéntico en los cuatro archivos (y SonarCloud lo contaba como duplicación).
- */
+// Marco común de los 4 escenarios de asistentes-ia: el mismo <StoryEscenario> se repetía en los cuatro archivos (SonarCloud lo marcaba como duplicación).
 function EscenarioChatIA({
   escenarioId,
   resumen,

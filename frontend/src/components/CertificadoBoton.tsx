@@ -3,16 +3,9 @@ import { ApiError, descargarCertificadoPdf, emitirCertificado, fetchAtestacion }
 
 type Estado = 'idle' | 'generando' | 'error'
 
-/**
- * El botón de certificado del dashboard: solo aparece cuando ya se aprobaron
- * todos los módulos que declara el servidor (`UMBRALES`), nunca un número
- * fijo — así el día que crezca no hay que tocar este componente.
- *
- * El flujo son tres peticiones seguidas —atestación, canje, PDF— porque el
- * progreso y el nombre viven en servicios distintos a propósito (§5.2 del
- * diseño): la atestación es el único dato que puede cruzar entre ellos, y
- * viaja firmada por el cliente, no por una llamada de servidor a servidor.
- */
+// Aparece solo cuando se aprobaron todos los módulos que declara el servidor (UMBRALES),
+// nunca un número fijo. Tres peticiones seguidas (atestación, canje, PDF) porque progreso
+// y nombre viven en servicios distintos (§5.2); la atestación firmada es lo único que cruza.
 function CertificadoBoton() {
   const [estado, setEstado] = useState<Estado>('idle')
 

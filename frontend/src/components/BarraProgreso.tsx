@@ -1,18 +1,6 @@
-/**
- * Barra de avance de un módulo o del entrenamiento completo.
- *
- * Dos formas, misma semántica:
- *
- * - `segmentada` (por defecto hasta 12 escenarios): una celda por escenario.
- *   Con 8 casos se puede *contar* el avance de un vistazo, que es justo lo que
- *   pide una pantalla de módulo — "me faltan tres" es más accionable que "38%".
- * - `continua`: para el total del entrenamiento, donde las celdas serían
- *   demasiadas y demasiado finas para leerse.
- *
- * La marca de meta es lo que vuelve honesta a la barra: el gating no exige
- * completar todo, exige `requeridos` de `total` (6 de 8 en phishing). Sin ella
- * la barra llena significaría algo distinto de "aprobado" y confundiría.
- */
+// `segmentada` (hasta 12, por defecto) permite *contar* el avance de un vistazo; `continua`
+// es para el total del entrenamiento, donde las celdas serían demasiado finas. La marca de
+// meta es necesaria porque el gating exige `requeridos` de `total`, no completar todo.
 
 interface BarraProgresoProps {
   aprobados: number

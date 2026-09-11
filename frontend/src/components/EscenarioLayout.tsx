@@ -15,19 +15,13 @@ interface EscenarioLayoutProps {
   escenarioId: string;
   /** Una línea; queda visible durante todo el escenario. */
   resumen: string;
-  /** La situación: quién eres y qué te está pasando. Solo historia, nada de
-   *  mecánica — acompaña al participante también dentro del escenario, donde
-   *  una frase como "vas a ver tu correo" ya no tendría sentido.
-   *
-   *  Va en piezas y no como prosa libre: el formato lo pone el layout para
-   *  todos los escenarios a la vez (ver ContextoEscenario). */
+  /** La situación: quién eres y qué te está pasando. Solo historia, nada de mecánica.
+   *  Va en piezas y no como prosa libre: el formato lo pone el layout (ver ContextoEscenario). */
   contexto: Contexto;
   /** Cómo se juega. Aparece únicamente en el briefing, antes de entrar. */
   nota?: ReactNode;
-  /** Datos prestados que este escenario pone en juego, además del correo, que
-   *  va siempre. Un formulario que pide la cédula no significa nada si no sabes
-   *  cuál es la tuya aquí dentro; y una cuenta bancaria en un escenario donde
-   *  no aparece dinero solo sería ruido, así que cada guion declara la suya. */
+  /** Datos prestados que este escenario pone en juego, además del correo (siempre presente).
+   *  Cada guion declara solo los que usa, para no meter ruido en escenarios sin dinero. */
   identidad?: DatoIdentidad[];
   /** Dominio del correo del participante dentro de este escenario. Los
    *  ambientados en una empresa lo fijan al de esa empresa; el resto usan el
@@ -39,65 +33,29 @@ interface EscenarioLayoutProps {
   decision: ReactNode;
   /** Oculta la columna lateral cuando la interacción vive dentro de la pantalla. */
   ocultarDecision?: boolean;
-  /** Con qué resultado cerró la corrida, o nada mientras siga abierta.
-   *
-   *  El layout lo usa para el diálogo de fin: el resultado sale al costado, y
-   *  quien estaba mirando la pantalla no se enteraba de que ya había decidido.
-   *  Ver AvisoFinEscenario. */
+  /** Con qué resultado cerró la corrida, o nada mientras siga abierta. El layout lo usa
+   *  para el diálogo de fin, porque el resultado sale al costado (ver AvisoFinEscenario). */
   resultado?: ResultadoEscenario;
   onEmpezar: () => void;
-  /** Forma del marco exterior. 'telefono' es el default: la mayoría de
-   *  escenarios (SMS, llamada, chat) se abren en el celular. 'escritorio' es
-   *  para correo y web: el phishing se abre más en computador, y así se
-   *  distingue de inmediato del resto de amenazas, que sí son de celular. */
+  /** Forma del marco exterior. 'telefono' es el default (SMS, llamada, chat); 'escritorio'
+   *  es para correo y web, así el phishing se distingue de inmediato del resto. */
   dispositivo?: "telefono" | "escritorio" | "escena";
 }
 
-/**
- * Marco común de los escenarios. Sostiene una sola regla: si la app real lo
- * mostraría va en `pantalla`, si no va en `decision`. Un participante no aparece
- * dentro de su propia app bancaria y un banco no tiene una sección "Contexto".
- */
-/** Alto y angosto, como se sostiene un celular.
- *
- *  30rem de ancho por 50rem de alto: misma relación 0.60 que antes (27.5 ×
- *  46rem), solo que un 9% más grande en cada lado. Los chats con burbujas de
- *  respuesta largas (asistentes-ia) se leían apretados en el tamaño previo.
- *  `lg:max-h-full` sigue protegiendo las pantallas bajas: el alto pedido es
- *  un máximo, no un mínimo, así que nunca desborda un viewport chico.
- *
- *  No se baja hasta la relación real de un celular (~0.46): estas pantallas
- *  tienen que caber formularios, hilos largos y el dock, y a 0.46 el contenido
- *  se estrangula. Es el punto medio entre parecer un teléfono y poder mostrar
- *  lo que el escenario necesita.
- */
+// Marco común: si la app real lo mostraría va en `pantalla`, si no va en `decision`.
+// MARCO_TELEFONO: relación 0.60 (no la real ~0.46, que estrangularía formularios/hilos
+// largos). border-control, no border-hairline-strong: mantiene 3:1 aun en apps oscuras.
 const MARCO_TELEFONO =
-  "sm:max-h-[50rem] sm:w-[30rem] sm:rounded-[1.75rem] sm:border sm:border-hairline-strong sm:shadow-[0_30px_70px_rgba(0,0,0,0.22)] lg:h-[50rem] lg:max-h-full lg:flex-none lg:self-center";
+  "sm:max-h-[50rem] sm:w-[30rem] sm:rounded-[1.75rem] sm:border-2 sm:border-control sm:shadow-[0_30px_70px_rgba(0,0,0,0.22)] lg:h-[50rem] lg:max-h-full lg:flex-none lg:self-center";
 
-/** Ancho y bajo, como una ventana de escritorio. Los anchos con vw + min/max
- *
- *  El ancho se pide con `calc(100vw - <columna>)` y no con una fracción del
- *  viewport: lo que se resta es lo que ocupan la columna de decisión, el hueco
- *  entre ambas y los márgenes. Así la ventana se queda con TODO lo que sobra en
- *  vez de con un porcentaje fijo, que en pantallas anchas dejaba un vacío enorme
- *  a los lados y en las estrechas se pasaba de largo.
- *
- *  Y se resta distinto en cada tramo porque la columna de decisión mide
- *  distinto: 23.75rem de 1024 a 1279, 28.75rem de ahí para arriba. Con el
- *  33.75rem de xl aplicado también abajo, la ventana renunciaba a unos 10rem
- *  que nadie estaba usando — justo en el tamaño de pantalla donde más falta
- *  hacían.
- *
- *  `self-center` y no `self-stretch`: al estirar, el tope de 720px deja la
- *  ventana anclada arriba del todo en una pantalla alta, con el hueco entero
- *  debajo. Con `h-full` ya ocupa el alto disponible, así que centrarla solo
- *  reparte lo que sobre cuando el tope se queda corto.
- */
+// MARCO_ESCRITORIO: ancho con calc(100vw - <columna>) para quedarse con TODO lo que
+// sobra, no un porcentaje fijo. La resta varía por breakpoint porque la columna de
+// decisión mide distinto en cada uno. self-center porque h-full ya ocupa el alto.
 const MARCO_ESCRITORIO =
-  "sm:max-h-[min(88vh,60rem)] sm:w-[96vw] sm:max-w-[68.75rem] sm:rounded-xl sm:border sm:border-hairline-strong sm:shadow-[0_30px_70px_rgba(0,0,0,0.22)] lg:h-full lg:max-h-[60rem] lg:w-[calc(100vw-28.75rem)] lg:min-w-[35rem] lg:max-w-[75rem] lg:flex-none lg:self-center xl:w-[calc(100vw-33.75rem)]";
+  "sm:max-h-[min(88vh,60rem)] sm:w-[96vw] sm:max-w-[68.75rem] sm:rounded-lg sm:border-[3px] sm:border-control sm:shadow-[0_30px_70px_rgba(0,0,0,0.22)] lg:h-full lg:max-h-[60rem] lg:w-[calc(100vw-28.75rem)] lg:min-w-[35rem] lg:max-w-[75rem] lg:flex-none lg:self-center xl:w-[calc(100vw-33.75rem)]";
 
 const MARCO_ESCENA =
-  "sm:max-h-[min(88vh,60rem)] sm:w-[96vw] sm:max-w-[68.75rem] sm:rounded-xl sm:border sm:border-hairline-strong sm:shadow-[0_30px_70px_rgba(0,0,0,0.22)] lg:h-[min(62vh,38rem)] lg:max-h-[38rem] lg:w-fit lg:max-w-full lg:flex-none lg:self-center";
+  "sm:max-h-[min(88vh,60rem)] sm:w-[96vw] sm:max-w-[68.75rem] sm:rounded-xl sm:border-2 sm:border-control sm:shadow-[0_30px_70px_rgba(0,0,0,0.22)] lg:h-[min(62vh,38rem)] lg:max-h-[38rem] lg:w-fit lg:max-w-full lg:flex-none lg:self-center";
 
 function EscenarioLayout({
   escenarioId,
@@ -183,10 +141,8 @@ function EscenarioLayout({
     </Link>
   );
 
-  /** La salida de dentro del escenario. Mientras quede algo a medias —sin
-   *  decidir, o decidido pero sin ver las señales— confirma una vez: la corrida
-   *  solo se registra al llegar a un final, y el repaso es la mitad útil del
-   *  ejercicio. Ya visto todo, salir es un enlace normal, sin diálogo. */
+  /** La salida de dentro del escenario. Mientras quede algo a medias confirma una vez
+   *  (la corrida solo se registra al llegar a un final); ya visto todo, es un enlace normal. */
   const salir = salidaLimpia ? (
     <Link to={`/seccion/${escenario.seccionId}`} className={CLASE_ATRAS}>
       ← Salir
@@ -206,15 +162,9 @@ function EscenarioLayout({
       <div className="min-h-dvh bg-canvas">
         <AppHeader atras={volver} />
 
-        {/* Mismo ancho que el dashboard y las secciones. Con el contenido en
-            una sola columna esa medida daría renglones larguísimos, así que a
-            partir de lg se parte en dos: a la izquierda lo que se lee entero
-            —la historia y cómo se juega—, a la derecha lo que se consulta.
-
-            El reparto no es solo temático: el botón va debajo de las dos
-            columnas, así que cuelga de la más alta. Con "cómo se juega" a la
-            derecha, esa columna doblaba en alto a la otra y el botón quedaba
-            flotando muy por debajo del texto que acompaña. */}
+        {/* Mismo ancho que dashboard/secciones; se parte en dos desde lg (izquierda lo que
+            se lee entero, derecha lo que se consulta) para que el botón, que cuelga de la
+            columna más alta, no quede flotando lejos del texto que acompaña. */}
         <main className="mx-auto max-w-6xl px-6 py-12">
           <p className="flex flex-wrap items-baseline gap-x-2 text-base font-medium text-muted">
             <span>{seccion?.canal}</span>
@@ -257,20 +207,12 @@ function EscenarioLayout({
               )}
             </div>
 
-            {/* Ocupa las dos filas de la rejilla para que el botón, que vive en
-                la segunda, no tenga que esperar a que esta columna termine:
-                cuando la historia es corta esta tarjeta es más alta, y el botón
-                quedaba colgando muy por debajo del texto al que acompaña. */}
+            {/* Ocupa las dos filas para que el botón, en la segunda, no espere a esta
+                columna: con historia corta la tarjeta es más alta y el botón colgaba. */}
             <div className="lg:row-span-2">
-              {/* Se avisa antes de entrar, y en todos los escenarios: si
-                  alguien ve su propio nombre en una bandeja simulada sin saber
-                  que la dirección es inventada, puede creer que el ejercicio le
-                  está mandando correo de verdad —o peor, que le llegó uno real.
-                  Nada de esto existe fuera de la simulación.
-
-                  Va como tarjeta y no como frase porque los mismos datos
-                  vuelven a aparecer dentro del escenario, escritos en un
-                  formulario que los pide: hay que poder reconocerlos. */}
+              {/* Se avisa antes de entrar: sin esto alguien podría creer que le llegó un
+                  correo real. Va como tarjeta, no como frase, porque los mismos datos
+                  vuelven a aparecer en un formulario dentro del escenario. */}
               <TarjetaIdentidad correo={correoDelEscenario} datos={identidad} />
               <p className="mt-3 text-base leading-relaxed text-body">
                 Nada de lo que ocurra aquí sale ni entra a tu correo real, ni
@@ -296,44 +238,26 @@ function EscenarioLayout({
   }
 
   return (
-    // h-dvh + overflow-hidden: la página no se desplaza nunca. Lo que se
-    // desplaza es el interior del dispositivo, como en una app real, y el
-    // bloque de decisión si su contenido no cabe.
-    // Desde 640px la página no se desplaza nunca: lo que se desplaza es el
-    // interior del dispositivo, como en una app real. Por debajo de eso sí se
-    // desplaza, y a propósito: en un celular, con la barra superior, el
-    // dispositivo simulado y el bloque de decisión repartiéndose 844px de
-    // alto, encerrarlo todo en una pantalla dejaba al correo unas tres líneas
-    // visibles dentro de una caja que había que desplazar por dentro.
+    // Desde 640px la página no se desplaza, solo el interior del dispositivo. Por debajo
+    // sí, a propósito: en celular, 844px repartidos entre barra/dispositivo/decisión
+    // dejaban al correo unas tres líneas visibles dentro de una caja a desplazar por dentro.
     <div className="flex min-h-dvh flex-col bg-canvas-soft sm:h-dvh sm:overflow-hidden">
-      {/* El resumen dejó de vivir en el header: entre logo, salir, ubicación
-          y cuenta ya hay suficiente que leer, y una frase entera ahí encima
-          era contexto de más para algo que el participante puede releer
-          cuando lo necesite. Sigue disponible en el diálogo "Ver contexto y
-          mis datos", junto a la situación completa. */}
+      {/* El resumen dejó de vivir en el header: ya hay suficiente que leer ahí. Sigue
+          disponible en el diálogo "Ver contexto y mis datos". */}
       <AppHeader atras={salir}>{ubicacion}</AppHeader>
 
-      {/* Apilado hasta 1024px; lado a lado arriba de eso. En una pantalla de
-          900px de alto no entran a la vez un dispositivo creíble y un bloque de
-          opciones largo: apilarlos ahí aplasta el dispositivo justo cuando es lo
-          que hay que juzgar. */}
+      {/* Apilado hasta 1024px; lado a lado arriba de eso, porque a 900px de alto apilar
+          un dispositivo creíble y un bloque de opciones largo aplasta al dispositivo. */}
       <main className="flex min-h-0 flex-1 flex-col items-center sm:gap-4 sm:px-4 sm:py-4 lg:flex-row lg:items-stretch lg:justify-center lg:gap-8 lg:py-6 [@media(max-height:940px)]:sm:py-2 [@media(max-height:940px)]:lg:py-3">
         <div
           ref={escenaRef}
-          // Fijo a propósito: el recorrido de señales de un escenario
-          // interactivo ubica el elemento a resaltar con
-          // document.getElementById en vez de hilar una ref nueva a través de
-          // props. Solo hay un escenario montado a la vez, así que un id fijo
-          // no puede colisionar.
+          // Fijo a propósito: el recorrido de señales ubica el elemento a resaltar con
+          // document.getElementById; solo hay un escenario montado a la vez.
           id="pantalla-escenario"
           tabIndex={-1}
           aria-label={`${escenario.titulo}: pantalla simulada`}
-          // `relative`: el aviso de fin se posiciona contra este marco, no
-          // contra la página, para taparlo exactamente a él.
-          // El alto mínimo es solo para el celular, donde la página se
-          // desplaza: sin él el marco se comprimía hasta lo que sobrara y la
-          // pantalla simulada dejaba de poder leerse. De sm en adelante manda
-          // el alto de la ventana, como antes.
+          // relative: el aviso de fin se posiciona contra este marco. min-h solo para
+          // celular: sin él el marco se comprimía y la pantalla dejaba de leerse.
           className={`relative flex min-h-[34rem] w-full flex-1 overflow-hidden focus:outline-none sm:min-h-0 ${
             dispositivo === "escena"
               ? MARCO_ESCENA
@@ -347,20 +271,12 @@ function EscenarioLayout({
         </div>
 
         {!ocultarDecision && (
-          /* En celular va debajo del dispositivo y se desplaza con la página.
-              De 640 a 1024 sigue apilado pero la página ya no se desplaza, así
-              que el bloque no pasa de media pantalla y se desplaza él. Al
-              costado puede usar todo el alto. */
+          /* En celular va debajo y se desplaza con la página; de 640 a 1024 sigue apilado
+              pero es el bloque el que se desplaza (máx. media pantalla). Al costado, todo el alto. */
           <div className="w-full shrink-0 border-t border-hairline bg-canvas px-4 py-4 sm:max-h-[45%] sm:w-[28.75rem] sm:overflow-y-auto sm:border-0 sm:bg-transparent sm:px-0 sm:py-0 lg:w-[23.75rem] lg:max-h-full lg:self-center xl:w-[28.75rem]">
-            {/* La historia queda a un clic, no ocupando espacio permanente. Vive
-                en un diálogo y no en un bloque fijo porque se consulta poco: casi
-                siempre se recuerda, y cuando no, se abre.
-
-                Va encima de la decisión y con aspecto de enlace, no de botón: es
-                una consulta de apoyo, no una acción del ejercicio, y compitiendo
-                en peso con "¿Qué haces?" desviaba la atención de lo único que hay
-                que hacer aquí. Sigue siendo un <button> porque abre un diálogo;
-                solo se viste de enlace. */}
+            {/* La historia queda a un clic, en un diálogo, porque se consulta poco. Con
+                aspecto de enlace (sigue siendo <button>) para no competir en peso con
+                "¿Qué haces?" y desviar la atención de lo único que hay que hacer aquí. */}
             <button
               type="button"
               onClick={() => dialogoRef.current?.showModal()}
@@ -388,7 +304,7 @@ function EscenarioLayout({
         aria-labelledby="titulo-contexto"
         // Mismo ancho que el saludo de bienvenida (Bienvenida.tsx): son los
         // dos únicos modales de la app y no hay motivo para que midan distinto.
-        className="m-auto w-[min(92vw,42rem)] rounded-xl border border-hairline-strong bg-surface p-8 text-ink shadow-card backdrop:bg-ink/40"
+        className="m-auto w-[min(92vw,42rem)] rounded-xl border border-hairline-strong bg-surface p-8 text-ink shadow-card backdrop:bg-scrim"
       >
         <h2
           id="titulo-contexto"
@@ -403,10 +319,8 @@ function EscenarioLayout({
           <ContextoEscenario contexto={contexto} />
         </div>
 
-        {/* La tarjeta se enseña al empezar, pero entre el briefing y el
-            formulario que pide la cédula pueden pasar minutos: si para
-            entonces ya no recuerdas que esos números eran los tuyos, el
-            formulario vuelve a ser casillas vacías. */}
+        {/* Entre el briefing y el formulario que pide la cédula pueden pasar minutos;
+            si ya no recuerdas que esos números eran los tuyos, el formulario queda vacío. */}
         <div className="mt-6">
           <TarjetaIdentidad correo={correoDelEscenario} datos={identidad} />
         </div>
@@ -421,15 +335,12 @@ function EscenarioLayout({
         </form>
       </dialog>
 
-      {/* Confirmación de salida. Un solo paso, y la opción segura —quedarse— es
-          la que tiene el peso visual. Lo que se avisa cambia según lo que
-          quede a medias: si aún no decidió, que la corrida no se guarda; si ya
-          decidió pero no vio el repaso, que se lo va a perder. Ya visto todo,
-          este diálogo no llega a abrirse (ver `salir`). */}
+      {/* Confirmación de salida, un paso, con el peso visual en la opción segura (quedarse).
+          Lo que avisa cambia según qué quede a medias. Ver `salir` para cuándo no abre. */}
       <dialog
         ref={salidaRef}
         aria-labelledby="titulo-salida"
-        className="m-auto w-[min(92vw,30rem)] rounded-xl border border-hairline-strong bg-surface p-8 text-ink shadow-card backdrop:bg-ink/40"
+        className="m-auto w-[min(92vw,30rem)] rounded-xl border border-hairline-strong bg-surface p-8 text-ink shadow-card backdrop:bg-scrim"
       >
         <h2 id="titulo-salida" className="text-xl font-semibold text-ink">
           {decidido ? "¿Salir sin ver las señales?" : "¿Salir del escenario?"}

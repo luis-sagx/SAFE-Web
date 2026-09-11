@@ -11,9 +11,8 @@ import type { StoryNode } from '../../hooks/useStoryEngine'
 import styles from './fisico.module.css'
 
 interface Pestana {
-  /** El de la barra. Corto a propósito: tiene que caber sin recortarse. */
+  // Corto a propósito: tiene que caber sin recortarse en la barra.
   corto: string
-  /** El de la página, donde sí hay sitio. */
   titulo: string
   url: string
   contenido: string[]
@@ -63,7 +62,6 @@ const DOCUMENTOS: Documento[] = [
   { nombre: 'Datos bancarios', x: 812, rotacion: -3 },
 ]
 
-/** Todas apuntan a la escena tal como estaba al empezar: ver PANTALLA_REPASO. */
 const SENALES: Senal[] = [
   {
     id: 'pestanas',
@@ -91,7 +89,6 @@ const SENALES: Senal[] = [
 const REGLA =
   '<b>Escritorio limpio y pantalla bloqueada.</b> Cada vez que dejas tu puesto —aunque sea cinco minutos— no debe quedar nada a la vista ni ninguna sesión abierta.'
 
-/** Ancho de cada pestaña en la barra, en unidades del viewBox. */
 const ANCHO_PESTANA = 128
 const X_PESTANAS = 244
 
@@ -214,10 +211,8 @@ function SalidaSegura() {
 
   const paginaActiva = vistaActiva !== null ? PESTANAS[vistaActiva] : undefined
 
-  // Un elemento, no un componente definido aquí dentro: declarado como
-  // `function Escena()` local, cada render creaba un tipo de componente nuevo y
-  // React desmontaba y volvía a montar el SVG entero en cada clic. De ahí venía
-  // la sensación de que los papeles necesitaban doble clic.
+  // Un elemento, no un componente local: `function Escena()` aquí dentro haría que
+  // React remonte el SVG entero en cada clic (de ahí el "doble clic" en los papeles).
   const escena = (
     <svg
       viewBox="0 0 1000 620"
@@ -244,7 +239,6 @@ function SalidaSegura() {
         </filter>
       </defs>
 
-      {/* Pared, zócalo y piso */}
       <rect width="1000" height="470" fill="url(#salida-pared)" />
       <rect y="462" width="1000" height="10" fill="#d6c4a9" />
       <rect y="472" width="1000" height="148" fill="#c39a68" />
@@ -259,7 +253,6 @@ function SalidaSegura() {
         <rect x="50" y="242" width="204" height="12" rx="4" fill="#a5825a" />
       </g>
 
-      {/* Reloj: las 5:50, la hora del escenario */}
       <g filter="url(#salida-sombra)">
         <circle cx="884" cy="150" r="46" fill="#fbfaf7" stroke="#5c6470" strokeWidth="4" />
         <line x1="884" y1="150" x2="886" y2="172" stroke="#5c6470" strokeWidth="5" strokeLinecap="round" />
@@ -267,13 +260,11 @@ function SalidaSegura() {
         <circle cx="884" cy="150" r="4" fill="#5c6470" />
       </g>
 
-      {/* Escritorio */}
       <rect x="30" y="410" width="940" height="28" rx="7" fill="url(#salida-mesa)" />
       <rect x="30" y="410" width="940" height="8" rx="4" fill="#d3ab77" />
       <rect x="76" y="438" width="848" height="132" fill="#96693b" />
       <rect x="76" y="438" width="848" height="132" fill="none" stroke="#7c5529" strokeWidth="3" />
 
-      {/* Cajón con llave: el destino de los papeles, con su contador */}
       <g>
         <rect x="640" y="462" width="252" height="86" rx="8" fill="#a97444" stroke="#7c5529" strokeWidth="3" />
         <rect x="728" y="500" width="76" height="11" rx="5" fill="#5b3f1f" />
@@ -286,17 +277,13 @@ function SalidaSegura() {
         </text>
       </g>
 
-      {/* Monitor */}
       <g filter="url(#salida-sombra)">
         <rect x="472" y="374" width="56" height="30" fill="#454b54" />
         <rect x="430" y="398" width="140" height="14" rx="7" fill="#3a3f47" />
         <rect x="228" y="52" width="544" height="332" rx="14" fill="#2a2f36" />
       </g>
 
-      {/* Ventana del navegador. Con la sesión bloqueada no se dibuja: lo que
-          hay es la pantalla de bloqueo, y así no se puede cerrar una pestaña
-          desde un equipo que supuestamente está bloqueado. Para volver al
-          navegador hay que desbloquear, como en la vida real. */}
+      {/* Bloqueada, no se dibuja la ventana: no se puede cerrar una pestaña "a través" de la pantalla de bloqueo. */}
       <g>
         <rect x="240" y="64" width="520" height="308" rx="6" fill="#1a1e23" />
 
@@ -317,9 +304,7 @@ function SalidaSegura() {
           </g>
         ) : (
           <>
-        {/* Barra de pestañas. Cada una se coloca por su sitio ENTRE LAS
-            ABIERTAS, no por su índice original: al cerrar una del medio las de
-            la derecha se deslizan y no queda el hueco. */}
+        {/* Cada pestaña se posiciona por su índice entre las abiertas: al cerrar una del medio, las demás se deslizan. */}
         <g data-signal="pestanas">
           {PESTANAS.map((pestana, i) => {
             const posicion = abiertas.indexOf(i)
@@ -353,9 +338,7 @@ function SalidaSegura() {
                   </text>
                 </g>
 
-                {/* La ✕ va en su propio hueco a la derecha, fuera del texto:
-                    antes se dibujaba encima del título y se leían las dos cosas
-                    superpuestas. */}
+                {/* La ✕ va en su propio hueco, fuera del texto: antes se dibujaba encima del título. */}
                 <g
                   className={styles.cerrar}
                   onClick={() => cerrarPestana(i)}
@@ -377,14 +360,12 @@ function SalidaSegura() {
           })}
         </g>
 
-        {/* Barra de dirección: la URL es la de la pestaña que estás viendo */}
         <rect x="240" y="110" width="520" height="34" fill="#23282f" />
         <rect x="252" y="116" width="496" height="22" rx="11" fill="#31373f" />
         <text x="500" y="132" textAnchor="middle" className={styles.url}>
           {paginaActiva ? `https://${paginaActiva.url}` : ''}
         </text>
 
-        {/* Contenido */}
         <rect x="240" y="144" width="520" height="228" fill="#f7f7f5" />
 
         {paginaActiva ? (
@@ -408,7 +389,6 @@ function SalidaSegura() {
         )}
       </g>
 
-      {/* Documentos sobre el escritorio */}
       <g data-signal="papeles">
         {DOCUMENTOS.map((documento, i) =>
           vistaGuardados.has(i) ? null : (
@@ -475,7 +455,6 @@ function SalidaSegura() {
           )),
         )}
         <rect x="440" y="418" width="120" height="7" rx="3" fill="#c7cad0" />
-        {/* Piloto del equipo: verde fijo cuando la sesión quedó bloqueada. */}
         <circle cx="612" cy="393" r="4" className={vistaBloqueada ? styles.pilotoOk : styles.pilotoOff} />
 
         <rect x="368" y="378" width="264" height="52" rx="10" className={`${styles.revelable} ${styles.contorno}`} />

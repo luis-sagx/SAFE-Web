@@ -3,24 +3,10 @@ import type { ReactElement } from 'react'
 import { MemoryRouter } from 'react-router'
 import { vi } from 'vitest'
 
-/**
- * Lo que todo test de escenario necesita antes de poder tocar el teléfono.
- *
- * Un escenario se monta dentro del router, lee la sesión del participante y al
- * llegar a un final manda la corrida al backend. Los tres estorban a un test
- * que solo quiere comprobar el grafo, y repetir sus cuarenta líneas de `vi.mock`
- * en cada archivo hacía que añadir un test costara más copiar que pensar.
- *
- * Los `vi.mock` no se pueden esconder aquí —vitest los eleva al principio del
- * archivo que los declara—, pero sí sus fábricas. Y por esa misma elevación las
- * fábricas se importan *dentro* del `vi.mock` y nunca arriba: cuando el mock se
- * registra, los imports del archivo todavía no se han evaluado.
- *
- *     vi.mock('../../context/AuthContext', async () =>
- *       (await import('../../test/escenario')).authFalso())
- */
-
-/// Fábrica del contexto de sesión.
+// vitest eleva `vi.mock` al principio del archivo que lo declara, así que las
+// fábricas deben importarse *dentro* del vi.mock, nunca arriba:
+//     vi.mock('../../context/AuthContext', async () =>
+//       (await import('../../test/escenario')).authFalso())
 export function authFalso() {
   return {
     useAuth: () => ({
@@ -49,16 +35,14 @@ export function authFalso() {
   }
 }
 
-/// Fábrica del cliente de API. Deja el resto del módulo intacto: solo la
-/// llamada que sale a la red se queda en el aire.
+// Deja el resto del módulo intacto: solo la llamada que sale a la red se mockea.
 export async function apiSinRed() {
   const actual = await vi.importActual<typeof import('../lib/api')>('../lib/api')
   return { ...actual, createRun: vi.fn().mockResolvedValue(undefined) }
 }
 
-/// Monta el escenario, pulsa "Empezar" y devuelve el marco del teléfono, que es
-/// donde viven los toques. Buscar dentro de él y no en toda la pantalla importa:
-/// el veredicto repite textos que también están en la pantalla simulada.
+// Busca dentro del marco del teléfono, no en toda la pantalla: el veredicto
+// repite textos que también están en la pantalla simulada.
 export function empezar(escenario: ReactElement): HTMLElement {
   const { container } = render(<MemoryRouter>{escenario}</MemoryRouter>)
   fireEvent.click(screen.getByRole('button', { name: 'Empezar' }))

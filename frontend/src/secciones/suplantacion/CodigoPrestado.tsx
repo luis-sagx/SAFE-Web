@@ -5,21 +5,8 @@ import type { ScreenView } from '../../components/ui/DeviceScreen'
 import type { Senal } from '../../components/ui/PanelVeredicto'
 import type { Story } from '../../hooks/useStoryEngine'
 
-/**
- * "Te llegó un código mío por error, ¿me lo pasas?".
- *
- * El escenario donde lo que está en juego no es tu dinero, sino tu cuenta: ese
- * código de seis dígitos no es de nadie más, es el que abre *tu* mensajería en
- * otro teléfono. Quien lo pide ya robó la cuenta de tu prima y está usando su
- * chat para hacer lo mismo contigo, y luego con tus contactos.
- *
- * Es difícil porque el favor parece diminuto —un número que no es tuyo, dicho
- * en un chat de confianza— y porque quien lo pide tiene todas las razones para
- * parecer tu prima: su número, su foto y su historial.
- *
- * El código se anuncia solo, un minuto antes de que abra el chat: el mismo
- * orden que tuvo el ataque real.
- */
+// Lo que está en juego no es dinero sino la cuenta: ese código abre tu mensajería en otro
+// teléfono. Quien lo pide ya robó la cuenta de tu prima y usa su chat para repetirlo contigo.
 
 const PRIMA = 'Gaby'
 const NUMERO_PRIMA = '+593 98 331 5507'

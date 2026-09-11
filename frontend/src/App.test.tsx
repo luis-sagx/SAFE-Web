@@ -19,6 +19,10 @@ vi.mock('./secciones/phishing/RolDePagos', () => ({
   default: () => <p>Escenario rol de pagos montado</p>,
 }))
 
+vi.mock('./secciones/phishing/SecuestroHilo', () => ({
+  default: () => <p>Escenario pago del colegio montado</p>,
+}))
+
 function participante() {
   return {
     id: 'p1',
@@ -59,5 +63,36 @@ describe('App', () => {
     await waitFor(() => {
       expect(screen.queryByText('Escenario rol de pagos montado')).toBeNull()
     })
+  })
+
+  it.each([
+    '/seccion/phishing/pago-pension-colegio',
+    '/seccion/phishing/secuestro-hilo',
+  ])('abre el escenario del colegio desde la ruta pública o la ruta histórica: %s', async (ruta) => {
+    setToken('t0ken')
+    fetchMeMock.mockResolvedValue(participante())
+    fetchProgresoMock.mockResolvedValue({
+      modulo: 'phishing',
+      escenarios: [
+        'loteria-premiada',
+        'factura-sri',
+        'clave-caducada',
+        'rol-de-pagos',
+        'quishing-actualice',
+      ].map((id) => ({ id: `phishing/${id}`, ultimoOutcome: 'CORRECTO' })),
+      aprobados: 5,
+      requeridos: 6,
+      aprobado: false,
+    })
+
+    render(
+      <MemoryRouter initialEntries={[ruta]}>
+        <AuthProvider>
+          <App />
+        </AuthProvider>
+      </MemoryRouter>,
+    )
+
+    expect(await screen.findByText('Escenario pago del colegio montado')).toBeDefined()
   })
 })

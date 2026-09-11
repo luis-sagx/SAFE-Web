@@ -30,7 +30,8 @@ que ya es una caja blanca con borde, redondeo y sombra. La `<img>` añade encima
 En Tailwind v4 `h-170` son 42.5 rem (680 px) de alto fijo. `PuertosFriosColdAisle` va sin
 altura (`w-full rounded shadow-md`) y desborda por alto natural.
 
-Las imágenes de `public/` son 1408×768 salvo `USBEstacionamiento.jpeg`, que es 1024×1024.
+Las imágenes de `public/escenarios/fisico/` son 1408×768 salvo
+`usb-estacionamiento.webp`, que es 1024×1024.
 Una foto cuadrada dentro de un marco ancho fijo no puede caber sin recorte ni barras.
 
 **Paleta cruda en vez de tokens.** La tira de datos usa
@@ -72,7 +73,7 @@ tampoco muestran el avance del módulo.
 **`AvisoFinEscenario` nunca aparece en dos escenarios.** `CableComprometido` y
 `TarjetaClonada` no pasan `resultado` a `EscenarioLayout`.
 
-**Fases muertas.** `TarjetaClonada` arranca con `EscaneoBilletera.jpeg` y un `useEffect` de
+**Fases muertas.** `TarjetaClonada` arranca con `escaneo-billetera.webp` y un `useEffect` de
 6 000 ms que avanza solo, con el rótulo `Observa la escena...`. Dos fotos que no llegan a
 contar la historia porque la primera no admite ninguna acción.
 
@@ -224,11 +225,11 @@ es el único que lo hace.
 
 #### `TrampaUSB` → `fisico/trampa-usb`
 
-Foto `/USBEstacionamiento.jpeg` (1024×1024, la única cuadrada: la que más gana con el marco
+Foto `/escenarios/fisico/usb-estacionamiento.webp` (1024×1024, la única cuadrada: la que más gana con el marco
 por relación).
 
 ```
-n1  escena: USBEstacionamiento
+n1  escena: usb-estacionamiento.webp
     ├─ "Agarrarlo, alguien lo dejó y probablemente lo necesita"  → e_agarra   (bad)
     ├─ "Dejarlo ahí, no es asunto tuyo"                          → e_deja     (partial)
     └─ "Dejarlo donde está y avisar a IT"                        → e_reporta  (good)
@@ -250,7 +251,7 @@ preguntar de quién es.
 
 #### `CodigoQRCafe` → `fisico/qr-cafe-wifi`
 
-Foto `/InternetCafe.jpeg`. Las tres opciones actuales pasan sin tocar su texto:
+Foto `/escenarios/fisico/internet-cafe.webp`. Las tres opciones actuales pasan sin tocar su texto:
 
 | Opción | Nivel hoy | Nodo |
 |---|---|---|
@@ -262,7 +263,7 @@ Señal: la zona del QR en la pared.
 
 #### `PuertosFriosColdAisle` → `fisico/puertos-frios-datacenter`
 
-Foto `/PuertaAbiertaServidores.jpeg`.
+Foto `/escenarios/fisico/puerta-abierta-servidores.webp`.
 
 Las tres etiquetas se reescriben para que digan lo que su consecuencia evalúa:
 
@@ -286,15 +287,15 @@ hace cuatro días mientras te distraían" se cuenta en `contexto.ahora`, que es 
 historia en todos los módulos.
 
 ```
-n_recuerdo  escena: EscaneoBilletera   (sin choices; solo se alcanza desde el repaso)
-n1          escena: LlamadaBanco
+n_recuerdo  escena: escaneo-billetera.webp   (sin choices; solo se alcanza desde el repaso)
+n1          escena: llamada-banco.webp
             ├─ "Bloquear la tarjeta inmediatamente y denunciar el fraude" → e_bloquea_denuncia (good)
             ├─ "Ignorar la notificación y esperar…"                       → e_ignora           (bad)
             ├─ "Bloquear la tarjeta pero no reportar nada…"               → e_bloquea_callado  (partial)
             └─ "Cambiar de banco y abrir una nueva cuenta"                → e_cambia_banco     (partial)
 ```
 
-`EscaneoBilletera.jpeg` se recupera en el repaso, no como fase muerta. `Senal` ya tiene el
+`escaneo-billetera.webp` se recupera en el repaso, no como fase muerta. `Senal` ya tiene el
 campo `pantalla?: string`, que devuelve la vista a ese nodo mientras se explica la señal —es el
 mecanismo que `DescargaProgramasPiratas` usa con `pantalla: 'e_malware'`:
 
@@ -310,15 +311,15 @@ con guiones sueltos dentro de `.feedbackPanel`) se convierte en la `regla` del p
 
 #### `CableComprometido` → `fisico/cable-comprometido`
 
-El SVG `SCENE_ART_OFFICE`, dibujado a mano, se jubila por `/ImagenEscritorio.jpeg`
+El SVG `SCENE_ART_OFFICE`, dibujado a mano, se jubila por `/escenarios/fisico/imagen-escritorio.webp`
 (1408×768), que hoy no referencia nadie en `src/`.
 
 ```
-n1  escena: CargadorSospechoso        (sala de descanso)
+n1  escena: cargador-sospechoso.webp        (sala de descanso)
     ├─ "Usarlo para cargar tu celular aquí"          → e_carga_alli (bad)
     ├─ "Dejarlo donde está y avisar a IT"            → e_avisa      (good)
     └─ "Llevártelo a tu escritorio, ahí lo necesitas más" → n2
-n2  escena: ImagenEscritorio          (el cable ya en tu puesto)
+n2  escena: imagen-escritorio.webp          (el cable ya en tu puesto)
     ├─ "Conectarlo a tu celular para cargar"         → e_celular (bad)
     ├─ "Conectarlo a tu computadora para revisar qué es" → e_pc  (bad)
     ├─ "Entregarlo a IT para análisis"               → e_it      (good)

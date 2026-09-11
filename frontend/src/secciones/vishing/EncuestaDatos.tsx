@@ -9,19 +9,9 @@ import type { Senal } from "../../components/ui/PanelVeredicto";
 import type { Story } from "../../hooks/useStoryEngine";
 import { IDENTIDAD_FICTICIA } from "../../lib/identidadFicticia";
 
-/**
- * El más difícil del módulo: la llamada que no pide dinero.
- *
- * Todo lo que los otros escenarios enseñan a detectar aquí sale bien. No hay
- * urgencia, no hay amenaza, no piden claves ni códigos, y lo que preguntan
- * parece inofensivo. Pero fecha de nacimiento, apellido de la madre, agencia
- * donde abriste la cuenta y últimos dígitos de la tarjeta son exactamente las
- * preguntas con las que un banco comprueba por teléfono que eres tú.
- *
- * La lección no es "cuelga si te apuran": es que los datos que no parecen
- * secretos son los que abren la puerta, y que quien llama no tiene por qué
- * pedírtelos aunque sea amable.
- */
+// El más difícil del módulo: no pide dinero ni mete prisa, así que todo lo
+// que enseñan los otros escenarios sale bien aquí. La lección es que los
+// datos que no parecen secretos son los que abren la puerta.
 
 const NUMERO = "+593 4 500 1180";
 const NACIMIENTO = "14 de marzo del 78";
@@ -88,9 +78,6 @@ const SIGUE = [
   },
 ];
 
-/// La encuesta sigue igual se hayan dado los datos a la primera o después de
-/// dudar, pero el hilo conserva por dónde se llegó: la conversación que se lee
-/// tiene que ser la que se tuvo.
 function encuestando(
   previas: { texto: string; mio?: boolean; senal?: string }[],
 ): ScreenView {

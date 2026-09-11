@@ -22,7 +22,7 @@ export default function ConfirmarRepeticionModal({ seccionId, titulo, aprobados,
   }, [onClose])
   const confirmar = onConfirm ?? (() => navigate(`/seccion/${seccionId}`, { state: { iniciarRepeticion: true } }))
   return <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
-    <button type="button" aria-label="Cerrar" onClick={onClose} className="fixed inset-0 bg-ink/40" />
+    <button type="button" aria-label="Cerrar" onClick={onClose} className="fixed inset-0 bg-scrim" />
     <div role="dialog" aria-modal="true" aria-labelledby="titulo-repeticion" className="relative z-10 w-full max-w-lg rounded-lg bg-canvas p-6 shadow-card">
       <button ref={cerrar} type="button" aria-label="Cerrar" onClick={onClose} className="absolute right-3 top-3 text-muted"><X aria-hidden /></button>
       <h2 id="titulo-repeticion" className="text-xl font-semibold text-ink">Repetir el módulo de {titulo}</h2>

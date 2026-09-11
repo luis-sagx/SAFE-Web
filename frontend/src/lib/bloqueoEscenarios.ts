@@ -1,15 +1,8 @@
 import type { Escenario } from '../data/catalogo'
 import type { Progreso, ProgresoEscenario, RunOutcome } from './api'
 
-/**
- * `progreso` con `escenarioId` contado como intentado (CORRECTO), en la ronda
- * de repetición en curso si la hay o en el recorrido normal si no. Idempotente:
- * si el escenario ya figura, devuelve `progreso` sin tocar.
- *
- * La corrida recién terminada se guarda en paralelo; hasta que el servidor la
- * registre, el gating y el cálculo de "siguiente escenario" tienen que darla
- * por hecha en vez de rebotar al participante por una lectura vieja.
- */
+// Idempotente. La corrida recién terminada se guarda en paralelo; hasta que el
+// servidor la registre, el gating debe darla por hecha en vez de leer un estado viejo.
 export function conEscenarioIntentado(
   progreso: Progreso,
   escenarioId: string,
@@ -30,9 +23,7 @@ export function conEscenarioIntentado(
     }
   }
 
-  // En una repetición, el GET puede devolver todavía la ronda oficial
-  // completa. Conservar el contexto explícito de la navegación permite crear
-  // la ronda provisional y continuar al siguiente escenario.
+  // En una repetición, el GET puede devolver todavía la ronda oficial completa.
   if (figura(progreso.escenarios)) {
     if (iniciandoRepeticion) {
       return { ...progreso, rondaEnCurso: { jugados: 1, escenarios: [nuevo] } }

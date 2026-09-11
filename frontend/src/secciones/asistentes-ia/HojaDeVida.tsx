@@ -4,32 +4,19 @@ import type { Story } from '../../hooks/useStoryEngine'
 import EscenarioChatIA from './EscenarioChatIA'
 import { crearChatIA, conRespuestaIA, marcar, senal } from './chatIA'
 
-/**
- * Una hoja de vida es un documento de identidad disfrazado de currículum:
- * cédula, fecha de nacimiento, domicilio y teléfono, todo junto en el mismo
- * archivo que cualquiera pega entero cuando quiere que le mejoren la
- * redacción. Y la IA lo devuelve maquetado, con esos datos copiados otra vez.
- *
- * Se diferencia del correo del compañero (el primero de la sección) en el
- * gesto, no en el tema: allí un dato de más se cuela dentro de un texto que
- * escribiste tú; aquí se pega un documento completo de un copiar y pegar, sin
- * leer qué lleva adentro. Es la forma en que de verdad se filtra más.
- *
- * El escenarioId sigue siendo `correo-credenciales` —el que tuvo este hueco
- * antes— porque es la clave con la que están guardadas las corridas.
- */
+/** Hoja de vida = documento de identidad disfrazado de currículum, pegado entero (copiar/pegar sin leer), no un
+ *  dato suelto colado en un texto. escenarioId sigue siendo `correo-credenciales` porque ahí están guardadas
+ *  las corridas anteriores. */
 
 const HORA = '19:40'
 
 const NOMBRE = 'Paola Guamán'
-/// Imposible por construcción: tercer dígito 9, que el Registro Civil no le da
-/// a ninguna persona natural (ver identidadFicticia).
+// Imposible por construcción: tercer dígito 9, que el Registro Civil no asigna (ver identidadFicticia).
 const CEDULA = '1799999980'
 const NACIMIENTO = '12/03/1999'
 const DIRECCION = 'Av. Napo y Quimiag, casa 214'
 const TELEFONO = '099 000 0011'
-/// Dominio del entrenamiento, no uno de verdad: una dirección de gmail escrita
-/// aquí podría existir y llegarle a alguien.
+// Dominio de entrenamiento, no uno real: un gmail aquí podría existir y llegarle a alguien.
 const CORREO = 'paola.guaman@safeweb.com'
 
 const TRAYECTORIA =
@@ -39,9 +26,7 @@ const PROMPT_CV_COMPLETO = `Aquí va: ${NOMBRE}, cédula ${CEDULA}, fecha de nac
 const PROMPT_SOLO_CONTACTO = `Aquí va: ${NOMBRE}, teléfono ${TELEFONO}, correo ${CORREO}. ${TRAYECTORIA}`
 const PROMPT_SIN_DATOS = `Aquí va solo la parte que hay que mejorar. ${TRAYECTORIA} Los datos de contacto los pongo yo al final.`
 
-// Va en el computador: una hoja de vida se arma frente al equipo, con el
-// archivo abierto al lado — que es de donde sale, de un copiar y pegar, todo
-// lo que termina en el chat.
+// Va en el computador: una hoja de vida se arma con el archivo abierto al lado, de un copiar y pegar.
 const CHAT = crearChatIA(
   'Asistente de escritura · servicio externo',
   [
@@ -60,9 +45,7 @@ const CHAT = crearChatIA(
   { titulo: 'Asistente IA', url: 'https://chat.asistente-ia.com/nuevo' },
 )
 
-/// La hoja de vida como la devuelve la IA: maquetada por secciones, no en un
-/// párrafo. Es lo que hace que valga la pena pegarla — y también lo que
-/// convierte el chat en una segunda copia del documento.
+// Maquetada por secciones (no un párrafo): eso es lo que vale la pena pegar, y también lo que copia el documento entero en el chat.
 const hojaMejorada = (contacto: string[], cierre: string) =>
   [
     'Aquí tienes la hoja de vida mejorada:',

@@ -1,19 +1,9 @@
 // Único punto de contacto con el backend: ningún componente llama a fetch.
 const BASE_URL = import.meta.env.VITE_API_URL ?? '/api'
 
-// El access token va en localStorage: vive minutos (15 min) y solo da acceso
-// a los datos del propio participante, nunca a un dato personal de otro. El
-// riesgo de un XSS que lo robara queda acotado por la CSP de nginx:
-// `script-src 'self'` no ejecuta script inyectado y `connect-src 'self'`
-// impide enviarlo a otro origen.
-//
-// El refresh token NO pasa por aquí: `identidad` lo pone en una cookie
-// `httpOnly` (`Set-Cookie`, ver `auth.controller.ts`). Ni este archivo ni
-// ningún otro código de la SPA lo ve nunca — un XSS que lea `localStorage` o
-// `document.cookie` no lo alcanza. El navegador la adjunta solo en
-// `POST /auth/refresh` (`credentials: 'same-origin'` abajo) y solo la propia
-// petición del navegador a ese origen; `SameSite=Strict` reemplaza al CSRF
-// token porque nunca viaja en una petición de otro sitio.
+// Access token en localStorage (vive 15 min); riesgo de XSS acotado por la CSP.
+// El refresh token nunca pasa por aquí: va en cookie httpOnly que solo el
+// backend lee, adjuntada solo en POST /auth/refresh (SameSite=Strict).
 const TOKEN_KEY = 'mic-access-token'
 
 export interface Participant {
@@ -143,10 +133,8 @@ function renovarSesion(): Promise<boolean> {
   return renovacionEnCurso
 }
 
-/// `POST /auth/logout` borra la cookie httpOnly del refresh token en el
-/// servidor: es lo único que la app no puede hacer por su cuenta (no es
-/// legible ni borrable desde JS). Sin esto, "cerrar sesión" en un equipo
-/// compartido dejaría la cookie viva para la siguiente persona.
+// POST /auth/logout borra la cookie httpOnly del refresh token en el servidor:
+// JS no puede leerla ni borrarla, y sin esto quedaría viva para el siguiente usuario.
 export function logout(): Promise<null> {
   return request<null>('/auth/logout', { method: 'POST', auth: false })
 }
@@ -206,12 +194,9 @@ async function request<T>(
   return response.status === 204 ? (null as T) : ((await response.json()) as T)
 }
 
-/// Variante de `request` para la única respuesta del API que no es JSON: el
-/// PDF del certificado. Repite el mismo reintento de sesión que `request`
-/// —el access token puede vencer entre pedir la atestación y descargar el
-/// PDF— en vez de compartir código con ella, porque el cuerpo de la respuesta
-/// se lee de dos formas distintas y no hay una tercera función que las
-/// unifique sin complicar la que ya existe.
+// Variante de `request` para la única respuesta no-JSON del API (el PDF del
+// certificado); repite el reintento de sesión en vez de compartir código
+// porque el cuerpo se lee de dos formas distintas.
 async function requestBlob(
   path: string,
   body: unknown,

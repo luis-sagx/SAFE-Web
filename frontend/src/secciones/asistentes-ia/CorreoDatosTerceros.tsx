@@ -4,21 +4,15 @@ import type { Story } from '../../hooks/useStoryEngine'
 import EscenarioChatIA from './EscenarioChatIA'
 import { crearChatIA, conRespuestaIA, marcar, senal } from './chatIA'
 
-/**
- * Puerta de entrada de la sección: la IA no engaña a nadie, es una herramienta
- * legítima. El riesgo está en lo que el propio participante le escribe antes de
- * pedir ayuda — aquí, el docente al que va el correo y el nombre, la cédula y
- * el correo de una compañera, que no hacen falta para redactar un texto.
- */
+/** La IA es legítima; el riesgo está en lo que el participante le escribe antes de pedir ayuda —aquí, el
+ *  docente y los datos de una compañera que no hacían falta para redactar el texto. */
 
 const HORA = '10:14'
 
-/// Imposible por construcción, como la del participante: tercer dígito 9, que
-/// el Registro Civil no le da a ninguna persona natural (ver identidadFicticia).
+// Imposible por construcción, como la del participante: tercer dígito 9, que el Registro Civil no asigna (ver identidadFicticia).
 const CEDULA = '1799999990'
 const NOMBRE = 'Andrea Cedeño'
-/// Dominio del entrenamiento, no uno de verdad: una dirección de gmail escrita
-/// aquí podría existir y llegarle a alguien.
+// Dominio de entrenamiento, no uno real: un gmail aquí podría existir y llegarle a alguien.
 const CORREO = 'andrea.cedeno02@safeweb.com'
 const DOCENTE = 'Ing. Marcelo Tapia'
 
@@ -27,10 +21,7 @@ const PROMPT_SIN_DATOS =
   'Es para un docente, para pedirle un cambio de horario a nombre de una compañera, en la materia de Redes. Deja en blanco los datos de ella y del profe, que yo los lleno después.'
 const PROMPT_SIN_IA = 'Mejor lo escribo yo, gracias.'
 
-// El chat arranca con un saludo que ya dice a qué vienes y una respuesta de la
-// IA que pregunta lo que le falta: uno y uno, como cualquier conversación. Lo
-// que se elige después es la contestación a esa pregunta, no un segundo
-// mensaje tuyo encima del primero.
+// El chat abre con saludo + pregunta de la IA; lo que se elige es la respuesta a esa pregunta, no un segundo mensaje encima.
 const CHAT = crearChatIA(
   'Redactor de mensajes · servicio externo',
   [
@@ -48,9 +39,7 @@ const CHAT = crearChatIA(
   ],
 )
 
-// La IA no contesta con una línea entre comillas: devuelve el correo armado,
-// con su asunto, su saludo y su despedida, y cierra ofreciendo más. Escrito de
-// un tirón no se reconocía como lo que un asistente de verdad entrega.
+// La IA responde con el correo armado (asunto, saludo, despedida), no una línea suelta: así se reconoce como una respuesta real.
 const CORREO_CON_DATOS = [
   'Aquí tienes el correo:',
   '',

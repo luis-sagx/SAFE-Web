@@ -3,11 +3,7 @@ import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router'
 import { verificarCertificado, type VerificacionCertificado } from '../lib/api'
 
-/**
- * Verificación pública del certificado: sin sesión, sin nombre (§5.6 del
- * diseño). Quien llega aquí ya tiene el PDF con el nombre delante; esta
- * pantalla solo confirma que el código es real y no fue revocado.
- */
+// Verificación pública (sin sesión ni nombre, §5.6): el PDF ya trae el nombre; aquí solo se confirma que el código es real y no fue revocado.
 function Verificar() {
   const { codigo } = useParams()
   const [resultado, setResultado] = useState<VerificacionCertificado | null>(null)
@@ -48,7 +44,7 @@ function Verificar() {
 
         {!error && resultado !== null && resultado.valido && (
           <div className="mt-4">
-            <p className="flex items-center gap-1.5 text-base font-semibold text-success">
+            <p className="flex items-center gap-1.5 text-base font-semibold text-success-ink">
               <CheckCircle2 aria-hidden className="size-5" strokeWidth={2.5} />
               Certificado válido
             </p>

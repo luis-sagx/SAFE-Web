@@ -1,19 +1,9 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { registerDecorator, type ValidationOptions } from 'class-validator';
 
-/**
- * Cédula de identidad ecuatoriana.
- *
- * LO QUE ESTO HACE: detectar cédulas INVENTADAS mediante el algoritmo módulo 10
- * del Registro Civil.
- *
- * LO QUE NO HACE: probar identidad. Una cédula ajena pero válida pasa la
- * validación. Es todo lo que se puede comprobar sin consultar al Registro
- * Civil, y alcanza para el objetivo declarado —una cuenta por persona—, que no
- * es autenticación.
- */
-
-/// Coeficientes del módulo 10 para los nueve primeros dígitos.
+// Detecta cédulas INVENTADAS con el algoritmo módulo 10 del Registro Civil; no prueba
+// identidad (una ajena pero válida pasa). Alcanza para el objetivo real: una cuenta
+// por persona, no autenticación.
 const COEFICIENTES = [2, 1, 2, 1, 2, 1, 2, 1, 2];
 
 export function esCedulaEcuatoriana(valor: unknown): boolean {
@@ -65,18 +55,9 @@ export function EsCedulaEcuatoriana(options?: ValidationOptions) {
   };
 }
 
-/**
- * Huella de la cédula. Es lo ÚNICO que se guarda: la cédula en claro no entra
- * a la base, no sale en ninguna respuesta y no se registra en los logs.
- *
- * Se usa HMAC y no un hash a secas porque el espacio de cédulas son 10 dígitos:
- * un SHA-256 sin secreto se invierte por fuerza bruta en segundos. El pepper es
- * lo que lo hace irreversible.
- *
- * Y se usa HMAC y no bcrypt porque el valor tiene que ser DETERMINISTA para
- * servir de índice único — no es una contraseña que se verifique, es una llave
- * que se compara.
- */
+// Huella de la cédula, lo ÚNICO que se guarda. HMAC (con pepper) y no un hash a secas
+// porque 10 dígitos se invierten por fuerza bruta sin secreto; y no bcrypt porque el
+// valor debe ser DETERMINISTA para servir de índice único, no verificarse como password.
 export function huellaCedula(cedula: string, pepper: string): string {
   return createHmac('sha256', pepper).update(cedula).digest('hex');
 }

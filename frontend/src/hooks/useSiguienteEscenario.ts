@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { escenariosDeSeccion } from '../data/catalogo'
+import { escenariosDeSeccion, rutaEscenario } from '../data/catalogo'
 import { fetchProgreso } from '../lib/api'
 import { conEscenarioIntentado, siguienteEnRonda } from '../lib/bloqueoEscenarios'
 
@@ -33,7 +33,7 @@ export function useSiguienteEscenario(escenarioId: string): SiguienteEscenarioRe
         )
 
         if (siguiente) {
-          setRuta(`/seccion/${siguiente.seccionId}/${siguiente.escenarioId}`)
+          setRuta(rutaEscenario(siguiente))
         } else {
           setRuta(`/seccion/${seccionId}`)
         }
@@ -44,7 +44,7 @@ export function useSiguienteEscenario(escenarioId: string): SiguienteEscenarioRe
 
         const siguiente = escenarios[escenarios.findIndex((e) => e.id === escenarioId) + 1]
         if (siguiente) {
-          setRuta(`/seccion/${siguiente.seccionId}/${siguiente.escenarioId}`)
+          setRuta(rutaEscenario(siguiente))
         } else {
           setRuta(`/seccion/${seccionId}`)
         }

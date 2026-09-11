@@ -43,14 +43,8 @@ export interface StoryEngine<N extends StoryNode = StoryNode> {
   runStatus: RunStatus
 }
 
-/**
- * Recorre el grafo de un escenario y registra la corrida: cada elección entra
- * en la traza y al llegar a un final el resultado se envía al backend.
- *
- * Los nodos finales declaran su resultado con `kind` ('good' | 'partial' |
- * 'bad'); `outcome` y `score` solo hacen falta para sobrescribir el valor
- * derivado.
- */
+// Recorre el grafo de un escenario y registra la corrida; los nodos finales
+// declaran su resultado con `kind`, y `outcome`/`score` solo sobrescriben ese valor.
 export function useStoryEngine<N extends StoryNode>(
   story: Story<N>,
   startId: string,

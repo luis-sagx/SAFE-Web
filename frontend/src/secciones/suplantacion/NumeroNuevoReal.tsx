@@ -6,19 +6,9 @@ import type { Senal } from '../../components/ui/PanelVeredicto'
 import type { Story } from '../../hooks/useStoryEngine'
 import { CUENTA_FICTICIA, IDENTIDAD_FICTICIA } from '../../lib/identidadFicticia'
 
-/**
- * El cambio de número que sí era verdad.
- *
- * Espeja a cambio-numero frase por frase: mismo "se me dañó el celular", misma
- * nota de voz, mismo número desconocido. Lo que cambia es lo que viene
- * después — aquí nadie pide dinero, nadie mete prisa y la llamada se contesta
- * al primer timbre.
- *
- * Sin este caso el módulo enseñaría "desconfía de todo número nuevo", que no
- * es criterio sino miedo: la gente cambia de número de verdad, y dejar
- * colgada a tu tía tiene su propio costo. Y aun siendo ella, hay cosas que no
- * se mandan por un chat: la foto de la cédula es una de ellas.
- */
+// Espeja a cambio-numero: mismo montaje, pero aquí el mensaje es real. Existe
+// para no enseñar "desconfía de todo número nuevo" — y para mostrar que ni
+// siendo ella, la cédula se manda por chat.
 
 const TIA = 'Rocío'
 const NUMERO_NUEVO = '+593 98 052 6614'
@@ -136,8 +126,7 @@ const RESPONDE_BIEN: ScreenView = {
   ],
 }
 
-/// Ella no pide nada, y ahí termina lo normal. Lo que llega después —una foto
-/// de la cédula— es lo único del escenario que no se manda ni a la familia.
+// La foto de la cédula es lo único que no se manda ni a la familia.
 const PIDE_CEDULA: ScreenView = {
   ...CHAT,
   msgs: [

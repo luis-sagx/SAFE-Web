@@ -68,7 +68,7 @@ describe('SesionBogota', () => {
   it('verificar por la app del banco desde los marcadores acredita sin escribir nada', () => {
     renderEscenario()
 
-    fireEvent.click(screen.getByRole('button', { name: 'Banco del Litoral' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Abrir Banco del Litoral' }))
 
     expect(screen.getByText('No caíste · verificaste por la app')).toBeDefined()
   })

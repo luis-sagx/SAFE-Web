@@ -5,18 +5,8 @@ import type { ScreenView } from '../../components/ui/DeviceScreen'
 import type { Senal } from '../../components/ui/PanelVeredicto'
 import type { Story } from '../../hooks/useStoryEngine'
 
-/**
- * El jefe que escribe desde otro número.
- *
- * La suplantación en el trabajo no pide dinero: pide un encargo. Y funciona
- * por algo que no tiene que ver con la tecnología, sino con la jerarquía —a la
- * gerente no se le pregunta dos veces, y menos si dice que está en una reunión
- * con auditoría.
- *
- * Por eso el acierto no es solo no comprar: es comprobar por el canal de
- * siempre, que en una empresa está a un toque en la agenda. El escenario deja
- * a la vista lo incómodo que se siente hacerlo.
- */
+// La suplantación explota la jerarquía, no la tecnología: a la gerente no se
+// le pregunta dos veces. El acierto es comprobar por el canal de siempre.
 
 const JEFA = 'Patricia Cedeño'
 const DESCONOCIDO = '+593 98 776 5510'

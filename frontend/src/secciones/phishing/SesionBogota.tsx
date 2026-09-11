@@ -145,7 +145,7 @@ const RESUMEN = 'Un correo avisa que alguien inició sesión en tu cuenta desde 
 const CONTEXTO: Contexto = {
   antes: (
     <>
-      Sos cliente del <strong>Banco del Litoral</strong>.
+      Eres cliente del <strong>Banco del Litoral</strong>.
     </>
   ),
   ahora: (
@@ -214,6 +214,12 @@ function ContenidoCorreo({ recibido, carpetas }: { recibido: string; carpetas: C
         senalEtiqueta: 'externo',
       }}
       recibido={recibido}
+      marca={{
+        nombre: 'Banco del Litoral',
+        detalle: 'Centro de seguridad y alertas',
+        icono: 'seguridad',
+        variante: 'financiera',
+      }}
       pie={<p>Banco del Litoral · Departamento de Seguridad</p>}
     >
       <p>Estimado(a) cliente:</p>

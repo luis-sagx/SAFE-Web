@@ -5,20 +5,8 @@ import type { Story } from '../../hooks/useStoryEngine'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
 import type { Senal } from '../../components/ui/PanelVeredicto'
 
-/**
- * El aviso de entrega que sí era de verdad.
- *
- * Cierra el módulo con la lección que le falta a los seis fraudulentos:
- * desconfiar de todo también se paga. Espeja con `paquete-retenido`, que es el
- * mismo courier y el mismo envío contados por un impostor.
- *
- * La diferencia no está en el diseño del mensaje sino en lo que pide: este no
- * pide nada. No hay enlace, no hay pago, no hay plazo. Un aviso real informa y
- * se queda quieto, y comprobarlo es abrir la app —no contestarle al número.
- *
- * El fallo vive dentro de la app, como en `alerta-consumo`: devolver el envío
- * sin mirarlo es la reacción exagerada que este escenario mide.
- */
+// Cierra el módulo con la lección que falta a los seis fraudulentos: desconfiar de todo
+// también se paga. Este aviso no pide nada; el fallo (como en alerta-consumo) es devolver sin mirar.
 
 const GUIA = '8842-EC'
 const RESPUESTA = '¿A qué hora exactamente? No voy a estar en la mañana.'
@@ -53,9 +41,7 @@ const SMS_RESPONDIDO: ScreenView = {
   msgs: [...SMS.msgs, { text: RESPUESTA, time: '18:06', mine: true }],
 }
 
-/// El inicio de la app. Abrirla no es todavía haber comprobado: desde aquí se
-/// puede mirar el envío o devolverlo a ciegas, que es el error que este
-/// escenario mide de verdad.
+// Abrirla no es todavía haber comprobado: se puede mirar el envío o devolverlo a ciegas.
 const APP_INICIO: ScreenView = {
   kind: 'web',
   app: 'EnvíaExpress',
@@ -89,8 +75,7 @@ const APP_INICIO: ScreenView = {
   cerrarLabel: 'Abrió la app y salió sin mirar nada',
 }
 
-/// El detalle: el envío existe, es el que estaba esperando y no pide un
-/// centavo. El acierto se enseña en pantalla, no solo se cuenta.
+// El acierto se enseña en pantalla, no solo se cuenta.
 const APP_DETALLE: ScreenView = {
   kind: 'web',
   app: 'EnvíaExpress',

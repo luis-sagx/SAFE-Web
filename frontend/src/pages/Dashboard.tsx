@@ -8,23 +8,11 @@ import { useAuth } from '../context/AuthContext'
 import { escenariosDeSeccion, SECCIONES } from '../data/catalogo'
 import { fetchProgreso, type Progreso } from '../lib/api'
 
-/// Solo las secciones con escenarios tienen gating; las demás muestran
-/// "Pronto" y no hace falta pedir su progreso.
+// Solo secciones con escenarios tienen gating; las demás muestran "Pronto" sin pedir progreso.
 const SECCIONES_ACTIVAS = SECCIONES.filter((s) => escenariosDeSeccion(s.id).length > 0)
 
-/**
- * Avance del entrenamiento completo, sumando solo los módulos disponibles.
- *
- * Las secciones que aún no tienen escenarios se quedan fuera del denominador a
- * propósito: contarlas mostraría un avance de "3 de 48" que no refleja nada que
- * el participante pueda hacer hoy, y que se movería solo porque abrimos un
- * módulo nuevo.
- *
- * Un módulo cuyo progreso no llegó tampoco entra en el denominador. Es el mismo
- * criterio: un módulo sin umbral en el servidor no se puede aprobar, así que
- * contarlo dejaba el marcador en un "x/6 módulos" que nadie podía completar.
- * Cuando el servidor le dé umbral, vuelve a contar solo.
- */
+// Secciones sin escenarios y módulos sin progreso quedan fuera del denominador: contarlos daría un avance que
+// nadie puede mover hoy (sin escenarios) o nunca completar (sin umbral en el servidor).
 function calcularGlobal(progresos: Record<string, Progreso>) {
   let aprobados = 0
   let total = 0
@@ -52,11 +40,7 @@ function Dashboard() {
   useEffect(() => {
     let cancelled = false
 
-    // allSettled y no all: un módulo que todavía no tiene umbral en el servidor
-    // responde 404, y con Promise.all ese único rechazo tiraba la promesa
-    // entera. El panel se quedaba sin ningún progreso —barra en cero e
-    // insignias "Aprobado" apagadas— para todos los módulos, incluidos los que
-    // sí habían respondido.
+    // allSettled: un módulo sin umbral aún responde 404, y con Promise.all ese rechazo vaciaba el progreso de todos.
     Promise.allSettled(SECCIONES_ACTIVAS.map((s) => fetchProgreso(s.id)))
       .then((resultados) => {
         if (cancelled) return
@@ -73,10 +57,7 @@ function Dashboard() {
 
   const global = calcularGlobal(progresos)
 
-  // Por dónde se sigue: el primer módulo del recorrido que todavía no está
-  // aprobado. Solo cuenta los que ya respondieron su progreso, para no marcar
-  // como "empieza aquí" un módulo que un segundo después resulta estar
-  // aprobado; mientras no haya llegado nada, ninguna tarjeta lleva insignia.
+  // Primer módulo sin aprobar, solo entre los que ya respondieron: evita marcar "empieza aquí" antes de tiempo.
   const entrada = SECCIONES_ACTIVAS.find((s) => progresos[s.id] && !progresos[s.id]?.aprobado)
 
   return (
@@ -90,10 +71,7 @@ function Dashboard() {
         <h1 className="mt-2 text-4xl font-semibold tracking-tight text-ink">
           Hola, {displayName}
         </h1>
-        {/* Dice la regla del curso, no una promesa que el veredicto luego
-            desmiente. Antes prometía que ninguna respuesta te deja mal y a los
-            diez minutos el panel de resultado decía "caíste en la trampa": de
-            las dos, la que se recuerda es la segunda. */}
+        {/* Regla del curso, no promesa: antes decía que ninguna respuesta te deja mal y el resultado decía lo contrario. */}
         <p className="mt-3 max-w-xl text-base leading-relaxed text-body">
           Elige un tipo de engaño y enfréntate a una situación como las de todos los días. Puedes
           fallar y repetir el módulo completo: lo que cuenta es tu última ronda completa.
@@ -111,10 +89,7 @@ function Dashboard() {
               >
                 Tu avance
               </h2>
-              {/* Los módulos van primero y con el número grande: aprobar un
-                  módulo es la meta del curso, y el total de escenarios no lo
-                  es —aprobar los 8 de un módulo no vale más que aprobar 6—.
-                  El detalle por escenario queda detrás, en letra chica. */}
+              {/* Módulos primero y en grande: aprobar un módulo es la meta, no acumular escenarios. */}
               <p className="text-sm text-body">
                 <span className="text-lg font-semibold tabular-nums text-ink">
                   {global.modulosAprobados}
@@ -139,18 +114,14 @@ function Dashboard() {
               etiqueta="Avance del entrenamiento completo"
             />
 
-            {/* Solo cuando ya no queda ningún módulo pendiente: el botón pide
-                los mismos módulos que declara el servidor (UMBRALES), nunca
-                un número escrito aquí, así que aparece exactamente cuando
-                `GET /api/runs/atestacion` va a decir que sí. */}
+            {/* Aparece solo cuando coincide con lo que UMBRALES del servidor exige, nunca un número fijo aquí. */}
             {global.modulos > 0 && global.modulosAprobados === global.modulos && (
               <CertificadoBoton />
             )}
           </section>
         )}
 
-        {/* Tres columnas como máximo: las seis secciones se reparten en dos
-            filas exactas. Con cuatro quedaba una fila coja. */}
+        {/* Tres columnas: las seis secciones caben en dos filas exactas (cuatro dejaba una fila coja). */}
         <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {SECCIONES.map((seccion) => {
             const escenarios = escenariosDeSeccion(seccion.id)
@@ -177,14 +148,12 @@ function Dashboard() {
                     </span>
                   )}
                   {progreso?.aprobado && (
-                    <span className="inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-[0.88px] text-success">
+                    <span className="inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-[0.88px] text-success-ink">
                       <CheckCircle2 aria-hidden className="size-3.5" strokeWidth={2.5} />
                       Aprobado
                     </span>
                   )}
-                  {/* Una sola tarjeta lleva esta insignia. Seis tarjetas del
-                      mismo peso no dicen por dónde se entra, y el recorrido sí
-                      tiene un orden: este es el primer módulo sin aprobar. */}
+                  {/* Única insignia: marca el primer módulo sin aprobar, el orden de entrada al recorrido. */}
                   {esEntrada && (
                     <span className="inline-flex items-center gap-1 rounded-full bg-primary px-2.5 py-1 text-xs font-semibold uppercase tracking-[0.88px] text-on-primary">
                       {empezado ? 'Continúa aquí' : 'Empieza aquí'}
@@ -207,12 +176,7 @@ function Dashboard() {
                     )}
                   </div>
 
-                  {/* Cuánto es el módulo, antes de entrar. Sin esta línea la
-                      tarjeta no decía a qué se estaba apuntando el
-                      participante y había que abrirla para averiguarlo.
-                      El umbral no se repite aquí: ya lo marca el anillo de
-                      la barra de abajo, como en un curso que no imprime la
-                      nota mínima en cada tarjeta. */}
+                  {/* Cuenta de escenarios antes de entrar; el umbral no se repite, ya lo marca la barra de abajo. */}
                   {disponible && (
                     <p className="mt-1.5 text-sm text-muted">{escenarios.length} escenarios</p>
                   )}
@@ -233,9 +197,7 @@ function Dashboard() {
 
             const clases = 'flex flex-col rounded-lg border p-5 transition'
 
-            // Las secciones sin escenarios se distinguen por la superficie y la
-            // insignia, no bajando la opacidad: atenuar el texto lo dejaría por
-            // debajo del contraste mínimo.
+            // Se distinguen por superficie/insignia, no opacidad: bajarla dejaría el texto bajo el contraste mínimo.
             return disponible ? (
               <Link
                 key={seccion.id}
@@ -256,10 +218,8 @@ function Dashboard() {
           })}
         </div>
 
-        {/* Deshabilitado hasta completar el entrenamiento a propósito: antes
-            de eso no hay una experiencia completa sobre la que opinar, y un
-            link activo invitaría a un feedback a medias. Sigue visible igual
-            —no oculto— para que se sepa que existe y qué falta para usarlo. */}
+        {/* Deshabilitado hasta completar el entrenamiento: antes no hay experiencia completa que valorar; sigue
+            visible para que se sepa que existe. */}
         <p className="mt-10 text-center text-sm text-muted">
           {global.modulos > 0 && global.modulosAprobados === global.modulos ? (
             <>

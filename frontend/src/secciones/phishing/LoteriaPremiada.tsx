@@ -9,19 +9,8 @@ import type { Senal } from '../../components/ui/PanelVeredicto'
 import { ENLACES_PIE } from '../../components/ui/armazonSitio'
 import { CUENTA_FICTICIA, IDENTIDAD_FICTICIA } from '../../lib/identidadFicticia'
 
-/**
- * El premio que nunca se jugó, con pago por adelantado para cobrarlo.
- *
- * Es el fraude más antiguo que sigue funcionando, y el que más golpea al
- * público de este curso. Su anzuelo no es técnico: no hay dominio casi idéntico
- * ni página clonada difícil de distinguir. Lo que empuja es la ilusión y la
- * prisa, y por eso el escenario es de dificultad 1 — la señal decisiva no hay
- * que buscarla en la pantalla, se responde con una pregunta: ¿yo jugué?
- *
- * La lotería es inventada, como el Banco del Litoral o TiendaExpress. Los
- * escenarios solo usan nombres reales cuando la institución es el asunto del
- * ejercicio, como el SRI en factura-sri.
- */
+// Anzuelo no técnico (sin dominio casi idéntico ni clon difícil de distinguir): la señal decisiva
+// no está en la pantalla, se responde con "¿yo jugué?" — de ahí la dificultad 1.
 
 const URL_FALSA = 'http://loteria-pacifico-premios.online/reclamo'
 
@@ -32,24 +21,30 @@ const CORREO: ScreenView = {
   senalDireccion: 'remitente',
   label: 'Externo',
   senalEtiqueta: 'externo',
-  subject: '¡Felicidades! Su número resultó ganador, reclamo pendiente',
+  subject: 'Acción requerida hoy: confirme su premio de USD 48.500',
   date: 'hoy 07:14',
+  marca: {
+    nombre: 'Lotería del Pacífico',
+    detalle: 'Premios y sorteos internacionales',
+    icono: 'premio',
+    variante: 'publicidad',
+  },
   body: `
     <p><span data-signal="saludo">Estimado(a) ganador(a):</span></p>
-    <img src="/LoteriaPremio.jpeg" alt="" />
+    <img class="mailHero" src="/escenarios/phishing/premio-loteria.webp" alt="" />
     <p>
-      Nos complace informarle que su correo electrónico resultó
-      <b>preseleccionado</b> en el sorteo internacional del mes y le corresponde un premio de
-      <b>USD 48.500,00</b>.
+      Su correo fue seleccionado como ganador del Sorteo Internacional de este mes.
     </p>
-    <p>
-      Para liberar la transferencia debe cubrir el
-      <mark class="marca" data-signal="pago">impuesto único de $85</mark>, que la ley no permite
-      descontar del monto premiado. Dispone de
-      <mark class="marca" data-signal="plazo">48 horas</mark>; pasado ese plazo el premio se
-      reasigna a otro participante.
-    </p>
+    <div class="correoDato">
+      <span>Premio reservado</span>
+      <strong>USD 48.500</strong>
+    </div>
+    <p>Para autorizar la transferencia debe pagar
+      <mark class="marca" data-signal="pago">USD 85 por concepto de impuestos y validación</mark>
+      antes de <mark class="marca" data-signal="plazo">hoy a las 18:00</mark>. Si el pago no se
+      registra dentro del plazo, el premio será reasignado automáticamente.</p>
     <p><a class="cta" href="${URL_FALSA}" data-hotspot-goto="n2" data-hotspot-label="Pulsó &quot;Reclamar mi premio ahora&quot; en el correo">Reclamar mi premio ahora</a></p>
+    <p class="fine">Este mensaje fue generado automáticamente. No responda a este correo.</p>
   `,
   footer: `
     <p>Lotería del Pacífico · Departamento de Premios y Reclamos</p>
@@ -66,10 +61,8 @@ const RECLAMO: ScreenView = {
   menu: ['Sorteos', 'Resultados', 'Ganadores', 'Ayuda'],
   title: 'Liberación de premio',
   subtitle: 'Complete sus datos para recibir la transferencia de USD 48.500,00.',
-  // Los campos vienen ya rellenos con los datos que el participante vio en el
-  // briefing, como los rellenaría el autocompletado del navegador. Con ceros de
-  // ejemplo, enviar el formulario se sentía como enviar casillas vacías; con
-  // sus números a la vista, pulsar el botón es verse entregar lo suyo.
+  // Campos ya rellenos con los datos del briefing: con ceros de ejemplo, enviar se
+  // sentía como enviar casillas vacías; con sus números, es verse entregar lo suyo.
   fields: [
     { label: 'Cédula', placeholder: '', valor: 'cedula' },
     { label: 'Banco y número de cuenta', placeholder: '', valor: 'cuenta', senal: 'campo-cuenta' },
@@ -85,9 +78,7 @@ const RECLAMO: ScreenView = {
   cerrarLabel: 'Cerró la página del reclamo y volvió al correo',
 }
 
-/// El buscador: aquí es donde "comprobarlo por mi cuenta" deja de ser una
-/// intención y se ve. No existe ninguna lotería con ese nombre, y eso es lo que
-/// desmonta el correo entero.
+// El buscador: no existe ninguna lotería con ese nombre, y eso desmonta el correo entero.
 const BUSCADOR: ScreenView = {
   kind: 'web',
   url: 'https://www.buscador.ec/?q=loteria+del+pacifico',
@@ -95,11 +86,8 @@ const BUSCADOR: ScreenView = {
   brand: 'Buscador',
   title: 'lotería del pacífico',
   subtitle: 'Cerca de 1.240 resultados (0,38 segundos)',
-  // Con resultados de verdad y no una ficha de datos: parte de lo que se
-  // entrena es reconocer dónde está uno mirando, y una lista de pares
-  // etiqueta/valor no se lee como un buscador. Ninguno de los tres dice
-  // "esto es una estafa" a la cara; lo que dicen es que el sorteo no consta
-  // en ningún lado, que es como se comprueba algo de verdad.
+  // Resultados de verdad, no una ficha de datos: se entrena reconocer dónde se está
+  // mirando. Ninguno dice "es una estafa" a la cara; dicen que el sorteo no consta en ningún lado.
   resultados: [
     {
       titulo: 'Sorteos y loterías con permiso vigente en el Ecuador',
@@ -118,7 +106,7 @@ const BUSCADOR: ScreenView = {
       titulo: 'Me llegó un correo de la Lotería del Pacífico · Foros EC',
       url: 'https://foros.ec › t › loteria-del-pacifico-premio',
       fragmento:
-        'A mí me llegó igual, con el mismo monto y las mismas 48 horas. Le escribí y lo único que querían era la transferencia de los $85.',
+        'A mí me llegó igual, con el mismo monto y la misma exigencia de pagar primero. Le escribí y lo único que querían era la transferencia de los $85.',
     },
   ],
   fields: [],
@@ -128,7 +116,6 @@ const BUSCADOR: ScreenView = {
 }
 
 const STORY: Story<ScreenNode> = {
-  // Responder, reenviar, eliminar y marcar como spam.
   ...finalesDeBarra('fraude', CORREO),
   n1: { kind: 'scene', view: CORREO },
   n2: { kind: 'scene', view: RECLAMO },
@@ -195,7 +182,7 @@ const SENALES: Senal[] = [
     pantalla: 'n1',
     targetId: 'plazo',
     texto:
-      'El <b>plazo de 48 horas</b> está para que no te dé tiempo de preguntarle a nadie. La prisa es parte del método.',
+      'El plazo de <b>solo unas horas</b> está para que no te dé tiempo de preguntarle a nadie. La prisa es parte del método.',
   },
   {
     id: 'dominio',

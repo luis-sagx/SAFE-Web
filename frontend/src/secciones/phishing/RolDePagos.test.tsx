@@ -24,6 +24,7 @@ vi.mock('../../context/AuthContext', () => ({
     roleLabel: 'Participante',
     initials: 'MP',
     correoSimulado: 'mariaperez@safeweb.com',
+    usuarioSimulado: 'mariaperez',
   }),
 }))
 
@@ -53,7 +54,7 @@ describe('RolDePagos', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Abrir Papelera' }))
 
     expect(screen.getByRole('heading', { name: 'Papelera' })).toBeDefined()
-    expect(screen.getByText('Tu rol de pagos de julio ya está disponible')).toBeDefined()
+    expect(screen.getByText(/Tu rol de pagos de .* ya está disponible/)).toBeDefined()
   })
 
   it('responder deja el veredicto de haber entregado la contraseña', () => {
@@ -67,9 +68,19 @@ describe('RolDePagos', () => {
   it('entrar al portal desde los marcadores y pulsar Ingresar acredita el escenario', () => {
     renderEscenario()
 
-    fireEvent.click(screen.getByRole('button', { name: 'Portal Andes' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Abrir Portal Andes' }))
     fireEvent.click(screen.getByRole('button', { name: 'Ingresar' }))
 
     expect(screen.getByText('Acertaste · el correo era legítimo')).toBeDefined()
+  })
+
+  it('personaliza el saludo y permite abrir el portal legítimo desde su URL visible', () => {
+    renderEscenario()
+
+    expect(screen.getByText('Hola, María:')).toBeDefined()
+    fireEvent.click(screen.getByRole('link', { name: 'portal.andes.com.ec' }))
+
+    expect(screen.getByRole('heading', { name: 'Portal del colaborador' })).toBeDefined()
+    expect(screen.getByText('https://portal.andes.com.ec/rrhh/rol')).toBeDefined()
   })
 })

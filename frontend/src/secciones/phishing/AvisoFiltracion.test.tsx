@@ -47,7 +47,7 @@ describe('AvisoFiltracion', () => {
   it('cerrar la pestaña que dispara el final devuelve el navegador al correo', () => {
     renderEscenario()
 
-    fireEvent.click(screen.getByRole('button', { name: 'TiendaExpress' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Abrir TiendaExpress' }))
     fireEvent.click(screen.getByRole('button', { name: 'Guardar contraseña' }))
 
     expect(screen.getByRole('tab', { name: /Contraseña actualizada/ })).toBeDefined()

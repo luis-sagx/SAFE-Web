@@ -1,41 +1,23 @@
 import type { ReactNode } from 'react'
 import styles from './DeviceScreen.module.css'
 
-/**
- * Primitivas para escenarios donde el participante actúa directamente sobre
- * la pantalla simulada en vez de elegir de una lista de acciones descritas.
- * Ver docs/superpowers/specs/2026-08-04-escenario-interactivo-factura-sri-design.md.
- *
- * Ningún elemento llama a `engine.choose` por su cuenta: solo llevan los
- * `data-hotspot-*`, y un único manejador delegado en el contenedor de la
- * pantalla —`manejarClicHotspot`— decide qué hacer. Así el escenario no tiene
- * que pasar la función de decisión a cada botón por separado.
- */
+// Ningún elemento llama a engine.choose por su cuenta: solo llevan
+// data-hotspot-*, y manejarClicHotspot, delegado en el contenedor, decide qué
+// hacer. Ver docs/superpowers/specs/2026-08-04-escenario-interactivo-factura-sri-design.md.
 
 interface HotspotBaseProps {
-  /** Nodo al que salta el grafo si se toca este punto. */
   goto: string
-  /** Se guarda en la traza de la corrida junto con `goto`. */
   label: string
-  /** Si además es una señal del debrief, el id que el recorrido va a buscar
-   *  con `[data-signal="…"]` para resaltarlo. */
   signalId?: string
   className?: string
-  /** Posición cuando el punto flota sobre una imagen en vez de fluir con el
-   *  resto del texto (ver EscenaFoto). */
   style?: React.CSSProperties
-  /** Nombre accesible, para cuando el contenido visible no lo da (un ícono
-   *  con `aria-hidden`, no una palabra que ya se lee). Sin esto el botón
-   *  quedaría mudo para un lector de pantalla. */
   ariaLabel?: string
   children: ReactNode
 }
 
-/** Enlace real: el `href` es el destino falso o verdadero que se quiere que
- *  el navegador muestre al pasar el mouse — es la única "revelación" de URL
- *  que existe, la nativa del navegador, sin tooltip propio. Nunca navega de
- *  verdad: `preventDefault` corta la navegación, pero no la propagación, así
- *  que el clic igual llega al manejador delegado del contenedor. */
+// href real: es la única "revelación" de URL que existe (la nativa del
+// navegador al pasar el mouse). preventDefault corta la navegación pero no
+// la propagación, así que el clic igual llega al manejador delegado.
 export function EnlaceHotspot({
   goto,
   label,
@@ -58,8 +40,6 @@ export function EnlaceHotspot({
   )
 }
 
-/** Cualquier otro punto interactivo que no sea un enlace: el adjunto, el
- *  botón de enviar un formulario, un atajo del escritorio. */
 export function BotonHotspot({ goto, label, signalId, className, style, ariaLabel, children }: Readonly<HotspotBaseProps>) {
   return (
     <button
@@ -76,30 +56,16 @@ export function BotonHotspot({ goto, label, signalId, className, style, ariaLabe
   )
 }
 
-/**
- * Corta la navegación de cualquier enlace de la pantalla simulada.
- *
- * Los enlaces llevan un `href` real —es la única forma de que el navegador
- * revele el destino al pasar el cursor, que es la habilidad que el módulo
- * enseña— pero seguirlo sacaría al participante del entrenamiento hacia un
- * dominio que no existe. En los cuerpos de correo, que se inyectan como HTML,
- * no hay ningún manejador propio que lo impida: tiene que hacerlo el
- * contenedor.
- */
+// Los cuerpos de correo se inyectan como HTML sin manejador propio, así que
+// esto corta cualquier <a> real para no sacar al participante del entrenamiento.
 export function evitarNavegacion(event: React.MouseEvent) {
   if ((event.target as HTMLElement).closest('a')) {
     event.preventDefault()
   }
 }
 
-/** Manejador único para el contenedor de la pantalla: busca el punto
- *  interactivo más cercano al elemento clicado y dispara la elección. Un solo
- *  `onClick` en la raíz reemplaza un `onClick` por botón.
- *
- *  Devuelve `false` cuando el clic no cayó en ningún punto interactivo, para
- *  que la pantalla pueda acusar recibo. Sin eso, tocar el cuerpo del correo no
- *  produce ningún efecto visible y no hay forma de distinguir "aquí no hay
- *  nada" de "la simulación se colgó". */
+// Devuelve false cuando el clic no cayó en ningún hotspot, para que la
+// pantalla distinga "aquí no hay nada" de "la simulación se colgó".
 export function manejarClicHotspot(
   event: React.MouseEvent,
   onHotspot: (goto: string, label?: string) => void,

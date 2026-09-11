@@ -14,15 +14,12 @@ export interface ZonaEscena {
 export interface DestelloEscena {
   x: string
   y: string
-  /** Nodo con las opciones, al que salta el grafo al tocarlo. */
   goto: string
   label: string
 }
 
-/** Aviso de que la escena avanza sola: sin esto, una foto que no responde al
- *  tacto y no cambia durante varios segundos se lee como colgada, no como
- *  "espera, ya vuelvo". El tiempo de la barra debe coincidir con el `ms` de
- *  `autoAvanza` en el nodo del grafo. */
+// Sin este aviso, una foto que no cambia por segundos se lee como colgada.
+// El tiempo de la barra debe coincidir con el `ms` de `autoAvanza` en el grafo.
 export interface ProgresoEscena {
   ms: number
   texto: string

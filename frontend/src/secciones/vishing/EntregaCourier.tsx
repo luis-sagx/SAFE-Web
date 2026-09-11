@@ -5,16 +5,8 @@ import type { ScreenView } from '../../components/ui/DeviceScreen'
 import type { Senal } from '../../components/ui/PanelVeredicto'
 import type { Story } from '../../hooks/useStoryEngine'
 
-/**
- * El motorizado que sí está en la puerta.
- *
- * La llamada legítima más común de todas, y por eso la puerta de entrada a los
- * casos verdaderos: alguien te llama, sabe tu nombre y tu dirección, y no pasa
- * nada. Lo que este escenario mide no es si desconfías —desconfiar de todo es
- * fácil— sino si sabes dónde está el límite: puedes confirmar una entrega sin
- * problema, pero el número de tu tarjeta no se dicta por teléfono ni al
- * repartidor que de verdad está abajo con tu paquete.
- */
+// Llamada legítima común: mide si sabes dónde está el límite, no si
+// desconfías de todo. Confirmar la entrega está bien; dictar la tarjeta no.
 
 const NUMERO = '+593 99 214 0087'
 
