@@ -13,8 +13,11 @@ interface AuthLayoutProps {
 /// plataforma; el formulario queda en una tarjeta a la derecha.
 function AuthLayout({ titulo, subtitulo, children, pie }: AuthLayoutProps) {
   return (
-    <div className="relative min-h-screen bg-gradient-to-b from-mint-light to-canvas">
-      <div className="absolute right-6 top-6">
+    // Flujo normal y no `absolute`: flotando arriba del todo, el selector se
+    // salía de la vista al hacer scroll (o se montaba encima del logo en una
+    // pantalla baja) — acá siempre tiene su propio espacio reservado.
+    <div className="min-h-screen bg-gradient-to-b from-mint-light to-canvas">
+      <div className="mx-auto flex max-w-5xl justify-end px-6 pt-6">
         <SelectorTema />
       </div>
       <div className="mx-auto flex min-h-screen max-w-5xl flex-col justify-center gap-12 px-6 py-12 lg:flex-row lg:items-center lg:gap-16">

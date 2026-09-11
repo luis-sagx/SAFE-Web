@@ -382,7 +382,11 @@ function PrivacidadClaves() {
       <button
         type="button"
         onClick={() => !final && setBloqueada(false)}
-        className="flex size-full flex-col items-center justify-center gap-3 bg-ink text-center"
+        // bg-[#171717] y no bg-ink: esto es la pantalla de bloqueo del SO
+        // simulado, no cromo — tiene que verse igual en los dos temas, y
+        // bg-ink se invierte en oscuro (casi blanco), lo que dejaba esta
+        // pantalla en blanco sobre blanco.
+        className="flex size-full flex-col items-center justify-center gap-3 bg-[#171717] text-center"
       >
         <span
           className="flex size-16 items-center justify-center rounded-full bg-white/10"
