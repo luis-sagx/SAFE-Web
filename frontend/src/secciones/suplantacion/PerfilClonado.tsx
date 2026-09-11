@@ -6,17 +6,8 @@ import type { Senal } from '../../components/ui/PanelVeredicto'
 import type { Story } from '../../hooks/useStoryEngine'
 import { CUENTA_FICTICIA } from '../../lib/identidadFicticia'
 
-/**
- * El perfil clonado: la misma foto, el mismo nombre, una cuenta nueva.
- *
- * Aquí no hay número que comprobar —el mensaje llega por la red social, no por
- * el teléfono— así que la verificación es otra: buscar a la persona en la
- * propia red y encontrarla dos veces. La cuenta de verdad sigue ahí, con sus
- * años de fotos y sus amigos en común; la copia se hizo esta semana.
- *
- * Es el escenario que enseña que "me escribió Marcela" y "me escribió alguien
- * con la foto de Marcela" son cosas distintas.
- */
+// No hay número que comprobar: la verificación es buscar a la persona en la
+// propia red y encontrarla dos veces (la cuenta real sigue activa).
 
 const AMIGA = 'Marcela Ríos'
 const CUENTA_ESTAFA = '3300-9182-44 · Jonathan Pico Arteaga'
@@ -159,9 +150,6 @@ const NO_LLAMA: ScreenView = {
   ],
 }
 
-/// La red social, con su buscador. Encontrar a la persona dos veces es la
-/// comprobación entera del escenario, y hay que hacerla: abrir la app no
-/// enseña nada por sí solo.
 const RED: ScreenView = {
   kind: 'web',
   app: 'Red social',

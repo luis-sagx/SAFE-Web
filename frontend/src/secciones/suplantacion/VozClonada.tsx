@@ -6,20 +6,8 @@ import type { Senal } from '../../components/ui/PanelVeredicto'
 import type { Story } from '../../hooks/useStoryEngine'
 import { CUENTA_FICTICIA } from '../../lib/identidadFicticia'
 
-/**
- * El más difícil del módulo: la voz es la suya.
- *
- * No hay número que comprobar, ni perfil, ni forma de escribir: hay una hija
- * llorando al teléfono y alguien que no deja colgar. Clonar una voz cuesta hoy
- * unos segundos de audio de cualquier video público, y contra eso no sirve
- * nada de lo que enseñan los otros escenarios.
- *
- * Lo único que funciona es lo más difícil de hacer con miedo: colgar y marcar
- * tú al número de siempre. Por eso el escenario deja la agenda a un icono de
- * distancia mientras la llamada grita, y por eso el final por colgar sin
- * comprobar sigue siendo incompleto: quien no llama se queda toda la tarde
- * creyendo que algo pasó.
- */
+// El más difícil del módulo: la voz clonada no deja nada que comprobar por sí
+// sola. Lo único que funciona es colgar y marcar tú al número de siempre.
 
 const DESCONOCIDO = '+593 96 302 8874'
 const NUMERO_HIJA = '+593 99 712 3380'
