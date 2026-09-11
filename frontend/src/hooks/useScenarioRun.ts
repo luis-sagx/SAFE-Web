@@ -1,9 +1,9 @@
 import { useCallback, useRef, useState } from 'react'
 import { createRun, type RunOutcome, type RunPayload } from '../lib/api'
-import { queueRun } from '../lib/pendingRuns'
+import { isRetryableRunError, queueRun } from '../lib/pendingRuns'
 import { getEscenario, type Escenario } from '../data/catalogo'
 
-export type RunStatus = 'idle' | 'saving' | 'saved' | 'queued'
+export type RunStatus = 'idle' | 'saving' | 'saved' | 'queued' | 'failed'
 export type StoryKind = 'scene' | 'good' | 'partial' | 'bad'
 
 /** Con qué cerró una corrida. Es `StoryKind` sin `'scene'`, que es el único
@@ -82,9 +82,13 @@ export function useScenarioRun(scenarioId: string): ScenarioRun {
       try {
         await createRun(payload)
         setStatus('saved')
-      } catch {
-        queueRun(payload)
-        setStatus('queued')
+      } catch (error) {
+        if (isRetryableRunError(error)) {
+          queueRun(payload)
+          setStatus('queued')
+        } else {
+          setStatus('failed')
+        }
       }
     },
     [escenario],
