@@ -6,15 +6,8 @@ import type { Senal } from '../../components/ui/PanelVeredicto'
 import type { Story } from '../../hooks/useStoryEngine'
 import { CUENTA_FICTICIA } from '../../lib/identidadFicticia'
 
-/**
- * La puerta de entrada del módulo: el premio que nunca se pidió.
- *
- * La señal decisiva no está en la pantalla —se responde con "¿yo participé?"—
- * igual que en loteria-premiada del módulo de correo. Lo que cambia es el
- * canal: aquí hay una voz que apura, y colgar cuesta más que cerrar una
- * pestaña porque hay alguien esperando del otro lado. Esa incomodidad es la
- * lección entera de vishing.
- */
+// Puerta de entrada del módulo. Igual que loteria-premiada, pero aquí colgar
+// cuesta más que cerrar una pestaña porque hay una voz esperando del otro lado.
 
 const QUIEN = 'Almacenes La Ganga'
 const NUMERO = '+593 98 342 1177'
@@ -50,11 +43,6 @@ const PREGUNTA = '¿Por qué tengo que pagar para recibir un premio?'
 const ACEPTA = 'Ya, está bien. ¿A qué cuenta deposito?'
 const CONTRA_ENTREGA = '¿Y no puedo pagar cuando me entreguen la cocina?'
 
-/// Lo que contestan a cada cosa. Quien llama tiene su guion y acaba llevando
-/// al mismo sitio, pero **contesta a lo que le dijiste**: dos respuestas
-/// distintas que reciben la misma frase se leen como que nadie escuchó, y eso
-/// rompe la ilusión de estar en una llamada, que es lo único que este módulo
-/// tiene para enseñar.
 const EXCUSA = {
   texto:
     'No, el premio es gratis. Lo que se cobra es el impuesto de entrega, que lo pone la transportadora, no nosotros.',
@@ -72,8 +60,8 @@ const PRISA = {
   senal: 'prisa',
 }
 
-/// El pago por adelantado no es un detalle del trámite: es todo el negocio,
-/// así que no hay versión del guion en la que acepten cobrar al entregar.
+// El pago por adelantado es el negocio entero: ninguna rama del guion acepta
+// cobrar al entregar.
 const ADELANTADO = {
   texto:
     'No, el sistema no libera el despacho sin el pago del impuesto. Es una norma de la promoción, yo no la puedo saltar.',
@@ -106,8 +94,6 @@ const LLAMADA = enLlamada(
   'Colgó al oír lo del premio',
 )
 
-/// Las dos ramas: preguntar y aceptar. Terminan en la misma cuenta y la misma
-/// prisa —preguntar no ahuyenta a nadie— pero por caminos que suenan distintos.
 const HILO_PREGUNTA: Linea[] = [
   ...ANUNCIO,
   { texto: PREGUNTA, mio: true },
@@ -152,9 +138,6 @@ function seNiegan(hilo: Linea[]): ScreenView {
   )
 }
 
-/// El navegador abre en sus sitios frecuentes, no en el sitio del almacén:
-/// comprobar por tu cuenta cuesta lo que cuesta de verdad, y el icono no puede
-/// resolver el escenario de un toque.
 const NAVEGADOR: ScreenView = {
   kind: 'web',
   app: 'Navegador',
@@ -195,8 +178,6 @@ const SITIO: ScreenView = {
   button: '',
 }
 
-/// La banca móvil. Abrirla no paga nada: la transferencia hay que hacerla, y
-/// verla escrita con la cuenta a nombre de una persona es media lección.
 const BANCO: ScreenView = {
   kind: 'web',
   app: 'Banco del Litoral',

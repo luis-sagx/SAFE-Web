@@ -5,15 +5,8 @@ import type { ScreenView } from '../../components/ui/DeviceScreen'
 import type { Senal } from '../../components/ui/PanelVeredicto'
 import type { Story } from '../../hooks/useStoryEngine'
 
-/**
- * El soporte técnico que no pediste.
- *
- * Aquí no piden dinero ni códigos: piden permiso. La estafa entera cabe en un
- * botón que dice "Permitir", y por eso el escenario obliga a pasar por la
- * tienda de aplicaciones y por la pantalla de permisos en vez de resolverse al
- * primer toque: quien instala una herramienta de control remoto casi nunca lee
- * lo que está autorizando, y esa pantalla es la lección.
- */
+// No piden dinero ni códigos, piden permiso: por eso pasa por la tienda de
+// apps y la pantalla de permisos en vez de resolverse al primer toque.
 
 const NUMERO = '+593 4 601 2288'
 const CODIGO_SESION = '483 992 117'
@@ -51,9 +44,6 @@ const LLAMADA: ScreenView = {
   etiqueta: 'No está en tus contactos',
   senalQuien: 'quien',
   dialogo: APERTURA,
-  // Cada respuesta recibe la suya. Acaban las dos en la misma instrucción
-  // —instale esto— pero contestando a lo que dijiste: si el guion no escucha,
-  // deja de parecer una llamada y el escenario pierde lo único que enseña.
   decir: [
     {
       texto: 'Sí, algo lento sí anda. ¿Qué tengo que hacer?',
@@ -149,9 +139,6 @@ const TIENDA: ScreenView = {
   button: '',
 }
 
-/// La pantalla de permisos, que es donde de verdad se decide todo. Va con el
-/// texto entero y sin adornos: lo que se autoriza aquí no es "una limpieza",
-/// es que un desconocido vea y maneje el teléfono.
 const PERMISO: ScreenView = {
   kind: 'web',
   app: 'AsistenciaMóvil',
