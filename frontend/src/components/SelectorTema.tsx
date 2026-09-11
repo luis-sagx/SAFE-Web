@@ -7,16 +7,8 @@ const OPCIONES: { valor: Preferencia; etiqueta: string; Icono: typeof Sun }[] = 
   { valor: 'oscuro', etiqueta: 'Oscuro', Icono: Moon },
 ]
 
-/**
- * Tres opciones de tema en un solo control, con texto además del ícono
- * (SC 1.4.1: el color no puede ser la única señal, y un público no técnico
- * no siempre reconoce un ícono de sol/luna sin la palabra).
- *
- * Vive en dos sitios: dentro de MenuUsuario, para quien ya inició sesión, y
- * en AuthLayout, para Login y Registro, que son públicas y no montan
- * MenuUsuario. Verificar y PoliticaDatos heredan la preferencia guardada sin
- * llevar control propio: son páginas de paso.
- */
+// Texto además de ícono por SC 1.4.1: el color no puede ser la única señal.
+// Vive en MenuUsuario y en AuthLayout (Login/Registro, públicas).
 function SelectorTema() {
   const { preferencia, setPreferencia } = useTheme()
 

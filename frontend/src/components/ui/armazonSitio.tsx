@@ -1,26 +1,11 @@
 import type { ReactNode } from 'react'
 import styles from './DeviceScreen.module.css'
 
-/**
- * Cabecera, aviso y pie de las páginas simuladas.
- *
- * Ningún sitio real es marca, título y contenido sobre blanco: tiene su menú
- * arriba y su letra pequeña abajo. Sin eso, las pantallas se leían como fichas
- * y no como sitios, y el contenido acababa a media ventana.
- *
- * Vive suelto porque lo usan las dos mecánicas: las pantallas declarativas a
- * través de `DeviceScreen`, y los escenarios escritos a mano que arman su
- * página con estas mismas clases.
- *
- * **La regla que manda sobre el resto**: la página falsa de un escenario lleva
- * exactamente lo mismo que la real. Un kit de phishing clona el sitio entero
- * —menú, aviso y pie incluidos—, y dejar la falsa desnuda enseñaría que se
- * reconoce por el acabado. No se reconoce por ahí: se reconoce por la
- * dirección.
- */
+// La página falsa de un escenario lleva exactamente lo mismo que la real
+// (menú, aviso, pie): un kit de phishing clona el sitio entero, y dejarla
+// desnuda enseñaría que se reconoce por el acabado, no por la dirección.
 
-/** Todo decorativo: nada de esto responde al clic, como el botón de inicio de
- *  la barra de tareas. */
+// Todo decorativo: nada de esto responde al clic.
 export function CabeceraSitio({ marca, menu }: { marca: ReactNode; menu: string[] }) {
   return (
     <div className={styles.sitioCabecera}>
@@ -34,8 +19,7 @@ export function CabeceraSitio({ marca, menu }: { marca: ReactNode; menu: string[
   )
 }
 
-/** La letra pequeña que un sitio pone bajo su formulario. En las páginas falsas
- *  hace además de coartada, que es exactamente su papel en las de verdad. */
+// En las páginas falsas hace de coartada, igual que en las de verdad.
 export function AvisoSitio({ children }: { children: ReactNode }) {
   return <p className={styles.pageAviso}>{children}</p>
 }
@@ -57,6 +41,5 @@ export function PieSitio({ texto, enlaces }: { texto?: ReactNode; enlaces?: stri
   )
 }
 
-/** El pie de siempre: aviso legal, contacto y ayuda. Se repite en casi todos
- *  los sitios simulados, reales y falsos, porque se repite en los de verdad. */
+// Se repite en casi todos los sitios simulados porque se repite en los reales.
 export const ENLACES_PIE = ['Aviso de privacidad', 'Términos de uso', 'Ayuda']
