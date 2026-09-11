@@ -6,7 +6,7 @@ import type { Story } from '../../hooks/useStoryEngine'
 
 const ESCENA: ScreenView = {
   kind: 'escena',
-  src: '/USBEstacionamiento.jpeg',
+  src: '/escenarios/fisico/usb-estacionamiento.webp',
   alt: 'USB abandonado en el estacionamiento',
   zonas: [
     { id: 'usb-suelo', x: '39%', y: '61%', ancho: '22%', alto: '18%' },

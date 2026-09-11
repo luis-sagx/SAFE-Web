@@ -12,7 +12,7 @@ en una señal de que el mensaje es legítimo.
   mensajes legítimos y fraudulentos comparten el mismo nivel de acabado.
 - La cabecera del mensaje rotula explícitamente `De:` y `Para:` para que el
   participante identifique sin ambigüedad el origen y el destinatario.
-- `loteria-premiada` usa el nuevo banner `phishing/premio-loteria.webp` y una
+- `loteria-premiada` usa el nuevo banner `escenarios/phishing/premio-loteria.webp` y una
   redacción más breve, directa y urgente.
 - `factura-sri` elimina la ilustración genérica; el adjunto sigue siendo la
   pieza visual que debe inspeccionarse.
@@ -24,7 +24,7 @@ en una señal de que el mensaje es legítimo.
   neutral `/seccion/phishing/pago-pension-colegio`. El identificador interno y
   la ruta anterior se conservan para no romper corridas ni enlaces existentes.
 - `aviso-filtracion` usa el banner sobrio
-  `phishing/aviso-seguridad.webp`.
+  `escenarios/phishing/aviso-seguridad.webp`.
 - En `quishing-actualice`, el marcador del banco abre primero el Centro de
   seguridad de la app. El buen final solo se acredita después de comprobar
   que no hay una actualización pendiente.

@@ -36,7 +36,7 @@ const CORREO: ScreenView = {
   },
   body: `
     <p>Estimado(a) cliente:</p>
-    <img class="mailHero" src="/phishing/aviso-seguridad.webp" alt="" />
+    <img class="mailHero" src="/escenarios/phishing/aviso-seguridad.webp" alt="" />
     <p>
       Hace tres días detectamos un <b>incidente de seguridad</b> que expuso los correos,
       teléfonos e historial de pedidos de un grupo de clientes, incluido el suyo.

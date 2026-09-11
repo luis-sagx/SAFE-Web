@@ -4,9 +4,9 @@ import type { ScreenView } from '../../components/ui/DeviceScreen'
 import type { Senal } from '../../components/ui/PanelVeredicto'
 import type { Story } from '../../hooks/useStoryEngine'
 
-const DESCANSO: ScreenView = { kind: 'escena', src: '/CargadorSospechoso.jpeg', alt: 'Cable desconocido en la sala de descanso', zonas: [{ id: 'cable-descanso', x: '63%', y: '66%', ancho: '18%', alto: '22%' }] }
+const DESCANSO: ScreenView = { kind: 'escena', src: '/escenarios/fisico/cargador-sospechoso.webp', alt: 'Cable desconocido en la sala de descanso', zonas: [{ id: 'cable-descanso', x: '63%', y: '66%', ancho: '18%', alto: '22%' }] }
 const DESCANSO_CON_DESTELLO: ScreenView = { ...DESCANSO, destello: { x: '69%', y: '81%', goto: 'n1', label: 'Inspeccionó el cable' } }
-const ESCRITORIO: ScreenView = { kind: 'escena', src: '/ImagenEscritorio.jpeg', alt: 'Cable desconocido sobre un escritorio', zonas: [{ id: 'cable-escritorio', x: '42%', y: '53%', ancho: '22%', alto: '20%' }] }
+const ESCRITORIO: ScreenView = { kind: 'escena', src: '/escenarios/fisico/imagen-escritorio.webp', alt: 'Cable desconocido sobre un escritorio', zonas: [{ id: 'cable-escritorio', x: '42%', y: '53%', ancho: '22%', alto: '20%' }] }
 const ESCRITORIO_CON_DESTELLO: ScreenView = { ...ESCRITORIO, destello: { x: '53%', y: '63%', goto: 'n2', label: 'Inspeccionó el cable' } }
 const SENALES_DESCANSO: Senal[] = [{ id: 'cable-descanso', targetId: 'cable-descanso', pantalla: 'n1', texto: 'Un <b>cable sin dueño</b> también puede ser un dispositivo de ataque.' }]
 const SENALES_COMPLETAS: Senal[] = [...SENALES_DESCANSO, { id: 'cable-escritorio', targetId: 'cable-escritorio', pantalla: 'n2', texto: 'Llevarlo al escritorio no lo hace seguro: <b>no se conecta</b>; se entrega a IT o se desecha.' }]

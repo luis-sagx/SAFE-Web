@@ -42,7 +42,7 @@ const CORREO: ScreenView = {
   },
   body: `
     <p><span data-signal="saludo">Estimado(a) ganador(a):</span></p>
-    <img class="mailHero" src="/phishing/premio-loteria.webp" alt="" />
+    <img class="mailHero" src="/escenarios/phishing/premio-loteria.webp" alt="" />
     <p>
       Su correo fue seleccionado como ganador del Sorteo Internacional de este mes.
     </p>
