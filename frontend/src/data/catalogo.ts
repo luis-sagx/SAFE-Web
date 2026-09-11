@@ -154,7 +154,9 @@ const BASE: EscenarioBase[] = [
     // sitio, la falsa igual que la real.
     // v7: el correo usa una campaña visual nueva y un mensaje más breve,
     // urgente y coherente con las señales que se explican al finalizar.
-    version: 7,
+    // v8: la cabecera del mensaje distingue explícitamente los campos De y
+    // Para, como en un cliente de correo real.
+    version: 8,
     naturaleza: "fraude",
     dificultad: 1,
     espeja: "phishing/aviso-filtracion",
@@ -183,7 +185,9 @@ const BASE: EscenarioBase[] = [
     // finales nombran lo que se entregó.
     // v10: el cuerpo adopta identidad institucional y elimina la imagen
     // genérica que no aportaba información al comprobante adjunto.
-    version: 10,
+    // v11: la cabecera del mensaje distingue explícitamente los campos De y
+    // Para, como en un cliente de correo real.
+    version: 11,
     naturaleza: "fraude",
     dificultad: 2,
     espeja: "phishing/rol-de-pagos",
@@ -211,7 +215,9 @@ const BASE: EscenarioBase[] = [
     // v8: el participante ve los datos que este escenario le pide, y los
     // finales nombran lo que se entregó.
     // v9: el correo incorpora una identidad corporativa realista.
-    version: 9,
+    // v10: la cabecera del mensaje distingue explícitamente los campos De y
+    // Para, como en un cliente de correo real.
+    version: 10,
     naturaleza: "fraude",
     dificultad: 3,
     espeja: "phishing/rol-de-pagos",
@@ -238,7 +244,9 @@ const BASE: EscenarioBase[] = [
     // finales nombran lo que se entregó.
     // v9: el portal visible se puede abrir desde el correo, el período es
     // vigente y el mensaje muestra identidad corporativa y saludo personal.
-    version: 9,
+    // v10: la cabecera del mensaje distingue explícitamente los campos De y
+    // Para, como en un cliente de correo real.
+    version: 10,
     naturaleza: "legitimo",
     dificultad: 3,
     espeja: "phishing/clave-caducada",
@@ -263,7 +271,9 @@ const BASE: EscenarioBase[] = [
     // finales nombran lo que se entregó.
     // v9: el correo incorpora una identidad bancaria realista y adapta su
     // redacción al español ecuatoriano.
-    version: 9,
+    // v10: el participante debe comprobar en el centro de seguridad de la app
+    // que no existe la actualización antes de completar el buen final.
+    version: 10,
     naturaleza: "fraude",
     dificultad: 4,
     espeja: "phishing/aviso-filtracion",
@@ -284,7 +294,9 @@ const BASE: EscenarioBase[] = [
     // sitio, la falsa igual que la real.
     // v8: el correo elimina la imagen genérica y la etiqueta artificial
     // "(nueva)"; su ruta pública ahora describe la situación sin jerga.
-    version: 8,
+    // v9: la cabecera del mensaje distingue explícitamente los campos De y
+    // Para, como en un cliente de correo real.
+    version: 9,
     naturaleza: "fraude",
     dificultad: 4,
     espeja: "phishing/rol-de-pagos",
@@ -308,7 +320,9 @@ const BASE: EscenarioBase[] = [
     // finales nombran lo que se entregó.
     // v9: el aviso usa una pieza visual propia de TiendaExpress y fechas
     // relativas para mantener vigente el escenario legítimo.
-    version: 9,
+    // v10: la cabecera del mensaje distingue explícitamente los campos De y
+    // Para, como en un cliente de correo real.
+    version: 10,
     naturaleza: "legitimo",
     dificultad: 4,
     espeja: "phishing/sesion-bogota",
@@ -337,7 +351,9 @@ const BASE: EscenarioBase[] = [
     // finales nombran lo que se entregó.
     // v8: el correo incorpora una identidad bancaria realista y adapta su
     // redacción al español ecuatoriano.
-    version: 8,
+    // v9: la cabecera del mensaje distingue explícitamente los campos De y
+    // Para, como en un cliente de correo real.
+    version: 9,
     naturaleza: "fraude",
     dificultad: 5,
     espeja: "phishing/aviso-filtracion",

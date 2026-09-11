@@ -581,9 +581,9 @@ export function CuerpoCorreo({
           {etiqueta}
         </p>
         <p className={styles.senderAddr} data-signal={senalDireccion}>
-          {direccion}
+          de: {direccion}
         </p>
-        <p className={styles.senderTo}>para {destinatario ?? correoSimulado}</p>
+        <p className={styles.senderTo}>para: {destinatario ?? correoSimulado}</p>
       </div>
       <span className={styles.date}>{fecha}</span>
     </div>

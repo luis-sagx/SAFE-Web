@@ -46,7 +46,7 @@ describe('QuishingActualice', () => {
   it('muestra el dominio del remitente con la sustitución de l por 1', () => {
     renderEscenario()
 
-    expect(screen.getByText('notificaciones@bancodel1itoral.com')).toBeDefined()
+    expect(screen.getByText('de: notificaciones@bancodel1itoral.com')).toBeDefined()
   })
 
   it('escanear el QR y enviar el formulario cuenta como caer en la trampa', () => {
@@ -58,10 +58,14 @@ describe('QuishingActualice', () => {
     expect(screen.getByText('Caíste en la trampa')).toBeDefined()
   })
 
-  it('entrar por la app del banco desde los marcadores acredita sin escanear', () => {
+  it('comprueba la solicitud desde la app del banco antes de acreditar', () => {
     renderEscenario()
 
     fireEvent.click(screen.getByRole('button', { name: 'Abrir Banco del Litoral' }))
+    expect(screen.getByRole('heading', { name: 'Centro de seguridad' })).toBeDefined()
+    expect(screen.queryByText('No caíste · entraste por tu cuenta')).toBeNull()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Revisar alertas recientes' }))
 
     expect(screen.getByText('No caíste · entraste por tu cuenta')).toBeDefined()
   })

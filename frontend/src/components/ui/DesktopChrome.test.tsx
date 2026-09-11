@@ -29,4 +29,20 @@ describe('CuerpoCorreo', () => {
     expect(marca.textContent).toContain('Seguridad de la información')
     expect(screen.getByText('Contenido que debe seguir disponible.')).toBeDefined()
   })
+
+  it('etiqueta explícitamente quién envía y quién recibe el mensaje', () => {
+    render(
+      <CuerpoCorreo
+        asunto="Aviso"
+        remitente={{ nombre: 'Banco del Litoral', direccion: 'notificaciones@bancodel1itoral.com' }}
+        recibido="hoy 08:15"
+        destinatario="luissagnay@safeweb.com"
+      >
+        <p>Mensaje de prueba.</p>
+      </CuerpoCorreo>,
+    )
+
+    expect(screen.getByText('de: notificaciones@bancodel1itoral.com')).toBeDefined()
+    expect(screen.getByText('para: luissagnay@safeweb.com')).toBeDefined()
+  })
 })

@@ -10,6 +10,8 @@ en una señal de que el mensaje es legítimo.
 
 - Todos los correos reciben una cabecera de marca compacta y accesible. Los
   mensajes legítimos y fraudulentos comparten el mismo nivel de acabado.
+- La cabecera del mensaje rotula explícitamente `De:` y `Para:` para que el
+  participante identifique sin ambigüedad el origen y el destinatario.
 - `loteria-premiada` usa el nuevo banner `phishing/premio-loteria.webp` y una
   redacción más breve, directa y urgente.
 - `factura-sri` elimina la ilustración genérica; el adjunto sigue siendo la
@@ -23,6 +25,9 @@ en una señal de que el mensaje es legítimo.
   la ruta anterior se conservan para no romper corridas ni enlaces existentes.
 - `aviso-filtracion` usa el banner sobrio
   `phishing/aviso-seguridad.webp`.
+- En `quishing-actualice`, el marcador del banco abre primero el Centro de
+  seguridad de la app. El buen final solo se acredita después de comprobar
+  que no hay una actualización pendiente.
 - Los escenarios restantes reciben una estructura visual acorde con su entidad
   sin sumar imágenes decorativas.
 - La barra del navegador pasa de “Marcadores” a “Sitios guardados”, explica su

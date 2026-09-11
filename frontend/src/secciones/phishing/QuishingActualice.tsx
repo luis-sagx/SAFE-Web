@@ -45,6 +45,7 @@ const QR_SVG = `
 const STORY: Story<StoryNode> = {
   n1: { kind: 'scene' },
   n2: { kind: 'scene' },
+  n3: { kind: 'scene' },
 
   e_datos: {
     kind: 'bad',
@@ -59,7 +60,7 @@ const STORY: Story<StoryNode> = {
     kind: 'good',
     verdict: 'No caíste · entraste por tu cuenta',
     outcome:
-      'Entraste a la app del banco por tu cuenta. No había ninguna actualización de datos pendiente: el correo era falso.',
+      'Entraste a la app del banco por tu cuenta y comprobaste el centro de seguridad. No había ninguna actualización de datos pendiente: el correo era falso.',
   },
   e_eliminar: {
     kind: 'good',
@@ -202,14 +203,20 @@ const PESTANAS: Record<string, PestanaConfig> = {
     segura: false,
     cierra: 'n1',
   },
+  n3: {
+    titulo: 'Centro de seguridad',
+    url: 'https://bancodellitoral.com.ec/app/seguridad',
+    segura: true,
+    cierra: 'n1',
+  },
 }
 
 const MARCADORES: MarcadorNavegador[] = [
   {
     Icono: Landmark,
     texto: 'Banco del Litoral',
-    goto: 'e_app',
-    label: 'Entró directamente a la app del banco desde sus marcadores',
+    goto: 'n3',
+    label: 'Abrió la app del banco desde sus marcadores para comprobar la solicitud',
   },
   { Icono: Newspaper, texto: 'El Comercio' },
 ]
@@ -298,6 +305,41 @@ function ContenidoPortalFalso() {
       <AvisoSitio>
         La actualización es obligatoria para mantener activa su cuenta. Sus datos viajan cifrados y
         no se comparten con terceros.
+      </AvisoSitio>
+
+      <PieSitio texto="Banco del Litoral · Entidad supervisada" enlaces={ENLACES_PIE} />
+    </div>
+  )
+}
+
+function ContenidoCentroSeguridad() {
+  return (
+    <div className={styles.page}>
+      <CabeceraSitio
+        marca="Banco del Litoral"
+        menu={['Cuentas', 'Transferencias', 'Pagos', 'Ayuda']}
+      />
+      <h2 className={styles.pageTitle}>Centro de seguridad</h2>
+      <p className={styles.pageSub}>
+        Revisa las solicitudes recientes antes de confirmar cambios en tu cuenta.
+      </p>
+
+      <div className={styles.form}>
+        <fieldset className={styles.field}>
+          <legend>Actualización de datos</legend>
+          <span className={styles.input}>No tienes solicitudes pendientes</span>
+        </fieldset>
+        <BotonHotspot
+          goto="e_app"
+          label="Comprobó en el centro de seguridad que no había una actualización pendiente"
+          className={styles.submit}
+        >
+          Revisar alertas recientes
+        </BotonHotspot>
+      </div>
+
+      <AvisoSitio>
+        El banco nunca te pedirá confirmar una actualización desde un enlace recibido por correo.
       </AvisoSitio>
 
       <PieSitio texto="Banco del Litoral · Entidad supervisada" enlaces={ENLACES_PIE} />
@@ -418,8 +460,10 @@ function QuishingActualice() {
             engine.isEnding && !repasando ? engine.current : undefined,
           )}
         />
-      ) : (
+      ) : pantallaActual === 'n2' ? (
         <ContenidoPortalFalso />
+      ) : (
+        <ContenidoCentroSeguridad />
       )}
     </Navegador>
   )
