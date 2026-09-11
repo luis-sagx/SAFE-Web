@@ -15,7 +15,7 @@ function Tarea({ hecho, children }: { hecho: boolean; children: ReactNode }) {
       <span
         aria-hidden
         className={`mt-1 flex size-5 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
-          hecho ? 'bg-success text-white' : 'border border-hairline-strong text-transparent'
+          hecho ? 'bg-success text-on-success' : 'border border-hairline-strong text-transparent'
         }`}
       >
         ✓
