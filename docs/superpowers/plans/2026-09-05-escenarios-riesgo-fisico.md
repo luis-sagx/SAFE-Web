@@ -97,7 +97,7 @@ Run: `git add frontend/src/secciones/fisico/{TrampaUSB,CodigoQRCafe,PuertosFrios
 
 - [ ] **Step 1: Write failing tests**
 
-Replace fake timers with immediate bank-call image coverage. Test that review can show `EscaneoBilletera`, that carrying the cable reaches desk rather than ending, and that `Dejarlo donde está y avisar a IT` is a new good ending.
+Replace fake timers with immediate bank-call image coverage. Test that review can show `escaneo-billetera.webp`, that carrying the cable reaches desk rather than ending, and that `Dejarlo donde está y avisar a IT` is a new good ending.
 
 - [ ] **Step 2: Run the focused tests**
 
@@ -107,7 +107,7 @@ Expected: FAIL due to timeouts, spark gating, SVG art, and local feedback.
 
 - [ ] **Step 3: Write minimal graph implementations**
 
-For cloned card, start with `LlamadaBanco.jpeg`, retain `EscaneoBilletera.jpeg` as the `pantalla: 'n_recuerdo'` signal target, and model four endings. For cable, use `CargadorSospechoso.jpeg` then `ImagenEscritorio.jpeg`; map the specified two bad/two good office endings, add the early IT option, and leave take-to-desk as only a graph edge. Delete `FlashSpark`, `ConsequenceArt`, `SCENE_ART_*`, shuffling, delay effects, and flash state.
+For cloned card, start with `llamada-banco.webp`, retain `escaneo-billetera.webp` as the `pantalla: 'n_recuerdo'` signal target, and model four endings. For cable, use `cargador-sospechoso.webp` then `imagen-escritorio.webp`; map the specified two bad/two good office endings, add the early IT option, and leave take-to-desk as only a graph edge. Delete `FlashSpark`, `ConsequenceArt`, `SCENE_ART_*`, shuffling, delay effects, and flash state.
 
 - [ ] **Step 4: Run the focused tests**
 
