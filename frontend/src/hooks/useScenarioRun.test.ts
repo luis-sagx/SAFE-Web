@@ -1,6 +1,6 @@
 import { act, renderHook } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import type { RunPayload } from '../lib/api'
+import { ApiError, type RunPayload } from '../lib/api'
 import { getEscenario } from '../data/catalogo'
 import { pendingCount } from '../lib/pendingRuns'
 import { outcomeFromKind, scoreFromOutcome, useScenarioRun } from './useScenarioRun'
@@ -97,8 +97,8 @@ describe('useScenarioRun', () => {
     expect(createRunMock).toHaveBeenCalledTimes(1)
   })
 
-  it('encola la corrida cuando el servidor falla', async () => {
-    createRunMock.mockRejectedValue(new Error('sin red'))
+  it('encola la corrida cuando falla la red', async () => {
+    createRunMock.mockRejectedValue(new TypeError('Failed to fetch'))
     const { result } = renderHook(() => useScenarioRun(ESCENARIO))
 
     await act(async () => {
@@ -107,6 +107,18 @@ describe('useScenarioRun', () => {
 
     expect(result.current.status).toBe('queued')
     expect(pendingCount()).toBe(1)
+  })
+
+  it('no encola una corrida inválida que nunca podrá reenviarse', async () => {
+    createRunMock.mockRejectedValue(new ApiError('scenarioId inválido', 400))
+    const { result } = renderHook(() => useScenarioRun(ESCENARIO))
+
+    await act(async () => {
+      await result.current.finish({ endingId: 'e_pago', outcome: 'INCORRECTO' })
+    })
+
+    expect(result.current.status).toBe('failed')
+    expect(pendingCount()).toBe(0)
   })
 
   it('permite volver a enviar después de reiniciar el escenario', async () => {

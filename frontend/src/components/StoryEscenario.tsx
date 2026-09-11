@@ -130,6 +130,11 @@ function pestanaDeVista(view: ScreenView, dominio: string): PestanaConfig | null
       cierra: view.cerrarGoto,
     }
   }
+  // Un chat que declara `sitio` no es una app del celular sino una página: se
+  // abre en el navegador y le toca su pestaña, como a cualquier otra.
+  if (view.kind === 'sms' && view.sitio) {
+    return { titulo: view.sitio.titulo, url: view.sitio.url, segura: true }
+  }
   return null
 }
 
@@ -476,6 +481,11 @@ function StoryEscenario({
     }
   }
 
+  // Un chat de asistente de IA se usa en el computador y no en el celular
+  // (ver `sitio` en DeviceScreen): con él manda el marco de escritorio, aunque
+  // el escenario tenga sus decisiones dentro de la pantalla.
+  const chatEnNavegador = vista.kind === 'sms' && Boolean(vista.sitio)
+
   const decision = engine.isEnding ? (
     <PanelVeredicto
       estadoGuardado={engine.runStatus}
@@ -698,9 +708,9 @@ function StoryEscenario({
       nota={nota}
       dominioCorreo={dominioCorreo}
       pantalla={
-        accionesEnPantalla ? (
+        accionesEnPantalla && !chatEnNavegador ? (
           pantallaTelefono
-        ) : vista.kind === 'sms' || vista.kind === 'escena' ? (
+        ) : !chatEnNavegador && (vista.kind === 'sms' || vista.kind === 'escena') ? (
           // Sin el marco del teléfono no hay `pantallaTelefono` que delegue el
           // clic: sin este `onClick` los puntos interactivos de la escena (el
           // destello, en 'escena') no dispararían nada. El propio div no es
@@ -743,7 +753,7 @@ function StoryEscenario({
       dispositivo={
         vista.kind === 'escena'
           ? 'escena'
-          : accionesEnPantalla || vista.kind === 'sms'
+          : !chatEnNavegador && (accionesEnPantalla || vista.kind === 'sms')
             ? 'telefono'
             : 'escritorio'
       }

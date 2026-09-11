@@ -1,4 +1,4 @@
-import { Landmark, Paperclip, Search, SendHorizontal, UserRound } from 'lucide-react'
+import { Bot, Landmark, Paperclip, Search, SendHorizontal, UserRound } from 'lucide-react'
 import { useEffect, useMemo, useRef } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import { CUENTA_FICTICIA, IDENTIDAD_FICTICIA } from '../../lib/identidadFicticia'
@@ -152,6 +152,13 @@ export type ScreenView =
       kind: 'sms'
       sender: string
       sub: string
+      /** Sitio en el que vive este chat, cuando no es una app del celular sino
+       *  una página que se abre en el computador (un asistente de IA, p. ej.).
+       *  Con esto el escenario deja el marco del teléfono y se pinta dentro del
+       *  navegador, con su pestaña y su barra de direcciones: en la oficina la
+       *  IA se usa en el computador, y ver el dominio ajeno en la barra es la
+       *  mitad de la lección. */
+      sitio?: { titulo: string; url: string }
       /** El `text` es HTML fijo del escenario: el enlace del mensaje va como
        *  `<a href>` con `data-hotspot-goto`, para que tocarlo sea la decisión y
        *  el navegador revele el destino al pasar el cursor. */
@@ -520,7 +527,14 @@ function DeviceScreen({
   const ultimoMio = view.msgs.map((msg) => Boolean(msg.mine)).lastIndexOf(true)
 
   return (
-    <section className={`${styles.screen} ${styles.sms}`} aria-label="Mensajes de texto">
+    <section
+      className={`${styles.screen} ${styles.sms} ${view.sitio ? styles.smsAncho : ''}`}
+      aria-label={view.sitio ? 'Chat con el asistente' : 'Mensajes de texto'}
+    >
+      {/* Un chat web no lleva cabecera de hilo: el nombre del servicio ya está
+          en la pestaña y en la barra de direcciones, y esa franja se comía el
+          alto que necesitan las respuestas largas del asistente. */}
+      {!view.sitio && (
       <div className={styles.smsbar}>
         {view.volverGoto ? (
           <button
@@ -560,6 +574,7 @@ function DeviceScreen({
             centrado en la cabecera y no corrido hacia la derecha. */}
         <span className={styles.smsVolver} aria-hidden />
       </div>
+      )}
 
       <div ref={hiloRef} className={styles.smsThread}>
         {view.msgs.map((msg, i) => (
@@ -570,6 +585,13 @@ function DeviceScreen({
             }`}
             style={i > ultimoMio ? { animationDelay: `${(i - ultimoMio - 1) * 0.6}s` } : undefined}
           >
+            {/* Sin cabecera que diga quién escribe, el avatar es lo que
+                distingue al asistente: cada respuesta suya sale firmada. */}
+            {view.sitio && !msg.mine && (
+              <span className={styles.smsAvatar} aria-hidden>
+                <Bot className={styles.smsAvatarIcono} strokeWidth={2} />
+              </span>
+            )}
             <div className={styles.smsBubble}>
               {msg.voz ? (
                 <NotaDeVoz texto={msg.text} duracion={msg.voz} senal={msg.senal} />
@@ -677,7 +699,9 @@ function DeviceScreen({
             Mensaje de texto
           </button>
         ) : (
-          <div className={styles.smsField}>Mensaje de texto</div>
+          <div className={styles.smsField}>
+            {view.sitio ? 'Escríbele al asistente' : 'Mensaje de texto'}
+          </div>
         )}
       </div>
     </section>

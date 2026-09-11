@@ -1,5 +1,7 @@
-import { useEffect, useRef, useState } from 'react'
+import { useContext, useEffect, useRef, useState } from 'react'
+import { toast } from 'sonner'
 import AccionesFinal from './AccionesFinal'
+import { RepasoVistoContext } from './repasoVisto'
 import EtiquetaAprobacion from './EtiquetaAprobacion'
 import type { StoryNode } from '../../hooks/useStoryEngine'
 import type { RunStatus } from '../../hooks/useScenarioRun'
@@ -88,6 +90,33 @@ function PanelVeredicto({
     primerBotonRef.current?.focus()
   }, [])
 
+  // Le avisa al layout en cuanto no queda repaso pendiente: llegó al cierre, o
+  // el desenlace no traía señales y arrancó ya ahí. A partir de ese momento
+  // "Salir" no necesita advertir de nada.
+  const avisarRepasoVisto = useContext(RepasoVistoContext)
+  useEffect(() => {
+    if (enCierre) avisarRepasoVisto?.(true)
+  }, [enCierre, avisarRepasoVisto])
+
+  useEffect(() => {
+    const id = `run-status-${escenarioId}`
+
+    if (estadoGuardado === 'queued') {
+      toast.warning('No pudimos enviar el intento.', {
+        id,
+        description:
+          'Quedó guardado en este equipo y lo reintentaremos automáticamente.',
+      })
+    }
+
+    if (estadoGuardado === 'failed') {
+      toast.error('No se pudo registrar este intento.', {
+        id,
+        description: 'El intento fue rechazado y no volverá a enviarse automáticamente.',
+      })
+    }
+  }, [escenarioId, estadoGuardado])
+
   useEffect(() => {
     onPantalla?.(enSenal ? senales[paso]?.pantalla : undefined)
   }, [enSenal, paso, senales, onPantalla])
@@ -150,15 +179,6 @@ function PanelVeredicto({
       <p className="mt-2 text-base leading-relaxed text-body">{node.outcome}</p>
 
       <EtiquetaAprobacion node={node} />
-
-      {/* Solo cuando hay algo que decir: "guardado" es lo esperado y no merece
-          una línea, pero una corrida en cola sí, porque el participante cree
-          que ya contó. */}
-      {estadoGuardado === 'queued' && (
-        <output className="mt-3 text-base text-warning">
-          Sin conexión: este intento se guardó en el equipo y se enviará solo cuando vuelva la red.
-        </output>
-      )}
 
       {enVeredicto && (
         <button
