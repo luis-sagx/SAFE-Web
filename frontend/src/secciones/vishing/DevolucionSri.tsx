@@ -12,20 +12,9 @@ import {
   IDENTIDAD_FICTICIA,
 } from "../../lib/identidadFicticia";
 
-/**
- * La devolución de impuestos que hay que "confirmar".
- *
- * El anzuelo no es una amenaza sino un regalo pequeño y creíble, y lo que
- * piden al principio no parece grave: la cédula, el número de cuenta. Por eso
- * el escenario separa lo que se llegó a decir de lo que no — colgar después de
- * dar la cédula no es lo mismo que colgar antes, y el final tiene que
- * distinguirlo o la lección se pierde.
- *
- * El código que piden al final es auténtico y llega solo, en cuanto lo
- * mencionan: es el que el banco manda para autorizar una salida de dinero, no
- * para liberar ningún depósito. La confusión entre las dos cosas es la trampa
- * entera.
- */
+// El anzuelo es un regalo, no una amenaza. El final distingue colgar antes de
+// dar la cédula de colgar después: son cosas distintas y hay que marcarlo.
+// El código final es real, pero autoriza salidas de dinero, no depósitos.
 
 const NUMERO = "+593 2 299 0100";
 const CODIGO = "302774";
@@ -136,9 +125,8 @@ const SIN_CEDULA: ScreenView = {
   colgarLabel: "Colgó sin dar ningún dato",
 };
 
-/// El mensaje auténtico. Sin `volverGoto`: no hay lista a la que volver, y la
-/// vuelta a la llamada es el icono `Teléfono`, que restaura la conversación
-/// exacta donde se dejó.
+// Sin `volverGoto`: se vuelve a la llamada por el icono Teléfono, que
+// restaura la conversación exacta donde se dejó.
 const CODIGO_SMS: ScreenView = {
   kind: "sms",
   sender: "BancoLitoral",
@@ -229,8 +217,6 @@ const APPS: AppTelefono[] = [
   },
 ];
 
-/// Llega en cuanto lo mencionan, sobre la llamada en curso, y es la misma en
-/// los dos caminos: con cédula dada o sin darla, el código se pide igual.
 const NOTIFICACION_CODIGO = {
   app: "Mensajes",
   remitente: "BancoLitoral",
