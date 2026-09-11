@@ -5,20 +5,8 @@ import type { Story } from '../../hooks/useStoryEngine'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
 import type { Senal } from '../../components/ui/PanelVeredicto'
 
-/**
- * El cobro que no existe, y la trampa que es contestar.
- *
- * Puerta de entrada del módulo (dificultad 1) y el único escenario sin enlace
- * ni formulario: no hay nada que abrir ni nada que rellenar. Lo único que el
- * mensaje quiere es una respuesta, y esa es toda la lección — en un SMS,
- * contestar no es la salida sino la puerta.
- *
- * Un número que responde queda marcado como activo y se revende. Y en las
- * campañas de tarificación adicional, el propio "BAJA" se cobra.
- *
- * La suscripción es falsa, y eso se comprueba en la app de la operadora: por
- * eso el acierto se enseña en pantalla en vez de contarse solo en el veredicto.
- */
+// Puerta de entrada del módulo (dificultad 1): único escenario sin enlace ni formulario.
+// Lo único que el mensaje quiere es una respuesta — contestar no es la salida, es la puerta.
 
 const TEXTO = `SUSCRIPCION ACTIVA: Tonos y Horoscopo Premium. Se renovo por $2,99 semanales con cargo a tu saldo. Si no deseas continuar responde BAJA a este mismo numero.`
 
@@ -28,10 +16,8 @@ const SMS: Extract<ScreenView, { kind: 'sms' }> = {
   sub: 'Número corto · SMS',
   senalRemitente: 'remitente',
   msgs: [{ text: TEXTO, time: '07:52', senal: 'mensaje' }],
-  // Las dos son respuestas, y las dos pierden. No hay frase prudente que
-  // mandar: en un SMS que no esperabas, lo que confirma que la línea existe no
-  // es lo que escribes sino que escribas. Ofrecer una salida buena en el
-  // composer enseñaría lo contrario.
+  // Las dos son respuestas, y las dos pierden: lo que confirma la línea no es lo
+  // que escribes sino que escribas. Una salida buena en el composer enseñaría lo contrario.
   respuestas: [
     { texto: 'BAJA', goto: 'e_responde', label: 'Escogió responder BAJA, como pedía el mensaje' },
     {
@@ -46,10 +32,8 @@ const SMS: Extract<ScreenView, { kind: 'sms' }> = {
   volverLabel: 'Salió del hilo sin hacer nada',
 }
 
-/// El hilo con la respuesta ya enviada. Las dos frases salen igual y las dos
-/// terminan igual de mal, así que las dos tienen que verse igual: la burbuja
-/// propia en el hilo, y el veredicto sobre ella. Un final que se dispara sin
-/// enseñar lo que salió del teléfono deja al participante sin saber qué mandó.
+// El veredicto se ve sobre la burbuja propia en el hilo: un final que se dispara sin
+// enseñar lo que salió del teléfono deja al participante sin saber qué mandó.
 function conRespuesta(texto: string): Extract<ScreenView, { kind: 'sms' }> {
   return {
     ...SMS,
@@ -65,11 +49,8 @@ function conRespuesta(texto: string): Extract<ScreenView, { kind: 'sms' }> {
 const SMS_BAJA = conRespuesta('BAJA')
 const SMS_RECLAMO = conRespuesta('Yo no contraté nada, dejen de cobrarme.')
 
-/// El inicio de la app. Abrir la app todavía no es haber comprobado nada: desde
-/// aquí se puede mirar las suscripciones o taparse el oído bloqueando los
-/// números cortos, que es el gesto precipitado que este escenario mide. Un
-/// icono que resuelve el escenario de un toque premia haber encontrado el
-/// icono, no haber sabido qué hacer con él.
+// Abrir la app todavía no es haber comprobado nada: se puede mirar las suscripciones
+// o bloquear los números a ciegas, que es el gesto precipitado que este escenario mide.
 const OPERADORA_INICIO: ScreenView = {
   kind: 'web',
   app: 'Mi Operadora',
@@ -98,9 +79,7 @@ const OPERADORA_INICIO: ScreenView = {
   button: '',
 }
 
-/// Lo que se ve al mirar las suscripciones: no hay ninguna. El acierto tiene
-/// que enseñarse, no solo contarse, y no queda nada abierto después de verlo:
-/// la pantalla que lo prueba es la que cierra.
+// El acierto tiene que enseñarse, no solo contarse: la pantalla que lo prueba es la que cierra.
 const OPERADORA: ScreenView = {
   kind: 'web',
   app: 'Mi Operadora',
