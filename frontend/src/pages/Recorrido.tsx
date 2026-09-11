@@ -29,12 +29,7 @@ function formatearFecha(iso: string): string {
   })
 }
 
-/**
- * La última corrida de cada escenario, la misma regla que usa el gating
- * (`calcularProgreso` en el backend): la de mayor `finishedAt`. Cualquier otra
- * regla —el mejor intento, el promedio— haría que esta pantalla contradijera
- * a la insignia "Aprobado" de la sección.
- */
+// Última corrida por escenario: misma regla que el gating del backend (mayor finishedAt), para no contradecir la insignia "Aprobado".
 function ultimaPorEscenario(runs: RunSummary[]): Map<string, RunSummary> {
   const ordenadas = [...runs].sort(
     (a, b) => new Date(a.finishedAt).getTime() - new Date(b.finishedAt).getTime(),
@@ -50,15 +45,7 @@ function contarIntentos(runs: RunSummary[], scenarioId: string): number {
   return runs.filter((r) => r.scenarioId === scenarioId).length
 }
 
-/**
- * El historial propio del participante: qué jugó, con qué resultado quedó y
- * cuánto le tomó. Consume `GET /api/runs/me`, que ya existía sin ningún
- * llamador en la aplicación — nada de esto pide nada nuevo al servidor.
- *
- * Solo aparece lo que el participante ya jugó: un escenario sin intentar no
- * puede aparecer aquí, y con él tampoco se filtra su `naturaleza` antes de
- * tiempo (la misma protección que ya aplica `Seccion.tsx`).
- */
+// Usa GET /api/runs/me (ya existía, sin llamador). Solo escenarios ya jugados: no se filtra su naturaleza antes de tiempo.
 function Recorrido() {
   const [runs, setRuns] = useState<RunSummary[] | null>(null)
   const [error, setError] = useState(false)
