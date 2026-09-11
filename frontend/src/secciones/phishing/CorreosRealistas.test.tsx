@@ -65,21 +65,21 @@ describe('correos de phishing realistas', () => {
   it('usa los dos banners nuevos y elimina las ilustraciones genéricas', () => {
     const loteria = abrirCorreo(LoteriaPremiada)
     expect(
-      loteria.container.querySelector('img[src="/phishing/premio-loteria.webp"]'),
+      loteria.container.querySelector('img[src="/escenarios/phishing/premio-loteria.webp"]'),
     ).not.toBeNull()
     loteria.unmount()
 
     const filtracion = abrirCorreo(AvisoFiltracion)
     expect(
-      filtracion.container.querySelector('img[src="/phishing/aviso-seguridad.webp"]'),
+      filtracion.container.querySelector('img[src="/escenarios/phishing/aviso-seguridad.webp"]'),
     ).not.toBeNull()
     filtracion.unmount()
 
     const factura = abrirCorreo(FacturaSri)
-    expect(factura.container.querySelector('img[src="/FacturaAdjunta.jpeg"]')).toBeNull()
+    expect(factura.container.querySelector('img.mailHero')).toBeNull()
     factura.unmount()
 
     const colegio = abrirCorreo(SecuestroHilo)
-    expect(colegio.container.querySelector('img[src="/ComprobanteTransferencia.jpeg"]')).toBeNull()
+    expect(colegio.container.querySelector('img.mailHero')).toBeNull()
   })
 })
