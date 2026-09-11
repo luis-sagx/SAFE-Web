@@ -2,6 +2,7 @@ import { ChevronDown, LogOut, Route } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { Link } from 'react-router'
 import { useAuth } from '../context/AuthContext'
+import SelectorTema from './SelectorTema'
 
 /**
  * Identidad y sesión, en un solo control del header.
@@ -69,6 +70,11 @@ function MenuUsuario() {
           <div className="border-b border-hairline px-3 py-2.5">
             <p className="truncate text-sm font-semibold text-ink">{nombre}</p>
             <p className="text-xs text-muted">{isSupervisor ? 'Supervisor' : roleLabel}</p>
+          </div>
+
+          <div className="border-b border-hairline px-3 py-2.5">
+            <p className="mb-1.5 text-xs font-medium text-muted">Tema</p>
+            <SelectorTema />
           </div>
 
           {!isSupervisor && (

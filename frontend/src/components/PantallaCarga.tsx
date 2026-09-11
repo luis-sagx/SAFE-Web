@@ -1,3 +1,5 @@
+import Marca from './Marca'
+
 /**
  * Lo que se ve mientras la app decide qué pantalla toca: comprobar la sesión,
  * bajar el trozo de código de un escenario, pedir el progreso de un módulo.
@@ -24,13 +26,7 @@ function PantallaCarga({ mensaje = 'Cargando…' }: { mensaje?: string }) {
           aria-hidden
           className="absolute inset-0 animate-spin rounded-full border-2 border-hairline-strong border-t-primary [animation-duration:1.1s] motion-reduce:animate-none"
         />
-        <img
-          src="/marca/isotipo-safeweb.webp"
-          alt=""
-          width={1253}
-          height={1253}
-          className="size-14"
-        />
+        <Marca variante="isotipo" className="size-14" />
       </div>
 
       <p className="text-base text-muted">{mensaje}</p>
