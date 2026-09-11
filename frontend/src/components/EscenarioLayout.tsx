@@ -8,6 +8,7 @@ import type { ResultadoEscenario } from "../hooks/useScenarioRun";
 import { useAuth } from "../context/AuthContext";
 import { escenariosDeSeccion, getEscenario, getSeccion } from "../data/catalogo";
 import TarjetaIdentidad, { type DatoIdentidad } from "./ui/TarjetaIdentidad";
+import { RepasoVistoContext } from "./ui/repasoVisto";
 
 interface EscenarioLayoutProps {
   /** Misma clave que recibe useScenarioRun, p. ej. 'estafa/saldo-contable'. */
@@ -126,6 +127,15 @@ function EscenarioLayout({
     ? `${usuarioSimulado}@${dominioCorreo}`
     : correoSimulado;
   const [fase, setFase] = useState<"briefing" | "escenario">("briefing");
+  // Lo enciende PanelVeredicto al llegar al cierre del repaso. Se apaga al
+  // reiniciar (cuando `resultado` vuelve a quedar sin valor), para que el
+  // siguiente intento vuelva a exigir ver las señales antes de salir sin más.
+  const [repasoVisto, setRepasoVisto] = useState(false);
+  useEffect(() => {
+    if (!resultado) setRepasoVisto(false);
+  }, [resultado]);
+  const decidido = Boolean(resultado);
+  const salidaLimpia = decidido && repasoVisto;
   const empezarRef = useRef<HTMLButtonElement>(null);
   const escenaRef = useRef<HTMLDivElement>(null);
   const dialogoRef = useRef<HTMLDialogElement>(null);
@@ -173,17 +183,21 @@ function EscenarioLayout({
     </Link>
   );
 
-  /** La salida de dentro del escenario. Se llama por lo que hace y confirma
-   *  una vez: la corrida solo se registra al llegar a un final, así que salir a
-   *  mitad la pierde entera, y "← Volver a la sección" tiene aspecto de flecha
-   *  de retroceso, que es lo que se pulsa por reflejo. */
-  const salir = (
+  /** La salida de dentro del escenario. Mientras quede algo a medias —sin
+   *  decidir, o decidido pero sin ver las señales— confirma una vez: la corrida
+   *  solo se registra al llegar a un final, y el repaso es la mitad útil del
+   *  ejercicio. Ya visto todo, salir es un enlace normal, sin diálogo. */
+  const salir = salidaLimpia ? (
+    <Link to={`/seccion/${escenario.seccionId}`} className={CLASE_ATRAS}>
+      ← Salir
+    </Link>
+  ) : (
     <button
       type="button"
       onClick={() => salidaRef.current?.showModal()}
       className={CLASE_ATRAS}
     >
-      ← Salir sin terminar
+      {decidido ? "← Salir" : "← Salir sin terminar"}
     </button>
   );
 
@@ -359,7 +373,9 @@ function EscenarioLayout({
               Ver contexto y mis datos
             </button>
 
-            {decision}
+            <RepasoVistoContext.Provider value={setRepasoVisto}>
+              {decision}
+            </RepasoVistoContext.Provider>
           </div>
         )}
       </main>
@@ -405,21 +421,23 @@ function EscenarioLayout({
         </form>
       </dialog>
 
-      {/* Confirmación de salida. La corrida solo se guarda al llegar a un
-          final, así que salir a mitad la borra entera: eso hay que decirlo
-          antes, no después. Un solo paso, y la opción segura —quedarse— es la
-          que tiene el peso visual. */}
+      {/* Confirmación de salida. Un solo paso, y la opción segura —quedarse— es
+          la que tiene el peso visual. Lo que se avisa cambia según lo que
+          quede a medias: si aún no decidió, que la corrida no se guarda; si ya
+          decidió pero no vio el repaso, que se lo va a perder. Ya visto todo,
+          este diálogo no llega a abrirse (ver `salir`). */}
       <dialog
         ref={salidaRef}
         aria-labelledby="titulo-salida"
         className="m-auto w-[min(92vw,30rem)] rounded-xl border border-hairline-strong bg-surface p-8 text-ink shadow-card backdrop:bg-ink/40"
       >
         <h2 id="titulo-salida" className="text-xl font-semibold text-ink">
-          ¿Salir del escenario?
+          {decidido ? "¿Salir sin ver las señales?" : "¿Salir del escenario?"}
         </h2>
         <p className="mt-3 text-base leading-relaxed text-body">
-          Todavía no has decidido nada, así que este intento no se va a guardar.
-          Puedes volver a empezarlo cuando quieras.
+          {decidido
+            ? "Tu intento ya quedó registrado, pero todavía no has visto las señales que delataban el engaño. Puedes volver a verlas cuando quieras."
+            : "Todavía no has decidido nada, así que este intento no se va a guardar. Puedes volver a empezarlo cuando quieras."}
         </p>
 
         <div className="mt-6 flex flex-wrap justify-end gap-3">
