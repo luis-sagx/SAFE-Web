@@ -223,6 +223,17 @@ describe('cola de corridas pendientes', () => {
     expect(pendingCount()).toBe(2)
   })
 
+  it('ignora un marcador obsoleto al migrar una cola anterior nueva', () => {
+    localStorage.setItem(
+      'mic-pending-run:legacy-stale-id-0',
+      JSON.stringify(run('phishing/factura-sri')),
+    )
+    localStorage.setItem('mic-pending-runs-migration-id', 'stale-id')
+    localStorage.setItem('mic-pending-runs', JSON.stringify([run('smishing/bono-estado')]))
+
+    expect(pendingCount()).toBe(2)
+  })
+
   it('no llama al servidor cuando no hay nada pendiente', async () => {
     const result = await flushPendingRuns()
     expect(createRunMock).not.toHaveBeenCalled()

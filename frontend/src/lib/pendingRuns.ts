@@ -20,10 +20,28 @@ interface StoredRun {
   run: RunPayload
 }
 
+interface MigrationMarker {
+  id: string
+  source: string
+}
+
 function newEntryId(): string {
   return typeof crypto.randomUUID === 'function'
     ? crypto.randomUUID()
     : `${Date.now()}-${Math.random().toString(36).slice(2)}`
+}
+
+function readMigrationMarker(): MigrationMarker | null {
+  try {
+    const raw = localStorage.getItem(MIGRATION_ID_KEY)
+    if (!raw) return null
+    const marker = JSON.parse(raw) as Partial<MigrationMarker>
+    return typeof marker.id === 'string' && typeof marker.source === 'string'
+      ? { id: marker.id, source: marker.source }
+      : null
+  } catch {
+    return null
+  }
 }
 
 function migrateLegacyQueue(): boolean {
@@ -43,18 +61,20 @@ function migrateLegacyQueue(): boolean {
     return true
   }
 
-  let migrationId = localStorage.getItem(MIGRATION_ID_KEY)
-  if (!migrationId) migrationId = newEntryId()
+  const marker = readMigrationMarker()
+  const migrationId = marker?.source === raw ? marker.id : newEntryId()
   const keys = runs.map((_, index) => `${ENTRY_PREFIX}legacy-${migrationId}-${index}`)
 
   try {
-    localStorage.setItem(MIGRATION_ID_KEY, migrationId)
+    localStorage.setItem(MIGRATION_ID_KEY, JSON.stringify({ id: migrationId, source: raw }))
     runs.forEach((run, index) => {
       localStorage.setItem(keys[index]!, JSON.stringify(run))
     })
-    // El origen solo se elimina después de haber escrito la migración completa.
-    localStorage.removeItem(LEGACY_KEY)
+    // Quitar primero el marcador evita que un cierre abrupto deje un ID capaz
+    // de sobrescribir una cola legacy futura. En el peor caso se reintenta la
+    // migración, favoreciendo duplicados recuperables antes que pérdida de datos.
     localStorage.removeItem(MIGRATION_ID_KEY)
+    localStorage.removeItem(LEGACY_KEY)
     return true
   } catch {
     // Revierte una migración parcial: la cola original queda intacta y puede
