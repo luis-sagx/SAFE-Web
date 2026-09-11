@@ -1,4 +1,6 @@
 import type { ReactNode } from 'react'
+import Marca from './Marca'
+import SelectorTema from './SelectorTema'
 
 interface AuthLayoutProps {
   titulo: string
@@ -11,16 +13,13 @@ interface AuthLayoutProps {
 /// plataforma; el formulario queda en una tarjeta a la derecha.
 function AuthLayout({ titulo, subtitulo, children, pie }: AuthLayoutProps) {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-mint-light to-canvas">
+    <div className="relative min-h-screen bg-gradient-to-b from-mint-light to-canvas">
+      <div className="absolute right-6 top-6">
+        <SelectorTema />
+      </div>
       <div className="mx-auto flex min-h-screen max-w-5xl flex-col justify-center gap-12 px-6 py-12 lg:flex-row lg:items-center lg:gap-16">
         <div className="flex-1">
-          <img
-            src="/marca/logo-safeweb.webp"
-            alt="SafeWeb"
-            width={2171}
-            height={723}
-            className="h-12 w-auto"
-          />
+          <Marca variante="logo" className="h-12 w-auto" />
           <h1 className="mt-4 text-4xl font-semibold leading-[1.1] tracking-tight text-ink sm:text-5xl">
             Aprende a reconocer un engaño antes de caer en uno.
           </h1>

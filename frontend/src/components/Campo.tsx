@@ -55,7 +55,7 @@ function Campo({
         className={`mt-1.5 h-11 w-full rounded-md border bg-surface px-4 text-base text-ink placeholder:text-muted-soft focus:outline-none focus:ring-1 ${
           error
             ? 'border-danger focus:border-danger focus:ring-danger'
-            : 'border-hairline-strong focus:border-ink focus:ring-ink'
+            : 'border-border-control focus:border-ink focus:ring-ink'
         }`}
       />
       {/* El error va debajo de su campo y no en un banner al inicio del

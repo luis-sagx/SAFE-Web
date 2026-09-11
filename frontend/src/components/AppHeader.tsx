@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import { Link } from 'react-router'
 import { useAuth } from '../context/AuthContext'
 import InfoLink from './InfoLink'
+import Marca from './Marca'
 import MenuUsuario from './MenuUsuario'
 
 /**
@@ -67,13 +68,7 @@ function AppHeader({
             to={isSupervisor ? '/admin' : '/dashboard'}
             className="shrink-0 rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-link"
           >
-            <img
-              src="/marca/logo-safeweb.webp"
-              alt="SafeWeb"
-              width={2171}
-              height={723}
-              className="h-10 w-auto"
-            />
+            <Marca variante="logo" className="h-10 w-auto" />
           </Link>
 
           {(etiqueta || atras) && <span aria-hidden className="h-6 w-px bg-hairline-strong" />}
