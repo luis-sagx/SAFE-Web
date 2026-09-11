@@ -388,7 +388,7 @@ function EscenarioLayout({
         aria-labelledby="titulo-contexto"
         // Mismo ancho que el saludo de bienvenida (Bienvenida.tsx): son los
         // dos únicos modales de la app y no hay motivo para que midan distinto.
-        className="m-auto w-[min(92vw,42rem)] rounded-xl border border-hairline-strong bg-surface p-8 text-ink shadow-card backdrop:bg-ink/40"
+        className="m-auto w-[min(92vw,42rem)] rounded-xl border border-hairline-strong bg-surface p-8 text-ink shadow-card backdrop:bg-scrim"
       >
         <h2
           id="titulo-contexto"
@@ -429,7 +429,7 @@ function EscenarioLayout({
       <dialog
         ref={salidaRef}
         aria-labelledby="titulo-salida"
-        className="m-auto w-[min(92vw,30rem)] rounded-xl border border-hairline-strong bg-surface p-8 text-ink shadow-card backdrop:bg-ink/40"
+        className="m-auto w-[min(92vw,30rem)] rounded-xl border border-hairline-strong bg-surface p-8 text-ink shadow-card backdrop:bg-scrim"
       >
         <h2 id="titulo-salida" className="text-xl font-semibold text-ink">
           {decidido ? "¿Salir sin ver las señales?" : "¿Salir del escenario?"}

@@ -120,7 +120,7 @@ function CierreModulo({ seccion, escenarios, progreso }: CierreModuloProps) {
           const resultado = progreso.escenarios.find((e) => e.id === escenario.id)
           const ok = resultado?.ultimoOutcome === 'CORRECTO'
           return <li key={escenario.id} className="flex items-center gap-2 text-sm text-body">
-            <span aria-hidden className={ok ? 'text-success' : 'text-danger'}>{ok ? '✓' : '✗'}</span>
+            <span aria-hidden className={ok ? 'text-success-ink' : 'text-danger'}>{ok ? '✓' : '✗'}</span>
             {escenario.titulo}
           </li>
         })}
@@ -144,7 +144,7 @@ function CierreModulo({ seccion, escenarios, progreso }: CierreModuloProps) {
               <dt className="text-sm font-semibold text-ink">{d.pregunta}</dt>
               <dd className="mt-1.5 grid gap-1.5 sm:grid-cols-2">
                 <span className="text-sm leading-relaxed text-body">
-                  <span className="font-medium text-success">Legítimo:</span> {d.legitimo}
+                  <span className="font-medium text-success-ink">Legítimo:</span> {d.legitimo}
                 </span>
                 <span className="text-sm leading-relaxed text-body">
                   <span className="font-medium text-danger">Fraude:</span> {d.fraude}

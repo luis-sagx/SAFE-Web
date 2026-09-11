@@ -46,7 +46,7 @@ function CierreModuloModal({ seccion, escenarios, progreso, onClose }: CierreMod
         type="button"
         onClick={onClose}
         aria-label="Cerrar resumen del módulo"
-        className="fixed inset-0 cursor-default appearance-none border-0 bg-ink/40 p-0"
+        className="fixed inset-0 cursor-default appearance-none border-0 bg-scrim p-0"
       />
 
       <div
