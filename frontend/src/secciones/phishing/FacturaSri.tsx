@@ -292,6 +292,12 @@ function ContenidoCorreo({ recibido, carpetas }: { recibido: string; carpetas: C
         senalEtiqueta: 'externo',
       }}
       recibido={recibido}
+      marca={{
+        nombre: 'Servicio de Rentas Internas',
+        detalle: 'Facturación electrónica',
+        icono: 'empresa',
+        variante: 'institucional',
+      }}
       adjunto={
         <BotonHotspot
           goto="e_adjunto"
@@ -327,7 +333,6 @@ function ContenidoCorreo({ recibido, carpetas }: { recibido: string; carpetas: C
       }
     >
       <p>Estimado(a) contribuyente:</p>
-      <img src="/FacturaAdjunta.jpeg" alt="" />
       <p>
         Nuestro sistema detectó una <b>factura electrónica no validada</b> asociada a su RUC. Si no
         completa la validación en las próximas{' '}

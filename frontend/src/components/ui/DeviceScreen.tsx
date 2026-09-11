@@ -3,7 +3,12 @@ import { useEffect, useMemo, useRef } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import { CUENTA_FICTICIA, IDENTIDAD_FICTICIA } from '../../lib/identidadFicticia'
 import { AvisoSitio, CabeceraSitio, PieSitio } from './armazonSitio'
-import { CuerpoCorreo, type AccionCorreo, type CarpetaCorreo } from './DesktopChrome'
+import {
+  CuerpoCorreo,
+  type AccionCorreo,
+  type CarpetaCorreo,
+  type MarcaCorreo,
+} from './DesktopChrome'
 import NotaDeVoz from './NotaDeVoz'
 import PantallaLlamada from './PantallaLlamada'
 import { EscenaFoto, type DestelloEscena, type ProgresoEscena, type ZonaEscena } from '../../secciones/fisico/EscenaFoto'
@@ -59,6 +64,8 @@ export type ScreenView =
       senalDireccion?: string
       senalEtiqueta?: string
       senalAdjunto?: string
+      /** Identidad visual que el remitente incluye en su plantilla. */
+      marca?: MarcaCorreo
     }
   | {
       kind: 'web'
@@ -402,6 +409,7 @@ function DeviceScreen({
           senalEtiqueta: view.senalEtiqueta,
         }}
         recibido={view.date}
+        marca={view.marca}
         adjunto={
           view.attachment && (
             <span

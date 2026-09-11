@@ -179,7 +179,7 @@ export function Navegador({
       </div>
 
       {marcadores.length > 0 && (
-        <div className={styles.marcadores}>
+        <nav className={styles.marcadores} aria-label="Sitios guardados">
           {/* La barra va con nombre porque mucha gente nunca guardó un
               marcador, y sin él esta franja se lee como decoración del
               programa en vez de como sitios a los que se puede ir. En el
@@ -188,12 +188,19 @@ export function Navegador({
               correo real por no encontrar el control, no por criterio.
 
               Nombra la barra, no la respuesta: sigue sin decir cuál pulsar. */}
-          <span className={styles.marcadoresEtiqueta}>Marcadores</span>
+          <span className={styles.marcadoresCabecera}>
+            <strong className={styles.marcadoresEtiqueta}>Sitios guardados</strong>
+            <span className={styles.marcadoresAyuda}>
+              Abre una entidad sin usar los enlaces del correo
+            </span>
+          </span>
           {marcadores.map(({ Icono, texto, goto, label }) => (
             <button
               key={texto}
               type="button"
               className={styles.marcador}
+              aria-label={`Abrir ${texto}`}
+              title={`Abrir ${texto}`}
               data-hotspot-goto={goto}
               data-hotspot-label={label}
             >
@@ -201,7 +208,7 @@ export function Navegador({
               {texto}
             </button>
           ))}
-        </div>
+        </nav>
       )}
 
       {children}

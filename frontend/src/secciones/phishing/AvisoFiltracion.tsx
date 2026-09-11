@@ -28,11 +28,17 @@ const CORREO: ScreenView = {
   senalDireccion: 'remitente',
   subject: 'Aviso importante de seguridad',
   date: 'hoy 08:15',
+  marca: {
+    nombre: 'TiendaExpress',
+    detalle: 'Seguridad de la información',
+    icono: 'tienda',
+    variante: 'seguridad',
+  },
   body: `
     <p>Estimado(a) cliente:</p>
-    <img src="/AlertaFiltracion.jpeg" alt="" />
+    <img class="mailHero" src="/phishing/aviso-seguridad.webp" alt="" />
     <p>
-      El pasado 2 de agosto detectamos un <b>incidente de seguridad</b> que expuso los correos,
+      Hace tres días detectamos un <b>incidente de seguridad</b> que expuso los correos,
       teléfonos e historial de pedidos de un grupo de clientes, incluido el suyo.
     </p>
     <p>

@@ -26,6 +26,9 @@ export interface Seccion {
 interface EscenarioBase {
   seccionId: string;
   escenarioId: string;
+  /** Segmento público de la URL cuando conviene que sea más comprensible que
+   *  el identificador histórico guardado en las corridas. */
+  ruta?: string;
   /** Describe la situación, nunca el veredicto: el menú no puede delatar
    *  cuáles casos son fraude y cuáles legítimos. */
   titulo: string;
@@ -149,7 +152,9 @@ const BASE: EscenarioBase[] = [
     // devuelve al correo, y la decisión es lo que se haga con el mensaje.
     // v6: las páginas del escenario llevan cabecera, aviso y pie de
     // sitio, la falsa igual que la real.
-    version: 6,
+    // v7: el correo usa una campaña visual nueva y un mensaje más breve,
+    // urgente y coherente con las señales que se explican al finalizar.
+    version: 7,
     naturaleza: "fraude",
     dificultad: 1,
     espeja: "phishing/aviso-filtracion",
@@ -176,7 +181,9 @@ const BASE: EscenarioBase[] = [
     // sitio, la falsa igual que la real.
     // v9: el participante ve los datos que este escenario le pide, y los
     // finales nombran lo que se entregó.
-    version: 9,
+    // v10: el cuerpo adopta identidad institucional y elimina la imagen
+    // genérica que no aportaba información al comprobante adjunto.
+    version: 10,
     naturaleza: "fraude",
     dificultad: 2,
     espeja: "phishing/rol-de-pagos",
@@ -203,7 +210,8 @@ const BASE: EscenarioBase[] = [
     // falsa igual que la real (prueba del issue #25).
     // v8: el participante ve los datos que este escenario le pide, y los
     // finales nombran lo que se entregó.
-    version: 8,
+    // v9: el correo incorpora una identidad corporativa realista.
+    version: 9,
     naturaleza: "fraude",
     dificultad: 3,
     espeja: "phishing/rol-de-pagos",
@@ -228,7 +236,9 @@ const BASE: EscenarioBase[] = [
     // reproche; sigue siendo parcial porque el mensaje pedía algo.
     // v8: el participante ve los datos que este escenario le pide, y los
     // finales nombran lo que se entregó.
-    version: 8,
+    // v9: el portal visible se puede abrir desde el correo, el período es
+    // vigente y el mensaje muestra identidad corporativa y saludo personal.
+    version: 9,
     naturaleza: "legitimo",
     dificultad: 3,
     espeja: "phishing/clave-caducada",
@@ -251,7 +261,9 @@ const BASE: EscenarioBase[] = [
     // sitio, la falsa igual que la real.
     // v7: el participante ve los datos que este escenario le pide, y los
     // finales nombran lo que se entregó.
-    version: 8,
+    // v9: el correo incorpora una identidad bancaria realista y adapta su
+    // redacción al español ecuatoriano.
+    version: 9,
     naturaleza: "fraude",
     dificultad: 4,
     espeja: "phishing/aviso-filtracion",
@@ -260,6 +272,7 @@ const BASE: EscenarioBase[] = [
   {
     seccionId: "phishing",
     escenarioId: "secuestro-hilo",
+    ruta: "pago-pension-colegio",
     titulo: "Cambio de cuenta bancaria",
     descripcion:
       "La secretaría del colegio informa una cuenta nueva para el pago de la pensión.",
@@ -269,7 +282,9 @@ const BASE: EscenarioBase[] = [
     // devuelve al correo, y la decisión es lo que se haga con el mensaje.
     // v6: las páginas del escenario llevan cabecera, aviso y pie de
     // sitio, la falsa igual que la real.
-    version: 7,
+    // v8: el correo elimina la imagen genérica y la etiqueta artificial
+    // "(nueva)"; su ruta pública ahora describe la situación sin jerga.
+    version: 8,
     naturaleza: "fraude",
     dificultad: 4,
     espeja: "phishing/rol-de-pagos",
@@ -291,7 +306,9 @@ const BASE: EscenarioBase[] = [
     // reproche; sigue siendo parcial porque el mensaje pedía algo.
     // v8: el participante ve los datos que este escenario le pide, y los
     // finales nombran lo que se entregó.
-    version: 8,
+    // v9: el aviso usa una pieza visual propia de TiendaExpress y fechas
+    // relativas para mantener vigente el escenario legítimo.
+    version: 9,
     naturaleza: "legitimo",
     dificultad: 4,
     espeja: "phishing/sesion-bogota",
@@ -318,7 +335,9 @@ const BASE: EscenarioBase[] = [
     // sitio, la falsa igual que la real.
     // v7: el participante ve los datos que este escenario le pide, y los
     // finales nombran lo que se entregó.
-    version: 7,
+    // v8: el correo incorpora una identidad bancaria realista y adapta su
+    // redacción al español ecuatoriano.
+    version: 8,
     naturaleza: "fraude",
     dificultad: 5,
     espeja: "phishing/aviso-filtracion",
@@ -954,4 +973,8 @@ export function escenariosDeSeccion(seccionId: string): Escenario[] {
 
 export function getEscenario(id: string): Escenario | undefined {
   return ESCENARIOS.find((escenario) => escenario.id === id);
+}
+
+export function rutaEscenario(escenario: Escenario): string {
+  return `/seccion/${escenario.seccionId}/${escenario.ruta ?? escenario.escenarioId}`;
 }

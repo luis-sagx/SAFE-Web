@@ -32,24 +32,30 @@ const CORREO: ScreenView = {
   senalDireccion: 'remitente',
   label: 'Externo',
   senalEtiqueta: 'externo',
-  subject: '¡Felicidades! Su número resultó ganador, reclamo pendiente',
+  subject: 'Acción requerida hoy: confirme su premio de USD 48.500',
   date: 'hoy 07:14',
+  marca: {
+    nombre: 'Lotería del Pacífico',
+    detalle: 'Premios y sorteos internacionales',
+    icono: 'premio',
+    variante: 'publicidad',
+  },
   body: `
     <p><span data-signal="saludo">Estimado(a) ganador(a):</span></p>
-    <img src="/LoteriaPremio.jpeg" alt="" />
+    <img class="mailHero" src="/phishing/premio-loteria.webp" alt="" />
     <p>
-      Nos complace informarle que su correo electrónico resultó
-      <b>preseleccionado</b> en el sorteo internacional del mes y le corresponde un premio de
-      <b>USD 48.500,00</b>.
+      Su correo fue seleccionado como ganador del Sorteo Internacional de este mes.
     </p>
-    <p>
-      Para liberar la transferencia debe cubrir el
-      <mark class="marca" data-signal="pago">impuesto único de $85</mark>, que la ley no permite
-      descontar del monto premiado. Dispone de
-      <mark class="marca" data-signal="plazo">48 horas</mark>; pasado ese plazo el premio se
-      reasigna a otro participante.
-    </p>
+    <div class="correoDato">
+      <span>Premio reservado</span>
+      <strong>USD 48.500</strong>
+    </div>
+    <p>Para autorizar la transferencia debe pagar
+      <mark class="marca" data-signal="pago">USD 85 por concepto de impuestos y validación</mark>
+      antes de <mark class="marca" data-signal="plazo">hoy a las 18:00</mark>. Si el pago no se
+      registra dentro del plazo, el premio será reasignado automáticamente.</p>
     <p><a class="cta" href="${URL_FALSA}" data-hotspot-goto="n2" data-hotspot-label="Pulsó &quot;Reclamar mi premio ahora&quot; en el correo">Reclamar mi premio ahora</a></p>
+    <p class="fine">Este mensaje fue generado automáticamente. No responda a este correo.</p>
   `,
   footer: `
     <p>Lotería del Pacífico · Departamento de Premios y Reclamos</p>
@@ -118,7 +124,7 @@ const BUSCADOR: ScreenView = {
       titulo: 'Me llegó un correo de la Lotería del Pacífico · Foros EC',
       url: 'https://foros.ec › t › loteria-del-pacifico-premio',
       fragmento:
-        'A mí me llegó igual, con el mismo monto y las mismas 48 horas. Le escribí y lo único que querían era la transferencia de los $85.',
+        'A mí me llegó igual, con el mismo monto y la misma exigencia de pagar primero. Le escribí y lo único que querían era la transferencia de los $85.',
     },
   ],
   fields: [],
@@ -195,7 +201,7 @@ const SENALES: Senal[] = [
     pantalla: 'n1',
     targetId: 'plazo',
     texto:
-      'El <b>plazo de 48 horas</b> está para que no te dé tiempo de preguntarle a nadie. La prisa es parte del método.',
+      'El plazo de <b>solo unas horas</b> está para que no te dé tiempo de preguntarle a nadie. La prisa es parte del método.',
   },
   {
     id: 'dominio',

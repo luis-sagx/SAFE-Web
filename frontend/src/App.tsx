@@ -1,11 +1,11 @@
-import { Suspense } from 'react'
+import { Fragment, Suspense } from 'react'
 import { Navigate, Route, Routes } from 'react-router'
 import PantallaCarga from './components/PantallaCarga'
 import RunNotifications from './components/RunNotifications'
 import RequireEscenarioDisponible from './components/RequireEscenarioDisponible'
 import RequireAuth from './components/RequireAuth'
 import RequireSupervisor from './components/RequireSupervisor'
-import { ESCENARIOS } from './data/catalogo'
+import { ESCENARIOS, rutaEscenario } from './data/catalogo'
 import Admin from './pages/Admin'
 import Bienvenida from './pages/Bienvenida'
 import Dashboard from './pages/Dashboard'
@@ -43,18 +43,23 @@ function App() {
             {/* Una ruta por entrada del catálogo: agregar un escenario no obliga
                 a tocar este archivo. */}
             {ESCENARIOS.map((escenario) => {
-              const { id, seccionId, escenarioId, Component } = escenario
+              const { id, seccionId, escenarioId, ruta, Component } = escenario
+              const contenido = (
+                <RequireEscenarioDisponible escenario={escenario}>
+                  <Component />
+                </RequireEscenarioDisponible>
+              )
 
               return (
-                <Route
-                  key={id}
-                  path={`/seccion/${seccionId}/${escenarioId}`}
-                  element={
-                    <RequireEscenarioDisponible escenario={escenario}>
-                      <Component />
-                    </RequireEscenarioDisponible>
-                  }
-                />
+                <Fragment key={id}>
+                  <Route path={rutaEscenario(escenario)} element={contenido} />
+                  {ruta && (
+                    <Route
+                      path={`/seccion/${seccionId}/${escenarioId}`}
+                      element={contenido}
+                    />
+                  )}
+                </Fragment>
               )
             })}
           </Route>

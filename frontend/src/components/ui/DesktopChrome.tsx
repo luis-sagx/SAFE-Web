@@ -1,9 +1,15 @@
 import {
+  Building2,
+  Gift,
   Inbox,
+  Landmark,
   Lock,
   Minus,
   Power,
+  School,
+  ShieldCheck,
   Square,
+  Store,
   X,
   LayoutGrid,
   Send,
@@ -63,6 +69,59 @@ export interface CarpetaCorreo {
    *  (p. ej. Eliminar → Papelera). Sin ella la carpeta se ve vacía siempre,
    *  aunque el escenario acabe de mandar el correo a esa bandeja. */
   contenido?: ReactNode
+}
+
+export type IconoMarcaCorreo =
+  | 'empresa'
+  | 'premio'
+  | 'banco'
+  | 'colegio'
+  | 'seguridad'
+  | 'tienda'
+
+export type VarianteMarcaCorreo =
+  | 'corporativa'
+  | 'publicidad'
+  | 'financiera'
+  | 'institucional'
+  | 'seguridad'
+
+/** Identidad visual del remitente dentro del mensaje. La marca mejora el
+ * realismo, pero nunca sustituye las señales del dominio y del contenido. */
+export interface MarcaCorreo {
+  nombre: string
+  detalle: string
+  icono: IconoMarcaCorreo
+  variante: VarianteMarcaCorreo
+}
+
+const ICONOS_MARCA = {
+  empresa: Building2,
+  premio: Gift,
+  banco: Landmark,
+  colegio: School,
+  seguridad: ShieldCheck,
+  tienda: Store,
+} satisfies Record<IconoMarcaCorreo, LucideIcon>
+
+function IdentidadMarcaCorreo({ marca }: { marca: MarcaCorreo }) {
+  const Icono = ICONOS_MARCA[marca.icono]
+
+  return (
+    <header
+      role="group"
+      className={`${styles.mailBrand} ${styles[`mailBrand_${marca.variante}`]}`}
+      aria-label={`Identidad visual de ${marca.nombre}`}
+    >
+      <span className={styles.mailBrandIcono} aria-hidden>
+        <Icono strokeWidth={1.8} />
+      </span>
+      <span className={styles.mailBrandTexto}>
+        <strong>{marca.nombre}</strong>
+        <span>{marca.detalle}</span>
+      </span>
+    </header>
+  )
 }
 
 /**
@@ -417,7 +476,7 @@ export interface RemitenteCorreo {
   senalEtiqueta?: string
 }
 
-interface VentanaCorreoProps {
+export interface VentanaCorreoProps {
   asunto: string
   remitente: RemitenteCorreo
   /** Fecha u hora de llegada, ya formateada por el escenario. */
@@ -440,6 +499,8 @@ interface VentanaCorreoProps {
    *  mandar el correo a Spam el participante se queda mirando esa carpeta, y
    *  el repaso necesita el mensaje delante para poder señalarlo. */
   carpetaForzada?: string
+  /** Cabecera visual que una entidad real incluiría en su plantilla. */
+  marca?: MarcaCorreo
   /** Cuerpo del correo. */
   children: ReactNode
 }
@@ -495,6 +556,7 @@ export function CuerpoCorreo({
   pie,
   destinatario,
   carpetaForzada,
+  marca,
   children,
 }: VentanaCorreoProps) {
   const { correoSimulado } = useAuth()
@@ -557,6 +619,8 @@ export function CuerpoCorreo({
                 ),
                 remitente.senalDireccion,
               )}
+
+              {marca && <IdentidadMarcaCorreo marca={marca} />}
 
               <div className={styles.prose}>{children}</div>
 

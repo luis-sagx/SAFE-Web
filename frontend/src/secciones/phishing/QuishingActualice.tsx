@@ -162,7 +162,7 @@ const RESUMEN = 'Un correo del banco pide escanear un QR para "actualizar tus da
 const CONTEXTO: Contexto = {
   antes: (
     <>
-      Sos cliente del <strong>Banco del Litoral</strong>. <strong>Este mes</strong> el banco sí
+      Eres cliente del <strong>Banco del Litoral</strong>. <strong>Este mes</strong> el banco sí
       pidió, dentro de su app, que los clientes actualicen algunos datos.
     </>
   ),
@@ -228,6 +228,12 @@ function ContenidoCorreo({ recibido, carpetas }: { recibido: string; carpetas: C
         senalEtiqueta: 'externo',
       }}
       recibido={recibido}
+      marca={{
+        nombre: 'Banco del Litoral',
+        detalle: 'Actualización de información de clientes',
+        icono: 'banco',
+        variante: 'financiera',
+      }}
       pie={<p className="fine">Banco del Litoral · Este es un mensaje automático.</p>}
     >
       <p>Estimado(a) cliente:</p>
