@@ -160,16 +160,16 @@ function PanelVeredicto({
   // verse igual que haber entregado la clave.
   const tono =
     node.kind === 'good'
-      ? { borde: 'border-success/40', fondo: 'bg-success', icono: '✓' }
+      ? { borde: 'border-success/40', fondo: 'bg-success', tinta: 'text-on-success', icono: '✓' }
       : node.kind === 'partial'
-        ? { borde: 'border-warning/40', fondo: 'bg-warning', icono: '!' }
-        : { borde: 'border-danger/40', fondo: 'bg-danger', icono: '✕' }
+        ? { borde: 'border-warning/40', fondo: 'bg-warning', tinta: 'text-on-warning', icono: '!' }
+        : { borde: 'border-danger/40', fondo: 'bg-danger', tinta: 'text-on-danger', icono: '✕' }
 
   return (
     <div className={`rounded-lg border bg-surface p-4 ${tono.borde}`}>
       <p className="flex items-center gap-2 text-lg font-semibold text-ink">
         <span
-          className={`flex size-6 shrink-0 items-center justify-center rounded-full text-sm text-white ${tono.fondo}`}
+          className={`flex size-6 shrink-0 items-center justify-center rounded-full text-sm ${tono.tinta} ${tono.fondo}`}
           aria-hidden
         >
           {tono.icono}
