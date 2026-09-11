@@ -11,21 +11,9 @@ interface CierreModuloModalProps {
   onClose: () => void
 }
 
-/**
- * El resumen del módulo (`CierreModulo`), como diálogo y no como bloque fijo
- * de la página: se abre por elección de quien ya aprobó, no en cada visita a
- * la sección. Sin biblioteca de modales — es un único caso de uso y un
- * `<div>` con `role="dialog"` resuelve lo que hace falta: foco al abrir,
- * Escape para cerrar, clic fuera para cerrar.
- *
- * El fondo que cierra al hacer clic es un `<button>` de verdad, no un `<div>`
- * con `onClick`: un elemento sin semántica interactiva y con manejador de
- * clic no se puede operar con teclado, y por eso no puede ir como padre del
- * panel del diálogo (un `<button>` solo admite contenido de fraseo, no los
- * `<div>` del panel) — va detrás, del mismo tamaño que la pantalla, y el
- * panel se dibuja encima con `z-10`. Así el panel no necesita su propio
- * `onClick` para frenar la propagación.
- */
+// Diálogo, no bloque fijo: se abre por elección de quien ya aprobó. Sin biblioteca de
+// modales (un <div role="dialog"> alcanza). El fondo que cierra es un <button> real, no
+// un <div onClick>, porque un <button> no admite el <div> del panel como hijo — va detrás.
 function CierreModuloModal({ seccion, escenarios, progreso, onClose }: CierreModuloModalProps) {
   const cerrarRef = useRef<HTMLButtonElement>(null)
 

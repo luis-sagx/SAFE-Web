@@ -2,18 +2,8 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 
-/**
- * Prueba de contraste WCAG 2.2 AA para los dos temas del cromo.
- *
- * No mantiene una copia de los colores: los extrae de index.css con una
- * expresión regular, así que valida lo que de verdad se compila y no puede
- * quedarse validando un mapa obsoleto. Ver
- * docs/superpowers/specs/2026-09-10-tema-oscuro-design.md §5 y §7.1.
- *
- * Se lee con node:fs y no con un import `?raw`: el plugin de Tailwind
- * intercepta los imports de .css en el paso de transformación de Vite/SSR
- * (el que usa Vitest) y devuelve el módulo vacío, aunque lleve `?raw`.
- */
+// Contraste WCAG 2.2 AA: extrae los colores de index.css con regex (valida lo
+// compilado). Usa node:fs porque el plugin de Tailwind vacía los imports `?raw` de .css en Vitest.
 const css = readFileSync('src/index.css', 'utf-8')
 
 function parseTokens(block: string): Record<string, string> {
@@ -46,8 +36,7 @@ function srgbToLinear(c: number): number {
   return s <= 0.04045 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4
 }
 
-/** Acepta #rgb, #rrggbb o rgb(r g b / a). El canal alfa se compone sobre un
- *  fondo dado antes de calcular luminancia, porque scrim es translúcido. */
+// Compone el canal alfa sobre el fondo dado antes de calcular luminancia (scrim es translúcido).
 function toRgba(value: string): RGBA {
   const hex = value.match(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i)
   if (hex?.[1]) {
