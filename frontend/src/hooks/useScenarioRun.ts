@@ -36,11 +36,8 @@ export function scoreFromOutcome(outcome: RunOutcome): number {
   return 0
 }
 
-/**
- * Contrato único para registrar el resultado de un escenario. Un escenario que
- * guarde resultados por su cuenta rompe el estudio en silencio: se salta la
- * traza, la versión y la guarda contra envíos duplicados.
- */
+// Contrato único para registrar resultados: un escenario que guarde por su
+// cuenta rompe el estudio en silencio (se salta traza, versión y anti-duplicados).
 export function useScenarioRun(scenarioId: string): ScenarioRun {
   const escenario = getEscenario(scenarioId)
 
