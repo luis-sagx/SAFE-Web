@@ -16,13 +16,8 @@ import { useAuth } from '../../context/AuthContext'
 import { BotonesVentana, Taskbar, type Reloj } from './DesktopChrome'
 import styles from './DeviceScreen.module.css'
 
-/**
- * El navegador con pestañas de los escenarios interactivos de phishing.
- * Extraído de FacturaSri.tsx (primer escenario en usar esta mecánica) para
- * que el resto de escenarios de correo/web lo reutilicen sin copiarlo. Ver
- * docs/superpowers/specs/2026-08-05-escenarios-interactivos-phishing-design.md
- * §2.1.
- */
+// Navegador con pestañas reutilizado por los escenarios de correo/web.
+// Ver docs/superpowers/specs/2026-08-05-escenarios-interactivos-phishing-design.md §2.1.
 
 export interface PestanaConfig {
   titulo: string
@@ -32,10 +27,8 @@ export interface PestanaConfig {
    *  sin candado ni "No seguro". Ninguno de los dos aplica a un archivo local,
    *  y el candado además enseñaría lo contrario de lo que mide el módulo. */
   local?: boolean
-  /** Nodo al que lleva cerrar esta pestaña. Si la pestaña decide su cierre en
-   *  tiempo de ejecución (p. ej. según si se visitó otra pantalla antes), se
-   *  deja sin definir aquí y se resuelve con `cierrePortal` +
-   *  `pestanaCierreDinamico`. */
+  /** Nodo al que lleva cerrar esta pestaña; si depende del recorrido, se deja
+   *  sin definir y se resuelve con `cierrePortal` + `pestanaCierreDinamico`. */
   cierra?: string
   /** `data-signal` para que el repaso de señales pueda resaltar la URL de
    *  esta pestaña. */
@@ -96,12 +89,8 @@ export function Navegador({
       aria-label="Navegador web"
       onClick={onHotspot}
     >
-      {/* Sin barra de título aparte: las pestañas ocupan el borde superior de
-          la ventana, como en cualquier navegador. Antes había cuatro franjas
-          grises apiladas antes del contenido —título, pestañas, dirección y
-          marcadores— y la de arriba no decía nada que las pestañas no dijeran
-          ya. Quitarla devuelve su alto al mensaje, que es lo que hay que
-          leer. */}
+      {/* Sin barra de título aparte: las pestañas ocupan el borde superior,
+          como en cualquier navegador. */}
       <div className={styles.tabstrip} role="tablist">
         {abiertas.map((id) => {
           const meta = pestanas[id]
@@ -153,10 +142,8 @@ export function Navegador({
           <RotateCw className={styles.navIcono} strokeWidth={2} />
         </span>
 
-        {/* Iconos de trazo y no emoji: 🔒 y ⚠ se dibujan distinto —y a color— en
-            cada sistema operativo, y el indicador de seguridad de la barra de
-            direcciones es justo lo que este módulo enseña a leer. Uno que
-            cambia de aspecto según la máquina enseña peor. */}
+        {/* Iconos de trazo y no emoji: 🔒/⚠ varían según el sistema operativo
+            y el indicador de seguridad es justo lo que este módulo enseña. */}
         {actual?.local ? (
           <FileText aria-hidden className={styles.urlIcono} strokeWidth={1.75} />
         ) : actual?.segura ? (
@@ -180,14 +167,8 @@ export function Navegador({
 
       {marcadores.length > 0 && (
         <nav className={styles.marcadores} aria-label="Sitios guardados">
-          {/* La barra va con nombre porque mucha gente nunca guardó un
-              marcador, y sin él esta franja se lee como decoración del
-              programa en vez de como sitios a los que se puede ir. En el
-              escenario legítimo eso llega a falsear el dato: el marcador es el
-              único camino al acierto, y quien no lo reconoce acaba borrando un
-              correo real por no encontrar el control, no por criterio.
-
-              Nombra la barra, no la respuesta: sigue sin decir cuál pulsar. */}
+          {/* Nombrada porque sin marcadores conocidos la franja se lee como
+              decoración; sigue sin decir cuál pulsar. */}
           <span className={styles.marcadoresCabecera}>
             <strong className={styles.marcadoresEtiqueta}>Sitios guardados</strong>
             <span className={styles.marcadoresAyuda}>
