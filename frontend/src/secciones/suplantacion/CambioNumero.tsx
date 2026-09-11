@@ -6,19 +6,8 @@ import type { Senal } from '../../components/ui/PanelVeredicto'
 import type { Story } from '../../hooks/useStoryEngine'
 import { CUENTA_FICTICIA } from '../../lib/identidadFicticia'
 
-/**
- * La puerta de entrada del módulo: "se me dañó el celular, este es mi número
- * nuevo".
- *
- * Es el fraude de suplantación más común del país y el más fácil de cortar:
- * el número de tu hijo lo tienes guardado, y llamarlo cuesta un toque. Todo el
- * ataque consiste en que no lo hagas, y por eso el escenario deja la agenda
- * abierta a un icono de distancia mientras el otro lado te apura.
- *
- * La nota de voz no es adorno: es lo que convierte "alguien dice ser mi hijo"
- * en "es mi hijo". Suena de verdad, porque leer esa frase escrita quita justo
- * la parte que hay que aprender a dudar.
- */
+// Puerta de entrada del módulo. Todo el ataque consiste en no llamar al número guardado
+// de siempre; la nota de voz no es adorno, es lo que hace "es mi hijo" en vez de solo texto.
 
 const DESCONOCIDO = '+593 96 118 4402'
 const NUMERO_ANDRES = '+593 99 845 2210'
@@ -52,9 +41,7 @@ const CHAT: ScreenView = {
   volverLabel: 'Salió del chat sin contestar ni comprobar',
 }
 
-/// La ficha del contacto: donde está todo lo que hace falta para dudar. La
-/// foto es la de Andrés —cualquiera la baja de sus redes— y la cuenta se creó
-/// anteayer.
+// La ficha donde está todo lo que hace falta para dudar: foto bajada de redes, cuenta de hace 2 días.
 const PERFIL: ScreenView = {
   kind: 'web',
   app: 'Mensajes',
@@ -168,9 +155,7 @@ const EXCUSA_LLAMADA: ScreenView = {
   ],
 }
 
-/// La prueba que ninguna suplantación pasa: algo que no está en internet. La
-/// respuesta es siempre la misma —enfadarse y volver a la prisa— porque quien
-/// escribe no tiene forma de saberlo.
+// Prueba que ninguna suplantación pasa: quien escribe no tiene forma de saberlo, así que esquiva.
 const PRUEBA: ScreenView = {
   ...CHAT,
   msgs: [
@@ -200,8 +185,7 @@ const PRUEBA: ScreenView = {
   ],
 }
 
-/// La agenda. Llamar al número de siempre es la comprobación entera, y está a
-/// un icono de distancia mientras el chat te apura.
+// Llamar al número de siempre es la comprobación entera, a un icono de distancia.
 const AGENDA: ScreenView = {
   kind: 'web',
   app: 'Teléfono',

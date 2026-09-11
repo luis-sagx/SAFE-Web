@@ -6,19 +6,8 @@ import type { Senal } from '../../components/ui/PanelVeredicto'
 import type { Story } from '../../hooks/useStoryEngine'
 import { IDENTIDAD_FICTICIA } from '../../lib/identidadFicticia'
 
-/**
- * El otro lado del módulo: el perfil clonado eres tú.
- *
- * Los demás escenarios preguntan si reconoces una suplantación cuando te llega;
- * este pregunta qué haces cuando la suplantación se hace *contigo* y son tus
- * conocidos quienes reciben los mensajes. El aviso de tu amiga es auténtico, y
- * lo único que hace falta es actuar: reportar la copia y avisar a los demás
- * antes de que alguien pague.
- *
- * El error que mide no es caer en nada, sino lo que casi todo el mundo hace
- * primero: escribirle a la cuenta falsa. Ahí se entregan datos de verdad a
- * quien ya estaba usando tu nombre.
- */
+// El otro lado del módulo: el perfil clonado eres tú. El error que mide no es caer en
+// nada, sino escribirle a la cuenta falsa — eso entrega datos reales a quien ya usa tu nombre.
 
 const AMIGA = 'Verónica'
 const NUMERO_AMIGA = '+593 99 618 2274'
@@ -80,13 +69,8 @@ const GRACIAS: ScreenView = {
   ],
 }
 
-/*
- * La captura es la única pantalla del proyecto que enseña la suplantación desde
- * fuera: lo que Verónica ve en su teléfono es tu nombre y tu foto pidiéndole
- * plata. Por eso va dibujada como una captura de verdad y no contada en texto,
- * y por eso el nombre que la encabeza es el mismo que aparecerá luego en los
- * resultados de la red social.
- */
+// Única pantalla del proyecto que enseña la suplantación desde fuera: lo que Verónica ve.
+// Por eso va dibujada como captura de verdad, no contada en texto.
 const CAPTURA: ScreenView = {
   ...CHAT,
   msgs: [
