@@ -48,7 +48,7 @@ function Verificar() {
 
         {!error && resultado !== null && resultado.valido && (
           <div className="mt-4">
-            <p className="flex items-center gap-1.5 text-base font-semibold text-success">
+            <p className="flex items-center gap-1.5 text-base font-semibold text-success-ink">
               <CheckCircle2 aria-hidden className="size-5" strokeWidth={2.5} />
               Certificado válido
             </p>

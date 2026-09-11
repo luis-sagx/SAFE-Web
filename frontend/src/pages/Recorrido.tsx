@@ -9,7 +9,7 @@ import { fetchMyRuns, type RunOutcome, type RunSummary } from '../lib/api'
 const SECCIONES_ACTIVAS = SECCIONES.filter((s) => escenariosDeSeccion(s.id).length > 0)
 
 const TONO_OUTCOME: Record<RunOutcome, { Icono: typeof CheckCircle2; clase: string; texto: string }> = {
-  CORRECTO: { Icono: CheckCircle2, clase: 'text-success', texto: 'Aprobado' },
+  CORRECTO: { Icono: CheckCircle2, clase: 'text-success-ink', texto: 'Aprobado' },
   PARCIAL: { Icono: TriangleAlert, clase: 'text-warning', texto: 'A medias' },
   INCORRECTO: { Icono: XCircle, clase: 'text-danger', texto: 'No aprobado' },
 }

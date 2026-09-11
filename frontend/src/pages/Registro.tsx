@@ -91,7 +91,7 @@ function Registro() {
         ? { texto: "Débil", clase: "text-danger" }
         : criteriosPassword === 3
           ? { texto: "Media", clase: "text-warning" }
-          : { texto: "Fuerte", clase: "text-success" };
+          : { texto: "Fuerte", clase: "text-success-ink" };
 
   // Solo se avisa de la cédula cuando ya está completa: marcarla en rojo
   // mientras la escribe convierte cada tecla en un reproche.

@@ -327,7 +327,7 @@ function Seccion() {
                   <div className="flex items-center justify-between gap-3">
                     <span
                       className={`font-mono text-xs font-medium tabular-nums ${
-                        aprobado ? 'text-success' : 'text-muted'
+                        aprobado ? 'text-success-ink' : 'text-muted'
                       }`}
                     >
                       {String(indice + 1).padStart(2, '0')}
@@ -342,7 +342,7 @@ function Seccion() {
 
                   <div className="mt-4 flex items-center justify-between border-t border-hairline pt-3">
                     {aprobado ? (
-                      <span className="inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-[0.88px] text-success">
+                      <span className="inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-[0.88px] text-success-ink">
                         <CheckCircle2 aria-hidden className="size-3.5" strokeWidth={2.5} />
                         Aprobado
                       </span>
