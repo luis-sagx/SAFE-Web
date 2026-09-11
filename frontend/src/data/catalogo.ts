@@ -105,12 +105,8 @@ export const SECCIONES: Seccion[] = [
   },
 ];
 
-/// Los cuatro escenarios de "asistentes-ia" comparten forma exacta (misma
-/// versión, misma naturaleza, sin espejo): una función en vez de cuatro
-/// objetos casi idénticos, para que el detector de duplicados de Sonar no los
-/// lea como el mismo bloque cuatro veces. Las demás secciones no pasan por
-/// aquí a propósito — no hay necesidad de tocar ~50 entradas ya existentes
-/// para resolver un duplicado que solo aparece entre estas cuatro.
+// Función en vez de cuatro objetos casi idénticos, para que el detector de
+// duplicados de Sonar no los lea como el mismo bloque cuatro veces.
 function escenarioAsistentesIA(
   escenarioId: string,
   titulo: string,
@@ -133,29 +129,14 @@ function escenarioAsistentesIA(
 
 const BASE: EscenarioBase[] = [
   {
-    // Sustituye a cobro-dirigido (paquete en aduana): los dos eran "paga poco
-    // para recibir algo", así que juntos repetían la lección en vez de
-    // ampliarla. Su .tsx sigue en el repositorio por si se quiere recuperar.
-    //
-    // Dificultad 1: es la puerta de entrada del módulo. La señal decisiva no
-    // está en la pantalla —se responde con "¿yo jugué?"— y eso la vuelve
-    // accesible para quien nunca ha mirado un dominio en su vida.
+    // Sustituye a cobro-dirigido: ambos eran "paga poco para recibir algo".
+    // Dificultad 1: la señal decisiva no está en pantalla —se responde con
+    // "¿yo jugué?"— así que es accesible sin haber mirado nunca un dominio.
     seccionId: "phishing",
     escenarioId: "loteria-premiada",
     titulo: "Premio de lotería",
     descripcion:
       "Un correo anuncia un premio millonario y pide un pago para poder liberarlo.",
-    // v2: se juega sobre la pantalla, sin lista de opciones.
-    // v3: el participante ve su cédula y su cuenta antes de empezar.
-    // v4: el briefing enseña los datos prestados en una tarjeta.
-    // v5: cerrar una pestaña ya no termina la corrida ni acredita;
-    // devuelve al correo, y la decisión es lo que se haga con el mensaje.
-    // v6: las páginas del escenario llevan cabecera, aviso y pie de
-    // sitio, la falsa igual que la real.
-    // v7: el correo usa una campaña visual nueva y un mensaje más breve,
-    // urgente y coherente con las señales que se explican al finalizar.
-    // v8: la cabecera del mensaje distingue explícitamente los campos De y
-    // Para, como en un cliente de correo real.
     version: 8,
     naturaleza: "fraude",
     dificultad: 1,
@@ -168,25 +149,6 @@ const BASE: EscenarioBase[] = [
     titulo: "Factura por validar",
     descripcion:
       "Un correo institucional anuncia un comprobante pendiente y da un plazo de 24 horas.",
-    // v2: la barra del cliente de correo pasó a ser funcional y sumó cinco
-    // finales (responder, reenviar, archivar, eliminar, marcar como spam).
-    // v3: el adjunto pasó de .html a un ejecutable .vbs con doble extensión.
-    // v4: el atajo del portal abre el portal real en vez de saltar al final.
-    // v5: el escenario se juega en un navegador con pestañas; el enlace del
-    // correo abre una pestaña nueva y el portal se abre desde los marcadores.
-    // Las corridas de versiones distintas no son comparables entre sí: el
-    // estímulo que vio cada participante no fue el mismo.
-    // v6: el briefing enseña los datos prestados en una tarjeta.
-    // v7: cerrar una pestaña ya no termina la corrida ni acredita;
-    // devuelve al correo, y la decisión es lo que se haga con el mensaje.
-    // v8: las páginas del escenario llevan cabecera, aviso y pie de
-    // sitio, la falsa igual que la real.
-    // v9: el participante ve los datos que este escenario le pide, y los
-    // finales nombran lo que se entregó.
-    // v10: el cuerpo adopta identidad institucional y elimina la imagen
-    // genérica que no aportaba información al comprobante adjunto.
-    // v11: la cabecera del mensaje distingue explícitamente los campos De y
-    // Para, como en un cliente de correo real.
     version: 11,
     naturaleza: "fraude",
     dificultad: 2,
@@ -194,29 +156,12 @@ const BASE: EscenarioBase[] = [
     Component: lazy(() => import("../secciones/phishing/FacturaSri")),
   },
   {
-    // v2 en los siete: la barra del cliente pasó a ser funcional y sumó cinco
-    // finales (responder, reenviar, archivar, eliminar, spam). En los dos
-    // legítimos, eliminar y marcar como spam cuentan como fallo.
+    // En los dos legítimos del módulo, eliminar y marcar como spam cuentan como fallo.
     seccionId: "phishing",
     escenarioId: "clave-caducada",
     titulo: "Contraseña por caducar",
     descripcion:
       "Soporte técnico avisa que tu clave vence hoy y ofrece un enlace para renovarla.",
-    // v3: se juega sobre la pantalla, sin lista de opciones. Las salidas que no
-    // eran botones —avisar a Soporte TI, cerrar la página falsa— pasaron a
-    // serlo: un marcador del navegador y la ✕ de la pestaña.
-    // v4: el marcador abre la intranet de verdad en vez de saltar al veredicto,
-    // para que el camino acertado se vea y no solo se cuente.
-    // v5: el briefing enseña los datos prestados en una tarjeta.
-    // v6: cerrar una pestaña ya no termina la corrida ni acredita;
-    // devuelve al correo, y la decisión es lo que se haga con el mensaje.
-    // v7: las páginas del escenario llevan cabecera y pie de sitio, la
-    // falsa igual que la real (prueba del issue #25).
-    // v8: el participante ve los datos que este escenario le pide, y los
-    // finales nombran lo que se entregó.
-    // v9: el correo incorpora una identidad corporativa realista.
-    // v10: la cabecera del mensaje distingue explícitamente los campos De y
-    // Para, como en un cliente de correo real.
     version: 10,
     naturaleza: "fraude",
     dificultad: 3,
@@ -229,23 +174,6 @@ const BASE: EscenarioBase[] = [
     titulo: "Rol de pagos disponible",
     descripcion:
       "Talento Humano notifica que el rol del mes ya está publicado en el portal.",
-    // v3: el escenario se juega en un navegador con pestañas — el
-    // participante actúa directo sobre el correo y el portal en vez de
-    // elegir de una lista de opciones. Las corridas de versiones distintas
-    // no son comparables entre sí.
-    // v4: el briefing enseña los datos prestados en una tarjeta.
-    // v5: cerrar una pestaña ya no termina la corrida ni acredita;
-    // devuelve al correo, y la decisión es lo que se haga con el mensaje.
-    // v6: las páginas del escenario llevan cabecera, aviso y pie de
-    // sitio, la falsa igual que la real.
-    // v7: responder o reenviar un correo real deja de leerse como un
-    // reproche; sigue siendo parcial porque el mensaje pedía algo.
-    // v8: el participante ve los datos que este escenario le pide, y los
-    // finales nombran lo que se entregó.
-    // v9: el portal visible se puede abrir desde el correo, el período es
-    // vigente y el mensaje muestra identidad corporativa y saludo personal.
-    // v10: la cabecera del mensaje distingue explícitamente los campos De y
-    // Para, como en un cliente de correo real.
     version: 10,
     naturaleza: "legitimo",
     dificultad: 3,
@@ -258,21 +186,7 @@ const BASE: EscenarioBase[] = [
     titulo: "Código para actualizar datos",
     descripcion:
       "El banco pide escanear un código QR para no perder el acceso a la cuenta.",
-    // v3: el escenario se juega en un navegador con pestañas; el QR es el
-    // punto interactivo (no hay "vista previa" posible, así que escanear ya
-    // abre la página falsa). Las corridas de versiones distintas no son
-    // comparables entre sí.
-    // v4: el briefing enseña los datos prestados en una tarjeta.
-    // v5: cerrar una pestaña ya no termina la corrida ni acredita;
-    // devuelve al correo, y la decisión es lo que se haga con el mensaje.
-    // v6: las páginas del escenario llevan cabecera, aviso y pie de
-    // sitio, la falsa igual que la real.
-    // v7: el participante ve los datos que este escenario le pide, y los
-    // finales nombran lo que se entregó.
-    // v9: el correo incorpora una identidad bancaria realista y adapta su
-    // redacción al español ecuatoriano.
-    // v10: el participante debe comprobar en el centro de seguridad de la app
-    // que no existe la actualización antes de completar el buen final.
+    // El QR es el punto interactivo: no hay "vista previa" posible, así que escanear ya abre la página falsa.
     version: 10,
     naturaleza: "fraude",
     dificultad: 4,
@@ -286,16 +200,6 @@ const BASE: EscenarioBase[] = [
     titulo: "Cambio de cuenta bancaria",
     descripcion:
       "La secretaría del colegio informa una cuenta nueva para el pago de la pensión.",
-    // v3: se juega sobre la pantalla, sin lista de opciones.
-    // v4: la transferencia sale de la cuenta que enseña el briefing.
-    // v5: cerrar una pestaña ya no termina la corrida ni acredita;
-    // devuelve al correo, y la decisión es lo que se haga con el mensaje.
-    // v6: las páginas del escenario llevan cabecera, aviso y pie de
-    // sitio, la falsa igual que la real.
-    // v8: el correo elimina la imagen genérica y la etiqueta artificial
-    // "(nueva)"; su ruta pública ahora describe la situación sin jerga.
-    // v9: la cabecera del mensaje distingue explícitamente los campos De y
-    // Para, como en un cliente de correo real.
     version: 9,
     naturaleza: "fraude",
     dificultad: 4,
@@ -308,20 +212,6 @@ const BASE: EscenarioBase[] = [
     titulo: "Aviso de filtración de datos",
     descripcion:
       "Una tienda en línea comunica un incidente de seguridad que afecta a tu cuenta.",
-    // v3: se juega sobre la pantalla, sin lista de opciones.
-    // v4: el briefing enseña los datos prestados en una tarjeta.
-    // v5: cerrar una pestaña ya no termina la corrida ni acredita;
-    // devuelve al correo, y la decisión es lo que se haga con el mensaje.
-    // v6: las páginas del escenario llevan cabecera, aviso y pie de
-    // sitio, la falsa igual que la real.
-    // v7: responder o reenviar un correo real deja de leerse como un
-    // reproche; sigue siendo parcial porque el mensaje pedía algo.
-    // v8: el participante ve los datos que este escenario le pide, y los
-    // finales nombran lo que se entregó.
-    // v9: el aviso usa una pieza visual propia de TiendaExpress y fechas
-    // relativas para mantener vigente el escenario legítimo.
-    // v10: la cabecera del mensaje distingue explícitamente los campos De y
-    // Para, como en un cliente de correo real.
     version: 10,
     naturaleza: "legitimo",
     dificultad: 4,
@@ -332,27 +222,11 @@ const BASE: EscenarioBase[] = [
     // El más difícil del módulo: la redacción es impecable y el anzuelo está en
     // el dominio y en pedir el OTP fuera de la app. Espeja con aviso-filtracion,
     // que es la misma forma —una alerta de seguridad— pero verdadera.
-    //
-    // v3: el escenario se juega en un navegador con pestañas; pasar de la
-    // página de clave al OTP es la misma pestaña avanzando un paso, como en
-    // un kit de phishing real. Las corridas de versiones distintas no son
-    // comparables entre sí.
     seccionId: "phishing",
     escenarioId: "sesion-bogota",
     titulo: "Inicio de sesión desconocido",
     descripcion:
       "Una alerta nocturna avisa de un acceso a tu cuenta desde otra ciudad.",
-    // v4: el briefing enseña los datos prestados en una tarjeta.
-    // v5: cerrar una pestaña ya no termina la corrida ni acredita;
-    // devuelve al correo, y la decisión es lo que se haga con el mensaje.
-    // v6: las páginas del escenario llevan cabecera, aviso y pie de
-    // sitio, la falsa igual que la real.
-    // v7: el participante ve los datos que este escenario le pide, y los
-    // finales nombran lo que se entregó.
-    // v8: el correo incorpora una identidad bancaria realista y adapta su
-    // redacción al español ecuatoriano.
-    // v9: la cabecera del mensaje distingue explícitamente los campos De y
-    // Para, como en un cliente de correo real.
     version: 9,
     naturaleza: "fraude",
     dificultad: 5,
@@ -361,15 +235,12 @@ const BASE: EscenarioBase[] = [
   },
   {
     // Puerta de entrada del módulo: el único SMS sin enlace ni formulario. La
-    // decisión es si contestar, y eso se entiende sin haber mirado nunca una
-    // dirección web.
+    // decisión es si contestar, sin haber mirado nunca una dirección web.
     seccionId: "smishing",
     escenarioId: "baja-suscripcion",
     titulo: "Suscripción que no contrataste",
     descripcion:
       "Un SMS cobra un servicio que nunca pediste y ofrece cancelarlo respondiendo.",
-    // v3: las opciones mirar (revisar suscripciones) ya no acreditan al cerrar
-    // la pantalla; el acierto se gana solo al dejar el mensaje después de verificar (issue #74).
     version: 3,
     naturaleza: "fraude",
     dificultad: 1,
@@ -382,8 +253,6 @@ const BASE: EscenarioBase[] = [
     titulo: "Bono preseleccionado",
     descripcion:
       "Un SMS anuncia una ayuda económica y pide registrar la cuenta antes de un plazo.",
-    // v3: las opciones mirar (elegir portal oficial) ya no acreditan al cerrar
-    // la pantalla; el acierto se gana solo al dejar el mensaje después de verificar (issue #74).
     version: 3,
     naturaleza: "fraude",
     dificultad: 2,
@@ -398,8 +267,6 @@ const BASE: EscenarioBase[] = [
     titulo: "Entrega programada",
     descripcion:
       "El courier avisa la entrega de tu paquete para mañana, sin pedirte nada.",
-    // v3: las opciones mirar (ver detalle) ya no acreditan al cerrar
-    // la pantalla; el acierto se gana solo al dejar el aviso después de verificar (issue #74).
     version: 3,
     naturaleza: "legitimo",
     dificultad: 2,
@@ -415,8 +282,6 @@ const BASE: EscenarioBase[] = [
     titulo: "Tarjeta bloqueada",
     descripcion:
       "Un SMS avisa de un bloqueo y da un número al que llamar para reactivar.",
-    // v3: las opciones mirar (revisar tarjetas) ya no acreditan al cerrar
-    // la pantalla; el acierto se gana solo al dejar el mensaje después de verificar (issue #74).
     version: 3,
     naturaleza: "fraude",
     dificultad: 3,
@@ -429,8 +294,6 @@ const BASE: EscenarioBase[] = [
     titulo: "Citación de tránsito",
     descripcion:
       "Un SMS amenaza con duplicar una multa si no pagas desde el enlace enviado.",
-    // v3: las opciones mirar (elegir portal oficial) ya no acreditan al cerrar
-    // la pantalla; el acierto se gana solo al dejar el mensaje después de verificar (issue #74).
     version: 3,
     naturaleza: "fraude",
     dificultad: 3,
@@ -443,8 +306,6 @@ const BASE: EscenarioBase[] = [
     titulo: "Alerta de consumo",
     descripcion:
       "Una notificación de tu banco informa un consumo hecho con tu tarjeta.",
-    // v3: las opciones mirar (ver movimientos) ya no acreditan al cerrar
-    // la pantalla; el acierto se gana solo al dejar el aviso después de verificar (issue #74).
     version: 3,
     naturaleza: "legitimo",
     dificultad: 3,
@@ -457,8 +318,6 @@ const BASE: EscenarioBase[] = [
     titulo: "Paquete retenido",
     descripcion:
       "Un mensaje pide un pago pequeño para liberar un envío que sí estás esperando.",
-    // v3: las opciones mirar (rastrear guía) ya no acreditan al cerrar
-    // la pantalla; el acierto se gana solo al dejar el mensaje después de verificar (issue #74).
     version: 3,
     naturaleza: "fraude",
     dificultad: 4,
@@ -474,8 +333,6 @@ const BASE: EscenarioBase[] = [
     titulo: "Código que piden reenviar",
     descripcion:
       "Alguien dice ser del banco y pide el código de verificación que acaba de llegarte.",
-    // v3: las opciones mirar (revisar intentos de acceso) ya no acreditan al cerrar
-    // la pantalla; el acierto se gana solo después de verificar (issue #74).
     version: 3,
     naturaleza: "fraude",
     dificultad: 5,
@@ -483,19 +340,14 @@ const BASE: EscenarioBase[] = [
     Component: lazy(() => import("../secciones/smishing/CodigoReenviado")),
   },
   {
-    // La puerta de entrada del módulo, y la única señal que no está en la
-    // pantalla: se responde con "¿yo participé?". Espeja con entrega-courier,
-    // que es la otra llamada de alguien que dice traerte algo — solo que esa
-    // es verdad.
+    // La única señal que no está en la pantalla: se responde con "¿yo
+    // participé?". Espeja con entrega-courier, la misma llamada siendo verdad.
     seccionId: "vishing",
     escenarioId: "premio-sorteo",
     titulo: "Premio de un sorteo",
     descripcion:
       "Una llamada anuncia que ganaste un electrodoméstico y pide cubrir la entrega.",
-    // v1 del módulo inmersivo: la llamada se juega sobre el teléfono —contestar,
-    // colgar, salir a comprobar en otra app— en vez de con una lista de
-    // opciones al lado. Sustituye a llamada-antiestafas, que nunca llegó a
-    // estar activa y por eso no deja corridas huérfanas.
+    // Sustituye a llamada-antiestafas, que nunca llegó a estar activa (sin corridas huérfanas).
     version: 1,
     naturaleza: "fraude",
     dificultad: 1,
@@ -611,10 +463,7 @@ const BASE: EscenarioBase[] = [
     titulo: "Cambio de número",
     descripcion:
       "Un número desconocido dice ser un familiar tuyo que perdió el celular.",
-    // v2: el escenario se juega sobre el teléfono —chat, perfil del contacto,
-    // agenda y app del banco— en vez de con una lista de opciones, y la nota
-    // de voz suena de verdad. Las corridas de la v1 no son comparables: nadie
-    // llegó a jugarla, porque el escenario nunca estuvo activo.
+    // v1 nunca estuvo activa, así que no hay corridas con las que comparar.
     version: 2,
     naturaleza: "fraude",
     dificultad: 1,
@@ -728,8 +577,6 @@ const BASE: EscenarioBase[] = [
     titulo: "Saldo contable",
     descripcion:
       "Vendes una laptop y el comprador manda un comprobante de depósito pidiendo que despaches ya.",
-    // v2: se juega sobre la pantalla, sin lista de opciones. El comprobante
-    // pasó de contarse en texto a dibujarse como la captura que es.
     version: 2,
     naturaleza: "fraude",
     dificultad: 2,
@@ -751,10 +598,8 @@ const BASE: EscenarioBase[] = [
     Component: lazy(() => import("../secciones/estafa/MitadDePrecio")),
   },
   {
-    // El primero de los dos legítimos: el mismo trato de arriendo-anticipado
-    // con el orden puesto del derecho (ver, firmar, pagar). Va tercero, y
-    // separado del otro legítimo por dos escenarios de fraude, para que dos
-    // legítimos seguidos no se reconozcan por su posición.
+    // Mismo trato de arriendo-anticipado con el orden puesto del derecho. Va
+    // separado del otro legítimo para que no se reconozcan por su posición.
     seccionId: "estafa",
     escenarioId: "visita-departamento",
     titulo: "Visita al departamento",
@@ -779,12 +624,8 @@ const BASE: EscenarioBase[] = [
     Component: lazy(() => import("../secciones/estafa/ArriendoAnticipado")),
   },
   {
-    // El primero de los dos legítimos. Espeja a saldo-contable con la misma
-    // escena y las señales al revés: un módulo que solo enseña fraudes enseña
-    // a desconfiar de todo, y eso también hace daño.
-    //
-    // Ni el título ni el id dicen que sea el bueno, y va quinto, no al final:
-    // un legítimo que se anuncia deja de medir nada.
+    // Espeja a saldo-contable con las señales al revés. Ni el título ni el id
+    // dicen que sea el bueno, y no va al final: un legítimo que se anuncia deja de medir nada.
     seccionId: "estafa",
     escenarioId: "pago-lavadora",
     titulo: "Pago por la lavadora",
@@ -838,11 +679,8 @@ const BASE: EscenarioBase[] = [
     espeja: "estafa/pago-lavadora",
     Component: lazy(() => import("../secciones/estafa/TareasPagadas")),
   },
-  // La última amenaza queda fuera del MVP ampliado. Sus componentes
-  // .tsx siguen en el repositorio intactos: se reactivan descomentando la
-  // entrada correspondiente. Las secciones se quedan declaradas en SECCIONES
-  // arriba; Dashboard.tsx ya pinta "Pronto" cuando escenariosDeSeccion() da
-  // vacío, así que no hace falta tocar nada más.
+  // La última amenaza queda fuera del MVP: sus .tsx siguen intactos en el
+  // repositorio, se reactivan descomentando la entrada correspondiente.
 
   {
     seccionId: 'fisico',

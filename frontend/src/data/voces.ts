@@ -1,16 +1,5 @@
-/**
- * Generado por scripts/voces.py — no editar a mano.
- *
- * De cada frase que dice quien llama en los escenarios de vishing al MP3 con
- * esa frase. Los audios se generan una sola vez y se sirven como archivos
- * estáticos, en vez de sintetizarlos en el navegador: la voz del sistema
- * cambia de un equipo a otro (y en muchos ni existe en español), y dos
- * participantes que oyen voces distintas no hicieron el mismo ejercicio.
- *
- * La clave es la frase entera y no un identificador corto a propósito: si el
- * guion cambia, el audio deja de encontrarse en vez de seguir sonando con el
- * texto viejo. El test de voces.test.ts avisa cuando eso pasa.
- */
+// Generado por scripts/voces.py — no editar a mano. Clave = frase entera (no
+// un id corto) para que un cambio de guion deje de encontrar el audio en vez de seguir sonando con el texto viejo.
 export const VOCES: Record<string, string> = {
   "Anotado. Y para registrarle el beneficio necesito dos datos más: los cuatro últimos dígitos de su tarjeta y la agencia donde abrió la cuenta.": "/voz/7decbb8ebf3b.mp3",
   "Banco del Litoral, departamento de seguridad, buenas noches. Le confirmo: hablo con el titular de la tarjeta terminada en 4417, ¿verdad?": "/voz/8e64d6bde001.mp3",
