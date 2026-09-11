@@ -5,11 +5,7 @@ interface StoryChoicesProps {
   onChoose: (goto: string, label: string) => void
 }
 
-/**
- * Decidir no es parte de la ficción: estas opciones viven fuera del marco del
- * dispositivo y usan los tokens del sistema de diseño, no la paleta de la app
- * simulada.
- */
+// Decidir no es parte de la ficción: usa los tokens del sistema de diseño, no la paleta simulada.
 function StoryChoices({ choices, onChoose }: StoryChoicesProps) {
   return (
     <div className="grid gap-2">
