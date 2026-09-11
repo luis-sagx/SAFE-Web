@@ -5,30 +5,17 @@ import {
   randomBytes,
 } from 'node:crypto';
 
-/**
- * Cifrado en reposo de nombre, apellido y correo (issue #95): protege contra
- * quien se lleve SOLO la base de datos (un backup filtrado, un dump, un
- * acceso indebido a Postgres) sin comprometer también el servidor. No
- * protege contra quien comprometa la aplicación completa —ahí la clave está
- * en el mismo lugar que los datos—, pero ese ya no es el escenario que este
- * cambio busca cubrir.
- *
- * AES-256-GCM: cifrado autenticado, no solo confidencial — `descifrar()`
- * revienta si el texto cifrado fue alterado, en vez de devolver basura en
- * silencio. Un IV aleatorio por valor (no reutilizado) es obligatorio con
- * GCM: reusar uno con la misma clave rompe la confidencialidad del cifrado.
- */
+// Cifrado en reposo de nombre/apellido/correo (issue #95): protege contra quien se lleve
+// SOLO la base de datos, no contra quien comprometa la app completa. AES-256-GCM porque
+// es autenticado (`descifrar()` revienta si el texto fue alterado) y usa IV por valor.
 
 const ALGORITMO = 'aes-256-gcm';
 const LARGO_IV = 12;
 const LARGO_ETIQUETA = 16;
 
-/// Cada valor cifrado por esta versión lleva este prefijo. Es lo que permite
-/// migrar en caliente: un valor sin el prefijo es texto plano de antes de
-/// este cambio, y `descifrar()` lo devuelve tal cual en vez de fallar. Así
-/// una fila que el script de `backfill-pii.mts` todavía no alcanzó sigue
-/// siendo legible mientras tanto, sin ninguna ventana en la que el login o el
-/// panel de administración dejen de funcionar.
+// Prefijo que permite migrar en caliente: un valor sin él es texto plano de antes del
+// cambio y `descifrar()` lo devuelve tal cual, así una fila que `backfill-pii.mts` no
+// alcanzó todavía sigue legible sin romper login ni admin.
 const PREFIJO = 'v1:';
 
 function clave(claveBase64: string): Buffer {
@@ -78,13 +65,8 @@ export function descifrarOpcional(
   return valor === null ? null : descifrar(valor, claveBase64);
 }
 
-/**
- * Huella del correo: el mismo patrón que `huellaCedula` (HMAC con un secreto
- * propio, determinista) y por el mismo motivo — sirve de índice único para
- * buscar por correo sin guardar el correo en claro. Un pepper aparte del de
- * la cédula: son dos secretos con propósitos distintos, y si algún día uno
- * se filtra, no arrastra al otro.
- */
+// Mismo patrón que huellaCedula (HMAC determinista) para indexar por correo sin guardarlo
+// en claro. Pepper propio, distinto del de la cédula, para que filtrarse uno no arrastre al otro.
 export function huellaEmail(email: string, pepper: string): string {
   return createHmac('sha256', pepper).update(email).digest('hex');
 }

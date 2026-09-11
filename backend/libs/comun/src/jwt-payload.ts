@@ -1,18 +1,6 @@
-/**
- * Contrato del token entre los dos servicios. `identidad` lo firma,
- * `entrenamiento` lo verifica; ninguno llama al otro por red.
- *
- * `seq` viaja en el token a propósito: es el único campo del participante que
- * el análisis necesita —el seudónimo (P001)— y no lo identifica. Llevándolo
- * aquí, `entrenamiento` puede etiquetar cada corrida sin tener jamás forma de
- * leer un dato personal.
- *
- * `typ: 'access'` distingue este token del de refresco (`RefreshTokenPayload`):
- * los dos se firman con el mismo secreto, así que sin esta marca un refresh
- * token robado serviría también como token de acceso —con su expiración
- * larga— y no con la corta que se diseñó. `JwtAuthGuard` rechaza cualquier
- * token cuyo `typ` no sea `'access'`.
- */
+// Contrato entre los dos servicios (identidad firma, entrenamiento verifica, sin red).
+// `seq` viaja para el seudónimo (P001) sin identificar a la persona. `typ: 'access'` evita
+// que un refresh token robado (mismo secreto) sirva como access token de vida larga.
 export interface JwtPayload {
   sub: string;
   seq: number;
@@ -20,40 +8,25 @@ export interface JwtPayload {
   typ: 'access';
 }
 
-/**
- * Token de vida larga que solo `identidad` firma y solo `identidad` verifica
- * (en `POST /auth/refresh`): `entrenamiento` nunca lo ve. Lleva únicamente el
- * `sub` porque el resto (`seq`, `role`, estado de la cuenta) se relee de la
- * base en cada refresco —así una cuenta desactivada o un cambio de rol se
- * refleja en, como máximo, la vida del access token, no en la del refresh.
- */
+// Token de vida larga, solo entre identidad y sí misma (POST /auth/refresh). Lleva solo
+// `sub`: el resto se relee de la base en cada refresco, así una cuenta desactivada se
+// refleja en, como máximo, la vida del access token.
 export interface RefreshTokenPayload {
   sub: string;
   typ: 'refresh';
 }
 
-/**
- * Pase de un solo salto entre los dos servicios, para el certificado: lo
- * firma `entrenamiento` (que conoce el progreso) y lo verifica `identidad`
- * (que conoce el nombre). Es la única forma en que `2026-09-03…` permite que
- * el progreso cruce hacia el otro servicio, sin que se llamen entre sí.
- *
- * Reutilizable dentro de sus 5 minutos de vida, no de un solo uso: el flujo la
- * gasta dos veces seguidas (emitir el certificado, descargar el PDF).
- * `identidad` exige además que `sub` coincida con el del access token de quien
- * la presenta — sin eso, la atestación de otra persona serviría para
- * emitirse un certificado con su progreso.
- */
+// Pase de un solo salto para el certificado: entrenamiento firma, identidad verifica.
+// Reutilizable en sus 5 minutos de vida (se gasta dos veces: emitir y descargar).
+// identidad exige que `sub` coincida con el access token, para que no sirva ajena.
 export interface AtestacionPayload {
   sub: string;
   seq: number;
-  /** Los módulos que `entrenamiento` verificó aprobados al firmar, tomados de
-   *  `UMBRALES`. Es lo que el certificado imprime, y lo que decide si un
-   *  recorrido mayor debe actualizar uno ya emitido (ver §5.4.1 del diseño). */
+  // Módulos que entrenamiento verificó aprobados (de UMBRALES): lo que el certificado
+  // imprime y lo que decide si un recorrido mayor debe actualizar uno ya emitido.
   modulos: string[];
-  /// Escenarios cuyo último intento terminó en CORRECTO, sobre los 48 del
-  /// entrenamiento completo. `entrenamiento` lo calcula y lo firma porque
-  /// identidad no puede ni debe consultar las corridas por su cuenta.
+  // CORRECTOS sobre los 48 del entrenamiento; lo calcula y firma entrenamiento porque
+  // identidad no puede consultar las corridas por su cuenta.
   calificacion: number;
   typ: 'atestacion';
 }
