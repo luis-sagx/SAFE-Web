@@ -70,9 +70,16 @@ interface EscenarioLayoutProps {
  *  tienen que caber formularios, hilos largos y el dock, y a 0.46 el contenido
  *  se estrangula. Es el punto medio entre parecer un teléfono y poder mostrar
  *  lo que el escenario necesita.
+ *
+ *  El borde va en `border-control` y no en `border-hairline-strong`: este
+ *  marco tiene que distinguirse del fondo de la página, no solo de una
+ *  tarjeta vecina, y muchos escenarios simulan una app oscura (chat,
+ *  llamada) — con el cromo también en oscuro, un borde meramente decorativo
+ *  se funde con los dos fondos oscuros a la vez. `border-control` mantiene
+ *  3:1 contra las seis superficies del sistema en los dos temas.
  */
 const MARCO_TELEFONO =
-  "sm:max-h-[50rem] sm:w-[30rem] sm:rounded-[1.75rem] sm:border sm:border-hairline-strong sm:shadow-[0_30px_70px_rgba(0,0,0,0.22)] lg:h-[50rem] lg:max-h-full lg:flex-none lg:self-center";
+  "sm:max-h-[50rem] sm:w-[30rem] sm:rounded-[1.75rem] sm:border-2 sm:border-control sm:shadow-[0_30px_70px_rgba(0,0,0,0.22)] lg:h-[50rem] lg:max-h-full lg:flex-none lg:self-center";
 
 /** Ancho y bajo, como una ventana de escritorio. Los anchos con vw + min/max
  *
@@ -94,10 +101,10 @@ const MARCO_TELEFONO =
  *  reparte lo que sobre cuando el tope se queda corto.
  */
 const MARCO_ESCRITORIO =
-  "sm:max-h-[min(88vh,60rem)] sm:w-[96vw] sm:max-w-[68.75rem] sm:rounded-xl sm:border sm:border-hairline-strong sm:shadow-[0_30px_70px_rgba(0,0,0,0.22)] lg:h-full lg:max-h-[60rem] lg:w-[calc(100vw-28.75rem)] lg:min-w-[35rem] lg:max-w-[75rem] lg:flex-none lg:self-center xl:w-[calc(100vw-33.75rem)]";
+  "sm:max-h-[min(88vh,60rem)] sm:w-[96vw] sm:max-w-[68.75rem] sm:rounded-lg sm:border-[3px] sm:border-control sm:shadow-[0_30px_70px_rgba(0,0,0,0.22)] lg:h-full lg:max-h-[60rem] lg:w-[calc(100vw-28.75rem)] lg:min-w-[35rem] lg:max-w-[75rem] lg:flex-none lg:self-center xl:w-[calc(100vw-33.75rem)]";
 
 const MARCO_ESCENA =
-  "sm:max-h-[min(88vh,60rem)] sm:w-[96vw] sm:max-w-[68.75rem] sm:rounded-xl sm:border sm:border-hairline-strong sm:shadow-[0_30px_70px_rgba(0,0,0,0.22)] lg:h-[min(62vh,38rem)] lg:max-h-[38rem] lg:w-fit lg:max-w-full lg:flex-none lg:self-center";
+  "sm:max-h-[min(88vh,60rem)] sm:w-[96vw] sm:max-w-[68.75rem] sm:rounded-xl sm:border-2 sm:border-control sm:shadow-[0_30px_70px_rgba(0,0,0,0.22)] lg:h-[min(62vh,38rem)] lg:max-h-[38rem] lg:w-fit lg:max-w-full lg:flex-none lg:self-center";
 
 function EscenarioLayout({
   escenarioId,

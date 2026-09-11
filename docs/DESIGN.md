@@ -222,10 +222,18 @@ En oscuro, lo que separa una tarjeta de la página es su borde
 
 `hairline` (divisor por defecto) · `hairline-soft` · `hairline-strong`
 (contorno de tarjetas, decorativo, exento de 3:1 porque el contenido ya
-delimita la tarjeta) · **`border-control`**, el único que va en el borde en
-reposo de un `<input>`, `<select>` o `<textarea>`: a diferencia de
-`hairline-strong`, este sí tiene que cumplir 3:1 (SC 1.4.11), porque es lo que
-hace visible dónde se puede escribir.
+delimita la tarjeta) · **`border-control`**, para cualquier borde que la
+persona necesite *percibir* y no solo decorar: a diferencia de
+`hairline-strong`, este sí cumple 3:1 (SC 1.4.11) contra las seis superficies
+del sistema, en los dos temas. Dos usos:
+
+- El borde en reposo de un `<input>`, `<select>` o `<textarea>` — es lo que
+  hace visible dónde se puede escribir.
+- El marco de un escenario simulado (`MARCO_TELEFONO` / `MARCO_ESCRITORIO` /
+  `MARCO_ESCENA` en `EscenarioLayout.tsx`) — tiene que distinguirse de la
+  página, no solo de una tarjeta vecina, y varios escenarios simulan una app
+  oscura: con el cromo también en oscuro, `hairline-strong` (decorativo) se
+  funde con los dos fondos oscuros a la vez.
 
 ### Semántico
 
@@ -480,7 +488,8 @@ tarjetas, y un solo nivel de sombra.
 - Mantener el cuerpo en 16px dentro de los escenarios.
 - Etiquetar los campos con `<label htmlFor>`.
 - Usar `border-control` (no `border-hairline-strong`) en el borde en reposo de
-  cualquier `<input>`, `<select>` o `<textarea>` nuevo.
+  cualquier `<input>`, `<select>` o `<textarea>` nuevo, y en el marco de
+  cualquier escenario simulado nuevo.
 - Usar `scrim` (no `bg-ink/40`) para el velo de un modal nuevo.
 - Si agregas un token de color, dale valor en claro **y** en oscuro en el
   mismo cambio, y corre `npx vitest run src/index.test.ts` — ese archivo
