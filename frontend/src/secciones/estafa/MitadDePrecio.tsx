@@ -6,18 +6,9 @@ import type { Senal } from '../../components/ui/PanelVeredicto'
 import type { Story } from '../../hooks/useStoryEngine'
 import { CUENTA_FICTICIA, IDENTIDAD_FICTICIA } from '../../lib/identidadFicticia'
 
-/**
- * El lado del comprador: el celular que cuesta la mitad de lo que cuesta.
- *
- * Los demás escenarios del módulo te ponen a vender; este te pone a comprar, y
- * la diferencia importa: cuando el que arriesga eres tú, el precio bajo deja de
- * ser una señal de alarma y pasa a sentirse como suerte.
- *
- * No hay ninguna urgencia inventada al principio, y por eso es difícil. La
- * urgencia la pone la ganga: si no pagas ya, se lo lleva otro. Todo lo demás
- * (la cuenta a otro nombre, el perfil de tres días, el "no puedo verme") está a
- * la vista desde el primer momento para quien mire.
- */
+/** El lado del comprador: aquí el que arriesga eres tú, así que el precio bajo se siente como suerte, no como
+ *  alarma. No hay urgencia inventada —la pone la ganga misma— y todo lo demás está a la vista desde el
+ *  principio para quien mire. */
 
 const VENDEDOR = 'Marlon Cedeño'
 const NUMERO_VENDEDOR = '+593 98 052 6613'
@@ -127,8 +118,7 @@ const PRESIONA: ScreenView = {
   ],
 }
 
-/// El anuncio, mirado por dentro. Todo lo que hace falta para dudar está aquí
-/// y se llega en dos toques, mientras el chat mete prisa por otro lado.
+// El anuncio: todo lo que hace falta para dudar está aquí, a dos toques, mientras el chat mete prisa por otro lado.
 const ANUNCIO: ScreenView = {
   kind: 'web',
   app: 'Mercado Abierto',

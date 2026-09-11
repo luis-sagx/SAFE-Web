@@ -6,19 +6,9 @@ import type { Senal } from '../../components/ui/PanelVeredicto'
 import type { Story } from '../../hooks/useStoryEngine'
 import { CUENTA_FICTICIA, IDENTIDAD_FICTICIA } from '../../lib/identidadFicticia'
 
-/**
- * El espejo legítimo de "Saldo contable".
- *
- * Espeja a "Saldo contable" y a "Celular a mitad de precio" con la misma
- * escena y las señales al revés: el dinero está en el saldo disponible, el
- * comprador propone verse en un sitio público y la cuenta que pagó está a su
- * propio nombre.
- *
- * Existe porque un módulo que solo enseña fraudes enseña a desconfiar de todo,
- * y eso también hace daño: quien no vuelve a vender nada por internet pagó la
- * lección más cara de lo que valía. Aquí el acierto es cerrar el trato, y el
- * fallo es dejarlo caer sin motivo o inventarse comprobaciones que no tocan.
- */
+/** El espejo legítimo de "Saldo contable" y "Celular a mitad de precio": misma escena, señales al revés
+ *  (saldo disponible, comprador que propone verse, cuenta a su propio nombre). Enseña que desconfiar de
+ *  todo también cuesta: aquí el acierto es cerrar el trato, no dejarlo caer sin motivo. */
 
 const COMPRADORA = 'Gabriela Ponce'
 const NUMERO_COMPRADORA = '+593 99 271 4508'
@@ -70,8 +60,7 @@ const ESPERA: ScreenView = {
   ],
 }
 
-/// El mismo banco del escenario del saldo contable, con los dos números
-/// diciendo lo mismo. Aquí no hay nada en proceso: el dinero ya es tuyo.
+// Mismo banco que "Saldo contable", incluso los mismos dos números: aquí no hay nada pendiente, el dinero ya es tuyo.
 const BANCO: ScreenView = {
   kind: 'web',
   app: IDENTIDAD_FICTICIA.banco,

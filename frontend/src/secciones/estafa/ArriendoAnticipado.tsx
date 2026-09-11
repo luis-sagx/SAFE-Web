@@ -6,18 +6,9 @@ import type { Senal } from '../../components/ui/PanelVeredicto'
 import type { Story } from '../../hooks/useStoryEngine'
 import { CUENTA_FICTICIA, IDENTIDAD_FICTICIA } from '../../lib/identidadFicticia'
 
-/**
- * El departamento que no se puede ver.
- *
- * Aquí lo que aprieta no es la prisa del estafador sino la necesidad de quien
- * busca: cuando llevas un mes viendo departamentos caros y aparece uno bueno y
- * barato, la parte de ti que quiere creer trabaja gratis para el otro lado.
- *
- * La señal decisiva no está escrita en ningún mensaje. Está en el orden: te
- * piden pagar antes de ver, y todo lo demás (el dueño que está fuera, las
- * fotos preciosas, el contrato que llega por correo) existe para justificar ese
- * orden invertido.
- */
+/** El departamento que no se puede ver: lo que aprieta es la necesidad de quien busca, no la prisa del
+ *  estafador. La señal decisiva no está en ningún mensaje sino en el orden: piden pagar antes de ver, y
+ *  todo lo demás existe para justificar ese orden invertido. */
 
 const DUENO = 'Sr. Patricio Moncayo'
 const NUMERO_DUENO = '+593 96 884 0257'
@@ -127,8 +118,7 @@ const APRIETA: ScreenView = {
   ],
 }
 
-/// El anuncio. Las fotos son de verdad, pero no son suyas: la búsqueda por
-/// imagen las encuentra en un anuncio de venta de hace dos años.
+// El anuncio: las fotos son de verdad, pero no son suyas (la búsqueda por imagen las encuentra en un anuncio de venta de hace dos años).
 const ANUNCIO: ScreenView = {
   kind: 'web',
   app: 'Portal Inmobiliario',
