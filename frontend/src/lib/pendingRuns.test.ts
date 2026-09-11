@@ -30,6 +30,8 @@ describe('cola de corridas pendientes', () => {
   })
 
   afterEach(() => {
+    vi.unstubAllGlobals()
+    vi.restoreAllMocks()
     if (originalLocks) {
       Object.defineProperty(navigator, 'locks', originalLocks)
     } else {
@@ -176,6 +178,23 @@ describe('cola de corridas pendientes', () => {
       if (key === 'mic-pending-runs') return null
       return getItem.call(this, key)
     })
+
+    queueRun(run('phishing/factura-sri'))
+    queueRun(run('smishing/bono-estado'))
+
+    expect(pendingCount()).toBe(2)
+  })
+
+  it('mantiene IDs únicos con entropía segura si randomUUID no está disponible', () => {
+    let entropy = 0
+    vi.stubGlobal('crypto', {
+      getRandomValues(values: Uint32Array) {
+        values[0] = ++entropy
+        return values
+      },
+    })
+    vi.spyOn(Date, 'now').mockReturnValue(1)
+    vi.spyOn(Math, 'random').mockReturnValue(0)
 
     queueRun(run('phishing/factura-sri'))
     queueRun(run('smishing/bono-estado'))

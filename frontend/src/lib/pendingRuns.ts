@@ -26,9 +26,10 @@ interface MigrationMarker {
 }
 
 function newEntryId(): string {
-  return typeof crypto.randomUUID === 'function'
-    ? crypto.randomUUID()
-    : `${Date.now()}-${Math.random().toString(36).slice(2)}`
+  if (typeof crypto.randomUUID === 'function') return crypto.randomUUID()
+
+  const entropy = crypto.getRandomValues(new Uint32Array(4))
+  return Array.from(entropy, (value) => value.toString(16).padStart(8, '0')).join('')
 }
 
 function readMigrationMarker(): MigrationMarker | null {
