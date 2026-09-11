@@ -4,23 +4,9 @@ import type { Story } from '../../hooks/useStoryEngine'
 import EscenarioChatIA from './EscenarioChatIA'
 import { crearChatIA, conRespuestaIA, conSeguimientoIA, marcar, senal } from './chatIA'
 
-/**
- * El más difícil de la sección. Lo que lo separa del resto:
- *
- * - Los datos no son propios ni de un compañero, sino de una clienta que
- *   confió esa información a la empresa, no a un servicio externo de IA.
- * - El camino limpio no termina en el primer mensaje. La IA devuelve un
- *   borrador **genérico que ya sirve** y encima ofrece "dejártelo listo para
- *   enviar" si le pasas el nombre y el número de cuenta. Resistir un pedido
- *   descarado es fácil; resistir un favor —cuando ya tienes un resultado
- *   usable en la mano— es lo que este escenario mide.
- * - En ese segundo paso hay una opción intermedia: darle solo el nombre para
- *   el saludo. Menos grave que el paquete completo, pero tampoco hacía falta:
- *   queda como parcial.
- *
- * Cada burbuja muestra el mensaje entero que se enviaría: se lee lo que sale
- * antes de tocarlo.
- */
+/** El más difícil: los datos son de una clienta (no de un compañero), y el camino limpio no termina en el
+ *  primer mensaje —la IA ofrece completar un borrador ya usable a cambio del nombre y la cuenta, y resistir
+ *  ese favor es lo que mide. Dar solo el nombre para el saludo queda como parcial. */
 
 const HORA = '11:47'
 
@@ -43,9 +29,7 @@ const PROMPT_ARMA_COMPLETA = `Sí, es ${NOMBRE}, cuenta ${CUENTA}. Déjala lista
 const PROMPT_SOLO_NOMBRE = `Solo el nombre para el saludo: ${NOMBRE}.`
 const PROMPT_ASI_ESTA_BIEN = 'Así está bien, el resto lo completo yo al enviarla.'
 
-// Va en el computador: los reclamos se contestan desde el puesto de trabajo,
-// con el sistema de clientes abierto al lado — que es justo de donde salen los
-// datos que terminan pegados en el chat.
+// Va en el computador: los reclamos se contestan con el sistema de clientes abierto al lado, de donde salen los datos que terminan en el chat.
 const CHAT = crearChatIA(
   'Redactor de respuestas · servicio externo',
   [
@@ -71,9 +55,7 @@ const MARCAS = {
   'dato-telefono': TELEFONO,
 }
 
-// La respuesta que la IA devuelve cuando le diste todo: contesta el reclamo y
-// de paso vuelve a escribir la cuenta, el saldo y el teléfono. Ese eco es media
-// lección, así que lleva su propia señal.
+// La IA repite la cuenta, el saldo y el teléfono en su respuesta: ese eco es media lección, con su propia señal.
 const RESPUESTA_CON_DATOS = marcar(
   [
     'Aquí tienes la respuesta:',
@@ -89,9 +71,7 @@ const RESPUESTA_CON_DATOS = marcar(
   { 'dato-devuelto': `cuyo saldo disponible es de ${SALDO}` },
 )
 
-// El borrador genérico + la oferta. El borrador ya sirve para enviar (saludo
-// neutro, cubre el cobro de $45); lo único que "falta" es el nombre, y eso es
-// la carnada.
+// El borrador ya sirve para enviar (saludo neutro, cubre el cobro); lo único que "falta" es el nombre — y esa es la carnada.
 const RESPUESTA_GENERICA = [
   'Aquí tienes un borrador general:',
   '',
@@ -137,8 +117,7 @@ const ENVIO_PIDE_SECRETO = conRespuestaIA(
   `Entendido, trataré la información como confidencial.<br><br>${RESPUESTA_CON_DATOS}`,
 )
 
-// Paso 2: mandaste el prompt limpio, la IA devuelve el borrador genérico y
-// ofrece completarlo. El chat sigue abierto con tres respuestas nuevas.
+// Paso 2: prompt limpio, la IA devuelve el borrador genérico y ofrece completarlo; el chat sigue abierto con tres respuestas nuevas.
 const CHAT_GENERICO = conSeguimientoIA(CHAT, HORA, PROMPT_SIN_DATOS, RESPUESTA_GENERICA, [
   { texto: PROMPT_ARMA_COMPLETA, goto: 'e_recae' },
   { texto: PROMPT_SOLO_NOMBRE, goto: 'e_solo_nombre' },
