@@ -22,13 +22,9 @@ interface MarcaProps {
   className?: string
 }
 
-/**
- * El logo lleva "Safe" en tinta casi negra: invisible sobre el lienzo
- * oscuro. La variante `-oscuro.webp` recolorea solo esos píxeles neutros a
- * --color-ink del tema oscuro, sin tocar el verde de marca — ver el spec de
- * tema oscuro §6.1 para cómo se generó. No se usa `filter: invert()`:
- * invertiría también el verde.
- */
+// El logo lleva "Safe" en tinta casi negra, invisible en oscuro; la variante
+// -oscuro.webp recolorea solo esos píxeles neutros (no filter: invert(),
+// que también invertiría el verde de marca).
 function Marca({ variante, className }: MarcaProps) {
   const { temaEfectivo } = useTheme()
   const { width, height, alt, ...rutas } = VARIANTES[variante]

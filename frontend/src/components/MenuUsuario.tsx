@@ -4,19 +4,8 @@ import { Link } from 'react-router'
 import { useAuth } from '../context/AuthContext'
 import SelectorTema from './SelectorTema'
 
-/**
- * Identidad y sesión, en un solo control del header.
- *
- * Antes el lado derecho era una fila de cuatro cosas sueltas —nombre, "Tu
- * recorrido", ⓘ y "Salir"— con cuatro pesos visuales distintos compitiendo
- * entre sí, y aun así "Salir" solo existía en el panel y en el admin: a mitad
- * de un escenario no había forma de cerrar sesión.
- *
- * Se agrupa lo que es "tu cuenta" detrás del avatar, que es donde la gente ya
- * lo busca, y se deja fuera únicamente la ayuda, que es contextual. El nombre
- * sigue visible en escritorio: identifica la sesión de un vistazo, que es lo
- * que importa en un equipo compartido.
- */
+// Agrupa cuenta/sesión detrás del avatar; antes "Salir" solo existía en
+// panel y admin, sin forma de cerrar sesión a mitad de un escenario.
 function MenuUsuario() {
   const { displayName, initials, roleLabel, isSupervisor, logout } = useAuth()
   const [abierto, setAbierto] = useState(false)
@@ -29,8 +18,7 @@ function MenuUsuario() {
     'flex w-full items-center gap-2.5 px-3 py-2.5 text-left text-sm font-medium text-ink transition hover:bg-canvas-soft focus-visible:bg-canvas-soft focus-visible:outline-none'
 
   return (
-    // El foco que sale del grupo cierra el menú: cubre a la vez el clic fuera y
-    // el tabulador, sin escuchar en `document`.
+    // onBlur cubre clic-fuera y tabulador sin escuchar en document.
     <div
       className="relative"
       onBlur={(evento) => {
