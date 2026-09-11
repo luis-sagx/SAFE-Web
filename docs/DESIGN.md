@@ -74,14 +74,15 @@ vive en el bloque `@theme` de `frontend/src/index.css`:
   --color-muted-soft: #a8acb3;
   --color-link: #006837;
 
-  /* Superficies */
-  --color-canvas: #ffffff;
-  --color-canvas-soft: #fafafa;
+  /* Superficies: levemente gris, no blanco puro — así surface (blanco de
+     verdad) se separa de la página sin depender solo del borde. */
+  --color-canvas: #f7f7f8;
+  --color-canvas-soft: #eef0f1;
   --color-surface: #ffffff;
   --color-surface-strong: #f0f0f3;
 
   /* Líneas y bordes */
-  --color-hairline: #f0f0f3;
+  --color-hairline: #e6e6ea;
   --color-hairline-soft: #f5f5f7;
   --color-hairline-strong: #dcdee0;
   --color-border-control: #7d828a;
@@ -132,8 +133,8 @@ vive en el bloque `@theme` de `frontend/src/index.css`:
   --color-canvas-soft: #161b21;
   --color-surface: #161b21;
   --color-surface-strong: #222932;
-  --color-hairline: #242b34;
-  --color-hairline-soft: #1c222a;
+  --color-hairline: #1e242c;
+  --color-hairline-soft: #171c22;
   --color-hairline-strong: #3a4450;
   --color-border-control: #697687;
   --color-mint-light: #13301f;
@@ -200,14 +201,17 @@ La regla del subrayado no cambia.
 
 | Token | Claro | Oscuro | Uso |
 |---|---|---|---|
-| `canvas` | `#ffffff` | `#0f1317` | Fondo de página. |
-| `canvas-soft` | `#fafafa` | `#161b21` | Banda alterna sutil, fondo de `:hover`. |
+| `canvas` | `#f7f7f8` | `#0f1317` | Fondo de página. |
+| `canvas-soft` | `#eef0f1` | `#161b21` | Banda alterna sutil, fondo de `:hover`, paneles con borde (p. ej. "Tu avance"). |
 | `surface` | `#ffffff` | `#161b21` | Tarjetas, campos, menús. |
 | `surface-strong` | `#f0f0f3` | `#222932` | Insignias, botones secundarios, placas de icono. |
 
-En oscuro, lo que separa una tarjeta de la página es su borde
-(`hairline-strong`), no su fondo — igual que en claro, donde `canvas` y
-`surface` son ambos blanco puro.
+En claro, `canvas` es levemente gris a propósito — no blanco puro — para que
+`surface` (blanco de verdad) se lea como una tarjeta elevada sobre la página
+en vez de fundirse con ella. En oscuro pasa lo contrario: `canvas` y
+`surface` son casi el mismo tono, y lo que separa una tarjeta de la página es
+su borde (`hairline-strong`), porque ahí ya no hay margen para bajar más el
+fondo sin perder legibilidad.
 
 ### Texto
 

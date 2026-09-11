@@ -60,9 +60,9 @@ function MenuUsuario() {
             <p className="text-xs text-muted">{isSupervisor ? 'Supervisor' : roleLabel}</p>
           </div>
 
-          <div className="border-b border-hairline px-3 py-2.5">
-            <p className="mb-1.5 text-xs font-medium text-muted">Tema</p>
-            <SelectorTema />
+          <div className="border-b border-hairline py-1.5">
+            <p className="px-3 pb-1 text-xs font-medium text-muted">Tema</p>
+            <SelectorTema variante="lista" />
           </div>
 
           {!isSupervisor && (
@@ -77,10 +77,14 @@ function MenuUsuario() {
             </Link>
           )}
 
-          <button role="menuitem" type="button" onClick={logout} className={claseItem}>
-            <LogOut aria-hidden className="size-4 text-muted" strokeWidth={1.75} />
-            Cerrar sesión
-          </button>
+          {/* Borde arriba: separa la salida del resto de opciones, no es una
+              más de la lista. */}
+          <div className="mt-1 border-t border-hairline pt-1">
+            <button role="menuitem" type="button" onClick={logout} className={claseItem}>
+              <LogOut aria-hidden className="size-4 text-muted" strokeWidth={1.75} />
+              Cerrar sesión
+            </button>
+          </div>
         </div>
       )}
     </div>
