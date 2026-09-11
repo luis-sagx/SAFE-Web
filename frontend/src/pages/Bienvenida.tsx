@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { useLocation, useNavigate } from "react-router";
+import Marca from "../components/Marca";
 import { useAuth } from "../context/AuthContext";
 
 /** Las seis amenazas del estudio, una por paso.
@@ -146,15 +147,9 @@ function Bienvenida() {
   }
 
   return (
-    <div className="flex min-h-dvh items-center justify-center bg-ink/40 px-6 py-10">
+    <div className="flex min-h-dvh items-center justify-center bg-scrim px-6 py-10">
       <div className="w-full max-w-2xl rounded-xl border border-hairline-strong bg-surface p-8 shadow-card">
-        <img
-          src="/marca/logo-safeweb.webp"
-          alt="SafeWeb"
-          width={2171}
-          height={723}
-          className="h-9 w-auto"
-        />
+        <Marca variante="logo" className="h-9 w-auto" />
 
         {/* Alto reservado para el paso más largo, que ahora es la portada con
             las reglas del curso. Sin él, la fila de botones sube y baja entre

@@ -177,7 +177,7 @@ function Dashboard() {
                     </span>
                   )}
                   {progreso?.aprobado && (
-                    <span className="inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-[0.88px] text-success">
+                    <span className="inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-[0.88px] text-success-ink">
                       <CheckCircle2 aria-hidden className="size-3.5" strokeWidth={2.5} />
                       Aprobado
                     </span>
