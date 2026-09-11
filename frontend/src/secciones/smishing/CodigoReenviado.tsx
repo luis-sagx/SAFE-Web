@@ -5,26 +5,8 @@ import type { Story } from '../../hooks/useStoryEngine'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
 import type { Senal } from '../../components/ui/PanelVeredicto'
 
-/**
- * El más difícil del módulo, y por una razón concreta: la mitad de lo que se ve
- * es auténtico.
- *
- * El código llega de verdad, del remitente de siempre del banco, porque el
- * atacante acaba de pedirlo con el número del participante. Todo lo que los
- * otros escenarios enseñan a mirar —el remitente, el formato, la dirección—
- * sale bien en ese mensaje. Lo falso es el otro, el que pide reenviarlo.
- *
- * Por eso el escenario deja las dos conversaciones a mano: el mensaje bueno
- * lleva escrita la defensa ("nunca lo comparta") y leerlo es lo que arma la
- * decisión. Nada obliga a abrirlo, igual que en la vida real.
- *
- * Se entra por el hilo del impostor y no por la lista, como en cualquier otro
- * escenario: quien recibe un mensaje lo abre desde la notificación, no desde
- * la bandeja. El código del banco llega solo, como en un teléfono de verdad:
- * su notificación aparece encima del hilo del impostor y sigue a la vista
- * hasta que se toca o se descarta. La flecha ‹ de la cabecera lleva también a
- * la lista, donde la vista previa lo enseña otra vez.
- */
+// El más difícil del módulo: la mitad de lo que se ve es auténtico. El código llega de
+// verdad (el atacante lo pidió con el número de la víctima); lo falso es que lo pidan reenviado.
 
 const CODIGO = '731 640'
 
@@ -44,10 +26,8 @@ const HILO_FALSO: ScreenView = {
       senal: 'piden-codigo',
     },
   ],
-  // Reenviar es el botín, así que pasa por el campo antes de salir: ver los
-  // seis dígitos escritos y todavía sin enviar es el instante que este
-  // escenario quiere provocar. Negarse no gana: no darlo evita el daño, pero
-  // deja el aviso sin comprobar y a ellos con la conversación abierta.
+  // Negarse no gana del todo: no darlo evita el daño, pero deja el aviso sin
+  // comprobar y a ellos con la conversación abierta.
   respuestas: [
     {
       texto: 'Te reenvío el código.',
@@ -64,10 +44,7 @@ const HILO_FALSO: ScreenView = {
   volverLabel: 'Salió del hilo a la lista de mensajes',
 }
 
-/// El hilo con la respuesta ya enviada. Los dos finales que nacen de contestar
-/// se ven sobre la burbuja propia: un borrador que se convierte en veredicto
-/// sin llegar a salir deja sin enseñar lo único que importaba, que el código
-/// salió del teléfono.
+// El veredicto se ve sobre la burbuja propia: hay que enseñar que el código salió del teléfono.
 const HILO_ENVIADO: ScreenView = {
   ...HILO_FALSO,
   respuestas: undefined,
@@ -86,10 +63,7 @@ const HILO_NEGADO: ScreenView = {
   ],
 }
 
-/// El mismo hilo del impostor, después de haber comprobado en la app que no
-/// hay ningún intento de acceso. Comprobar no bastaba: seguían con una
-/// conversación abierta y el código todavía sin usar. Negarse ahora sí cierra
-/// el escenario, porque ya no queda nada pendiente.
+// Después de comprobar en la app: negarse ahora sí cierra el escenario, ya no queda nada pendiente.
 const HILO_COMPROBADO: ScreenView = {
   ...HILO_FALSO,
   respuestas: [
@@ -106,10 +80,7 @@ const HILO_COMPROBADO: ScreenView = {
   ],
 }
 
-/// La lista de conversaciones, a la que se sale con la flecha de la cabecera.
-/// Aquí es donde el código deja de salir de la nada: la vista previa del banco
-/// lo enseña, y los dos remitentes quedan uno debajo del otro para compararlos.
-/// Salir del hilo a mirar es decisión del participante, como en su teléfono.
+// La vista previa del banco enseña el código, y los dos remitentes quedan uno debajo del otro para comparar.
 const LISTA: ScreenView = {
   kind: 'web',
   app: 'Mensajes',
@@ -117,7 +88,6 @@ const LISTA: ScreenView = {
   secure: true,
   brand: 'Mensajes',
   title: 'Conversaciones',
-  // Salir de Mensajes es dejarlo pasar: no entrega nada y no comprueba nada.
   cerrarGoto: 'e_ignora',
   cerrarLabel: 'Salió de los mensajes sin hacer nada',
   opciones: [
@@ -140,9 +110,7 @@ const LISTA: ScreenView = {
   button: '',
 }
 
-/// El mensaje auténtico. Todo en él está bien —el remitente de siempre, el
-/// formato de siempre— y lleva escrita la defensa. Es el escenario entero en
-/// dos líneas.
+// El mensaje auténtico: todo en él está bien, y lleva escrita la defensa. El escenario entero en dos líneas.
 const HILO_BANCO: ScreenView = {
   kind: 'sms',
   sender: 'BANCO LITORAL',
@@ -159,11 +127,8 @@ const HILO_BANCO: ScreenView = {
   volverLabel: 'Volvió a la lista de mensajes',
 }
 
-/// El inicio de la banca móvil. Abrir la app todavía no es haber comprobado
-/// nada: desde aquí se puede mirar la actividad de la cuenta o cambiar la clave
-/// a ciegas, que es el gesto precipitado que este escenario mide. Un icono que
-/// resuelve el escenario de un toque premia haber encontrado el icono, no haber
-/// sabido qué hacer con él.
+// Abrir la app todavía no es haber comprobado nada: se puede mirar la actividad
+// o cambiar la clave a ciegas, que es el gesto precipitado que este escenario mide.
 const BANCO_INICIO: ScreenView = {
   kind: 'web',
   app: 'Banco',
@@ -215,8 +180,7 @@ const APP_BANCO: ScreenView = {
     'El código que te enviamos autoriza operaciones en tu cuenta. Nadie del banco te lo pedirá nunca, ni por llamada, ni por mensaje, ni por correo. Si alguien te lo pide, es un intento de fraude.',
   fields: [],
   button: '',
-  // No a la lista: al hilo del impostor, ya comprobado. Sigue esperando una
-  // respuesta, y comprobar solo no cierra ese frente.
+  // Al hilo del impostor, no a la lista: sigue esperando respuesta, comprobar solo no cierra ese frente.
   cerrarGoto: 'n1c',
   cerrarLabel: 'Cerró la app después de ver que no había accesos no autorizados',
 }
@@ -248,9 +212,7 @@ const STORY: Story<ScreenNode> = {
   n1: {
     kind: 'scene',
     view: HILO_FALSO,
-    // El código ya llegó cuando arranca el escenario: en la vida real las dos
-    // conversaciones son casi simultáneas. El banner deja los seis dígitos y
-    // recorta la advertencia; leerla entera es lo que cuesta un toque.
+    // El banner deja los seis dígitos y recorta la advertencia; leerla entera cuesta un toque.
     notificacion: {
       app: 'Mensajes',
       remitente: 'BANCO LITORAL',
@@ -274,9 +236,7 @@ const STORY: Story<ScreenNode> = {
   },
   e_app: {
     kind: 'good',
-    // La misma burbuja de negativa que e_niega: el mensaje que sale del
-    // teléfono es idéntico en los dos caminos, y lo único que cambia es que
-    // aquí ya habías comprobado antes de mandarlo.
+    // Misma burbuja que e_niega: el mensaje que sale del teléfono es idéntico, solo cambia que aquí ya habías comprobado.
     view: HILO_NEGADO,
     verdict: 'No caíste · lo comprobaste donde consta',
     outcome:

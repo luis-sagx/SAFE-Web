@@ -6,32 +6,14 @@ import type { ScreenView } from '../../components/ui/DeviceScreen'
 import type { Senal } from '../../components/ui/PanelVeredicto'
 import { IDENTIDAD_FICTICIA } from '../../lib/identidadFicticia'
 
-/**
- * El SMS que no trae enlace sino un número al que llamar.
- *
- * Los otros escenarios del módulo enseñan a mirar una dirección. Aquí no hay
- * ninguna: la trampa es un número de teléfono, y marcarlo te mete en una
- * llamada donde el engaño ya no se lee, se escucha. Es el puente natural hacia
- * el módulo de vishing.
- *
- * Un teléfono convierte cualquier número de un mensaje en algo que se toca, así
- * que marcarlo cuesta un gesto y comprobarlo cuesta buscar la tarjeta. Esa
- * diferencia de esfuerzo es justo la que explota el ataque, y por eso el
- * escenario deja las dos cosas a un toque de distancia.
- *
- * El código que piden en la llamada es auténtico —el banco lo manda de
- * verdad, porque el impostor acaba de provocar una compra con la tarjeta—, y
- * llega como notificación en cuanto lo mencionan. El remitente de ese mensaje
- * es la comparación que falta: `BANCO LITORAL`, no el `BANCO-LIT` sin
- * verificar del SMS que empezó todo.
- */
+// La trampa es un número de teléfono, no un enlace: marcarlo mete en una llamada donde el
+// engaño se escucha, no se lee. Puente natural hacia el módulo de vishing.
 
 const NUMERO_FALSO = '09 87 654 321'
 const PREGUNTA = '¿Qué consumo fue? No reconozco ningún bloqueo.'
 const CODIGO = '508 213'
 
-/// El número va como enlace porque en un teléfono lo es: el sistema los
-/// detecta y los vuelve pulsables. Que se toque sin pensar es parte del ataque.
+// Va como enlace porque en un teléfono lo es: el sistema lo detecta y lo vuelve pulsable.
 const TEXTO = `BANCO DEL LITORAL: su tarjeta terminada en ${IDENTIDAD_FICTICIA.tarjeta} fue BLOQUEADA por un intento de consumo no reconocido. Para reactivarla comuniquese de inmediato al <a href="tel:0987654321" data-hotspot-goto="n2" data-hotspot-label="Tocó el número que venía en el mensaje">${NUMERO_FALSO}</a>.`
 
 const SMS: ScreenView = {
@@ -55,8 +37,7 @@ const SMS: ScreenView = {
   volverLabel: 'Salió del hilo sin hacer nada',
 }
 
-/// El hilo con la pregunta ya enviada. El final se ve sobre lo que de verdad
-/// salió del teléfono, no sobre un borrador que nunca se mandó.
+// El final se ve sobre lo que de verdad salió del teléfono, no un borrador nunca mandado.
 const SMS_RESPONDIDO: ScreenView = {
   ...SMS,
   respuestas: undefined,
@@ -67,14 +48,8 @@ const SMS_RESPONDIDO: ScreenView = {
   ],
 }
 
-/// La llamada, con la pantalla de llamada de verdad —la misma de vishing— y no
-/// con una ficha que la imita. Marcar no termina el escenario: termina lo que
-/// se dice dentro, y quien marcó todavía puede colgar. El dock sigue debajo,
-/// así que salir a mirar la app del banco mientras el otro habla cuesta lo
-/// mismo que en un teléfono de verdad.
-///
-/// Es una llamada **saliente**: la hiciste tú, y por eso ni siquiera queda un
-/// número extraño en tu registro. Ese detalle es la mitad del desenlace.
+// Marcar no termina el escenario: termina lo que se dice dentro, y aún se puede colgar.
+// Es una llamada saliente (la hiciste tú), y eso es la mitad del desenlace.
 const APERTURA = [
   {
     texto: `Banco del Litoral, departamento de seguridad, buenas noches. Le confirmo: hablo con el titular de la tarjeta terminada en ${IDENTIDAD_FICTICIA.tarjeta}, ¿verdad?`,
@@ -85,14 +60,8 @@ const APERTURA = [
   },
 ]
 
-/// El marcador, con el número puesto y todavía sin llamar. Tocar un número en
-/// un mensaje abre esto, no la conversación: sin el paso intermedio el
-/// escenario metía en la llamada de golpe, como si hubiera llamado alguien más,
-/// y marcar dejaba de ser una decisión del participante.
-///
-/// Salir del marcador no termina la corrida. Es lo correcto y no es suficiente:
-/// no llamaste, pero sigues sin saber si tu tarjeta tenía algún bloqueo, y eso
-/// se resuelve en la app.
+// Tocar un número abre el marcador, no la llamada directa: sin ese paso, marcar dejaba
+// de ser una decisión. Salir de aquí no termina la corrida: sigues sin saber si había bloqueo.
 const MARCADOR: ScreenView = {
   kind: 'call',
   marcando: true,
@@ -157,9 +126,7 @@ const PIDEN_CODIGO: ScreenView = {
   colgarLabel: 'Colgó sin dictar el código',
 }
 
-/// El mensaje auténtico, leído desde la notificación o desde el dock. Sin
-/// `volverGoto`: no hay lista a la que volver, y la vuelta a la llamada es el
-/// icono `Teléfono`, que ya restaura la conversación exacta donde se dejó.
+// Sin `volverGoto`: no hay lista a la que volver, el icono `Teléfono` ya restaura la llamada.
 const CODIGO_SMS: ScreenView = {
   kind: 'sms',
   sender: 'BANCO LITORAL',
@@ -174,11 +141,8 @@ const CODIGO_SMS: ScreenView = {
   ],
 }
 
-/// El inicio de la banca móvil. Abrir la app todavía no es haber comprobado
-/// nada: desde aquí se puede mirar el estado de la tarjeta o anularla a ciegas,
-/// que es el gesto precipitado que este escenario mide. Un icono que resuelve
-/// el escenario de un toque premia haber encontrado el icono, no haber sabido
-/// qué hacer con él.
+// Abrir la app todavía no es haber comprobado nada: se puede mirar el estado
+// o anular a ciegas, que es el gesto precipitado que este escenario mide.
 const BANCO_INICIO: ScreenView = {
   kind: 'web',
   app: 'Banco',
@@ -207,10 +171,7 @@ const BANCO_INICIO: ScreenView = {
   button: '',
 }
 
-/// El mismo inicio, visto mientras la llamada sigue en curso. Mirar las
-/// tarjetas aquí no cierra el escenario: colgar sigue pendiente, y eso se
-/// resuelve en la llamada, no en la app. Solo cambia a dónde lleva "Mis
-/// tarjetas"; el resto del menú es idéntico.
+// Mirar tarjetas aquí no cierra el escenario: colgar sigue pendiente. Solo cambia a dónde lleva "Mis tarjetas".
 const BANCO_INICIO_EN_LLAMADA: ScreenView = {
   ...BANCO_INICIO,
   opciones: [
@@ -231,11 +192,8 @@ const BANCO_INICIO_EN_LLAMADA: ScreenView = {
   ],
 }
 
-/// Lo que se ve al mirar las tarjetas: nunca estuvo bloqueada, y el número de
-/// verdad está ahí escrito. El acierto se enseña, no se cuenta, y no queda
-/// nada abierto después de verlo: la pantalla que lo prueba es la que cierra.
-/// Mismo contenido cuando se mira en plena llamada (`n_tarjetas_llamada`):
-/// sin `cerrarGoto`, porque ahí lo único que cierra el escenario es colgar.
+// Mismo contenido cuando se mira en plena llamada (`n_tarjetas_llamada`): sin
+// `cerrarGoto` ahí, porque lo único que cierra el escenario en llamada es colgar.
 const APP_BANCO: ScreenView = {
   kind: 'web',
   app: 'Banco',
@@ -265,14 +223,12 @@ const APPS: AppTelefono[] = [
     texto: 'Banco',
     color: '#155e75',
     goto: 'n5',
-    // Con la llamada en pantalla, comprobar no puede cerrar el escenario:
-    // colgar sigue pendiente. Por eso abre la variante que no termina nada.
+    // Con la llamada en curso, comprobar no puede cerrar el escenario: abre la variante que no termina nada.
     gotoEnLlamada: 'n5c',
     label: 'Abrió la app del banco para comprobar el bloqueo',
   },
   { Icono: MessageSquareText, texto: 'Mensajes', color: '#2f9e44', hilo: 'sms' },
-  // Con llamada y mensajes a la vez, cada icono tiene que volver a lo suyo: sin
-  // el `hilo` los dos devolverían a lo último que se vio.
+  // Sin `hilo`, ambos iconos devolverían a lo último visto en vez de a lo suyo.
   { Icono: Phone, texto: 'Teléfono', color: '#495057', hilo: 'call' },
   {
     Icono: Compass,
@@ -309,10 +265,8 @@ export const STORY: Story<ScreenNode> = {
     outcome:
       'Tu tarjeta nunca estuvo bloqueada. El código que dictaste autorizaba una compra que ellos hacían mientras hablabas: mil doscientos dólares en electrónica. Y la llamada la hiciste tú.',
   },
-  // Colgar no puede valer lo mismo que no haber marcado: la regla de este
-  // escenario es que al número del mensaje no se llama, y marcarlo les confirma
-  // la línea más fuerte que un SMS. Colgaste bien, pero llegaste tarde. Mismo
-  // reparto que banco-confirma en vishing.
+  // Colgar no vale lo mismo que no haber marcado: marcar ya confirmó la línea más
+  // fuerte que un SMS. Mismo reparto que banco-confirma en vishing.
   e_cuelga: {
     kind: 'partial',
     view: PIDEN_CODIGO,
