@@ -4,7 +4,13 @@ import { Link, Navigate, useNavigate, useParams } from 'react-router'
 import AppHeader, { CLASE_ATRAS } from '../components/AppHeader'
 import BarraProgreso from '../components/BarraProgreso'
 import CierreModuloModal from '../components/CierreModuloModal'
-import { escenariosDeSeccion, getSeccion, SECCIONES, type Seccion as SeccionCatalogo } from '../data/catalogo'
+import {
+  escenariosDeSeccion,
+  getSeccion,
+  rutaEscenario,
+  SECCIONES,
+  type Seccion as SeccionCatalogo,
+} from '../data/catalogo'
 import { fetchProgreso, type Progreso } from '../lib/api'
 import { escenarioEstaDisponible } from '../lib/bloqueoEscenarios'
 import ConfirmarRepeticionModal from '../components/ConfirmarRepeticionModal'
@@ -271,7 +277,7 @@ function Seccion() {
         )}
 
         {mostrarRepeticion && progreso && (
-          <ConfirmarRepeticionModal seccionId={seccion.id} titulo={seccion.titulo} aprobados={progreso.aprobados} aprobado={progreso.aprobado} onClose={() => setMostrarRepeticion(false)} onConfirm={() => navigate(`/seccion/${seccion.id}/${escenarios[0]?.escenarioId}`, { state: { iniciarRepeticion: true } })} />
+          <ConfirmarRepeticionModal seccionId={seccion.id} titulo={seccion.titulo} aprobados={progreso.aprobados} aprobado={progreso.aprobado} onClose={() => setMostrarRepeticion(false)} onConfirm={() => escenarios[0] && navigate(rutaEscenario(escenarios[0]), { state: { iniciarRepeticion: true } })} />
         )}
 
         {mostrarCierre && progreso?.aprobado && (
@@ -376,7 +382,7 @@ function Seccion() {
                 <li key={escenario.id} className="flex">
                   {disponible ? (
                     <Link
-                      to={`/seccion/${escenario.seccionId}/${escenario.escenarioId}`}
+                      to={rutaEscenario(escenario)}
                       className={cardClassName}
                     >
                       {contenido}

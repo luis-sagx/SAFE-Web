@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import { ESCENARIOS, SECCIONES, escenariosDeSeccion, getEscenario, getSeccion } from './catalogo'
+import {
+  ESCENARIOS,
+  SECCIONES,
+  escenariosDeSeccion,
+  getEscenario,
+  getSeccion,
+  rutaEscenario,
+} from './catalogo'
 
 // Mismo patrón que exige CreateRunDto: un id que no lo cumpla se juega igual y
 // el POST /runs lo rechaza con 400, perdiendo la corrida en silencio.
@@ -155,5 +162,14 @@ describe('catálogo de escenarios', () => {
     expect(getSeccion('phishing')?.titulo).toBe('Phishing')
     expect(getSeccion(undefined)).toBeUndefined()
     expect(getEscenario('phishing/no-existe')).toBeUndefined()
+  })
+
+  it('publica el pago del colegio en una ruta neutral sin cambiar su id histórico', () => {
+    const escenario = getEscenario('phishing/secuestro-hilo')
+
+    expect(escenario?.id).toBe('phishing/secuestro-hilo')
+    expect(escenario && rutaEscenario(escenario)).toBe(
+      '/seccion/phishing/pago-pension-colegio',
+    )
   })
 })

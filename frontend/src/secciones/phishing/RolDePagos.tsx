@@ -13,7 +13,7 @@ import styles from '../../components/ui/DeviceScreen.module.css'
 import { useAuth } from '../../context/AuthContext'
 import { IDENTIDAD_FICTICIA } from '../../lib/identidadFicticia'
 import Instrucciones from '../../components/ui/Instrucciones'
-import { BotonHotspot, manejarClicHotspot } from '../../components/ui/interactivo'
+import { BotonHotspot, EnlaceHotspot, manejarClicHotspot } from '../../components/ui/interactivo'
 import {
   Navegador,
   type MarcadorNavegador,
@@ -97,7 +97,16 @@ const ACCIONES: AccionCorreo[] = [
   },
 ]
 
-const ASUNTO = 'Tu rol de pagos de julio ya está disponible'
+const HOY = new Date()
+const PERIODO_ROL = new Intl.DateTimeFormat('es-EC', {
+  month: 'long',
+  year: 'numeric',
+}).format(HOY)
+const FECHA_LIMITE = new Intl.DateTimeFormat('es-EC', {
+  day: 'numeric',
+  month: 'long',
+}).format(new Date(HOY.getFullYear(), HOY.getMonth(), HOY.getDate() + 5))
+const ASUNTO = `Tu rol de pagos de ${PERIODO_ROL} ya está disponible`
 const REMITENTE_NOMBRE = 'Talento Humano · Corporación Andes'
 const DIRECCION = 'nomina@andes.com.ec'
 
@@ -152,7 +161,7 @@ const SENALES: Senal[] = [
 const RULE =
   'Regla de oro: no todo correo es una trampa. Lo que distingue a uno legítimo es que <b>no te pide tu clave y su dominio es el real</b>. Aun así, entra al portal escribiendo tú la dirección: es la costumbre que te protege siempre.'
 
-const RESUMEN = 'Talento Humano avisa que tu rol de pagos de julio ya está en el portal.'
+const RESUMEN = `Talento Humano avisa que tu rol de pagos de ${PERIODO_ROL} ya está en el portal.`
 
 const CONTEXTO: Contexto = {
   antes: (
@@ -211,6 +220,8 @@ const MARCADORES: MarcadorNavegador[] = [
 ]
 
 function ContenidoCorreo({ recibido, carpetas }: { recibido: string; carpetas: CarpetaCorreo[] }) {
+  const { displayName } = useAuth()
+
   return (
     <CuerpoCorreo
       acciones={ACCIONES}
@@ -218,6 +229,12 @@ function ContenidoCorreo({ recibido, carpetas }: { recibido: string; carpetas: C
       asunto={ASUNTO}
       remitente={{ nombre: REMITENTE_NOMBRE, direccion: DIRECCION, senalDireccion: 'remitente' }}
       recibido={recibido}
+      marca={{
+        nombre: 'Corporación Andes',
+        detalle: 'Talento Humano · Portal del colaborador',
+        icono: 'empresa',
+        variante: 'corporativa',
+      }}
       pie={
         <>
           <p>Talento Humano · Corporación Andes</p>
@@ -225,15 +242,24 @@ function ContenidoCorreo({ recibido, carpetas }: { recibido: string; carpetas: C
         </>
       }
     >
-      <p data-signal="saludo">Hola,</p>
+      <p data-signal="saludo">Hola, {displayName || 'colaborador'}:</p>
       <p>
-        Tu rol de pagos del período <b>julio 2026</b> ya está publicado en el portal del
+        Tu rol de pagos del período <b>{PERIODO_ROL}</b> ya está publicado en el portal del
         colaborador, junto con el detalle de horas extra y descuentos.
       </p>
       <p>
-        Puedes consultarlo en <b data-signal="portal">portal.andes.com.ec</b>, con el mismo usuario
-        de tu correo institucional. Si algo no cuadra, responde a este correo o escribe a{' '}
-        <span data-signal="canal">la extensión 214</span> antes del 8 de agosto.
+        Puedes consultarlo en{' '}
+        <EnlaceHotspot
+          goto="n2"
+          label="Abrió el portal legítimo desde la dirección visible del correo"
+          href="https://portal.andes.com.ec/rrhh/rol"
+          signalId="portal"
+        >
+          portal.andes.com.ec
+        </EnlaceHotspot>
+        , con el mismo usuario de tu correo institucional. Si algo no cuadra, responde a este
+        correo o llama a{' '}
+        <span data-signal="canal">la extensión 214</span> antes del {FECHA_LIMITE}.
       </p>
     </CuerpoCorreo>
   )

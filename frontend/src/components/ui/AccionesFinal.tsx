@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router'
-import { escenariosDeSeccion, getSeccion, SECCIONES } from '../../data/catalogo'
+import { escenariosDeSeccion, getSeccion, rutaEscenario, SECCIONES } from '../../data/catalogo'
 import { fetchProgreso } from '../../lib/api'
 import type { RunOutcome } from '../../lib/api'
 import { conEscenarioIntentado, siguienteEnRonda } from '../../lib/bloqueoEscenarios'
@@ -147,7 +147,7 @@ function AccionesFinal({ escenarioId, outcome, autoFocus }: AccionesFinalProps) 
         {marcador}
         <Link
           ref={principalRef as React.Ref<HTMLAnchorElement>}
-          to={`/seccion/${siguiente.seccionId}/${siguiente.escenarioId}`}
+          to={rutaEscenario(siguiente)}
           // El guardado de esta corrida es async y no se espera antes de
           // mostrar este botón: si la petición todavía no llegó al servidor
           // cuando se navega, la comprobación de disponibilidad de la
@@ -213,7 +213,7 @@ function AccionesFinal({ escenarioId, outcome, autoFocus }: AccionesFinalProps) 
           aprobados={aprobadosEfectivos}
           aprobado={aprobadoEfectivo}
           onClose={() => setMostrarRepeticion(false)}
-          onConfirm={() => navigate(`/seccion/${seccionId}/${escenarios[0]?.escenarioId}`, { state: { iniciarRepeticion: true } })}
+          onConfirm={() => escenarios[0] && navigate(rutaEscenario(escenarios[0]), { state: { iniciarRepeticion: true } })}
         />
       )}
       {volver}

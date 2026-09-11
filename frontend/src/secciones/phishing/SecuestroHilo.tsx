@@ -26,7 +26,7 @@ import { crearSenal } from '../../lib/crearSenal'
 const HILO_PREVIO = `
   <div style="border-left:3px solid #d7dde1;padding-left:12px;margin:14px 0;color:#5f6b7a;font-size:13px;line-height:1.55;">
     <p style="margin:0 0 8px;"><b>Secretaría, Unidad Educativa San Rafael</b> · hace 3 días<br/>
-    Buenas tardes, le recuerdo que la pensión de julio vence el día 30. El monto es $145.</p>
+    Buenas tardes, le recuerdo que la pensión de este mes vence en cinco días. El monto es $145.</p>
     <p style="margin:0;"><b>Yo</b> · hace 3 días<br/>
     Perfecto, gracias, hago la transferencia esta semana a la cuenta de siempre.</p>
   </div>
@@ -37,19 +37,24 @@ const CORREO: ScreenView = {
   from: 'Secretaría, Unidad Educativa San Rafael',
   address: 'secretaria@unidadsanrafael.edu.ec',
   senalDireccion: 'remitente',
-  subject: 'Re: Pensión de julio',
+  subject: 'Re: Pensión de este mes',
   date: 'hoy 11:15',
+  marca: {
+    nombre: 'Unidad Educativa San Rafael',
+    detalle: 'Secretaría · Pensiones',
+    icono: 'colegio',
+    variante: 'institucional',
+  },
   body: `
     <p>Buenas de nuevo:</p>
-    <img src="/ComprobanteTransferencia.jpeg" alt="" />
     <p>
       Antes de que transfiera, le cuento que
       <mark class="marca" data-signal="cuenta">cambiamos de banco</mark> este mes. Adjunto el
-      comprobante corregido con el nuevo número de cuenta para la pensión de julio.
+      comprobante corregido con el nuevo número de cuenta para la pensión de este mes.
     </p>
     ${HILO_PREVIO}
   `,
-  attachment: 'Comprobante_pension_julio.pdf',
+  attachment: 'Comprobante_pension_mes_actual.pdf',
   adjuntoGoto: 'n4',
   adjuntoLabel: 'Abrió el comprobante adjunto',
   senalAdjunto: 'adjunto',
@@ -78,7 +83,7 @@ const BANCA: ScreenView = {
     },
     {
       label: 'Cuenta destino',
-      placeholder: 'Banco Austral · 2200418877 (nueva)',
+      placeholder: 'Banco Austral · 2200418877',
       senal: 'cuenta-nueva',
     },
     { label: 'Monto', placeholder: '$145,00' },
@@ -130,15 +135,15 @@ const COLEGIO: ScreenView = {
 /// exactamente lo que había que desconfiar. Un archivo no verifica nada.
 const COMPROBANTE: ScreenView = {
   kind: 'web',
-  url: 'C:\\Usuarios\\Descargas\\Comprobante_pension_julio.pdf',
+  url: 'C:\\Usuarios\\Descargas\\Comprobante_pension_mes_actual.pdf',
   secure: true,
   local: true,
   brand: 'Unidad Educativa San Rafael',
-  title: 'Comprobante de pago · Pensión julio',
-  subtitle: 'Documento generado por Secretaría · 05/08/2026',
+  title: 'Comprobante de pago · Pensión del mes',
+  subtitle: 'Documento generado hoy por Secretaría',
   datos: [
     { etiqueta: 'Estudiante', valor: 'A nombre del representante' },
-    { etiqueta: 'Concepto', valor: 'Pensión de julio' },
+    { etiqueta: 'Concepto', valor: 'Pensión del mes actual' },
     { etiqueta: 'Monto', valor: '$145,00' },
     { etiqueta: 'Banco', valor: 'Banco Austral', senal: 'banco-nuevo' },
     { etiqueta: 'Número de cuenta', valor: '2200418877', senal: 'cuenta-pdf' },
@@ -277,7 +282,7 @@ const CONTEXTO: Contexto = {
   antes: (
     <>
       Pagas la pensión del colegio de tu hijo y tienes un hilo de correo real y en curso con la{' '}
-      <strong>secretaría</strong>, sobre la de julio.
+      <strong>secretaría</strong>, sobre la pensión de este mes.
     </>
   ),
   ahora: (

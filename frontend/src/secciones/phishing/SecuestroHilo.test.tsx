@@ -24,6 +24,7 @@ vi.mock('../../context/AuthContext', () => ({
     roleLabel: 'Participante',
     initials: 'MP',
     correoSimulado: 'mariaperez@safeweb.com',
+    usuarioSimulado: 'mariaperez',
   }),
 }))
 
@@ -41,8 +42,10 @@ describe('SecuestroHilo', () => {
     )
 
     fireEvent.click(screen.getByRole('button', { name: 'Empezar' }))
-    fireEvent.click(screen.getByRole('button', { name: 'Banco del Litoral' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Abrir Banco del Litoral' }))
 
     expect(screen.getByText('Carlos Andrés Mena')).toBeDefined()
+    expect(screen.getByText('Banco Austral · 2200418877')).toBeDefined()
+    expect(screen.queryByText(/\(nueva\)/i)).toBeNull()
   })
 })

@@ -19,6 +19,12 @@ const CORREO: ScreenView = {
   senalEtiqueta: 'externo',
   subject: 'Tu contraseña caduca hoy · acción requerida',
   date: 'hoy 16:05',
+  marca: {
+    nombre: 'Corporación Andes',
+    detalle: 'Departamento de Tecnología',
+    icono: 'empresa',
+    variante: 'corporativa',
+  },
   body: `
     <p><span data-signal="saludo">Hola,</span></p>
     <p>
