@@ -6,19 +6,9 @@ import type { Senal } from '../../components/ui/PanelVeredicto'
 import type { Story } from '../../hooks/useStoryEngine'
 import { CUENTA_FICTICIA, IDENTIDAD_FICTICIA } from '../../lib/identidadFicticia'
 
-/**
- * El error que se paga con dinero propio: te transfieren de más y te piden la
- * diferencia.
- *
- * Es el más difícil del módulo porque el dinero *sí* entra, y entra de verdad:
- * lo ves en tu saldo. Lo que no se ve es de dónde salió. Cuando el dueño de la
- * cuenta robada reclama, el banco reversa esos $1.300 y tú ya devolviste
- * $1.170 de tu bolsillo a un desconocido.
- *
- * La salida no es reconocer nada raro en el mensaje, porque no lo hay: es
- * saber a quién le toca arreglarlo. Un dinero que llegó por error se devuelve
- * por el banco, nunca de mano a mano.
- */
+/** El más difícil: el dinero sí entra, de verdad, pero no es del comprador —es de una cuenta robada, y el
+ *  banco lo reversa cuando el dueño reclama. No hay nada raro que reconocer en el mensaje: la salida es saber
+ *  que un error se devuelve por el banco, nunca de mano a mano. */
 
 const COMPRADOR = 'Diego Alarcón'
 const NUMERO_COMPRADOR = '+593 96 720 3384'

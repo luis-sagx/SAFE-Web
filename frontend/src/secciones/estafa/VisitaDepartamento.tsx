@@ -6,18 +6,9 @@ import type { Senal } from '../../components/ui/PanelVeredicto'
 import type { Story } from '../../hooks/useStoryEngine'
 import { CUENTA_FICTICIA, IDENTIDAD_FICTICIA } from '../../lib/identidadFicticia'
 
-/**
- * El espejo legítimo de "Departamento en arriendo".
- *
- * Espeja a "Departamento en arriendo" con la misma escena y el orden puesto
- * del derecho: te dan la dirección exacta, te abren la puerta, firmas el
- * contrato delante y el depósito se paga al firmar, con recibo y a una cuenta
- * que está al nombre de la inmobiliaria.
- *
- * Mide lo que el otro no puede medir: si alguien aprendió la regla o solo
- * aprendió a tener miedo. Quien no vuelve a arrendar nada por internet pagó la
- * lección más cara de lo que valía, y aquí el acierto es firmar.
- */
+/** El espejo legítimo de "Departamento en arriendo": misma escena, orden puesto del derecho (dirección real,
+ *  visita, firma y depósito al firmar, a la cuenta de la inmobiliaria). Mide si se aprendió la regla o solo
+ *  el miedo: aquí el acierto es firmar. */
 
 const AGENTE = 'Mariela Cifuentes · Inmobiliaria Caicedo'
 const NUMERO_AGENTE = '+593 2 246 8890'
@@ -53,8 +44,7 @@ const CHAT: ScreenView = {
   volverLabel: 'Salió del chat sin contestar',
 }
 
-/// La visita. Lo que en el escenario espejo era imposible aquí ocurre sin
-/// ningún drama: la puerta se abre y el departamento es el de las fotos.
+// La visita: lo que en el espejo era imposible, aquí ocurre sin drama —la puerta se abre y es el departamento de las fotos.
 const VISITA: ScreenView = {
   kind: 'web',
   app: 'Portal Inmobiliario',
