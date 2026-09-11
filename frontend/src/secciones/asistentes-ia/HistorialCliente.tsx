@@ -1,155 +1,311 @@
-import StoryEscenario, { type ScreenNode } from '../../components/StoryEscenario'
+import type { ScreenNode } from '../../components/StoryEscenario'
 import type { Contexto } from '../../components/ui/ContextoEscenario'
-import type { Senal } from '../../components/ui/PanelVeredicto'
 import type { Story } from '../../hooks/useStoryEngine'
-import { crearChatIA, conRespuestaIA } from './chatIA'
+import EscenarioChatIA from './EscenarioChatIA'
+import { crearChatIA, conRespuestaIA, conSeguimientoIA, marcar, senal } from './chatIA'
 
 /**
- * El más difícil de la sección: los datos no son propios ni de un compañero,
- * sino de un cliente que confió esa información a la empresa, no a un
- * servicio externo de IA. Y pedirle a la IA que "no los use" después de
- * pegarlos no deshace que ya salieron.
+ * El más difícil de la sección. Lo que lo separa del resto:
+ *
+ * - Los datos no son propios ni de un compañero, sino de una clienta que
+ *   confió esa información a la empresa, no a un servicio externo de IA.
+ * - El camino limpio no termina en el primer mensaje. La IA devuelve un
+ *   borrador **genérico que ya sirve** y encima ofrece "dejártelo listo para
+ *   enviar" si le pasas el nombre y el número de cuenta. Resistir un pedido
+ *   descarado es fácil; resistir un favor —cuando ya tienes un resultado
+ *   usable en la mano— es lo que este escenario mide.
+ * - En ese segundo paso hay una opción intermedia: darle solo el nombre para
+ *   el saludo. Menos grave que el paquete completo, pero tampoco hacía falta:
+ *   queda como parcial.
+ *
+ * Cada burbuja muestra el mensaje entero que se enviaría: se lee lo que sale
+ * antes de tocarlo.
  */
 
 const HORA = '11:47'
 
-const BORRADOR =
-  'Ayúdame a responder este correo. Datos de la cuenta: cliente María Fuentes, cuenta 0102345678, saldo $2.340,15, teléfono 099 456 7890. Pregunta por qué se le cobró $45 de más este mes.'
-const BORRADOR_SOLO_MOTIVO =
-  'Ayúdame a responder un correo de un cliente que reclama un cobro de $45 de más este mes en su cuenta. Escribe un tono formal y empático, sin inventar datos de la cuenta.'
-const BORRADOR_PIDE_SECRETO = `${BORRADOR} No uses estos datos para nada más, son confidenciales.`
+const NOMBRE = 'Mónica Zambrano'
+const PRIMER_NOMBRE = NOMBRE.split(' ')[0]
+const CUENTA = '2100-0000-45'
+const SALDO = '$2.340,15'
+const TELEFONO = '099 000 0045'
 
+const RECLAMO = 'Reclama por qué le cobramos $45 de más este mes.'
+const DATOS = `Sus datos: ${NOMBRE}, cuenta ${CUENTA}, saldo ${SALDO}, teléfono ${TELEFONO}.`
+
+// --- Paso 1: qué le escribes a la IA de entrada ---
+const PROMPT_CON_DATOS = `${RECLAMO} ${DATOS}`
+const PROMPT_SIN_DATOS = `${RECLAMO} Respóndele formal y amable, diciéndole que ya estamos revisando. No inventes datos de la cuenta.`
+const PROMPT_PIDE_SECRETO = `${PROMPT_CON_DATOS} No guardes estos datos, son confidenciales.`
+
+// --- Paso 2: qué contestas a la oferta de la IA ---
+const PROMPT_ARMA_COMPLETA = `Sí, es ${NOMBRE}, cuenta ${CUENTA}. Déjala lista para enviar.`
+const PROMPT_SOLO_NOMBRE = `Solo el nombre para el saludo: ${NOMBRE}.`
+const PROMPT_ASI_ESTA_BIEN = 'Así está bien, el resto lo completo yo al enviarla.'
+
+// Va en el computador: los reclamos se contestan desde el puesto de trabajo,
+// con el sistema de clientes abierto al lado — que es justo de donde salen los
+// datos que terminan pegados en el chat.
 const CHAT = crearChatIA(
   'Redactor de respuestas · servicio externo',
   [
-    { texto: 'Hola', mio: true },
-    { texto: 'Hola, ¿en qué puedo ayudarte?' },
-    { texto: 'Ayúdame a responder el correo de un cliente', mio: true },
+    { texto: 'Hola, ayúdame a responder el reclamo de una clienta.', mio: true },
+    {
+      texto:
+        'Con gusto. Cuéntame qué reclama la clienta y en qué tono quieres responder. Con eso te preparo una respuesta clara y cordial.',
+    },
   ],
   HORA,
   [
-    { texto: BORRADOR, goto: 'e_con_datos' },
-    { texto: BORRADOR_SOLO_MOTIVO, goto: 'e_solo_motivo' },
-    { texto: BORRADOR_PIDE_SECRETO, goto: 'e_pide_secreto' },
+    { texto: PROMPT_CON_DATOS, goto: 'e_con_datos' },
+    { texto: PROMPT_SIN_DATOS, goto: 'n2_generico' },
+    { texto: PROMPT_PIDE_SECRETO, goto: 'e_pide_secreto' },
   ],
+  { titulo: 'Asistente IA', url: 'https://chat.asistente-ia.com/nuevo' },
 )
 
-const ENVIO_CON_DATOS = conRespuestaIA(
-  CHAT,
-  HORA,
-  BORRADOR,
-  'Aquí tienes una respuesta: "Estimada María Fuentes, revisamos el cobro adicional de $45 en su cuenta 0102345678 y le confirmaremos el motivo a la brevedad."',
+const MARCAS = {
+  'dato-nombre': NOMBRE,
+  'dato-cuenta': CUENTA,
+  'dato-saldo': SALDO,
+  'dato-telefono': TELEFONO,
+}
+
+// La respuesta que la IA devuelve cuando le diste todo: contesta el reclamo y
+// de paso vuelve a escribir la cuenta, el saldo y el teléfono. Ese eco es media
+// lección, así que lleva su propia señal.
+const RESPUESTA_CON_DATOS = marcar(
+  [
+    'Aquí tienes la respuesta:',
+    '',
+    `Hola, ${PRIMER_NOMBRE}. Buenas tardes.`,
+    '',
+    `Lamentamos la confusión ocasionada por el cobro adicional de $45,00 en su cuenta ${CUENTA}, cuyo saldo disponible es de ${SALDO}. Vamos a revisar el detalle de la facturación de este mes para verificar a qué corresponde ese valor y confirmar si el cobro fue realizado correctamente.`,
+    '',
+    `Una vez que tengamos el detalle le informaremos el motivo y, de existir algún error, procederemos con la corrección. Si necesita más información puede escribirnos o llamarnos al ${TELEFONO}.`,
+    '',
+    'Gracias por comunicarnos su inquietud y disculpe las molestias.',
+  ].join('<br>'),
+  { 'dato-devuelto': `cuyo saldo disponible es de ${SALDO}` },
 )
-const ENVIO_SOLO_MOTIVO = conRespuestaIA(
-  CHAT,
-  HORA,
-  BORRADOR_SOLO_MOTIVO,
-  'Aquí tienes: "Estimado/a cliente, gracias por escribirnos. Estamos revisando el cobro adicional de $45 que menciona y le confirmaremos el motivo a la brevedad." Agrega el nombre y los datos de la cuenta al enviarlo.',
+
+// El borrador genérico + la oferta. El borrador ya sirve para enviar (saludo
+// neutro, cubre el cobro de $45); lo único que "falta" es el nombre, y eso es
+// la carnada.
+const RESPUESTA_GENERICA = [
+  'Aquí tienes un borrador general:',
+  '',
+  'Hola, buenas tardes. Lamentamos la confusión por el cobro adicional de $45,00. Estamos revisando el detalle de la facturación de este mes y le informaremos el motivo apenas lo tengamos; de existir un error, procederemos con la corrección.',
+  '',
+  'Si me pasas el nombre de la clienta y el número de cuenta, te la dejo lista para enviar: con el saludo personalizado y el detalle del cobro ya redactado.',
+].join('<br>')
+
+const RESPUESTA_ARMA_COMPLETA = marcar(
+  [
+    'Lista para enviar:',
+    '',
+    `Hola, ${PRIMER_NOMBRE}. Buenas tardes.`,
+    '',
+    `Lamentamos la confusión ocasionada por el cobro adicional de $45,00 en su cuenta ${CUENTA}. Estamos revisando el detalle de la facturación de este mes y le informaremos el motivo apenas lo tengamos; de existir un error, procederemos con la corrección.`,
+    '',
+    'Gracias por comunicarnos su inquietud y disculpe las molestias.',
+  ].join('<br>'),
+  { 'dato-devuelto': `en su cuenta ${CUENTA}` },
 )
+
+const RESPUESTA_SOLO_NOMBRE = marcar(
+  [
+    'Aquí tienes la respuesta con el saludo:',
+    '',
+    `Hola, ${PRIMER_NOMBRE}. Buenas tardes.`,
+    '',
+    'Lamentamos la confusión ocasionada por el cobro adicional de $45,00. Estamos revisando el detalle de la facturación de este mes y le informaremos el motivo apenas lo tengamos; de existir un error, procederemos con la corrección.',
+    '',
+    'Gracias por comunicarnos su inquietud y disculpe las molestias.',
+  ].join('<br>'),
+  { 'dato-devuelto': `Hola, ${PRIMER_NOMBRE}` },
+)
+
+const RESPUESTA_ASI_ESTA_BIEN =
+  'Perfecto. Copia el borrador y completa el saludo con el nombre y los datos de la cuenta al enviarlo.'
+
+const ENVIO_CON_DATOS = conRespuestaIA(CHAT, HORA, marcar(PROMPT_CON_DATOS, MARCAS), RESPUESTA_CON_DATOS)
 const ENVIO_PIDE_SECRETO = conRespuestaIA(
   CHAT,
   HORA,
-  BORRADOR_PIDE_SECRETO,
-  'Entendido, no los usaré para otra cosa. Aquí tienes la respuesta: "Estimada María Fuentes, revisamos el cobro adicional de $45 en su cuenta 0102345678 y le confirmaremos el motivo a la brevedad."',
+  marcar(PROMPT_PIDE_SECRETO, MARCAS),
+  `Entendido, trataré la información como confidencial.<br><br>${RESPUESTA_CON_DATOS}`,
 )
+
+// Paso 2: mandaste el prompt limpio, la IA devuelve el borrador genérico y
+// ofrece completarlo. El chat sigue abierto con tres respuestas nuevas.
+const CHAT_GENERICO = conSeguimientoIA(CHAT, HORA, PROMPT_SIN_DATOS, RESPUESTA_GENERICA, [
+  { texto: PROMPT_ARMA_COMPLETA, goto: 'e_recae' },
+  { texto: PROMPT_SOLO_NOMBRE, goto: 'e_solo_nombre' },
+  { texto: PROMPT_ASI_ESTA_BIEN, goto: 'e_sin_datos' },
+])
+
+const ENVIO_RECAE = conRespuestaIA(
+  CHAT_GENERICO,
+  HORA,
+  marcar(PROMPT_ARMA_COMPLETA, { 'dato-nombre': NOMBRE, 'dato-cuenta': CUENTA }),
+  RESPUESTA_ARMA_COMPLETA,
+)
+const ENVIO_SOLO_NOMBRE = conRespuestaIA(
+  CHAT_GENERICO,
+  HORA,
+  marcar(PROMPT_SOLO_NOMBRE, { 'dato-nombre': NOMBRE }),
+  RESPUESTA_SOLO_NOMBRE,
+)
+const ENVIO_SIN_DATOS = conRespuestaIA(CHAT_GENERICO, HORA, PROMPT_ASI_ESTA_BIEN, RESPUESTA_ASI_ESTA_BIEN)
 
 const STORY: Story<ScreenNode> = {
   n1: { kind: 'scene', view: CHAT },
+  n2_generico: { kind: 'scene', view: CHAT_GENERICO },
   e_con_datos: {
     kind: 'bad',
     view: ENVIO_CON_DATOS,
     senales: [
-      {
-        id: 'datos-cliente',
-        targetId: 'borrador-enviado',
-        pantalla: 'e_con_datos',
-        texto:
-          'El <b>número de cuenta</b>, el <b>saldo</b> y el <b>teléfono</b> de María salieron hacia un servicio externo. La IA solo necesitaba saber que hubo un cobro de más.',
-      },
+      senal(
+        'dato-nombre',
+        'e_con_datos',
+        'El <b>nombre completo</b> de la clienta. Es lo que convierte al resto de la línea en los datos de una persona concreta y no en un ejemplo.',
+      ),
+      senal(
+        'dato-cuenta',
+        'e_con_datos',
+        'Su <b>número de cuenta</b>. Es el dato con el que alguien que llame haciéndose pasar por el banco suena creíble desde la primera frase.',
+      ),
+      senal(
+        'dato-saldo',
+        'e_con_datos',
+        'Su <b>saldo</b>. No hace falta para explicar un cobro de $45, y es información que ni siquiera todos dentro de la empresa deberían ver.',
+      ),
+      senal(
+        'dato-telefono',
+        'e_con_datos',
+        'Su <b>teléfono</b>. Junto con lo anterior deja armado el paquete completo para llamarla, saber cuánto tiene y decirle su número de cuenta.',
+      ),
+      senal(
+        'dato-devuelto',
+        'e_con_datos',
+        'Y la IA los escribió otra vez en su respuesta. Ya no están una vez en la conversación sino dos, en un historial guardado en el servidor de otra empresa.',
+      ),
     ],
-    verdict: 'Datos financieros de un cliente compartidos con la IA',
+    verdict: 'Datos financieros de una clienta compartidos con la IA',
     outcome:
-      'El número de cuenta, el saldo y el teléfono de María quedaron en un servicio externo. Para redactar la respuesta bastaba con el motivo del reclamo, no con esos datos.',
-  },
-  e_solo_motivo: {
-    kind: 'good',
-    view: ENVIO_SOLO_MOTIVO,
-    senales: [
-      {
-        id: 'sin-datos',
-        targetId: 'borrador-enviado',
-        pantalla: 'e_solo_motivo',
-        texto: 'La IA redactó la respuesta sabiendo solo el motivo del reclamo, sin los datos de la cuenta.',
-      },
-    ],
-    verdict: 'Respuesta redactada sin exponer los datos del cliente',
-    outcome:
-      'La IA redactó la respuesta sabiendo que hubo un cobro de $45 de más, sin necesitar el número de cuenta, el saldo ni el teléfono de María. Esos datos los agregaste tú al enviarla.',
+      'El nombre, la cuenta, el saldo y el teléfono de Mónica quedaron en un servicio externo. Para redactar la respuesta bastaba con el motivo del reclamo.',
   },
   e_pide_secreto: {
     kind: 'bad',
     view: ENVIO_PIDE_SECRETO,
     senales: [
-      {
-        id: 'pide-secreto',
-        targetId: 'borrador-enviado',
-        pantalla: 'e_pide_secreto',
-        texto:
-          'Pedirle a la IA que "no use" un dato no borra que ese dato ya salió de tu sistema hacia un servicio externo.',
-      },
+      senal(
+        'dato-cuenta',
+        'e_pide_secreto',
+        'La cuenta ya está escrita. La frase que pide confidencialidad viene <b>después</b>, y el mensaje se envió entero de una sola vez.',
+      ),
+      senal(
+        'dato-saldo',
+        'e_pide_secreto',
+        'El saldo también. Pedir que "no lo guarde" es una instrucción dentro del texto, no un permiso que puedas retirar después.',
+      ),
     ],
     verdict: 'Pedir confidencialidad no deshace haber compartido el dato',
     outcome:
-      'Los datos de la cuenta de María ya quedaron escritos en la conversación. Pedirle a la IA que no los use después no cambia que ya salieron de donde deberían haberse quedado.',
+      'Los datos de Mónica ya quedaron escritos en la conversación, y la IA los repitió en su respuesta. Pedirle que no los guarde no cambia que ya salieron de donde debían quedarse.',
+  },
+  e_recae: {
+    kind: 'bad',
+    view: ENVIO_RECAE,
+    senales: [
+      senal(
+        'dato-nombre',
+        'e_recae',
+        'El <b>nombre completo</b>, que la oferta de "dejártela lista" te sacó. El borrador genérico que la IA ya te había dado servía para enviar tal cual.',
+      ),
+      senal(
+        'dato-cuenta',
+        'e_recae',
+        'Y el <b>número de cuenta</b>, justo lo que habías evitado dar en el primer mensaje. Una respuesta a un reclamo no necesita el número de cuenta para nada.',
+      ),
+      senal(
+        'dato-devuelto',
+        'e_recae',
+        'La IA los escribió de vuelta en el borrador final. El nombre y la cuenta de Mónica quedaron en un historial guardado en el servidor de otra empresa.',
+      ),
+    ],
+    verdict: 'La oferta de "dejártela lista" te sacó los datos',
+    outcome:
+      'La IA no pidió los datos de entrada: primero te dio algo genérico y después los pidió como un favor, para "dejarla lista". El borrador genérico ya alcanzaba; lo que sumó darle el nombre y la cuenta fue un saludo con nombre, a cambio de que esos datos salieran de la empresa.',
+  },
+  e_solo_nombre: {
+    kind: 'partial',
+    view: ENVIO_SOLO_NOMBRE,
+    senales: [
+      senal(
+        'dato-nombre',
+        'e_solo_nombre',
+        'El <b>nombre completo</b> de la clienta. Frenaste el número de cuenta, pero el nombre tampoco hacía falta: el saludo lo pones tú al enviar la respuesta.',
+      ),
+      senal(
+        'dato-devuelto',
+        'e_solo_nombre',
+        'Y la IA lo repitió en el saludo. Un nombre junto a un reclamo por un cobro ya identifica a una clienta concreta en un servicio externo.',
+      ),
+    ],
+    verdict: 'Cediste el nombre a la oferta',
+    outcome:
+      'Diste menos que el paquete completo, pero diste. El borrador genérico se enviaba sin el nombre; personalizar el saludo era cosa tuya, dentro del sistema de la empresa.',
+  },
+  e_sin_datos: {
+    kind: 'good',
+    view: ENVIO_SIN_DATOS,
+    senales: [
+      senal(
+        'borrador-enviado',
+        'n2_generico',
+        'Le contaste a la IA solo el motivo del reclamo — y cuando te ofreció "dejarla lista" a cambio del nombre y la cuenta, dijiste que así estaba bien. Nada de lo que le diste identifica a la clienta.',
+      ),
+    ],
+    verdict: 'Te quedaste con el borrador genérico',
+    outcome:
+      'El borrador que la IA ya te había dado alcanzaba. Rechazaste la oferta de completarlo: el nombre y la cuenta de la clienta los pones tú al enviar la respuesta, dentro del sistema de la empresa, no en el chat.',
   },
 }
 
-const SENALES: Senal[] = [
-  {
-    id: 'cuenta-en-juego',
-    pantalla: 'n1',
-    texto:
-      'Tienes a la mano el <b>número de cuenta</b>, el <b>saldo</b> y el <b>teléfono</b> del cliente. Para responder por qué hubo un cobro de más, la IA no necesita esos datos.',
-  },
+const SENALES = [
+  senal(
+    'cuenta-en-juego',
+    'n1',
+    'La IA te pregunta <b>qué reclama la clienta</b> y en qué tono responder. Tienes el sistema abierto al lado con su cuenta, su saldo y su teléfono — y nada de eso contesta esas dos preguntas.',
+  ),
 ]
 
 const RULE =
-  'Regla de oro: los datos de un cliente son de la empresa, no de un servicio externo. Antes de pedirle ayuda a una IA, pregúntate qué necesita saber de verdad para lo que le pides — casi nunca es el número de cuenta completo.'
+  'Regla de oro: los datos de un cliente son de la empresa, no de un servicio externo. Una IA no siempre pide los datos de golpe: a veces te da algo genérico y te ofrece "dejártelo listo" si se los pasas. El borrador genérico casi siempre alcanza; lo que falta lo completas tú al enviarlo.'
 
-const RESUMEN = 'Un cliente reclama un cobro de más, y tienes a la mano todos sus datos de cuenta.'
+const RESUMEN = 'Le pides a una IA que responda el reclamo de una clienta, con la cuenta y el saldo de ella a la vista.'
 
 const CONTEXTO: Contexto = {
   antes: 'Atiendes reclamos de clientes y sueles usar una IA para darle un tono más claro a tus respuestas.',
   ahora: (
     <>
-      <strong>Un cliente escribió</strong> preguntando por qué se le cobró $45 de más, y tienes a la mano su
-      número de cuenta, su saldo y su teléfono.
+      <strong>Abres el asistente de IA</strong> en el computador, con el sistema de clientes al lado: ahí
+      están el número de cuenta, el saldo y el teléfono de quien reclama.
     </>
   ),
 }
 
 function HistorialCliente() {
   return (
-    <StoryEscenario
+    <EscenarioChatIA
       escenarioId="asistentes-ia/historial-cliente"
       resumen={RESUMEN}
       contexto={CONTEXTO}
       story={STORY}
       senales={SENALES}
       rule={RULE}
-      accionesEnPantalla
-      cuandoTermina="Cuando toques una de las respuestas del chat."
-      instruccion={
-        <p className="text-lg leading-relaxed text-body">
-          Toca una de las respuestas para elegir qué datos del cliente incluir en el mensaje a la IA.
-        </p>
-      }
-      pista={
-        <p>
-          La IA puede redactar la respuesta sabiendo solo el motivo del reclamo. Lo que decides es si le das
-          además el resto de la cuenta.
-        </p>
-      }
     />
   )
 }

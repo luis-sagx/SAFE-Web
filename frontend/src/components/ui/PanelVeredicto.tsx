@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import AccionesFinal from './AccionesFinal'
+import { RepasoVistoContext } from './repasoVisto'
 import EtiquetaAprobacion from './EtiquetaAprobacion'
 import type { StoryNode } from '../../hooks/useStoryEngine'
 import type { RunStatus } from '../../hooks/useScenarioRun'
@@ -88,6 +89,14 @@ function PanelVeredicto({
   useEffect(() => {
     primerBotonRef.current?.focus()
   }, [])
+
+  // Le avisa al layout en cuanto no queda repaso pendiente: llegó al cierre, o
+  // el desenlace no traía señales y arrancó ya ahí. A partir de ese momento
+  // "Salir" no necesita advertir de nada.
+  const avisarRepasoVisto = useContext(RepasoVistoContext)
+  useEffect(() => {
+    if (enCierre) avisarRepasoVisto?.(true)
+  }, [enCierre, avisarRepasoVisto])
 
   useEffect(() => {
     const id = `run-status-${escenarioId}`
