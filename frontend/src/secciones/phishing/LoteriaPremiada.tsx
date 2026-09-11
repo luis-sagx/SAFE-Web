@@ -9,19 +9,8 @@ import type { Senal } from '../../components/ui/PanelVeredicto'
 import { ENLACES_PIE } from '../../components/ui/armazonSitio'
 import { CUENTA_FICTICIA, IDENTIDAD_FICTICIA } from '../../lib/identidadFicticia'
 
-/**
- * El premio que nunca se jugó, con pago por adelantado para cobrarlo.
- *
- * Es el fraude más antiguo que sigue funcionando, y el que más golpea al
- * público de este curso. Su anzuelo no es técnico: no hay dominio casi idéntico
- * ni página clonada difícil de distinguir. Lo que empuja es la ilusión y la
- * prisa, y por eso el escenario es de dificultad 1 — la señal decisiva no hay
- * que buscarla en la pantalla, se responde con una pregunta: ¿yo jugué?
- *
- * La lotería es inventada, como el Banco del Litoral o TiendaExpress. Los
- * escenarios solo usan nombres reales cuando la institución es el asunto del
- * ejercicio, como el SRI en factura-sri.
- */
+// Anzuelo no técnico (sin dominio casi idéntico ni clon difícil de distinguir): la señal decisiva
+// no está en la pantalla, se responde con "¿yo jugué?" — de ahí la dificultad 1.
 
 const URL_FALSA = 'http://loteria-pacifico-premios.online/reclamo'
 
@@ -72,10 +61,8 @@ const RECLAMO: ScreenView = {
   menu: ['Sorteos', 'Resultados', 'Ganadores', 'Ayuda'],
   title: 'Liberación de premio',
   subtitle: 'Complete sus datos para recibir la transferencia de USD 48.500,00.',
-  // Los campos vienen ya rellenos con los datos que el participante vio en el
-  // briefing, como los rellenaría el autocompletado del navegador. Con ceros de
-  // ejemplo, enviar el formulario se sentía como enviar casillas vacías; con
-  // sus números a la vista, pulsar el botón es verse entregar lo suyo.
+  // Campos ya rellenos con los datos del briefing: con ceros de ejemplo, enviar se
+  // sentía como enviar casillas vacías; con sus números, es verse entregar lo suyo.
   fields: [
     { label: 'Cédula', placeholder: '', valor: 'cedula' },
     { label: 'Banco y número de cuenta', placeholder: '', valor: 'cuenta', senal: 'campo-cuenta' },
@@ -91,9 +78,7 @@ const RECLAMO: ScreenView = {
   cerrarLabel: 'Cerró la página del reclamo y volvió al correo',
 }
 
-/// El buscador: aquí es donde "comprobarlo por mi cuenta" deja de ser una
-/// intención y se ve. No existe ninguna lotería con ese nombre, y eso es lo que
-/// desmonta el correo entero.
+// El buscador: no existe ninguna lotería con ese nombre, y eso desmonta el correo entero.
 const BUSCADOR: ScreenView = {
   kind: 'web',
   url: 'https://www.buscador.ec/?q=loteria+del+pacifico',
@@ -101,11 +86,8 @@ const BUSCADOR: ScreenView = {
   brand: 'Buscador',
   title: 'lotería del pacífico',
   subtitle: 'Cerca de 1.240 resultados (0,38 segundos)',
-  // Con resultados de verdad y no una ficha de datos: parte de lo que se
-  // entrena es reconocer dónde está uno mirando, y una lista de pares
-  // etiqueta/valor no se lee como un buscador. Ninguno de los tres dice
-  // "esto es una estafa" a la cara; lo que dicen es que el sorteo no consta
-  // en ningún lado, que es como se comprueba algo de verdad.
+  // Resultados de verdad, no una ficha de datos: se entrena reconocer dónde se está
+  // mirando. Ninguno dice "es una estafa" a la cara; dicen que el sorteo no consta en ningún lado.
   resultados: [
     {
       titulo: 'Sorteos y loterías con permiso vigente en el Ecuador',
@@ -134,7 +116,6 @@ const BUSCADOR: ScreenView = {
 }
 
 const STORY: Story<ScreenNode> = {
-  // Responder, reenviar, eliminar y marcar como spam.
   ...finalesDeBarra('fraude', CORREO),
   n1: { kind: 'scene', view: CORREO },
   n2: { kind: 'scene', view: RECLAMO },

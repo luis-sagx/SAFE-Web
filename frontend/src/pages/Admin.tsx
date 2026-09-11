@@ -207,7 +207,7 @@ function Participantes() {
                     <span
                       className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium ${
                         p.activo
-                          ? "bg-success/10 text-success"
+                          ? "bg-success/10 text-success-ink"
                           : "bg-surface-strong text-muted"
                       }`}
                     >
@@ -284,7 +284,7 @@ function Participantes() {
       <dialog
         ref={dialogoRef}
         onClose={() => setConfirmacion(null)}
-        className="m-auto w-[min(92vw,26rem)] rounded-xl border border-hairline-strong bg-surface p-6 text-ink shadow-card backdrop:bg-ink/40"
+        className="m-auto w-[min(92vw,26rem)] rounded-xl border border-hairline-strong bg-surface p-6 text-ink shadow-card backdrop:bg-scrim"
       >
         {confirmacion && (
           <>

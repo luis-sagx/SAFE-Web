@@ -3,11 +3,9 @@ import { ISOTIPO_SAFEWEB_PNG_BASE64 } from './isotipo-safeweb';
 
 const ISOTIPO_SAFEWEB = Buffer.from(ISOTIPO_SAFEWEB_PNG_BASE64, 'base64');
 
-/// Paleta propia del PDF, más ornamentada que la del sistema de diseño de la
-/// app: un certificado se guarda e imprime, y ahí las reglas de `DESIGN.md`
-/// (un solo verde de marca, nada de degradados) no aplican — son para la
-/// interfaz que se usa en pantalla, no para este documento aparte. El PDF no
-/// tiene acceso a los tokens de Tailwind de todos modos.
+// Paleta propia del PDF, más ornamentada que la del sistema de diseño de la app: las
+// reglas de DESIGN.md (un solo verde, sin degradados) son para la interfaz en pantalla,
+// no para un documento que se imprime; el PDF tampoco tiene acceso a los tokens de Tailwind.
 const VERDE_OSCURO = '#00401f';
 const VERDE_MARCA = '#006837';
 const DORADO = '#b6903f';
@@ -89,27 +87,9 @@ function dibujarCalendario(doc: Doc, cx: number, cy: number, r: number): void {
   doc.restore();
 }
 
-/**
- * Genera el PDF del certificado en memoria. `pdfkit` porque escribir un PDF
- * válido a mano no son "unas pocas líneas" (§10 de `ARQUITECTURA.md`), y un
- * navegador headless añadiría cientos de MB al contenedor por un documento de
- * una página.
- *
- * El estilo —banner verde con degradado, escudo dorado, marco crema, sello
- * circular— sigue el patrón de certificado corporativo (el que pidió
- * reemplazar al primer diseño, más plano). Sin código QR: el código de
- * verificación en texto ya cumple esa función y un QR mal escaneado en una
- * impresión no aportaba nada que el texto no diera. Sin firma: a diferencia
- * de un certificado de instructor, este no tiene una persona que lo respalde
- * a título propio — el sello y el código verificable hacen ese papel.
- *
- * Sin fuente embebida: Times y Helvetica, las que trae pdfkit, usan WinAnsi,
- * que cubre tildes y `ñ`. Sin escudo institucional ni mención de la ESPE en
- * ningún lugar del documento: emitir con la identidad visual de la
- * universidad necesita autorización del departamento. Sin cédula, nunca
- * (§7.1 de `ARQUITECTURA.md`): no existe en claro en ningún lugar del
- * sistema, y este documento no es la excepción.
- */
+// pdfkit porque escribir un PDF a mano no son "unas pocas líneas" (§10 ARQUITECTURA.md) y
+// un navegador headless costaría cientos de MB por una página. Sin QR ni firma (el código
+// de verificación basta), sin escudo ESPE (requiere autorización) y sin cédula (§7.1).
 export function generarCertificadoPdf(
   datos: DatosCertificado,
 ): Promise<Buffer> {
@@ -124,7 +104,6 @@ export function generarCertificadoPdf(
     const ancho = doc.page.width;
     const alto = doc.page.height;
 
-    // --- Fondo y marco ----------------------------------------------------
     doc.rect(0, 0, ancho, alto).fill(CREMA);
     doc
       .rect(10, 10, ancho - 20, alto - 20)
@@ -132,10 +111,8 @@ export function generarCertificadoPdf(
       .strokeColor(DORADO)
       .stroke();
 
-    // --- Banner -------------------------------------------------------
-    // Degradado vertical y sutil, no el tricolor horizontal "brillo de
-    // plástico" de la v1: un solo tono que oscurece hacia abajo lee como
-    // impreso, no como un ícono de app generado por IA.
+    // Degradado vertical sutil, no el tricolor horizontal "brillo de plástico" de la v1:
+    // un solo tono que oscurece hacia abajo lee como impreso, no como un ícono generado por IA.
     const degradado = doc.linearGradient(0, 0, 0, ALTO_BANNER);
     degradado.stop(0, VERDE_MARCA).stop(1, VERDE_OSCURO);
     doc.rect(0, 0, ancho, ALTO_BANNER).fill(degradado);
@@ -150,17 +127,14 @@ export function generarCertificadoPdf(
     const espacioIconoTexto = 18;
     const anchoGrupo = insigniaLado + espacioIconoTexto + anchoTitulo;
     const xGrupo = (ancho - anchoGrupo) / 2;
-    // El lockup se centra más arriba de la mitad del banner, no en ella: deja
-    // un hueco fijo debajo para el subtítulo en vez de calcularlo a partir
-    // del alto real del texto de 38pt (el "SAFE Web" bold), que pdfkit
-    // reserva más alto de lo que el ojo ve — con los dos centrados en el
-    // mismo punto medio, el subtítulo terminaba pegado contra la "W".
+    // Centrado más arriba de la mitad del banner, con hueco fijo debajo para el subtítulo:
+    // pdfkit reserva el texto de 38pt más alto de lo que el ojo ve, y centrar ambos en el
+    // mismo punto medio dejaba el subtítulo pegado contra la "W".
     const yLockup = ALTO_BANNER * 0.4;
     const ySubtitulo = yLockup + 34;
 
-    // El isotipo real de SafeWeb, no un escudo dibujado a mano: sobre una
-    // insignia blanca para que el verde del ícono no se pierda contra el
-    // verde del banner.
+    // Isotipo real de SafeWeb sobre insignia blanca, para que su verde no se pierda contra
+    // el del banner.
     const insigniaY = yLockup - insigniaLado / 2 - 4;
     doc
       .save()
@@ -191,13 +165,9 @@ export function generarCertificadoPdf(
         },
       );
 
-    // El tracking usa `characterSpacing` (el operador `Tc` del PDF, un avance
-    // fijo en puntos) y no letras separadas por espacios literales: un
-    // espacio de verdad mide distinto según qué fuente sustituya el lector
-    // de PDF por "Helvetica"/"Times", y con un título largo esa diferencia
-    // bastaba para que el texto se saliera de la página en algunos lectores
-    // aunque en este cuadraba bien. `Tc` es un desplazamiento fijo, no un
-    // glifo — no depende de qué fuente termine dibujando el texto.
+    // characterSpacing (Tc, avance fijo en puntos) y no espacios literales: un espacio de
+    // verdad mide distinto según la fuente que sustituya el lector, y con un título largo
+    // eso bastaba para salirse de la página en algunos lectores.
     doc
       .fillColor(DORADO_CLARO)
       .font('Helvetica-Bold')
@@ -208,7 +178,6 @@ export function generarCertificadoPdf(
         characterSpacing: 1.5,
       });
 
-    // --- Cuerpo -------------------------------------------------------
     let y = ALTO_BANNER + 34;
 
     doc
@@ -222,12 +191,9 @@ export function generarCertificadoPdf(
       });
     y += 44;
 
-    // El tamaño baja hasta que el nombre completo cabe en una sola línea: un
-    // nombre ecuatoriano con dos nombres y dos apellidos fácilmente pasa los
-    // ~28 caracteres que "Luis Sagnay" ocupa a tamaño 40, y dejarlo envolver
-    // a una segunda línea corría el resto del certificado hacia abajo hasta
-    // desbordar la página (el bug real: no eran letras montadas, era
-    // contenido empujado a una segunda hoja en blanco).
+    // El tamaño baja hasta que el nombre quepa en una línea: un nombre ecuatoriano con dos
+    // nombres y apellidos pasa fácil los ~28 caracteres a tamaño 40, y envolver a una segunda
+    // línea empujaba el resto del certificado a desbordar a una página en blanco.
     doc.font('Times-BoldItalic');
     const anchoNombreDisponible = ancho - MARGEN * 2 - 20;
     let nombreFontSize = 40;
@@ -270,13 +236,9 @@ export function generarCertificadoPdf(
       .stroke();
     y += 28;
 
-    // Fila de tres columnas —duración, calificación, emitido—, cada una con
-    // espacio de sobra para su contenido más largo ("CALIFICACIÓN" a la
-    // izquierda, la fecha completa a la derecha). La v1 apretaba esto en
-    // cuatro columnas contra "temas de estudio", y ni la etiqueta ni la fecha
-    // cabían: se cortaban y se montaban sobre el valor de abajo. Separarlas
-    // en dos filas —esta y la de temas, más abajo— les da a las tres el
-    // ancho que de verdad necesitan.
+    // Tres columnas con espacio de sobra para su contenido más largo. La v1 las apretaba en
+    // cuatro contra "temas de estudio" y ni la etiqueta ni la fecha cabían; separarlas en
+    // dos filas les da el ancho que necesitan.
     const xCol1 = ancho * 0.06;
     const xCol2 = ancho * 0.37;
     const xCol3 = ancho * 0.68;
@@ -340,11 +302,8 @@ export function generarCertificadoPdf(
       .strokeColor(GRIS_LINEA)
       .stroke();
 
-    // --- Temas de estudio -------------------------------------------------
-    // Un párrafo centrado, no una grilla con un glifo por amenaza: los
-    // íconos a este tamaño se leían como emojis sueltos, no como algo propio
-    // de un certificado formal. El punto medio como separador es suficiente
-    // para distinguir cada tema sin necesitar una viñeta por línea.
+    // Párrafo centrado con punto medio como separador, no una grilla con un glifo por
+    // amenaza: los íconos a este tamaño se leían como emojis sueltos, no formales.
     let yTemas = yColBase + altoFilaStats + 14;
     doc
       .moveTo(MARGEN, yTemas - 10)
@@ -376,13 +335,9 @@ export function generarCertificadoPdf(
       );
     yTemas = doc.y;
 
-    // --- Pie ------------------------------------------------------------
-    // La línea sigue al contenido real (el final de "temas de estudio" o el
-    // de la columna de fecha, lo que llegue más abajo) en vez de una
-    // distancia fija al borde: con 5 módulos en dos filas y con 6 en tres,
-    // una posición fija dejaba un hueco muerto entre la lista y el pie, o lo
-    // apretaba demasiado. Con un mínimo, para que una lista corta no suba el
-    // pie hasta la mitad de la página.
+    // La línea sigue al contenido real (temas o fecha, lo que llegue más abajo) en vez de
+    // una distancia fija: con 5 módulos en dos filas y 6 en tres, una posición fija dejaba
+    // hueco muerto o apretaba. Con un mínimo, para que una lista corta no suba el pie.
     const finContenido = Math.max(yTemas, yColBase + 46);
     const yPie = Math.max(finContenido + 32, alto - 96);
 
@@ -393,9 +348,8 @@ export function generarCertificadoPdf(
       .strokeColor(DORADO)
       .stroke();
 
-    // Un solo bloque centrado: sin el sello que ocupaba el centro, dejar la
-    // verificación pegada al margen izquierdo dejaba la mitad derecha del
-    // pie vacía y el conjunto descompensado.
+    // Bloque centrado: sin el sello que ocupaba el centro, la verificación pegada al margen
+    // dejaba la mitad derecha del pie vacía y descompensada.
     doc
       .fillColor(GRIS_TEXTO)
       .font('Helvetica-Bold')

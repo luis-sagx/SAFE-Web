@@ -68,10 +68,9 @@ export interface SesionBody {
   participant: PerfilBody;
 }
 
-/// El refresh token no viaja en el body: llega en una cookie httpOnly
-/// (`mic-refresh-token`) que `Set-Cookie` pone en la respuesta de
-/// register/login/refresh. Se extrae así para reenviarla a mano en las
-/// pruebas, que es justo lo que un navegador haría solo.
+// El refresh token no viaja en el body: llega en una cookie httpOnly (mic-refresh-token)
+// que Set-Cookie pone en register/login/refresh. Se extrae para reenviarla a mano en las
+// pruebas, justo lo que un navegador haría solo.
 export function cookieRefresh(res: {
   headers: Record<string, unknown>;
 }): string {
@@ -98,16 +97,9 @@ export function cuerpo<T>(res: { body: unknown }): T {
 
 let contadorCedulas = 0;
 
-/**
- * Cédula válida según el módulo 10, construida para las pruebas: no es de
- * ninguna persona real.
- *
- * Se genera en vez de tomarse de una lista porque la cédula es única en la
- * base: una lista fija se agotaría al crecer la suite y las pruebas empezarían
- * a chocar entre sí por un motivo que no tiene nada que ver con lo que miden.
- *
- * Prefijo "170": provincia 17 (Pichincha) y tercer dígito 0 (persona natural).
- */
+// Cédula válida según el módulo 10, generada (no de una lista fija, que se agotaría al
+// crecer la suite y chocaría entre pruebas). Prefijo "170": provincia 17 (Pichincha),
+// tercer dígito 0 (persona natural).
 export function cedulaDePrueba(): string {
   contadorCedulas += 1;
   const base = `170${String(contadorCedulas).padStart(6, '0')}`;

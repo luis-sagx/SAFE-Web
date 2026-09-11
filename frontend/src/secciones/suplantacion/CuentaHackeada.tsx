@@ -6,18 +6,8 @@ import type { Senal } from '../../components/ui/PanelVeredicto'
 import type { Story } from '../../hooks/useStoryEngine'
 import { CUENTA_FICTICIA } from '../../lib/identidadFicticia'
 
-/**
- * El más difícil del módulo: la cuenta es de verdad, quien escribe no.
- *
- * Todo lo que enseñan los otros escenarios sale bien aquí. El número está
- * guardado desde hace años, la foto es la suya, el historial de la
- * conversación es real y no hay ninguna cuenta nueva que mirar. Le robaron el
- * WhatsApp a Byron, y quien escribe es quien se lo robó.
- *
- * Lo único que queda para dudar es lo que no se puede robar: cómo escribe una
- * persona, y su voz. Por eso el escenario premia llamar y castiga confiar en
- * que "el número es el suyo".
- */
+// El más difícil del módulo: la cuenta es de verdad, quien escribe no (le robaron el WhatsApp).
+// Solo queda para dudar lo que no se puede robar: cómo escribe, y su voz.
 
 const AMIGO = 'Byron Mendoza'
 const NUMERO_BYRON = '+593 98 447 1093'

@@ -6,21 +6,9 @@ import type { Senal } from '../../components/ui/PanelVeredicto'
 import type { Story } from '../../hooks/useStoryEngine'
 import { IDENTIDAD_FICTICIA } from '../../lib/identidadFicticia'
 
-/**
- * La llamada del banco que sí es del banco.
- *
- * Espeja a antifraude-banco casi frase por frase: mismo consumo, misma
- * pregunta, mismo código que llega por mensaje. Lo que cambia es lo que hacen
- * con él — aquí te dicen que no se lo des a nadie, ni siquiera a ellos.
- *
- * Sin este escenario el módulo enseñaría "cuelga siempre", que no es criterio
- * sino miedo: el fraude de verdad estaba ocurriendo y quedarse sin hacer nada
- * cuesta dinero. Por eso colgar sin comprobar nada es parcial y no acierto, y
- * el acierto pleno es colgar y llamar tú, o mirarlo en la app.
- *
- * El mensaje se anuncia solo justo después de que la llamada lo mencione: el
- * banner repite la misma defensa que se acaba de escuchar.
- */
+// Espeja a antifraude-banco: misma llamada, pero legítima y pide no dar el
+// código ni a ellos. Existe para no enseñar "cuelga siempre" — colgar sin
+// comprobar nada queda como parcial, no como acierto pleno.
 
 const NUMERO = '+593 4 373 8000'
 const CODIGO = '771204'
@@ -194,9 +182,6 @@ export const STORY: Story<ScreenNode> = {
   n3: {
     kind: 'scene',
     view: BLOQUEAN,
-    // Llega justo después de que te lo anuncien en la llamada, y trae en el
-    // banner mismo la defensa que la llamada acaba de decir con otras
-    // palabras: "no me lo dé a mí ni a nadie".
     notificacion: {
       app: 'Mensajes',
       remitente: 'BancoLitoral',

@@ -21,13 +21,18 @@ import '@fontsource/ibm-plex-mono/500.css'
 import './index.css'
 import App from './App'
 import { AuthProvider } from './context/AuthContext'
+import { ThemeProvider } from './context/ThemeContext'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
-      <AuthProvider>
-        <App />
-      </AuthProvider>
+      {/* Fuera de AuthProvider: el tema no depende de la sesión y tiene que
+          existir también en las rutas públicas (Login, Registro, Verificar). */}
+      <ThemeProvider>
+        <AuthProvider>
+          <App />
+        </AuthProvider>
+      </ThemeProvider>
     </BrowserRouter>
   </StrictMode>,
 )

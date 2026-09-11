@@ -4,12 +4,8 @@ import type { Story } from '../../hooks/useStoryEngine'
 import EscenarioChatIA from './EscenarioChatIA'
 import { crearChatIA, conRespuestaIA, marcar, senal } from './chatIA'
 
-/**
- * El único de la sección donde lo que se filtra no es de una persona sino de
- * la propia empresa: cifras sin publicar y un plan que ni siquiera los
- * empleados afectados conocen todavía. Mide si el criterio de "no compartas
- * datos de otros" también se aplica cuando el dato es institucional.
- */
+/** Único de la sección donde lo filtrado es institucional, no personal: cifras sin publicar y un plan que ni los
+ *  empleados afectados conocen. Mide si "no compartas datos de otros" también aplica a datos de la empresa. */
 
 const HORA = '15:02'
 
@@ -22,10 +18,8 @@ const PROMPT_SIN_CIFRAS =
   'Es el informe trimestral, para la reunión de gerencia. Dame un párrafo modelo que mencione el resultado financiero del período y una decisión de personal todavía sin anunciar, con espacios en blanco que yo lleno con las cifras.'
 const PROMPT_SIN_IA = 'Mejor lo resumo yo, gracias.'
 
-// La burbuja que se toca dice qué se hace, no qué se comparte: "le paso el
-// informe" no delata que el informe trae las cifras sin publicar. Lo que sale
-// de verdad —el prompt completo, con los datos marcados— aparece como mensaje
-// enviado recién en el nodo destino, que es donde el repaso lo señala.
+// La burbuja dice qué se hace, no qué se comparte ("le paso el informe" no delata las cifras); el prompt completo
+// con los datos marcados aparece recién en el nodo destino, donde el repaso lo señala.
 const BURBUJA_CON_CIFRAS = 'Le paso el informe y le pido que lo resuma.'
 const BURBUJA_SIN_CIFRAS = 'Le pido un párrafo modelo y yo pongo las cifras aparte.'
 

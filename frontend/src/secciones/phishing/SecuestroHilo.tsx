@@ -9,19 +9,8 @@ import type { ScreenView } from '../../components/ui/DeviceScreen'
 import type { Senal } from '../../components/ui/PanelVeredicto'
 import { crearSenal } from '../../lib/crearSenal'
 
-/**
- * El hilo secuestrado: el correo es auténtico y el remitente también.
- *
- * Es el único escenario del módulo sin nada raro que señalar — no hay dominio
- * parecido, ni faltas de ortografía, ni prisa fingida. La cuenta de la
- * secretaría está comprometida de verdad, así que todo lo que el participante
- * aprendió a mirar en los escenarios anteriores le sale bien y aun así pierde
- * el dinero. Lo único que lo salva es el hábito: un cambio de número de cuenta
- * se confirma por fuera del canal donde llegó.
- *
- * Por eso aquí responder es un fallo, y no la respuesta tibia que es en el
- * resto del módulo: preguntar dentro del hilo es preguntarle al atacante.
- */
+// Único escenario sin nada raro que señalar: la cuenta de la secretaría está hackeada de
+// verdad, y todo lo que se aprendió a mirar sale bien igual. Solo el hábito de confirmar salva.
 
 const HILO_PREVIO = `
   <div style="border-left:3px solid #d7dde1;padding-left:12px;margin:14px 0;color:#5f6b7a;font-size:13px;line-height:1.55;">
@@ -60,9 +49,7 @@ const CORREO: ScreenView = {
   senalAdjunto: 'adjunto',
 }
 
-/// La banca en línea, abierta desde los marcadores: es donde la decisión se
-/// vuelve irreversible. La cuenta destino aparece ya escrita con el número
-/// nuevo, que es exactamente lo que el correo consiguió.
+// La banca en línea: es donde la decisión se vuelve irreversible.
 const BANCA: ScreenView = {
   kind: 'web',
   url: 'https://banca.bancodellitoral.ec/transferencias',
@@ -72,9 +59,7 @@ const BANCA: ScreenView = {
   title: 'Transferencia a terceros',
   subtitle: 'Revise los datos antes de confirmar la transferencia.',
   fields: [
-    // La cuenta de origen es la del participante, la misma que vio antes de
-    // empezar: sin ella la pantalla enseña a dónde va el dinero pero no de
-    // dónde sale, que es lo que hace propia la pérdida.
+    // Cuenta de origen del participante: sin ella la pérdida no se siente propia.
     { label: 'Cuenta de origen', placeholder: '', valor: 'cuenta' },
     {
       label: 'Beneficiario',
@@ -99,8 +84,7 @@ const BANCA: ScreenView = {
   cerrarLabel: 'Abrió la banca, no transfirió y volvió al correo',
 }
 
-/// El sitio del colegio, con el teléfono de siempre: el canal alterno que hace
-/// falta para confirmar el cambio sin pasar por el correo.
+// El canal alterno que hace falta para confirmar el cambio sin pasar por el correo.
 const COLEGIO: ScreenView = {
   kind: 'web',
   url: 'https://www.unidadsanrafael.edu.ec/contacto',
@@ -122,17 +106,12 @@ const COLEGIO: ScreenView = {
   button: '📞 Llamar al (02) 244 1180',
   botonGoto: 'e_llama',
   botonLabel: 'Llamó al colegio al número de su sitio oficial',
-  // Cerrar aquí no decide nada: buscar el número y no usarlo deja al
-  // participante donde estaba, con el correo todavía sin responder.
   cerrarGoto: 'n1',
   cerrarLabel: 'Miró el teléfono del colegio y volvió al correo',
 }
 
-/// El comprobante, abierto desde el disco después de descargarlo. No es una
-/// trampa técnica —es un PDF de verdad, sin macros ni doble extensión— y por
-/// eso mismo enseña algo distinto de factura-sri: un documento con membrete
-/// convence, y aquí lo único que aporta es el número de cuenta nuevo, que es
-/// exactamente lo que había que desconfiar. Un archivo no verifica nada.
+// No es trampa técnica (PDF real, sin macros): un documento con membrete convence,
+// y aquí solo aporta el número de cuenta nuevo — que es justo lo que había que desconfiar.
 const COMPROBANTE: ScreenView = {
   kind: 'web',
   url: 'C:\\Usuarios\\Descargas\\Comprobante_pension_mes_actual.pdf',
@@ -155,7 +134,6 @@ const COMPROBANTE: ScreenView = {
 }
 
 const STORY: Story<ScreenNode> = {
-  // Responder, reenviar, eliminar y marcar como spam.
   ...finalesDeBarra('fraude', CORREO),
   n1: { kind: 'scene', view: CORREO },
   n2: { kind: 'scene', view: BANCA },

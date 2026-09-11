@@ -72,8 +72,7 @@ function migrateLegacyQueue(): boolean {
       localStorage.setItem(keys[index]!, JSON.stringify(run))
     })
     // Quitar primero el marcador evita que un cierre abrupto deje un ID capaz
-    // de sobrescribir una cola legacy futura. En el peor caso se reintenta la
-    // migración, favoreciendo duplicados recuperables antes que pérdida de datos.
+    // de sobrescribir una cola legacy futura (prefiere duplicados a pérdida de datos).
     localStorage.removeItem(MIGRATION_ID_KEY)
     localStorage.removeItem(LEGACY_KEY)
     return true

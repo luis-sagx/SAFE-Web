@@ -4,30 +4,8 @@ import { VOCES } from '../../data/voces'
 import type { ScreenView } from './DeviceScreen'
 import styles from './DeviceScreen.module.css'
 
-/**
- * La pantalla de una llamada, dentro del mismo teléfono que usa smishing.
- *
- * El módulo de vishing no puede jugarse con una lista de opciones al lado por
- * lo mismo que el de smishing dejó de hacerlo: una llamada no se decide
- * leyendo alternativas rotuladas, se decide colgando, comprobando en otra app
- * o cediendo a lo que te piden. Aquí eso son gestos de la pantalla —contestar,
- * rechazar, colgar, silenciar— y el dock del teléfono sigue debajo, así que
- * salir de la llamada a mirar la app del banco mientras el otro habla es tan
- * posible como en un teléfono de verdad.
- *
- * Lo único que no puede ser un gesto es hablar: en una llamada la respuesta es
- * lo que uno dice. Va como burbujas del propio hilo de la conversación, nunca
- * como cuestionario, y siempre conviviendo con las salidas del aparato, que es
- * lo que impide que el escenario se resuelva barriendo dos botones.
- *
- * **Se oye.** El engaño de una llamada está en el tono, en la prisa y en la
- * confianza con la que hablan, y nada de eso sobrevive convertido en texto: un
- * escenario que solo se lee entrena a leer, que es justo lo contrario de lo que
- * hay que aprender aquí. Por eso manda el audio (voces.ts, MP3 generados una
- * vez para que todos oigan lo mismo) y la transcripción queda debajo, en
- * pequeño — como apoyo para quien no puede oírla o no la entendió, no como el
- * contenido principal.
- */
+// Pantalla de llamada: se decide con gestos (contestar/rechazar/colgar/silenciar),
+// no con una lista de opciones, y manda el audio — la transcripción es solo apoyo.
 type Llamada = Extract<ScreenView, { kind: 'call' }>
 
 function reloj(segundos: number) {
@@ -39,22 +17,15 @@ function reloj(segundos: number) {
 function PantallaLlamada({ view, terminada }: { view: Llamada; terminada?: boolean }) {
   const [segundos, setSegundos] = useState(0)
   const [silencio, setSilencio] = useState(false)
-  /// Los audios que quedan por sonar. Van en cola y no todos a la vez porque
-  /// un nodo puede traer varias frases seguidas.
+  // Audios pendientes, en cola: un nodo puede traer varias frases seguidas.
   const [cola, setCola] = useState<string[]>([])
   const [sonando, setSonando] = useState(false)
   const audioRef = useRef<HTMLAudioElement>(null)
-  /// Cuántas líneas del diálogo ya sonaron. Cada nodo trae la conversación
-  /// entera —como el hilo de un SMS trae los mensajes anteriores— así que sin
-  /// esto el teléfono repetiría la llamada desde el principio en cada paso.
+  // Cada nodo trae la conversación entera; sin esto se repetiría desde el inicio en cada paso.
   const dichas = useRef(0)
-  /// Qué audio está cargado en el elemento. Sin esto, volver del silencio le
-  /// asignaba el mismo `src` otra vez y la frase empezaba desde el principio,
-  /// en vez de seguir donde se había quedado.
+  // Evita reasignar el mismo `src` al salir del silencio, lo que reiniciaba la frase.
   const cargado = useRef('')
-  /// Lo último que dijo quien llama, para el botón de repetir. En una llamada
-  /// de verdad se pide "¿me lo repite?", y sin eso la única forma de volver a
-  /// oír algo sería reiniciar el escenario.
+  // Última frase dicha, para el botón "repetir" (como pedir "¿me lo repite?").
   const ultimas = useRef<string[]>([])
 
   useEffect(() => {
@@ -62,8 +33,7 @@ function PantallaLlamada({ view, terminada }: { view: Llamada; terminada?: boole
       setSegundos(0)
       return undefined
     }
-    // Una llamada colgada no sigue contando: el cronómetro corriendo bajo el
-    // veredicto decía que seguías hablando con quien acababas de cortar.
+    // Colgada, no sigue contando: el cronómetro bajo el veredicto no debe seguir corriendo.
     if (terminada) return undefined
     const t = setInterval(() => setSegundos((s) => s + 1), 1000)
     return () => clearInterval(t)
@@ -71,8 +41,7 @@ function PantallaLlamada({ view, terminada }: { view: Llamada; terminada?: boole
 
   useEffect(() => {
     const lineas = view.dialogo ?? []
-    // Al repetir el escenario la conversación se acorta: lo que quedaba dicho
-    // vuelve a estar por decir.
+    // Al reiniciar el escenario la conversación se acorta.
     if (lineas.length < dichas.current) dichas.current = 0
     const nuevas = lineas
       .slice(dichas.current)
@@ -83,8 +52,7 @@ function PantallaLlamada({ view, terminada }: { view: Llamada; terminada?: boole
 
     if (nuevas.length === 0) return
     ultimas.current = nuevas
-    // Se encola aunque esté silenciado: al quitar el silencio hay que poder
-    // seguir oyendo lo que quedaba, no perderlo.
+    // Se encola aunque esté silenciado, para no perderlo al quitar el silencio.
     setCola(nuevas)
   }, [view.dialogo])
 
@@ -112,10 +80,7 @@ function PantallaLlamada({ view, terminada }: { view: Llamada; terminada?: boole
     }
 
     setSonando(true)
-    // Si el navegador bloquea la reproducción automática, la transcripción
-    // sigue ahí y el botón de repetir —que sí nace de un clic— la desbloquea.
-    // El `as` no sobra: en jsdom `play()` no devuelve promesa ninguna, y los
-    // tests del módulo se caían al encadenarle el `catch`.
+    // `as`: en jsdom `play()` no devuelve promesa y los tests fallaban al encadenar `.catch`.
     const reproduccion = audio.play() as Promise<void> | undefined
     reproduccion?.catch(() => {
       setSonando(false)
@@ -123,9 +88,7 @@ function PantallaLlamada({ view, terminada }: { view: Llamada; terminada?: boole
     })
   }, [cola, silencio, terminada])
 
-  /// Silenciar pausa; volver a pulsarlo sigue donde se quedó, que es lo que
-  /// hace el botón en un teléfono. Reiniciar la frase entera obligaba a
-  /// volver a oír lo que uno ya había escuchado solo por haberla parado.
+  // Silenciar pausa; volver a pulsarlo continúa donde se quedó, no reinicia la frase.
   function alternarSilencio() {
     setSilencio((s) => !s)
   }
@@ -134,9 +97,7 @@ function PantallaLlamada({ view, terminada }: { view: Llamada; terminada?: boole
 
 
   if (view.entrante || view.marcando) {
-    // El marcador y la llamada entrante son la misma pantalla —quién es, su
-    // número y dos botones— y solo cambia qué significan. Marcar es salir a
-    // buscar a alguien; contestar es dejar entrar a quien ya está llamando.
+    // Marcador y llamada entrante comparten pantalla; solo cambia qué significan los botones.
     const rotulos = view.marcando
       ? {
           region: 'Marcador',
@@ -210,9 +171,6 @@ function PantallaLlamada({ view, terminada }: { view: Llamada; terminada?: boole
         <span className={styles.callReloj}>{reloj(segundos)}</span>
       </div>
 
-      {/* En una fila: el nombre manda, y el número con su aviso al lado ocupan
-          una línea en vez de tres. Lo alto de la pantalla es para lo que se
-          dice, que es donde está el escenario. */}
       <div className={styles.callQuienFila} data-signal={view.senalQuien}>
         <span className={styles.callAvatar} aria-hidden>
           {inicial}
@@ -226,8 +184,6 @@ function PantallaLlamada({ view, terminada }: { view: Llamada; terminada?: boole
         </span>
       </div>
 
-      {/* Lo que manda es el audio: la barra dice si están hablando y deja
-          volver a oírlo, como cuando uno pide que le repitan algo. */}
       {!terminada && (
       <div className={styles.callVoz}>
         <span className={`${styles.callOnda} ${sonando ? styles.callOndaActiva : ''}`} aria-hidden>
@@ -265,8 +221,7 @@ function PantallaLlamada({ view, terminada }: { view: Llamada; terminada?: boole
         onError={() => setCola((pendientes) => pendientes.slice(1))}
       />
 
-      {/* Secundaria a propósito: apoyo para quien no puede oír el audio o no
-          entendió una frase, no el contenido principal del escenario. */}
+      {/* Secundaria a propósito: apoyo, no el contenido principal del escenario. */}
       <div className={styles.callTranscripcion}>
         <span className={styles.callTag}>Transcripción</span>
         {(view.dialogo ?? []).map((linea) => (
@@ -297,9 +252,8 @@ function PantallaLlamada({ view, terminada }: { view: Llamada; terminada?: boole
         </div>
       )}
 
-      {/* Los cuatro controles reaccionan, aunque solo colgar decida algo. Es la
-          misma regla del dock: si únicamente respondiera el que resuelve el
-          escenario, el realce del cursor lo delataría antes de escuchar nada. */}
+      {/* Los cuatro controles reaccionan aunque solo colgar decida algo, para no
+          delatar con el cursor cuál resuelve el escenario. */}
       <div className={styles.callControles}>
         <button
           type="button"

@@ -3,18 +3,8 @@ import { useEffect, useRef, useState } from 'react'
 import { VOCES } from '../../data/voces'
 import styles from './DeviceScreen.module.css'
 
-/**
- * Una nota de voz dentro de un hilo de mensajería.
- *
- * En suplantación es el ataque, no un adorno: la nota de voz es lo que hace
- * creíble a quien dice ser tu hijo o tu jefe, porque la voz "es suya". Leerla
- * escrita quita justo lo que hay que aprender a dudar, así que suena — y la
- * transcripción se queda debajo, en pequeño, como apoyo para quien no puede
- * oírla (misma regla que la pantalla de llamada).
- *
- * El audio sale del mismo índice generado que las llamadas: un MP3 fijo por
- * frase, para que todos los participantes oigan exactamente lo mismo.
- */
+// La nota suena (no solo se lee) porque en suplantación la voz "es suya" es
+// el ataque; la transcripción queda de apoyo debajo. Mismo audio para todos.
 function NotaDeVoz({
   texto,
   duracion,
@@ -31,8 +21,7 @@ function NotaDeVoz({
   const url = VOCES[texto]
 
   useEffect(() => {
-    // Cambiar de pantalla con una nota sonando dejaría la voz de fondo sobre
-    // otra cosa, que es lo único que no pasa en un teléfono de verdad.
+    // Evita que la voz siga sonando de fondo al cambiar de pantalla.
     const audio = audioRef.current
     return () => audio?.pause()
   }, [])
@@ -53,9 +42,7 @@ function NotaDeVoz({
   return (
     <span className={styles.nota}>
       <span className={styles.notaFila}>
-        {/* `data-control` lo deja fuera del manejador de puntos interactivos:
-            escuchar no es decidir, y sin esto pulsar play contaba como haber
-            tocado una parte muerta de la pantalla. */}
+        {/* `data-control`: escuchar no cuenta como haber tocado un hotspot. */}
         <button
           type="button"
           className={styles.notaPlay}

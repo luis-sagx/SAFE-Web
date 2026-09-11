@@ -6,25 +6,9 @@ import type { Senal } from '../../components/ui/PanelVeredicto'
 import type { Story } from '../../hooks/useStoryEngine'
 import { CUENTA_FICTICIA, IDENTIDAD_FICTICIA } from '../../lib/identidadFicticia'
 
-/**
- * La puerta de entrada del módulo: vendes algo y te enseñan un comprobante.
- *
- * Aquí nadie suplanta a nadie. El comprador es un desconocido cualquiera, el
- * trato lo empezaste tú y el dinero sale de tu mano por tu propia decisión. Lo
- * único que hay que saber está escrito en tu propia app del banco, en dos
- * líneas que casi nadie distingue: saldo contable y saldo disponible.
- *
- * El pago entra como depósito con cheque, que es donde esas dos líneas se
- * separan de verdad en un banco ecuatoriano: el cheque se acredita "salvo buen
- * cobro" y se queda en efectivización hasta que el banco lo cobra. Si la cuenta
- * de quien lo firmó no tiene fondos, sale protestado y el banco anula el
- * depósito.
- *
- * Es el fraude de venta más común del país y el más barato de evitar: no hace
- * falta reconocer nada raro, solo esperar a que el dinero se pueda usar. Toda
- * la estafa consiste en que no esperes, y por eso el guion aprieta con el
- * courier y con la hora.
- */
+/** Puerta de entrada del módulo: sin suplantación, el trato lo inicias tú. Todo se decide en tu banco —saldo
+ *  contable vs. disponible— y el pago llega como cheque porque ahí es donde esas dos líneas de verdad se
+ *  separan en un banco ecuatoriano ("salvo buen cobro"). El fraude de venta más común, y evitarlo es solo esperar. */
 
 const COMPRADOR = 'Fernando Zurita'
 const NUMERO_COMPRADOR = '+593 98 447 1926'
@@ -35,9 +19,7 @@ const AVISA = {
   senal: 'avisa',
 }
 
-/// La papeleta del depósito. Va dibujada como una foto de verdad, con su banco
-/// y su número de transacción, porque falsificarla cuesta cinco minutos y
-/// creerla es exactamente el error que mide el escenario.
+// La papeleta va dibujada como foto real (banco + n.º de transacción): falsificarla cuesta 5 minutos, y creerla es el error que mide el escenario.
 const COMPROBANTE = {
   text: 'Ahí está, mire 👆',
   time: '10:13',
@@ -103,9 +85,7 @@ const APURA: ScreenView = {
   ],
 }
 
-/// La pantalla entera del escenario. Las dos líneas están juntas, con las
-/// mismas letras, y dicen cosas distintas: contable es lo que el banco anotó,
-/// disponible es lo que puedes usar.
+// Las dos líneas van juntas, con las mismas letras: contable es lo que el banco anotó, disponible es lo que puedes usar.
 const BANCO: ScreenView = {
   kind: 'web',
   app: IDENTIDAD_FICTICIA.banco,

@@ -3,7 +3,11 @@
    una ilustración pegada dentro de una app, que es lo contrario de lo que se
    quiere: el participante está mirando su propia oficina. El fondo repite el
    color de la pared para que las bandas que sobran al ajustar la relación de
-   aspecto no se noten. */
+   aspecto no se noten.
+
+   Colores en literal en todo el archivo, no var(--color-*): esto es un
+   escenario simulado y no debe seguir el tema claro/oscuro del cromo. Ver
+   docs/superpowers/specs/2026-09-10-tema-oscuro-design.md §2.2. */
 .escenaMarco {
   position: relative;
   display: flex;
@@ -49,17 +53,17 @@
 
 .contorno {
   fill: none;
-  stroke: var(--color-primary);
+  stroke: #006837;
   stroke-width: 3;
 }
 
 .pastilla {
-  fill: var(--color-primary);
+  fill: #006837;
   stroke: none;
 }
 
 .pastillaTexto {
-  fill: var(--color-on-primary);
+  fill: #ffffff;
   font-size: 14px;
   font-weight: 600;
 }
@@ -102,24 +106,24 @@
 }
 
 .paginaTitulo {
-  fill: var(--color-ink);
+  fill: #171717;
   font-size: 21px;
   font-weight: 700;
 }
 
 .paginaLinea {
-  fill: var(--color-body);
+  fill: #60646c;
   font-family: var(--font-mono);
   font-size: 15px;
 }
 
 .paginaVacia {
-  fill: var(--color-muted);
+  fill: #6b6f76;
   font-size: 17px;
 }
 
 .pantallaBloqueada {
-  fill: var(--color-success);
+  fill: #16a34a;
   font-size: 19px;
   font-weight: 700;
   letter-spacing: 1px;
@@ -143,7 +147,7 @@
 }
 
 .papelRotulo {
-  fill: var(--color-ink);
+  fill: #171717;
   font-size: 15px;
   font-weight: 700;
   pointer-events: none;
@@ -173,14 +177,14 @@
 }
 
 .pilotoOk {
-  fill: var(--color-success);
+  fill: #16a34a;
 }
 
 /* El repaso de señales marca elementos del SVG, y ahí `background` no pinta
    nada: el resalte se hace con el contorno ámbar del sistema más un halo que
    sí funciona sobre vectores. */
 .escenaMarco :global(.senal-resaltada) {
-  outline: 3px solid var(--color-warning);
+  outline: 3px solid #ab6400;
   outline-offset: 6px;
   filter: drop-shadow(0 0 0.6rem rgba(171, 100, 0, 0.9));
 }
@@ -214,7 +218,7 @@
   position: absolute;
   inset: 0;
   border-radius: 999px;
-  background: var(--color-warning);
+  background: #ab6400;
   opacity: 0.55;
   animation: destello-pulso 1.6s ease-out infinite;
 }
@@ -227,7 +231,7 @@
   width: 1.875rem;
   height: 1.875rem;
   border-radius: 999px;
-  background: var(--color-warning);
+  background: #ab6400;
   font-size: 1rem;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
 }
@@ -295,7 +299,7 @@
   width: 100%;
   transform-origin: left;
   transform: scaleX(0);
-  background: var(--color-primary);
+  background: #006837;
   animation-name: progreso-avance;
   animation-timing-function: linear;
   animation-fill-mode: forwards;

@@ -3,19 +3,9 @@ import { useEffect, useState } from 'react'
 import type { Escenario, Seccion as SeccionCatalogo } from '../data/catalogo'
 import { fetchMyRuns, type Progreso } from '../lib/api'
 
-/**
- * Los cuatro discriminadores del diseño pedagógico
- * (`docs/superpowers/specs/2026-07-25-escenarios-ciberamenazas-design.md`
- * §3.1): lo que distingue un caso legítimo de uno de fraude cuando la
- * redacción, el logo y el formato ya no lo delatan. Contenido fijo, igual
- * para los seis módulos — es la lección que se repite entre todos, no una
- * particular de cada uno.
- *
- * El tercero va marcado aparte porque el propio diseño lo llama el más
- * fiable y el más fácil de usar sin conocimiento técnico: no exige leer un
- * dominio ni entender un OTP, solo notar si quien contacta se ofende porque
- * verificas.
- */
+// Los cuatro discriminadores del diseño pedagógico (spec 2026-07-25 §3.1), fijos para
+// los seis módulos. El tercero va destacado: el propio diseño lo llama el más fiable y
+// el más fácil de usar sin conocimiento técnico.
 const DISCRIMINADORES = [
   {
     pregunta: '¿Qué te piden?',
@@ -52,17 +42,9 @@ interface CierreModuloProps {
   progreso: Progreso
 }
 
-/**
- * Contenido pedagógico —los cuatro discriminadores— y no una animación de
- * recompensa: es lo único del diseño que enseña a discriminar en vez de a
- * reconocer señales sueltas.
- *
- * Se muestra dentro de `CierreModuloModal` y no en el flujo de la página: un
- * bloque de este tamaño permanentemente visible cada vez que se vuelve a la
- * sección, ya aprobada, competía con las tarjetas de escenarios. Como modal,
- * el participante lo abre cuando quiere repasarlo y no cuando la página
- * decide mostrarlo.
- */
+// Contenido pedagógico (los discriminadores), no una animación de recompensa. Vive en un
+// modal y no en el flujo de la página: un bloque de este tamaño siempre visible al volver
+// a la sección ya aprobada competía con las tarjetas de escenarios.
 function CierreModulo({ seccion, escenarios, progreso }: CierreModuloProps) {
   const [duracionMs, setDuracionMs] = useState<number | null>(null)
 
@@ -120,7 +102,7 @@ function CierreModulo({ seccion, escenarios, progreso }: CierreModuloProps) {
           const resultado = progreso.escenarios.find((e) => e.id === escenario.id)
           const ok = resultado?.ultimoOutcome === 'CORRECTO'
           return <li key={escenario.id} className="flex items-center gap-2 text-sm text-body">
-            <span aria-hidden className={ok ? 'text-success' : 'text-danger'}>{ok ? '✓' : '✗'}</span>
+            <span aria-hidden className={ok ? 'text-success-ink' : 'text-danger'}>{ok ? '✓' : '✗'}</span>
             {escenario.titulo}
           </li>
         })}
@@ -144,7 +126,7 @@ function CierreModulo({ seccion, escenarios, progreso }: CierreModuloProps) {
               <dt className="text-sm font-semibold text-ink">{d.pregunta}</dt>
               <dd className="mt-1.5 grid gap-1.5 sm:grid-cols-2">
                 <span className="text-sm leading-relaxed text-body">
-                  <span className="font-medium text-success">Legítimo:</span> {d.legitimo}
+                  <span className="font-medium text-success-ink">Legítimo:</span> {d.legitimo}
                 </span>
                 <span className="text-sm leading-relaxed text-body">
                   <span className="font-medium text-danger">Fraude:</span> {d.fraude}

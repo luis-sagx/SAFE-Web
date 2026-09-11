@@ -15,16 +15,8 @@ import { fetchProgreso, type Progreso } from '../lib/api'
 import { escenarioEstaDisponible } from '../lib/bloqueoEscenarios'
 import ConfirmarRepeticionModal from '../components/ConfirmarRepeticionModal'
 
-/// La dificultad no delata nada: un escenario legítimo puede ser tan difícil
-/// como uno de fraude, y de hecho los que espejan lo son.
-///
-/// Tres estrellas chicas junto al nombre, no cinco puntos ni el nombre solo:
-/// las estrellas solas no bastaban —nada en la tarjeta decía que eran una
-/// escala de dificultad y no otra cosa—, y el nombre solo no daba una imagen
-/// que se lea de un vistazo entre varias tarjetas. Van las dos, pequeñas.
-/// El ámbar y no el `ink` del texto: `ink` es el color del contenido de la
-/// tarjeta, y una estrella "llena" del mismo color que un título no se lee
-/// como calificación.
+// La dificultad no delata naturaleza (un legítimo puede ser tan difícil como uno de fraude). Estrellas + nombre para que
+// se lea como escala a simple vista; ámbar y no `ink` para no confundir con el color del título.
 const NOMBRE_DIFICULTAD = ['Fácil', 'Fácil', 'Media', 'Difícil', 'Difícil'] as const
 const ESTRELLAS_DIFICULTAD = [1, 1, 2, 3, 3] as const
 
@@ -49,22 +41,8 @@ function Dificultad({ nivel }: { nivel: number }) {
   )
 }
 
-/**
- * A dónde se sigue cuando esta sección ya dio de sí.
- *
- * El orden del recorrido es el de SECCIONES, así que "el siguiente" es
- * literalmente el de al lado; la última no muestra nada porque no hay a dónde
- * seguir. Aparece al cierre de la lista y no arriba: es lo que se hace después
- * de jugar, no antes.
- *
- * El umbral no se decide aquí. `aprobado` lo calcula el servidor con su propio
- * UMBRALES (6 de 8 en phishing) y es el mismo que abre los escenarios; copiar
- * el número al cliente lo dejaría mintiendo el día que cambie en el backend.
- *
- * Son dos condiciones distintas y se dicen por separado, porque el participante
- * no puede hacer nada con la segunda: que tú lo hayas desbloqueado, y que el
- * módulo exista ya.
- */
+// El umbral lo calcula el servidor (UMBRALES), no aquí, para no mentir si cambia; "desbloqueado" y "módulo existe"
+// son dos condiciones distintas porque el participante solo puede actuar sobre la primera.
 function SiguienteModulo({
   seccion,
   progreso,
@@ -77,9 +55,7 @@ function SiguienteModulo({
   // "bloqueado" y se corrige sola un segundo después miente en el intervalo.
   if (!siguiente || !progreso) return null
 
-  // El recorrido entre módulos exige haber visto todos los escenarios del
-  // módulo anterior, no aprobar una nota mínima. La nota sigue siendo útil
-  // para el certificado, pero nunca debe impedir avanzar al siguiente módulo.
+  // Avanzar exige ver todos los escenarios del módulo anterior, no una nota mínima; la nota es solo para el certificado.
   const abierto = progreso.escenarios.length >= escenariosDeSeccion(seccion.id).length
   const listo = escenariosDeSeccion(siguiente.id).length > 0
   const faltan = Math.max(escenariosDeSeccion(seccion.id).length - progreso.escenarios.length, 0)
@@ -194,9 +170,7 @@ function Seccion() {
         }
       />
 
-      {/* Mismo ancho que el dashboard y que la barra superior: las tres
-          pantallas de navegación se leen como una sola, sin que el contenido
-          salte de sitio al entrar en una sección. */}
+      {/* Mismo ancho que dashboard y barra superior: las tres pantallas se leen como una sola, sin saltos al entrar. */}
       <main className="mx-auto max-w-6xl px-6 py-12">
         <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.88px] text-muted">
           <seccion.Icono aria-hidden className="size-4 text-link" strokeWidth={2} />
@@ -210,9 +184,7 @@ function Seccion() {
         <h1 className="mt-3 text-4xl font-semibold tracking-tight text-ink">{seccion.titulo}</h1>
         <p className="mt-3 max-w-2xl text-base leading-relaxed text-body">{seccion.descripcion}</p>
 
-        {/* El bloque de avance va antes que las tarjetas y ocupa el ancho
-            completo: es lo que el participante viene a consultar cuando vuelve
-            a la sección, y como insignia suelta se perdía. */}
+        {/* Avance antes que las tarjetas, ancho completo: es lo primero que se busca al volver a la sección. */}
         {progreso && escenarios.length > 0 && (
           <section
             aria-labelledby="titulo-progreso"
@@ -225,9 +197,7 @@ function Seccion() {
               >
                 Progreso del módulo
               </h2>
-              {/* El umbral no se repite en texto: la barra ya lo marca con un
-                  anillo en su propia celda (BarraProgreso), como en un curso
-                  que no imprime la nota mínima en cada pantalla. */}
+              {/* El umbral no se repite en texto: ya lo marca el anillo de la barra (BarraProgreso). */}
               <p className="text-sm font-medium text-ink">
                 <span className="text-lg font-semibold tabular-nums">{progreso.aprobados}</span>
                 <span className="text-muted">/{escenarios.length}</span>
@@ -251,9 +221,7 @@ function Seccion() {
             )}
 
             {progreso.aprobado ? (
-              // El resumen completo vive en el modal, no aquí: un bloque de
-              // discriminadores permanentemente visible en cada visita a una
-              // sección ya aprobada competía con las tarjetas de escenarios.
+              // Resumen completo vive en el modal, no aquí: siempre visible competía con las tarjetas de escenarios.
               <button
                 type="button"
                 onClick={() => setMostrarCierre(true)}
@@ -296,15 +264,9 @@ function Seccion() {
         ) : (
           <ol className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {escenarios.map((escenario, indice) => {
-              // Sin intentar no muestra ninguna insignia de resultado: mostrar
-              // algo distinto de "aprobado"/"falta" antes de jugarlo delataría
-              // si el escenario es fraude o legítimo, y el menú no puede hacer
-              // eso. "Sin jugar" es seguro porque no habla del contenido.
-              // La ronda en curso solo trae los escenarios que ya se
-              // rejugaron esta vez: los que todavía no se tocan en esta
-              // repetición siguen mostrando su resultado de la ronda
-              // cerrada, no "sin jugar" — si no, repetir uno solo apagaba la
-              // insignia de los otros siete (issue reportado en asistentes-ia).
+              // "Sin jugar" y no otra insignia antes de jugar: delataría si es fraude o legítimo. La ronda en curso solo
+              // actualiza los escenarios ya rejugados esta vez; los demás mantienen su resultado previo (si no, repetir
+              // uno apagaba la insignia de los otros).
               const enRondaActual = progreso?.rondaEnCurso?.escenarios.find(
                 (e) => e.id === escenario.id,
               )
@@ -327,7 +289,7 @@ function Seccion() {
                   <div className="flex items-center justify-between gap-3">
                     <span
                       className={`font-mono text-xs font-medium tabular-nums ${
-                        aprobado ? 'text-success' : 'text-muted'
+                        aprobado ? 'text-success-ink' : 'text-muted'
                       }`}
                     >
                       {String(indice + 1).padStart(2, '0')}
@@ -342,7 +304,7 @@ function Seccion() {
 
                   <div className="mt-4 flex items-center justify-between border-t border-hairline pt-3">
                     {aprobado ? (
-                      <span className="inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-[0.88px] text-success">
+                      <span className="inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-[0.88px] text-success-ink">
                         <CheckCircle2 aria-hidden className="size-3.5" strokeWidth={2.5} />
                         Aprobado
                       </span>
@@ -355,12 +317,8 @@ function Seccion() {
                         Sin jugar
                       </span>
                     ) : (
-                      /* El candado dice qué lo abre: el escenario justo
-                         anterior en la lista, no el próximo pendiente del
-                         módulo. El 08 depende del 07, no del 03 — mostrar el
-                         mismo número en las cinco tarjetas bloqueadas decía
-                         que todas se abrían con el mismo paso, cuando cada
-                         una depende de que se termine la de al lado. */
+                      /* El candado señala el escenario anterior en la lista, no el próximo pendiente del módulo: cada
+                         uno depende del de al lado, no de un número fijo. */
                       <span className="inline-flex items-center gap-1 text-xs font-medium text-muted">
                         <LockKeyhole aria-hidden className="size-3.5" strokeWidth={2.5} />
                         Se abre al terminar el {String(indice).padStart(2, '0')}

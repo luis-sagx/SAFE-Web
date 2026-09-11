@@ -11,49 +11,30 @@ export interface Senal {
   id: string
   /** Lleva negritas <b>; contenido fijo del código, nunca de un usuario. */
   texto: string
-  /** `data-signal` a buscar dentro del contenedor de la pantalla. Si no se
-   *  da, o el escenario no está mostrando esa pantalla ahora mismo, la señal
-   *  se explica igual — solo que sin resaltar nada. */
   targetId?: string
-  /** Nodo del grafo cuya pantalla contiene esta señal.
-   *
-   *  Un escenario de varias pantallas termina mostrando la última —la página
-   *  falsa, por ejemplo—, y ahí las señales del correo no tienen nada que
-   *  resaltar: se explicaban en texto sobre una pantalla que ya no las
-   *  contenía. Con esto el repaso devuelve la vista a la pantalla de cada
-   *  señal antes de señalarla. */
+  /** Nodo del grafo cuya pantalla contiene esta señal: el repaso vuelve a
+   *  esa pantalla antes de resaltarla, porque el escenario puede haber
+   *  avanzado a otra. */
   pantalla?: string
 }
 
 interface PanelVeredictoProps {
-  /** 'phishing/factura-sri'. Lo necesita AccionesFinal para el siguiente. */
   escenarioId: string
   node: StoryNode
   senales: Senal[]
-  /** Lleva negritas <b>; contenido fijo del código. */
   regla: string
   /** @deprecated Se conserva por compatibilidad con escenarios existentes. */
   restartLabel?: string
   /** @deprecated La repetición ahora se inicia a nivel de módulo. */
   onRestart?: () => void
-  /** id del contenedor de la pantalla (ver EscenarioLayout), para ubicar el
-   *  elemento que corresponde a cada señal. */
   contenedorId: string
-  /** Avisa qué pantalla toca mostrar en cada paso del repaso. */
   onPantalla?: (pantallaId: string | undefined) => void
-  /** Si la corrida llegó al servidor. Sin esto, una corrida que se encoló por
-   *  falta de red se veía igual que una guardada y el participante daba por
-   *  registrado un intento que todavía no lo estaba. */
+  /** Si la corrida llegó al servidor; sin esto una corrida encolada por
+   *  falta de red se veía igual que una guardada. */
   estadoGuardado?: RunStatus
 }
 
 const CLASE_RESALTADA = 'senal-resaltada'
-
-/**
- * Panel de resultado de todos los escenarios: primero el
- * veredicto, después un recorrido de las señales que resalta el elemento real
- * en la pantalla en vez de listarlas aparte, y cierra con la regla de oro.
- */
 function PanelVeredicto({
   escenarioId,
   node,
@@ -67,13 +48,11 @@ function PanelVeredicto({
 }: PanelVeredictoProps) {
   const haySenales = senales.length > 0
 
-  // -1 = veredicto todavía sin abrir el recorrido, 0..N-1 = viendo esa señal,
-  // N = cierre. Sin señales no hay recorrido que abrir: se arranca ya en el
-  // cierre para que siempre haya un botón visible que avance algo.
+  // -1 = veredicto, 0..N-1 = viendo esa señal, N = cierre. Sin señales
+  // arranca ya en cierre para que siempre haya un botón que avance algo.
   const [paso, setPaso] = useState(haySenales ? -1 : 0)
 
-  // Para reservar el alto del recorrido (ver más abajo). Se compara sin las
-  // etiquetas: <b> ocupa en el texto pero no en la pantalla.
+  // Para reservar el alto del recorrido; se compara sin <b>, que no ocupa pantalla.
   const largo = (texto: string) => texto.replace(/<[^>]+>/g, '').length
   const masLarga = senales.reduce(
     (mayor, senal) => (largo(senal.texto) > largo(mayor) ? senal.texto : mayor),
@@ -90,9 +69,7 @@ function PanelVeredicto({
     primerBotonRef.current?.focus()
   }, [])
 
-  // Le avisa al layout en cuanto no queda repaso pendiente: llegó al cierre, o
-  // el desenlace no traía señales y arrancó ya ahí. A partir de ese momento
-  // "Salir" no necesita advertir de nada.
+  // Avisa al layout cuando no queda repaso pendiente para que "Salir" no advierta nada.
   const avisarRepasoVisto = useContext(RepasoVistoContext)
   useEffect(() => {
     if (enCierre) avisarRepasoVisto?.(true)
@@ -133,9 +110,7 @@ function PanelVeredicto({
 
     let resaltado: HTMLElement | null = null
 
-    // En dos tiempos: la pantalla que contiene la señal puede estar montándose
-    // todavía cuando corre este efecto, así que si no aparece a la primera se
-    // vuelve a buscar en el siguiente cuadro.
+    // Reintenta un cuadro después: la pantalla puede seguir montándose cuando corre este efecto.
     function resaltar() {
       const contenedor = document.getElementById(contenedorId)
       const elemento = contenedor?.querySelector<HTMLElement>(`[data-signal="${targetId}"]`)
@@ -156,20 +131,19 @@ function PanelVeredicto({
     }
   }, [enSenal, paso, senales, contenedorId])
 
-  // 'partial' no es un fallo: una respuesta prudente pero incompleta no puede
-  // verse igual que haber entregado la clave.
+  // 'partial' no es un fallo: no puede verse igual que haber entregado la clave.
   const tono =
     node.kind === 'good'
-      ? { borde: 'border-success/40', fondo: 'bg-success', icono: '✓' }
+      ? { borde: 'border-success/40', fondo: 'bg-success', tinta: 'text-on-success', icono: '✓' }
       : node.kind === 'partial'
-        ? { borde: 'border-warning/40', fondo: 'bg-warning', icono: '!' }
-        : { borde: 'border-danger/40', fondo: 'bg-danger', icono: '✕' }
+        ? { borde: 'border-warning/40', fondo: 'bg-warning', tinta: 'text-on-warning', icono: '!' }
+        : { borde: 'border-danger/40', fondo: 'bg-danger', tinta: 'text-on-danger', icono: '✕' }
 
   return (
     <div className={`rounded-lg border bg-surface p-4 ${tono.borde}`}>
       <p className="flex items-center gap-2 text-lg font-semibold text-ink">
         <span
-          className={`flex size-6 shrink-0 items-center justify-center rounded-full text-sm text-white ${tono.fondo}`}
+          className={`flex size-6 shrink-0 items-center justify-center rounded-full text-sm ${tono.tinta} ${tono.fondo}`}
           aria-hidden
         >
           {tono.icono}
@@ -209,13 +183,8 @@ function PanelVeredicto({
               Saltar
             </button>
           </div>
-          {/* Alto reservado: sin él los textos van de una a seis líneas y la
-              fila de botones sube y baja entre paso y paso, obligando a buscar
-              el botón de nuevo cada vez. Lo reserva la señal más larga de este
-              escenario, dibujada invisible debajo, y no una medida fija: con
-              un número fijo el panel de un escenario de señales cortas mide lo
-              mismo que el del más largo del catálogo y hay que hacer scroll
-              para ver los botones. */}
+          {/* Alto reservado con la señal más larga (invisible, debajo) para que
+              los botones no salten de posición entre pasos. */}
           <div className="relative mt-3">
             <p
               aria-hidden
@@ -227,12 +196,8 @@ function PanelVeredicto({
               dangerouslySetInnerHTML={{ __html: senales[paso]?.texto ?? '' }}
             />
           </div>
-          {/* "Anterior" se renderiza siempre, deshabilitado en el primer paso.
-              Antes aparecía a partir del segundo, así que "Siguiente" pasaba de
-              ocupar toda la fila a la mitad y se desplazaba casi 200px justo
-              cuando la persona iba a volver a pulsarlo. Un botón deshabilitado
-              queda además fuera del recorrido del teclado, sin necesidad de
-              ocultarlo. */}
+          {/* "Anterior" se renderiza siempre (deshabilitado en el primer paso)
+              para que "Siguiente" no se desplace entre pasos. */}
           <div className="mt-4 flex gap-2">
             <button
               type="button"

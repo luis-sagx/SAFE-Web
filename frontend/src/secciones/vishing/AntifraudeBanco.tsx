@@ -9,19 +9,9 @@ import type { Senal } from "../../components/ui/PanelVeredicto";
 import type { Story } from "../../hooks/useStoryEngine";
 import { IDENTIDAD_FICTICIA } from "../../lib/identidadFicticia";
 
-/**
- * El falso departamento antifraude: la llamada que te pide el código que el
- * banco te acaba de enviar.
- *
- * Es la pareja de tarjeta-bloqueada, pero al revés: allí el SMS te empujaba a
- * llamar, aquí la llamada te empuja a leer un SMS. Y el mensaje que llega es
- * auténtico —lo manda el banco de verdad, porque alguien está intentando
- * operar con tu cuenta ahora mismo—, así que todo lo que el módulo de smishing
- * enseña a mirar sale bien en él. Lo falso es quien lo pide.
- *
- * El mensaje se anuncia solo, encima de la llamada en curso, justo cuando el
- * impostor dice que lo acaba de enviar: es el instante entero del ataque.
- */
+// Pareja de tarjeta-bloqueada, al revés: aquí la llamada te empuja a leer un
+// SMS auténtico del banco. El mensaje pasa cualquier chequeo; lo falso es
+// quien lo pide.
 
 const NUMERO = "+593 2 380 4412";
 const QUIEN = "Banco del Litoral";
@@ -58,10 +48,6 @@ const LLAMADA: ScreenView = {
   etiqueta: "No está en tus contactos",
   senalQuien: "quien",
   dialogo: APERTURA,
-  // Cada respuesta tiene la suya: quien llama sigue su guion y acaba pidiendo
-  // lo mismo, pero contesta a lo que le dijiste. Preguntar quién es no es una
-  // defensa —la respuesta también está preparada— y comprobarlo cuesta más si
-  // la conversación suena real.
   decir: [
     {
       texto: "No, yo no hice esa compra.",
@@ -120,9 +106,6 @@ function pidiendoCodigo(
   };
 }
 
-/// El teléfono anuncia el mensaje justo cuando el impostor lo pide, como pasa
-/// de verdad: el atacante acaba de provocar el envío. Texto plano y sin las
-/// negritas del hilo, como cualquier banner del sistema.
 const NOTIFICACION_CODIGO = {
   app: "Mensajes",
   remitente: "BancoLitoral",
@@ -148,9 +131,6 @@ const DUDA_QUIEN = pidiendoCodigo([
   },
 ]);
 
-/// El SMS es auténtico: lo manda el banco porque alguien está intentando
-/// operar de verdad. Y lo dice en su propio texto, que es la señal que este
-/// escenario enseña a leer sin salir de la pantalla.
 const MENSAJE: ScreenView = {
   kind: "sms",
   sender: "BancoLitoral",
@@ -168,8 +148,6 @@ const MENSAJE: ScreenView = {
   ],
 };
 
-/// La banca móvil: el cargo del que hablan no existe, y el número de atención
-/// de verdad está escrito ahí mismo.
 const BANCO: ScreenView = {
   kind: "web",
   app: "Banco del Litoral",

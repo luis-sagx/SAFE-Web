@@ -1,20 +1,9 @@
-/**
- * Cédula de identidad ecuatoriana — algoritmo módulo 10 del Registro Civil.
- *
- * Copia deliberada de `backend/apps/identidad/src/cedula/cedula.ts`. Se duplica
- * porque el frontend y el backend son proyectos independientes que solo
- * comparten el contrato HTTP (ver docs/ARQUITECTURA.md §3), y porque el
- * participante merece saber que se equivocó ANTES de enviar el formulario.
- *
- * El backend valida igual: esta copia es comodidad, nunca la defensa.
- *
- * Detecta cédulas inventadas, no prueba identidad: una cédula ajena pero válida
- * pasa. Es todo lo que se puede comprobar sin consultar al Registro Civil.
- */
+// Copia deliberada de backend/apps/identidad/src/cedula/cedula.ts (proyectos
+// independientes); el backend valida igual, esto es solo comodidad para el formulario.
 
 const COEFICIENTES = [2, 1, 2, 1, 2, 1, 2, 1, 2]
 
-/** Quita espacios, puntos y guiones. Hay quien la escribe "171003406-5". */
+// Quita espacios, puntos y guiones. Hay quien la escribe "171003406-5".
 export function normalizarCedula(valor: string): string {
   return valor.replace(/[\s.-]/g, '')
 }
@@ -26,8 +15,7 @@ export function esCedulaEcuatoriana(valor: string): boolean {
     return false
   }
 
-  // Se lee con slice y no por índice: con `noUncheckedIndexedAccess` cada
-  // acceso sería `number | undefined` aunque el regex ya garantice 10 dígitos.
+  // slice en vez de índice: con `noUncheckedIndexedAccess` el acceso por índice sería `number | undefined`.
   const digito = (i: number) => Number(cedula.slice(i, i + 1))
 
   // Provincia: 01–24, más 30 para ecuatorianos registrados en el exterior.

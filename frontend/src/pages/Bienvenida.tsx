@@ -1,17 +1,10 @@
 import { useState, type FormEvent } from "react";
 import { useLocation, useNavigate } from "react-router";
+import Marca from "../components/Marca";
 import { useAuth } from "../context/AuthContext";
 
-/** Las seis amenazas del estudio, una por paso.
- *
- *  `finalidad` dice qué busca quien la usa —no el canal, que ya lo dice el
- *  título— y `prevencion` dice qué hacer. Lo segundo faltaba: el aviso
- *  enumeraba seis peligros y no daba ni una defensa, que es justo lo que el
- *  participante necesita antes de empezar.
- *
- *  `ejemplo` es la frase que suena de verdad en cada ataque. Se reconoce antes
- *  un ejemplo concreto que una definición, y este público reconoce estas
- *  frases porque ya las ha recibido. */
+/** `finalidad` no repite el canal (ya en el título); `prevención` se añadió porque faltaba;
+ *  `ejemplo` usa frases reales porque se reconocen antes que una definición. */
 const AMENAZAS = [
   {
     titulo: "Phishing",
@@ -71,14 +64,7 @@ const AMENAZAS = [
 
 const PANEL = "/dashboard";
 
-/**
- * A dónde volver al cerrar el aviso.
- *
- * Solo rutas internas: `from` llega por el estado de navegación, y aceptar
- * cualquier cadena convertiría este botón en un salto a donde diga quien
- * fabrique el enlace. Se exige que empiece por una sola barra, y se descarta
- * la propia bienvenida para no dejar a nadie dando vueltas en ella.
- */
+// Solo rutas internas: `from` es controlable por quien arme el enlace, así que se exige "/" único y se descarta bienvenida (evita loop).
 function destinoDe(from: unknown): string {
   if (typeof from !== "string") return PANEL;
   if (!from.startsWith("/") || from.startsWith("//")) return PANEL;
@@ -87,28 +73,19 @@ function destinoDe(from: unknown): string {
   return from;
 }
 
-/**
- * Aparece sola en el primer ingreso (RequireAuth la fuerza mientras
- * `onboardingVisto` sea false) y queda disponible siempre desde el ícono ⓘ.
- * Se muestra como un modal, una tarjeta centrada, sin el header ni la
- * navegación de la app, para que se lea como un aviso puntual y no como una
- * pantalla más del curso.
- */
+// RequireAuth fuerza esta pantalla en el primer ingreso; el modal (sin header/nav) evita que se lea como una pantalla más del curso.
 function Bienvenida() {
   const { displayName, participant, marcarOnboardingVisto } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const destino = destinoDe((location.state as { from?: unknown } | null)?.from);
 
-  // 0 es la portada; 1..6, una amenaza cada uno. De una en una y no las seis
-  // juntas porque seis párrafos en una pantalla se saltan enteros: quien
-  // quería empezar pulsaba "Continuar" sin haber leído ninguno.
+  // Una amenaza a la vez: seis párrafos juntos se saltaban enteros (se pulsaba "Continuar" sin leer).
   const [paso, setPaso] = useState(0);
   const amenaza = paso > 0 ? AMENAZAS[paso - 1] : undefined;
   const ultimo = paso === AMENAZAS.length;
 
-  // Refleja el estado actual al entrar por el ícono ⓘ: si ya lo había
-  // marcado, sigue marcado, y desmarcarlo es lo que reactiva el aviso.
+  // Refleja el estado guardado al abrir desde el ícono ⓘ; desmarcarlo reactiva el aviso.
   const [noVolverAMostrar, setNoVolverAMostrar] = useState(
     participant?.onboardingVisto ?? false,
   );
@@ -117,7 +94,6 @@ function Bienvenida() {
   async function handleContinuar(event: FormEvent) {
     event.preventDefault();
 
-    // Mientras queden amenazas, el botón avanza en vez de cerrar.
     if (!ultimo) {
       setPaso((actual) => actual + 1);
       return;
@@ -126,39 +102,26 @@ function Bienvenida() {
     await cerrar();
   }
 
-  /// Salir del aviso, tanto al terminarlo como al saltárselo. Es el mismo
-  /// camino en los dos casos: marcar y navegar. Si "Saltar" no marcara,
-  /// RequireAuth volvería a mandar aquí en el siguiente render y la pantalla
-  /// sería inescapable.
+  // Mismo camino en los dos casos (terminar o saltar): si "Saltar" no marcara, RequireAuth reabriría esta pantalla.
   async function cerrar() {
     setEnviando(true);
 
     try {
       await marcarOnboardingVisto(noVolverAMostrar);
     } catch {
-      // Informativo, no bloqueante: si falla el guardado, la única
-      // consecuencia es que esta pantalla vuelva a aparecer la próxima vez.
+      // Informativo: si falla el guardado, solo vuelve a aparecer la próxima vez.
     } finally {
-      // `replace`: el aviso no debe quedarse en el historial, o volver atrás
-      // desde la pantalla recuperada lo abriría otra vez.
+      // replace: no debe quedar en el historial o "atrás" la reabriría.
       navigate(destino, { replace: true });
     }
   }
 
   return (
-    <div className="flex min-h-dvh items-center justify-center bg-ink/40 px-6 py-10">
+    <div className="flex min-h-dvh items-center justify-center bg-scrim px-6 py-10">
       <div className="w-full max-w-2xl rounded-xl border border-hairline-strong bg-surface p-8 shadow-card">
-        <img
-          src="/marca/logo-safeweb.webp"
-          alt="SafeWeb"
-          width={2171}
-          height={723}
-          className="h-9 w-auto"
-        />
+        <Marca variante="logo" className="h-9 w-auto" />
 
-        {/* Alto reservado para el paso más largo, que ahora es la portada con
-            las reglas del curso. Sin él, la fila de botones sube y baja entre
-            un paso y otro, y hay que volver a buscar el botón cada vez. */}
+        {/* Alto fijo al paso más largo (portada): si no, la fila de botones sube y baja entre pasos. */}
         <div className="mt-3 min-h-[21rem]">
           {amenaza ? (
             <>
@@ -196,10 +159,7 @@ function Bienvenida() {
                 criterio, no que memorices una lista.
               </p>
 
-              {/* Las reglas del curso, en la portada. El aviso enumeraba seis
-                  amenazas y no decía en ningún momento cómo se aprueba ni por
-                  qué los módulos aparecen cerrados: el participante lo
-                  descubría al chocar con un candado. */}
+              {/* Reglas del curso en la portada: antes no decía cómo se aprueba ni por qué los módulos aparecen cerrados. */}
               <ul className="mt-4 grid gap-2 rounded-md bg-canvas-soft px-4 py-3 text-base leading-relaxed text-body">
                 <li>
                   <strong className="text-ink">Seis módulos</strong>, uno por
@@ -221,9 +181,7 @@ function Bienvenida() {
           )}
         </div>
 
-        {/* Los puntos dicen cuánto queda sin obligar a contar. No son
-            botones: saltar al paso cinco no tiene sentido cuando el recorrido
-            dura seis pantallas cortas. */}
+        {/* Indican cuánto queda sin ser clicables: saltar pasos no tiene sentido en un recorrido de 6 pantallas cortas. */}
         <div className="mt-6 flex items-center gap-1.5" aria-hidden>
           {AMENAZAS.map((otra, indice) => (
             <span
@@ -249,9 +207,7 @@ function Bienvenida() {
           )}
 
           <div className={`flex gap-3 ${ultimo ? "mt-5" : ""}`}>
-            {/* Se dibuja siempre, apagado en la portada: un botón que aparece
-                a mitad del recorrido mueve al otro de sitio justo cuando la
-                persona va a volver a pulsarlo. */}
+            {/* Botón siempre presente (apagado en portada) para que no cambie de lugar el de "Siguiente". */}
             <button
               type="button"
               disabled={paso === 0}
@@ -270,12 +226,8 @@ function Bienvenida() {
             </button>
           </div>
 
-          {/* Una salida desde el primer paso. Siete pantallas obligatorias sin
-              forma de salirse es la pantalla que todo el mundo aprende a
-              atravesar sin leer; y quien vuelve a abrir el aviso desde el ícono
-              ⓘ a mitad de un escenario no debería tener que recorrerlo entero
-              para regresar. Las seis amenazas siguen contadas, mejor, en la
-              tarjeta de cada módulo del panel. */}
+          {/* Salida desde el primer paso: siete pantallas sin forma de salir se aprenden a ignorar, y reabrir el aviso a
+              mitad de un escenario no debe forzar a recorrerlo entero. */}
           {!ultimo && (
             <button
               type="button"

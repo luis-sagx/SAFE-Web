@@ -4,22 +4,8 @@ import type { AccionCorreo } from '../../components/ui/DesktopChrome'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
 import type { Naturaleza } from '../../data/catalogo'
 
-/**
- * La barra del cliente de correo, con sus cuatro finales, para cualquier
- * escenario de phishing.
- *
- * Responder, reenviar, eliminar y marcar como spam significan lo mismo en
- * todos los correos; lo único que cambia es **si el mensaje era real**. Por
- * eso los finales se generan a partir de la naturaleza del escenario en vez
- * de escribirse ocho veces: siete copias del mismo texto acabarían divergiendo,
- * igual que había pasado con la ventana.
- *
- * Y la inversión es justo lo que hace que valga la pena tenerlos en los
- * legítimos: ahí **eliminar y marcar como spam son un fallo**. Un módulo donde
- * borrar siempre acierta enseña "desconfía de todo", que no es criterio sino
- * otra forma de equivocarse — y le cuesta a la persona el aviso que sí
- * necesitaba leer.
- */
+// Los finales se generan por naturaleza (fraude/legítimo) en vez de escribirse
+// ocho veces. En los legítimos eliminar/spam son el fallo: enseña que descartar todo no es criterio.
 export const ACCIONES_BARRA: AccionCorreo[] = [
   {
     Icono: Reply,
@@ -91,11 +77,8 @@ const LEGITIMO = {
     outcome:
       'El correo era auténtico y lo borraste. Desconfiar de todo sale tan caro como confiar de más: te quedaste sin el aviso y sin lo que había que hacer con él.',
   },
-  // Ni acierto ni error: el correo era real, así que contestarlo no expuso
-  // nada, y el resultado no debe leerse como un reproche (issue #34). Lo que
-  // falta es lo otro: el mensaje pedía algo y sigue sin hacerse. Ese "sin daño
-  // y sin resolver" es exactamente lo que significa 'partial' aquí, el mismo
-  // caso que archivarlo.
+  // Ni acierto ni error (issue #34): el correo era real, no expuso nada, pero
+  // lo que pedía sigue sin hacerse — de ahí 'partial'.
   e_responder: {
     kind: 'partial' as const,
     verdict: 'Sin daño, pero sin resolver',
@@ -110,13 +93,7 @@ const LEGITIMO = {
   },
 }
 
-/**
- * Los cuatro finales listos para meter en el grafo de un escenario.
- *
- * `vista` es la pantalla sobre la que se leen: el panel de resultado se muestra
- * al lado del correo que lo provocó, así que los finales heredan la misma
- * imagen del mensaje.
- */
+// `vista` es la pantalla donde se muestra el veredicto: se hereda del correo que lo provocó.
 export function finalesDeBarra(
   naturaleza: Naturaleza,
   vista: ScreenView,

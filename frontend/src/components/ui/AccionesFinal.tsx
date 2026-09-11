@@ -7,34 +7,17 @@ import { conEscenarioIntentado, siguienteEnRonda } from '../../lib/bloqueoEscena
 import ConfirmarRepeticionModal from '../ConfirmarRepeticionModal'
 
 interface AccionesFinalProps {
-  /** 'phishing/factura-sri'. De aquí sale la sección y el orden del módulo. */
   escenarioId: string
-  /** Resultado recién decidido; puede llegar antes de que el servidor guarde la corrida. */
+  // outcome puede llegar antes de que el servidor guarde la corrida.
   outcome: RunOutcome
   onRestart?: () => void
-  /** Texto del botón de repetir, cuando repetir está disponible. */
   restartLabel?: string
-  /** Si toma el foco al aparecer. Lo pide el panel que no tiene recorrido de
-   *  señales, donde este es el primer control de la pantalla. */
   autoFocus?: boolean
 }
 
-/**
- * Qué se ofrece al terminar un escenario.
- *
- * Mientras queden escenarios sin intentar en el módulo, la acción principal es
- * ir al siguiente, no repetir. Repetir de entrada invita a reintentar hasta
- * acertar, y entonces la corrida deja de medir lo que la persona sabía y pasa
- * a medir cuántas veces insistió; el gating cuenta el *último* intento, así
- * que además es una vía para inflar el resultado sin haber aprendido nada.
- *
- * Cuando ya se intentaron los ocho, se ofrece repetir el módulo completo: ahí
- * es repaso deliberado, no reintento de un escenario suelto.
- *
- * "Siguiente" es el primero del catálogo que aún no se ha intentado, no el de
- * al lado: quien entra por el tercero no debería quedarse sin los dos
- * primeros.
- */
+// Mientras queden escenarios sin intentar, la acción principal es "siguiente",
+// no repetir: repetir de entrada infla el resultado con reintentos en vez de
+// medir lo que la persona sabía (el gating cuenta el último intento).
 function AccionesFinal({ escenarioId, outcome, autoFocus }: AccionesFinalProps) {
   const navigate = useNavigate()
   const location = useLocation()
@@ -60,16 +43,15 @@ function AccionesFinal({ escenarioId, outcome, autoFocus }: AccionesFinalProps) 
     fetchProgreso(seccionId)
       .then((progreso) => {
         if (cancelado) return
-        // El escenario recién terminado se añade a mano: su corrida se guarda
-        // en paralelo y este progreso puede haberse pedido antes de que el
-        // servidor la registre.
+        // Se añade a mano: la corrida se guarda en paralelo y este progreso
+        // puede haberse pedido antes de que el servidor la registre.
         setIntentados(new Set([...progreso.escenarios.map((e) => e.id), escenarioId]))
         setAvance({ aprobados: progreso.aprobados, requeridos: progreso.requeridos, rondaEnCurso: progreso.rondaEnCurso ?? undefined })
         setProgreso(progreso)
       })
       .catch(() => {
-        // Sin progreso se sigue con el orden del catálogo. Quedarse sin ningún
-        // botón por un fallo de red dejaría al participante encerrado.
+        // Sin progreso se sigue con el orden del catálogo, para no dejar al
+        // participante sin ningún botón por un fallo de red.
       })
 
     return () => {
@@ -117,9 +99,7 @@ function AccionesFinal({ escenarioId, outcome, autoFocus }: AccionesFinalProps) 
     </Link>
   )
 
-  // El progreso llega un instante después del veredicto, así que este bloque
-  // aparece solo cuando hay algo cierto que decir. Cuando ya se superó el
-  // umbral lo dice, en vez de seguir contando contra una meta ya cumplida.
+  // Aparece solo cuando el progreso ya llegó (un instante después del veredicto).
   const marcador = avance && (
     <p className="mt-4 text-center text-base text-body">
       {(progresoEfectivo ? aprobadosEfectivos : avance.aprobados) >= avance.requeridos ? (
@@ -148,13 +128,9 @@ function AccionesFinal({ escenarioId, outcome, autoFocus }: AccionesFinalProps) 
         <Link
           ref={principalRef as React.Ref<HTMLAnchorElement>}
           to={rutaEscenario(siguiente)}
-          // El guardado de esta corrida es async y no se espera antes de
-          // mostrar este botón: si la petición todavía no llegó al servidor
-          // cuando se navega, la comprobación de disponibilidad de la
-          // siguiente pantalla vería este escenario como "sin intentar" y
-          // rebotaría a la sección. Este aviso deja que esa comprobación
-          // confíe en que sí se completó, igual que ya hace `intentados` aquí
-          // mismo, sin depender de que el servidor ya lo sepa.
+          // El guardado es async: si al navegar el servidor aún no lo registró,
+          // la siguiente pantalla vería este escenario "sin intentar" y
+          // rebotaría a la sección. `recienCompletado` evita eso.
           state={{
             recienCompletado: escenarioId,
             iniciarRepeticion: enRepeticion || progresoEfectivo?.rondaEnCurso != null,

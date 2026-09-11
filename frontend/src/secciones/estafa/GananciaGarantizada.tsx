@@ -6,18 +6,9 @@ import type { Senal } from '../../components/ui/PanelVeredicto'
 import type { Story } from '../../hooks/useStoryEngine'
 import { CUENTA_FICTICIA, IDENTIDAD_FICTICIA } from '../../lib/identidadFicticia'
 
-/**
- * El más difícil del módulo, porque el primer retiro sí llega.
- *
- * Aquí no hay comprobante falso ni cuenta a otro nombre: los cincuenta dólares
- * que te devuelven son de verdad, y esa es toda la inversión que hace el
- * estafador. Con ese dinero compra lo único que necesita, que es tu confianza
- * para la segunda entrega, la que ya no vuelve.
- *
- * Por eso el escenario no se gana desconfiando de lo que ves, sino sabiendo
- * una regla que no depende de la pantalla: ninguna inversión garantiza una
- * rentabilidad, y el dinero de verdad no cobra por dejarte sacarlo.
- */
+/** El más difícil: el primer retiro sí llega —de verdad— porque esa es toda la inversión del estafador,
+ *  compra tu confianza para la entrega grande. Se gana sabiendo una regla, no desconfiando de la pantalla:
+ *  ninguna inversión garantiza rentabilidad, y el dinero real no cobra por dejarte sacarlo. */
 
 const ASESOR = 'Andrés Villacís'
 const NUMERO_ASESOR = '+593 99 302 7715'
@@ -150,9 +141,7 @@ const SE_MOLESTA: ScreenView = {
   ],
 }
 
-/// El panel de la plataforma. No hay ningún error a la vista, y ese es el
-/// punto: los números que enseña los escribe quien cobra, y no hay dinero
-/// detrás de ninguno.
+// El panel no muestra ningún error a la vista: los números los escribe quien cobra, y no hay dinero real detrás.
 const PANEL: ScreenView = {
   kind: 'web',
   app: 'Ruvel Capital',

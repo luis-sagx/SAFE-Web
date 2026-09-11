@@ -5,22 +5,11 @@ import type { ScreenView } from '../../components/ui/DeviceScreen'
 import type { Senal } from '../../components/ui/PanelVeredicto'
 import type { Story } from '../../hooks/useStoryEngine'
 
-/**
- * La llamada perdida de madrugada que sale carísima devolver.
- *
- * El único escenario del módulo que no empieza con el teléfono sonando: aquí
- * la llamada ya pasó y lo que hay es un registro. El engaño consiste en que la
- * decisión la tomes tú, marcando, y por eso no hay nadie apurándote — solo la
- * curiosidad de quién llamó a las tres de la mañana.
- */
+// Único escenario que no empieza con el teléfono sonando: la llamada ya pasó
+// y el engaño depende de que decidas marcar tú, sin que nadie te apure.
 
 const NUMERO = '+225 07 55 21 88'
 
-/// El registro de llamadas, y nada más que eso: llamadas. Antes traía además
-/// la opción de bloquear metida entre dos entradas, y una acción disfrazada de
-/// llamada en la misma lista se lee mal — en un teléfono de verdad la lista
-/// solo enumera lo que pasó, y lo que se puede hacer con una llamada aparece
-/// al abrirla.
 const REGISTRO: ScreenView = {
   kind: 'web',
   app: 'Teléfono',
@@ -41,10 +30,6 @@ const REGISTRO: ScreenView = {
   button: '',
 }
 
-/// La ficha de esa llamada: lo que se puede hacer con ella está aquí, que es
-/// donde lo pone cualquier teléfono. Devolverla y bloquearla son las dos
-/// decisiones del escenario, y ahora se eligen una al lado de la otra en vez
-/// de a dos alturas distintas de una lista revuelta.
 const FICHA: ScreenView = {
   kind: 'web',
   app: 'Teléfono',

@@ -1,8 +1,8 @@
 ---
-version: 1.0
+version: 2.0
 name: safe-web-design
-description: Sistema de diseño de la plataforma de entrenamiento anti-fraude. Lienzo blanco puro con tinta casi negra (#171717); el único voltaje de marca es verde profundo (#006837) para las acciones primarias, discreto y editorial. Tipografía Inter en pesos moderados (display 600, cuerpo 400). Solo modo claro. Implementado con Tailwind CSS v4 mediante variables de tema en `@theme`. Adaptado de un análisis del sitio de Expo, despojado de sus superficies oscuras y de todo lo propio de una web de marketing.
-mode: light-only
+description: Sistema de diseño de la plataforma de entrenamiento anti-fraude. Lienzo blanco puro (o casi negro en oscuro) con tinta casi negra (o casi blanca); el único voltaje de marca es verde profundo (#006837 en claro, #2fbf71 en oscuro) para las acciones primarias, discreto y editorial. Tipografía Inter en pesos moderados (display 600, cuerpo 400). Cromo con tema claro y oscuro, elegible por la persona; los escenarios simulados quedan siempre fuera del tema. Implementado con Tailwind CSS v4 mediante variables de tema en `@theme`, redefinidas bajo `:root[data-tema="oscuro"]`. Adaptado de un análisis del sitio de Expo, despojado de todo lo propio de una web de marketing.
+mode: light-and-dark
 framework: tailwind-v4
 ---
 
@@ -14,15 +14,31 @@ pantallas o escenarios aquí.
 
 **Dos reglas que gobiernan todo el documento:**
 
-1. **Solo modo claro.** No hay tema oscuro ni superficies oscuras. Nada de
-   `dark:` en las clases, nada de `prefers-color-scheme`.
+1. **El cromo tiene tema claro y oscuro; los escenarios simulados no tienen
+   ninguno de los dos.** La persona elige Sistema / Claro / Oscuro con
+   `SelectorTema`, guardado en `localStorage` y aplicado con el atributo
+   `data-tema` en `<html>`. Un componente de cromo nunca escribe `dark:` en su
+   JSX: sigue el tema automáticamente porque usa clases de utilidad
+   (`bg-surface`, `text-ink`…) que Tailwind resuelve a variables CSS, y esas
+   variables son las que cambian bajo `:root[data-tema="oscuro"]` en
+   `frontend/src/index.css`. Ver el detalle completo, con cada valor y su
+   ratio de contraste, en
+   `docs/superpowers/specs/2026-09-10-tema-oscuro-design.md`.
 
-   **Única excepción: el interior de un escenario.** Un escenario que simula
-   WhatsApp, una llamada o una app bancaria debe *parecerse a esa app*, y varias
-   son oscuras. Esa apariencia vive en el `.module.css` del escenario y no usa
-   los tokens de este documento. Todo lo que rodea al escenario —acceso,
-   dashboard, listado de secciones, encabezados y botones de navegación— sí es
-   modo claro y sí usa los tokens.
+   **Excepción, y esta sí es absoluta: el interior de un escenario.** Un
+   escenario que simula WhatsApp, una llamada o una app bancaria debe
+   *parecerse a esa app*, no al tema que la persona eligió para la
+   plataforma — varias son oscuras aunque el cromo esté en claro, y deben
+   seguir siéndolo aunque el cromo pase a oscuro. Esa apariencia vive en el
+   `.module.css` del escenario, en valores **literales**, y nunca en
+   `var(--color-*)`: un escenario que referenciara un token del tema cambiaría
+   de aspecto cuando la persona cambia de tema, que es justo lo que no debe
+   pasar. El criterio para saber en qué lado de la frontera está un
+   componente: **si se estiliza con un `.module.css`, es simulación y va en
+   literales; si se estiliza con clases de utilidad de Tailwind, es cromo y
+   sigue el tema.** Todo lo que rodea al escenario —acceso, dashboard, listado
+   de secciones, encabezados y botones de navegación— es cromo y sí usa los
+   tokens.
 
    **El marco exterior sí importa, y no es el mismo para todas las amenazas.**
    `EscenarioLayout` acepta `dispositivo: 'telefono' | 'escritorio'`. Un correo
@@ -54,20 +70,22 @@ vive en el bloque `@theme` de `frontend/src/index.css`:
   /* Texto */
   --color-ink: #171717;
   --color-body: #60646c;
-  --color-muted: #999999;
-  --color-muted-soft: #cccccc;
+  --color-muted: #63676e;
+  --color-muted-soft: #a8acb3;
   --color-link: #006837;
 
-  /* Superficies */
-  --color-canvas: #ffffff;
-  --color-canvas-soft: #fafafa;
+  /* Superficies: levemente gris, no blanco puro — así surface (blanco de
+     verdad) se separa de la página sin depender solo del borde. */
+  --color-canvas: #f7f7f8;
+  --color-canvas-soft: #eef0f1;
   --color-surface: #ffffff;
   --color-surface-strong: #f0f0f3;
 
-  /* Líneas */
-  --color-hairline: #f0f0f3;
+  /* Líneas y bordes */
+  --color-hairline: #e6e6ea;
   --color-hairline-soft: #f5f5f7;
   --color-hairline-strong: #dcdee0;
+  --color-border-control: #7d828a;
 
   /* Ambiente: solo detrás del hero de la portada */
   --color-mint-light: #d9ede2;
@@ -75,8 +93,15 @@ vive en el bloque `@theme` de `frontend/src/index.css`:
 
   /* Semántico */
   --color-success: #16a34a;
+  --color-success-ink: #0d7038;
+  --color-on-success: #06210f;
   --color-danger: #b4342f;
-  --color-warning: #ab6400;
+  --color-on-danger: #ffffff;
+  --color-warning: #945700;
+  --color-on-warning: #ffffff;
+
+  /* Velo de modal */
+  --color-scrim: rgb(0 0 0 / 0.45);
 
   /* Tipografía */
   --font-sans: 'Inter', -apple-system, system-ui, sans-serif;
@@ -92,13 +117,48 @@ vive en el bloque `@theme` de `frontend/src/index.css`:
   /* Sombra: un solo nivel */
   --shadow-card: 0 4px 12px rgba(0, 0, 0, 0.04);
 }
+
+:root[data-tema='oscuro'] {
+  /* Solo tokens de color y la sombra. Valores completos y su ratio de
+     contraste en el spec de tema oscuro §5. */
+  --color-primary: #2fbf71;
+  --color-primary-active: #25a862;
+  --color-on-primary: #06170d; /* invierte: tinta oscura sobre relleno claro */
+  --color-ink: #eef2f6;
+  --color-body: #bcc5d0;
+  --color-muted: #98a2ae;
+  --color-muted-soft: #6b7480;
+  --color-link: #4fd08a;
+  --color-canvas: #0f1317;
+  --color-canvas-soft: #161b21;
+  --color-surface: #161b21;
+  --color-surface-strong: #222932;
+  --color-hairline: #1e242c;
+  --color-hairline-soft: #171c22;
+  --color-hairline-strong: #3a4450;
+  --color-border-control: #697687;
+  --color-mint-light: #13301f;
+  --color-mint-mid: #2a5c3f;
+  --color-success: #3ddc84;
+  --color-success-ink: #3ddc84;
+  --color-on-success: #06170d;
+  --color-danger: #f0736f;
+  --color-on-danger: #2a0b0a;
+  --color-warning: #e8a33d;
+  --color-on-warning: #241705;
+  --color-scrim: rgb(0 0 0 / 0.65);
+  --shadow-card: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
 ```
 
 Declarar un color acá genera automáticamente `bg-*`, `text-*`, `border-*`.
-`--color-ink` habilita `text-ink`, `bg-ink`, `border-ink`.
+`--color-ink` habilita `text-ink`, `bg-ink`, `border-ink`. Como es una
+variable CSS, no hace falta ningún prefijo `dark:` en el JSX: la misma clase
+`bg-canvas` resuelve a un color distinto según `data-tema`.
 
 **Nunca** escribas `text-[#171717]` ni `style={{ color: '#171717' }}`. Si un
-color no existe como token, agrégalo a `@theme` primero.
+color no existe como token, agrégalo a `@theme` primero — con su valor en
+claro **y** en oscuro, y su ratio de contraste comprobado en las dos.
 
 ---
 
@@ -125,48 +185,86 @@ colorear un ícono pequeño (los íconos de categoría del dashboard, un ícono 
 estado) o el borde de una tarjeta en `:hover`. Es el único lugar donde se
 permite fuera del texto — nunca como color de fondo ni de borde en reposo.
 
-`primary` sobre blanco da **6.8:1**: cumple AA para texto normal y AAA para
-texto grande. Blanco sobre `primary`, lo mismo. `primary-active` sobre blanco,
-9.4:1.
+`primary` sobre blanco da **6.9:1**: cumple AA para texto normal y AAA para
+texto grande. `primary-active` sobre blanco, 9.4:1.
+
+**En oscuro el botón primario invierte polaridad.** Ningún verde alcanza a la
+vez 3:1 contra un lienzo oscuro y 4.5:1 bajo texto blanco con margen seguro,
+así que `on-primary` pasa a ser tinta casi negra (`#06170d`) sobre un verde
+más claro (`primary: #2fbf71`), como en Material 3. `text-on-primary` sigue
+usándose exactamente igual en el JSX — solo el token cambia de significado
+según el tema. `link`, en cambio, sí se separa de `primary` en oscuro
+(`#4fd08a` contra `#2fbf71`): como texto necesita 4.5:1 y el relleno solo 3:1.
+La regla del subrayado no cambia.
 
 ### Superficies
 
-| Token | Valor | Uso |
-|---|---|---|
-| `canvas` | `#ffffff` | Fondo de página. |
-| `canvas-soft` | `#fafafa` | Banda alterna sutil. |
-| `surface` | `#ffffff` | Tarjetas. |
-| `surface-strong` | `#f0f0f3` | Insignias, botones secundarios, placas de icono. |
+| Token | Claro | Oscuro | Uso |
+|---|---|---|---|
+| `canvas` | `#f7f7f8` | `#0f1317` | Fondo de página. |
+| `canvas-soft` | `#eef0f1` | `#161b21` | Banda alterna sutil, fondo de `:hover`, paneles con borde (p. ej. "Tu avance"). |
+| `surface` | `#ffffff` | `#161b21` | Tarjetas, campos, menús. |
+| `surface-strong` | `#f0f0f3` | `#222932` | Insignias, botones secundarios, placas de icono. |
 
-No hay superficies oscuras. La variante `feature-card-dark` del sistema
-original **se eliminó**: contradice el modo claro único.
+En claro, `canvas` es levemente gris a propósito — no blanco puro — para que
+`surface` (blanco de verdad) se lea como una tarjeta elevada sobre la página
+en vez de fundirse con ella. En oscuro pasa lo contrario: `canvas` y
+`surface` son casi el mismo tono, y lo que separa una tarjeta de la página es
+su borde (`hairline-strong`), porque ahí ya no hay margen para bajar más el
+fondo sin perder legibilidad.
 
 ### Texto
 
-| Token | Valor | Uso |
-|---|---|---|
-| `ink` | `#171717` | Títulos y énfasis. |
-| `body` | `#60646c` | Texto corrido. |
-| `muted` | `#999999` | Subtítulos, texto de ayuda. |
-| `muted-soft` | `#cccccc` | Texto deshabilitado. |
+| Token | Claro | Oscuro | Uso |
+|---|---|---|---|
+| `ink` | `#171717` | `#eef2f6` | Títulos y énfasis. |
+| `body` | `#60646c` | `#bcc5d0` | Texto corrido. |
+| `muted` | `#63676e` | `#98a2ae` | Subtítulos, texto de ayuda. **Nunca** para contenido. |
+| `muted-soft` | `#a8acb3` | `#6b7480` | Placeholders, controles deshabilitados. **Nunca** para un rótulo: no es texto legible y está exento de contraste a propósito. |
 
-### Líneas
+### Líneas y bordes
 
-`hairline` `#f0f0f3` (divisor por defecto) · `hairline-soft` `#f5f5f7` ·
-`hairline-strong` `#dcdee0` (contorno de tarjetas y campos).
+`hairline` (divisor por defecto) · `hairline-soft` · `hairline-strong`
+(contorno de tarjetas, decorativo, exento de 3:1 porque el contenido ya
+delimita la tarjeta) · **`border-control`**, para cualquier borde que la
+persona necesite *percibir* y no solo decorar: a diferencia de
+`hairline-strong`, este sí cumple 3:1 (SC 1.4.11) contra las seis superficies
+del sistema, en los dos temas. Dos usos:
+
+- El borde en reposo de un `<input>`, `<select>` o `<textarea>` — es lo que
+  hace visible dónde se puede escribir.
+- El marco de un escenario simulado (`MARCO_TELEFONO` / `MARCO_ESCRITORIO` /
+  `MARCO_ESCENA` en `EscenarioLayout.tsx`) — tiene que distinguirse de la
+  página, no solo de una tarjeta vecina, y varios escenarios simulan una app
+  oscura: con el cromo también en oscuro, `hairline-strong` (decorativo) se
+  funde con los dos fondos oscuros a la vez.
 
 ### Semántico
 
-`success` `#16a34a` · `danger` `#b4342f` · `warning` `#ab6400`.
+`success` (relleno) es un verde vivo que solo cumple 1.4.11 (3:1) como objeto
+gráfico, no como texto. Para texto existe **`success-ink`**, una variante
+oscurecida a 4.5:1 — cae cerca de `primary` a propósito: cualquier verde que
+llegue a 4.5:1 sobre blanco queda en esa franja, y el acierto se distingue por
+el glifo y la palabra, no por el matiz (ver §7). `on-success`, `on-danger` y
+`on-warning` son la tinta que va **encima** de cada relleno semántico — en
+claro casi siempre blanco, en oscuro casi siempre tinta oscura sobre el verde
+más claro de ese tema.
 
-El rojo de error se oscureció respecto del original (`#eb8e90`): aquel no
-alcanzaba contraste AA sobre blanco, y los mensajes de error de un formulario
-tienen que leerse. Ver §7.
+El rojo de error se oscureció respecto del sistema original de Expo
+(`#eb8e90`): aquel no alcanzaba contraste AA sobre blanco, y los mensajes de
+error de un formulario tienen que leerse.
 
-**`success` es más claro y saturado que `primary` a propósito.** En una
-aplicación donde verde significa «acertaste», el verde del acierto no puede ser
-el mismo verde del cromo. Aun así, §7 sigue exigiendo que el color nunca sea la
-única señal: un resultado siempre lleva texto.
+**`success`/`success-ink` son más claros y saturados que `primary` a
+propósito.** En una aplicación donde verde significa «acertaste», el verde del
+acierto no puede ser el mismo verde del cromo. Aun así, §7 sigue exigiendo que
+el color nunca sea la única señal: un resultado siempre lleva texto.
+
+### Velo de modal
+
+`scrim`: el fondo de un `<dialog>` o de un modal superpuesto. No es
+`bg-ink/40` — en oscuro `ink` es casi blanco, y ese velo se aclararía en vez
+de oscurecer el fondo. `scrim` es negro con una opacidad fija que sube en
+oscuro (0.45 → 0.65) para leerse igual de sólido en los dos temas.
 
 ### Ambiente
 
@@ -324,16 +422,25 @@ formulario: el usuario no técnico no relaciona un banner lejano con su campo.
 El público objetivo son personas no técnicas, incluidos adultos mayores. Esto
 no es opcional:
 
-- **Contraste AA como mínimo.** `body` (#60646c) sobre blanco da 5.7:1 ✓.
-  `muted` (#999999) da 2.8:1 — **solo para texto de 18px o más, nunca para
-  contenido**. `danger` (#b4342f) da 6.4:1 ✓.
+- **Contraste AA como mínimo, en los dos temas.** `body` da 4.85:1 en claro y
+  8.19:1 en oscuro, mínimo sobre cualquiera de las seis superficies del
+  sistema. `muted` da 4.64:1 / 5.52:1 — **nunca para contenido**, solo
+  subtítulos y ayudas. `danger` da 4.94:1 / 5.02:1. `border-control` (el
+  borde de un campo) da 3.16:1 / 3.09:1. Estos números no son una foto fija:
+  `frontend/src/index.test.ts` los recalcula desde `index.css` en cada corrida
+  y falla si algún par baja del mínimo — ver
+  `docs/superpowers/specs/2026-09-10-tema-oscuro-design.md` §5 y §7.1 para la
+  tabla completa y el razonamiento detrás de cada valor.
 - **Objetivos táctiles de 44px** en cualquier control de un escenario.
 - **El color nunca es la única señal.** Un error lleva texto; un acierto lleva
   texto. Un escenario no puede depender de rojo/verde para comunicar su
-  resultado.
+  resultado. Es también la razón por la que `success-ink` (el verde de texto)
+  puede quedar cerca de `primary`: el acierto ya lo dice el glifo y la palabra.
 - **Foco siempre visible.** No se elimina el contorno de foco sin reemplazarlo.
 - **Etiquetas reales**, con `htmlFor` apuntando al `id` del campo. Un
   `placeholder` no es una etiqueta.
+- **El selector de tema lleva texto, no solo ícono** (SC 1.4.1): "Sistema" /
+  "Claro" / "Oscuro", no solo un sol y una luna.
 
 ---
 
@@ -357,7 +464,7 @@ que no aplica:
 
 | Eliminado | Motivo |
 |---|---|
-| `surface-dark`, `feature-card-dark`, `pricing-tier-featured`, `ide-mockup-card` | Superficies oscuras — se pidió solo modo claro. |
+| `pricing-tier-featured`, `ide-mockup-card` | Chrome de marketing sin equivalente en una app de entrenamiento. |
 | `device-mockup-card` (hero MacBook + iPhone) | Chrome de marketing de Expo. Acá el hero es texto y una acción. |
 | `pricing-tier-card`, `ecosystem-tile`, `testimonial-card` | No existe precio, ecosistema ni testimonios en esta plataforma. |
 | `footer-light` de 5 columnas | Una aplicación de entrenamiento no lleva pie de página de marketing. |
@@ -376,25 +483,41 @@ tarjetas, y un solo nivel de sombra.
 
 ### Hacer
 
-- Usar tokens de `@theme` mediante clases de utilidad.
+- Usar tokens de `@theme` mediante clases de utilidad — eso es lo que hace que
+  un componente de cromo siga el tema sin escribir una sola línea para ello.
 - Reservar `bg-primary` (verde) para la acción principal de la pantalla — una
   sola por pantalla.
 - Subrayar todo enlace en texto: es lo único que lo distingue de un botón.
 - Botones y campos a `rounded-md` (8px); tarjetas a `rounded-lg` (12px).
 - Mantener el cuerpo en 16px dentro de los escenarios.
 - Etiquetar los campos con `<label htmlFor>`.
+- Usar `border-control` (no `border-hairline-strong`) en el borde en reposo de
+  cualquier `<input>`, `<select>` o `<textarea>` nuevo, y en el marco de
+  cualquier escenario simulado nuevo.
+- Usar `scrim` (no `bg-ink/40`) para el velo de un modal nuevo.
+- Si agregas un token de color, dale valor en claro **y** en oscuro en el
+  mismo cambio, y corre `npx vitest run src/index.test.ts` — ese archivo
+  recalcula el contraste de los dos temas y falla si algo queda por debajo de
+  AA.
 
 ### No hacer
 
-- No usar `dark:` ni consultas de esquema de color en la interfaz de la
-  plataforma. La apariencia de una app simulada vive en el `.module.css` del
-  escenario, nunca en tokens ni en utilidades de Tailwind.
-- No usar hex en línea ni `style={{}}`. Si falta un color, agregarlo a `@theme`.
+- No escribir `dark:` en un componente de cromo. Si necesitas que algo cambie
+  con el tema, es una variable en `@theme` / `:root[data-tema="oscuro"]`, no
+  una clase condicional en el JSX.
+- No usar `var(--color-*)` dentro de un `.module.css` de un escenario
+  simulado: eso lo haría seguir el tema del cromo, y un escenario simulado
+  nunca debe hacerlo (ver regla 1). Ahí los colores van en literal.
+- No usar hex en línea ni `style={{}}` en el cromo. Si falta un color,
+  agregarlo a `@theme`.
 - No dejar un enlace en texto sin subrayar: en verde sin subrayado se lee como
   botón.
 - No usar `rounded-full` en un botón. Las pastillas son de las insignias.
-- No usar `text-muted` para contenido: no alcanza contraste a tamaño normal.
+- No usar `text-muted` ni `text-muted-soft` para contenido: `muted-soft` está
+  exento de contraste a propósito porque no es texto que haya que leer.
 - No agregar un segundo nivel de sombra ni un segundo color de marca.
 - No repetir el degradado de menta fuera del hero de la portada.
-- No usar `primary` para señalar un acierto: eso es `success`, que es otro
-  verde a propósito.
+- No usar `primary` para señalar un acierto: eso es `success`/`success-ink`,
+  que son otro verde a propósito.
+- No usar `bg-ink/40` como velo de modal: en oscuro `ink` es casi blanco. Usa
+  `scrim`.

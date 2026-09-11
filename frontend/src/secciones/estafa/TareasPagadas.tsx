@@ -6,19 +6,9 @@ import type { Senal } from '../../components/ui/PanelVeredicto'
 import type { Story } from '../../hooks/useStoryEngine'
 import { CUENTA_FICTICIA, IDENTIDAD_FICTICIA } from '../../lib/identidadFicticia'
 
-/**
- * Trabajo desde casa: te pagan de verdad, y por eso funciona.
- *
- * El engaño no está en ninguna pantalla, está en el orden de los hechos. Las
- * primeras tareas se pagan puntualmente y con eso compran algo que ninguna
- * mentira compra: la prueba, vivida por ti, de que esto sí paga. Solo después
- * aparece la vuelta de tuerca, que es la única que importa: para seguir
- * ganando hay que poner dinero propio.
- *
- * Se parece al de la inversión garantizada, pero la puerta de entrada es
- * distinta y toca a otra gente: aquí no hace falta tener ahorros, solo falta
- * de trabajo. Por eso entra por un grupo de empleo y no por uno de finanzas.
- */
+/** El engaño no está en ninguna pantalla sino en el orden: los primeros pagos son reales y compran la prueba
+ *  vivida de que "esto sí paga"; solo después llega la vuelta de tuerca (poner dinero propio). Entra por un
+ *  grupo de empleo, no de finanzas —toca a quien le falta trabajo, no ahorros. */
 
 const COORDINADORA = 'Katty · Coordinadora'
 const NUMERO_COORDINADORA = '+593 98 613 9042'
@@ -185,9 +175,7 @@ const PANEL: ScreenView = {
   button: '',
 }
 
-/// Las condiciones, que están escritas y nadie lee. Dicen en su propia letra
-/// pequeña que el depósito no se devuelve y que el retiro depende de completar
-/// un cupo que se puede cambiar en cualquier momento.
+// Las condiciones que nadie lee: en letra pequeña dicen que el depósito no se devuelve y el cupo cambia cuando quieran.
 const CONDICIONES: ScreenView = {
   kind: 'web',
   app: 'TaskPro',

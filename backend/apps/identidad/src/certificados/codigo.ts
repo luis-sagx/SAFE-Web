@@ -12,11 +12,8 @@ function grupo(longitud: number): string {
   return s;
 }
 
-/**
- * Código del certificado: "SW-XXXX-XXXX". Aleatorio y sin relación con `seq`
- * ni con ningún dato personal — derivarlo filtraría el orden de registro o el
- * número de participantes del estudio a quien reúna dos códigos.
- */
+// Código "SW-XXXX-XXXX": aleatorio y sin relación con `seq` ni datos personales, para no
+// filtrar el orden de registro ni el número de participantes a quien reúna dos códigos.
 export function generarCodigoCertificado(): string {
   return `SW-${grupo(4)}-${grupo(4)}`;
 }

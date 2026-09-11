@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef } from 'react'
 import { Toaster, toast } from 'sonner'
+import { useTheme } from '../context/ThemeContext'
 import { flushPendingRuns } from '../lib/pendingRuns'
 
 interface RunNotificationsProps {
@@ -7,6 +8,7 @@ interface RunNotificationsProps {
 }
 
 function RunNotifications({ enabled }: RunNotificationsProps) {
+  const { temaEfectivo } = useTheme()
   const requestedSync = useRef(0)
   const syncing = useRef(false)
 
@@ -86,7 +88,7 @@ function RunNotifications({ enabled }: RunNotificationsProps) {
       visibleToasts={3}
       closeButton
       richColors
-      theme="light"
+      theme={temaEfectivo === 'oscuro' ? 'dark' : 'light'}
       offset={16}
       mobileOffset={12}
       containerAriaLabel="Notificaciones"
