@@ -3,34 +3,34 @@ import request from 'supertest';
 import type { App } from 'supertest/types';
 import { PrismaService } from '../apps/entrenamiento/src/prisma/prisma.service';
 import {
-  corrida,
-  crearApp,
-  cuerpo,
-  limpiar,
-  type CorridaBody,
-  type Entorno,
-  type ProgresoBody,
+  run,
+  createTestApp,
+  responseBody,
+  cleanDatabase,
+  type RunBody,
+  type TestEnvironment,
+  type ProgressBody,
 } from './entrenamiento.e2e';
 
 describe('Corridas (e2e)', () => {
   let app: INestApplication;
   let prisma: PrismaService;
-  let token: Entorno['token'];
-  let deMaria: string;
-  let deOtro: string;
+  let token: TestEnvironment['token'];
+  let mariaToken: string;
+  let otherToken: string;
 
   const server = () => request(app.getHttpServer() as App);
 
   beforeAll(async () => {
-    ({ app, prisma, token } = await crearApp());
-    await limpiar(prisma);
+    ({ app, prisma, token } = await createTestApp());
+    await cleanDatabase(prisma);
 
-    deMaria = await token({ sub: 'maria', seq: 7 });
-    deOtro = await token({ sub: 'otro', seq: 8 });
+    mariaToken = await token({ sub: 'maria', seq: 7 });
+    otherToken = await token({ sub: 'otro', seq: 8 });
   });
 
   afterAll(async () => {
-    await limpiar(prisma);
+    await cleanDatabase(prisma);
     await app.close();
   });
 
@@ -40,22 +40,22 @@ describe('Corridas (e2e)', () => {
   it('acepta un token firmado sin levantar el servicio de identidad', async () => {
     const res = await server()
       .post('/api/runs')
-      .set('Authorization', `Bearer ${deMaria}`)
-      .send(corrida())
+      .set('Authorization', `Bearer ${mariaToken}`)
+      .send(run())
       .expect(201);
 
-    const resumen = cuerpo<CorridaBody>(res);
-    expect(resumen).toMatchObject({
+    const summary = responseBody<RunBody>(res);
+    expect(summary).toMatchObject({
       scenarioId: 'phishing/factura-sri',
       outcome: 'CORRECTO',
       score: 100,
     });
 
-    const guardada = await prisma.scenarioRun.findUnique({
-      where: { id: resumen.id },
+    const saved = await prisma.scenarioRun.findUnique({
+      where: { id: summary.id },
     });
-    expect(guardada?.participantId).toBe('maria');
-    expect(guardada?.decisions).toEqual([{ desde: 'n1', hacia: 'n2' }]);
+    expect(saved?.participantId).toBe('maria');
+    expect(saved?.decisions).toEqual([{ desde: 'n1', hacia: 'n2' }]);
   });
 
   // El seudónimo se copia del token, no del cuerpo: es lo que permite mostrar
@@ -63,18 +63,18 @@ describe('Corridas (e2e)', () => {
   it('etiqueta la corrida con el seudónimo del token', async () => {
     const res = await server()
       .post('/api/runs')
-      .set('Authorization', `Bearer ${deMaria}`)
-      .send(corrida({ scenarioId: 'phishing/clave-caducada' }))
+      .set('Authorization', `Bearer ${mariaToken}`)
+      .send(run({ scenarioId: 'phishing/clave-caducada' }))
       .expect(201);
 
-    const guardada = await prisma.scenarioRun.findUnique({
-      where: { id: cuerpo<CorridaBody>(res).id },
+    const saved = await prisma.scenarioRun.findUnique({
+      where: { id: responseBody<RunBody>(res).id },
     });
-    expect(guardada?.participantSeq).toBe(7);
+    expect(saved?.participantSeq).toBe(7);
   });
 
   it('exige token para escribir', async () => {
-    await server().post('/api/runs').send(corrida()).expect(401);
+    await server().post('/api/runs').send(run()).expect(401);
   });
 
   // Aceptarlos del cuerpo dejaría escribir a nombre de otro participante o
@@ -82,11 +82,11 @@ describe('Corridas (e2e)', () => {
   it.each([
     ['participantId', { participantId: 'otro-id' }],
     ['participantSeq', { participantSeq: 999 }],
-  ])('rechaza %s enviado en el cuerpo', async (_caso, override) => {
+  ])('rechaza %s enviado en el cuerpo', async (_case, override) => {
     await server()
       .post('/api/runs')
-      .set('Authorization', `Bearer ${deMaria}`)
-      .send({ ...corrida(), ...override })
+      .set('Authorization', `Bearer ${mariaToken}`)
+      .send({ ...run(), ...override })
       .expect(400);
   });
 
@@ -97,20 +97,20 @@ describe('Corridas (e2e)', () => {
     ['fecha de inicio inválida', { startedAt: 'ayer' }],
     ['duración negativa', { durationMs: -1 }],
     ['versión cero', { version: 0 }],
-  ])('rechaza la corrida con %s', async (_caso, override) => {
+  ])('rechaza la corrida con %s', async (_case, override) => {
     await server()
       .post('/api/runs')
-      .set('Authorization', `Bearer ${deMaria}`)
-      .send(corrida(override))
+      .set('Authorization', `Bearer ${mariaToken}`)
+      .send(run(override))
       .expect(400);
   });
 
   it('GET /api/runs/me solo devuelve las corridas propias', async () => {
     await server()
       .post('/api/runs')
-      .set('Authorization', `Bearer ${deOtro}`)
+      .set('Authorization', `Bearer ${otherToken}`)
       .send(
-        corrida({
+        run({
           scenarioId: 'phishing/rol-de-pagos',
           outcome: 'INCORRECTO',
           score: 0,
@@ -120,12 +120,12 @@ describe('Corridas (e2e)', () => {
 
     const res = await server()
       .get('/api/runs/me')
-      .set('Authorization', `Bearer ${deMaria}`)
+      .set('Authorization', `Bearer ${mariaToken}`)
       .expect(200);
 
-    const mias = cuerpo<CorridaBody[]>(res);
-    expect(mias.length).toBeGreaterThan(0);
-    for (const run of mias) {
+    const ownRuns = responseBody<RunBody[]>(res);
+    expect(ownRuns.length).toBeGreaterThan(0);
+    for (const run of ownRuns) {
       expect(run.scenarioId).not.toBe('phishing/rol-de-pagos');
     }
   });
@@ -134,7 +134,7 @@ describe('Corridas (e2e)', () => {
     it('responde 403 a un participante', async () => {
       await server()
         .get('/api/runs/resultados')
-        .set('Authorization', `Bearer ${deMaria}`)
+        .set('Authorization', `Bearer ${mariaToken}`)
         .expect(403);
     });
 
@@ -152,19 +152,19 @@ describe('Corridas (e2e)', () => {
 
       expect(res.headers['content-type']).toContain('application/json');
 
-      const filas = cuerpo<Array<Record<string, unknown>>>(res);
-      const deSiete = filas.find((f) => f.seudonimo === 'P007');
-      expect(deSiete).toMatchObject({
+      const rows = responseBody<Array<Record<string, unknown>>>(res);
+      const pseudonymSeven = rows.find((f) => f.seudonimo === 'P007');
+      expect(pseudonymSeven).toMatchObject({
         seudonimo: 'P007',
       });
 
       // La garantía de privacidad, contra la base real. Este servicio no tiene
       // ninguna tabla con datos personales ni permiso sobre el schema que las
       // tiene: no hay forma de que salgan.
-      const texto = res.text;
-      expect(texto).not.toContain('María');
-      expect(texto).not.toContain('@ejemplo.ec');
-      expect(texto).not.toContain('0991234567');
+      const text = res.text;
+      expect(text).not.toContain('María');
+      expect(text).not.toContain('@ejemplo.ec');
+      expect(text).not.toContain('0991234567');
     });
   });
 
@@ -174,21 +174,21 @@ describe('Corridas (e2e)', () => {
     });
 
     it('responde 404 para un módulo que no existe', async () => {
-      const propio = await token({ sub: 'progreso-1', seq: 50 });
+      const ownToken = await token({ sub: 'progreso-1', seq: 50 });
       await server()
         .get('/api/runs/progreso/no-existe')
-        .set('Authorization', `Bearer ${propio}`)
+        .set('Authorization', `Bearer ${ownToken}`)
         .expect(404);
     });
 
     it('sin corridas, progreso vacío y no aprobado', async () => {
-      const propio = await token({ sub: 'progreso-2', seq: 51 });
+      const ownToken = await token({ sub: 'progreso-2', seq: 51 });
       const res = await server()
         .get('/api/runs/progreso/phishing')
-        .set('Authorization', `Bearer ${propio}`)
+        .set('Authorization', `Bearer ${ownToken}`)
         .expect(200);
 
-      expect(cuerpo<ProgresoBody>(res)).toEqual({
+      expect(responseBody<ProgressBody>(res)).toEqual({
         modulo: 'phishing',
         escenarios: [],
         aprobados: 0,
@@ -200,15 +200,15 @@ describe('Corridas (e2e)', () => {
     });
 
     it('usa el último intento de cada escenario y no mezcla a otro participante', async () => {
-      const propio = await token({ sub: 'progreso-3', seq: 52 });
-      const otro = await token({ sub: 'progreso-3-otro', seq: 53 });
+      const ownToken = await token({ sub: 'progreso-3', seq: 52 });
+      const other = await token({ sub: 'progreso-3-otro', seq: 53 });
 
       // Repite el mismo escenario: la corrida más reciente es la que cuenta.
       await server()
         .post('/api/runs')
-        .set('Authorization', `Bearer ${propio}`)
+        .set('Authorization', `Bearer ${ownToken}`)
         .send(
-          corrida({
+          run({
             scenarioId: 'phishing/factura-sri',
             outcome: 'INCORRECTO',
             score: 0,
@@ -217,9 +217,9 @@ describe('Corridas (e2e)', () => {
         .expect(201);
       await server()
         .post('/api/runs')
-        .set('Authorization', `Bearer ${propio}`)
+        .set('Authorization', `Bearer ${ownToken}`)
         .send(
-          corrida({
+          run({
             scenarioId: 'phishing/factura-sri',
             outcome: 'CORRECTO',
             score: 100,
@@ -230,9 +230,9 @@ describe('Corridas (e2e)', () => {
       // De otro participante: no debe colarse en el progreso de "propio".
       await server()
         .post('/api/runs')
-        .set('Authorization', `Bearer ${otro}`)
+        .set('Authorization', `Bearer ${other}`)
         .send(
-          corrida({
+          run({
             scenarioId: 'phishing/clave-caducada',
             outcome: 'CORRECTO',
             score: 100,
@@ -242,15 +242,15 @@ describe('Corridas (e2e)', () => {
 
       const res = await server()
         .get('/api/runs/progreso/phishing')
-        .set('Authorization', `Bearer ${propio}`)
+        .set('Authorization', `Bearer ${ownToken}`)
         .expect(200);
 
-      const progreso = cuerpo<ProgresoBody>(res);
-      expect(progreso.escenarios).toEqual([
+      const progress = responseBody<ProgressBody>(res);
+      expect(progress.escenarios).toEqual([
         { id: 'phishing/factura-sri', ultimoOutcome: 'CORRECTO' },
       ]);
-      expect(progreso.aprobados).toBe(1);
-      expect(progreso.aprobado).toBe(false);
+      expect(progress.aprobados).toBe(1);
+      expect(progress.aprobado).toBe(false);
     });
   });
 });
