@@ -1,27 +1,27 @@
 import { X } from 'lucide-react'
 import { useEffect, useRef } from 'react'
-import CierreModulo from './CierreModulo'
-import type { Escenario, Seccion as SeccionCatalogo } from '../data/catalogo'
-import type { Progreso } from '../lib/api'
+import ModuleCompletion from './CierreModulo'
+import type { Scenario, Section } from '../data/catalogo'
+import type { Progress } from '../lib/api'
 
-interface CierreModuloModalProps {
-  seccion: SeccionCatalogo
-  escenarios: Escenario[]
-  progreso: Progreso
+interface ModuleCompletionModalProps {
+  seccion: Section
+  escenarios: Scenario[]
+  progreso: Progress
   onClose: () => void
 }
 
 // Diálogo, no bloque fijo: se abre por elección de quien ya aprobó. Sin biblioteca de
 // modales (un <div role="dialog"> alcanza). El fondo que cierra es un <button> real, no
 // un <div onClick>, porque un <button> no admite el <div> del panel como hijo — va detrás.
-function CierreModuloModal({ seccion, escenarios, progreso, onClose }: CierreModuloModalProps) {
-  const cerrarRef = useRef<HTMLButtonElement>(null)
+function ModuleCompletionModal({ seccion: section, escenarios: scenarios, progreso: progress, onClose }: ModuleCompletionModalProps) {
+  const closeRef = useRef<HTMLButtonElement>(null)
 
   useEffect(() => {
-    cerrarRef.current?.focus()
+    closeRef.current?.focus()
 
-    function onKeyDown(evento: KeyboardEvent) {
-      if (evento.key === 'Escape') onClose()
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') onClose()
     }
 
     document.addEventListener('keydown', onKeyDown)
@@ -45,7 +45,7 @@ function CierreModuloModal({ seccion, escenarios, progreso, onClose }: CierreMod
       >
         <div className="flex justify-end p-2">
           <button
-            ref={cerrarRef}
+            ref={closeRef}
             type="button"
             onClick={onClose}
             aria-label="Cerrar resumen del módulo"
@@ -56,11 +56,11 @@ function CierreModuloModal({ seccion, escenarios, progreso, onClose }: CierreMod
         </div>
 
         <div className="px-5 pb-5">
-          <CierreModulo seccion={seccion} escenarios={escenarios} progreso={progreso} />
+          <ModuleCompletion seccion={section} escenarios={scenarios} progreso={progress} />
         </div>
       </div>
     </div>
   )
 }
 
-export default CierreModuloModal
+export default ModuleCompletionModal
