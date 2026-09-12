@@ -1,29 +1,29 @@
 import type { ScreenNode } from '../../components/StoryEscenario'
-import type { Contexto } from '../../components/ui/ContextoEscenario'
+import type { Context } from '../../components/ui/ContextoEscenario'
 import type { Story } from '../../hooks/useStoryEngine'
-import EscenarioChatIA from './EscenarioChatIA'
-import { crearChatIA, conRespuestaIA, marcar, senal } from './chatIA'
+import AIChatScenario from './EscenarioChatIA'
+import { createAIChat, withAIResponse, mark, signal } from './chatIA'
 
 /** Único de la sección donde lo filtrado es institucional, no personal: cifras sin publicar y un plan que ni los
  *  empleados afectados conocen. Mide si "no compartas datos de otros" también aplica a datos de la empresa. */
 
-const HORA = '15:02'
+const TIME = '15:02'
 
-const PERDIDAS = '$340.000'
-const RECORTE = 'va a recortar el 15% del personal de planta en enero'
-const SIN_AVISAR = 'Todavía no se les avisa a los empleados'
+const MISSED = '$340.000'
+const CLIPPING = 'va a recortar el 15% del personal de planta en enero'
+const WITHOUT_NOTIFY = 'Todavía no se les avisa a los empleados'
 
-const PROMPT_CON_CIFRAS = `Es el informe trimestral, para la reunión de gerencia. Dice que la empresa tuvo pérdidas de ${PERDIDAS} y ${RECORTE}. ${SIN_AVISAR}. Resúmelo en un párrafo.`
-const PROMPT_SIN_CIFRAS =
+const PROMPT_WITH_DIGITS = `Es el informe trimestral, para la reunión de gerencia. Dice que la empresa tuvo pérdidas de ${MISSED} y ${CLIPPING}. ${WITHOUT_NOTIFY}. Resúmelo en un párrafo.`
+const PROMPT_WITHOUT_DIGITS =
   'Es el informe trimestral, para la reunión de gerencia. Dame un párrafo modelo que mencione el resultado financiero del período y una decisión de personal todavía sin anunciar, con espacios en blanco que yo lleno con las cifras.'
-const PROMPT_SIN_IA = 'Mejor lo resumo yo, gracias.'
+const PROMPT_WITHOUT_AI = 'Mejor lo resumo yo, gracias.'
 
 // La burbuja dice qué se hace, no qué se comparte ("le paso el informe" no delata las cifras); el prompt completo
 // con los datos marcados aparece recién en el nodo destino, donde el repaso lo señala.
-const BURBUJA_CON_CIFRAS = 'Le paso el informe y le pido que lo resuma.'
-const BURBUJA_SIN_CIFRAS = 'Le pido un párrafo modelo y yo pongo las cifras aparte.'
+const BUBBLE_WITH_DIGITS = 'Le paso el informe y le pido que lo resuma.'
+const BUBBLE_WITHOUT_DIGITS = 'Le pido un párrafo modelo y yo pongo las cifras aparte.'
 
-const CHAT = crearChatIA(
+const CHAT = createAIChat(
   'Redactor de resúmenes · servicio externo',
   [
     { texto: 'Hola, necesito resumir un informe del trabajo.', mio: true },
@@ -32,34 +32,34 @@ const CHAT = crearChatIA(
         'Con gusto. Cuéntame de qué trata el informe y qué extensión debe tener el resumen. Si me dices además para quién es —directivos, personal o clientes—, ajusto el tono.',
     },
   ],
-  HORA,
+  TIME,
   [
-    { texto: BURBUJA_CON_CIFRAS, goto: 'e_con_cifras' },
-    { texto: BURBUJA_SIN_CIFRAS, goto: 'e_sin_cifras' },
-    { texto: PROMPT_SIN_IA, goto: 'e_no_usa_ia' },
+    { texto: BUBBLE_WITH_DIGITS, goto: 'e_con_cifras' },
+    { texto: BUBBLE_WITHOUT_DIGITS, goto: 'e_sin_cifras' },
+    { texto: PROMPT_WITHOUT_AI, goto: 'e_no_usa_ia' },
   ],
 )
 
-const ENVIO_CON_CIFRAS = conRespuestaIA(
+const SUBMISSION_WITH_DIGITS = withAIResponse(
   CHAT,
-  HORA,
-  marcar(PROMPT_CON_CIFRAS, {
-    'dato-perdidas': PERDIDAS,
-    'dato-recorte': RECORTE,
-    'dato-sin-avisar': SIN_AVISAR,
+  TIME,
+  mark(PROMPT_WITH_DIGITS, {
+    'dato-perdidas': MISSED,
+    'dato-recorte': CLIPPING,
+    'dato-sin-avisar': WITHOUT_NOTIFY,
   }),
   [
     'Aquí tienes el resumen para la reunión:',
     '',
-    `Durante este trimestre la empresa registró una pérdida de ${PERDIDAS}, por lo que se implementará una reducción del 15% del personal de planta en enero para optimizar la estructura de costos; esta decisión se mantiene bajo estricta confidencialidad hasta la notificación formal a los empleados.`,
+    `Durante este trimestre la empresa registró una pérdida de ${MISSED}, por lo que se implementará una reducción del 15% del personal de planta en enero para optimizar la estructura de costos; esta decisión se mantiene bajo estricta confidencialidad hasta la notificación formal a los empleados.`,
     '',
     '¿Necesitas que prepare también los puntos clave para la presentación?',
   ].join('<br>'),
 )
-const ENVIO_SIN_CIFRAS = conRespuestaIA(
+const SUBMISSION_WITHOUT_DIGITS = withAIResponse(
   CHAT,
-  HORA,
-  PROMPT_SIN_CIFRAS,
+  TIME,
+  PROMPT_WITHOUT_DIGITS,
   [
     'Aquí tienes el párrafo modelo:',
     '',
@@ -68,10 +68,10 @@ const ENVIO_SIN_CIFRAS = conRespuestaIA(
     'Completa los corchetes con tus cifras antes de presentarlo.',
   ].join('<br>'),
 )
-const SIN_IA = conRespuestaIA(
+const WITHOUT_AI = withAIResponse(
   CHAT,
-  HORA,
-  PROMPT_SIN_IA,
+  TIME,
+  PROMPT_WITHOUT_AI,
   'Entendido. Si más adelante quieres que revise la estructura o el tono del resumen, aquí estaré.',
 )
 
@@ -79,19 +79,19 @@ const STORY: Story<ScreenNode> = {
   n1: { kind: 'scene', view: CHAT },
   e_con_cifras: {
     kind: 'bad',
-    view: ENVIO_CON_CIFRAS,
+    view: SUBMISSION_WITH_DIGITS,
     senales: [
-      senal(
+      signal(
         'dato-perdidas',
         'e_con_cifras',
         'La <b>cifra de pérdidas</b> del trimestre, que todavía no se publica. Para armar un párrafo, a la IA le bastaba con saber que hubo un resultado negativo.',
       ),
-      senal(
+      signal(
         'dato-recorte',
         'e_con_cifras',
         'El <b>plan de despidos</b>, con su porcentaje y su fecha. Es la clase de dato con el que se opera en bolsa o se negocia un contrato antes de tiempo.',
       ),
-      senal(
+      signal(
         'dato-sin-avisar',
         'e_con_cifras',
         'Y lo que lo agrava: <b>la empresa no ha avisado todavía</b>. La noticia salió antes hacia un servicio externo que hacia las personas que van a perder el trabajo.',
@@ -103,9 +103,9 @@ const STORY: Story<ScreenNode> = {
   },
   e_sin_cifras: {
     kind: 'good',
-    view: ENVIO_SIN_CIFRAS,
+    view: SUBMISSION_WITHOUT_DIGITS,
     senales: [
-      senal(
+      signal(
         'borrador-enviado',
         'e_sin_cifras',
         'Le pediste a la IA la <b>forma</b> del resumen, no el contenido: para qué reunión es, qué debe mencionar y dónde van los huecos.',
@@ -117,15 +117,15 @@ const STORY: Story<ScreenNode> = {
   },
   e_no_usa_ia: {
     kind: 'partial',
-    view: SIN_IA,
+    view: WITHOUT_AI,
     verdict: 'Evitaste el riesgo, pero no hacía falta',
     outcome:
       'No compartiste nada, pero tampoco hacía falta renunciar a la ayuda: bastaba con pedir el párrafo modelo sin pegar las cifras ni el plan de despidos.',
   },
 }
 
-const SENALES = [
-  senal(
+const SIGNALS = [
+  signal(
     'informe-en-juego',
     'n1',
     'La IA te pregunta de qué trata el informe. El que tienes delante trae <b>cifras sin publicar</b> y un <b>plan de despidos que nadie ha anunciado</b> — y contar de qué trata no obliga a copiarlo entero.',
@@ -135,9 +135,9 @@ const SENALES = [
 const RULE =
   'Regla de oro: la información <b>confidencial de tu empresa</b> —cifras sin publicar, planes sin anunciar— no se pega en una IA externa. Pide la forma del texto, y completa tú los datos sensibles aparte.'
 
-const RESUMEN = 'Le pides a una IA que resuma un informe con cifras sin publicar y un plan de despidos sin anunciar.'
+const SUMMARY = 'Le pides a una IA que resuma un informe con cifras sin publicar y un plan de despidos sin anunciar.'
 
-const CONTEXTO: Contexto = {
+const CONTEXT: Context = {
   antes: 'Te pidieron preparar un resumen ejecutivo del informe financiero interno para la reunión de gerencia.',
   ahora: (
     <>
@@ -147,17 +147,17 @@ const CONTEXTO: Contexto = {
   ),
 }
 
-function ResumenDocumentoInterno() {
+function InternalDocumentSummary() {
   return (
-    <EscenarioChatIA
+    <AIChatScenario
       escenarioId="asistentes-ia/resumen-documento-interno"
-      resumen={RESUMEN}
-      contexto={CONTEXTO}
+      resumen={SUMMARY}
+      contexto={CONTEXT}
       story={STORY}
-      senales={SENALES}
+      senales={SIGNALS}
       rule={RULE}
     />
   )
 }
 
-export default ResumenDocumentoInterno
+export default InternalDocumentSummary
