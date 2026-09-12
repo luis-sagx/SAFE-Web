@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
 import { describe, expect, it, vi } from 'vitest'
-import SesionBogota from './SesionBogota'
+import BogotaSession from './SesionBogota'
 
 vi.mock('../../context/AuthContext', () => ({
   useAuth: () => ({
@@ -28,14 +28,14 @@ vi.mock('../../context/AuthContext', () => ({
 }))
 
 vi.mock('../../lib/api', async () => {
-  const actual = await vi.importActual<typeof import('../../lib/api')>('../../lib/api')
-  return { ...actual, createRun: vi.fn().mockResolvedValue(undefined) }
+  const current = await vi.importActual<typeof import('../../lib/api')>('../../lib/api')
+  return { ...current, createRun: vi.fn().mockResolvedValue(undefined) }
 })
 
-function renderEscenario() {
+function renderScenario() {
   render(
     <MemoryRouter>
-      <SesionBogota />
+      <BogotaSession />
     </MemoryRouter>,
   )
 
@@ -44,7 +44,7 @@ function renderEscenario() {
 
 describe('SesionBogota', () => {
   it('completar clave y luego el código de un tirón cae en la trampa', () => {
-    renderEscenario()
+    renderScenario()
 
     fireEvent.click(screen.getByRole('link', { name: 'No fui yo (proteger mi cuenta)' }))
     fireEvent.click(screen.getByRole('button', { name: 'Cerrar acceso no reconocido' }))
@@ -54,7 +54,7 @@ describe('SesionBogota', () => {
   })
 
   it('pasar de la página de clave al OTP no abre una pestaña nueva: sigue habiendo solo dos', () => {
-    renderEscenario()
+    renderScenario()
 
     fireEvent.click(screen.getByRole('link', { name: 'No fui yo (proteger mi cuenta)' }))
     expect(screen.getAllByRole('tab')).toHaveLength(2)
@@ -66,7 +66,7 @@ describe('SesionBogota', () => {
   })
 
   it('verificar por la app del banco desde los marcadores acredita sin escribir nada', () => {
-    renderEscenario()
+    renderScenario()
 
     fireEvent.click(screen.getByRole('button', { name: 'Abrir Banco del Litoral' }))
 

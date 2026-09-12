@@ -2,14 +2,14 @@ import { fireEvent, render, screen } from '@testing-library/react'
 import type { ComponentType } from 'react'
 import { MemoryRouter } from 'react-router'
 import { describe, expect, it, vi } from 'vitest'
-import AvisoFiltracion from './AvisoFiltracion'
-import ClaveCaducada from './ClaveCaducada'
-import FacturaSri from './FacturaSri'
-import LoteriaPremiada from './LoteriaPremiada'
-import QuishingActualice from './QuishingActualice'
-import RolDePagos from './RolDePagos'
-import SecuestroHilo from './SecuestroHilo'
-import SesionBogota from './SesionBogota'
+import DataLeakNotice from './AvisoFiltracion'
+import ExpiredPassword from './ClaveCaducada'
+import SriInvoice from './FacturaSri'
+import LotteryPrize from './LoteriaPremiada'
+import QuishingUpdate from './QuishingActualice'
+import PayrollStatement from './RolDePagos'
+import ThreadHijacking from './SecuestroHilo'
+import BogotaSession from './SesionBogota'
 
 vi.mock('../../context/AuthContext', () => ({
   useAuth: () => ({
@@ -32,54 +32,54 @@ vi.mock('../../context/AuthContext', () => ({
 }))
 
 vi.mock('../../lib/api', async () => {
-  const actual = await vi.importActual<typeof import('../../lib/api')>('../../lib/api')
-  return { ...actual, createRun: vi.fn().mockResolvedValue(undefined) }
+  const current = await vi.importActual<typeof import('../../lib/api')>('../../lib/api')
+  return { ...current, createRun: vi.fn().mockResolvedValue(undefined) }
 })
 
-function abrirCorreo(Component: ComponentType) {
-  const vista = render(
+function openEmail(Component: ComponentType) {
+  const toView = render(
     <MemoryRouter>
       <Component />
     </MemoryRouter>,
   )
   fireEvent.click(screen.getByRole('button', { name: 'Empezar' }))
-  return vista
+  return toView
 }
 
 describe('correos de phishing realistas', () => {
   it.each([
-    ['Premio de lotería', LoteriaPremiada, 'Lotería del Pacífico'],
-    ['Factura del SRI', FacturaSri, 'Servicio de Rentas Internas'],
-    ['Clave por caducar', ClaveCaducada, 'Corporación Andes'],
-    ['Rol de pagos', RolDePagos, 'Corporación Andes'],
-    ['Actualización por QR', QuishingActualice, 'Banco del Litoral'],
-    ['Pago del colegio', SecuestroHilo, 'Unidad Educativa San Rafael'],
-    ['Aviso de filtración', AvisoFiltracion, 'TiendaExpress'],
-    ['Sesión desconocida', SesionBogota, 'Banco del Litoral'],
-  ])('%s muestra una identidad visual propia del remitente', (_caso, Component, marca) => {
-    abrirCorreo(Component)
+    ['Premio de lotería', LotteryPrize, 'Lotería del Pacífico'],
+    ['Factura del SRI', SriInvoice, 'Servicio de Rentas Internas'],
+    ['Clave por caducar', ExpiredPassword, 'Corporación Andes'],
+    ['Rol de pagos', PayrollStatement, 'Corporación Andes'],
+    ['Actualización por QR', QuishingUpdate, 'Banco del Litoral'],
+    ['Pago del colegio', ThreadHijacking, 'Unidad Educativa San Rafael'],
+    ['Aviso de filtración', DataLeakNotice, 'TiendaExpress'],
+    ['Sesión desconocida', BogotaSession, 'Banco del Litoral'],
+  ])('%s muestra una identidad visual propia del remitente', (_case, Component, brand) => {
+    openEmail(Component)
 
-    expect(screen.getByRole('group', { name: `Identidad visual de ${marca}` })).toBeDefined()
+    expect(screen.getByRole('group', { name: `Identidad visual de ${brand}` })).toBeDefined()
   })
 
   it('usa los dos banners nuevos y elimina las ilustraciones genéricas', () => {
-    const loteria = abrirCorreo(LoteriaPremiada)
+    const lottery = openEmail(LotteryPrize)
     expect(
-      loteria.container.querySelector('img[src="/escenarios/phishing/premio-loteria.webp"]'),
+      lottery.container.querySelector('img[src="/escenarios/phishing/premio-loteria.webp"]'),
     ).not.toBeNull()
-    loteria.unmount()
+    lottery.unmount()
 
-    const filtracion = abrirCorreo(AvisoFiltracion)
+    const leak = openEmail(DataLeakNotice)
     expect(
-      filtracion.container.querySelector('img[src="/escenarios/phishing/aviso-seguridad.webp"]'),
+      leak.container.querySelector('img[src="/escenarios/phishing/aviso-seguridad.webp"]'),
     ).not.toBeNull()
-    filtracion.unmount()
+    leak.unmount()
 
-    const factura = abrirCorreo(FacturaSri)
-    expect(factura.container.querySelector('img.mailHero')).toBeNull()
-    factura.unmount()
+    const invoice = openEmail(SriInvoice)
+    expect(invoice.container.querySelector('img.mailHero')).toBeNull()
+    invoice.unmount()
 
-    const colegio = abrirCorreo(SecuestroHilo)
-    expect(colegio.container.querySelector('img.mailHero')).toBeNull()
+    const school = openEmail(ThreadHijacking)
+    expect(school.container.querySelector('img.mailHero')).toBeNull()
   })
 })

@@ -1,11 +1,11 @@
-import StoryEscenario, { type ScreenNode } from '../../components/StoryEscenario'
-import type { Contexto } from '../../components/ui/ContextoEscenario'
-import { ACCIONES_BARRA, finalesDeBarra } from './barraDeCorreo'
+import ScenarioStory, { type ScreenNode } from '../../components/StoryEscenario'
+import type { Context } from '../../components/ui/ContextoEscenario'
+import { ACTIONS_BAR, createToolbarEndings } from './barraDeCorreo'
 import type { Story } from '../../hooks/useStoryEngine'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
-import type { Senal } from '../../components/ui/PanelVeredicto'
+import type { Signal } from '../../components/ui/PanelVeredicto'
 
-const CORREO: ScreenView = {
+const EMAIL: ScreenView = {
   kind: 'mail',
   from: 'Envíos Rápido',
   address: 'aranceles@enviosrapido-ec.shop',
@@ -27,7 +27,7 @@ const CORREO: ScreenView = {
   `,
 }
 
-const PAGO: ScreenView = {
+const PAYMENT: ScreenView = {
   kind: 'web',
   url: 'enviosrapido-ec.shop/arancel',
   secure: false,
@@ -43,10 +43,10 @@ const PAGO: ScreenView = {
 
 const STORY: Story<ScreenNode> = {
   // Responder, reenviar, eliminar y marcar como spam.
-  ...finalesDeBarra('fraude', CORREO),
+  ...createToolbarEndings('fraude', EMAIL),
   n1: {
     kind: 'scene',
-    view: CORREO,
+    view: EMAIL,
     choices: [
       { label: 'Pagar de una vez: es apenas $2.40.', goto: 'e_paga' },
       { label: 'Dudar del monto, pero pagar igual "por si acaso".', goto: 'e_paga_duda' },
@@ -58,28 +58,28 @@ const STORY: Story<ScreenNode> = {
   },
   e_paga: {
     kind: 'bad',
-    view: PAGO,
+    view: PAYMENT,
     verdict: 'Caíste en la trampa',
     outcome:
       'Los $2.40 nunca fueron el objetivo: eran el precio de entrada para que escribieras los datos completos de tu tarjeta. Días después aparecieron cargos que no reconocés.',
   },
   e_paga_duda: {
     kind: 'bad',
-    view: PAGO,
+    view: PAYMENT,
     verdict: 'Caíste en la trampa',
     outcome:
       'Dudaste del monto pero pagaste de todos modos. El resultado es el mismo: tu tarjeta quedó comprometida por un cobro de $2.40.',
   },
   e_rastrea: {
     kind: 'good',
-    view: CORREO,
+    view: EMAIL,
     verdict: 'No caíste · verificaste en la web oficial',
     outcome:
       'En el sitio oficial del courier tu pedido no tenía ningún arancel pendiente. El correo usaba datos reales de una filtración para parecer creíble.',
   },
 }
 
-const SENALES: Senal[] = [
+const SIGNALS: Signal[] = [
   {
     id: 's1',
     texto:
@@ -106,9 +106,9 @@ const SENALES: Senal[] = [
 const RULE =
   'Regla de oro: que alguien conozca tus datos no prueba que sea quien dice ser. Los datos personales confirman que hubo una filtración en algún lado, no que el mensaje sea legítimo.'
 
-const RESUMEN = 'Un correo con tu nombre y cédula pide $2.40 para liberar un paquete de aduana.'
+const SUMMARY = 'Un correo con tu nombre y cédula pide $2.40 para liberar un paquete de aduana.'
 
-const CONTEXTO: Contexto = {
+const CONTEXT: Context = {
   antes: 'Compraste unos audífonos inalámbricos hace unos días y sí estás esperando el envío.',
   ahora: (
     <>
@@ -118,19 +118,19 @@ const CONTEXTO: Contexto = {
   ),
 }
 
-function CobroDirigido() {
+function TargetedCharge() {
   return (
-    <StoryEscenario
+    <ScenarioStory
       escenarioId="phishing/cobro-dirigido"
-      resumen={RESUMEN}
-      contexto={CONTEXTO}
+      resumen={SUMMARY}
+      contexto={CONTEXT}
       story={STORY}
-      accionesCorreo={ACCIONES_BARRA}
-      senales={SENALES}
+      accionesCorreo={ACTIONS_BAR}
+      senales={SIGNALS}
       rule={RULE}
       restartLabel="↻ Repetir el escenario"
     />
   )
 }
 
-export default CobroDirigido
+export default TargetedCharge

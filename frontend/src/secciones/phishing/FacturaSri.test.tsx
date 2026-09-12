@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
 import { describe, expect, it, vi } from 'vitest'
-import FacturaSri from './FacturaSri'
+import SriInvoice from './FacturaSri'
 
 vi.mock('../../context/AuthContext', () => ({
   useAuth: () => ({
@@ -28,14 +28,14 @@ vi.mock('../../context/AuthContext', () => ({
 }))
 
 vi.mock('../../lib/api', async () => {
-  const actual = await vi.importActual<typeof import('../../lib/api')>('../../lib/api')
-  return { ...actual, createRun: vi.fn().mockResolvedValue(undefined) }
+  const current = await vi.importActual<typeof import('../../lib/api')>('../../lib/api')
+  return { ...current, createRun: vi.fn().mockResolvedValue(undefined) }
 })
 
-function renderEscenario() {
+function renderScenario() {
   render(
     <MemoryRouter>
-      <FacturaSri />
+      <SriInvoice />
     </MemoryRouter>,
   )
 
@@ -44,7 +44,7 @@ function renderEscenario() {
 
 describe('FacturaSri', () => {
   it('permite revisar Enviados sin cerrar el escenario', () => {
-    renderEscenario()
+    renderScenario()
 
     fireEvent.click(screen.getByRole('button', { name: 'Abrir Enviados' }))
 
@@ -61,7 +61,7 @@ describe('FacturaSri', () => {
   })
 
   it('permite revisar Papelera sin cerrar el escenario', () => {
-    renderEscenario()
+    renderScenario()
 
     fireEvent.click(screen.getByRole('button', { name: 'Abrir Papelera' }))
 
@@ -78,7 +78,7 @@ describe('FacturaSri', () => {
   })
 
   it('con el escenario ya terminado, cerrar la pestaña del portal falso vuelve al correo', () => {
-    renderEscenario()
+    renderScenario()
 
     fireEvent.click(screen.getByRole('link', { name: 'Validar mi factura ahora' }))
     fireEvent.click(screen.getByRole('button', { name: 'Validar factura' }))
@@ -102,7 +102,7 @@ describe('FacturaSri', () => {
   })
 
   it('el repaso de señales enseña cada pantalla en su propia pestaña', () => {
-    renderEscenario()
+    renderScenario()
 
     fireEvent.click(screen.getByRole('link', { name: 'Validar mi factura ahora' }))
     fireEvent.click(screen.getByRole('button', { name: 'Validar factura' }))
@@ -129,7 +129,7 @@ describe('FacturaSri', () => {
   })
 
   it('al eliminar el correo, la barra lateral lo refleja: sale de Recibidos y aparece en Papelera', () => {
-    renderEscenario()
+    renderScenario()
 
     fireEvent.click(screen.getByRole('button', { name: 'Eliminar' }))
 

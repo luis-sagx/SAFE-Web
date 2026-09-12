@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
 import { describe, expect, it, vi } from 'vitest'
-import QuishingActualice from './QuishingActualice'
+import QuishingUpdate from './QuishingActualice'
 
 vi.mock('../../context/AuthContext', () => ({
   useAuth: () => ({
@@ -28,14 +28,14 @@ vi.mock('../../context/AuthContext', () => ({
 }))
 
 vi.mock('../../lib/api', async () => {
-  const actual = await vi.importActual<typeof import('../../lib/api')>('../../lib/api')
-  return { ...actual, createRun: vi.fn().mockResolvedValue(undefined) }
+  const current = await vi.importActual<typeof import('../../lib/api')>('../../lib/api')
+  return { ...current, createRun: vi.fn().mockResolvedValue(undefined) }
 })
 
-function renderEscenario() {
+function renderScenario() {
   render(
     <MemoryRouter>
-      <QuishingActualice />
+      <QuishingUpdate />
     </MemoryRouter>,
   )
 
@@ -44,13 +44,13 @@ function renderEscenario() {
 
 describe('QuishingActualice', () => {
   it('muestra el dominio del remitente con la sustitución de l por 1', () => {
-    renderEscenario()
+    renderScenario()
 
     expect(screen.getByText('de: notificaciones@bancodel1itoral.com')).toBeDefined()
   })
 
   it('escanear el QR y enviar el formulario cuenta como caer en la trampa', () => {
-    renderEscenario()
+    renderScenario()
 
     fireEvent.click(screen.getByRole('button', { name: 'Código QR, escanear para continuar' }))
     fireEvent.click(screen.getByRole('button', { name: 'Confirmar datos' }))
@@ -59,7 +59,7 @@ describe('QuishingActualice', () => {
   })
 
   it('comprueba la solicitud desde la app del banco antes de acreditar', () => {
-    renderEscenario()
+    renderScenario()
 
     fireEvent.click(screen.getByRole('button', { name: 'Abrir Banco del Litoral' }))
     expect(screen.getByRole('heading', { name: 'Centro de seguridad' })).toBeDefined()
@@ -71,7 +71,7 @@ describe('QuishingActualice', () => {
   })
 
   it('al marcar como spam, la barra lateral lo refleja', () => {
-    renderEscenario()
+    renderScenario()
 
     fireEvent.click(screen.getByRole('button', { name: 'Marcar como spam' }))
     fireEvent.click(screen.getByRole('button', { name: 'Abrir Spam' }))
