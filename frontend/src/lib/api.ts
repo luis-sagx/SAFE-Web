@@ -45,15 +45,15 @@ export interface RunSummary {
   finishedAt: string
 }
 
-export interface ProgresoEscenario {
+export interface ScenarioProgress {
   id: string
   /** Solo aparece si el participante ya lo intentó al menos una vez. */
   ultimoOutcome?: RunOutcome
 }
 
-export interface Progreso {
+export interface Progress {
   modulo: string
-  escenarios: ProgresoEscenario[]
+  escenarios: ScenarioProgress[]
   aprobados: number
   /** Umbral que exige el servidor. El total de escenarios no viaja aquí: lo
    *  da el catálogo, que es el único lugar donde existen de verdad. */
@@ -62,7 +62,7 @@ export interface Progreso {
   ronda?: number
   rondaEnCurso?: {
     jugados: number
-    escenarios: ProgresoEscenario[]
+    escenarios: ScenarioProgress[]
   } | null
 }
 
@@ -107,14 +107,14 @@ interface RequestOptions {
 /// Varias peticiones pueden vencer a la vez (varias pestañas, varias llamadas
 /// en paralelo): sin esto cada una dispararía su propio POST /auth/refresh.
 /// Comparten esta promesa y solo se llama al backend una vez.
-let renovacionEnCurso: Promise<boolean> | null = null
+let refreshInProgress: Promise<boolean> | null = null
 
-function renovarSesion(): Promise<boolean> {
-  if (renovacionEnCurso) {
-    return renovacionEnCurso
+function refreshSession(): Promise<boolean> {
+  if (refreshInProgress) {
+    return refreshInProgress
   }
 
-  renovacionEnCurso = (async () => {
+  refreshInProgress = (async () => {
     try {
       // Sin body: el refresh token va en la cookie httpOnly, no lo toca JS.
       const session = await request<Session>('/auth/refresh', {
@@ -127,10 +127,10 @@ function renovarSesion(): Promise<boolean> {
       return false
     }
   })().finally(() => {
-    renovacionEnCurso = null
+    refreshInProgress = null
   })
 
-  return renovacionEnCurso
+  return refreshInProgress
 }
 
 // POST /auth/logout borra la cookie httpOnly del refresh token en el servidor:
@@ -142,7 +142,7 @@ export function logout(): Promise<null> {
 async function request<T>(
   path: string,
   options: RequestOptions = {},
-  reintentado = false,
+  retried = false,
 ): Promise<T> {
   const { method = 'GET', body, auth = true } = options
   const headers: Record<string, string> = {}
@@ -172,7 +172,7 @@ async function request<T>(
     // Access token vencido: se intenta renovar UNA vez con la cookie del
     // refresh token antes de rendirse. `auth` excluye la propia llamada a
     // /auth/refresh, que nunca debe reintentarse a sí misma.
-    if (response.status === 401 && auth && !reintentado && (await renovarSesion())) {
+    if (response.status === 401 && auth && !retried && (await refreshSession())) {
       return request<T>(path, options, true)
     }
 
@@ -200,7 +200,7 @@ async function request<T>(
 async function requestBlob(
   path: string,
   body: unknown,
-  reintentado = false,
+  retried = false,
 ): Promise<Blob> {
   const token = getToken()
   const headers: Record<string, string> = { 'Content-Type': 'application/json' }
@@ -216,7 +216,7 @@ async function requestBlob(
   })
 
   if (!response.ok) {
-    if (response.status === 401 && !reintentado && (await renovarSesion())) {
+    if (response.status === 401 && !retried && (await refreshSession())) {
       return requestBlob(path, body, true)
     }
     if (response.status === 401) {
@@ -248,8 +248,8 @@ export function fetchMe(): Promise<Participant> {
   return request<Participant>('/auth/me')
 }
 
-export function patchMe(cambios: { onboardingVisto: boolean }): Promise<Participant> {
-  return request<Participant>('/auth/me', { method: 'PATCH', body: cambios })
+export function patchMe(changes: { onboardingVisto: boolean }): Promise<Participant> {
+  return request<Participant>('/auth/me', { method: 'PATCH', body: changes })
 }
 
 export function createRun(run: RunPayload): Promise<RunSummary> {
@@ -261,13 +261,13 @@ export function fetchMyRuns(): Promise<RunSummary[]> {
 }
 
 /** 404 si `modulo` no tiene gating configurado en el backend. */
-export function fetchProgreso(modulo: string): Promise<Progreso> {
-  return request<Progreso>(`/runs/progreso/${modulo}`)
+export function fetchProgress(module: string): Promise<Progress> {
+  return request<Progress>(`/runs/progreso/${module}`)
 }
 
 // --- Supervisión (solo rol SUPERVISOR) ---
 
-export interface AdminParticipante {
+export interface AdminParticipant {
   id: string
   /** El mismo código que identifica las corridas (P001). Es la llave con la
    *  que el supervisor cruza a esta persona con su pre-test y su post-test. */
@@ -280,7 +280,7 @@ export interface AdminParticipante {
 }
 
 /** Una corrida del estudio, seudonimizada. Sin ningún dato personal. */
-export interface ResultadoCorrida {
+export interface RunResult {
   seudonimo: string
   scenarioId: string
   version: number
@@ -292,32 +292,32 @@ export interface ResultadoCorrida {
   finishedAt: string
 }
 
-export function fetchParticipantes(): Promise<AdminParticipante[]> {
-  return request<AdminParticipante[]>('/admin/participantes')
+export function fetchParticipants(): Promise<AdminParticipant[]> {
+  return request<AdminParticipant[]>('/admin/participantes')
 }
 
-export function cambiarEstadoParticipante(
+export function changeParticipantStatus(
   id: string,
-  activo: boolean,
-): Promise<AdminParticipante> {
-  return request<AdminParticipante>(`/admin/participantes/${id}/estado`, {
+  active: boolean,
+): Promise<AdminParticipant> {
+  return request<AdminParticipant>(`/admin/participantes/${id}/estado`, {
     method: 'PATCH',
-    body: { activo },
+    body: { activo: active },
   })
 }
 
-export function restablecerPasswordParticipante(id: string): Promise<{ password: string }> {
+export function resetParticipantPassword(id: string): Promise<{ password: string }> {
   return request<{ password: string }>(`/admin/participantes/${id}/restablecer-password`, {
     method: 'POST',
   })
 }
 
-export function eliminarParticipante(id: string): Promise<null> {
+export function deleteParticipant(id: string): Promise<null> {
   return request<null>(`/admin/participantes/${id}`, { method: 'DELETE' })
 }
 
-export function fetchResultados(): Promise<ResultadoCorrida[]> {
-  return request<ResultadoCorrida[]>('/runs/resultados')
+export function fetchResults(): Promise<RunResult[]> {
+  return request<RunResult[]>('/runs/resultados')
 }
 
 // --- Certificado (spec 2026-09-03-gamificacion-y-certificado-design.md) ---
@@ -325,7 +325,7 @@ export function fetchResultados(): Promise<ResultadoCorrida[]> {
 /** Un solo salto a través del cliente: lo firma `entrenamiento` cuando todos
  *  los módulos están aprobados, y `identidad` lo canjea. Vive 5 minutos; el
  *  frontend no la guarda entre pantallas, la pide de nuevo cada vez. */
-export interface Certificado {
+export interface Certificate {
   codigo: string
   emitidoAt: string
   modulos: string[]
@@ -333,7 +333,7 @@ export interface Certificado {
   calificacion: number
 }
 
-export interface VerificacionCertificado {
+export interface CertificateVerification {
   valido: boolean
   emitidoAt?: string
   horas?: number
@@ -343,19 +343,19 @@ export interface VerificacionCertificado {
 
 /** 409 (`ApiError`) si todavía falta algún módulo por aprobar; el mensaje del
  *  servidor ya lo dice. */
-export function fetchAtestacion(): Promise<{ atestacion: string }> {
+export function fetchAttestation(): Promise<{ atestacion: string }> {
   return request<{ atestacion: string }>('/runs/atestacion')
 }
 
-export function emitirCertificado(atestacion: string): Promise<Certificado> {
-  return request<Certificado>('/certificados', { method: 'POST', body: { atestacion } })
+export function issueCertificate(attestation: string): Promise<Certificate> {
+  return request<Certificate>('/certificados', { method: 'POST', body: { atestacion: attestation } })
 }
 
-export function descargarCertificadoPdf(atestacion: string): Promise<Blob> {
-  return requestBlob('/certificados/pdf', { atestacion })
+export function downloadCertificatePdf(attestation: string): Promise<Blob> {
+  return requestBlob('/certificados/pdf', { atestacion: attestation })
 }
 
 /** Pública, sin sesión: no pasa por `auth`. */
-export function verificarCertificado(codigo: string): Promise<VerificacionCertificado> {
-  return request<VerificacionCertificado>(`/certificados/verificar/${codigo}`, { auth: false })
+export function verifyCertificate(code: string): Promise<CertificateVerification> {
+  return request<CertificateVerification>(`/certificados/verificar/${code}`, { auth: false })
 }

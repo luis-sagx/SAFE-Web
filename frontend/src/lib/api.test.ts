@@ -2,14 +2,14 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   ApiError,
   createRun,
-  descargarCertificadoPdf,
-  emitirCertificado,
-  fetchAtestacion,
+  downloadCertificatePdf,
+  issueCertificate,
+  fetchAttestation,
   fetchMe,
   getToken,
   login,
   setToken,
-  verificarCertificado,
+  verifyCertificate,
 } from './api'
 
 function mockFetch(response: Partial<Response> & { json?: () => Promise<unknown> }) {
@@ -162,24 +162,24 @@ describe('api · certificado', () => {
     localStorage.clear()
   })
 
-  it('fetchAtestacion pide GET /runs/atestacion con el token', async () => {
+  it('fetchAttestation pide GET /runs/atestacion con el token', async () => {
     setToken('t0ken')
     const fetchMock = mockFetch({ json: () => Promise.resolve({ atestacion: 'un.jwt.firmado' }) })
 
-    await expect(fetchAtestacion()).resolves.toEqual({ atestacion: 'un.jwt.firmado' })
+    await expect(fetchAttestation()).resolves.toEqual({ atestacion: 'un.jwt.firmado' })
 
     const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit]
     expect(url).toContain('/runs/atestacion')
     expect((init.headers as Record<string, string>).Authorization).toBe('Bearer t0ken')
   })
 
-  it('emitirCertificado manda la atestación en el cuerpo, no como query', async () => {
+  it('issueCertificate manda la atestación en el cuerpo, no como query', async () => {
     setToken('t0ken')
     const fetchMock = mockFetch({
       json: () => Promise.resolve({ codigo: 'SW-AAAA-BBBB', emitidoAt: 'x', modulos: [], horas: 4 }),
     })
 
-    await emitirCertificado('un.jwt.firmado')
+    await issueCertificate('un.jwt.firmado')
 
     const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit]
     expect(url).toContain('/certificados')
@@ -187,31 +187,31 @@ describe('api · certificado', () => {
     expect(JSON.parse(init.body as string)).toEqual({ atestacion: 'un.jwt.firmado' })
   })
 
-  it('verificarCertificado no manda el token de sesión: es una ruta pública', async () => {
+  it('verifyCertificate no manda el token de sesión: es una ruta pública', async () => {
     setToken('t0ken')
     const fetchMock = mockFetch({ json: () => Promise.resolve({ valido: true }) })
 
-    await verificarCertificado('SW-AAAA-BBBB')
+    await verifyCertificate('SW-AAAA-BBBB')
 
     const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit]
     expect(url).toContain('/certificados/verificar/SW-AAAA-BBBB')
     expect((init.headers as Record<string, string> | undefined)?.Authorization).toBeUndefined()
   })
 
-  it('descargarCertificadoPdf devuelve el blob de la respuesta', async () => {
+  it('downloadCertificatePdf devuelve el blob de la respuesta', async () => {
     setToken('t0ken')
     const pdf = new Blob(['%PDF-'])
     mockFetch({ blob: () => Promise.resolve(pdf) })
 
-    const resultado = await descargarCertificadoPdf('un.jwt.firmado')
+    const result = await downloadCertificatePdf('un.jwt.firmado')
 
-    expect(resultado).toBe(pdf)
+    expect(result).toBe(pdf)
   })
 
   // Mismo mecanismo que el resto del API: si el access token venció justo
   // entre pedir la atestación y descargar el PDF, se renueva una vez y se
   // reintenta, en vez de fallar la descarga por una expiración de segundos.
-  it('descargarCertificadoPdf renueva la sesión y reintenta si el access token venció', async () => {
+  it('downloadCertificatePdf renueva la sesión y reintenta si el access token venció', async () => {
     setToken('vencido')
     const pdf = new Blob(['%PDF-'])
 
@@ -226,17 +226,17 @@ describe('api · certificado', () => {
       .mockResolvedValueOnce({ ok: true, status: 200, blob: () => Promise.resolve(pdf) })
     vi.stubGlobal('fetch', fetchMock)
 
-    await expect(descargarCertificadoPdf('un.jwt.firmado')).resolves.toBe(pdf)
+    await expect(downloadCertificatePdf('un.jwt.firmado')).resolves.toBe(pdf)
 
     expect(fetchMock).toHaveBeenCalledTimes(3)
     expect(getToken()).toBe('nuevo')
   })
 
-  it('descargarCertificadoPdf sin sesión que renovar, descarta el token y lanza ApiError', async () => {
+  it('downloadCertificatePdf sin sesión que renovar, descarta el token y lanza ApiError', async () => {
     setToken('vencido')
     mockFetch({ ok: false, status: 401 })
 
-    await expect(descargarCertificadoPdf('un.jwt.firmado')).rejects.toBeInstanceOf(ApiError)
+    await expect(downloadCertificatePdf('un.jwt.firmado')).rejects.toBeInstanceOf(ApiError)
     expect(getToken()).toBeNull()
   })
 })
