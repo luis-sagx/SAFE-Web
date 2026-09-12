@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
-import type { Progreso } from './api'
-import { conEscenarioIntentado } from './bloqueoEscenarios'
+import type { Progress } from './api'
+import { withAttemptedScenario } from './bloqueoEscenarios'
 
-function progreso(over: Partial<Progreso> = {}): Progreso {
+function progress(over: Partial<Progress> = {}): Progress {
   return {
     modulo: 'fisico',
     escenarios: [],
@@ -15,13 +15,13 @@ function progreso(over: Partial<Progreso> = {}): Progreso {
 
 describe('conEscenarioIntentado', () => {
   it('añade el escenario al recorrido normal cuando no hay ronda', () => {
-    const out = conEscenarioIntentado(progreso(), 'fisico/salida-segura')
+    const out = withAttemptedScenario(progress(), 'fisico/salida-segura')
     expect(out.escenarios).toEqual([{ id: 'fisico/salida-segura', ultimoOutcome: 'CORRECTO' }])
   })
 
   it('lo añade a la ronda en curso cuando la hay, no al recorrido normal', () => {
-    const out = conEscenarioIntentado(
-      progreso({ rondaEnCurso: { jugados: 0, escenarios: [] } }),
+    const out = withAttemptedScenario(
+      progress({ rondaEnCurso: { jugados: 0, escenarios: [] } }),
       'fisico/salida-segura',
     )
     expect(out.rondaEnCurso!.escenarios).toEqual([{ id: 'fisico/salida-segura', ultimoOutcome: 'CORRECTO' }])
@@ -29,13 +29,13 @@ describe('conEscenarioIntentado', () => {
   })
 
   it('es idempotente: si ya figura devuelve el mismo objeto', () => {
-    const p = progreso({ escenarios: [{ id: 'fisico/salida-segura', ultimoOutcome: 'INCORRECTO' }] })
-    expect(conEscenarioIntentado(p, 'fisico/salida-segura')).toBe(p)
+    const p = progress({ escenarios: [{ id: 'fisico/salida-segura', ultimoOutcome: 'INCORRECTO' }] })
+    expect(withAttemptedScenario(p, 'fisico/salida-segura')).toBe(p)
   })
 
   it('no muta el progreso recibido', () => {
-    const p = progreso()
-    conEscenarioIntentado(p, 'fisico/salida-segura')
+    const p = progress()
+    withAttemptedScenario(p, 'fisico/salida-segura')
     expect(p.escenarios).toEqual([])
   })
 })

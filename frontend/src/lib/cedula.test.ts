@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { esCedulaEcuatoriana, normalizarCedula } from './cedula'
+import { isEcuadorianId, normalizeEcuadorianId } from './cedula'
 
 // Cédulas construidas con el algoritmo, no de personas reales.
-describe('esCedulaEcuatoriana', () => {
-  it.each(['1710034065', '0926687856', '1104535438', '3012345678'])('acepta %s', (cedula) => {
-    expect(esCedulaEcuatoriana(cedula)).toBe(true)
+describe('isEcuadorianId', () => {
+  it.each(['1710034065', '0926687856', '1104535438', '3012345678'])('acepta %s', (ecuadorianId) => {
+    expect(isEcuadorianId(ecuadorianId)).toBe(true)
   })
 
   // Cada una tiene el verificador CORRECTO: lo que se rechaza es la otra
@@ -19,15 +19,15 @@ describe('esCedulaEcuatoriana', () => {
     ['once dígitos', '17100340651'],
     ['con letras', '17100340a5'],
     ['vacía', ''],
-  ])('rechaza %s', (_caso, cedula) => {
-    expect(esCedulaEcuatoriana(cedula)).toBe(false)
+  ])('rechaza %s', (_case, ecuadorianId) => {
+    expect(isEcuadorianId(ecuadorianId)).toBe(false)
   })
 
   // El backend normaliza igual; si el front no lo hiciera, el participante
   // vería un error mientras escribe algo que el servidor sí aceptaría.
   it('acepta la misma cédula escrita con guiones, puntos o espacios', () => {
-    expect(esCedulaEcuatoriana('171003406-5')).toBe(true)
-    expect(esCedulaEcuatoriana('1710 0340 65')).toBe(true)
-    expect(normalizarCedula('171.003.406-5')).toBe('1710034065')
+    expect(isEcuadorianId('171003406-5')).toBe(true)
+    expect(isEcuadorianId('1710 0340 65')).toBe(true)
+    expect(normalizeEcuadorianId('171.003.406-5')).toBe('1710034065')
   })
 })
