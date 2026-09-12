@@ -1,8 +1,8 @@
 import { useState, type FormEvent } from 'react'
 import { Link, Navigate, useNavigate } from 'react-router'
 import AuthLayout from '../components/AuthLayout'
-import PantallaCarga from '../components/PantallaCarga'
-import Campo from '../components/Campo'
+import LoadingScreen from '../components/PantallaCarga'
+import Field from '../components/Campo'
 import { useAuth } from '../context/AuthContext'
 
 function Login() {
@@ -15,7 +15,7 @@ function Login() {
   const [submitting, setSubmitting] = useState(false)
 
   if (loading) {
-    return <PantallaCarga />
+    return <LoadingScreen />
   }
 
   if (isAuthenticated) {
@@ -28,8 +28,8 @@ function Login() {
     setSubmitting(true)
 
     try {
-      const perfil = await login(email, password)
-      navigate(perfil.role === 'SUPERVISOR' ? '/admin' : '/dashboard')
+      const profile = await login(email, password)
+      navigate(profile.role === 'SUPERVISOR' ? '/admin' : '/dashboard')
     } catch (submitError) {
       setError((submitError as Error).message)
     } finally {
@@ -51,7 +51,7 @@ function Login() {
       }
     >
       <form onSubmit={handleSubmit} className="mt-6 space-y-5" noValidate>
-        <Campo
+        <Field
           id="email"
           label="Correo"
           type="email"
@@ -61,7 +61,7 @@ function Login() {
           placeholder="tu@correo.com"
           maxLength={120}
         />
-        <Campo
+        <Field
           id="password"
           label="Contraseña"
           type="password"

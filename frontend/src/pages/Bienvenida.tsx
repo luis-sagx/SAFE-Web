@@ -1,11 +1,11 @@
 import { useState, type FormEvent } from "react";
 import { useLocation, useNavigate } from "react-router";
-import Marca from "../components/Marca";
+import Brand from "../components/Marca";
 import { useAuth } from "../context/AuthContext";
 
 /** `finalidad` no repite el canal (ya en el título); `prevención` se añadió porque faltaba;
  *  `ejemplo` usa frases reales porque se reconocen antes que una definición. */
-const AMENAZAS = [
+const THREATS = [
   {
     titulo: "Phishing",
     finalidad:
@@ -65,7 +65,7 @@ const AMENAZAS = [
 const PANEL = "/dashboard";
 
 // Solo rutas internas: `from` es controlable por quien arme el enlace, así que se exige "/" único y se descarta bienvenida (evita loop).
-function destinoDe(from: unknown): string {
+function getDestination(from: unknown): string {
   if (typeof from !== "string") return PANEL;
   if (!from.startsWith("/") || from.startsWith("//")) return PANEL;
   if (from.startsWith("/bienvenida")) return PANEL;
@@ -74,76 +74,76 @@ function destinoDe(from: unknown): string {
 }
 
 // RequireAuth fuerza esta pantalla en el primer ingreso; el modal (sin header/nav) evita que se lea como una pantalla más del curso.
-function Bienvenida() {
-  const { displayName, participant, marcarOnboardingVisto } = useAuth();
+function Welcome() {
+  const { displayName, participant, marcarOnboardingVisto: markOnboardingAsSeen } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const destino = destinoDe((location.state as { from?: unknown } | null)?.from);
+  const destination = getDestination((location.state as { from?: unknown } | null)?.from);
 
   // Una amenaza a la vez: seis párrafos juntos se saltaban enteros (se pulsaba "Continuar" sin leer).
-  const [paso, setPaso] = useState(0);
-  const amenaza = paso > 0 ? AMENAZAS[paso - 1] : undefined;
-  const ultimo = paso === AMENAZAS.length;
+  const [step, setStep] = useState(0);
+  const threat = step > 0 ? THREATS[step - 1] : undefined;
+  const latest = step === THREATS.length;
 
   // Refleja el estado guardado al abrir desde el ícono ⓘ; desmarcarlo reactiva el aviso.
-  const [noVolverAMostrar, setNoVolverAMostrar] = useState(
+  const [doNotShowAgain, setDoNotShowAgain] = useState(
     participant?.onboardingVisto ?? false,
   );
-  const [enviando, setEnviando] = useState(false);
+  const [sending, setSending] = useState(false);
 
-  async function handleContinuar(event: FormEvent) {
+  async function handleContinue(event: FormEvent) {
     event.preventDefault();
 
-    if (!ultimo) {
-      setPaso((actual) => actual + 1);
+    if (!latest) {
+      setStep((current) => current + 1);
       return;
     }
 
-    await cerrar();
+    await close();
   }
 
   // Mismo camino en los dos casos (terminar o saltar): si "Saltar" no marcara, RequireAuth reabriría esta pantalla.
-  async function cerrar() {
-    setEnviando(true);
+  async function close() {
+    setSending(true);
 
     try {
-      await marcarOnboardingVisto(noVolverAMostrar);
+      await markOnboardingAsSeen(doNotShowAgain);
     } catch {
       // Informativo: si falla el guardado, solo vuelve a aparecer la próxima vez.
     } finally {
       // replace: no debe quedar en el historial o "atrás" la reabriría.
-      navigate(destino, { replace: true });
+      navigate(destination, { replace: true });
     }
   }
 
   return (
     <div className="flex min-h-dvh items-center justify-center bg-scrim px-6 py-10">
       <div className="w-full max-w-2xl rounded-xl border border-hairline-strong bg-surface p-8 shadow-card">
-        <Marca variante="logo" className="h-9 w-auto" />
+        <Brand variante="logo" className="h-9 w-auto" />
 
         {/* Alto fijo al paso más largo (portada): si no, la fila de botones sube y baja entre pasos. */}
         <div className="mt-3 min-h-[21rem]">
-          {amenaza ? (
+          {threat ? (
             <>
               <p className="text-sm font-medium text-muted">
-                {paso} de {AMENAZAS.length}
+                {step} de {THREATS.length}
               </p>
               <h1 className="mt-1 text-2xl font-semibold tracking-tight text-ink">
-                {amenaza.titulo}
+                {threat.titulo}
               </h1>
 
               <p className="mt-4 text-lg leading-relaxed text-body">
                 <span className="font-semibold text-ink">Qué es: </span>
-                {amenaza.finalidad}
+                {threat.finalidad}
               </p>
 
               <p className="mt-4 rounded-md border-l-[3px] border-hairline-strong bg-canvas-soft px-4 py-3 text-lg italic leading-relaxed text-body">
-                {amenaza.ejemplo}
+                {threat.ejemplo}
               </p>
 
               <p className="mt-4 text-lg leading-relaxed text-body">
                 <span className="font-semibold text-ink">Cómo evitarlo: </span>
-                {amenaza.prevencion}
+                {threat.prevencion}
               </p>
             </>
           ) : (
@@ -183,35 +183,35 @@ function Bienvenida() {
 
         {/* Indican cuánto queda sin ser clicables: saltar pasos no tiene sentido en un recorrido de 6 pantallas cortas. */}
         <div className="mt-6 flex items-center gap-1.5" aria-hidden>
-          {AMENAZAS.map((otra, indice) => (
+          {THREATS.map((other, index) => (
             <span
-              key={otra.titulo}
+              key={other.titulo}
               className={`h-1.5 flex-1 rounded-full ${
-                indice < paso ? "bg-primary" : "bg-hairline-strong"
+                index < step ? "bg-primary" : "bg-hairline-strong"
               }`}
             />
           ))}
         </div>
 
-        <form onSubmit={handleContinuar} className="mt-6">
-          {ultimo && (
+        <form onSubmit={handleContinue} className="mt-6">
+          {latest && (
             <label className="flex items-start gap-2.5 text-base text-body">
               <input
                 type="checkbox"
-                checked={noVolverAMostrar}
-                onChange={(event) => setNoVolverAMostrar(event.target.checked)}
+                checked={doNotShowAgain}
+                onChange={(event) => setDoNotShowAgain(event.target.checked)}
                 className="mt-0.5 size-4 shrink-0"
               />
               No volver a mostrar esto al entrar (se reabre desde el ícono ⓘ).
             </label>
           )}
 
-          <div className={`flex gap-3 ${ultimo ? "mt-5" : ""}`}>
+          <div className={`flex gap-3 ${latest ? "mt-5" : ""}`}>
             {/* Botón siempre presente (apagado en portada) para que no cambie de lugar el de "Siguiente". */}
             <button
               type="button"
-              disabled={paso === 0}
-              onClick={() => setPaso((actual) => actual - 1)}
+              disabled={step === 0}
+              onClick={() => setStep((current) => current - 1)}
               className="h-12 rounded-md border border-hairline-strong bg-surface px-5 text-base font-medium text-ink transition hover:bg-canvas-soft disabled:cursor-default disabled:border-hairline disabled:text-muted-soft disabled:hover:bg-surface"
             >
               ← Anterior
@@ -219,20 +219,20 @@ function Bienvenida() {
 
             <button
               type="submit"
-              disabled={enviando}
+              disabled={sending}
               className="h-12 flex-1 rounded-md bg-primary text-base font-medium text-on-primary transition hover:bg-primary-active disabled:opacity-60"
             >
-              {enviando ? "Un momento…" : ultimo ? "Continuar" : "Siguiente →"}
+              {sending ? "Un momento…" : latest ? "Continuar" : "Siguiente →"}
             </button>
           </div>
 
           {/* Salida desde el primer paso: siete pantallas sin forma de salir se aprenden a ignorar, y reabrir el aviso a
               mitad de un escenario no debe forzar a recorrerlo entero. */}
-          {!ultimo && (
+          {!latest && (
             <button
               type="button"
-              disabled={enviando}
-              onClick={() => void cerrar()}
+              disabled={sending}
+              onClick={() => void close()}
               className="mx-auto mt-4 block text-base font-medium text-link underline decoration-dotted underline-offset-4 transition hover:decoration-solid disabled:opacity-60"
             >
               Saltar la introducción
@@ -243,4 +243,4 @@ function Bienvenida() {
     </div>
   );
 }
-export default Bienvenida;
+export default Welcome;
