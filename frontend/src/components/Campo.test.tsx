@@ -1,12 +1,12 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
-import Campo from './Campo'
+import Field from './Campo'
 
 describe('Campo', () => {
   it('renderiza el campo de entrada sin errores', () => {
     const onChange = vi.fn()
     const { container } = render(
-      <Campo id="test" label="Test Field" value="" onChange={onChange} />
+      <Field id="test" label="Test Field" value="" onChange={onChange} />
     )
     expect(container).toBeDefined()
     expect(screen.getByLabelText('Test Field')).toBeDefined()
@@ -15,14 +15,14 @@ describe('Campo', () => {
   it('renderiza con valor inicial', () => {
     const onChange = vi.fn()
     const input = render(
-      <Campo id="test" label="Test" value="initial" onChange={onChange} />
+      <Field id="test" label="Test" value="initial" onChange={onChange} />
     ).getByDisplayValue('initial') as HTMLInputElement
     expect(input.value).toBe('initial')
   })
 
   it('llama onChange cuando el usuario escribe', () => {
     const onChange = vi.fn()
-    render(<Campo id="test" label="Test" value="" onChange={onChange} />)
+    render(<Field id="test" label="Test" value="" onChange={onChange} />)
     const input = screen.getByRole('textbox') as HTMLInputElement
     fireEvent.change(input, { target: { value: 'hello' } })
     expect(onChange).toHaveBeenCalledWith('hello')
@@ -31,7 +31,7 @@ describe('Campo', () => {
   it('muestra el mensaje de error cuando está presente', () => {
     const onChange = vi.fn()
     render(
-      <Campo
+      <Field
         id="test"
         label="Test"
         value=""
@@ -45,7 +45,7 @@ describe('Campo', () => {
   it('muestra la ayuda cuando está presente y no hay error', () => {
     const onChange = vi.fn()
     render(
-      <Campo
+      <Field
         id="test"
         label="Test"
         value=""
@@ -59,7 +59,7 @@ describe('Campo', () => {
   it('no muestra ayuda cuando hay error', () => {
     const onChange = vi.fn()
     render(
-      <Campo
+      <Field
         id="test"
         label="Test"
         value=""
@@ -75,7 +75,7 @@ describe('Campo', () => {
   it('acepta props adicionales como placeholder y type', () => {
     const onChange = vi.fn()
     const input = render(
-      <Campo
+      <Field
         id="email"
         label="Email"
         value=""
