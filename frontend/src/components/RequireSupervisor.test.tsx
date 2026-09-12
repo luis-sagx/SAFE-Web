@@ -7,7 +7,7 @@ const { useAuthMock } = vi.hoisted(() => ({ useAuthMock: vi.fn() }))
 
 vi.mock('../context/AuthContext', () => ({ useAuth: useAuthMock }))
 
-function renderRuta() {
+function renderRoute() {
   return render(
     <MemoryRouter initialEntries={['/admin']}>
       <Routes>
@@ -25,7 +25,7 @@ describe('RequireSupervisor', () => {
   it('muestra la pantalla de carga mientras resuelve la sesión', () => {
     useAuthMock.mockReturnValue({ isAuthenticated: false, loading: true, isSupervisor: false })
 
-    renderRuta()
+    renderRoute()
 
     expect(screen.getByRole('status')).toBeDefined()
   })
@@ -33,7 +33,7 @@ describe('RequireSupervisor', () => {
   it('manda al acceso sin sesión', () => {
     useAuthMock.mockReturnValue({ isAuthenticated: false, loading: false, isSupervisor: false })
 
-    renderRuta()
+    renderRoute()
 
     expect(screen.getByText('Pantalla de acceso')).toBeDefined()
   })
@@ -41,7 +41,7 @@ describe('RequireSupervisor', () => {
   it('manda al panel del participante si la sesión no es de supervisor', () => {
     useAuthMock.mockReturnValue({ isAuthenticated: true, loading: false, isSupervisor: false })
 
-    renderRuta()
+    renderRoute()
 
     expect(screen.getByText('Zona del participante')).toBeDefined()
   })
@@ -49,7 +49,7 @@ describe('RequireSupervisor', () => {
   it('deja pasar a un supervisor autenticado', () => {
     useAuthMock.mockReturnValue({ isAuthenticated: true, loading: false, isSupervisor: true })
 
-    renderRuta()
+    renderRoute()
 
     expect(screen.getByText('Panel de supervisión')).toBeDefined()
   })
