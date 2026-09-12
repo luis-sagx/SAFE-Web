@@ -2,7 +2,7 @@ import type { JwtPayload } from '@comun';
 import { RunsController } from './runs.controller';
 import type { RunsService } from './runs.service';
 
-const PARTICIPANTE: JwtPayload = {
+const PARTICIPANT: JwtPayload = {
   sub: 'uuid-a',
   seq: 7,
   role: 'PARTICIPANT',
@@ -14,18 +14,18 @@ const PARTICIPANTE: JwtPayload = {
 // tenían.
 describe('RunsController.atestacion', () => {
   it('delega en el servicio con el participante del token', async () => {
-    let recibido: JwtPayload | undefined;
-    const servicio = {
-      atestacion: (participante: JwtPayload) => {
-        recibido = participante;
+    let received: JwtPayload | undefined;
+    const service = {
+      attestation: (participant: JwtPayload) => {
+        received = participant;
         return Promise.resolve({ atestacion: 'un.jwt.firmado' });
       },
     } as unknown as RunsService;
 
-    const controller = new RunsController(servicio);
-    const resultado = await controller.atestacion(PARTICIPANTE);
+    const controller = new RunsController(service);
+    const result = await controller.attestation(PARTICIPANT);
 
-    expect(recibido).toBe(PARTICIPANTE);
-    expect(resultado).toEqual({ atestacion: 'un.jwt.firmado' });
+    expect(received).toBe(PARTICIPANT);
+    expect(result).toEqual({ atestacion: 'un.jwt.firmado' });
   });
 });
