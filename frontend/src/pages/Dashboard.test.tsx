@@ -3,16 +3,16 @@ import { MemoryRouter } from 'react-router'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import Dashboard from './Dashboard'
 
-const { fetchProgresoMock } = vi.hoisted(() => ({
-  fetchProgresoMock: vi.fn(),
+const { fetchProgressMock } = vi.hoisted(() => ({
+  fetchProgressMock: vi.fn(),
 }))
 
 vi.mock('../lib/api', async () => {
-  const actual = await vi.importActual<typeof import('../lib/api')>('../lib/api')
-  return { ...actual, fetchProgreso: fetchProgresoMock }
+  const current = await vi.importActual<typeof import('../lib/api')>('../lib/api')
+  return { ...current, fetchProgress: fetchProgressMock }
 })
 
-vi.mock('../context/AuthContext', async () => (await import('../test/escenario')).authFalso())
+vi.mock('../context/AuthContext', async () => (await import('../test/escenario')).mockAuth())
 
 function renderDashboard() {
   return render(
@@ -24,13 +24,13 @@ function renderDashboard() {
 
 describe('Dashboard', () => {
   beforeEach(() => {
-    fetchProgresoMock.mockReset()
+    fetchProgressMock.mockReset()
   })
 
   // El recorrido propio vive en el menú de cuenta del header, que es el mismo
   // en todas las pantallas: se llega a él desde cualquier punto, no solo aquí.
   it('siempre ofrece el enlace al recorrido propio', async () => {
-    fetchProgresoMock.mockResolvedValue({
+    fetchProgressMock.mockResolvedValue({
       modulo: 'phishing',
       escenarios: [],
       aprobados: 0,
@@ -45,7 +45,7 @@ describe('Dashboard', () => {
   })
 
   it('sin aprobar todos los módulos, no ofrece el certificado', async () => {
-    fetchProgresoMock.mockResolvedValue({
+    fetchProgressMock.mockResolvedValue({
       modulo: 'phishing',
       escenarios: [],
       aprobados: 5,
@@ -70,9 +70,9 @@ describe('Dashboard', () => {
   // declara (una condición que aquí se simula aprobando los de todas las
   // secciones activas).
   it('con todos los módulos aprobados, ofrece descargar el certificado', async () => {
-    fetchProgresoMock.mockImplementation((modulo: string) =>
+    fetchProgressMock.mockImplementation((module: string) =>
       Promise.resolve({
-        modulo,
+        modulo: module,
         escenarios: [],
         aprobados: 6,
         requeridos: 6,
