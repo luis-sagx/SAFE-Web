@@ -2,23 +2,23 @@ import { ConflictException, NotFoundException } from '@nestjs/common';
 import type { JwtService } from '@nestjs/jwt';
 import type { JwtPayload } from '@comun';
 import { RunsService } from './runs.service';
-import { TOTALES, UMBRALES } from './progreso';
+import { TOTALS, THRESHOLDS } from './progreso';
 import type { PrismaService } from '../prisma/prisma.service';
 
 /// Firma-simulada: guarda el último payload firmado para que los tests lo
 /// inspeccionen, sin depender de un secreto real.
 function jwtFake() {
-  let ultimoPayload: unknown;
+  let latestPayload: unknown;
   const jwt = {
     signAsync: (payload: unknown) => {
-      ultimoPayload = payload;
+      latestPayload = payload;
       return Promise.resolve('token-simulado');
     },
   } as unknown as JwtService;
-  return { jwt, ultimoPayload: () => ultimoPayload };
+  return { jwt, latestPayload: () => latestPayload };
 }
 
-interface CorridaFake {
+interface MockRun {
   scenarioId: string;
   [k: string]: unknown;
 }
@@ -27,17 +27,17 @@ interface CorridaFake {
 /// `progreso()`: sin esto, dos módulos distintos en la misma lista de corridas
 /// se contarían entre sí y el test no distinguiría "aprobado" de "no
 /// aprobado" por módulo.
-function serviceWith(runs: CorridaFake[], jwt?: JwtService) {
+function serviceWith(runs: MockRun[], jwt?: JwtService) {
   const prisma = {
     scenarioRun: {
       findMany: ({
         where,
       }: { where?: { scenarioId?: { startsWith?: string } } } = {}) => {
-        const prefijo = where?.scenarioId?.startsWith;
-        const filtradas = prefijo
-          ? runs.filter((r) => r.scenarioId.startsWith(prefijo))
+        const prefix = where?.scenarioId?.startsWith;
+        const filtered = prefix
+          ? runs.filter((r) => r.scenarioId.startsWith(prefix))
           : runs;
-        return Promise.resolve(filtradas);
+        return Promise.resolve(filtered);
       },
     },
   } as unknown as PrismaService;
@@ -62,9 +62,9 @@ function runFixture(overrides: Record<string, unknown> = {}) {
 
 describe('RunsService.resultados', () => {
   it('mapea cada corrida a su fila seudonimizada', async () => {
-    const [fila] = await serviceWith([runFixture()]).resultados();
+    const [row] = await serviceWith([runFixture()]).results();
 
-    expect(fila).toEqual({
+    expect(row).toEqual({
       seudonimo: 'P007',
       scenarioId: 'phishing/factura-sri',
       version: 1,
@@ -82,36 +82,36 @@ describe('RunsService.resultados', () => {
   // se prueba: si alguien reintrodujera un campo personal en ScenarioRun, esto
   // lo atraparía.
   it('nunca incluye datos personales aunque vengan en la fila', async () => {
-    const [fila] = await serviceWith([
+    const [row] = await serviceWith([
       runFixture({
         nombre: 'María Pérez',
         email: 'maria@gmail.com',
         telefono: '0991234567',
       }),
-    ]).resultados();
+    ]).results();
 
-    const texto = JSON.stringify(fila);
-    expect(texto).not.toContain('María');
-    expect(texto).not.toContain('maria@gmail.com');
-    expect(texto).not.toContain('0991234567');
-    expect(fila.seudonimo).toBe('P007');
+    const text = JSON.stringify(row);
+    expect(text).not.toContain('María');
+    expect(text).not.toContain('maria@gmail.com');
+    expect(text).not.toContain('0991234567');
+    expect(row.seudonimo).toBe('P007');
   });
 });
 
-/// Los `TOTALES[modulo]` (8) escenarios intentados, los primeros
-/// `UMBRALES[modulo]` (6) en CORRECTO y el resto en lo que sea: lo mínimo que
-/// `calcularProgreso` cuenta como aprobado desde que también exige haber
+/// Los `TOTALS[modulo]` (8) escenarios intentados, los primeros
+/// `THRESHOLDS[modulo]` (6) en CORRECTO y el resto en lo que sea: lo mínimo que
+/// `calculateProgress` cuenta como aprobado desde que también exige haber
 /// jugado los 8, no solo llegar al umbral (progreso.ts).
-function corridasAprobadas(modulo: string) {
-  return Array.from({ length: TOTALES[modulo] }, (_, i) => ({
-    scenarioId: `${modulo}/e${i}`,
+function approvedRuns(module: string) {
+  return Array.from({ length: TOTALS[module] }, (_, i) => ({
+    scenarioId: `${module}/e${i}`,
     outcome:
-      i < UMBRALES[modulo] ? ('CORRECTO' as const) : ('INCORRECTO' as const),
+      i < THRESHOLDS[module] ? ('CORRECTO' as const) : ('INCORRECTO' as const),
     finishedAt: new Date(`2026-08-01T10:00:${String(i).padStart(2, '0')}.000Z`),
   }));
 }
 
-const PARTICIPANTE: JwtPayload = {
+const PARTICIPANT: JwtPayload = {
   sub: 'uuid-participante',
   seq: 7,
   role: 'PARTICIPANT',
@@ -119,9 +119,9 @@ const PARTICIPANTE: JwtPayload = {
 };
 
 describe('RunsService.progreso', () => {
-  it('404 si el módulo no está en UMBRALES ni en TOTALES', async () => {
+  it('404 si el módulo no está en THRESHOLDS ni en TOTALS', async () => {
     await expect(
-      serviceWith([]).progreso('p1', 'no-existe'),
+      serviceWith([]).progress('p1', 'no-existe'),
     ).rejects.toBeInstanceOf(NotFoundException);
   });
 
@@ -134,9 +134,9 @@ describe('RunsService.progreso', () => {
       },
     ];
 
-    const progreso = await serviceWith(runs).progreso('p1', 'phishing');
+    const progress = await serviceWith(runs).progress('p1', 'phishing');
 
-    expect(progreso).toMatchObject({
+    expect(progress).toMatchObject({
       modulo: 'phishing',
       aprobados: 1,
       requeridos: 6,
@@ -145,59 +145,53 @@ describe('RunsService.progreso', () => {
 });
 
 describe('RunsService.atestacion', () => {
-  it('firma la atestación cuando todos los módulos de UMBRALES están aprobados', async () => {
-    const modulos = Object.keys(UMBRALES);
-    const runs = modulos.flatMap((m) => corridasAprobadas(m));
-    const { jwt, ultimoPayload } = jwtFake();
+  it('firma la atestación cuando todos los módulos de THRESHOLDS están aprobados', async () => {
+    const modules = Object.keys(THRESHOLDS);
+    const runs = modules.flatMap((m) => approvedRuns(m));
+    const { jwt, latestPayload } = jwtFake();
 
-    const resultado = await serviceWith(runs, jwt).atestacion(PARTICIPANTE);
+    const result = await serviceWith(runs, jwt).attestation(PARTICIPANT);
 
-    expect(resultado).toEqual({ atestacion: 'token-simulado' });
-    expect(ultimoPayload()).toEqual({
-      sub: PARTICIPANTE.sub,
-      seq: PARTICIPANTE.seq,
-      modulos,
-      // Suma de UMBRALES[modulo] para cada módulo: `corridasAprobadas` deja
+    expect(result).toEqual({ atestacion: 'token-simulado' });
+    expect(latestPayload()).toEqual({
+      sub: PARTICIPANT.sub,
+      seq: PARTICIPANT.seq,
+      modulos: modules,
+      // Suma de THRESHOLDS[modulo] para cada módulo: `approvedRuns` deja
       // exactamente ese número en CORRECTO por módulo. Calculado y no fijo,
       // para no romper cada vez que se añade o cambia un módulo.
-      calificacion: modulos.reduce((total, m) => total + UMBRALES[m], 0),
+      calificacion: modules.reduce((total, m) => total + THRESHOLDS[m], 0),
       typ: 'atestacion',
     });
   });
 
   it('incluye riesgo físico entre los módulos exigidos para el certificado', async () => {
-    const modulos = Object.keys(UMBRALES);
-    const { jwt, ultimoPayload } = jwtFake();
+    const modules = Object.keys(THRESHOLDS);
+    const { jwt, latestPayload } = jwtFake();
 
     await serviceWith(
-      modulos.flatMap((m) => corridasAprobadas(m)),
+      modules.flatMap((m) => approvedRuns(m)),
       jwt,
-    ).atestacion(PARTICIPANTE);
+    ).attestation(PARTICIPANT);
 
-    expect((ultimoPayload() as { modulos: string[] }).modulos).toContain(
+    expect((latestPayload() as { modulos: string[] }).modulos).toContain(
       'fisico',
     );
   });
 
   // El endpoint no exige un número fijo de módulos: exige TODOS los que
-  // declara UMBRALES. Si mañana se añade uno más, este test lo exigiría
+  // declara THRESHOLDS. Si mañana se añade uno más, este test lo exigiría
   // igual sin cambiar una línea (spec 2026-09-03 §5.1).
   it('rechaza con 409 y nombra los módulos que faltan', async () => {
-    const modulos = Object.keys(UMBRALES);
-    const [primero, ...resto] = modulos;
+    const modules = Object.keys(THRESHOLDS);
+    const [first, ...rest] = modules;
     // Al primer módulo le falta una corrida: 5 de 6.
-    const runsPrimero = corridasAprobadas(primero).slice(
-      0,
-      UMBRALES[primero] - 1,
-    );
-    const runs = [
-      ...runsPrimero,
-      ...resto.flatMap((m) => corridasAprobadas(m)),
-    ];
+    const firstModuleRuns = approvedRuns(first).slice(0, THRESHOLDS[first] - 1);
+    const runs = [...firstModuleRuns, ...rest.flatMap((m) => approvedRuns(m))];
 
     let error: unknown;
     try {
-      await serviceWith(runs).atestacion(PARTICIPANTE);
+      await serviceWith(runs).attestation(PARTICIPANT);
     } catch (e) {
       error = e;
     }
@@ -205,7 +199,7 @@ describe('RunsService.atestacion', () => {
     expect(error).toBeInstanceOf(ConflictException);
     expect((error as ConflictException).getResponse()).toEqual({
       message: 'Todavía no apruebas todos los módulos.',
-      faltan: [primero],
+      faltan: [first],
     });
   });
 });
