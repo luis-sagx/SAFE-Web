@@ -1,14 +1,14 @@
 import { Pause, Play } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
-import { VOCES } from '../../data/voces'
+import { VOICES } from '../../data/voces'
 import styles from './DeviceScreen.module.css'
 
 // La nota suena (no solo se lee) porque en suplantación la voz "es suya" es
 // el ataque; la transcripción queda de apoyo debajo. Mismo audio para todos.
-function NotaDeVoz({
-  texto,
-  duracion,
-  senal,
+function VoiceNote({
+  texto: text,
+  duracion: duration,
+  senal: signal,
 }: {
   /** Lo que dice la nota. Es también la clave del audio en `VOCES`. */
   texto: string
@@ -17,8 +17,8 @@ function NotaDeVoz({
   senal?: string
 }) {
   const audioRef = useRef<HTMLAudioElement>(null)
-  const [sonando, setSonando] = useState(false)
-  const url = VOCES[texto]
+  const [ringing, setRinging] = useState(false)
+  const url = VOICES[text]
 
   useEffect(() => {
     // Evita que la voz siga sonando de fondo al cambiar de pantalla.
@@ -26,17 +26,17 @@ function NotaDeVoz({
     return () => audio?.pause()
   }, [])
 
-  function alternar() {
+  function toggle() {
     const audio = audioRef.current
     if (!audio) return
-    if (sonando) {
+    if (ringing) {
       audio.pause()
-      setSonando(false)
+      setRinging(false)
       return
     }
-    setSonando(true)
-    const reproduccion = audio.play() as Promise<void> | undefined
-    reproduccion?.catch(() => setSonando(false))
+    setRinging(true)
+    const playback = audio.play() as Promise<void> | undefined
+    playback?.catch(() => setRinging(false))
   }
 
   return (
@@ -46,18 +46,18 @@ function NotaDeVoz({
         <button
           type="button"
           className={styles.notaPlay}
-          aria-label={sonando ? 'Pausar la nota de voz' : 'Reproducir la nota de voz'}
+          aria-label={ringing ? 'Pausar la nota de voz' : 'Reproducir la nota de voz'}
           data-control=""
-          onClick={alternar}
+          onClick={toggle}
           disabled={!url}
         >
-          {sonando ? (
+          {ringing ? (
             <Pause aria-hidden className={styles.notaPlayIcono} strokeWidth={2} />
           ) : (
             <Play aria-hidden className={styles.notaPlayIcono} strokeWidth={2} />
           )}
         </button>
-        <span className={`${styles.notaOnda} ${sonando ? styles.notaOndaActiva : ''}`} aria-hidden>
+        <span className={`${styles.notaOnda} ${ringing ? styles.notaOndaActiva : ''}`} aria-hidden>
           <i />
           <i />
           <i />
@@ -66,20 +66,20 @@ function NotaDeVoz({
           <i />
           <i />
         </span>
-        <span className={styles.notaDuracion}>{duracion}</span>
+        <span className={styles.notaDuracion}>{duration}</span>
       </span>
 
-      <span className={styles.notaTexto} data-signal={senal}>
-        {texto}
+      <span className={styles.notaTexto} data-signal={signal}>
+        {text}
       </span>
 
       {url && (
         // eslint-disable-next-line jsx-a11y/media-has-caption -- la
         // transcripción va justo encima, siempre visible.
-        <audio ref={audioRef} src={url} onEnded={() => setSonando(false)} />
+        <audio ref={audioRef} src={url} onEnded={() => setRinging(false)} />
       )}
     </span>
   )
 }
 
-export default NotaDeVoz
+export default VoiceNote
