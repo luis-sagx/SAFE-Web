@@ -1,27 +1,27 @@
 import { fireEvent, screen, within } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
-import { empezar } from '../../test/escenario'
-import DescargaProgramasPiratas from './DescargaProgramasPiratas'
+import { start } from '../../test/escenario'
+import PiratedSoftwareDownload from './DescargaProgramasPiratas'
 
-vi.mock('../../context/AuthContext', async () => (await import('../../test/escenario')).authFalso())
-vi.mock('../../lib/api', async () => (await import('../../test/escenario')).apiSinRed())
+vi.mock('../../context/AuthContext', async () => (await import('../../test/escenario')).mockAuth())
+vi.mock('../../lib/api', async () => (await import('../../test/escenario')).offlineApi())
 
 describe('DescargaProgramasPiratas', () => {
   it('abre en los resultados de búsqueda de Adobe', () => {
-    const telefono = empezar(<DescargaProgramasPiratas />)
+    const phone = start(<PiratedSoftwareDownload />)
 
-    expect(within(telefono).getAllByText(/Resultados para: descargar Adobe/).length).toBeGreaterThan(0)
+    expect(within(phone).getAllByText(/Resultados para: descargar Adobe/).length).toBeGreaterThan(0)
   })
 
   it('explica cuándo termina el escenario', () => {
-    empezar(<DescargaProgramasPiratas />)
+    start(<PiratedSoftwareDownload />)
 
     fireEvent.click(screen.getByText('¿Cuándo termina el escenario?'))
 
     expect(screen.getByText(/Volver a los resultados de búsqueda no cuenta/)).toBeDefined()
   })
 
-  const RUTAS_DE_DESCARGA: [string, RegExp, string, string][] = [
+  const DOWNLOAD_PATHS: [string, RegExp, string, string][] = [
     [
       'sitio pirata',
       /Adobe gratis 2024/,
@@ -48,15 +48,15 @@ describe('DescargaProgramasPiratas', () => {
     ],
   ]
 
-  it.each(RUTAS_DE_DESCARGA)(
+  it.each(DOWNLOAD_PATHS)(
     'elegir %s y luego "%s" lleva al veredicto correcto',
-    (_caso, resultado, boton, veredicto) => {
-      const telefono = empezar(<DescargaProgramasPiratas />)
+    (_case, result, button, verdict) => {
+      const phone = start(<PiratedSoftwareDownload />)
 
-      fireEvent.click(within(telefono).getByText(resultado))
-      fireEvent.click(within(telefono).getByText(boton))
+      fireEvent.click(within(phone).getByText(result))
+      fireEvent.click(within(phone).getByText(button))
 
-      expect(screen.getByText(veredicto)).toBeDefined()
+      expect(screen.getByText(verdict)).toBeDefined()
     },
   )
 })

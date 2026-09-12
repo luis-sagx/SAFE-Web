@@ -1,8 +1,8 @@
-import StoryEscenario, { type ScreenNode } from '../../components/StoryEscenario'
-import type { Contexto } from '../../components/ui/ContextoEscenario'
+import ScenarioStory, { type ScreenNode } from '../../components/StoryEscenario'
+import type { Context } from '../../components/ui/ContextoEscenario'
 import type { Story } from '../../hooks/useStoryEngine'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
-import type { Senal } from '../../components/ui/PanelVeredicto'
+import type { Signal } from '../../components/ui/PanelVeredicto'
 
 const GOOGLE_SEARCH: ScreenView = {
   kind: 'web',
@@ -23,7 +23,7 @@ const GOOGLE_SEARCH: ScreenView = {
   button: '',
 }
 
-const RESULTADOS_BUSQUEDA: ScreenView = {
+const RESULTS_SEARCH: ScreenView = {
   kind: 'web',
   app: 'Google',
   url: 'google.com/search?q=descargar+Adobe',
@@ -61,7 +61,7 @@ const RESULTADOS_BUSQUEDA: ScreenView = {
   button: '',
 }
 
-const PAGINA_PIRATA: ScreenView = {
+const PIRATE_PAGE: ScreenView = {
   kind: 'web',
   app: 'megafiles.net',
   url: 'megafiles.net/adobe-gratis',
@@ -86,7 +86,7 @@ const PAGINA_PIRATA: ScreenView = {
   button: '',
 }
 
-const PAGINA_OFICIAL: ScreenView = {
+const OFFICIAL_PAGE: ScreenView = {
   kind: 'web',
   app: 'adobe.com',
   url: 'adobe.com/products/photoshop',
@@ -120,7 +120,7 @@ const PAGINA_OFICIAL: ScreenView = {
   button: '',
 }
 
-const PAGINA_FLASH: ScreenView = {
+const PAGE_FLASH: ScreenView = {
   kind: 'web',
   app: 'softwarelibre123.com',
   url: 'softwarelibre123.com/adobe-flash',
@@ -145,7 +145,7 @@ const PAGINA_FLASH: ScreenView = {
   button: '',
 }
 
-const RESULTADO_MALWARE: ScreenView = {
+const RESULT_MALWARE: ScreenView = {
   kind: 'web',
   app: 'Chrome',
   url: 'descarga-completada',
@@ -174,7 +174,7 @@ const RESULTADO_MALWARE: ScreenView = {
   button: '',
 }
 
-const RESULTADO_OFICIAL: ScreenView = {
+const RESULT_OFFICIAL: ScreenView = {
   kind: 'web',
   app: 'Adobe',
   url: 'adobe.com/download-complete',
@@ -203,7 +203,7 @@ const RESULTADO_OFICIAL: ScreenView = {
   button: '',
 }
 
-const RESULTADO_TRIAL: ScreenView = {
+const RESULT_TRIAL: ScreenView = {
   kind: 'web',
   app: 'Adobe',
   url: 'adobe.com/trial-activated',
@@ -233,15 +233,15 @@ const RESULTADO_TRIAL: ScreenView = {
 }
 
 const STORY: Story<ScreenNode> = {
-  n1: { kind: 'scene', view: RESULTADOS_BUSQUEDA },
+  n1: { kind: 'scene', view: RESULTS_SEARCH },
   n_google: { kind: 'scene', view: GOOGLE_SEARCH },
-  n_pagina_falsa: { kind: 'scene', view: PAGINA_PIRATA },
-  n_pagina_oficial: { kind: 'scene', view: PAGINA_OFICIAL },
-  n_pagina_flash: { kind: 'scene', view: PAGINA_FLASH },
+  n_pagina_falsa: { kind: 'scene', view: PIRATE_PAGE },
+  n_pagina_oficial: { kind: 'scene', view: OFFICIAL_PAGE },
+  n_pagina_flash: { kind: 'scene', view: PAGE_FLASH },
 
   e_malware: {
     kind: 'bad',
-    view: RESULTADO_MALWARE,
+    view: RESULT_MALWARE,
     verdict: 'Caíste en la trampa - Resultado pirata',
     outcome:
       'El sitio pirata ofrecía software gratis pero el archivo contiene malware integrado (ransomware + keylogger). Tu computadora y toda la red corporativa están comprometidas. Se pueden robar credenciales, datos financieros y documentos confidenciales. La empresa corre riesgo legal grave.',
@@ -249,7 +249,7 @@ const STORY: Story<ScreenNode> = {
 
   e_malware_flash: {
     kind: 'bad',
-    view: RESULTADO_MALWARE,
+    view: RESULT_MALWARE,
     verdict: 'Caíste en la trampa - Sitio falso',
     outcome:
       'El sitio fake de Flash también distribuye malware. La descarga comprometió tu computadora y toda la red corporativa. Se pueden acceder a credenciales, sistemas y datos sensibles. Esto pone en riesgo legal a la empresa.',
@@ -257,7 +257,7 @@ const STORY: Story<ScreenNode> = {
 
   e_descarga_oficial: {
     kind: 'good',
-    view: RESULTADO_OFICIAL,
+    view: RESULT_OFFICIAL,
     verdict: 'No caíste - Descargaste del sitio oficial',
     outcome:
       'Descargaste desde adobe.com verificado. El software es auténtico, sin malware, y la licencia cumple con todas las políticas corporativas y legales. Tu empresa está completamente protegida.',
@@ -265,14 +265,14 @@ const STORY: Story<ScreenNode> = {
 
   e_descarga_trial: {
     kind: 'good',
-    view: RESULTADO_TRIAL,
+    view: RESULT_TRIAL,
     verdict: 'Decisión segura - Versión de prueba legal',
     outcome:
       'Activaste la versión legal de prueba desde Adobe oficial. Completamente segura y sin riesgos. Después de 30 días puedes solicitar la licencia permanente a IT o renovar la suscripción. Sin compromisos.',
   },
 }
 
-const SENALES: Senal[] = [
+const SIGNALS: Signal[] = [
   {
     id: 's1',
     targetId: 'malware-detectado',
@@ -299,9 +299,9 @@ const SENALES: Senal[] = [
 const RULE =
   'Regla de oro: En búsquedas, los resultados pirata frecuentemente aparecen primero porque pagan para posicionarse. Siempre verifica que estés en el sitio OFICIAL (adobe.com, microsoft.com, etc.). Si el dominio no es exacto, es falso.'
 
-const RESUMEN = 'Búsqueda de software - Identifica sitios oficiales vs. falsos'
+const SUMMARY = 'Búsqueda de software - Identifica sitios oficiales vs. falsos'
 
-const CONTEXTO: Contexto = {
+const CONTEXT: Context = {
   antes:
     'Los atacantes crean sitios falsos que parecen legales y los posicionan en los primeros resultados de búsqueda. Si descargas desde un sitio pirata, tu computadora se infecta con malware. En una empresa, esto compromete toda la red corporativa.',
   ahora: (
@@ -312,14 +312,14 @@ const CONTEXTO: Contexto = {
   ),
 }
 
-function DescargaProgramasPiratas() {
+function PiratedSoftwareDownload() {
   return (
-    <StoryEscenario
+    <ScenarioStory
       escenarioId="fisico/descarga-programas-piratas"
-      resumen={RESUMEN}
-      contexto={CONTEXTO}
+      resumen={SUMMARY}
+      contexto={CONTEXT}
       story={STORY}
-      senales={SENALES}
+      senales={SIGNALS}
       rule={RULE}
       restartLabel="Repetir el escenario"
       instruccion={
@@ -344,4 +344,4 @@ function DescargaProgramasPiratas() {
   )
 }
 
-export default DescargaProgramasPiratas
+export default PiratedSoftwareDownload

@@ -12,12 +12,12 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 import { useState } from 'react'
-import EscenarioLayout from '../../components/EscenarioLayout'
-import Instrucciones from '../../components/ui/Instrucciones'
-import PanelVeredicto, { type Senal } from '../../components/ui/PanelVeredicto'
-import Tarea from '../../components/ui/Tarea'
+import ScenarioLayout from '../../components/EscenarioLayout'
+import Instructions from '../../components/ui/Instrucciones'
+import VerdictPanel, { type Signal } from '../../components/ui/PanelVeredicto'
+import Task from '../../components/ui/Tarea'
 import { MailNav, Taskbar } from '../../components/ui/DesktopChrome'
-import type { Contexto } from '../../components/ui/ContextoEscenario'
+import type { Context } from '../../components/ui/ContextoEscenario'
 import styles from '../../components/ui/DeviceScreen.module.css'
 import { useAuth } from '../../context/AuthContext'
 import { useScenarioRun } from '../../hooks/useScenarioRun'
@@ -62,7 +62,7 @@ const APPS: App[] = [
   },
 ]
 
-const CORREOS = [
+const EMAILS = [
   {
     de: 'Dirección General',
     direccion: 'direccion@andes.ec',
@@ -89,7 +89,7 @@ const CORREOS = [
   },
 ]
 
-const DOCUMENTOS = [
+const DOCUMENTS = [
   { nombre: 'mi_salario_2026.pdf', detalle: '245 KB · modificado hoy' },
   { nombre: 'reestructuracion_borrador.docx', detalle: '1.2 MB · hace 2 días' },
   { nombre: 'contrato_negociacion.pdf', detalle: '567 KB · la semana pasada' },
@@ -98,7 +98,7 @@ const DOCUMENTOS = [
 
 // Cada señal reabre su app antes de resaltarla: al terminar están cerradas
 // (eso es lo que se pedía) y sin esto el repaso hablaría de algo que ya no se ve.
-const SENALES: Senal[] = [
+const SIGNALS: Signal[] = [
   {
     id: 'credenciales',
     targetId: 'credenciales',
@@ -122,17 +122,17 @@ const SENALES: Senal[] = [
   },
 ]
 
-const REGLA =
+const RULE =
   '<b>Escritorio limpio y pantalla bloqueada.</b> Si alguien se acerca a tu puesto, lo primero es bloquear; y lo que no debería ver, cerrado antes de volver a desbloquear delante de él.'
 
 // Minimizar/maximizar se ven pero no responden, como en el resto de pantallas:
 // solo el ✕ está vivo, y se pinta rojo al pasar por encima (señal conocida).
-function Ventana({
+function Window({
   app,
-  alFrente,
+  alFrente: bringToFront,
   z,
   onFocus,
-  onCerrar,
+  onCerrar: onClose,
   children,
 }: {
   app: App
@@ -165,38 +165,38 @@ function Ventana({
             className={`${styles.ventanaBoton} ${styles.ventanaCerrar}`}
             title={`Cerrar ${app.titulo}`}
             aria-label={`Cerrar ${app.titulo}`}
-            onClick={onCerrar}
+            onClick={onClose}
           >
             <X className={styles.ventanaBotonIcono} strokeWidth={2.5} />
           </button>
         </span>
       </div>
 
-      <div className={styles.ventanaCuerpo} aria-current={alFrente ? 'true' : undefined}>
+      <div className={styles.ventanaCuerpo} aria-current={bringToFront ? 'true' : undefined}>
         {children}
       </div>
     </section>
   )
 }
 
-function AppCredenciales() {
-  const { usuarioSimulado, correoSimulado } = useAuth()
+function CredentialsApp() {
+  const { usuarioSimulado: simulatedUser, correoSimulado: simulatedEmail } = useAuth()
 
-  const claves = [
-    { servicio: 'Correo corporativo', usuario: correoSimulado, clave: 'Abc123!@#G2026' },
-    { servicio: 'Banco Corporativo', usuario: usuarioSimulado, clave: 'SecurePass2026' },
-    { servicio: 'Sistema interno', usuario: usuarioSimulado, clave: 'InternalSys#99' },
-    { servicio: 'VPN de la empresa', usuario: `${usuarioSimulado}@vpn`, clave: 'VPNPass2026!' },
+  const passwords = [
+    { servicio: 'Correo corporativo', usuario: simulatedEmail, clave: 'Abc123!@#G2026' },
+    { servicio: 'Banco Corporativo', usuario: simulatedUser, clave: 'SecurePass2026' },
+    { servicio: 'Sistema interno', usuario: simulatedUser, clave: 'InternalSys#99' },
+    { servicio: 'VPN de la empresa', usuario: `${simulatedUser}@vpn`, clave: 'VPNPass2026!' },
   ]
 
   return (
     <div className={styles.ventanaPagina}>
       <div className={styles.datos}>
-        {claves.map((entrada) => (
-          <div key={entrada.servicio} className={styles.dato}>
-            <span className={styles.datoEtiqueta}>{entrada.servicio}</span>
+        {passwords.map((entry) => (
+          <div key={entry.servicio} className={styles.dato}>
+            <span className={styles.datoEtiqueta}>{entry.servicio}</span>
             <span className={styles.datoValor}>
-              {entrada.usuario} · {entrada.clave}
+              {entry.usuario} · {entry.clave}
             </span>
           </div>
         ))}
@@ -205,20 +205,20 @@ function AppCredenciales() {
   )
 }
 
-function AppArchivos() {
+function FilesApp() {
   return (
     <>
       <div className={styles.ventanaRuta}>Este equipo › Documentos</div>
       <div className={styles.ventanaPagina}>
         <div className="flex flex-col items-start gap-3">
-          {DOCUMENTOS.map((documento) => (
-            <span key={documento.nombre} className={styles.attachment}>
+          {DOCUMENTS.map((document) => (
+            <span key={document.nombre} className={styles.attachment}>
               <span className={styles.attachmentTipo} aria-hidden>
-                {documento.nombre.split('.').pop()?.toUpperCase()}
+                {document.nombre.split('.').pop()?.toUpperCase()}
               </span>
               <span className={styles.attachmentNombre}>
-                {documento.nombre}
-                <span className={styles.attachmentPeso}>{documento.detalle}</span>
+                {document.nombre}
+                <span className={styles.attachmentPeso}>{document.detalle}</span>
               </span>
             </span>
           ))}
@@ -228,7 +228,7 @@ function AppArchivos() {
   )
 }
 
-function AppCorreo() {
+function EmailApp() {
   return (
     <>
       {/* Sin ✕ en la pestaña: lo que pide el escenario es cerrar la ventana entera. */}
@@ -253,17 +253,17 @@ function AppCorreo() {
         <div className={styles.mailPane}>
           <div className={styles.mailbody}>
             <h1 className={styles.subject}>Recibidos</h1>
-            {CORREOS.map((correo) => (
-              <div key={correo.asunto} className={styles.senderRow}>
+            {EMAILS.map((email) => (
+              <div key={email.asunto} className={styles.senderRow}>
                 <div className={styles.avatar} aria-hidden>
-                  {correo.de.slice(0, 1)}
+                  {email.de.slice(0, 1)}
                 </div>
                 <div className={styles.senderId}>
-                  <p className={styles.senderName}>{correo.de}</p>
-                  <p className={styles.senderAddr}>{correo.direccion}</p>
-                  <p className={styles.mailFolderAsunto}>{correo.asunto}</p>
+                  <p className={styles.senderName}>{email.de}</p>
+                  <p className={styles.senderAddr}>{email.direccion}</p>
+                  <p className={styles.mailFolderAsunto}>{email.asunto}</p>
                 </div>
-                <span className={styles.date}>{correo.hora}</span>
+                <span className={styles.date}>{email.hora}</span>
               </div>
             ))}
           </div>
@@ -273,92 +273,92 @@ function AppCorreo() {
   )
 }
 
-const CONTENIDO: Record<AppId, () => React.JSX.Element> = {
-  credenciales: AppCredenciales,
-  archivos: AppArchivos,
-  correo: AppCorreo,
+const CONTENT: Record<AppId, () => React.JSX.Element> = {
+  credenciales: CredentialsApp,
+  archivos: FilesApp,
+  correo: EmailApp,
 }
 
-function PrivacidadClaves() {
+function PasswordPrivacy() {
   const run = useScenarioRun('fisico/privacidad-claves')
   const { displayName } = useAuth()
 
   // Orden de atrás hacia adelante: la última es la que está al frente.
-  const [abiertas, setAbiertas] = useState<AppId[]>(APPS.map((app) => app.id))
-  const [bloqueada, setBloqueada] = useState(false)
+  const [open, setOpen] = useState<AppId[]>(APPS.map((app) => app.id))
+  const [blocked, setBlocked] = useState(false)
   const [final, setFinal] = useState<StoryNode | null>(null)
-  const [repaso, setRepaso] = useState<AppId | null>(null)
+  const [review, setReview] = useState<AppId | null>(null)
 
-  const enRepaso = repaso !== null
-  const vistaAbiertas = enRepaso
-    ? [...APPS.map((app) => app.id).filter((id) => id !== repaso), repaso]
-    : abiertas
-  const vistaBloqueada = enRepaso ? false : bloqueada
+  const reviewing = review !== null
+  const openView = reviewing
+    ? [...APPS.map((app) => app.id).filter((id) => id !== review), review]
+    : open
+  const blockedView = reviewing ? false : blocked
 
-  function alFrente(id: AppId) {
+  function bringToFront(id: AppId) {
     if (final) return
-    setAbiertas((previas) => [...previas.filter((otra) => otra !== id), id])
+    setOpen((previous) => [...previous.filter((other) => other !== id), id])
   }
 
-  function cerrar(id: AppId) {
+  function close(id: AppId) {
     if (final) return
-    setAbiertas((previas) => previas.filter((otra) => otra !== id))
+    setOpen((previous) => previous.filter((other) => other !== id))
   }
 
-  function bloquear() {
+  function block() {
     if (final) return
     run.recordDecision({ accion: 'bloqueó la sesión desde el menú de encendido' })
-    setBloqueada(true)
+    setBlocked(true)
   }
 
-  function atender() {
+  function answer() {
     if (final) return
 
-    const expuestas = abiertas.length
-    run.recordDecision({ ventanasAbiertas: expuestas, bloqueada })
+    const exposed = open.length
+    run.recordDecision({ ventanasAbiertas: exposed, bloqueada: blocked })
 
     // Tres desenlaces y no dos: bloquear con las ventanas puestas no es lo
     // mismo que dejarlo todo a la vista, pero tampoco está resuelto — en
     // cuanto desbloquees delante de él vuelve a estar todo ahí.
-    const nodo: StoryNode =
-      expuestas === 0 && bloqueada
+    const node: StoryNode =
+      exposed === 0 && blocked
         ? {
             kind: 'good',
             verdict: 'Nada que mirar',
             outcome:
               'Cerraste las tres aplicaciones y bloqueaste antes de girarte. Tu compañero se encontró una pantalla de bloqueo y tú atendiste su pregunta sin dejar nada expuesto.',
           }
-        : expuestas === 0 || bloqueada
+        : exposed === 0 || blocked
           ? {
               kind: 'partial',
               verdict: 'A medio resolver',
-              outcome: bloqueada
+              outcome: blocked
                 ? 'Bloqueaste la pantalla, pero las aplicaciones siguen abiertas detrás. En cuanto desbloquees para enseñarle algo, vuelve a estar todo a la vista.'
                 : 'Cerraste las aplicaciones, pero dejaste la sesión abierta. Si te levantas un momento a buscar algo, cualquiera se sienta en tu sitio.',
             }
           : {
               kind: 'bad',
               verdict: 'Lo vio todo',
-              outcome: `Te giraste con ${expuestas === 1 ? 'una aplicación abierta' : `${expuestas} aplicaciones abiertas`} y la sesión sin bloquear. Tus contraseñas, tus correos y tus archivos estuvieron delante de él todo el rato que duró la conversación.`,
+              outcome: `Te giraste con ${exposed === 1 ? 'una aplicación abierta' : `${exposed} aplicaciones abiertas`} y la sesión sin bloquear. Tus contraseñas, tus correos y tus archivos estuvieron delante de él todo el rato que duró la conversación.`,
             }
 
-    setFinal(nodo)
+    setFinal(node)
     void run.finish({
-      endingId: nodo.kind,
+      endingId: node.kind,
       outcome:
-        nodo.kind === 'good' ? 'CORRECTO' : nodo.kind === 'partial' ? 'PARCIAL' : 'INCORRECTO',
+        node.kind === 'good' ? 'CORRECTO' : node.kind === 'partial' ? 'PARCIAL' : 'INCORRECTO',
     })
   }
 
-  function reiniciar() {
+  function restart() {
     run.restart()
-    setAbiertas(APPS.map((app) => app.id))
-    setBloqueada(false)
+    setOpen(APPS.map((app) => app.id))
+    setBlocked(false)
     setFinal(null)
-    setRepaso(null)
+    setReview(null)
   }
 
-  const contexto: Contexto = {
+  const context: Context = {
     antes: (
       <p>
         En una oficina compartida no hace falta que nadie toque tu equipo: lo que tengas en
@@ -375,13 +375,13 @@ function PrivacidadClaves() {
     ),
   }
 
-  const pantalla = vistaBloqueada ? (
+  const screen = blockedView ? (
     // La pantalla de bloqueo tapa el escritorio entero, como el sistema real:
     // con la sesión bloqueada no se puede cerrar nada sin desbloquear antes.
     <section className={`${styles.screen} ${styles.desktop}`} aria-label="Pantalla bloqueada">
       <button
         type="button"
-        onClick={() => !final && setBloqueada(false)}
+        onClick={() => !final && setBlocked(false)}
         // bg-[#171717] y no bg-ink: esto es la pantalla de bloqueo del SO
         // simulado, no cromo — tiene que verse igual en los dos temas, y
         // bg-ink se invierte en oscuro (casi blanco), lo que dejaba esta
@@ -403,7 +403,7 @@ function PrivacidadClaves() {
   ) : (
     <section className={`${styles.screen} ${styles.desktop}`} aria-label="Tu escritorio">
       <div className={styles.escritorio}>
-        {vistaAbiertas.length === 0 && (
+        {openView.length === 0 && (
           <p className={styles.escritorioVacio}>
             <span className={styles.escritorioVacioTitulo}>Escritorio despejado</span>
             <span>No queda ninguna aplicación abierta. Falta la sesión.</span>
@@ -411,53 +411,53 @@ function PrivacidadClaves() {
         )}
 
         {APPS.map((app) => {
-          const z = vistaAbiertas.indexOf(app.id)
+          const z = openView.indexOf(app.id)
           if (z === -1) return null
-          const Contenido = CONTENIDO[app.id]
+          const Content = CONTENT[app.id]
 
           return (
-            <Ventana
+            <Window
               key={app.id}
               app={app}
               z={z + 1}
-              alFrente={z === vistaAbiertas.length - 1}
-              onFocus={() => alFrente(app.id)}
-              onCerrar={() => cerrar(app.id)}
+              alFrente={z === openView.length - 1}
+              onFocus={() => bringToFront(app.id)}
+              onCerrar={() => close(app.id)}
             >
-              <Contenido />
-            </Ventana>
+              <Content />
+            </Window>
           )
         })}
       </div>
 
       <Taskbar
-        apps={APPS.filter((app) => vistaAbiertas.includes(app.id)).map((app) => ({
+        apps={APPS.filter((app) => openView.includes(app.id)).map((app) => ({
           Icono: app.Icono,
           texto: app.nombre,
-          activa: vistaAbiertas.at(-1) === app.id,
-          onClick: () => alFrente(app.id),
+          activa: openView.at(-1) === app.id,
+          onClick: () => bringToFront(app.id),
         }))}
-        onBloquear={bloquear}
+        onBloquear={block}
         reloj="vivo"
       />
     </section>
   )
 
   const decision = final ? (
-    <PanelVeredicto
+    <VerdictPanel
       estadoGuardado={run.status}
       escenarioId="fisico/privacidad-claves"
       node={final}
-      senales={SENALES}
-      regla={REGLA}
+      senales={SIGNALS}
+      regla={RULE}
       restartLabel="↻ Repetir el escenario"
-      onRestart={reiniciar}
+      onRestart={restart}
       contenedorId="pantalla-escenario"
-      onPantalla={(id) => setRepaso((id ?? null) as AppId | null)}
+      onPantalla={(id) => setReview((id ?? null) as AppId | null)}
     />
   ) : (
     <div className="grid gap-4">
-      <Instrucciones
+      <Instructions
         queHaces={
           <>
             <p className="text-lg leading-relaxed text-body">
@@ -467,11 +467,11 @@ function PrivacidadClaves() {
 
             <ul className="grid gap-2.5">
               {APPS.map((app) => (
-                <Tarea key={app.id} hecho={!abiertas.includes(app.id)}>
+                <Task key={app.id} hecho={!open.includes(app.id)}>
                   Cerrar {app.corto}
-                </Tarea>
+                </Task>
               ))}
-              <Tarea hecho={bloqueada}>Bloquear la sesión</Tarea>
+              <Task hecho={blocked}>Bloquear la sesión</Task>
             </ul>
           </>
         }
@@ -493,7 +493,7 @@ function PrivacidadClaves() {
 
       <button
         type="button"
-        onClick={atender}
+        onClick={answer}
         className="min-h-12 w-full rounded-md bg-primary px-4 py-3 text-lg font-medium text-on-primary transition hover:bg-primary-active focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link"
       >
         Girarme a atenderlo
@@ -501,7 +501,7 @@ function PrivacidadClaves() {
     </div>
   )
 
-  const nota = (
+  const note = (
     <div className="text-base leading-relaxed text-body">
       <p>
         Vas a ver tu propio escritorio, con las aplicaciones tal como las dejaste. Puedes tocar lo
@@ -511,19 +511,19 @@ function PrivacidadClaves() {
   )
 
   return (
-    <EscenarioLayout
+    <ScenarioLayout
       escenarioId="fisico/privacidad-claves"
       resumen="Privacidad — Alguien se acerca a tu escritorio"
-      contexto={contexto}
-      nota={nota}
+      contexto={context}
+      nota={note}
       identidad={[]}
-      pantalla={pantalla}
+      pantalla={screen}
       decision={decision}
       resultado={final?.kind === 'scene' ? undefined : final?.kind}
-      onEmpezar={reiniciar}
+      onEmpezar={restart}
       dispositivo="escritorio"
     />
   )
 }
 
-export default PrivacidadClaves
+export default PasswordPrivacy

@@ -1,16 +1,16 @@
 import { useState } from 'react'
-import EscenarioLayout from '../../components/EscenarioLayout'
+import ScenarioLayout from '../../components/EscenarioLayout'
 import FlashOverlay from '../../components/ui/FlashOverlay'
-import Instrucciones from '../../components/ui/Instrucciones'
-import Tarea from '../../components/ui/Tarea'
-import PanelVeredicto, { type Senal } from '../../components/ui/PanelVeredicto'
+import Instructions from '../../components/ui/Instrucciones'
+import Task from '../../components/ui/Tarea'
+import VerdictPanel, { type Signal } from '../../components/ui/PanelVeredicto'
 import { useFlashTransition } from '../../hooks/useFlashTransition'
-import type { Contexto } from '../../components/ui/ContextoEscenario'
+import type { Context } from '../../components/ui/ContextoEscenario'
 import { useScenarioRun } from '../../hooks/useScenarioRun'
 import type { StoryNode } from '../../hooks/useStoryEngine'
 import styles from './fisico.module.css'
 
-interface Pestana {
+interface Tab {
   // Corto a propósito: tiene que caber sin recortarse en la barra.
   corto: string
   titulo: string
@@ -19,7 +19,7 @@ interface Pestana {
   color: string
 }
 
-const PESTANAS: Pestana[] = [
+const TABS: Tab[] = [
   {
     corto: 'Nóminas',
     titulo: 'Nóminas 2026',
@@ -50,19 +50,19 @@ const PESTANAS: Pestana[] = [
   },
 ]
 
-interface Documento {
+interface Document {
   nombre: string
   x: number
   rotacion: number
 }
 
-const DOCUMENTOS: Documento[] = [
+const DOCUMENTS: Document[] = [
   { nombre: 'Contratos', x: 52, rotacion: -4 },
   { nombre: 'Nóminas', x: 128, rotacion: 3 },
   { nombre: 'Datos bancarios', x: 812, rotacion: -3 },
 ]
 
-const SENALES: Senal[] = [
+const SIGNALS: Signal[] = [
   {
     id: 'pestanas',
     targetId: 'pestanas',
@@ -86,81 +86,85 @@ const SENALES: Senal[] = [
   },
 ]
 
-const REGLA =
+const RULE =
   '<b>Escritorio limpio y pantalla bloqueada.</b> Cada vez que dejas tu puesto —aunque sea cinco minutos— no debe quedar nada a la vista ni ninguna sesión abierta.'
 
-const ANCHO_PESTANA = 128
-const X_PESTANAS = 244
+const WIDTH_TAB = 128
+const X_TABS = 244
 
-const SIN_CERRAR: ReadonlySet<number> = new Set()
+const WITHOUT_CLOSE: ReadonlySet<number> = new Set()
 
-function SalidaSegura() {
+function SafeExit() {
   const run = useScenarioRun('fisico/salida-segura')
 
-  const [cerradas, setCerradas] = useState<ReadonlySet<number>>(SIN_CERRAR)
-  const [guardados, setGuardados] = useState<ReadonlySet<number>>(SIN_CERRAR)
-  const [bloqueada, setBloqueada] = useState(false)
+  const [closed, setClosed] = useState<ReadonlySet<number>>(WITHOUT_CLOSE)
+  const [saved, setSaved] = useState<ReadonlySet<number>>(WITHOUT_CLOSE)
+  const [blocked, setBlocked] = useState(false)
   // Arranca en la primera pestaña, como cualquier navegador que se deja
   // abierto: una ventana sin ninguna pestaña activa no existe.
-  const [pestanaActiva, setPestanaActiva] = useState<number | null>(0)
+  const [activeTab, setTabActive] = useState<number | null>(0)
   const [final, setFinal] = useState<StoryNode | null>(null)
   // El repaso de señales apunta a cosas que el participante ya cerró o guardó.
   // Mientras dura, la escena vuelve a como estaba al empezar para que haya algo
   // que señalar.
-  const [repaso, setRepaso] = useState(false)
+  const [review, setReview] = useState(false)
 
   const stampFlash = useFlashTransition()
 
-  const pestanasAbiertas = PESTANAS.length - cerradas.size
-  const papelesExpuestos = DOCUMENTOS.length - guardados.size
-  const todoListo = pestanasAbiertas === 0 && papelesExpuestos === 0 && bloqueada
+  const openTabs = TABS.length - closed.size
+  const exposedPapers = DOCUMENTS.length - saved.size
+  const allReady = openTabs === 0 && exposedPapers === 0 && blocked
 
-  const vistaCerradas = repaso ? SIN_CERRAR : cerradas
-  const vistaGuardados = repaso ? SIN_CERRAR : guardados
-  const vistaBloqueada = repaso ? false : bloqueada
-  const vistaActiva = repaso ? 0 : pestanaActiva
-  const abiertas = PESTANAS.map((_, i) => i).filter((i) => !vistaCerradas.has(i))
+  const closedView = review ? WITHOUT_CLOSE : closed
+  const savedView = review ? WITHOUT_CLOSE : saved
+  const blockedView = review ? false : blocked
+  const activeView = review ? 0 : activeTab
+  const open = TABS.map((_, i) => i).filter((i) => !closedView.has(i))
 
-  function cerrarPestana(indice: number) {
+  function closeTab(index: number) {
     if (final) return
 
-    const quedan = PESTANAS.map((_, i) => i).filter((i) => i !== indice && !cerradas.has(i))
-    setCerradas(new Set(cerradas).add(indice))
+    const remaining = TABS.map((_, i) => i).filter((i) => i !== index && !closed.has(i))
+    setClosed(new Set(closed).add(index))
     // Como en un navegador: al cerrar la que estás viendo pasas a la de al
     // lado, no a una ventana en blanco.
-    if (pestanaActiva === indice) {
-      const siguiente = quedan.find((i) => i > indice) ?? quedan.at(-1) ?? null
-      setPestanaActiva(siguiente)
+    if (activeTab === index) {
+      const next = remaining.find((i) => i > index) ?? remaining.at(-1) ?? null
+      setTabActive(next)
     }
   }
 
-  function guardarDocumento(indice: number) {
+  function saveDocument(index: number) {
     if (final) return
-    setGuardados(new Set(guardados).add(indice))
+    setSaved(new Set(saved).add(index))
   }
 
-  function alternarBloqueo() {
+  function toggleBlocking() {
     if (final) return
-    setBloqueada((estaba) => !estaba)
+    setBlocked((was) => !was)
   }
 
-  function irse() {
+  function leave() {
     if (final) return
 
-    run.recordDecision({ pestanasAbiertas, papelesExpuestos, bloqueada })
+    run.recordDecision({
+      pestanasAbiertas: openTabs,
+      papelesExpuestos: exposedPapers,
+      bloqueada: blocked,
+    })
 
     stampFlash.trigger(() => {
       // Lo que quedó a la vista se enumera tal cual: un "no completaste todo"
       // no dice qué se llevó puesto quien entre mañana.
-      const expuesto = [
-        pestanasAbiertas > 0 &&
-          `${pestanasAbiertas} ${pestanasAbiertas === 1 ? 'pestaña abierta' : 'pestañas abiertas'} con datos internos`,
-        papelesExpuestos > 0 &&
-          `${papelesExpuestos} ${papelesExpuestos === 1 ? 'documento' : 'documentos'} sobre el escritorio`,
-        !bloqueada && 'la sesión sin bloquear',
+      const exposed = [
+        openTabs > 0 &&
+          `${openTabs} ${openTabs === 1 ? 'pestaña abierta' : 'pestañas abiertas'} con datos internos`,
+        exposedPapers > 0 &&
+          `${exposedPapers} ${exposedPapers === 1 ? 'documento' : 'documentos'} sobre el escritorio`,
+        !blocked && 'la sesión sin bloquear',
       ].filter(Boolean) as string[]
 
-      const nodo: StoryNode = todoListo
+      const node: StoryNode = allReady
         ? {
             kind: 'good',
             verdict: 'Puesto asegurado',
@@ -170,28 +174,28 @@ function SalidaSegura() {
         : {
             kind: 'bad',
             verdict: 'Dejaste tu puesto expuesto',
-            outcome: `Te fuiste dejando ${expuesto.join(', ')}. Personal de limpieza, visitas y cualquiera que pase por el pasillo tiene toda la noche para mirar.`,
+            outcome: `Te fuiste dejando ${exposed.join(', ')}. Personal de limpieza, visitas y cualquiera que pase por el pasillo tiene toda la noche para mirar.`,
           }
 
-      setFinal(nodo)
+      setFinal(node)
       void run.finish({
-        endingId: todoListo ? 'good' : 'bad',
-        outcome: todoListo ? 'CORRECTO' : 'INCORRECTO',
+        endingId: allReady ? 'good' : 'bad',
+        outcome: allReady ? 'CORRECTO' : 'INCORRECTO',
       })
     }, 750)
   }
 
-  function reiniciar() {
+  function restart() {
     run.restart()
-    setCerradas(SIN_CERRAR)
-    setGuardados(SIN_CERRAR)
-    setBloqueada(false)
-    setPestanaActiva(0)
+    setClosed(WITHOUT_CLOSE)
+    setSaved(WITHOUT_CLOSE)
+    setBlocked(false)
+    setTabActive(0)
     setFinal(null)
-    setRepaso(false)
+    setReview(false)
   }
 
-  const contexto: Contexto = {
+  const context: Context = {
     antes: (
       <p>
         La seguridad física pesa tanto como la digital. Lo que dejas a la vista al irte —una
@@ -209,11 +213,11 @@ function SalidaSegura() {
     ),
   }
 
-  const paginaActiva = vistaActiva !== null ? PESTANAS[vistaActiva] : undefined
+  const activePage = activeView !== null ? TABS[activeView] : undefined
 
   // Un elemento, no un componente local: `function Escena()` aquí dentro haría que
   // React remonte el SVG entero en cada clic (de ahí el "doble clic" en los papeles).
-  const escena = (
+  const scene = (
     <svg
       viewBox="0 0 1000 620"
       className={styles.escena}
@@ -273,7 +277,7 @@ function SalidaSegura() {
           CAJÓN CON LLAVE
         </text>
         <text x="766" y="536" textAnchor="middle" className={styles.contadorMueble}>
-          {vistaGuardados.size} de {DOCUMENTOS.length} guardados
+          {savedView.size} de {DOCUMENTS.length} guardados
         </text>
       </g>
 
@@ -287,7 +291,7 @@ function SalidaSegura() {
       <g>
         <rect x="240" y="64" width="520" height="308" rx="6" fill="#1a1e23" />
 
-        {vistaBloqueada ? (
+        {blockedView ? (
           <g>
             <rect x="240" y="64" width="520" height="308" rx="6" fill="#12161a" />
             <path
@@ -306,50 +310,50 @@ function SalidaSegura() {
           <>
         {/* Cada pestaña se posiciona por su índice entre las abiertas: al cerrar una del medio, las demás se deslizan. */}
         <g data-signal="pestanas">
-          {PESTANAS.map((pestana, i) => {
-            const posicion = abiertas.indexOf(i)
-            if (posicion === -1) return null
+          {TABS.map((tab, i) => {
+            const position = open.indexOf(i)
+            if (position === -1) return null
 
-            const activa = vistaActiva === i
-            const x = X_PESTANAS + posicion * ANCHO_PESTANA
+            const active = activeView === i
+            const x = X_TABS + position * WIDTH_TAB
 
             return (
               <g
-                key={pestana.corto}
+                key={tab.corto}
                 className={styles.pestana}
                 style={{ transform: `translateX(${x}px)` }}
               >
-                <g className={styles.hotspot} onClick={() => setPestanaActiva(i)}>
+                <g className={styles.hotspot} onClick={() => setTabActive(i)}>
                   <rect
                     x="0"
                     y="72"
                     width="122"
                     height="34"
                     rx="6"
-                    fill={activa ? '#f7f7f5' : '#272c33'}
+                    fill={active ? '#f7f7f5' : '#272c33'}
                   />
-                  <circle cx="16" cy="89" r="5" fill={pestana.color} />
+                  <circle cx="16" cy="89" r="5" fill={tab.color} />
                   <text
                     x="30"
                     y="94"
-                    className={activa ? styles.pestanaTextoActiva : styles.pestanaTexto}
+                    className={active ? styles.pestanaTextoActiva : styles.pestanaTexto}
                   >
-                    {pestana.corto}
+                    {tab.corto}
                   </text>
                 </g>
 
                 {/* La ✕ va en su propio hueco, fuera del texto: antes se dibujaba encima del título. */}
                 <g
                   className={styles.cerrar}
-                  onClick={() => cerrarPestana(i)}
+                  onClick={() => closeTab(i)}
                   role="button"
-                  aria-label={`Cerrar la pestaña ${pestana.titulo}`}
+                  aria-label={`Cerrar la pestaña ${tab.titulo}`}
                 >
                   <circle cx="104" cy="89" r="13" fill="transparent" />
                   <circle cx="104" cy="89" r="11" className={styles.cerrarHalo} />
                   <path
                     d="M 99 84 L 109 94 M 109 84 L 99 94"
-                    stroke={activa ? '#3d434b' : '#c8cfd7'}
+                    stroke={active ? '#3d434b' : '#c8cfd7'}
                     strokeWidth="2"
                     strokeLinecap="round"
                     style={{ pointerEvents: 'none' }}
@@ -363,20 +367,20 @@ function SalidaSegura() {
         <rect x="240" y="110" width="520" height="34" fill="#23282f" />
         <rect x="252" y="116" width="496" height="22" rx="11" fill="#31373f" />
         <text x="500" y="132" textAnchor="middle" className={styles.url}>
-          {paginaActiva ? `https://${paginaActiva.url}` : ''}
+          {activePage ? `https://${activePage.url}` : ''}
         </text>
 
         <rect x="240" y="144" width="520" height="228" fill="#f7f7f5" />
 
-        {paginaActiva ? (
+        {activePage ? (
           <g>
             <text x="268" y="186" className={styles.paginaTitulo}>
-              {paginaActiva.titulo}
+              {activePage.titulo}
             </text>
             <line x1="268" y1="200" x2="732" y2="200" stroke="#e3e3df" strokeWidth="2" />
-            {paginaActiva.contenido.map((linea, i) => (
-              <text key={linea} x="268" y={232 + i * 28} className={styles.paginaLinea}>
-                {linea}
+            {activePage.contenido.map((line, i) => (
+              <text key={line} x="268" y={232 + i * 28} className={styles.paginaLinea}>
+                {line}
               </text>
             ))}
           </g>
@@ -390,28 +394,28 @@ function SalidaSegura() {
       </g>
 
       <g data-signal="papeles">
-        {DOCUMENTOS.map((documento, i) =>
-          vistaGuardados.has(i) ? null : (
+        {DOCUMENTS.map((document, i) =>
+          savedView.has(i) ? null : (
             <g
-              key={documento.nombre}
+              key={document.nombre}
               className={styles.hotspot}
-              onClick={() => guardarDocumento(i)}
+              onClick={() => saveDocument(i)}
               role="button"
-              aria-label={`Guardar ${documento.nombre} en el cajón`}
-              transform={`rotate(${documento.rotacion} ${documento.x + 54} 350)`}
+              aria-label={`Guardar ${document.nombre} en el cajón`}
+              transform={`rotate(${document.rotacion} ${document.x + 54} 350)`}
             >
               <g filter="url(#salida-sombra)">
-                <rect x={documento.x} y="294" width="108" height="116" rx="5" className={styles.papel} />
+                <rect x={document.x} y="294" width="108" height="116" rx="5" className={styles.papel} />
               </g>
-              <line x1={documento.x + 14} y1="318" x2={documento.x + 94} y2="318" className={styles.papelLinea} />
-              <line x1={documento.x + 14} y1="334" x2={documento.x + 94} y2="334" className={styles.papelLinea} />
-              <line x1={documento.x + 14} y1="350" x2={documento.x + 72} y2="350" className={styles.papelLinea} />
-              <rect x={documento.x + 1} y="374" width="106" height="35" className={styles.papelBanda} />
-              <text x={documento.x + 54} y="397" textAnchor="middle" className={styles.papelRotulo}>
-                {documento.nombre}
+              <line x1={document.x + 14} y1="318" x2={document.x + 94} y2="318" className={styles.papelLinea} />
+              <line x1={document.x + 14} y1="334" x2={document.x + 94} y2="334" className={styles.papelLinea} />
+              <line x1={document.x + 14} y1="350" x2={document.x + 72} y2="350" className={styles.papelLinea} />
+              <rect x={document.x + 1} y="374" width="106" height="35" className={styles.papelBanda} />
+              <text x={document.x + 54} y="397" textAnchor="middle" className={styles.papelRotulo}>
+                {document.nombre}
               </text>
               <rect
-                x={documento.x - 6}
+                x={document.x - 6}
                 y="288"
                 width="120"
                 height="128"
@@ -419,8 +423,8 @@ function SalidaSegura() {
                 className={`${styles.revelable} ${styles.contorno}`}
               />
               <g className={styles.revelable} style={{ pointerEvents: 'none' }}>
-                <rect x={documento.x - 18} y="252" width="144" height="28" rx="14" className={styles.pastilla} />
-                <text x={documento.x + 54} y="271" textAnchor="middle" className={styles.pastillaTexto}>
+                <rect x={document.x - 18} y="252" width="144" height="28" rx="14" className={styles.pastilla} />
+                <text x={document.x + 54} y="271" textAnchor="middle" className={styles.pastillaTexto}>
                   Guardar en el cajón
                 </text>
               </g>
@@ -434,19 +438,19 @@ function SalidaSegura() {
       <g
         data-signal="bloqueo"
         className={styles.hotspot}
-        onClick={alternarBloqueo}
+        onClick={toggleBlocking}
         role="button"
-        aria-label={vistaBloqueada ? 'Desbloquear la sesión' : 'Bloquear la sesión'}
+        aria-label={blockedView ? 'Desbloquear la sesión' : 'Bloquear la sesión'}
       >
         <g filter="url(#salida-sombra)">
           <rect x="378" y="386" width="244" height="34" rx="7" fill="#e6e7ea" stroke="#b9bcc3" strokeWidth="2" />
         </g>
-        {[0, 1, 2].map((fila) =>
-          Array.from({ length: 13 }, (_, columna) => (
+        {[0, 1, 2].map((row) =>
+          Array.from({ length: 13 }, (_, column) => (
             <rect
-              key={`${fila}-${columna}`}
-              x={386 + columna * 17.6 + (fila === 2 ? 6 : 0)}
-              y={391 + fila * 9}
+              key={`${row}-${column}`}
+              x={386 + column * 17.6 + (row === 2 ? 6 : 0)}
+              y={391 + row * 9}
               width="14"
               height="7"
               rx="2"
@@ -455,13 +459,13 @@ function SalidaSegura() {
           )),
         )}
         <rect x="440" y="418" width="120" height="7" rx="3" fill="#c7cad0" />
-        <circle cx="612" cy="393" r="4" className={vistaBloqueada ? styles.pilotoOk : styles.pilotoOff} />
+        <circle cx="612" cy="393" r="4" className={blockedView ? styles.pilotoOk : styles.pilotoOff} />
 
         <rect x="368" y="378" width="264" height="52" rx="10" className={`${styles.revelable} ${styles.contorno}`} />
 
         {/* Con la sesión bloqueada no se rotula nada: ya lo dice la pantalla, y
             repetirlo en la madera del escritorio no es algo que exista ahí. */}
-        {!vistaBloqueada && (
+        {!blockedView && (
           <text x="500" y="452" textAnchor="middle" className={styles.rotuloTeclado}>
             Bloquear la sesión · Win + L
           </text>
@@ -470,30 +474,30 @@ function SalidaSegura() {
     </svg>
   )
 
-  const pantalla = (
+  const screen = (
     <div className={styles.escenaMarco}>
-      {escena}
+      {scene}
       <FlashOverlay active={stampFlash.active} />
     </div>
   )
 
   const decision = final ? (
-    <PanelVeredicto
+    <VerdictPanel
       estadoGuardado={run.status}
       escenarioId="fisico/salida-segura"
       node={final}
-      senales={SENALES}
-      regla={REGLA}
+      senales={SIGNALS}
+      regla={RULE}
       restartLabel="↻ Repetir el escenario"
-      onRestart={reiniciar}
+      onRestart={restart}
       contenedorId="pantalla-escenario"
-      onPantalla={(id) => setRepaso(Boolean(id))}
+      onPantalla={(id) => setReview(Boolean(id))}
     />
   ) : (
     <div className="grid gap-4">
       <p className="text-lg font-semibold text-ink">Antes de irte, deja el puesto listo</p>
 
-      <Instrucciones
+      <Instructions
         queHaces={
           <div className="grid gap-4">
             <p className="text-lg leading-relaxed text-body">
@@ -502,19 +506,19 @@ function SalidaSegura() {
             </p>
 
             <ul className="grid gap-2.5">
-              <Tarea hecho={pestanasAbiertas === 0}>
+              <Task hecho={openTabs === 0}>
                 Cerrar las pestañas del navegador{' '}
                 <span className="tabular-nums text-muted">
-                  ({cerradas.size} de {PESTANAS.length})
+                  ({closed.size} de {TABS.length})
                 </span>
-              </Tarea>
-              <Tarea hecho={papelesExpuestos === 0}>
+              </Task>
+              <Task hecho={exposedPapers === 0}>
                 Guardar los documentos en el cajón{' '}
                 <span className="tabular-nums text-muted">
-                  ({guardados.size} de {DOCUMENTOS.length})
+                  ({saved.size} de {DOCUMENTS.length})
                 </span>
-              </Tarea>
-              <Tarea hecho={bloqueada}>Bloquear la sesión</Tarea>
+              </Task>
+              <Task hecho={blocked}>Bloquear la sesión</Task>
             </ul>
           </div>
         }
@@ -538,15 +542,15 @@ function SalidaSegura() {
           hecho convertía el ejercicio en un trámite que no se puede fallar. */}
       <button
         type="button"
-        onClick={irse}
+        onClick={leave}
         className="min-h-12 w-full rounded-md bg-primary px-4 py-3 text-lg font-medium text-on-primary transition hover:bg-primary-active focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link"
       >
-        {todoListo ? 'Irme: el puesto está listo' : 'Irme de la oficina'}
+        {allReady ? 'Irme: el puesto está listo' : 'Irme de la oficina'}
       </button>
     </div>
   )
 
-  const nota = (
+  const note = (
     <div className="text-base leading-relaxed text-body">
       <p>
         Vas a ver tu puesto de trabajo. Puedes tocar lo que quieras de la escena; el escenario
@@ -556,19 +560,19 @@ function SalidaSegura() {
   )
 
   return (
-    <EscenarioLayout
+    <ScenarioLayout
       escenarioId="fisico/salida-segura"
       resumen="Fin de jornada — Deja tu puesto asegurado"
-      contexto={contexto}
-      nota={nota}
+      contexto={context}
+      nota={note}
       identidad={[]}
-      pantalla={pantalla}
+      pantalla={screen}
       decision={decision}
       resultado={final?.kind === 'good' ? 'good' : final ? 'bad' : undefined}
-      onEmpezar={reiniciar}
+      onEmpezar={restart}
       dispositivo="escritorio"
     />
   )
 }
 
-export default SalidaSegura
+export default SafeExit
