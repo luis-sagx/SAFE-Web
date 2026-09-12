@@ -1,22 +1,24 @@
 import { plainToInstance } from 'class-transformer';
 import { validateSync } from 'class-validator';
-import { CanjearAtestacionDto } from './canjear-atestacion.dto';
+import { RedeemAttestationDto } from './canjear-atestacion.dto';
 
-function validar(atestacion: unknown) {
-  const dto = plainToInstance(CanjearAtestacionDto, { atestacion });
+function validate(attestation: unknown) {
+  const dto = plainToInstance(RedeemAttestationDto, {
+    atestacion: attestation,
+  });
   return validateSync(dto).map((e) => e.property);
 }
 
 describe('CanjearAtestacionDto', () => {
   it('acepta una cadena con forma de JWT', () => {
-    expect(validar('aaa.bbb.ccc')).toEqual([]);
+    expect(validate('aaa.bbb.ccc')).toEqual([]);
   });
 
   it('rechaza una cadena sin la forma de un JWT', () => {
-    expect(validar('no-es-un-jwt')).toContain('atestacion');
+    expect(validate('no-es-un-jwt')).toContain('atestacion');
   });
 
   it('rechaza que falte el campo', () => {
-    expect(validar(undefined)).toContain('atestacion');
+    expect(validate(undefined)).toContain('atestacion');
   });
 });
