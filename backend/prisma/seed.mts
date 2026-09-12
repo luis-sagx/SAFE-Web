@@ -11,18 +11,18 @@ import { PrismaPg } from '@prisma/adapter-pg';
 import { hash } from 'bcryptjs';
 // Extensión .js: Node lo ejecuta como ESM y la resolución la exige.
 import { PrismaClient } from '../generated/identidad/client.js';
-import { cifrar, huellaEmail } from '../apps/identidad/src/pii/pii.ts';
+import { encrypt, hashEmail } from '../apps/identidad/src/pii/pii.ts';
 
-function secreto(nombre: string): string {
-  const valor = process.env[nombre];
-  if (!valor) {
-    throw new Error(`Falta ${nombre} en el entorno (ver .env.example).`);
+function secret(name: string): string {
+  const value = process.env[name];
+  if (!value) {
+    throw new Error(`Falta ${name} en el entorno (ver .env.example).`);
   }
-  return valor;
+  return value;
 }
 
-const emailPepper = secreto('EMAIL_PEPPER');
-const piiKey = secreto('PII_ENCRYPTION_KEY');
+const emailPepper = secret('EMAIL_PEPPER');
+const piiKey = secret('PII_ENCRYPTION_KEY');
 
 const prisma = new PrismaClient({
   // El schema va como segundo argumento, no como `?schema=` en la URL: el
@@ -51,17 +51,17 @@ function makePassword(): string {
 async function main() {
   const email = arg('email', 'supervisor@espe.edu.ec').toLowerCase();
   const reset = process.argv.includes('--reset');
-  const emailHash = huellaEmail(email, emailPepper);
+  const emailHash = hashEmail(email, emailPepper);
 
   // `OR` con `email` por si la cuenta se creó antes del cifrado (issue #95)
   // y `backfill-pii.mts` todavía no la alcanzó: esas filas no tienen huella
   // todavía, solo el correo en claro.
-  const existente = await prisma.participant.findFirst({
+  const existing = await prisma.participant.findFirst({
     where: { OR: [{ emailHash }, { email }] },
   });
 
   // Solo se imprime una contraseña que quedó guardada de verdad.
-  if (existente && !reset) {
+  if (existing && !reset) {
     console.log(`
 La cuenta de supervisor ${email} ya existe; su contraseña no se tocó.
 Para generar una nueva:  pnpm seed -- --email ${email} --reset
@@ -72,18 +72,18 @@ Para generar una nueva:  pnpm seed -- --email ${email} --reset
   const password = makePassword();
   const passwordHash = await hash(password, 12);
 
-  if (existente) {
+  if (existing) {
     await prisma.participant.update({
-      where: { id: existente.id },
+      where: { id: existing.id },
       data: { passwordHash },
     });
   } else {
     await prisma.participant.create({
       data: {
-        email: cifrar(email, piiKey),
+        email: encrypt(email, piiKey),
         emailHash,
-        nombre: cifrar('Supervisor', piiKey),
-        apellido: cifrar('del estudio', piiKey),
+        nombre: encrypt('Supervisor', piiKey),
+        apellido: encrypt('del estudio', piiKey),
         // Sin cédula: no es participante, gestiona el estudio.
         passwordHash,
         role: 'SUPERVISOR',
