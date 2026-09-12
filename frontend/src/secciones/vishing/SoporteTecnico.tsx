@@ -1,20 +1,20 @@
 import { Camera, LayoutGrid, Phone, Wifi } from 'lucide-react'
-import StoryEscenario, { type AppTelefono, type ScreenNode } from '../../components/StoryEscenario'
-import type { Contexto } from '../../components/ui/ContextoEscenario'
+import ScenarioStory, { type PhoneApp, type ScreenNode } from '../../components/StoryEscenario'
+import type { Context } from '../../components/ui/ContextoEscenario'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
-import type { Senal } from '../../components/ui/PanelVeredicto'
+import type { Signal } from '../../components/ui/PanelVeredicto'
 import type { Story } from '../../hooks/useStoryEngine'
 
 // No piden dinero ni códigos, piden permiso: por eso pasa por la tienda de
 // apps y la pantalla de permisos en vez de resolverse al primer toque.
 
-const NUMERO = '+593 4 601 2288'
-const CODIGO_SESION = '483 992 117'
+const NUMBER = '+593 4 601 2288'
+const CODE_SESSION = '483 992 117'
 
-const ENTRANTE: ScreenView = {
+const INCOMING: ScreenView = {
   kind: 'call',
   entrante: true,
-  quien: NUMERO,
+  quien: NUMBER,
   numero: 'Guayaquil, Ecuador',
   etiqueta: 'No está en tus contactos',
   senalQuien: 'quien',
@@ -24,7 +24,7 @@ const ENTRANTE: ScreenView = {
   rechazarLabel: 'Rechazó la llamada sin contestar',
 }
 
-const APERTURA = [
+const OPENING = [
   {
     texto:
       'Buenas tardes, le llamo del soporte técnico de AndinaNet, su proveedor de internet. ¿Ha notado que la conexión le va más lenta estos días?',
@@ -37,13 +37,13 @@ const APERTURA = [
   },
 ]
 
-const LLAMADA: ScreenView = {
+const CALL: ScreenView = {
   kind: 'call',
-  quien: NUMERO,
+  quien: NUMBER,
   numero: 'Guayaquil, Ecuador',
   etiqueta: 'No está en tus contactos',
   senalQuien: 'quien',
-  dialogo: APERTURA,
+  dialogo: OPENING,
   decir: [
     {
       texto: 'Sí, algo lento sí anda. ¿Qué tengo que hacer?',
@@ -60,10 +60,10 @@ const LLAMADA: ScreenView = {
   colgarLabel: 'Colgó al principio de la llamada',
 }
 
-const SIGO = 'Sí, algo lento sí anda. ¿Qué tengo que hacer?'
-const COMO_SABEN = '¿Y ustedes cómo saben lo que hace mi router?'
+const CONTINUE_VIEW = 'Sí, algo lento sí anda. ¿Qué tengo que hacer?'
+const HOW_DO_THEY_KNOW = '¿Y ustedes cómo saben lo que hace mi router?'
 
-const INSTRUCCIONES = [
+const INSTRUCTIONS = [
   {
     texto:
       'Le paso el proceso: abra la tienda de aplicaciones de su teléfono e instale AsistenciaMóvil, que es la herramienta oficial de soporte.',
@@ -76,14 +76,14 @@ const INSTRUCCIONES = [
   },
 ]
 
-function pidiendoApp(respuesta: { texto: string; mio?: boolean }[]): ScreenView {
+function askingApp(response: { texto: string; mio?: boolean }[]): ScreenView {
   return {
     kind: 'call',
-    quien: NUMERO,
+    quien: NUMBER,
     numero: 'Guayaquil, Ecuador',
     etiqueta: 'No está en tus contactos',
     senalQuien: 'quien',
-    dialogo: [...APERTURA, ...respuesta, ...INSTRUCCIONES],
+    dialogo: [...OPENING, ...response, ...INSTRUCTIONS],
     decir: [
       {
         texto: 'No voy a instalar nada en mi teléfono.',
@@ -101,23 +101,23 @@ function pidiendoApp(respuesta: { texto: string; mio?: boolean }[]): ScreenView 
   }
 }
 
-const SIGUE_EL_PASO = pidiendoApp([
-  { texto: SIGO, mio: true },
+const FOLLOWS_STEP = askingApp([
+  { texto: CONTINUE_VIEW, mio: true },
   {
     texto:
       'Perfecto, entonces es lo que veíamos: el equipo está saturado por ese tráfico. No se preocupe, lo dejamos limpio en un momento.',
   },
 ])
 
-const PREGUNTA_COMO = pidiendoApp([
-  { texto: COMO_SABEN, mio: true },
+const QUESTION_HOW = askingApp([
+  { texto: HOW_DO_THEY_KNOW, mio: true },
   {
     texto:
       'Lo vemos desde la central, porque su router pasa por nuestra red. Nosotros no entramos a nada suyo, solo miramos el tráfico.',
   },
 ])
 
-const TIENDA: ScreenView = {
+const STORE: ScreenView = {
   kind: 'web',
   app: 'Tienda de apps',
   url: 'tienda',
@@ -139,13 +139,13 @@ const TIENDA: ScreenView = {
   button: '',
 }
 
-const PERMISO: ScreenView = {
+const PERMISSION: ScreenView = {
   kind: 'web',
   app: 'AsistenciaMóvil',
   url: 'asistencia-movil',
   secure: true,
   brand: 'Sesión de asistencia',
-  title: 'Tu código de sesión es ' + CODIGO_SESION,
+  title: 'Tu código de sesión es ' + CODE_SESSION,
   subtitle: 'La persona que tenga este código podrá conectarse a tu teléfono.',
   datos: [
     {
@@ -164,7 +164,7 @@ const PERMISO: ScreenView = {
   fields: [],
 }
 
-const OPERADORA: ScreenView = {
+const OPERATOR: ScreenView = {
   kind: 'web',
   app: 'Mi AndinaNet',
   url: 'andinanet',
@@ -187,7 +187,7 @@ const OPERADORA: ScreenView = {
   button: '',
 }
 
-const ESTADO: ScreenView = {
+const STATUS: ScreenView = {
   kind: 'web',
   app: 'Mi AndinaNet',
   url: 'andinanet',
@@ -206,7 +206,7 @@ const ESTADO: ScreenView = {
   button: '',
 }
 
-const APPS: AppTelefono[] = [
+const APPS: PhoneApp[] = [
   { Icono: Phone, texto: 'Teléfono', color: '#2f9e44', hilo: 'call' },
   {
     Icono: LayoutGrid,
@@ -231,51 +231,51 @@ const APPS: AppTelefono[] = [
 ]
 
 export const STORY: Story<ScreenNode> = {
-  n1: { kind: 'scene', view: ENTRANTE },
-  n2: { kind: 'scene', view: LLAMADA },
-  n3: { kind: 'scene', view: SIGUE_EL_PASO },
-  n3b: { kind: 'scene', view: PREGUNTA_COMO },
-  n4: { kind: 'scene', view: TIENDA },
-  n5: { kind: 'scene', view: PERMISO },
-  n6: { kind: 'scene', view: OPERADORA },
+  n1: { kind: 'scene', view: INCOMING },
+  n2: { kind: 'scene', view: CALL },
+  n3: { kind: 'scene', view: FOLLOWS_STEP },
+  n3b: { kind: 'scene', view: QUESTION_HOW },
+  n4: { kind: 'scene', view: STORE },
+  n5: { kind: 'scene', view: PERMISSION },
+  n6: { kind: 'scene', view: OPERATOR },
   e_rechaza: {
     kind: 'good',
-    view: ENTRANTE,
+    view: INCOMING,
     verdict: 'No caíste · no contestaste',
     outcome:
       'Rechazaste una llamada de un número desconocido. Tu operadora no necesita llamarte para arreglarte nada, y si de verdad hubiera una avería, la verías en su app o te llegaría un aviso por escrito.',
   },
   e_cuelga: {
     kind: 'good',
-    view: SIGUE_EL_PASO,
+    view: FOLLOWS_STEP,
     verdict: 'No caíste · colgaste',
     outcome:
       'Colgaste. Nadie que te llame sin que lo pidas necesita que instales una aplicación en tu teléfono. Si llegaste a instalarla antes de colgar, desinstálala: mientras esté ahí, alguien con el código puede volver a intentarlo.',
   },
   e_niega: {
     kind: 'good',
-    view: SIGUE_EL_PASO,
+    view: FOLLOWS_STEP,
     verdict: 'No caíste · te negaste a instalar nada',
     outcome:
       'Dijiste que no y ahí se acabó. La estafa entera dependía de que instalaras la herramienta: sin ella, quien llamaba no tenía forma de tocar tu teléfono por muy convincente que sonara.',
   },
   e_control: {
     kind: 'bad',
-    view: PERMISO,
+    view: PERMISSION,
     verdict: 'Caíste en la trampa',
     outcome:
       'Diste el control de tu teléfono a un desconocido. Mientras te explicaba la "limpieza", abrió tu app del banco, hizo una transferencia y borró los mensajes de aviso para que no la vieras. No hizo falta ninguna contraseña: tu teléfono ya estaba abierto y era él quien tocaba.',
   },
   e_verifica: {
     kind: 'good',
-    view: ESTADO,
+    view: STATUS,
     verdict: 'No caíste · lo comprobaste en tu canal',
     outcome:
       'En la app de tu operadora no había ninguna avería ni alerta del router, y ahí mismo estaba escrito que nunca llaman para pedirte instalar nada. La llamada seguía esperando mientras comprobabas.',
   },
 }
 
-const SENALES: Senal[] = [
+const SIGNALS: Signal[] = [
   {
     id: 's1',
     targetId: 'quien',
@@ -323,9 +323,9 @@ const SENALES: Senal[] = [
 const RULE =
   'Regla de oro: <b>nadie que te llame sin que lo pidas debe instalar nada en tu teléfono</b>. Una app de control remoto no limpia virus: le entrega tu pantalla y tus apps a quien esté al otro lado.'
 
-const RESUMEN = 'Una llamada dice ser del soporte de tu internet y quiere arreglarte el router.'
+const SUMMARY = 'Una llamada dice ser del soporte de tu internet y quiere arreglarte el router.'
 
-const CONTEXTO: Contexto = {
+const CONTEXT: Context = {
   antes: (
     <>
       Tienes internet en casa con <strong>AndinaNet</strong> y, como a todo el mundo, alguna tarde
@@ -340,14 +340,14 @@ const CONTEXTO: Contexto = {
   ),
 }
 
-function SoporteTecnico() {
+function TechnicalSupport() {
   return (
-    <StoryEscenario
+    <ScenarioStory
       escenarioId="vishing/soporte-tecnico"
-      resumen={RESUMEN}
-      contexto={CONTEXTO}
+      resumen={SUMMARY}
+      contexto={CONTEXT}
       story={STORY}
-      senales={SENALES}
+      senales={SIGNALS}
       rule={RULE}
       restartLabel="↻ Recibir la llamada otra vez"
       accionesEnPantalla
@@ -369,4 +369,4 @@ function SoporteTecnico() {
   )
 }
 
-export default SoporteTecnico
+export default TechnicalSupport

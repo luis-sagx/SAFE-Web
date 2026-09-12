@@ -1,28 +1,28 @@
 import { Camera, Compass, MessageSquareText, Phone, Wallet } from "lucide-react";
-import StoryEscenario, {
-  type AppTelefono,
+import ScenarioStory, {
+  type PhoneApp,
   type ScreenNode,
 } from "../../components/StoryEscenario";
-import type { Contexto } from "../../components/ui/ContextoEscenario";
+import type { Context } from "../../components/ui/ContextoEscenario";
 import type { ScreenView } from "../../components/ui/DeviceScreen";
-import type { Senal } from "../../components/ui/PanelVeredicto";
+import type { Signal } from "../../components/ui/PanelVeredicto";
 import type { Story } from "../../hooks/useStoryEngine";
 import {
-  CUENTA_FICTICIA,
-  IDENTIDAD_FICTICIA,
+  ACCOUNT_FAKE,
+  IDENTITY_FAKE,
 } from "../../lib/identidadFicticia";
 
 // El anzuelo es un regalo, no una amenaza. El final distingue colgar antes de
 // dar la cédula de colgar después: son cosas distintas y hay que marcarlo.
 // El código final es real, pero autoriza salidas de dinero, no depósitos.
 
-const NUMERO = "+593 2 299 0100";
-const CODIGO = "302774";
+const NUMBER = "+593 2 299 0100";
+const CODE = "302774";
 
-const ENTRANTE: ScreenView = {
+const INCOMING: ScreenView = {
   kind: "call",
   entrante: true,
-  quien: NUMERO,
+  quien: NUMBER,
   numero: "Quito, Ecuador",
   etiqueta: "No está en tus contactos",
   senalQuien: "quien",
@@ -32,7 +32,7 @@ const ENTRANTE: ScreenView = {
   rechazarLabel: "Rechazó la llamada sin contestar",
 };
 
-const APERTURA = [
+const OPENING = [
   {
     texto:
       "Buenos días, le llamo del Servicio de Rentas Internas, departamento de devoluciones. ¿Hablo con el contribuyente titular de la declaración del año pasado?",
@@ -47,14 +47,14 @@ const APERTURA = [
 
 const BASE: ScreenView = {
   kind: "call",
-  quien: NUMERO,
+  quien: NUMBER,
   numero: "Quito, Ecuador",
   etiqueta: "No está en tus contactos",
   senalQuien: "quien",
-  dialogo: APERTURA,
+  dialogo: OPENING,
   decir: [
     {
-      texto: `Claro, es ${IDENTIDAD_FICTICIA.cedula}.`,
+      texto: `Claro, es ${IDENTITY_FAKE.cedula}.`,
       goto: "n3",
       label: "Confirmó su número de cédula por teléfono",
     },
@@ -69,9 +69,9 @@ const BASE: ScreenView = {
   colgarLabel: "Colgó al principio de la llamada",
 };
 
-const CIERRE = [
+const COMPLETION = [
   {
-    texto: `Perfecto. La acreditación va a la cuenta ${CUENTA_FICTICIA}, ¿es correcta? Ya la tengo aquí en el sistema.`,
+    texto: `Perfecto. La acreditación va a la cuenta ${ACCOUNT_FAKE}, ¿es correcta? Ya la tengo aquí en el sistema.`,
     senal: "cuenta",
   },
   {
@@ -81,16 +81,16 @@ const CIERRE = [
   },
 ];
 
-const DIO_CEDULA: ScreenView = {
+const GAVE_ECUADORIAN_ID: ScreenView = {
   ...BASE,
   dialogo: [
-    ...APERTURA,
-    { texto: `Claro, es ${IDENTIDAD_FICTICIA.cedula}.`, mio: true },
-    ...CIERRE,
+    ...OPENING,
+    { texto: `Claro, es ${IDENTITY_FAKE.cedula}.`, mio: true },
+    ...COMPLETION,
   ],
   decir: [
     {
-      texto: `Sí, esa es. El código es ${CODIGO}.`,
+      texto: `Sí, esa es. El código es ${CODE}.`,
       goto: "e_codigo",
       label: "Dictó el código que le llegó del banco",
     },
@@ -99,10 +99,10 @@ const DIO_CEDULA: ScreenView = {
   colgarLabel: "Colgó después de haber dado su cédula",
 };
 
-const SIN_CEDULA: ScreenView = {
+const WITHOUT_ECUADORIAN_ID: ScreenView = {
   ...BASE,
   dialogo: [
-    ...APERTURA,
+    ...OPENING,
     {
       texto: "Yo no he reclamado ninguna devolución.",
       mio: true,
@@ -112,11 +112,11 @@ const SIN_CEDULA: ScreenView = {
         "Es automática, sale del cruce de sus gastos deducibles. No tiene que reclamar nada, solo confirmarme la cédula y la cuenta donde le depositamos.",
       senal: "insisten",
     },
-    ...CIERRE,
+    ...COMPLETION,
   ],
   decir: [
     {
-      texto: `Bueno, mi cédula es ${IDENTIDAD_FICTICIA.cedula} y la cuenta es esa.`,
+      texto: `Bueno, mi cédula es ${IDENTITY_FAKE.cedula} y la cuenta es esa.`,
       goto: "e_datos",
       label: "Terminó dando la cédula y confirmando la cuenta",
     },
@@ -127,20 +127,20 @@ const SIN_CEDULA: ScreenView = {
 
 // Sin `volverGoto`: se vuelve a la llamada por el icono Teléfono, que
 // restaura la conversación exacta donde se dejó.
-const CODIGO_SMS: ScreenView = {
+const CODE_SMS: ScreenView = {
   kind: "sms",
   sender: "BancoLitoral",
   sub: "Remitente verificado · SMS",
   msgs: [
     {
-      text: `Su codigo de autorizacion de transferencia es ${CODIGO}. Vence en 5 minutos. Nunca lo comparta: con el se autorizan salidas de dinero de su cuenta.`,
+      text: `Su codigo de autorizacion de transferencia es ${CODE}. Vence en 5 minutos. Nunca lo comparta: con el se autorizan salidas de dinero de su cuenta.`,
       time: "10:12",
       senal: "texto-codigo",
     },
   ],
 };
 
-const NAVEGADOR: ScreenView = {
+const BROWSER: ScreenView = {
   kind: "web",
   app: "Navegador",
   url: "inicio",
@@ -187,7 +187,7 @@ const PORTAL: ScreenView = {
   button: "",
 };
 
-const APPS: AppTelefono[] = [
+const APPS: PhoneApp[] = [
   { Icono: Phone, texto: "Teléfono", color: "#2f9e44", hilo: "call" },
   {
     Icono: MessageSquareText,
@@ -217,55 +217,55 @@ const APPS: AppTelefono[] = [
   },
 ];
 
-const NOTIFICACION_CODIGO = {
+const NOTIFICATION_CODE = {
   app: "Mensajes",
   remitente: "BancoLitoral",
   hora: "10:12",
-  texto: `Su codigo de autorizacion de transferencia es ${CODIGO}. Vence en 5 minutos. Nunca lo comparta: con el se autorizan salidas de dinero de su cuenta.`,
+  texto: `Su codigo de autorizacion de transferencia es ${CODE}. Vence en 5 minutos. Nunca lo comparta: con el se autorizan salidas de dinero de su cuenta.`,
   goto: "n_codigo",
   label: "Abrió la notificación del código que envió el banco",
 };
 
 export const STORY: Story<ScreenNode> = {
-  n1: { kind: "scene", view: ENTRANTE },
+  n1: { kind: "scene", view: INCOMING },
   n2: { kind: "scene", view: BASE },
-  n3: { kind: "scene", view: DIO_CEDULA, notificacion: NOTIFICACION_CODIGO },
-  n3b: { kind: "scene", view: SIN_CEDULA, notificacion: NOTIFICACION_CODIGO },
-  n4: { kind: "scene", view: NAVEGADOR },
-  n_codigo: { kind: "scene", view: CODIGO_SMS },
+  n3: { kind: "scene", view: GAVE_ECUADORIAN_ID, notificacion: NOTIFICATION_CODE },
+  n3b: { kind: "scene", view: WITHOUT_ECUADORIAN_ID, notificacion: NOTIFICATION_CODE },
+  n4: { kind: "scene", view: BROWSER },
+  n_codigo: { kind: "scene", view: CODE_SMS },
   e_rechaza: {
     kind: "good",
-    view: ENTRANTE,
+    view: INCOMING,
     verdict: "No caíste · no contestaste",
     outcome:
       "Rechazaste una llamada de un número desconocido. Si el SRI tuviera algo que devolverte, estaría en tu portal y llegaría por escrito: ninguna institución resuelve un trámite en una llamada que empezaron ellos.",
   },
   e_cuelga: {
     kind: "good",
-    view: SIN_CEDULA,
+    view: WITHOUT_ECUADORIAN_ID,
     verdict: "No caíste · colgaste sin dar nada",
     outcome:
       'Colgaste sin confirmar ni un dato. Fíjate en el orden: primero te ofrecen algo bueno, después te piden "solo confirmar" lo que ya deberían saber. Quien de verdad tiene tu declaración no necesita que le dictes tu cédula.',
   },
   e_cuelga_datos: {
     kind: "partial",
-    view: DIO_CEDULA,
+    view: GAVE_ECUADORIAN_ID,
     verdict: "Colgaste a tiempo, pero ya habías dado tu cédula",
-    outcome: `Colgaste antes de dictar el código, que es lo que habría costado dinero. Pero les confirmaste tu cédula ${IDENTIDAD_FICTICIA.cedula}: con ella la próxima llamada sonará mucho más creíble, porque empezarán diciéndotela ellos.`,
+    outcome: `Colgaste antes de dictar el código, que es lo que habría costado dinero. Pero les confirmaste tu cédula ${IDENTITY_FAKE.cedula}: con ella la próxima llamada sonará mucho más creíble, porque empezarán diciéndotela ellos.`,
     score: 50,
   },
   e_datos: {
     kind: "partial",
-    view: SIN_CEDULA,
+    view: WITHOUT_ECUADORIAN_ID,
     verdict: "Dudaste, pero entregaste igual",
-    outcome: `Preguntaste bien y aun así acabaste dando tu cédula y confirmando tu cuenta ${CUENTA_FICTICIA}. No perdiste dinero hoy, pero ahora tienen los dos datos con los que se abre cualquier gestión a tu nombre.`,
+    outcome: `Preguntaste bien y aun así acabaste dando tu cédula y confirmando tu cuenta ${ACCOUNT_FAKE}. No perdiste dinero hoy, pero ahora tienen los dos datos con los que se abre cualquier gestión a tu nombre.`,
     score: 50,
   },
   e_codigo: {
     kind: "bad",
-    view: DIO_CEDULA,
+    view: GAVE_ECUADORIAN_ID,
     verdict: "Caíste en la trampa",
-    outcome: `No había ninguna devolución. El código ${CODIGO} no liberaba ningún depósito: era el que tu banco envía para autorizar una transferencia, y con él sacaron el dinero de tu cuenta mientras seguías al teléfono. `,
+    outcome: `No había ninguna devolución. El código ${CODE} no liberaba ningún depósito: era el que tu banco envía para autorizar una transferencia, y con él sacaron el dinero de tu cuenta mientras seguías al teléfono. `,
   },
   e_portal: {
     kind: "good",
@@ -276,7 +276,7 @@ export const STORY: Story<ScreenNode> = {
   },
 };
 
-const SENALES: Senal[] = [
+const SIGNALS: Signal[] = [
   {
     id: "s1",
     targetId: "quien",
@@ -331,10 +331,10 @@ const SENALES: Senal[] = [
 const RULE =
   "Regla de oro: ninguna institución te llama para pedirte tu cédula, tu cuenta o un código. Si te ofrecen dinero por teléfono, <b>cuelga y compruébalo entrando tú al portal oficial</b>; y recuerda que el código del banco solo autoriza salidas de dinero, nunca entradas.";
 
-const RESUMEN =
+const SUMMARY =
   "Una llamada dice que el SRI tiene una devolución de impuestos a tu favor.";
 
-const CONTEXTO: Contexto = {
+const CONTEXT: Context = {
   antes: (
     <>
       Declaraste tus impuestos el año pasado, como siempre, y{" "}
@@ -349,14 +349,14 @@ const CONTEXTO: Contexto = {
   ),
 };
 
-function DevolucionSri() {
+function SriRefund() {
   return (
-    <StoryEscenario
+    <ScenarioStory
       escenarioId="vishing/devolucion-sri"
-      resumen={RESUMEN}
-      contexto={CONTEXTO}
+      resumen={SUMMARY}
+      contexto={CONTEXT}
       story={STORY}
-      senales={SENALES}
+      senales={SIGNALS}
       rule={RULE}
       restartLabel="↻ Recibir la llamada otra vez"
       accionesEnPantalla
@@ -381,4 +381,4 @@ function DevolucionSri() {
   );
 }
 
-export default DevolucionSri;
+export default SriRefund;

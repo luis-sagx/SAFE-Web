@@ -1,19 +1,19 @@
 import { Camera, MessageCircle, Phone, Wallet } from 'lucide-react'
-import StoryEscenario, { type AppTelefono, type ScreenNode } from '../../components/StoryEscenario'
-import type { Contexto } from '../../components/ui/ContextoEscenario'
+import ScenarioStory, { type PhoneApp, type ScreenNode } from '../../components/StoryEscenario'
+import type { Context } from '../../components/ui/ContextoEscenario'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
-import type { Senal } from '../../components/ui/PanelVeredicto'
+import type { Signal } from '../../components/ui/PanelVeredicto'
 import type { Story } from '../../hooks/useStoryEngine'
-import { CUENTA_FICTICIA } from '../../lib/identidadFicticia'
+import { ACCOUNT_FAKE } from '../../lib/identidadFicticia'
 
 // Puerta de entrada del módulo. Todo el ataque consiste en no llamar al número guardado
 // de siempre; la nota de voz no es adorno, es lo que hace "es mi hijo" en vez de solo texto.
 
-const DESCONOCIDO = '+593 96 118 4402'
-const NUMERO_ANDRES = '+593 99 845 2210'
-const CUENTA_ESTAFA = '2200-4471-08 · Kevin Loor Zambrano'
+const UNKNOWN = '+593 96 118 4402'
+const NUMBER_ANDRES = '+593 99 845 2210'
+const ACCOUNT_SCAM = '2200-4471-08 · Kevin Loor Zambrano'
 
-const PRIMER_MENSAJE = {
+const FIRST_MESSAGE = {
   text: 'Papi buenas, disculpa la hora 🙏 se me dañó el celular y perdí el chip. Este es mi número nuevo, soy Andrés. Guárdalo porfa.',
   time: '21:48',
   senal: 'mensaje',
@@ -28,12 +28,12 @@ const AUDIO = {
 
 const CHAT: ScreenView = {
   kind: 'sms',
-  sender: DESCONOCIDO,
+  sender: UNKNOWN,
   sub: 'No está en tus contactos · toca para ver el perfil',
   senalRemitente: 'remitente',
   perfilGoto: 'n1b',
   perfilLabel: 'Abrió el perfil del contacto que le escribía',
-  msgs: [PRIMER_MENSAJE],
+  msgs: [FIRST_MESSAGE],
   respuestas: [
     { texto: '¿Qué pasó, hijo? Cuéntame.', goto: 'n2', label: 'Contestó al número desconocido' },
   ],
@@ -42,13 +42,13 @@ const CHAT: ScreenView = {
 }
 
 // La ficha donde está todo lo que hace falta para dudar: foto bajada de redes, cuenta de hace 2 días.
-const PERFIL: ScreenView = {
+const PROFILE: ScreenView = {
   kind: 'web',
   app: 'Mensajes',
   url: 'perfil',
   secure: true,
   brand: 'Información del contacto',
-  title: DESCONOCIDO,
+  title: UNKNOWN,
   subtitle: 'No guardado en tu agenda.',
   datos: [
     {
@@ -68,7 +68,7 @@ const PERFIL: ScreenView = {
 
 const CHAT_AUDIO: ScreenView = {
   ...CHAT,
-  msgs: [PRIMER_MENSAJE, { text: '¿Qué pasó, hijo? Cuéntame.', time: '21:51', mine: true }, AUDIO],
+  msgs: [FIRST_MESSAGE, { text: '¿Qué pasó, hijo? Cuéntame.', time: '21:51', mine: true }, AUDIO],
   respuestas: [
     { texto: 'Ya mismo te transfiero, hijo.', goto: 'n3', label: 'Aceptó transferir el dinero' },
     { texto: 'Llámame, quiero oírte.', goto: 'n3b', label: 'Pidió que le llamara' },
@@ -80,13 +80,13 @@ const CHAT_AUDIO: ScreenView = {
   ],
 }
 
-const CUENTA: ScreenView = {
+const ACCOUNT: ScreenView = {
   ...CHAT,
   msgs: [
     ...(CHAT_AUDIO.kind === 'sms' ? CHAT_AUDIO.msgs : []),
     { text: 'Ya mismo te transfiero, hijo.', time: '21:53', mine: true },
     {
-      text: `Gracias pa 🙏 deposita a esta cuenta: ${CUENTA_ESTAFA}. Es de mi amigo, la mía está bloqueada por lo del chip.`,
+      text: `Gracias pa 🙏 deposita a esta cuenta: ${ACCOUNT_SCAM}. Es de mi amigo, la mía está bloqueada por lo del chip.`,
       time: '21:53',
       senal: 'cuenta',
     },
@@ -105,10 +105,10 @@ const CUENTA: ScreenView = {
   ],
 }
 
-const EXCUSA_CUENTA: ScreenView = {
+const EXCUSE_ACCOUNT: ScreenView = {
   ...CHAT,
   msgs: [
-    ...(CUENTA.kind === 'sms' ? CUENTA.msgs : []),
+    ...(ACCOUNT.kind === 'sms' ? ACCOUNT.msgs : []),
     { text: 'Esa cuenta no está a tu nombre.', time: '21:54', mine: true },
     {
       text: 'Ya te dije que es de mi amigo Kevin, él me está ayudando. Papi por favor apúrate que me están esperando 😭',
@@ -130,7 +130,7 @@ const EXCUSA_CUENTA: ScreenView = {
   ],
 }
 
-const EXCUSA_LLAMADA: ScreenView = {
+const EXCUSE_CALL: ScreenView = {
   ...CHAT,
   msgs: [
     ...(CHAT_AUDIO.kind === 'sms' ? CHAT_AUDIO.msgs : []),
@@ -156,7 +156,7 @@ const EXCUSA_LLAMADA: ScreenView = {
 }
 
 // Prueba que ninguna suplantación pasa: quien escribe no tiene forma de saberlo, así que esquiva.
-const PRUEBA: ScreenView = {
+const TEST: ScreenView = {
   ...CHAT,
   msgs: [
     ...(CHAT_AUDIO.kind === 'sms' ? CHAT_AUDIO.msgs : []),
@@ -186,7 +186,7 @@ const PRUEBA: ScreenView = {
 }
 
 // Llamar al número de siempre es la comprobación entera, a un icono de distancia.
-const AGENDA: ScreenView = {
+const CONTACTS: ScreenView = {
   kind: 'web',
   app: 'Teléfono',
   url: 'contactos',
@@ -196,7 +196,7 @@ const AGENDA: ScreenView = {
   opciones: [
     {
       texto: 'Andrés · Hijo',
-      detalle: `${NUMERO_ANDRES} · el número que siempre has tenido guardado`,
+      detalle: `${NUMBER_ANDRES} · el número que siempre has tenido guardado`,
       goto: 'e_verifica',
       label: 'Llamó a su hijo al número de siempre',
     },
@@ -208,10 +208,10 @@ const AGENDA: ScreenView = {
   button: '',
 }
 
-const LLAMADA_HIJO: ScreenView = {
+const CALL_SON: ScreenView = {
   kind: 'call',
   quien: 'Andrés · Hijo',
-  numero: NUMERO_ANDRES,
+  numero: NUMBER_ANDRES,
   etiqueta: 'Guardado en tus contactos',
   dialogo: [
     {
@@ -223,14 +223,14 @@ const LLAMADA_HIJO: ScreenView = {
   colgarGoto: undefined,
 }
 
-const BANCO: ScreenView = {
+const BANK: ScreenView = {
   kind: 'web',
   app: 'Banco del Litoral',
   url: 'bancolitoral.ec',
   secure: true,
   brand: 'Banca móvil',
   title: 'Tus cuentas',
-  subtitle: `${CUENTA_FICTICIA} · disponible $980,20`,
+  subtitle: `${ACCOUNT_FAKE} · disponible $980,20`,
   opciones: [
     {
       texto: 'Transferir',
@@ -246,7 +246,7 @@ const BANCO: ScreenView = {
   button: '',
 }
 
-const TRANSFERENCIA: ScreenView = {
+const TRANSFER: ScreenView = {
   kind: 'web',
   app: 'Banco del Litoral',
   url: 'bancolitoral.ec',
@@ -255,7 +255,7 @@ const TRANSFERENCIA: ScreenView = {
   title: 'Confirma la transferencia',
   subtitle: 'Revisa los datos antes de enviar el dinero.',
   datos: [
-    { etiqueta: 'Cuenta de destino', valor: CUENTA_ESTAFA, senal: 'cuenta' },
+    { etiqueta: 'Cuenta de destino', valor: ACCOUNT_SCAM, senal: 'cuenta' },
     { etiqueta: 'Titular', valor: 'Kevin Loor Zambrano' },
     { etiqueta: 'Valor', valor: '$350,00' },
   ],
@@ -268,7 +268,7 @@ const TRANSFERENCIA: ScreenView = {
   fields: [],
 }
 
-const APPS: AppTelefono[] = [
+const APPS: PhoneApp[] = [
   { Icono: MessageCircle, texto: 'Mensajes', color: '#2f9e44', hilo: 'sms' },
   {
     Icono: Phone,
@@ -294,32 +294,32 @@ const APPS: AppTelefono[] = [
 
 export const STORY: Story<ScreenNode> = {
   n1: { kind: 'scene', view: CHAT },
-  n1b: { kind: 'scene', view: PERFIL },
+  n1b: { kind: 'scene', view: PROFILE },
   n2: { kind: 'scene', view: CHAT_AUDIO },
-  n3: { kind: 'scene', view: CUENTA },
-  n3b: { kind: 'scene', view: EXCUSA_LLAMADA },
-  n3c: { kind: 'scene', view: EXCUSA_CUENTA },
-  n4: { kind: 'scene', view: PRUEBA },
-  n5: { kind: 'scene', view: AGENDA },
-  n6: { kind: 'scene', view: BANCO },
-  n7: { kind: 'scene', view: TRANSFERENCIA },
+  n3: { kind: 'scene', view: ACCOUNT },
+  n3b: { kind: 'scene', view: EXCUSE_CALL },
+  n3c: { kind: 'scene', view: EXCUSE_ACCOUNT },
+  n4: { kind: 'scene', view: TEST },
+  n5: { kind: 'scene', view: CONTACTS },
+  n6: { kind: 'scene', view: BANK },
+  n7: { kind: 'scene', view: TRANSFER },
   e_paga: {
     kind: 'bad',
-    view: TRANSFERENCIA,
+    view: TRANSFER,
     verdict: 'Caíste en la suplantación',
     outcome:
       'Los $350 salieron a la cuenta de un desconocido y no se pueden reversar. Andrés estaba en su casa, con su celular de siempre: nunca chocó ningún carro. La foto era suya, sacada de sus redes, y la voz del audio también, hecha con un programa a partir de cualquier video en el que sale hablando.',
   },
   e_verifica: {
     kind: 'good',
-    view: LLAMADA_HIJO,
+    view: CALL_SON,
     verdict: 'No caíste · llamaste al número de siempre',
     outcome:
       'Andrés contestó a la primera desde su número de toda la vida: estaba en casa y no había pasado nada. Un toque en la agenda desmonta el engaño entero, y por eso el mensaje insiste tanto en que no llames.',
   },
   e_corta: {
     kind: 'good',
-    view: PRUEBA,
+    view: TEST,
     verdict: 'No caíste · no mandaste nada',
     outcome:
       'Te plantaste: sin hablar con tu hijo, no hay transferencia. No hizo falta demostrar que era mentira ni discutir; basta con no mandar dinero a alguien cuya voz oíste pero cuya cara no viste. Ahora llama a Andrés a su número para quedarte tranquilo.',
@@ -334,7 +334,7 @@ export const STORY: Story<ScreenNode> = {
   },
 }
 
-const SENALES: Senal[] = [
+const SIGNALS: Signal[] = [
   {
     id: 's1',
     targetId: 'remitente',
@@ -389,9 +389,9 @@ const SENALES: Senal[] = [
 const RULE =
   'Regla de oro: si un número nuevo dice ser alguien conocido y pide dinero, <b>llama tú al número de siempre antes de mandar nada</b>. Una foto de perfil y hasta una voz se copian; una llamada a tu propia agenda, no.'
 
-const RESUMEN = 'Un número desconocido dice ser tu hijo, que perdió el celular, y pide dinero.'
+const SUMMARY = 'Un número desconocido dice ser tu hijo, que perdió el celular, y pide dinero.'
 
-const CONTEXTO: Contexto = {
+const CONTEXT: Context = {
   antes: (
     <>
       Tu hijo <strong>Andrés</strong> vive fuera de casa y hablan casi a diario. Tienes su número
@@ -406,14 +406,14 @@ const CONTEXTO: Contexto = {
   ),
 }
 
-function CambioNumero() {
+function NumberChange() {
   return (
-    <StoryEscenario
+    <ScenarioStory
       escenarioId="suplantacion/cambio-numero"
-      resumen={RESUMEN}
-      contexto={CONTEXTO}
+      resumen={SUMMARY}
+      contexto={CONTEXT}
       story={STORY}
-      senales={SENALES}
+      senales={SIGNALS}
       rule={RULE}
       restartLabel="↻ Repetir el escenario"
       accionesEnPantalla
@@ -436,4 +436,4 @@ function CambioNumero() {
   )
 }
 
-export default CambioNumero
+export default NumberChange

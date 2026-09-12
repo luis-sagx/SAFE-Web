@@ -1,21 +1,21 @@
 import { Camera, MessageCircle, Phone, Wallet } from 'lucide-react'
-import StoryEscenario, { type AppTelefono, type ScreenNode } from '../../components/StoryEscenario'
-import type { Contexto } from '../../components/ui/ContextoEscenario'
+import ScenarioStory, { type PhoneApp, type ScreenNode } from '../../components/StoryEscenario'
+import type { Context } from '../../components/ui/ContextoEscenario'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
-import type { Senal } from '../../components/ui/PanelVeredicto'
+import type { Signal } from '../../components/ui/PanelVeredicto'
 import type { Story } from '../../hooks/useStoryEngine'
-import { CUENTA_FICTICIA, IDENTIDAD_FICTICIA } from '../../lib/identidadFicticia'
+import { ACCOUNT_FAKE, IDENTITY_FAKE } from '../../lib/identidadFicticia'
 
 /** El más difícil: el dinero sí entra, de verdad, pero no es del comprador —es de una cuenta robada, y el
  *  banco lo reversa cuando el dueño reclama. No hay nada raro que reconocer en el mensaje: la salida es saber
  *  que un error se devuelve por el banco, nunca de mano a mano. */
 
-const COMPRADOR = 'Diego Alarcón'
-const NUMERO_COMPRADOR = '+593 96 720 3384'
-const CUENTA_DEVOLUCION = '3388-9012-45 · Wilson Pinto Cedeño'
-const BANCO_TELEFONO = '1700 100 200'
+const BUYER = 'Diego Alarcón'
+const NUMBER_BUYER = '+593 96 720 3384'
+const REFUND_ACCOUNT = '3388-9012-45 · Wilson Pinto Cedeño'
+const BANK_PHONE = '1700 100 200'
 
-const DISCULPA = {
+const EXCUSE = {
   text: 'Buenas tardes 😳 le acabo de transferir por la bicicleta pero me equivoqué feo: puse $1.300 en vez de $130. Se me fue un cero. Por favor devuélvame la diferencia, son $1.170.',
   time: '16:41',
   senal: 'error',
@@ -23,9 +23,9 @@ const DISCULPA = {
 
 const CHAT: ScreenView = {
   kind: 'sms',
-  sender: COMPRADOR,
-  sub: `${NUMERO_COMPRADOR} · comprador de la bicicleta`,
-  msgs: [DISCULPA],
+  sender: BUYER,
+  sub: `${NUMBER_BUYER} · comprador de la bicicleta`,
+  msgs: [EXCUSE],
   respuestas: [
     {
       texto: 'Uy, qué problema. Deje reviso y le devuelvo.',
@@ -42,13 +42,13 @@ const CHAT: ScreenView = {
   volverLabel: 'Salió del chat sin contestar',
 }
 
-const CUENTA_PEDIDA: ScreenView = {
+const ACCOUNT_REQUESTED: ScreenView = {
   ...CHAT,
   msgs: [
-    DISCULPA,
+    EXCUSE,
     { text: 'Uy, qué problema. Deje reviso y le devuelvo.', time: '16:43', mine: true },
     {
-      text: `Gracias, de verdad 🙏 mándeme los $1.170 a esta cuenta: ${CUENTA_DEVOLUCION}. Es la de mi cuñado, la mía quedó con el límite topado por la transferencia de hoy.`,
+      text: `Gracias, de verdad 🙏 mándeme los $1.170 a esta cuenta: ${REFUND_ACCOUNT}. Es la de mi cuñado, la mía quedó con el límite topado por la transferencia de hoy.`,
       time: '16:44',
       senal: 'otra-cuenta',
     },
@@ -67,10 +67,10 @@ const CUENTA_PEDIDA: ScreenView = {
   ],
 }
 
-const REVISADO: ScreenView = {
+const REVIEWED: ScreenView = {
   ...CHAT,
   msgs: [
-    DISCULPA,
+    EXCUSE,
     { text: 'Deje reviso mi cuenta primero.', time: '16:43', mine: true },
     {
       text: 'Sí sí, revise nomás, ahí está el depósito 🙏 pero apúrese porfa que ese dinero era para el arriendo y me van a sacar del departamento hoy mismo 😭',
@@ -92,10 +92,10 @@ const REVISADO: ScreenView = {
   ],
 }
 
-const INSISTE: ScreenView = {
+const INSISTS: ScreenView = {
   ...CHAT,
   msgs: [
-    DISCULPA,
+    EXCUSE,
     { text: 'Esto se devuelve por el banco, no de mano a mano.', time: '16:47', mine: true },
     {
       text: 'Por el banco se demora quince días hábiles y a mí me sacan hoy 😭 usted ya tiene la plata ahí, solo es apretar un botón. No sea así por favor, yo confié en usted.',
@@ -117,14 +117,14 @@ const INSISTE: ScreenView = {
   ],
 }
 
-const BANCO: ScreenView = {
+const BANK: ScreenView = {
   kind: 'web',
-  app: IDENTIDAD_FICTICIA.banco,
+  app: IDENTITY_FAKE.banco,
   url: 'bancolitoral.ec',
   secure: true,
   brand: 'Banca móvil',
   title: 'Cuenta de ahorros',
-  subtitle: CUENTA_FICTICIA,
+  subtitle: ACCOUNT_FAKE,
   datos: [
     { etiqueta: 'Saldo disponible', valor: '$1.540,50' },
     {
@@ -157,16 +157,16 @@ const BANCO: ScreenView = {
   button: '',
 }
 
-const TRANSFERENCIA: ScreenView = {
+const TRANSFER: ScreenView = {
   kind: 'web',
-  app: IDENTIDAD_FICTICIA.banco,
+  app: IDENTITY_FAKE.banco,
   url: 'bancolitoral.ec',
   secure: true,
   brand: 'Transferir a terceros',
   title: 'Confirma la transferencia',
   subtitle: 'Revisa los datos antes de enviar el dinero.',
   datos: [
-    { etiqueta: 'Cuenta de destino', valor: CUENTA_DEVOLUCION, senal: 'otra-cuenta' },
+    { etiqueta: 'Cuenta de destino', valor: REFUND_ACCOUNT, senal: 'otra-cuenta' },
     { etiqueta: 'Titular', valor: 'Wilson Pinto Cedeño' },
     { etiqueta: 'Valor', valor: '$1.170,00' },
   ],
@@ -179,10 +179,10 @@ const TRANSFERENCIA: ScreenView = {
   fields: [],
 }
 
-const LLAMADA_BANCO: ScreenView = {
+const CALL_BANK: ScreenView = {
   kind: 'call',
-  quien: IDENTIDAD_FICTICIA.banco,
-  numero: BANCO_TELEFONO,
+  quien: IDENTITY_FAKE.banco,
+  numero: BANK_PHONE,
   etiqueta: 'El número impreso en tu tarjeta',
   dialogo: [
     {
@@ -194,7 +194,7 @@ const LLAMADA_BANCO: ScreenView = {
   ],
 }
 
-const AGENDA: ScreenView = {
+const CONTACTS: ScreenView = {
   kind: 'web',
   app: 'Teléfono',
   url: 'contactos',
@@ -203,8 +203,8 @@ const AGENDA: ScreenView = {
   title: 'Tu agenda',
   opciones: [
     {
-      texto: IDENTIDAD_FICTICIA.banco,
-      detalle: `${BANCO_TELEFONO} · el número impreso en tu tarjeta`,
+      texto: IDENTITY_FAKE.banco,
+      detalle: `${BANK_PHONE} · el número impreso en tu tarjeta`,
       goto: 'e_banco',
       label: 'Llamó al banco por el número de su tarjeta',
     },
@@ -216,11 +216,11 @@ const AGENDA: ScreenView = {
   button: '',
 }
 
-const APPS: AppTelefono[] = [
+const APPS: PhoneApp[] = [
   { Icono: MessageCircle, texto: 'Mensajes', color: '#2f9e44', hilo: 'sms' },
   {
     Icono: Wallet,
-    texto: IDENTIDAD_FICTICIA.banco,
+    texto: IDENTITY_FAKE.banco,
     color: '#155e75',
     goto: 'n5',
     label: 'Abrió la app del banco',
@@ -243,22 +243,22 @@ const APPS: AppTelefono[] = [
 
 export const STORY: Story<ScreenNode> = {
   n1: { kind: 'scene', view: CHAT },
-  n2: { kind: 'scene', view: CUENTA_PEDIDA },
-  n2b: { kind: 'scene', view: REVISADO },
-  n3: { kind: 'scene', view: INSISTE },
-  n4: { kind: 'scene', view: TRANSFERENCIA },
-  n5: { kind: 'scene', view: BANCO },
-  n6: { kind: 'scene', view: AGENDA },
+  n2: { kind: 'scene', view: ACCOUNT_REQUESTED },
+  n2b: { kind: 'scene', view: REVIEWED },
+  n3: { kind: 'scene', view: INSISTS },
+  n4: { kind: 'scene', view: TRANSFER },
+  n5: { kind: 'scene', view: BANK },
+  n6: { kind: 'scene', view: CONTACTS },
   e_devuelve: {
     kind: 'bad',
-    view: TRANSFERENCIA,
+    view: TRANSFER,
     verdict: 'Caíste en la estafa',
     outcome:
       'Los $1.170 salieron de tu cuenta a la de Wilson Pinto y no se pueden reversar. Nueve días después, la dueña de la cuenta desde la que te llegaron los $1.300 denunció que se la habían vaciado, y el banco te retiró ese valor del saldo. La bicicleta la tienes, pero pusiste $1.170 tuyos y te quedaste debiendo la diferencia. Diego no volvió a escribir.',
   },
   e_banco: {
     kind: 'good',
-    view: LLAMADA_BANCO,
+    view: CALL_BANK,
     verdict: 'No caíste · lo dejaste en manos del banco',
     outcome:
       'No devolviste nada por tu cuenta, y eso fue lo que te salvó. El depósito venía de una cuenta robada: el banco lo reversó a las dos semanas y tu saldo volvió a lo que era, sin que perdieras un dólar. Un dinero que llega por error se devuelve por donde llegó.',
@@ -273,7 +273,7 @@ export const STORY: Story<ScreenNode> = {
   },
 }
 
-const SENALES: Senal[] = [
+const SIGNALS: Signal[] = [
   {
     id: 's1',
     targetId: 'otra-cuenta',
@@ -321,10 +321,10 @@ const SENALES: Senal[] = [
 const RULE =
   'Regla de oro: un dinero que te llega por error <b>se devuelve por el banco, nunca de mano a mano</b>. Si el depósito venía de una cuenta robada, el banco te lo va a quitar igual, y lo que hayas devuelto tú sale de tu bolsillo. Llama al número de tu tarjeta y repórtalo el mismo día.'
 
-const RESUMEN =
+const SUMMARY =
   'Un comprador te transfiere de más "por error" y te pide que le devuelvas la diferencia.'
 
-const CONTEXTO: Contexto = {
+const CONTEXT: Context = {
   antes: (
     <>
       Vendiste una <strong>bicicleta en $130</strong> por una página de compraventa. Quedaste con el
@@ -339,14 +339,14 @@ const CONTEXTO: Contexto = {
   ),
 }
 
-function VueltoDeMas() {
+function ExcessChange() {
   return (
-    <StoryEscenario
+    <ScenarioStory
       escenarioId="estafa/vuelto-de-mas"
-      resumen={RESUMEN}
-      contexto={CONTEXTO}
+      resumen={SUMMARY}
+      contexto={CONTEXT}
       story={STORY}
-      senales={SENALES}
+      senales={SIGNALS}
       rule={RULE}
       restartLabel="↻ Repetir el escenario"
       accionesEnPantalla
@@ -367,4 +367,4 @@ function VueltoDeMas() {
   )
 }
 
-export default VueltoDeMas
+export default ExcessChange

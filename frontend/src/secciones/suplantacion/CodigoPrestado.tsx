@@ -1,23 +1,23 @@
 import { Camera, MessageCircle, MessageSquareText, Phone } from 'lucide-react'
-import StoryEscenario, { type AppTelefono, type ScreenNode } from '../../components/StoryEscenario'
-import type { Contexto } from '../../components/ui/ContextoEscenario'
+import ScenarioStory, { type PhoneApp, type ScreenNode } from '../../components/StoryEscenario'
+import type { Context } from '../../components/ui/ContextoEscenario'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
-import type { Senal } from '../../components/ui/PanelVeredicto'
+import type { Signal } from '../../components/ui/PanelVeredicto'
 import type { Story } from '../../hooks/useStoryEngine'
 
 // Lo que está en juego no es dinero sino la cuenta: ese código abre tu mensajería en otro
 // teléfono. Quien lo pide ya robó la cuenta de tu prima y usa su chat para repetirlo contigo.
 
-const PRIMA = 'Gaby'
-const NUMERO_PRIMA = '+593 98 331 5507'
-const CODIGO = '418-207'
+const COUSIN = 'Gaby'
+const NUMBER_COUSIN = '+593 98 331 5507'
+const CODE = '418-207'
 
-const HISTORIAL = [
+const HISTORY = [
   { text: '¿Al final vienes el domingo donde mi mamá? 🥘', time: '5 ago' },
   { text: 'Ahí estaré, llevo el postre', time: '5 ago', mine: true },
 ]
 
-const PEDIDO = {
+const ORDER = {
   text: 'Primaaa, ayúdame con algo rápido 🙏 me estoy cambiando de celular y puse mal mi número: el código de verificación te llegó a ti. ¿Me lo pasas porfa? Son 6 números.',
   time: '20:14',
   senal: 'pide-codigo',
@@ -25,10 +25,10 @@ const PEDIDO = {
 
 const CHAT: ScreenView = {
   kind: 'sms',
-  sender: PRIMA,
-  sub: `${NUMERO_PRIMA} · guardada en tus contactos`,
+  sender: COUSIN,
+  sub: `${NUMBER_COUSIN} · guardada en tus contactos`,
   senalRemitente: 'remitente',
-  msgs: [...HISTORIAL, PEDIDO],
+  msgs: [...HISTORY, ORDER],
   respuestas: [
     { texto: 'Deja veo si me llegó algo.', goto: 'n2', label: 'Fue a buscar el mensaje del código' },
     {
@@ -41,7 +41,7 @@ const CHAT: ScreenView = {
   volverLabel: 'Salió del chat sin contestar ni comprobar',
 }
 
-const MENSAJES: ScreenView = {
+const MESSAGES: ScreenView = {
   kind: 'web',
   app: 'SMS',
   url: 'sms',
@@ -51,7 +51,7 @@ const MENSAJES: ScreenView = {
   datos: [
     {
       etiqueta: '20:13 · Verificación',
-      valor: `Tu código es ${CODIGO}. No lo compartas con nadie. Si no lo pediste, alguien está intentando entrar a tu cuenta.`,
+      valor: `Tu código es ${CODE}. No lo compartas con nadie. Si no lo pediste, alguien está intentando entrar a tu cuenta.`,
       senal: 'texto-codigo',
     },
     { etiqueta: '18:40 · Farmacia', valor: 'Tu receta está lista para retiro.' },
@@ -65,11 +65,11 @@ const MENSAJES: ScreenView = {
   button: '',
 }
 
-const INSISTE: ScreenView = {
+const INSISTS: ScreenView = {
   ...CHAT,
   msgs: [
-    ...HISTORIAL,
-    PEDIDO,
+    ...HISTORY,
+    ORDER,
     { text: '¿Y por qué me llegaría a mí un código tuyo?', time: '20:15', mine: true },
     {
       text: 'Porque me equivoqué en un dígito al escribir mi número, prima 🙈 el sistema lo mandó al tuyo. Pásamelo rapidito que se vence.',
@@ -87,11 +87,11 @@ const INSISTE: ScreenView = {
   ],
 }
 
-const CON_CODIGO: ScreenView = {
+const WITH_CODE: ScreenView = {
   ...CHAT,
   msgs: [
-    ...HISTORIAL,
-    PEDIDO,
+    ...HISTORY,
+    ORDER,
     { text: 'Deja veo si me llegó algo.', time: '20:16', mine: true },
     {
       text: '¿Ya? Pásamelo porfa, que ese código se vence en un ratito y me quedo sin WhatsApp 😩',
@@ -100,7 +100,7 @@ const CON_CODIGO: ScreenView = {
     },
   ],
   respuestas: [
-    { texto: `Te paso: ${CODIGO}`, goto: 'e_codigo', label: 'Le pasó el código por el chat' },
+    { texto: `Te paso: ${CODE}`, goto: 'e_codigo', label: 'Le pasó el código por el chat' },
     {
       texto: 'El mensaje dice que no lo comparta con nadie.',
       goto: 'e_niega',
@@ -109,7 +109,7 @@ const CON_CODIGO: ScreenView = {
   ],
 }
 
-const AGENDA: ScreenView = {
+const CONTACTS: ScreenView = {
   kind: 'web',
   app: 'Teléfono',
   url: 'contactos',
@@ -118,8 +118,8 @@ const AGENDA: ScreenView = {
   title: 'Tu agenda',
   opciones: [
     {
-      texto: `${PRIMA} · Prima`,
-      detalle: `${NUMERO_PRIMA} · su número de siempre`,
+      texto: `${COUSIN} · Prima`,
+      detalle: `${NUMBER_COUSIN} · su número de siempre`,
       goto: 'e_llama',
       label: 'Llamó a su prima en vez de pasarle el código',
     },
@@ -131,10 +131,10 @@ const AGENDA: ScreenView = {
   button: '',
 }
 
-const LLAMADA_PRIMA: ScreenView = {
+const CALL_COUSIN: ScreenView = {
   kind: 'call',
-  quien: `${PRIMA} · Prima`,
-  numero: NUMERO_PRIMA,
+  quien: `${COUSIN} · Prima`,
+  numero: NUMBER_COUSIN,
   etiqueta: 'Guardada en tus contactos',
   dialogo: [
     {
@@ -146,7 +146,7 @@ const LLAMADA_PRIMA: ScreenView = {
   ],
 }
 
-const APPS: AppTelefono[] = [
+const APPS: PhoneApp[] = [
   { Icono: MessageCircle, texto: 'Mensajes', color: '#2f9e44', hilo: 'sms' },
   {
     Icono: MessageSquareText,
@@ -180,32 +180,32 @@ export const STORY: Story<ScreenNode> = {
       app: 'Verificación',
       remitente: 'Verificación',
       hora: '20:13',
-      texto: `Tu código es ${CODIGO}. No lo compartas con nadie. Si no lo pediste, alguien está intentando entrar a tu cuenta.`,
+      texto: `Tu código es ${CODE}. No lo compartas con nadie. Si no lo pediste, alguien está intentando entrar a tu cuenta.`,
       goto: 'n2',
       label: 'Abrió la notificación del código de verificación',
     },
   },
-  n2: { kind: 'scene', view: MENSAJES },
-  n2b: { kind: 'scene', view: INSISTE },
-  n3: { kind: 'scene', view: CON_CODIGO },
-  n4: { kind: 'scene', view: AGENDA },
+  n2: { kind: 'scene', view: MESSAGES },
+  n2b: { kind: 'scene', view: INSISTS },
+  n3: { kind: 'scene', view: WITH_CODE },
+  n4: { kind: 'scene', view: CONTACTS },
   e_codigo: {
     kind: 'bad',
-    view: CON_CODIGO,
+    view: WITH_CODE,
     verdict: 'Caíste en la suplantación',
     outcome:
       'Ese código no era de tu prima: era el de tu propia cuenta. Con él entraron a tu mensajería desde otro teléfono, te sacaron de la sesión y empezaron a escribirle a toda tu agenda pidiendo plata con tu nombre y tu foto. A Gaby le habían hecho exactamente lo mismo la noche anterior, y por eso el mensaje llegó desde su chat.',
   },
   e_niega: {
     kind: 'good',
-    view: CON_CODIGO,
+    view: WITH_CODE,
     verdict: 'No caíste · el código no se pasa',
     outcome:
       'No lo mandaste, y con eso bastó: sin ese número nadie puede abrir tu cuenta en otro teléfono. El mensaje lo decía en su propio texto, y la regla no tiene excepciones ni siquiera para la familia.',
   },
   e_llama: {
     kind: 'good',
-    view: LLAMADA_PRIMA,
+    view: CALL_COUSIN,
     verdict: 'No caíste · la llamaste',
     outcome:
       'Gaby contestó y te contó que le habían robado el WhatsApp la noche anterior: quien te escribía era el ladrón, desde su cuenta. Una llamada resolvió las dos cosas, no perder tu cuenta y avisarle a ella.',
@@ -220,7 +220,7 @@ export const STORY: Story<ScreenNode> = {
   },
 }
 
-const SENALES: Senal[] = [
+const SIGNALS: Signal[] = [
   {
     id: 's1',
     targetId: 'pide-codigo',
@@ -268,9 +268,9 @@ const SENALES: Senal[] = [
 const RULE =
   'Regla de oro: un código de verificación <b>no se comparte con nadie, nunca</b>, ni con tu familia. Si te llegó a ti, es tuyo, y quien lo pide está intentando entrar a tu cuenta desde otro teléfono.'
 
-const RESUMEN = 'Tu prima pide que le pases un código de seis dígitos que te llegó por error.'
+const SUMMARY = 'Tu prima pide que le pases un código de seis dígitos que te llegó por error.'
 
-const CONTEXTO: Contexto = {
+const CONTEXT: Context = {
   antes: (
     <>
       <strong>Gaby</strong> es tu prima y se escriben casi todas las semanas por el{' '}
@@ -285,14 +285,14 @@ const CONTEXTO: Contexto = {
   ),
 }
 
-function CodigoPrestado() {
+function SharedCode() {
   return (
-    <StoryEscenario
+    <ScenarioStory
       escenarioId="suplantacion/codigo-prestado"
-      resumen={RESUMEN}
-      contexto={CONTEXTO}
+      resumen={SUMMARY}
+      contexto={CONTEXT}
       story={STORY}
-      senales={SENALES}
+      senales={SIGNALS}
       rule={RULE}
       restartLabel="↻ Repetir el escenario"
       accionesEnPantalla
@@ -313,4 +313,4 @@ function CodigoPrestado() {
   )
 }
 
-export default CodigoPrestado
+export default SharedCode

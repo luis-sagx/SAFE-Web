@@ -1,18 +1,18 @@
 import { Camera, MessageCircle, Users, Wallet } from 'lucide-react'
-import StoryEscenario, { type AppTelefono, type ScreenNode } from '../../components/StoryEscenario'
-import type { Contexto } from '../../components/ui/ContextoEscenario'
+import ScenarioStory, { type PhoneApp, type ScreenNode } from '../../components/StoryEscenario'
+import type { Context } from '../../components/ui/ContextoEscenario'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
-import type { Senal } from '../../components/ui/PanelVeredicto'
+import type { Signal } from '../../components/ui/PanelVeredicto'
 import type { Story } from '../../hooks/useStoryEngine'
-import { CUENTA_FICTICIA } from '../../lib/identidadFicticia'
+import { ACCOUNT_FAKE } from '../../lib/identidadFicticia'
 
 // No hay número que comprobar: la verificación es buscar a la persona en la
 // propia red y encontrarla dos veces (la cuenta real sigue activa).
 
-const AMIGA = 'Marcela Ríos'
-const CUENTA_ESTAFA = '3300-9182-44 · Jonathan Pico Arteaga'
+const FRIEND = 'Marcela Ríos'
+const ACCOUNT_SCAM = '3300-9182-44 · Jonathan Pico Arteaga'
 
-const APERTURA = {
+const OPENING = {
   text: 'Holaaa 😊 qué gusto, ¿cómo has estado? Perdí el acceso a mi cuenta anterior y tuve que abrir esta, ya estoy avisando a todos.',
   time: '16:20',
   senal: 'cuenta-nueva',
@@ -20,12 +20,12 @@ const APERTURA = {
 
 const CHAT: ScreenView = {
   kind: 'sms',
-  sender: AMIGA,
+  sender: FRIEND,
   sub: 'Mensaje de alguien que no está en tu lista de amigos',
   senalRemitente: 'remitente',
   perfilGoto: 'n1b',
   perfilLabel: 'Abrió el perfil desde el que le escribían',
-  msgs: [APERTURA],
+  msgs: [OPENING],
   respuestas: [
     { texto: '¡Marce! Todo bien, ¿y tú?', goto: 'n2', label: 'Siguió la conversación' },
     {
@@ -38,13 +38,13 @@ const CHAT: ScreenView = {
   volverLabel: 'Salió de la conversación sin contestar ni comprobar',
 }
 
-const PERFIL_FALSO: ScreenView = {
+const FAKE_PROFILE: ScreenView = {
   kind: 'web',
   app: 'Red social',
   url: 'perfil',
   secure: true,
   brand: 'Perfil',
-  title: AMIGA,
+  title: FRIEND,
   subtitle: 'No sois amigos.',
   datos: [
     { etiqueta: 'Cuenta creada', valor: 'Hace 6 días', senal: 'antiguedad' },
@@ -58,10 +58,10 @@ const PERFIL_FALSO: ScreenView = {
   button: '',
 }
 
-const PIDE: ScreenView = {
+const ASKS: ScreenView = {
   ...CHAT,
   msgs: [
-    APERTURA,
+    OPENING,
     { text: '¡Marce! Todo bien, ¿y tú?', time: '16:22', mine: true },
     {
       text: 'Ahí vamos 🙈 oye, justo te iba a escribir: estoy en un apuro con un pago y me faltan 220 dólares hasta el viernes. ¿Me los puedes prestar? Te los devuelvo apenas cobre.',
@@ -79,10 +79,10 @@ const PIDE: ScreenView = {
   ],
 }
 
-const EXCUSA_CUENTA: ScreenView = {
+const EXCUSE_ACCOUNT: ScreenView = {
   ...CHAT,
   msgs: [
-    APERTURA,
+    OPENING,
     { text: '¿Y por qué me escribes desde otra cuenta?', time: '16:22', mine: true },
     {
       text: 'Me hackearon la otra y no la pude recuperar 😩 esta es la buena, agrégame porfa. Oye, y aprovecho: ¿me puedes prestar 220 dólares hasta el viernes? Estoy en un apuro con un pago.',
@@ -100,13 +100,13 @@ const EXCUSA_CUENTA: ScreenView = {
   ],
 }
 
-const CUENTA: ScreenView = {
+const ACCOUNT: ScreenView = {
   ...CHAT,
   msgs: [
-    APERTURA,
+    OPENING,
     { text: 'Claro, pásame la cuenta.', time: '16:24', mine: true },
     {
-      text: `Gracias, mil gracias 🙏 mándalo a ${CUENTA_ESTAFA}, es de mi cuñado, la mía la tengo con problemas por lo de la cuenta hackeada.`,
+      text: `Gracias, mil gracias 🙏 mándalo a ${ACCOUNT_SCAM}, es de mi cuñado, la mía la tengo con problemas por lo de la cuenta hackeada.`,
       time: '16:24',
       senal: 'cuenta',
     },
@@ -125,10 +125,10 @@ const CUENTA: ScreenView = {
   ],
 }
 
-const NO_LLAMA: ScreenView = {
+const DOES_NOT_CALL: ScreenView = {
   ...CHAT,
   msgs: [
-    APERTURA,
+    OPENING,
     { text: 'Mejor te llamo y hablamos.', time: '16:24', mine: true },
     {
       text: 'Es que estoy en el trabajo y no puedo contestar 🙈 escríbeme nomás por aquí, porfa.',
@@ -150,7 +150,7 @@ const NO_LLAMA: ScreenView = {
   ],
 }
 
-const RED: ScreenView = {
+const NETWORK: ScreenView = {
   kind: 'web',
   app: 'Red social',
   url: 'inicio',
@@ -159,7 +159,7 @@ const RED: ScreenView = {
   title: '¿A quién buscas?',
   opciones: [
     {
-      texto: `Buscar "${AMIGA}"`,
+      texto: `Buscar "${FRIEND}"`,
       detalle: 'Busca a tu amiga en la red',
       goto: 'n5',
       label: 'Buscó a su amiga en la red social',
@@ -172,23 +172,23 @@ const RED: ScreenView = {
   button: '',
 }
 
-const BUSQUEDA: ScreenView = {
+const SEARCH: ScreenView = {
   kind: 'web',
   app: 'Red social',
   url: 'buscar',
   secure: true,
   brand: 'Resultados',
-  title: AMIGA,
+  title: FRIEND,
   subtitle: 'Dos personas coinciden con ese nombre.',
   opciones: [
     {
-      texto: `${AMIGA} · desde 2013`,
+      texto: `${FRIEND} · desde 2013`,
       detalle: '214 amigos en común · años de fotos · es tu amiga desde siempre',
       goto: 'e_verifica',
       label: 'Entró al perfil real de su amiga y le escribió',
     },
     {
-      texto: `${AMIGA} · desde hace 6 días`,
+      texto: `${FRIEND} · desde hace 6 días`,
       detalle: '31 amigos · ninguno en común · 4 fotos',
       goto: 'n1b',
       label: 'Entró al perfil nuevo desde la búsqueda',
@@ -198,13 +198,13 @@ const BUSQUEDA: ScreenView = {
   button: '',
 }
 
-const PERFIL_REAL: ScreenView = {
+const REAL_PROFILE: ScreenView = {
   kind: 'web',
   app: 'Red social',
   url: 'perfil',
   secure: true,
   brand: 'Perfil',
-  title: AMIGA,
+  title: FRIEND,
   subtitle: 'Amigas desde 2013.',
   datos: [
     { etiqueta: 'Última publicación', valor: 'Ayer, fotos del cumpleaños de su hija' },
@@ -217,14 +217,14 @@ const PERFIL_REAL: ScreenView = {
   button: '',
 }
 
-const BANCO: ScreenView = {
+const BANK: ScreenView = {
   kind: 'web',
   app: 'Banco del Litoral',
   url: 'bancolitoral.ec',
   secure: true,
   brand: 'Banca móvil',
   title: 'Tus cuentas',
-  subtitle: `${CUENTA_FICTICIA} · disponible $980,20`,
+  subtitle: `${ACCOUNT_FAKE} · disponible $980,20`,
   opciones: [
     {
       texto: 'Transferir',
@@ -240,7 +240,7 @@ const BANCO: ScreenView = {
   button: '',
 }
 
-const TRANSFERENCIA: ScreenView = {
+const TRANSFER: ScreenView = {
   kind: 'web',
   app: 'Banco del Litoral',
   url: 'bancolitoral.ec',
@@ -249,7 +249,7 @@ const TRANSFERENCIA: ScreenView = {
   title: 'Confirma la transferencia',
   subtitle: 'Revisa los datos antes de enviar el dinero.',
   datos: [
-    { etiqueta: 'Cuenta de destino', valor: CUENTA_ESTAFA, senal: 'cuenta' },
+    { etiqueta: 'Cuenta de destino', valor: ACCOUNT_SCAM, senal: 'cuenta' },
     { etiqueta: 'Titular', valor: 'Jonathan Pico Arteaga' },
     { etiqueta: 'Valor', valor: '$220,00' },
   ],
@@ -262,7 +262,7 @@ const TRANSFERENCIA: ScreenView = {
   fields: [],
 }
 
-const APPS: AppTelefono[] = [
+const APPS: PhoneApp[] = [
   { Icono: MessageCircle, texto: 'Mensajes', color: '#2f9e44', hilo: 'sms' },
   {
     Icono: Users,
@@ -288,32 +288,32 @@ const APPS: AppTelefono[] = [
 
 export const STORY: Story<ScreenNode> = {
   n1: { kind: 'scene', view: CHAT },
-  n1b: { kind: 'scene', view: PERFIL_FALSO },
-  n2: { kind: 'scene', view: PIDE },
-  n2b: { kind: 'scene', view: EXCUSA_CUENTA },
-  n3: { kind: 'scene', view: CUENTA },
-  n3b: { kind: 'scene', view: NO_LLAMA },
-  n4: { kind: 'scene', view: RED },
-  n5: { kind: 'scene', view: BUSQUEDA },
-  n6: { kind: 'scene', view: BANCO },
-  n7: { kind: 'scene', view: TRANSFERENCIA },
+  n1b: { kind: 'scene', view: FAKE_PROFILE },
+  n2: { kind: 'scene', view: ASKS },
+  n2b: { kind: 'scene', view: EXCUSE_ACCOUNT },
+  n3: { kind: 'scene', view: ACCOUNT },
+  n3b: { kind: 'scene', view: DOES_NOT_CALL },
+  n4: { kind: 'scene', view: NETWORK },
+  n5: { kind: 'scene', view: SEARCH },
+  n6: { kind: 'scene', view: BANK },
+  n7: { kind: 'scene', view: TRANSFER },
   e_paga: {
     kind: 'bad',
-    view: TRANSFERENCIA,
+    view: TRANSFER,
     verdict: 'Caíste en la suplantación',
     outcome:
       'Los $220 se fueron a la cuenta de un desconocido. Marcela nunca perdió su cuenta: la de siempre seguía publicando fotos esa misma semana. Alguien copió su nombre y sus fotos, abrió una cuenta nueva y escribió a toda la gente que aparecía en sus comentarios.',
   },
   e_verifica: {
     kind: 'good',
-    view: PERFIL_REAL,
+    view: REAL_PROFILE,
     verdict: 'No caíste · la buscaste en la red',
     outcome:
       'La cuenta de siempre de Marcela seguía ahí, activa y con vuestros 214 amigos en común. Le escribiste por ahí y te confirmó lo que ya se veía: no era ella. Cuando alguien "cambia de cuenta", la de antes es la que dice la verdad.',
   },
   e_corta: {
     kind: 'good',
-    view: NO_LLAMA,
+    view: DOES_NOT_CALL,
     verdict: 'No caíste · no mandaste nada',
     outcome:
       'No mandaste dinero a alguien con quien no pudiste hablar. Es todo lo que hacía falta: nadie que de verdad te conozca se ofende porque quieras oírle la voz antes de prestarle plata.',
@@ -328,7 +328,7 @@ export const STORY: Story<ScreenNode> = {
   },
 }
 
-const SENALES: Senal[] = [
+const SIGNALS: Signal[] = [
   {
     id: 's1',
     targetId: 'cuenta-nueva',
@@ -383,9 +383,9 @@ const SENALES: Senal[] = [
 const RULE =
   'Regla de oro: una foto y un nombre <b>no identifican a nadie</b>: se copian en un minuto. Si una cuenta nueva dice ser alguien conocido, búscalo en la red o llámalo por su número de siempre, y no mandes dinero a una cuenta que está a otro nombre.'
 
-const RESUMEN = 'Una amiga te escribe desde una cuenta nueva y termina pidiéndote dinero prestado.'
+const SUMMARY = 'Una amiga te escribe desde una cuenta nueva y termina pidiéndote dinero prestado.'
 
-const CONTEXTO: Contexto = {
+const CONTEXT: Context = {
   antes: (
     <>
       <strong>Marcela</strong> es amiga tuya desde el colegio. Se escriben de vez en cuando por la
@@ -400,14 +400,14 @@ const CONTEXTO: Contexto = {
   ),
 }
 
-function PerfilClonado() {
+function ClonedProfile() {
   return (
-    <StoryEscenario
+    <ScenarioStory
       escenarioId="suplantacion/perfil-clonado"
-      resumen={RESUMEN}
-      contexto={CONTEXTO}
+      resumen={SUMMARY}
+      contexto={CONTEXT}
       story={STORY}
-      senales={SENALES}
+      senales={SIGNALS}
       rule={RULE}
       restartLabel="↻ Repetir el escenario"
       accionesEnPantalla
@@ -428,4 +428,4 @@ function PerfilClonado() {
   )
 }
 
-export default PerfilClonado
+export default ClonedProfile

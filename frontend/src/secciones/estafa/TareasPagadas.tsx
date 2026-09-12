@@ -1,20 +1,20 @@
 import { Camera, ListChecks, MessageCircle, Wallet } from 'lucide-react'
-import StoryEscenario, { type AppTelefono, type ScreenNode } from '../../components/StoryEscenario'
-import type { Contexto } from '../../components/ui/ContextoEscenario'
+import ScenarioStory, { type PhoneApp, type ScreenNode } from '../../components/StoryEscenario'
+import type { Context } from '../../components/ui/ContextoEscenario'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
-import type { Senal } from '../../components/ui/PanelVeredicto'
+import type { Signal } from '../../components/ui/PanelVeredicto'
 import type { Story } from '../../hooks/useStoryEngine'
-import { CUENTA_FICTICIA, IDENTIDAD_FICTICIA } from '../../lib/identidadFicticia'
+import { ACCOUNT_FAKE, IDENTITY_FAKE } from '../../lib/identidadFicticia'
 
 /** El engaño no está en ninguna pantalla sino en el orden: los primeros pagos son reales y compran la prueba
  *  vivida de que "esto sí paga"; solo después llega la vuelta de tuerca (poner dinero propio). Entra por un
  *  grupo de empleo, no de finanzas —toca a quien le falta trabajo, no ahorros. */
 
-const COORDINADORA = 'Katty · Coordinadora'
-const NUMERO_COORDINADORA = '+593 98 613 9042'
-const CUENTA_PLATAFORMA = '6640-7723-19 · Diana Carolina Chuquín'
+const COORDINATOR = 'Katty · Coordinadora'
+const NUMBER_COORDINATOR = '+593 98 613 9042'
+const ACCOUNT_PLATFORM = '6640-7723-19 · Diana Carolina Chuquín'
 
-const FELICITA = {
+const CONGRATULATES = {
   text: '¡Felicidades! 🎉 completó sus 20 tareas del nivel Bronce y ya le transferimos sus $12. Revise su cuenta. Está lista para pasar al nivel Plata, donde cada tarea paga $3 en vez de $0,60.',
   time: '15:02',
   senal: 'primer-pago',
@@ -22,9 +22,9 @@ const FELICITA = {
 
 const CHAT: ScreenView = {
   kind: 'sms',
-  sender: COORDINADORA,
-  sub: `${NUMERO_COORDINADORA} · coordinadora del grupo de tareas`,
-  msgs: [FELICITA],
+  sender: COORDINATOR,
+  sub: `${NUMBER_COORDINATOR} · coordinadora del grupo de tareas`,
+  msgs: [CONGRATULATES],
   respuestas: [
     {
       texto: 'Sí me llegó, gracias. ¿Cómo paso a Plata?',
@@ -41,10 +41,10 @@ const CHAT: ScreenView = {
   volverLabel: 'Salió del chat sin seguir',
 }
 
-const PIDE_RECARGA: ScreenView = {
+const ASKS_TOP_UP: ScreenView = {
   ...CHAT,
   msgs: [
-    FELICITA,
+    CONGRATULATES,
     { text: 'Sí me llegó, gracias. ¿Cómo paso a Plata?', time: '15:04', mine: true },
     {
       text: 'Muy fácil: el nivel Plata pide un depósito de activación de $180 🔓 ese dinero es suyo, queda como saldo de trabajo en su panel y lo recupera con las primeras 60 tareas. En una semana ya está ganando $180 semanales.',
@@ -66,10 +66,10 @@ const PIDE_RECARGA: ScreenView = {
   ],
 }
 
-const EXPLICA: ScreenView = {
+const EXPLAINS: ScreenView = {
   ...CHAT,
   msgs: [
-    FELICITA,
+    CONGRATULATES,
     { text: '¿Por qué me pagan por dar me gusta?', time: '15:04', mine: true },
     {
       text: 'Porque las marcas nos contratan para posicionar sus productos y nosotros repartimos ese presupuesto entre nuestros colaboradores 📈 usted ya vio que el pago es real, ¿no? Lo del nivel Plata es solo la activación, $180 que quedan como saldo suyo.',
@@ -91,13 +91,13 @@ const EXPLICA: ScreenView = {
   ],
 }
 
-const CUENTA: ScreenView = {
+const ACCOUNT: ScreenView = {
   ...CHAT,
   msgs: [
-    FELICITA,
+    CONGRATULATES,
     { text: 'Listo, ¿a qué cuenta deposito?', time: '15:07', mine: true },
     {
-      text: `Deposite los $180 a esta cuenta: ${CUENTA_PLATAFORMA}, y mándeme el comprobante para activarle el nivel de una vez 🙌 hoy es el último día de la promoción de activación, mañana sube a $250.`,
+      text: `Deposite los $180 a esta cuenta: ${ACCOUNT_PLATFORM}, y mándeme el comprobante para activarle el nivel de una vez 🙌 hoy es el último día de la promoción de activación, mañana sube a $250.`,
       time: '15:08',
       senal: 'cuenta',
     },
@@ -116,10 +116,10 @@ const CUENTA: ScreenView = {
   ],
 }
 
-const INSISTE: ScreenView = {
+const INSISTS: ScreenView = {
   ...CHAT,
   msgs: [
-    FELICITA,
+    CONGRATULATES,
     { text: 'Un trabajo no se paga para poder trabajar.', time: '15:09', mine: true },
     {
       text: 'No es un pago, es un saldo de trabajo que sigue siendo suyo 🙂 en el grupo somos 300 y todos pasamos por lo mismo. Doña Elsa entró hace dos meses y ya saca $600 al mes desde su casa. Usted decide, pero el cupo de hoy se cierra a las 6.',
@@ -176,7 +176,7 @@ const PANEL: ScreenView = {
 }
 
 // Las condiciones que nadie lee: en letra pequeña dicen que el depósito no se devuelve y el cupo cambia cuando quieran.
-const CONDICIONES: ScreenView = {
+const CONDITIONS: ScreenView = {
   kind: 'web',
   app: 'TaskPro',
   url: 'taskpro-ec.app',
@@ -210,16 +210,16 @@ const CONDICIONES: ScreenView = {
   button: '',
 }
 
-const TRANSFERENCIA: ScreenView = {
+const TRANSFER: ScreenView = {
   kind: 'web',
-  app: IDENTIDAD_FICTICIA.banco,
+  app: IDENTITY_FAKE.banco,
   url: 'bancolitoral.ec',
   secure: true,
   brand: 'Transferir a terceros',
   title: 'Confirma la transferencia',
-  subtitle: `Desde ${CUENTA_FICTICIA}`,
+  subtitle: `Desde ${ACCOUNT_FAKE}`,
   datos: [
-    { etiqueta: 'Cuenta de destino', valor: CUENTA_PLATAFORMA, senal: 'cuenta' },
+    { etiqueta: 'Cuenta de destino', valor: ACCOUNT_PLATFORM, senal: 'cuenta' },
     { etiqueta: 'Concepto', valor: 'Activación nivel Plata' },
     { etiqueta: 'Valor', valor: '$180,00' },
   ],
@@ -232,7 +232,7 @@ const TRANSFERENCIA: ScreenView = {
   fields: [],
 }
 
-const APPS: AppTelefono[] = [
+const APPS: PhoneApp[] = [
   { Icono: MessageCircle, texto: 'Mensajes', color: '#2f9e44', hilo: 'sms' },
   {
     Icono: ListChecks,
@@ -243,7 +243,7 @@ const APPS: AppTelefono[] = [
   },
   {
     Icono: Wallet,
-    texto: IDENTIDAD_FICTICIA.banco,
+    texto: IDENTITY_FAKE.banco,
     color: '#155e75',
     goto: 'n5',
     label: 'Abrió la app del banco para transferir',
@@ -258,23 +258,23 @@ const APPS: AppTelefono[] = [
 
 export const STORY: Story<ScreenNode> = {
   n1: { kind: 'scene', view: CHAT },
-  n2: { kind: 'scene', view: PIDE_RECARGA },
-  n2b: { kind: 'scene', view: EXPLICA },
-  n3: { kind: 'scene', view: CUENTA },
-  n4: { kind: 'scene', view: INSISTE },
-  n5: { kind: 'scene', view: TRANSFERENCIA },
+  n2: { kind: 'scene', view: ASKS_TOP_UP },
+  n2b: { kind: 'scene', view: EXPLAINS },
+  n3: { kind: 'scene', view: ACCOUNT },
+  n4: { kind: 'scene', view: INSISTS },
+  n5: { kind: 'scene', view: TRANSFER },
   n6: { kind: 'scene', view: PANEL },
-  n6b: { kind: 'scene', view: CONDICIONES },
+  n6b: { kind: 'scene', view: CONDITIONS },
   e_recarga: {
     kind: 'bad',
-    view: TRANSFERENCIA,
+    view: TRANSFER,
     verdict: 'Caíste en la estafa',
     outcome:
       'Los $180 salieron y el nivel Plata se activó. Hiciste las 60 tareas de la primera semana y, al pedir el retiro, el cupo mensual había subido a 200: las condiciones decían que se podía cambiar sin avisar. Después vino el nivel Oro, con otro depósito, "para desbloquear el retiro acumulado". Los $12 del principio fueron lo que costó comprarte, y salieron del bolsillo de alguien que había recargado antes que tú.',
   },
   e_corta: {
     kind: 'good',
-    view: INSISTE,
+    view: INSISTS,
     verdict: 'No caíste · no pagaste por trabajar',
     outcome:
       'Te quedaste con tus $12 y no pusiste un dólar. El grupo cerró siete semanas después, cuando dejaron de aparecer personas nuevas que recargaran: ahí es donde estaba el dinero, y no en ninguna marca. Un trabajo de verdad te paga a ti; el que te cobra por dejarte trabajar no es un trabajo.',
@@ -289,7 +289,7 @@ export const STORY: Story<ScreenNode> = {
   },
 }
 
-const SENALES: Senal[] = [
+const SIGNALS: Signal[] = [
   {
     id: 's1',
     targetId: 'recarga',
@@ -336,9 +336,9 @@ const SENALES: Senal[] = [
 const RULE =
   'Regla de oro: un trabajo de verdad <b>te paga a ti; tú no le pagas a él</b>. En cuanto haya que depositar para activar un nivel, desbloquear tareas o liberar un retiro, ahí se acabó el trabajo. Que los primeros pagos lleguen es parte del método, no una prueba de que sea real.'
 
-const RESUMEN = 'Un trabajo desde casa que sí te pagó las primeras tareas y ahora pide un depósito.'
+const SUMMARY = 'Un trabajo desde casa que sí te pagó las primeras tareas y ahora pide un depósito.'
 
-const CONTEXTO: Contexto = {
+const CONTEXT: Context = {
   antes: (
     <>
       Llevas meses buscando algo que hacer desde la casa y te metieron en un{' '}
@@ -353,14 +353,14 @@ const CONTEXTO: Contexto = {
   ),
 }
 
-function TareasPagadas() {
+function PaidTasks() {
   return (
-    <StoryEscenario
+    <ScenarioStory
       escenarioId="estafa/tareas-pagadas"
-      resumen={RESUMEN}
-      contexto={CONTEXTO}
+      resumen={SUMMARY}
+      contexto={CONTEXT}
       story={STORY}
-      senales={SENALES}
+      senales={SIGNALS}
       rule={RULE}
       restartLabel="↻ Repetir el escenario"
       accionesEnPantalla
@@ -381,4 +381,4 @@ function TareasPagadas() {
   )
 }
 
-export default TareasPagadas
+export default PaidTasks

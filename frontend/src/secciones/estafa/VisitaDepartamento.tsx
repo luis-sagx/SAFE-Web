@@ -1,33 +1,33 @@
 import { Building2, Camera, MessageCircle, Wallet } from 'lucide-react'
-import StoryEscenario, { type AppTelefono, type ScreenNode } from '../../components/StoryEscenario'
-import type { Contexto } from '../../components/ui/ContextoEscenario'
+import ScenarioStory, { type PhoneApp, type ScreenNode } from '../../components/StoryEscenario'
+import type { Context } from '../../components/ui/ContextoEscenario'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
-import type { Senal } from '../../components/ui/PanelVeredicto'
+import type { Signal } from '../../components/ui/PanelVeredicto'
 import type { Story } from '../../hooks/useStoryEngine'
-import { CUENTA_FICTICIA, IDENTIDAD_FICTICIA } from '../../lib/identidadFicticia'
+import { ACCOUNT_FAKE, IDENTITY_FAKE } from '../../lib/identidadFicticia'
 
 /** El espejo legítimo de "Departamento en arriendo": misma escena, orden puesto del derecho (dirección real,
  *  visita, firma y depósito al firmar, a la cuenta de la inmobiliaria). Mide si se aprendió la regla o solo
  *  el miedo: aquí el acierto es firmar. */
 
-const AGENTE = 'Mariela Cifuentes · Inmobiliaria Caicedo'
-const NUMERO_AGENTE = '+593 2 246 8890'
-const CUENTA_INMOBILIARIA = '8830-4412-07 · Inmobiliaria Caicedo Cía. Ltda.'
-const DIRECCION = 'Av. Coruña N26-118 y San Ignacio, edificio Pradera, dpto. 4B'
-const DEPOSITO = '$640'
+const AGENT = 'Mariela Cifuentes · Inmobiliaria Caicedo'
+const NUMBER_AGENT = '+593 2 246 8890'
+const ACCOUNT_REAL_ESTATE = '8830-4412-07 · Inmobiliaria Caicedo Cía. Ltda.'
+const ADDRESS = 'Av. Coruña N26-118 y San Ignacio, edificio Pradera, dpto. 4B'
+const DEPOSIT = '$640'
 
-const RESPONDE = {
-  text: `Buenas tardes. Sí, el departamento sigue disponible: $320 mensuales más alícuota. Está en ${DIRECCION}. ¿Le queda bien que lo vea mañana a las 10 o prefiere el sábado? El conserje también le puede abrir si a usted le sirve otra hora.`,
+const RESPONDS = {
+  text: `Buenas tardes. Sí, el departamento sigue disponible: $320 mensuales más alícuota. Está en ${ADDRESS}. ¿Le queda bien que lo vea mañana a las 10 o prefiere el sábado? El conserje también le puede abrir si a usted le sirve otra hora.`,
   time: '17:20',
   senal: 'direccion',
 }
 
 const CHAT: ScreenView = {
   kind: 'sms',
-  sender: AGENTE,
-  sub: `${NUMERO_AGENTE} · número fijo de la inmobiliaria`,
+  sender: AGENT,
+  sub: `${NUMBER_AGENT} · número fijo de la inmobiliaria`,
   senalRemitente: 'remitente',
-  msgs: [RESPONDE],
+  msgs: [RESPONDS],
   respuestas: [
     {
       texto: 'Mañana a las 10 me queda bien. Ahí estaré.',
@@ -45,7 +45,7 @@ const CHAT: ScreenView = {
 }
 
 // La visita: lo que en el espejo era imposible, aquí ocurre sin drama —la puerta se abre y es el departamento de las fotos.
-const VISITA: ScreenView = {
+const VISIT: ScreenView = {
   kind: 'web',
   app: 'Portal Inmobiliario',
   url: 'portalinmobiliario.ec',
@@ -79,7 +79,7 @@ const VISITA: ScreenView = {
   button: '',
 }
 
-const REGISTRO: ScreenView = {
+const REGISTRATION_VIEW: ScreenView = {
   kind: 'web',
   app: 'Navegador',
   url: 'supercias.gob.ec',
@@ -103,13 +103,13 @@ const REGISTRO: ScreenView = {
   button: '',
 }
 
-const CIERRA: ScreenView = {
+const CLOSES: ScreenView = {
   ...CHAT,
   msgs: [
-    RESPONDE,
+    RESPONDS,
     { text: 'Ya lo vi, me gustó. ¿Cómo seguimos?', time: '11:40', mine: true },
     {
-      text: `Perfecto. Pase mañana por la oficina con su cédula, firmamos el contrato y ahí mismo hace el depósito de garantía de ${DEPOSITO} (dos meses), a la cuenta de la inmobiliaria. Le entregamos su copia del contrato, el recibo y las llaves el mismo día.`,
+      text: `Perfecto. Pase mañana por la oficina con su cédula, firmamos el contrato y ahí mismo hace el depósito de garantía de ${DEPOSIT} (dos meses), a la cuenta de la inmobiliaria. Le entregamos su copia del contrato, el recibo y las llaves el mismo día.`,
       time: '11:45',
       senal: 'orden',
     },
@@ -128,7 +128,7 @@ const CIERRA: ScreenView = {
   ],
 }
 
-const CONTRATO: ScreenView = {
+const CONTRACT: ScreenView = {
   kind: 'web',
   app: 'Portal Inmobiliario',
   url: 'portalinmobiliario.ec',
@@ -138,10 +138,10 @@ const CONTRATO: ScreenView = {
   subtitle: 'Lo que dice el contrato que tienes delante.',
   datos: [
     { etiqueta: 'Arrendador', valor: 'Inmobiliaria Caicedo Cía. Ltda.', senal: 'coincide' },
-    { etiqueta: 'Inmueble', valor: DIRECCION, senal: 'coincide' },
+    { etiqueta: 'Inmueble', valor: ADDRESS, senal: 'coincide' },
     { etiqueta: 'Canon mensual', valor: '$320,00 más alícuota' },
-    { etiqueta: 'Garantía', valor: `${DEPOSITO} · devolvible al terminar, contra inventario` },
-    { etiqueta: 'Cuenta para el depósito', valor: CUENTA_INMOBILIARIA, senal: 'misma-cuenta' },
+    { etiqueta: 'Garantía', valor: `${DEPOSIT} · devolvible al terminar, contra inventario` },
+    { etiqueta: 'Cuenta para el depósito', valor: ACCOUNT_REAL_ESTATE, senal: 'misma-cuenta' },
   ],
   aviso:
     'La cuenta del contrato está a nombre de la misma compañía que arrienda, y el depósito se entrega contra recibo.',
@@ -165,16 +165,16 @@ const CONTRATO: ScreenView = {
   button: '',
 }
 
-const TRANSFERENCIA: ScreenView = {
+const TRANSFER: ScreenView = {
   kind: 'web',
-  app: IDENTIDAD_FICTICIA.banco,
+  app: IDENTITY_FAKE.banco,
   url: 'bancolitoral.ec',
   secure: true,
   brand: 'Transferir a terceros',
   title: 'Confirma la transferencia',
-  subtitle: `Desde ${CUENTA_FICTICIA}`,
+  subtitle: `Desde ${ACCOUNT_FAKE}`,
   datos: [
-    { etiqueta: 'Cuenta de destino', valor: CUENTA_INMOBILIARIA, senal: 'misma-cuenta' },
+    { etiqueta: 'Cuenta de destino', valor: ACCOUNT_REAL_ESTATE, senal: 'misma-cuenta' },
     { etiqueta: 'Concepto', valor: 'Garantía de arriendo · dpto. 4B' },
     { etiqueta: 'Valor', valor: '$640,00' },
   ],
@@ -187,7 +187,7 @@ const TRANSFERENCIA: ScreenView = {
   fields: [],
 }
 
-const APPS: AppTelefono[] = [
+const APPS: PhoneApp[] = [
   { Icono: MessageCircle, texto: 'Mensajes', color: '#2f9e44', hilo: 'sms' },
   {
     Icono: Building2,
@@ -198,7 +198,7 @@ const APPS: AppTelefono[] = [
   },
   {
     Icono: Wallet,
-    texto: IDENTIDAD_FICTICIA.banco,
+    texto: IDENTITY_FAKE.banco,
     color: '#155e75',
     goto: 'n6',
     label: 'Abrió la app del banco',
@@ -213,21 +213,21 @@ const APPS: AppTelefono[] = [
 
 export const STORY: Story<ScreenNode> = {
   n1: { kind: 'scene', view: CHAT },
-  n2: { kind: 'scene', view: VISITA },
-  n3: { kind: 'scene', view: CIERRA },
-  n4: { kind: 'scene', view: REGISTRO },
-  n5: { kind: 'scene', view: CONTRATO },
-  n6: { kind: 'scene', view: TRANSFERENCIA },
+  n2: { kind: 'scene', view: VISIT },
+  n3: { kind: 'scene', view: CLOSES },
+  n4: { kind: 'scene', view: REGISTRATION_VIEW },
+  n5: { kind: 'scene', view: CONTRACT },
+  n6: { kind: 'scene', view: TRANSFER },
   e_firma: {
     kind: 'good',
-    view: CONTRATO,
+    view: CONTRACT,
     verdict: 'Acertaste · viste, firmaste y después pagaste',
     outcome:
       'Firmaste el contrato con el departamento ya visto, la compañía comprobada en el registro y el depósito a la cuenta de la misma inmobiliaria que arrienda, contra recibo. Te mudaste el fin de semana. Esto es lo que se ve cuando un arriendo es de verdad: el mismo trato del otro escenario, pero en el orden correcto.',
   },
   e_piensa: {
     kind: 'partial',
-    view: CONTRATO,
+    view: CONTRACT,
     verdict: 'Estaba todo bien y lo dejaste enfriar',
     outcome:
       'Pediste un día más y el departamento seguía disponible, así que no perdiste nada. Pero tampoco tenías qué pensar: lo habías visto, la compañía constaba en el registro y el contrato coincidía con todo. Tomarse un día es sano cuando algo no cuadra; aquí lo único que faltaba era decidir.',
@@ -251,7 +251,7 @@ export const STORY: Story<ScreenNode> = {
   },
 }
 
-const SENALES: Senal[] = [
+const SIGNALS: Signal[] = [
   {
     id: 's1',
     targetId: 'direccion',
@@ -292,10 +292,10 @@ const SENALES: Senal[] = [
 const RULE =
   'Regla de oro: la misma regla vale para los dos. En un arriendo el orden es <b>ver, firmar y después pagar</b>, a la cuenta de quien firma el contrato. Si el orden se cumple, arrendar es seguro y hay que hacerlo; si alguien te lo invierte, ahí está la trampa. La prudencia es el orden, no la desconfianza.'
 
-const RESUMEN =
+const SUMMARY =
   'Una agente inmobiliaria te da la dirección y tres horarios para ver un departamento.'
 
-const CONTEXTO: Contexto = {
+const CONTEXT: Context = {
   antes: (
     <>
       Llevas <strong>un mes buscando departamento</strong> y escribiste a varios anuncios del sector
@@ -310,14 +310,14 @@ const CONTEXTO: Contexto = {
   ),
 }
 
-function VisitaDepartamento() {
+function ApartmentVisit() {
   return (
-    <StoryEscenario
+    <ScenarioStory
       escenarioId="estafa/visita-departamento"
-      resumen={RESUMEN}
-      contexto={CONTEXTO}
+      resumen={SUMMARY}
+      contexto={CONTEXT}
       story={STORY}
-      senales={SENALES}
+      senales={SIGNALS}
       rule={RULE}
       restartLabel="↻ Repetir el escenario"
       accionesEnPantalla
@@ -339,4 +339,4 @@ function VisitaDepartamento() {
   )
 }
 
-export default VisitaDepartamento
+export default ApartmentVisit

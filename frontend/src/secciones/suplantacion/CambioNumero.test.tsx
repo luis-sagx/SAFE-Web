@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
 import { describe, expect, it, vi } from 'vitest'
-import CambioNumero from './CambioNumero'
+import NumberChange from './CambioNumero'
 
 vi.mock('../../context/AuthContext', () => ({
   useAuth: () => ({
@@ -29,14 +29,14 @@ vi.mock('../../context/AuthContext', () => ({
 }))
 
 vi.mock('../../lib/api', async () => {
-  const actual = await vi.importActual<typeof import('../../lib/api')>('../../lib/api')
-  return { ...actual, createRun: vi.fn().mockResolvedValue(undefined) }
+  const current = await vi.importActual<typeof import('../../lib/api')>('../../lib/api')
+  return { ...current, createRun: vi.fn().mockResolvedValue(undefined) }
 })
 
-function empezar() {
+function start() {
   const { container } = render(
     <MemoryRouter>
-      <CambioNumero />
+      <NumberChange />
     </MemoryRouter>,
   )
 
@@ -48,25 +48,25 @@ describe('CambioNumero', () => {
   // La ficha del contacto es donde está la señal, y abrirla no decide nada:
   // mirar quién te escribe no es responderle.
   it('la cabecera del chat abre el perfil sin terminar la corrida', () => {
-    const telefono = empezar()
+    const phone = start()
 
-    fireEvent.click(within(telefono).getByRole('button', { name: /No está en tus contactos/ }))
+    fireEvent.click(within(phone).getByRole('button', { name: /No está en tus contactos/ }))
 
-    expect(within(telefono).getByText('Hace 2 días')).toBeDefined()
+    expect(within(phone).getByText('Hace 2 días')).toBeDefined()
     expect(screen.getByText('¿Qué haces?')).toBeDefined()
 
-    fireEvent.click(within(telefono).getByRole('button', { name: 'Salir de la aplicación' }))
-    expect(within(telefono).getByText(/se me dañó el celular/)).toBeDefined()
+    fireEvent.click(within(phone).getByRole('button', { name: 'Salir de la aplicación' }))
+    expect(within(phone).getByText(/se me dañó el celular/)).toBeDefined()
   })
 
   it('la nota de voz llega al contestar y se puede reproducir', () => {
-    const telefono = empezar()
+    const phone = start()
 
-    expect(within(telefono).queryByRole('button', { name: 'Reproducir la nota de voz' })).toBeNull()
+    expect(within(phone).queryByRole('button', { name: 'Reproducir la nota de voz' })).toBeNull()
 
-    fireEvent.click(within(telefono).getByRole('button', { name: /¿Qué pasó, hijo?/ }))
+    fireEvent.click(within(phone).getByRole('button', { name: /¿Qué pasó, hijo?/ }))
 
-    const play = within(telefono).getByRole('button', { name: 'Reproducir la nota de voz' })
+    const play = within(phone).getByRole('button', { name: 'Reproducir la nota de voz' })
     // Tiene audio generado: si faltara, el botón quedaría inhabilitado.
     expect(play.hasAttribute('disabled')).toBe(false)
     // Y escuchar no decide nada.
@@ -75,32 +75,32 @@ describe('CambioNumero', () => {
   })
 
   it('llamar al número de siempre es el acierto', () => {
-    const telefono = empezar()
+    const phone = start()
 
-    fireEvent.click(within(telefono).getByRole('button', { name: /Teléfono/ }))
+    fireEvent.click(within(phone).getByRole('button', { name: /Teléfono/ }))
     expect(screen.getByText('¿Qué haces?')).toBeDefined()
 
-    fireEvent.click(within(telefono).getByRole('button', { name: /Andrés · Hijo/ }))
+    fireEvent.click(within(phone).getByRole('button', { name: /Andrés · Hijo/ }))
     expect(screen.getByText('No caíste · llamaste al número de siempre')).toBeDefined()
   })
 
   it('transferir no es un toque: hay que confirmarlo en la app', () => {
-    const telefono = empezar()
+    const phone = start()
 
-    fireEvent.click(within(telefono).getByRole('button', { name: /Banco del Litoral/ }))
-    fireEvent.click(within(telefono).getByRole('button', { name: /Transferir/ }))
+    fireEvent.click(within(phone).getByRole('button', { name: /Banco del Litoral/ }))
+    fireEvent.click(within(phone).getByRole('button', { name: /Transferir/ }))
 
-    expect(within(telefono).getAllByText(/Kevin Loor Zambrano/).length).toBeGreaterThan(0)
+    expect(within(phone).getAllByText(/Kevin Loor Zambrano/).length).toBeGreaterThan(0)
     expect(screen.getByText('¿Qué haces?')).toBeDefined()
 
-    fireEvent.click(within(telefono).getByRole('button', { name: 'Transferir $350,00' }))
+    fireEvent.click(within(phone).getByRole('button', { name: 'Transferir $350,00' }))
     expect(screen.getByText('Caíste en la suplantación')).toBeDefined()
   })
 
   it('salir del chat sin comprobar deja la duda', () => {
-    const telefono = empezar()
+    const phone = start()
 
-    fireEvent.click(within(telefono).getByRole('button', { name: 'Volver a la lista de mensajes' }))
+    fireEvent.click(within(phone).getByRole('button', { name: 'Volver a la lista de mensajes' }))
     expect(screen.getByText('No perdiste nada, pero te quedaste con la duda')).toBeDefined()
   })
 })

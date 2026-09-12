@@ -1,19 +1,19 @@
 import { Camera, MessageCircle, ShoppingBag, Wallet } from 'lucide-react'
-import StoryEscenario, { type AppTelefono, type ScreenNode } from '../../components/StoryEscenario'
-import type { Contexto } from '../../components/ui/ContextoEscenario'
+import ScenarioStory, { type PhoneApp, type ScreenNode } from '../../components/StoryEscenario'
+import type { Context } from '../../components/ui/ContextoEscenario'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
-import type { Senal } from '../../components/ui/PanelVeredicto'
+import type { Signal } from '../../components/ui/PanelVeredicto'
 import type { Story } from '../../hooks/useStoryEngine'
-import { CUENTA_FICTICIA, IDENTIDAD_FICTICIA } from '../../lib/identidadFicticia'
+import { ACCOUNT_FAKE, IDENTITY_FAKE } from '../../lib/identidadFicticia'
 
 /** El espejo legítimo de "Saldo contable" y "Celular a mitad de precio": misma escena, señales al revés
  *  (saldo disponible, comprador que propone verse, cuenta a su propio nombre). Enseña que desconfiar de
  *  todo también cuesta: aquí el acierto es cerrar el trato, no dejarlo caer sin motivo. */
 
-const COMPRADORA = 'Gabriela Ponce'
-const NUMERO_COMPRADORA = '+593 99 271 4508'
+const BUYER = 'Gabriela Ponce'
+const NUMBER_BUYER = '+593 99 271 4508'
 
-const AVISA = {
+const WARNS = {
   text: 'Buenos días. Ya le hice la transferencia de los $180 por la lavadora. Cuando pueda confirme y coordinamos, yo paso a recogerla con mi hermano y una camioneta.',
   time: '09:14',
   senal: 'sin-prisa',
@@ -21,9 +21,9 @@ const AVISA = {
 
 const CHAT: ScreenView = {
   kind: 'sms',
-  sender: COMPRADORA,
-  sub: `${NUMERO_COMPRADORA} · compradora de la lavadora`,
-  msgs: [AVISA],
+  sender: BUYER,
+  sub: `${NUMBER_BUYER} · compradora de la lavadora`,
+  msgs: [WARNS],
   respuestas: [
     {
       texto: 'Deme un momento, reviso mi banco.',
@@ -40,10 +40,10 @@ const CHAT: ScreenView = {
   volverLabel: 'Salió del chat sin contestar',
 }
 
-const ESPERA: ScreenView = {
+const WAIT: ScreenView = {
   ...CHAT,
   msgs: [
-    AVISA,
+    WARNS,
     { text: 'Deme un momento, reviso mi banco.', time: '09:16', mine: true },
     {
       text: 'Claro, revise con calma 🙂 si algo no aparece me avisa y lo vemos. Yo estoy libre esta tarde o mañana, como a usted le quede mejor.',
@@ -61,14 +61,14 @@ const ESPERA: ScreenView = {
 }
 
 // Mismo banco que "Saldo contable", incluso los mismos dos números: aquí no hay nada pendiente, el dinero ya es tuyo.
-const BANCO: ScreenView = {
+const BANK: ScreenView = {
   kind: 'web',
-  app: IDENTIDAD_FICTICIA.banco,
+  app: IDENTITY_FAKE.banco,
   url: 'bancolitoral.ec',
   secure: true,
   brand: 'Banca móvil',
   title: 'Cuenta de ahorros',
-  subtitle: CUENTA_FICTICIA,
+  subtitle: ACCOUNT_FAKE,
   datos: [
     { etiqueta: 'Saldo contable', valor: '$1.160,50' },
     { etiqueta: 'Saldo disponible', valor: '$1.160,50', senal: 'disponible' },
@@ -91,9 +91,9 @@ const BANCO: ScreenView = {
   button: '',
 }
 
-const MOVIMIENTOS: ScreenView = {
+const TRANSACTIONS: ScreenView = {
   kind: 'web',
-  app: IDENTIDAD_FICTICIA.banco,
+  app: IDENTITY_FAKE.banco,
   url: 'bancolitoral.ec',
   secure: true,
   brand: 'Movimientos',
@@ -118,10 +118,10 @@ const MOVIMIENTOS: ScreenView = {
   button: '',
 }
 
-const ENTREGA: ScreenView = {
+const DELIVERY: ScreenView = {
   ...CHAT,
   msgs: [
-    AVISA,
+    WARNS,
     {
       text: 'Ya vi que entró. ¿Le queda bien esta tarde?',
       time: '09:24',
@@ -147,7 +147,7 @@ const ENTREGA: ScreenView = {
   ],
 }
 
-const ANUNCIO: ScreenView = {
+const AD: ScreenView = {
   kind: 'web',
   app: 'Mercado Abierto',
   url: 'mercadoabierto.ec',
@@ -158,7 +158,7 @@ const ANUNCIO: ScreenView = {
   datos: [
     {
       etiqueta: 'Interesada',
-      valor: `${COMPRADORA} · cuenta desde 2019`,
+      valor: `${BUYER} · cuenta desde 2019`,
       senal: 'perfil',
     },
     {
@@ -178,11 +178,11 @@ const ANUNCIO: ScreenView = {
   button: '',
 }
 
-const APPS: AppTelefono[] = [
+const APPS: PhoneApp[] = [
   { Icono: MessageCircle, texto: 'Mensajes', color: '#2f9e44', hilo: 'sms' },
   {
     Icono: Wallet,
-    texto: IDENTIDAD_FICTICIA.banco,
+    texto: IDENTITY_FAKE.banco,
     color: '#155e75',
     goto: 'n2',
     label: 'Abrió la app del banco',
@@ -204,14 +204,14 @@ const APPS: AppTelefono[] = [
 
 export const STORY: Story<ScreenNode> = {
   n1: { kind: 'scene', view: CHAT },
-  n1b: { kind: 'scene', view: ESPERA },
-  n2: { kind: 'scene', view: BANCO },
-  n3: { kind: 'scene', view: MOVIMIENTOS },
-  n4: { kind: 'scene', view: ENTREGA },
-  n5: { kind: 'scene', view: ANUNCIO },
+  n1b: { kind: 'scene', view: WAIT },
+  n2: { kind: 'scene', view: BANK },
+  n3: { kind: 'scene', view: TRANSACTIONS },
+  n4: { kind: 'scene', view: DELIVERY },
+  n5: { kind: 'scene', view: AD },
   e_entrega: {
     kind: 'good',
-    view: ENTREGA,
+    view: DELIVERY,
     verdict: 'Acertaste · la venta era buena y la cerraste',
     outcome:
       'Comprobaste antes de entregar y todo cuadraba: el dinero estaba en tu saldo disponible, acreditado y a nombre de quien te escribía. Quedaste con ella, entregaste la lavadora y se acabó. Dónde entregarla era cosa de comodidad, no de seguridad: lo que cerró bien esta venta fue haber mirado la cuenta antes. Esto es lo que se ve cuando una venta es de verdad, y reconocerlo importa tanto como reconocer la otra.',
@@ -234,7 +234,7 @@ export const STORY: Story<ScreenNode> = {
   },
 }
 
-const SENALES: Senal[] = [
+const SIGNALS: Signal[] = [
   {
     id: 's1',
     targetId: 'disponible',
@@ -275,9 +275,9 @@ const SENALES: Senal[] = [
 const RULE =
   'Regla de oro: la misma comprobación sirve para las dos. Mira el <b>saldo disponible</b> antes de entregar; si el dinero está ahí, acreditado y a nombre de quien te habla, la venta es buena y cerrarla es lo correcto. Desconfiar de todo no es prudencia, es dejar de poder vender.'
 
-const RESUMEN = 'Vendes una lavadora y la compradora dice que ya te transfirió.'
+const SUMMARY = 'Vendes una lavadora y la compradora dice que ya te transfirió.'
 
-const CONTEXTO: Contexto = {
+const CONTEXT: Context = {
   antes: (
     <>
       Pusiste en venta tu <strong>lavadora en $180</strong> por una página de compraventa, y una
@@ -292,14 +292,14 @@ const CONTEXTO: Contexto = {
   ),
 }
 
-function PagoLavadora() {
+function WashingMachinePayment() {
   return (
-    <StoryEscenario
+    <ScenarioStory
       escenarioId="estafa/pago-lavadora"
-      resumen={RESUMEN}
-      contexto={CONTEXTO}
+      resumen={SUMMARY}
+      contexto={CONTEXT}
       story={STORY}
-      senales={SENALES}
+      senales={SIGNALS}
       rule={RULE}
       restartLabel="↻ Repetir el escenario"
       accionesEnPantalla
@@ -321,4 +321,4 @@ function PagoLavadora() {
   )
 }
 
-export default PagoLavadora
+export default WashingMachinePayment
