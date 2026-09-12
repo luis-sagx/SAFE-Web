@@ -3,21 +3,21 @@ import { MemoryRouter } from 'react-router'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import Admin from './Admin'
 
-const { fetchParticipantesMock, fetchResultadosMock } = vi.hoisted(() => ({
-  fetchParticipantesMock: vi.fn(),
-  fetchResultadosMock: vi.fn(),
+const { fetchParticipantsMock, fetchResultsMock } = vi.hoisted(() => ({
+  fetchParticipantsMock: vi.fn(),
+  fetchResultsMock: vi.fn(),
 }))
 
 vi.mock('../lib/api', async () => {
-  const actual = await vi.importActual<typeof import('../lib/api')>('../lib/api')
+  const current = await vi.importActual<typeof import('../lib/api')>('../lib/api')
   return {
-    ...actual,
-    fetchParticipantes: fetchParticipantesMock,
-    fetchResultados: fetchResultadosMock,
+    ...current,
+    fetchParticipants: fetchParticipantsMock,
+    fetchResults: fetchResultsMock,
   }
 })
 
-vi.mock('../context/AuthContext', async () => (await import('../test/escenario')).authFalso())
+vi.mock('../context/AuthContext', async () => (await import('../test/escenario')).mockAuth())
 
 function renderAdmin() {
   return render(
@@ -29,12 +29,12 @@ function renderAdmin() {
 
 describe('Admin', () => {
   beforeEach(() => {
-    fetchParticipantesMock.mockReset()
-    fetchResultadosMock.mockReset()
+    fetchParticipantsMock.mockReset()
+    fetchResultsMock.mockReset()
   })
 
   it('muestra el estado de carga mientras llega la lista de participantes', () => {
-    fetchParticipantesMock.mockReturnValue(new Promise(() => {}))
+    fetchParticipantsMock.mockReturnValue(new Promise(() => {}))
 
     renderAdmin()
 
@@ -42,7 +42,7 @@ describe('Admin', () => {
   })
 
   it('sin participantes, dice que todavía no hay ninguno', async () => {
-    fetchParticipantesMock.mockResolvedValue([])
+    fetchParticipantsMock.mockResolvedValue([])
 
     renderAdmin()
 
@@ -52,8 +52,8 @@ describe('Admin', () => {
   })
 
   it('muestra el estado de carga de resultados al cambiar de pestaña', async () => {
-    fetchParticipantesMock.mockResolvedValue([])
-    fetchResultadosMock.mockReturnValue(new Promise(() => {}))
+    fetchParticipantsMock.mockResolvedValue([])
+    fetchResultsMock.mockReturnValue(new Promise(() => {}))
 
     renderAdmin()
 

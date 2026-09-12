@@ -9,18 +9,18 @@ import {
 } from "lucide-react";
 import AppHeader from "../components/AppHeader";
 import {
-  cambiarEstadoParticipante,
-  eliminarParticipante,
-  fetchParticipantes,
-  fetchResultados,
-  restablecerPasswordParticipante,
-  type AdminParticipante,
-  type ResultadoCorrida,
+  changeParticipantStatus,
+  deleteParticipant,
+  fetchParticipants,
+  fetchResults,
+  resetParticipantPassword,
+  type AdminParticipant,
+  type RunResult,
 } from "../lib/api";
 
-type Pestana = "participantes" | "resultados";
+type Tab = "participantes" | "resultados";
 
-interface Confirmacion {
+interface Confirmation {
   titulo: string;
   mensaje: string;
   /// Texto del botón que confirma ("Sí, desactivar").
@@ -31,12 +31,12 @@ interface Confirmacion {
   accion: () => void | Promise<void>;
 }
 
-function nombreCompleto(p: AdminParticipante): string {
-  const partes = [p.nombre, p.apellido].filter(Boolean);
-  return partes.length > 0 ? partes.join(" ") : "—";
+function fullName(p: AdminParticipant): string {
+  const parts = [p.nombre, p.apellido].filter(Boolean);
+  return parts.length > 0 ? parts.join(" ") : "—";
 }
 
-function fecha(iso: string): string {
+function date(iso: string): string {
   return new Date(iso).toLocaleDateString("es-EC", {
     year: "numeric",
     month: "short",
@@ -46,7 +46,7 @@ function fecha(iso: string): string {
 
 /// Contraseña recién generada para un participante: se muestra una vez y el
 /// supervisor la copia. El backend no la guarda en claro.
-function BannerPassword({
+function PasswordBanner({
   password,
   onClose,
 }: {
@@ -75,86 +75,86 @@ function BannerPassword({
   );
 }
 
-function Participantes() {
-  const [lista, setLista] = useState<AdminParticipante[]>([]);
-  const [cargando, setCargando] = useState(true);
+function Participants() {
+  const [list, setList] = useState<AdminParticipant[]>([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [ocupado, setOcupado] = useState<string | null>(null);
-  const [passwordNueva, setPasswordNueva] = useState("");
-  const [confirmacion, setConfirmacion] = useState<Confirmacion | null>(null);
-  const dialogoRef = useRef<HTMLDialogElement>(null);
+  const [busy, setBusy] = useState<string | null>(null);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmation, setConfirmation] = useState<Confirmation | null>(null);
+  const dialogueRef = useRef<HTMLDialogElement>(null);
 
-  const cargar = useCallback(() => {
-    setCargando(true);
-    fetchParticipantes()
-      .then(setLista)
+  const load = useCallback(() => {
+    setLoading(true);
+    fetchParticipants()
+      .then(setList)
       .catch((e: Error) => setError(e.message))
-      .finally(() => setCargando(false));
+      .finally(() => setLoading(false));
   }, []);
 
-  useEffect(cargar, [cargar]);
+  useEffect(load, [load]);
 
-  async function conBloqueo(id: string, accion: () => Promise<void>) {
+  async function withBlocking(id: string, action: () => Promise<void>) {
     setError("");
-    setOcupado(id);
+    setBusy(id);
     try {
-      await accion();
+      await action();
     } catch (e) {
       setError((e as Error).message);
     } finally {
-      setOcupado(null);
+      setBusy(null);
     }
   }
 
   /// Toda acción sobre un participante pasa por este modal antes de ejecutarse.
-  function pedirConfirmacion(conf: Confirmacion) {
-    setConfirmacion(conf);
-    dialogoRef.current?.showModal();
+  function requestConfirmation(conf: Confirmation) {
+    setConfirmation(conf);
+    dialogueRef.current?.showModal();
   }
 
-  const alternarEstado = (p: AdminParticipante) =>
-    pedirConfirmacion({
+  const toggleStatus = (p: AdminParticipant) =>
+    requestConfirmation({
       titulo: p.activo ? "¿Desactivar esta cuenta?" : "¿Activar esta cuenta?",
       mensaje: p.activo
-        ? `${nombreCompleto(p)} no podrá iniciar sesión hasta que la reactives.`
-        : `${nombreCompleto(p)} podrá volver a iniciar sesión.`,
+        ? `${fullName(p)} no podrá iniciar sesión hasta que la reactives.`
+        : `${fullName(p)} podrá volver a iniciar sesión.`,
       etiqueta: p.activo ? "Sí, desactivar" : "Sí, activar",
       Icono: p.activo ? UserX : UserCheck,
       accion: () =>
-        conBloqueo(p.id, async () => {
-          const actualizado = await cambiarEstadoParticipante(p.id, !p.activo);
-          setLista((prev) => prev.map((x) => (x.id === p.id ? actualizado : x)));
+        withBlocking(p.id, async () => {
+          const updated = await changeParticipantStatus(p.id, !p.activo);
+          setList((prev) => prev.map((x) => (x.id === p.id ? updated : x)));
         }),
     });
 
-  const restablecer = (p: AdminParticipante) =>
-    pedirConfirmacion({
+  const reset = (p: AdminParticipant) =>
+    requestConfirmation({
       titulo: "¿Restablecer la contraseña?",
-      mensaje: `Se generará una contraseña nueva para ${nombreCompleto(p)} y la actual dejará de funcionar.`,
+      mensaje: `Se generará una contraseña nueva para ${fullName(p)} y la actual dejará de funcionar.`,
       etiqueta: "Sí, restablecer",
       Icono: KeyRound,
       accion: () =>
-        conBloqueo(p.id, async () => {
-          const { password } = await restablecerPasswordParticipante(p.id);
-          setPasswordNueva(password);
+        withBlocking(p.id, async () => {
+          const { password } = await resetParticipantPassword(p.id);
+          setNewPassword(password);
         }),
     });
 
-  const eliminar = (p: AdminParticipante) =>
-    pedirConfirmacion({
+  const removeParticipant = (p: AdminParticipant) =>
+    requestConfirmation({
       titulo: "¿Eliminar esta cuenta?",
-      mensaje: `Se borrará la cuenta de ${nombreCompleto(p)}. Esta acción no se puede deshacer.`,
+      mensaje: `Se borrará la cuenta de ${fullName(p)}. Esta acción no se puede deshacer.`,
       etiqueta: "Sí, eliminar",
       Icono: Trash2,
       peligro: true,
       accion: () =>
-        conBloqueo(p.id, async () => {
-          await eliminarParticipante(p.id);
-          setLista((prev) => prev.filter((x) => x.id !== p.id));
+        withBlocking(p.id, async () => {
+          await deleteParticipant(p.id);
+          setList((prev) => prev.filter((x) => x.id !== p.id));
         }),
     });
 
-  if (cargando) {
+  if (loading) {
     return <p role="status" className="flex items-center gap-2 text-base text-muted">
       <Loader2 aria-hidden className="size-4 animate-spin motion-reduce:animate-none" />
       Cargando participantes…
@@ -163,10 +163,10 @@ function Participantes() {
 
   return (
     <div>
-      {passwordNueva && (
-        <BannerPassword
-          password={passwordNueva}
-          onClose={() => setPasswordNueva("")}
+      {newPassword && (
+        <PasswordBanner
+          password={newPassword}
+          onClose={() => setNewPassword("")}
         />
       )}
       {error && (
@@ -175,7 +175,7 @@ function Participantes() {
         </p>
       )}
 
-      {lista.length === 0 ? (
+      {list.length === 0 ? (
         <p className="text-base text-muted">
           Todavía no hay participantes registrados.
         </p>
@@ -193,7 +193,7 @@ function Participantes() {
               </tr>
             </thead>
             <tbody>
-              {lista.map((p) => (
+              {list.map((p) => (
                 <tr
                   key={p.id}
                   className="border-b border-hairline last:border-0"
@@ -201,7 +201,7 @@ function Participantes() {
                   <td className="px-4 py-3 font-medium text-ink tabular-nums">
                     {p.seudonimo}
                   </td>
-                  <td className="px-4 py-3 text-ink">{nombreCompleto(p)}</td>
+                  <td className="px-4 py-3 text-ink">{fullName(p)}</td>
                   <td className="px-4 py-3 text-body">{p.email ?? "—"}</td>
                   <td className="px-4 py-3">
                     <span
@@ -219,11 +219,11 @@ function Participantes() {
                     </span>
                   </td>
                   <td className="px-4 py-3 text-muted tabular-nums">
-                    {fecha(p.createdAt)}
+                    {date(p.createdAt)}
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-end gap-2">
-                      {ocupado === p.id && (
+                      {busy === p.id && (
                         <Loader2
                           aria-hidden
                           className="size-4 animate-spin text-muted"
@@ -231,8 +231,8 @@ function Participantes() {
                       )}
                       <button
                         type="button"
-                        disabled={ocupado === p.id}
-                        onClick={() => alternarEstado(p)}
+                        disabled={busy === p.id}
+                        onClick={() => toggleStatus(p)}
                         className="inline-flex h-8 items-center gap-1 rounded-md border border-hairline-strong bg-surface px-2.5 text-xs font-medium text-ink transition hover:bg-surface-strong disabled:opacity-50"
                       >
                         {p.activo ? (
@@ -244,8 +244,8 @@ function Participantes() {
                       </button>
                       <button
                         type="button"
-                        disabled={ocupado === p.id}
-                        onClick={() => restablecer(p)}
+                        disabled={busy === p.id}
+                        onClick={() => reset(p)}
                         title="Restablecer contraseña"
                         className="inline-flex h-8 items-center gap-1 rounded-md border border-hairline-strong bg-surface px-2.5 text-xs font-medium text-ink transition hover:bg-surface-strong disabled:opacity-50"
                       >
@@ -258,8 +258,8 @@ function Participantes() {
                       </button>
                       <button
                         type="button"
-                        disabled={ocupado === p.id}
-                        onClick={() => eliminar(p)}
+                        disabled={busy === p.id}
+                        onClick={() => removeParticipant(p)}
                         title="Eliminar cuenta"
                         className="inline-flex h-8 items-center gap-1 rounded-md border border-danger/30 bg-surface px-2.5 text-xs font-medium text-danger transition hover:bg-danger/10 disabled:opacity-50"
                       >
@@ -282,29 +282,29 @@ function Participantes() {
       {/* <dialog> nativo: el navegador atrapa el foco, cierra con Escape y deja
           el fondo inerte. Toda acción sobre un participante confirma aquí. */}
       <dialog
-        ref={dialogoRef}
-        onClose={() => setConfirmacion(null)}
+        ref={dialogueRef}
+        onClose={() => setConfirmation(null)}
         className="m-auto w-[min(92vw,26rem)] rounded-xl border border-hairline-strong bg-surface p-6 text-ink shadow-card backdrop:bg-scrim"
       >
-        {confirmacion && (
+        {confirmation && (
           <>
             <div className="flex items-start gap-3">
               <span
                 aria-hidden
                 className={`flex size-10 shrink-0 items-center justify-center rounded-full ${
-                  confirmacion.peligro
+                  confirmation.peligro
                     ? "bg-danger/10 text-danger"
                     : "bg-surface-strong text-ink"
                 }`}
               >
-                <confirmacion.Icono className="size-5" strokeWidth={1.75} />
+                <confirmation.Icono className="size-5" strokeWidth={1.75} />
               </span>
               <div className="min-w-0">
                 <h2 className="text-lg font-semibold text-ink">
-                  {confirmacion.titulo}
+                  {confirmation.titulo}
                 </h2>
                 <p className="mt-1 text-sm leading-relaxed text-body">
-                  {confirmacion.mensaje}
+                  {confirmation.mensaje}
                 </p>
               </div>
             </div>
@@ -322,19 +322,19 @@ function Participantes() {
               <button
                 type="button"
                 value="confirm"
-                onClick={() => void confirmacion.accion()}
+                onClick={() => void confirmation.accion()}
                 className={`inline-flex h-9 items-center gap-1.5 rounded-md px-3 text-sm font-medium text-on-primary transition ${
-                  confirmacion.peligro
+                  confirmation.peligro
                     ? "bg-danger hover:opacity-90"
                     : "bg-primary hover:bg-primary-active"
                 }`}
               >
-                <confirmacion.Icono
+                <confirmation.Icono
                   aria-hidden
                   className="size-4"
                   strokeWidth={1.75}
                 />
-                {confirmacion.etiqueta}
+                {confirmation.etiqueta}
               </button>
             </form>
           </>
@@ -350,19 +350,19 @@ const OUTCOME_LABEL: Record<string, string> = {
   INCORRECTO: "Incorrecto",
 };
 
-function Resultados() {
-  const [filas, setFilas] = useState<ResultadoCorrida[]>([]);
-  const [cargando, setCargando] = useState(true);
+function Results() {
+  const [rows, setRows] = useState<RunResult[]>([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    fetchResultados()
-      .then(setFilas)
+    fetchResults()
+      .then(setRows)
       .catch((e: Error) => setError(e.message))
-      .finally(() => setCargando(false));
+      .finally(() => setLoading(false));
   }, []);
 
-  if (cargando) {
+  if (loading) {
     return <p role="status" className="flex items-center gap-2 text-base text-muted">
       <Loader2 aria-hidden className="size-4 animate-spin motion-reduce:animate-none" />
       Cargando resultados…
@@ -375,7 +375,7 @@ function Resultados() {
       </p>
     );
   }
-  if (filas.length === 0) {
+  if (rows.length === 0) {
     return (
       <p className="text-base text-muted">
         Todavía no hay corridas registradas.
@@ -386,7 +386,7 @@ function Resultados() {
   return (
     <div>
       <p className="mb-4 text-sm text-body">
-        {filas.length} corridas. Cada participante aparece solo por su seudónimo
+        {rows.length} corridas. Cada participante aparece solo por su seudónimo
         (P001…): ningún dato personal sale de aquí.
       </p>
       <div className="overflow-x-auto rounded-lg border border-hairline-strong">
@@ -403,7 +403,7 @@ function Resultados() {
             </tr>
           </thead>
           <tbody>
-            {filas.map((r, i) => (
+            {rows.map((r, i) => (
               <tr
                 key={`${r.seudonimo}-${i}`}
                 className="border-b border-hairline last:border-0"
@@ -423,7 +423,7 @@ function Resultados() {
                   {Math.round(r.durationMs / 1000)}s
                 </td>
                 <td className="px-4 py-3 text-muted tabular-nums">
-                  {fecha(r.finishedAt)}
+                  {date(r.finishedAt)}
                 </td>
               </tr>
             ))}
@@ -435,11 +435,11 @@ function Resultados() {
 }
 
 function Admin() {
-  const [pestana, setPestana] = useState<Pestana>("participantes");
+  const [tab, setTab] = useState<Tab>("participantes");
 
-  const tabClase = (activa: boolean) =>
+  const tabClassName = (active: boolean) =>
     `h-9 rounded-md px-3 text-sm font-medium transition ${
-      activa ? "bg-surface-strong text-ink" : "text-body hover:bg-canvas-soft"
+      active ? "bg-surface-strong text-ink" : "text-body hover:bg-canvas-soft"
     }`;
 
   return (
@@ -461,25 +461,25 @@ function Admin() {
           <button
             type="button"
             role="tab"
-            aria-selected={pestana === "participantes"}
-            onClick={() => setPestana("participantes")}
-            className={tabClase(pestana === "participantes")}
+            aria-selected={tab === "participantes"}
+            onClick={() => setTab("participantes")}
+            className={tabClassName(tab === "participantes")}
           >
             Participantes
           </button>
           <button
             type="button"
             role="tab"
-            aria-selected={pestana === "resultados"}
-            onClick={() => setPestana("resultados")}
-            className={tabClase(pestana === "resultados")}
+            aria-selected={tab === "resultados"}
+            onClick={() => setTab("resultados")}
+            className={tabClassName(tab === "resultados")}
           >
             Resultados
           </button>
         </div>
 
         <section className="mt-8">
-          {pestana === "participantes" ? <Participantes /> : <Resultados />}
+          {tab === "participantes" ? <Participants /> : <Results />}
         </section>
       </main>
     </div>
