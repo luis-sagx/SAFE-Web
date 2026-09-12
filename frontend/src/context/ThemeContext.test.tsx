@@ -2,19 +2,19 @@ import { act, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { ThemeProvider, useTheme } from './ThemeContext'
 
-/** Doble de matchMedia: jsdom no lo implementa. `cambiar` dispara el
+/** Doble de matchMedia: jsdom no lo implementa. `change` dispara el
  *  listener de "change" como haría el sistema operativo real al alternar de
  *  tema con la pestaña abierta. */
-function mockMatchMedia(prefiereOscuro: boolean) {
+function mockMatchMedia(prefersDark: boolean) {
   let listeners: Array<() => void> = []
   const mql = {
-    matches: prefiereOscuro,
+    matches: prefersDark,
     media: '(prefers-color-scheme: dark)',
-    addEventListener: (_evento: string, cb: () => void) => listeners.push(cb),
+    addEventListener: (_event: string, cb: () => void) => listeners.push(cb),
     // Tiene que quitar de verdad: si no, el listener de un render anterior
     // (por ejemplo cuando la preferencia deja de ser "sistema") sigue vivo y
     // el test "no la mueve" fallaría por una fuga del doble, no de la app.
-    removeEventListener: (_evento: string, cb: () => void) => {
+    removeEventListener: (_event: string, cb: () => void) => {
       listeners = listeners.filter((l) => l !== cb)
     },
   }
@@ -23,30 +23,30 @@ function mockMatchMedia(prefiereOscuro: boolean) {
     vi.fn(() => mql),
   )
   return {
-    cambiar(nuevo: boolean) {
-      mql.matches = nuevo
+    change(newValue: boolean) {
+      mql.matches = newValue
       listeners.forEach((cb) => cb())
     },
   }
 }
 
-function Consumidor() {
-  const { preferencia, temaEfectivo, setPreferencia } = useTheme()
+function Consumer() {
+  const { preferencia: preference, temaEfectivo: themeEffective, setPreferencia: setPreference } = useTheme()
   return (
     <div>
-      <span data-testid="preferencia">{preferencia}</span>
-      <span data-testid="efectivo">{temaEfectivo}</span>
-      <button onClick={() => setPreferencia('claro')}>claro</button>
-      <button onClick={() => setPreferencia('oscuro')}>oscuro</button>
-      <button onClick={() => setPreferencia('sistema')}>sistema</button>
+      <span data-testid="preferencia">{preference}</span>
+      <span data-testid="efectivo">{themeEffective}</span>
+      <button onClick={() => setPreference('claro')}>claro</button>
+      <button onClick={() => setPreference('oscuro')}>oscuro</button>
+      <button onClick={() => setPreference('sistema')}>sistema</button>
     </div>
   )
 }
 
-function renderConProvider() {
+function renderWithProvider() {
   return render(
     <ThemeProvider>
-      <Consumidor />
+      <Consumer />
     </ThemeProvider>,
   )
 }
@@ -62,7 +62,7 @@ describe('ThemeContext', () => {
   })
 
   it('sin localStorage previo, arranca en "sistema" resuelto contra el SO', () => {
-    renderConProvider()
+    renderWithProvider()
 
     expect(screen.getByTestId('preferencia').textContent).toBe('sistema')
     expect(screen.getByTestId('efectivo').textContent).toBe('claro')
@@ -71,7 +71,7 @@ describe('ThemeContext', () => {
 
   it('arranca en oscuro si el SO lo prefiere y la preferencia es "sistema"', () => {
     mockMatchMedia(true)
-    renderConProvider()
+    renderWithProvider()
 
     expect(screen.getByTestId('efectivo').textContent).toBe('oscuro')
     expect(document.documentElement.dataset.tema).toBe('oscuro')
@@ -79,7 +79,7 @@ describe('ThemeContext', () => {
 
   it('lee la preferencia guardada en localStorage', () => {
     localStorage.setItem('tema', 'oscuro')
-    renderConProvider()
+    renderWithProvider()
 
     expect(screen.getByTestId('preferencia').textContent).toBe('oscuro')
     expect(screen.getByTestId('efectivo').textContent).toBe('oscuro')
@@ -89,13 +89,13 @@ describe('ThemeContext', () => {
   // al comportamiento por defecto en vez de propagar algo inválido.
   it('un valor inválido en localStorage cae a "sistema"', () => {
     localStorage.setItem('tema', 'sepia')
-    renderConProvider()
+    renderWithProvider()
 
     expect(screen.getByTestId('preferencia').textContent).toBe('sistema')
   })
 
   it('elegir "oscuro" actualiza preferencia, efectivo, data-tema y localStorage', () => {
-    renderConProvider()
+    renderWithProvider()
 
     fireEvent.click(screen.getByRole('button', { name: 'oscuro' }))
 
@@ -107,7 +107,7 @@ describe('ThemeContext', () => {
 
   it('elegir "claro" fija el tema efectivo aunque el SO prefiera oscuro', () => {
     mockMatchMedia(true)
-    renderConProvider()
+    renderWithProvider()
 
     fireEvent.click(screen.getByRole('button', { name: 'claro' }))
 
@@ -118,12 +118,12 @@ describe('ThemeContext', () => {
   // Con la preferencia en "sistema", si la persona cambia el tema del SO con
   // la pestaña abierta, la página tiene que seguirlo sin recargar.
   it('en "sistema", sigue en vivo el cambio de tema del sistema operativo', () => {
-    const medios = mockMatchMedia(false)
-    renderConProvider()
+    const media = mockMatchMedia(false)
+    renderWithProvider()
 
     expect(screen.getByTestId('efectivo').textContent).toBe('claro')
 
-    act(() => medios.cambiar(true))
+    act(() => media.change(true))
 
     expect(screen.getByTestId('efectivo').textContent).toBe('oscuro')
     expect(document.documentElement.dataset.tema).toBe('oscuro')
@@ -132,18 +132,18 @@ describe('ThemeContext', () => {
   // Fijada explícitamente en claro/oscuro, un cambio del SO no debe moverla:
   // solo "sistema" escucha matchMedia.
   it('con una preferencia explícita, un cambio del SO no la mueve', () => {
-    const medios = mockMatchMedia(false)
-    renderConProvider()
+    const media = mockMatchMedia(false)
+    renderWithProvider()
 
     fireEvent.click(screen.getByRole('button', { name: 'claro' }))
-    act(() => medios.cambiar(true))
+    act(() => media.change(true))
 
     expect(screen.getByTestId('efectivo').textContent).toBe('claro')
   })
 
   it('volver a "sistema" retoma la preferencia del sistema operativo', () => {
     mockMatchMedia(true)
-    renderConProvider()
+    renderWithProvider()
 
     fireEvent.click(screen.getByRole('button', { name: 'claro' }))
     expect(screen.getByTestId('efectivo').textContent).toBe('claro')
@@ -159,7 +159,7 @@ describe('ThemeContext', () => {
       throw new Error('bloqueado')
     })
 
-    expect(() => renderConProvider()).not.toThrow()
+    expect(() => renderWithProvider()).not.toThrow()
     expect(screen.getByTestId('preferencia').textContent).toBe('sistema')
 
     spy.mockRestore()
@@ -170,7 +170,7 @@ describe('ThemeContext', () => {
       throw new Error('bloqueado')
     })
 
-    renderConProvider()
+    renderWithProvider()
     expect(() => fireEvent.click(screen.getByRole('button', { name: 'oscuro' }))).not.toThrow()
 
     expect(screen.getByTestId('efectivo').textContent).toBe('oscuro')
@@ -181,7 +181,7 @@ describe('ThemeContext', () => {
   // useTheme() fuera de un <ThemeProvider> no lanza (a diferencia de
   // useAuth()): cae al valor por defecto, claro/sistema.
   it('useTheme() sin ThemeProvider no lanza y devuelve el valor por defecto', () => {
-    expect(() => render(<Consumidor />)).not.toThrow()
+    expect(() => render(<Consumer />)).not.toThrow()
     expect(screen.getByTestId('preferencia').textContent).toBe('sistema')
     expect(screen.getByTestId('efectivo').textContent).toBe('claro')
   })
