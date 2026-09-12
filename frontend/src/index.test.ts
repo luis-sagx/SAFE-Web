@@ -79,14 +79,14 @@ function contrast(fg: string, bg: string): number {
 
 // --- Qué se verifica --------------------------------------------------------
 
-const SUPERFICIES = ['canvas', 'canvas-soft', 'surface', 'surface-strong', 'mint-light', 'signal']
+const SURFACES = ['canvas', 'canvas-soft', 'surface', 'surface-strong', 'mint-light', 'signal']
 
 // Tokens que aparecen como texto legible en el cromo (DESIGN.md §7: el color
 // nunca es la única señal, pero cuando SÍ lleva texto, ese texto debe leerse).
-const TEXTO = ['ink', 'body', 'muted', 'link', 'success-ink', 'danger', 'warning', 'signal-body']
+const TEXT = ['ink', 'body', 'muted', 'link', 'success-ink', 'danger', 'warning', 'signal-body']
 
 // Pares tinta/relleno: texto de botón o insignia sobre su propio fondo.
-const RELLENOS: [string, string][] = [
+const FILLERS: [string, string][] = [
   ['on-primary', 'primary'],
   ['on-primary', 'primary-active'],
   ['on-success', 'success'],
@@ -97,8 +97,8 @@ const RELLENOS: [string, string][] = [
 
 // No-texto (SC 1.4.11): el borde de un control real, y el relleno semántico
 // como objeto gráfico contra el lienzo.
-const NO_TEXTO: [string, string][] = [
-  ...SUPERFICIES.map((s): [string, string] => ['border-control', s]),
+const NO_TEXT: [string, string][] = [
+  ...SURFACES.map((s): [string, string] => ['border-control', s]),
   ['signal-border', 'signal'],
   ['primary', 'canvas'],
   ['success', 'canvas'],
@@ -111,25 +111,25 @@ const NO_TEXTO: [string, string][] = [
 describe.each([
   ['claro', light],
   ['oscuro', dark],
-])('tema %s', (_nombre, tokens) => {
+])('tema %s', (_name, tokens) => {
   const color = (name: string) => {
     const v = tokens[name]
     if (!v) throw new Error(`Token --color-${name} no existe en index.css`)
     return v
   }
 
-  it.each(SUPERFICIES.flatMap((bg) => TEXTO.map((fg): [string, string] => [fg, bg])))(
+  it.each(SURFACES.flatMap((bg) => TEXT.map((fg): [string, string] => [fg, bg])))(
     'texto %s sobre %s cumple 4.5:1 (SC 1.4.3)',
     (fg, bg) => {
       expect(contrast(color(fg), color(bg))).toBeGreaterThanOrEqual(4.5)
     },
   )
 
-  it.each(RELLENOS)('%s sobre %s cumple 4.5:1 (SC 1.4.3)', (fg, bg) => {
+  it.each(FILLERS)('%s sobre %s cumple 4.5:1 (SC 1.4.3)', (fg, bg) => {
     expect(contrast(color(fg), color(bg))).toBeGreaterThanOrEqual(4.5)
   })
 
-  it.each(NO_TEXTO)('%s contra %s cumple 3:1 (SC 1.4.11)', (fg, bg) => {
+  it.each(NO_TEXT)('%s contra %s cumple 3:1 (SC 1.4.11)', (fg, bg) => {
     expect(contrast(color(fg), color(bg))).toBeGreaterThanOrEqual(3)
   })
 })
