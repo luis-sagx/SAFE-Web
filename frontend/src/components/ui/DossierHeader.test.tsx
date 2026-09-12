@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import DossierHeader from './DossierHeader'
 
-const CAMPOS_VISIBLES: [string, RegExp | string][] = [
+const FIELDS_VISIBLE: [string, RegExp | string][] = [
   ['caseLabel', 'Caso #1'],
   ['secondTab', 'Detalles'],
   ['participantName', /Juan/],
@@ -26,9 +26,9 @@ describe('DossierHeader', () => {
     expect(container).toBeDefined()
   })
 
-  it.each(CAMPOS_VISIBLES)('renderiza el campo %s', (_campo, texto) => {
+  it.each(FIELDS_VISIBLE)('renderiza el campo %s', (_field, text) => {
     render(<DossierHeader {...defaultProps} />)
-    expect(screen.getByText(texto)).toBeDefined()
+    expect(screen.getByText(text)).toBeDefined()
   })
 
   it('renderiza el RiskGauge con los valores correctos', () => {
