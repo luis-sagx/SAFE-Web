@@ -1,21 +1,21 @@
 import { Compass, MessageSquareText, Signal, Wallet } from 'lucide-react'
-import StoryEscenario, { type AppTelefono, type ScreenNode } from '../../components/StoryEscenario'
-import type { Contexto } from '../../components/ui/ContextoEscenario'
+import ScenarioStory, { type PhoneApp, type ScreenNode } from '../../components/StoryEscenario'
+import type { Context } from '../../components/ui/ContextoEscenario'
 import type { Story } from '../../hooks/useStoryEngine'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
-import type { Senal } from '../../components/ui/PanelVeredicto'
+import type { Signal as ScenarioSignal } from '../../components/ui/PanelVeredicto'
 
 // Puerta de entrada del módulo (dificultad 1): único escenario sin enlace ni formulario.
 // Lo único que el mensaje quiere es una respuesta — contestar no es la salida, es la puerta.
 
-const TEXTO = `SUSCRIPCION ACTIVA: Tonos y Horoscopo Premium. Se renovo por $2,99 semanales con cargo a tu saldo. Si no deseas continuar responde BAJA a este mismo numero.`
+const TEXT = `SUSCRIPCION ACTIVA: Tonos y Horoscopo Premium. Se renovo por $2,99 semanales con cargo a tu saldo. Si no deseas continuar responde BAJA a este mismo numero.`
 
 const SMS: Extract<ScreenView, { kind: 'sms' }> = {
   kind: 'sms',
   sender: '5050',
   sub: 'Número corto · SMS',
   senalRemitente: 'remitente',
-  msgs: [{ text: TEXTO, time: '07:52', senal: 'mensaje' }],
+  msgs: [{ text: TEXT, time: '07:52', senal: 'mensaje' }],
   // Las dos son respuestas, y las dos pierden: lo que confirma la línea no es lo
   // que escribes sino que escribas. Una salida buena en el composer enseñaría lo contrario.
   respuestas: [
@@ -34,24 +34,24 @@ const SMS: Extract<ScreenView, { kind: 'sms' }> = {
 
 // El veredicto se ve sobre la burbuja propia en el hilo: un final que se dispara sin
 // enseñar lo que salió del teléfono deja al participante sin saber qué mandó.
-function conRespuesta(texto: string): Extract<ScreenView, { kind: 'sms' }> {
+function withResponse(text: string): Extract<ScreenView, { kind: 'sms' }> {
   return {
     ...SMS,
     respuestas: undefined,
     volverGoto: undefined,
     msgs: [
-      { text: TEXTO, time: '07:52', senal: 'mensaje' },
-      { text: texto, time: '07:53', mine: true, senal: 'respuesta' },
+      { text: TEXT, time: '07:52', senal: 'mensaje' },
+      { text: text, time: '07:53', mine: true, senal: 'respuesta' },
     ],
   }
 }
 
-const SMS_BAJA = conRespuesta('BAJA')
-const SMS_RECLAMO = conRespuesta('Yo no contraté nada, dejen de cobrarme.')
+const CANCELLATION_SMS = withResponse('BAJA')
+const CLAIM_SMS = withResponse('Yo no contraté nada, dejen de cobrarme.')
 
 // Abrir la app todavía no es haber comprobado nada: se puede mirar las suscripciones
 // o bloquear los números a ciegas, que es el gesto precipitado que este escenario mide.
-const OPERADORA_INICIO: ScreenView = {
+const OPERATOR_START: ScreenView = {
   kind: 'web',
   app: 'Mi Operadora',
   url: 'inicio',
@@ -80,7 +80,7 @@ const OPERADORA_INICIO: ScreenView = {
 }
 
 // El acierto tiene que enseñarse, no solo contarse: la pantalla que lo prueba es la que cierra.
-const OPERADORA: ScreenView = {
+const OPERATOR: ScreenView = {
   kind: 'web',
   app: 'Mi Operadora',
   url: 'inicio',
@@ -99,7 +99,7 @@ const OPERADORA: ScreenView = {
   button: '',
 }
 
-const APPS: AppTelefono[] = [
+const APPS: PhoneApp[] = [
   {
     Icono: Signal,
     texto: 'Mi Operadora',
@@ -124,24 +124,24 @@ const APPS: AppTelefono[] = [
 
 const STORY: Story<ScreenNode> = {
   n1: { kind: 'scene', view: SMS },
-  n4: { kind: 'scene', view: OPERADORA_INICIO },
+  n4: { kind: 'scene', view: OPERATOR_START },
   e_responde: {
     kind: 'bad',
-    view: SMS_BAJA,
+    view: CANCELLATION_SMS,
     verdict: 'Caíste en la trampa',
     outcome:
       'No había ninguna suscripción que cancelar: el mensaje solo buscaba que contestaras. Tu número pasó a una lista que se revende, y el "BAJA" se cobró como mensaje de tarificación adicional.',
   },
   e_reclama: {
     kind: 'bad',
-    view: SMS_RECLAMO,
+    view: CLAIM_SMS,
     verdict: 'Caíste en la trampa',
     outcome:
       'Reclamar también es contestar, y eso era todo lo que buscaban: confirmaste que alguien lee esa línea. Tu número pasó a la lista que se revende, y el cobro que reclamabas nunca existió.',
   },
   e_bloquea: {
     kind: 'partial',
-    view: OPERADORA_INICIO,
+    view: OPERATOR_START,
     verdict: 'Te tapaste el oído, pero no comprobaste nada',
     outcome:
       'No contestar fue lo que impidió el daño. Pero sigues sin saber si el cargo de $2,99 existía: el bloqueo silencia el mensaje, no el cobro.',
@@ -155,14 +155,14 @@ const STORY: Story<ScreenNode> = {
   },
   e_verifica: {
     kind: 'good',
-    view: OPERADORA,
+    view: OPERATOR,
     verdict: 'No caíste · lo comprobaste con tu operadora',
     outcome:
       'En tu línea no había ninguna suscripción ni ningún cargo por ese servicio: el mensaje era falso. Lo comprobaste donde consta, sin contestarle a nadie.',
   },
 }
 
-const SENALES: Senal[] = [
+const SIGNALS: ScenarioSignal[] = [
   {
     id: 's1',
     targetId: 'mensaje',
@@ -196,9 +196,9 @@ const SENALES: Senal[] = [
 const RULE =
   'Regla de oro: a un mensaje que no esperabas <b>no se le contesta nada</b>, ni siquiera para darse de baja. Responder confirma que tu número existe y que alguien lo lee, que es exactamente lo que se vende. Los cobros se revisan con tu operadora.'
 
-const RESUMEN = 'Un SMS cobra una suscripción que nunca contrataste y ofrece cancelarla.'
+const SUMMARY = 'Un SMS cobra una suscripción que nunca contrataste y ofrece cancelarla.'
 
-const CONTEXTO: Contexto = {
+const CONTEXT: Context = {
   antes: 'Tienes una línea prepago y recargas cada tanto, sin llevar mucho la cuenta del saldo.',
   ahora: (
     <>
@@ -208,14 +208,14 @@ const CONTEXTO: Contexto = {
   ),
 }
 
-function BajaSuscripcion() {
+function SubscriptionCancellation() {
   return (
-    <StoryEscenario
+    <ScenarioStory
       escenarioId="smishing/baja-suscripcion"
-      resumen={RESUMEN}
-      contexto={CONTEXTO}
+      resumen={SUMMARY}
+      contexto={CONTEXT}
       story={STORY}
-      senales={SENALES}
+      senales={SIGNALS}
       rule={RULE}
       restartLabel="↻ Repetir el escenario"
       accionesEnPantalla
@@ -236,4 +236,4 @@ function BajaSuscripcion() {
   )
 }
 
-export default BajaSuscripcion
+export default SubscriptionCancellation

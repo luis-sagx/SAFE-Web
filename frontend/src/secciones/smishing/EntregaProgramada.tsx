@@ -1,15 +1,15 @@
 import { Compass, MessageSquareText, Package, Wallet } from 'lucide-react'
-import StoryEscenario, { type AppTelefono, type ScreenNode } from '../../components/StoryEscenario'
-import type { Contexto } from '../../components/ui/ContextoEscenario'
+import ScenarioStory, { type PhoneApp, type ScreenNode } from '../../components/StoryEscenario'
+import type { Context } from '../../components/ui/ContextoEscenario'
 import type { Story } from '../../hooks/useStoryEngine'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
-import type { Senal } from '../../components/ui/PanelVeredicto'
+import type { Signal } from '../../components/ui/PanelVeredicto'
 
 // Cierra el módulo con la lección que falta a los seis fraudulentos: desconfiar de todo
 // también se paga. Este aviso no pide nada; el fallo (como en alerta-consumo) es devolver sin mirar.
 
-const GUIA = '8842-EC'
-const RESPUESTA = '¿A qué hora exactamente? No voy a estar en la mañana.'
+const GUIDE = '8842-EC'
+const RESPONSE = '¿A qué hora exactamente? No voy a estar en la mañana.'
 
 const SMS: ScreenView = {
   kind: 'sms',
@@ -18,14 +18,14 @@ const SMS: ScreenView = {
   senalRemitente: 'remitente',
   msgs: [
     {
-      text: `ENVIAEXPRESS: su envio ${GUIA} sale a reparto manana entre 09h00 y 13h00. No requiere ningun pago. Puede ver el detalle en nuestra app.`,
+      text: `ENVIAEXPRESS: su envio ${GUIDE} sale a reparto manana entre 09h00 y 13h00. No requiere ningun pago. Puede ver el detalle en nuestra app.`,
       time: '18:05',
       senal: 'mensaje',
     },
   ],
   respuestas: [
     {
-      texto: RESPUESTA,
+      texto: RESPONSE,
       goto: 'e_responde',
       label: 'Contestó al número del aviso preguntando por la hora',
     },
@@ -34,21 +34,21 @@ const SMS: ScreenView = {
   volverLabel: 'Salió del hilo sin hacer nada',
 }
 
-const SMS_RESPONDIDO: ScreenView = {
+const REPLIED_SMS: ScreenView = {
   ...SMS,
   respuestas: undefined,
   volverGoto: undefined,
-  msgs: [...SMS.msgs, { text: RESPUESTA, time: '18:06', mine: true }],
+  msgs: [...SMS.msgs, { text: RESPONSE, time: '18:06', mine: true }],
 }
 
 // Abrirla no es todavía haber comprobado: se puede mirar el envío o devolverlo a ciegas.
-const APP_INICIO: ScreenView = {
+const APP_HOME: ScreenView = {
   kind: 'web',
   app: 'EnvíaExpress',
   url: 'enviaexpress.ec',
   secure: true,
   brand: 'Mis envíos',
-  title: `Guía ${GUIA}`,
+  title: `Guía ${GUIDE}`,
   subtitle: 'En bodega de reparto · Quito',
   opciones: [
     {
@@ -76,12 +76,12 @@ const APP_INICIO: ScreenView = {
 }
 
 // El acierto se enseña en pantalla, no solo se cuenta.
-const APP_DETALLE: ScreenView = {
+const APP_DETAIL: ScreenView = {
   kind: 'web',
   app: 'EnvíaExpress',
   url: 'enviaexpress.ec',
   secure: true,
-  brand: `Guía ${GUIA}`,
+  brand: `Guía ${GUIDE}`,
   title: 'Detalle del envío',
   subtitle: 'Actualizado hace 40 minutos.',
   datos: [
@@ -96,7 +96,7 @@ const APP_DETALLE: ScreenView = {
   button: '',
 }
 
-const APPS: AppTelefono[] = [
+const APPS: PhoneApp[] = [
   {
     Icono: Package,
     texto: 'EnvíaExpress',
@@ -121,24 +121,24 @@ const APPS: AppTelefono[] = [
 
 const STORY: Story<ScreenNode> = {
   n1: { kind: 'scene', view: SMS },
-  n3: { kind: 'scene', view: APP_INICIO },
+  n3: { kind: 'scene', view: APP_HOME },
   e_app: {
     kind: 'good',
-    view: APP_DETALLE,
+    view: APP_DETAIL,
     verdict: 'Acertaste · el aviso era legítimo',
     outcome:
       'El envío era el que estabas esperando, salía a reparto al día siguiente y no había ningún valor pendiente. Comprobarlo en la app te tomó diez segundos y te dejó con la información que el mensaje anunciaba: a qué hora estar en casa.',
   },
   e_devuelve: {
     kind: 'bad',
-    view: APP_INICIO,
+    view: APP_HOME,
     verdict: 'Aviso legítimo, reacción peligrosa',
     outcome:
       'Devolviste al remitente un paquete que sí habías comprado, sin mirar antes de qué se trataba. El envío se fue de vuelta, el reembolso tarda semanas y el aviso no tenía nada de raro: ni pedía pago, ni traía enlace, ni metía prisa. Desconfiar de todo cuesta tanto como confiar de más.',
   },
   e_responde: {
     kind: 'partial',
-    view: SMS_RESPONDIDO,
+    view: REPLIED_SMS,
     verdict: 'Contestaste a un número que no lee',
     outcome:
       'No pasó nada malo: el remitente era el de siempre. Pero los avisos automáticos salen de un número que no recibe respuestas, así que tu pregunta no llegó a ninguna parte. La franja horaria estaba en la app, a un toque de distancia.',
@@ -152,7 +152,7 @@ const STORY: Story<ScreenNode> = {
   },
 }
 
-const SENALES: Senal[] = [
+const SIGNALS: Signal[] = [
   {
     id: 's1',
     targetId: 'mensaje',
@@ -186,9 +186,9 @@ const SENALES: Senal[] = [
 const RULE =
   'Regla de oro: un aviso auténtico <b>informa y no te pide nada</b>. Compruébalo en la app del courier con tu número de guía, que es lo mismo que harías con uno falso; la diferencia es que este resiste la comprobación. Y descartar de un plumazo lo que sí era real también cuesta.'
 
-const RESUMEN = 'Un SMS del courier avisa que tu paquete llega mañana en la mañana.'
+const SUMMARY = 'Un SMS del courier avisa que tu paquete llega mañana en la mañana.'
 
-const CONTEXTO: Contexto = {
+const CONTEXT: Context = {
   antes: 'Compraste algo por internet hace unos días y estás esperando que llegue.',
   ahora: (
     <>
@@ -198,14 +198,14 @@ const CONTEXTO: Contexto = {
   ),
 }
 
-function EntregaProgramada() {
+function ScheduledDelivery() {
   return (
-    <StoryEscenario
+    <ScenarioStory
       escenarioId="smishing/entrega-programada"
-      resumen={RESUMEN}
-      contexto={CONTEXTO}
+      resumen={SUMMARY}
+      contexto={CONTEXT}
       story={STORY}
-      senales={SENALES}
+      senales={SIGNALS}
       rule={RULE}
       restartLabel="↻ Repetir el escenario"
       accionesEnPantalla
@@ -232,4 +232,4 @@ function EntregaProgramada() {
   )
 }
 
-export default EntregaProgramada
+export default ScheduledDelivery
