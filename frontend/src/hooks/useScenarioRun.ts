@@ -1,14 +1,14 @@
 import { useCallback, useRef, useState } from 'react'
 import { createRun, type RunOutcome, type RunPayload } from '../lib/api'
 import { isRetryableRunError, queueRun } from '../lib/pendingRuns'
-import { getEscenario, type Escenario } from '../data/catalogo'
+import { getScenario, type Scenario } from '../data/catalogo'
 
 export type RunStatus = 'idle' | 'saving' | 'saved' | 'queued' | 'failed'
 export type StoryKind = 'scene' | 'good' | 'partial' | 'bad'
 
 /** Con qué cerró una corrida. Es `StoryKind` sin `'scene'`, que es el único
  *  valor que no es un final. */
-export type ResultadoEscenario = Exclude<StoryKind, 'scene'>
+export type ScenarioResult = Exclude<StoryKind, 'scene'>
 
 export interface RunResult {
   endingId: string
@@ -17,7 +17,7 @@ export interface RunResult {
 }
 
 export interface ScenarioRun {
-  escenario: Escenario
+  escenario: Scenario
   status: RunStatus
   recordDecision: (decision: Record<string, unknown>) => void
   finish: (result: RunResult) => Promise<void>
@@ -39,9 +39,9 @@ export function scoreFromOutcome(outcome: RunOutcome): number {
 // Contrato único para registrar resultados: un escenario que guarde por su
 // cuenta rompe el estudio en silencio (se salta traza, versión y anti-duplicados).
 export function useScenarioRun(scenarioId: string): ScenarioRun {
-  const escenario = getEscenario(scenarioId)
+  const scenario = getScenario(scenarioId)
 
-  if (!escenario) {
+  if (!scenario) {
     throw new Error(`Escenario "${scenarioId}" no está en el catálogo.`)
   }
 
@@ -64,8 +64,8 @@ export function useScenarioRun(scenarioId: string): ScenarioRun {
       submittedRef.current = true
 
       const payload: RunPayload = {
-        scenarioId: escenario.id,
-        version: escenario.version,
+        scenarioId: scenario.id,
+        version: scenario.version,
         outcome,
         score: score ?? scoreFromOutcome(outcome),
         endingId,
@@ -88,7 +88,7 @@ export function useScenarioRun(scenarioId: string): ScenarioRun {
         }
       }
     },
-    [escenario],
+    [scenario],
   )
 
   const restart = useCallback(() => {
@@ -98,5 +98,5 @@ export function useScenarioRun(scenarioId: string): ScenarioRun {
     setStatus('idle')
   }, [])
 
-  return { escenario, status, recordDecision, finish, restart }
+  return { escenario: scenario, status, recordDecision, finish, restart }
 }
