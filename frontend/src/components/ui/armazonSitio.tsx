@@ -6,13 +6,13 @@ import styles from './DeviceScreen.module.css'
 // desnuda enseñaría que se reconoce por el acabado, no por la dirección.
 
 // Todo decorativo: nada de esto responde al clic.
-export function CabeceraSitio({ marca, menu }: { marca: ReactNode; menu: string[] }) {
+export function SiteHeader({ marca: brand, menu }: { marca: ReactNode; menu: string[] }) {
   return (
     <div className={styles.sitioCabecera}>
-      <p className={styles.brand}>{marca}</p>
+      <p className={styles.brand}>{brand}</p>
       <nav className={styles.sitioMenu} aria-hidden>
-        {menu.map((entrada) => (
-          <span key={entrada}>{entrada}</span>
+        {menu.map((entry) => (
+          <span key={entry}>{entry}</span>
         ))}
       </nav>
     </div>
@@ -20,20 +20,20 @@ export function CabeceraSitio({ marca, menu }: { marca: ReactNode; menu: string[
 }
 
 // En las páginas falsas hace de coartada, igual que en las de verdad.
-export function AvisoSitio({ children }: { children: ReactNode }) {
+export function SiteNotice({ children }: { children: ReactNode }) {
   return <p className={styles.pageAviso}>{children}</p>
 }
 
-export function PieSitio({ texto, enlaces }: { texto?: ReactNode; enlaces?: string[] }) {
-  if (!texto && !enlaces) return null
+export function SiteFooter({ texto: text, enlaces: links }: { texto?: ReactNode; enlaces?: string[] }) {
+  if (!text && !links) return null
 
   return (
     <div className={styles.sitioPie}>
-      {texto && <p className={styles.pageFooter}>{texto}</p>}
-      {enlaces && (
+      {text && <p className={styles.pageFooter}>{text}</p>}
+      {links && (
         <p className={styles.sitioPieEnlaces} aria-hidden>
-          {enlaces.map((entrada) => (
-            <span key={entrada}>{entrada}</span>
+          {links.map((entry) => (
+            <span key={entry}>{entry}</span>
           ))}
         </p>
       )}
@@ -42,4 +42,4 @@ export function PieSitio({ texto, enlaces }: { texto?: ReactNode; enlaces?: stri
 }
 
 // Se repite en casi todos los sitios simulados porque se repite en los reales.
-export const ENLACES_PIE = ['Aviso de privacidad', 'Términos de uso', 'Ayuda']
+export const FOOTER_LINKS = ['Aviso de privacidad', 'Términos de uso', 'Ayuda']
