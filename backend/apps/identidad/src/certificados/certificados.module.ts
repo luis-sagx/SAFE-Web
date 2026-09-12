@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
 import { AuthJwtModule } from '@comun';
 import { MailModule } from '../mail/mail.module';
-import { CertificadosController } from './certificados.controller';
-import { CertificadosService } from './certificados.service';
+import { CertificatesController } from './certificados.controller';
+import { CertificatesService } from './certificados.service';
 
 /// `AuthJwtModule` por dos motivos: `JwtAuthGuard` verifica el access token, y
 /// `JwtService` verifica la atestación que firma `entrenamiento` —mismo
@@ -10,8 +10,8 @@ import { CertificadosService } from './certificados.service';
 /// `AdminModule` la reutiliza para la revocación.
 @Module({
   imports: [AuthJwtModule, MailModule],
-  controllers: [CertificadosController],
-  providers: [CertificadosService],
-  exports: [CertificadosService],
+  controllers: [CertificatesController],
+  providers: [CertificatesService],
+  exports: [CertificatesService],
 })
-export class CertificadosModule {}
+export class CertificatesModule {}
