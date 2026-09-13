@@ -1,10 +1,10 @@
-import type { Senal } from '../components/ui/PanelVeredicto'
+import type { Signal } from '../components/ui/PanelVeredicto'
 
-export function crearSenal(
+export function createSignal(
   id: string,
-  pantalla: string,
+  screen: string,
   targetId: string,
-  texto: string,
-): Senal {
-  return { id, pantalla, targetId, texto }
+  text: string,
+): Signal {
+  return { id, pantalla: screen, targetId, texto: text }
 }

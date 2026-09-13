@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
 import { describe, expect, it, vi } from 'vitest'
-import BonoEstado from './BonoEstado'
+import GovernmentBenefit from './BonoEstado'
 
 vi.mock('../../context/AuthContext', () => ({
   useAuth: () => ({
@@ -29,14 +29,14 @@ vi.mock('../../context/AuthContext', () => ({
 }))
 
 vi.mock('../../lib/api', async () => {
-  const actual = await vi.importActual<typeof import('../../lib/api')>('../../lib/api')
-  return { ...actual, createRun: vi.fn().mockResolvedValue(undefined) }
+  const current = await vi.importActual<typeof import('../../lib/api')>('../../lib/api')
+  return { ...current, createRun: vi.fn().mockResolvedValue(undefined) }
 })
 
-function empezar() {
+function start() {
   const { container } = render(
     <MemoryRouter>
-      <BonoEstado />
+      <GovernmentBenefit />
     </MemoryRouter>,
   )
 
@@ -46,115 +46,115 @@ function empezar() {
 
 describe('BonoEstado', () => {
   it('se decide tocando el propio teléfono, sin lista de opciones', () => {
-    const container = empezar()
-    const telefono = container.querySelector('#pantalla-escenario') as HTMLElement
+    const container = start()
+    const phone = container.querySelector('#pantalla-escenario') as HTMLElement
 
-    expect(telefono).not.toBeNull()
+    expect(phone).not.toBeNull()
     expect(screen.getByText('¿Qué haces?')).toBeDefined()
     expect(screen.getByRole('button', { name: 'Ver contexto y mis datos' })).toBeDefined()
 
     // El enlace del SMS es el punto interactivo: no hay ningún botón fuera del
     // teléfono que describa la acción.
-    const enlace = within(telefono).getByText('bit.ly/bono-ec-2026')
-    fireEvent.click(enlace)
+    const link = within(phone).getByText('bit.ly/bono-ec-2026')
+    fireEvent.click(link)
 
-    expect(within(telefono).getByText('Acreditación del bono de $180')).toBeDefined()
-    expect(within(telefono).getByText('bono-social-ec.online/registro')).toBeDefined()
+    expect(within(phone).getByText('Acreditación del bono de $180')).toBeDefined()
+    expect(within(phone).getByText('bono-social-ec.online/registro')).toBeDefined()
 
-    fireEvent.click(within(telefono).getByRole('button', { name: 'Acreditar mi bono' }))
+    fireEvent.click(within(phone).getByRole('button', { name: 'Acreditar mi bono' }))
     expect(screen.getByText('Caíste en la trampa')).toBeDefined()
   })
 
   it('salir de la página falsa no entrega datos', () => {
-    const container = empezar()
-    const telefono = container.querySelector('#pantalla-escenario') as HTMLElement
+    const container = start()
+    const phone = container.querySelector('#pantalla-escenario') as HTMLElement
 
-    fireEvent.click(within(telefono).getByText('bit.ly/bono-ec-2026'))
-    fireEvent.click(within(telefono).getByRole('button', { name: 'Volver atrás' }))
+    fireEvent.click(within(phone).getByText('bit.ly/bono-ec-2026'))
+    fireEvent.click(within(phone).getByRole('button', { name: 'Volver atrás' }))
     expect(screen.getByText('No caíste · el formulario te delató')).toBeDefined()
   })
 
   it('desde la página falsa se puede volver al hilo a releer el SMS', () => {
-    const container = empezar()
-    const telefono = container.querySelector('#pantalla-escenario') as HTMLElement
+    const container = start()
+    const phone = container.querySelector('#pantalla-escenario') as HTMLElement
 
-    fireEvent.click(within(telefono).getByText('bit.ly/bono-ec-2026'))
-    expect(within(telefono).getByText('Acreditación del bono de $180')).toBeDefined()
+    fireEvent.click(within(phone).getByText('bit.ly/bono-ec-2026'))
+    expect(within(phone).getByText('Acreditación del bono de $180')).toBeDefined()
 
-    fireEvent.click(within(telefono).getByRole('button', { name: /Mensajes/ }))
-    expect(within(telefono).getByText(/MIES INFORMA/)).toBeDefined()
+    fireEvent.click(within(phone).getByRole('button', { name: /Mensajes/ }))
+    expect(within(phone).getByText(/MIES INFORMA/)).toBeDefined()
     // Volver a leer no decide: la corrida sigue en la página falsa.
     expect(screen.getByText('¿Qué haces?')).toBeDefined()
 
-    fireEvent.click(within(telefono).getByRole('button', { name: /Mensajes/ }))
-    expect(within(telefono).getByText('Acreditación del bono de $180')).toBeDefined()
+    fireEvent.click(within(phone).getByRole('button', { name: /Mensajes/ }))
+    expect(within(phone).getByText('Acreditación del bono de $180')).toBeDefined()
   })
 
   it('volver al navegador desde el hilo no deja la pantalla en Mensajes', () => {
-    const container = empezar()
-    const telefono = container.querySelector('#pantalla-escenario') as HTMLElement
-    const app = (nombre: RegExp) => within(telefono).getByRole('button', { name: nombre })
+    const container = start()
+    const phone = container.querySelector('#pantalla-escenario') as HTMLElement
+    const app = (name: RegExp) => within(phone).getByRole('button', { name: name })
 
     fireEvent.click(app(/Navegador/))
-    expect(within(telefono).getByText('Nueva pestaña')).toBeDefined()
+    expect(within(phone).getByText('Nueva pestaña')).toBeDefined()
 
     // Releer el SMS, mirar otra app y volver al navegador: el destino es el
     // nodo en el que ya estamos, así que el hilo tapaba la pantalla.
     fireEvent.click(app(/Mensajes/))
-    expect(within(telefono).getByText(/MIES INFORMA/)).toBeDefined()
+    expect(within(phone).getByText(/MIES INFORMA/)).toBeDefined()
 
     fireEvent.click(app(/Banco/))
-    expect(within(telefono).getByText(/Saldo disponible/)).toBeDefined()
+    expect(within(phone).getByText(/Saldo disponible/)).toBeDefined()
 
     fireEvent.click(app(/Navegador/))
-    expect(within(telefono).getByText('Nueva pestaña')).toBeDefined()
-    expect(within(telefono).queryByText(/MIES INFORMA/)).toBeNull()
+    expect(within(phone).getByText('Nueva pestaña')).toBeDefined()
+    expect(within(phone).queryByText(/MIES INFORMA/)).toBeNull()
   })
 
   it('mirar una app sobre el hilo y volver a Mensajes deja el hilo, no la pantalla del grafo', () => {
-    const container = empezar()
-    const telefono = container.querySelector('#pantalla-escenario') as HTMLElement
-    const app = (nombre: RegExp) => within(telefono).getByRole('button', { name: nombre })
+    const container = start()
+    const phone = container.querySelector('#pantalla-escenario') as HTMLElement
+    const app = (name: RegExp) => within(phone).getByRole('button', { name: name })
 
-    fireEvent.click(within(telefono).getByText('bit.ly/bono-ec-2026'))
+    fireEvent.click(within(phone).getByText('bit.ly/bono-ec-2026'))
     fireEvent.click(app(/Mensajes/))
     fireEvent.click(app(/Cámara/))
     fireEvent.click(app(/Mensajes/))
 
-    expect(within(telefono).getByText(/MIES INFORMA/)).toBeDefined()
+    expect(within(phone).getByText(/MIES INFORMA/)).toBeDefined()
   })
 
   it('abrir el navegador no comprueba nada, pero entrar al portal oficial sí', () => {
-    const container = empezar()
-    const telefono = container.querySelector('#pantalla-escenario') as HTMLElement
+    const container = start()
+    const phone = container.querySelector('#pantalla-escenario') as HTMLElement
 
-    fireEvent.click(within(telefono).getByRole('button', { name: /Navegador/ }))
+    fireEvent.click(within(phone).getByRole('button', { name: /Navegador/ }))
 
     // El navegador abre en sus sitios frecuentes, no en el portal, y la
     // corrida sigue abierta: tocar el icono todavía no es un veredicto.
-    expect(within(telefono).getByText('Nueva pestaña')).toBeDefined()
+    expect(within(phone).getByText('Nueva pestaña')).toBeDefined()
     expect(screen.getByText('¿Qué haces?')).toBeDefined()
 
-    fireEvent.click(within(telefono).getByRole('button', { name: /inclusion\.gob\.ec/ }))
+    fireEvent.click(within(phone).getByRole('button', { name: /inclusion\.gob\.ec/ }))
 
     // La respuesta se lee en pantalla, y verla ya es la comprobación: no
     // queda nada abierto después, así que la corrida termina aquí.
-    expect(within(telefono).getByText('Consulta de beneficiarios')).toBeDefined()
-    expect(within(telefono).getByText('Procesos de preselección')).toBeDefined()
+    expect(within(phone).getByText('Consulta de beneficiarios')).toBeDefined()
+    expect(within(phone).getByText('Procesos de preselección')).toBeDefined()
     expect(screen.getByText('No caíste · buscaste la fuente oficial')).toBeDefined()
   })
 
   it('el repaso de señales resalta elementos dentro del celular', async () => {
-    const container = empezar()
-    const telefono = container.querySelector('#pantalla-escenario') as HTMLElement
+    const container = start()
+    const phone = container.querySelector('#pantalla-escenario') as HTMLElement
 
-    fireEvent.click(within(telefono).getByText('bit.ly/bono-ec-2026'))
-    fireEvent.click(within(telefono).getByRole('button', { name: 'Acreditar mi bono' }))
+    fireEvent.click(within(phone).getByText('bit.ly/bono-ec-2026'))
+    fireEvent.click(within(phone).getByRole('button', { name: 'Acreditar mi bono' }))
     fireEvent.click(screen.getByRole('button', { name: 'Ver las señales' }))
 
     await waitFor(() => {
       expect(
-        within(telefono)
+        within(phone)
           .getByText(/MIES INFORMA/)
           .closest('[data-signal="mensaje"]')
           ?.classList.contains('senal-resaltada'),
@@ -166,7 +166,7 @@ describe('BonoEstado', () => {
 
     await waitFor(() => {
       expect(
-        within(telefono)
+        within(phone)
           .getByText('bono-social-ec.online/registro')
           .closest('[data-signal="url"]')
           ?.classList.contains('senal-resaltada'),

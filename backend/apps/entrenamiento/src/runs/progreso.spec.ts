@@ -1,8 +1,6 @@
-import { calcularProgreso, type CorridaMinima } from './progreso';
+import { calculateProgress, type MinimalRun } from './progreso';
 
-function corrida(
-  overrides: Partial<CorridaMinima> & Pick<CorridaMinima, 'scenarioId'>,
-) {
+function run(overrides: Partial<MinimalRun> & Pick<MinimalRun, 'scenarioId'>) {
   return {
     outcome: 'CORRECTO' as const,
     finishedAt: new Date('2026-08-01T00:00:00.000Z'),
@@ -10,42 +8,42 @@ function corrida(
   };
 }
 
-describe('calcularProgreso', () => {
+describe('calculateProgress', () => {
   it('cuenta aprobado solo lo que terminó en CORRECTO', () => {
-    const progreso = calcularProgreso('phishing', 6, 8, [
-      corrida({ scenarioId: 'phishing/a', outcome: 'CORRECTO' }),
-      corrida({ scenarioId: 'phishing/b', outcome: 'PARCIAL' }),
-      corrida({ scenarioId: 'phishing/c', outcome: 'INCORRECTO' }),
+    const progress = calculateProgress('phishing', 6, 8, [
+      run({ scenarioId: 'phishing/a', outcome: 'CORRECTO' }),
+      run({ scenarioId: 'phishing/b', outcome: 'PARCIAL' }),
+      run({ scenarioId: 'phishing/c', outcome: 'INCORRECTO' }),
     ]);
 
-    expect(progreso.aprobados).toBe(1);
-    expect(progreso.requeridos).toBe(6);
-    expect(progreso.aprobado).toBe(false);
+    expect(progress.aprobados).toBe(1);
+    expect(progress.requeridos).toBe(6);
+    expect(progress.aprobado).toBe(false);
   });
 
   // La regla central del gating: no importa el orden en que la base devuelva
   // las filas, ni cuántas veces se repita un escenario — solo cuenta la
   // corrida con el finishedAt más tardío de cada uno.
   it('usa la última corrida de cada escenario sin importar el orden de llegada', () => {
-    const progreso = calcularProgreso('phishing', 1, 1, [
-      corrida({
+    const progress = calculateProgress('phishing', 1, 1, [
+      run({
         scenarioId: 'phishing/a',
         outcome: 'CORRECTO',
         finishedAt: new Date('2026-08-03T00:00:00.000Z'),
       }),
-      corrida({
+      run({
         scenarioId: 'phishing/a',
         outcome: 'INCORRECTO',
         finishedAt: new Date('2026-08-01T00:00:00.000Z'),
       }),
-      corrida({
+      run({
         scenarioId: 'phishing/a',
         outcome: 'PARCIAL',
         finishedAt: new Date('2026-08-02T00:00:00.000Z'),
       }),
     ]);
 
-    expect(progreso.escenarios).toEqual([
+    expect(progress.escenarios).toEqual([
       { id: 'phishing/a', ultimoOutcome: 'CORRECTO' },
     ]);
   });
@@ -53,112 +51,109 @@ describe('calcularProgreso', () => {
   // El caso que motiva "el último intento manda": alguien ya aprobado repite
   // el escenario y falla. Debe perder el punto, no conservarlo.
   it('un escenario ya aprobado que se repite y falla baja el conteo', () => {
-    const progreso = calcularProgreso('phishing', 1, 1, [
-      corrida({
+    const progress = calculateProgress('phishing', 1, 1, [
+      run({
         scenarioId: 'phishing/a',
         outcome: 'CORRECTO',
         finishedAt: new Date('2026-08-01T00:00:00.000Z'),
       }),
-      corrida({
+      run({
         scenarioId: 'phishing/a',
         outcome: 'INCORRECTO',
         finishedAt: new Date('2026-08-02T00:00:00.000Z'),
       }),
     ]);
 
-    expect(progreso.escenarios).toEqual([
+    expect(progress.escenarios).toEqual([
       { id: 'phishing/a', ultimoOutcome: 'INCORRECTO' },
     ]);
-    expect(progreso.aprobados).toBe(0);
-    expect(progreso.aprobado).toBe(false);
+    expect(progress.aprobados).toBe(0);
+    expect(progress.aprobado).toBe(false);
   });
 
   it('aprobado exige el umbral y haber intentado los `total`, no solo el umbral', () => {
-    const seis = Array.from({ length: 6 }, (_, i) =>
-      corrida({ scenarioId: `phishing/${i}`, outcome: 'CORRECTO' }),
+    const six = Array.from({ length: 6 }, (_, i) =>
+      run({ scenarioId: `phishing/${i}`, outcome: 'CORRECTO' }),
     );
 
     // 5 de 6: no llega ni al umbral.
-    expect(calcularProgreso('phishing', 6, 8, seis.slice(0, 5)).aprobado).toBe(
+    expect(calculateProgress('phishing', 6, 8, six.slice(0, 5)).aprobado).toBe(
       false,
     );
 
     // 6/6 correctos, pero solo 6 de los 8 escenarios del módulo intentados:
     // antes esto ya daba "aprobado", y era el bug que dejaba dos escenarios
     // sin jugar nunca. Ahora no basta.
-    expect(calcularProgreso('phishing', 6, 8, seis).aprobado).toBe(false);
+    expect(calculateProgress('phishing', 6, 8, six).aprobado).toBe(false);
 
     // Los 8 intentados, 6 en CORRECTO y 2 en lo que sea: ahí sí aprueba.
-    const ocho = [
-      ...seis,
-      corrida({ scenarioId: 'phishing/6', outcome: 'INCORRECTO' }),
-      corrida({ scenarioId: 'phishing/7', outcome: 'PARCIAL' }),
+    const eight = [
+      ...six,
+      run({ scenarioId: 'phishing/6', outcome: 'INCORRECTO' }),
+      run({ scenarioId: 'phishing/7', outcome: 'PARCIAL' }),
     ];
-    expect(calcularProgreso('phishing', 6, 8, ocho).aprobado).toBe(true);
+    expect(calculateProgress('phishing', 6, 8, eight).aprobado).toBe(true);
   });
 
   it('sin corridas, progreso vacío y no aprobado', () => {
-    const progreso = calcularProgreso('phishing', 6, 8, []);
+    const progress = calculateProgress('phishing', 6, 8, []);
 
-    expect(progreso.escenarios).toEqual([]);
-    expect(progreso.aprobados).toBe(0);
-    expect(progreso.aprobado).toBe(false);
-    expect(progreso.ronda).toBe(1);
-    expect(progreso.rondaEnCurso).toBeNull();
+    expect(progress.escenarios).toEqual([]);
+    expect(progress.aprobados).toBe(0);
+    expect(progress.aprobado).toBe(false);
+    expect(progress.ronda).toBe(1);
+    expect(progress.rondaEnCurso).toBeNull();
   });
 
   it('congela la ronda oficial mientras una repetición está abierta', () => {
-    const primera = Array.from({ length: 8 }, (_, i) =>
-      corrida({
+    const first = Array.from({ length: 8 }, (_, i) =>
+      run({
         scenarioId: `phishing/${i}`,
         outcome: i < 6 ? 'CORRECTO' : 'INCORRECTO',
         finishedAt: new Date(2026, 7, 1, 0, i),
       }),
     );
-    const repeticion = [
-      corrida({
+    const replay = [
+      run({
         scenarioId: 'phishing/0',
         outcome: 'INCORRECTO',
         finishedAt: new Date(2026, 7, 2),
       }),
-      corrida({
+      run({
         scenarioId: 'phishing/1',
         outcome: 'INCORRECTO',
         finishedAt: new Date(2026, 7, 2, 0, 1),
       }),
-      corrida({
+      run({
         scenarioId: 'phishing/2',
         outcome: 'INCORRECTO',
         finishedAt: new Date(2026, 7, 2, 0, 2),
       }),
     ];
-    const progreso = calcularProgreso('phishing', 6, 8, [
-      ...primera,
-      ...repeticion,
-    ]);
-    expect(progreso.aprobados).toBe(6);
-    expect(progreso.ronda).toBe(2);
-    expect(progreso.rondaEnCurso?.jugados).toBe(3);
+    const progress = calculateProgress('phishing', 6, 8, [...first, ...replay]);
+    expect(progress.aprobados).toBe(6);
+    expect(progress.ronda).toBe(2);
+    expect(progress.rondaEnCurso?.jugados).toBe(3);
   });
 
   it('cierra una ronda solo con escenarios distintos', () => {
-    const corridas = [
+    const runs = [
       ...Array.from({ length: 7 }, (_, i) =>
-        corrida({
+        run({
           scenarioId: `phishing/${i}`,
           finishedAt: new Date(2026, 7, 1, 0, i),
         }),
       ),
-      corrida({
+      run({
         scenarioId: 'phishing/0',
         outcome: 'INCORRECTO',
         finishedAt: new Date(2026, 7, 1, 0, 8),
       }),
-      corrida({
+      run({
         scenarioId: 'phishing/7',
         finishedAt: new Date(2026, 7, 1, 0, 9),
       }),
     ];
-    expect(calcularProgreso('phishing', 6, 8, corridas).ronda).toBe(1);
+    expect(calculateProgress('phishing', 6, 8, runs).ronda).toBe(1);
   });
 });

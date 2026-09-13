@@ -1,11 +1,11 @@
 import { Camera, Images, Landmark, MessageSquareText } from 'lucide-react'
-import StoryEscenario, { type AppTelefono, type ScreenNode } from '../../components/StoryEscenario'
-import type { Contexto } from '../../components/ui/ContextoEscenario'
+import ScenarioStory, { type PhoneApp, type ScreenNode } from '../../components/StoryEscenario'
+import type { Context } from '../../components/ui/ContextoEscenario'
 import type { Story } from '../../hooks/useStoryEngine'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
-import type { Senal } from '../../components/ui/PanelVeredicto'
+import type { Signal } from '../../components/ui/PanelVeredicto'
 
-const HISTORIAL = [
+const HISTORY = [
   {
     text: 'Banco del Litoral: consumo aprobado $12,40 FARMACIA SANA 28/07 11:02, tarjeta *4417.',
     time: '28 jul',
@@ -16,22 +16,22 @@ const HISTORIAL = [
   },
 ]
 
-const NUEVO = {
+const NEW = {
   text: 'Banco del Litoral: consumo aprobado $42,90 SUPERMERCADO LA UNIÓN 02/08 19:14, tarjeta *4417. Si no lo reconoces, bloquéala desde la app o llama al número impreso en tu tarjeta.',
   time: '19:14',
   senal: 'aviso',
 }
 
-const BORRADOR = 'No reconozco ese consumo, mi tarjeta es la 4539 0011 8842 4417'
+const DRAFT = 'No reconozco ese consumo, mi tarjeta es la 4539 0011 8842 4417'
 
 const SMS: ScreenView = {
   kind: 'sms',
   sender: 'BancoLitoral',
   sub: 'Remitente verificado · mismo hilo de siempre',
-  msgs: [...HISTORIAL, NUEVO],
+  msgs: [...HISTORY, NEW],
   respuestas: [
     {
-      texto: BORRADOR,
+      texto: DRAFT,
       goto: 'e_responde',
       label: 'Envió por SMS el número completo de su tarjeta',
     },
@@ -43,17 +43,17 @@ const SMS: ScreenView = {
   volverLabel: 'Salió del hilo sin verificar el consumo',
 }
 
-const SMS_RESPONDIDO: ScreenView = {
+const REPLIED_SMS: ScreenView = {
   ...SMS,
   respuestas: undefined,
   volverGoto: undefined,
-  msgs: [...HISTORIAL, NUEVO, { text: BORRADOR, time: '19:16', mine: true, senal: 'respuesta' }],
+  msgs: [...HISTORY, NEW, { text: DRAFT, time: '19:16', mine: true, senal: 'respuesta' }],
 }
 
 /// El inicio de la banca móvil. Abrir la app no es todavía haber verificado:
 /// desde aquí se puede mirar los movimientos o bloquear la tarjeta a ciegas,
 /// que es el error que este escenario mide de verdad.
-const APP_INICIO: ScreenView = {
+const APP_HOME: ScreenView = {
   kind: 'web',
   app: 'Banco del Litoral',
   url: 'bancolitoral.ec',
@@ -84,7 +84,7 @@ const APP_INICIO: ScreenView = {
 /// La app del banco con los mismos movimientos del hilo. El acierto de este
 /// escenario es comprobar, y comprobar significa ver el consumo listado: el
 /// veredicto lo cuenta, pero la pantalla es la que lo prueba.
-const APP_BANCO: ScreenView = {
+const APP_BANK: ScreenView = {
   kind: 'web',
   app: 'Banco del Litoral',
   url: 'bancolitoral.ec',
@@ -103,7 +103,7 @@ const APP_BANCO: ScreenView = {
   button: '',
 }
 
-const APPS: AppTelefono[] = [
+const APPS: PhoneApp[] = [
   { Icono: MessageSquareText, texto: 'Mensajes', color: '#2f9e44' },
   {
     Icono: Camera,
@@ -128,10 +128,10 @@ const APPS: AppTelefono[] = [
 
 const STORY: Story<ScreenNode> = {
   n1: { kind: 'scene', view: SMS },
-  n2: { kind: 'scene', view: APP_INICIO },
+  n2: { kind: 'scene', view: APP_HOME },
   e_bloquea: {
     kind: 'partial',
-    view: APP_INICIO,
+    view: APP_HOME,
     verdict: 'Reaccionaste sin comprobar',
     outcome:
       'Bloqueaste la tarjeta por una compra que habías hecho tú. No perdiste nada, pero te quedaste sin tarjeta hasta que el banco emita otra, y los movimientos estaban a un toque de distancia en esta misma app.',
@@ -139,14 +139,14 @@ const STORY: Story<ScreenNode> = {
   },
   e_app: {
     kind: 'good',
-    view: APP_BANCO,
+    view: APP_BANK,
     verdict: 'Acertaste · el aviso era legítimo',
     outcome:
       'En la app apareció el mismo consumo de $42,90: era tu compra del supermercado. El SMS venía del hilo de siempre del banco, no pedía nada y solo te avisaba.',
   },
   e_responde: {
     kind: 'bad',
-    view: SMS_RESPONDIDO,
+    view: REPLIED_SMS,
     verdict: 'Aviso legítimo, reacción peligrosa',
     outcome:
       'El aviso era real, pero enviaste el número completo de tu tarjeta por SMS. Ese canal no lo lee tu banco: quien controle ese número (o tu teléfono) ya tiene tus datos.',
@@ -162,7 +162,7 @@ const STORY: Story<ScreenNode> = {
   },
 }
 
-const SENALES: Senal[] = [
+const SIGNALS: Signal[] = [
   {
     id: 's1',
     targetId: 'aviso',
@@ -198,9 +198,9 @@ const SENALES: Senal[] = [
 const RULE =
   'Regla de oro: un aviso real del banco <b>informa, no pide</b>. Verifica siempre en la app o llamando al número impreso en tu tarjeta, y nunca escribas datos de tarjeta en un SMS, aunque el mensaje sea auténtico.'
 
-const RESUMEN = 'Llega un SMS del banco avisando un consumo de $42,90 con tu tarjeta.'
+const SUMMARY = 'Llega un SMS del banco avisando un consumo de $42,90 con tu tarjeta.'
 
-const CONTEXTO: Contexto = {
+const CONTEXT: Context = {
   antes: (
     <>
       Cliente del <strong>Banco del Litoral</strong>, con las <strong>alertas de consumo</strong>{' '}
@@ -215,14 +215,14 @@ const CONTEXTO: Contexto = {
   ),
 }
 
-function AlertaConsumo() {
+function ConsumptionAlert() {
   return (
-    <StoryEscenario
+    <ScenarioStory
       escenarioId="smishing/alerta-consumo"
-      resumen={RESUMEN}
-      contexto={CONTEXTO}
+      resumen={SUMMARY}
+      contexto={CONTEXT}
       story={STORY}
-      senales={SENALES}
+      senales={SIGNALS}
       rule={RULE}
       restartLabel="↻ Repetir el escenario"
       accionesEnPantalla
@@ -244,4 +244,4 @@ function AlertaConsumo() {
   )
 }
 
-export default AlertaConsumo
+export default ConsumptionAlert

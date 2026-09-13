@@ -2,7 +2,7 @@ import { plainToInstance } from 'class-transformer';
 import { validateSync } from 'class-validator';
 import { RegisterDto } from './register.dto';
 
-function validar(overrides: Record<string, unknown>) {
+function validate(overrides: Record<string, unknown>) {
   const base = {
     nombre: 'Ana',
     apellido: 'Pérez',
@@ -16,117 +16,117 @@ function validar(overrides: Record<string, unknown>) {
 
 describe('RegisterDto.email — dominios permitidos', () => {
   it('acepta un proveedor libre conocido', () => {
-    expect(validar({ email: 'ana@gmail.com' })).toEqual([]);
-    expect(validar({ email: 'ana@outlook.com' })).toEqual([]);
-    expect(validar({ email: 'ana@yahoo.com' })).toEqual([]);
-    expect(validar({ email: 'ana@icloud.com' })).toEqual([]);
-    expect(validar({ email: 'ana@zoho.com' })).toEqual([]);
+    expect(validate({ email: 'ana@gmail.com' })).toEqual([]);
+    expect(validate({ email: 'ana@outlook.com' })).toEqual([]);
+    expect(validate({ email: 'ana@yahoo.com' })).toEqual([]);
+    expect(validate({ email: 'ana@icloud.com' })).toEqual([]);
+    expect(validate({ email: 'ana@zoho.com' })).toEqual([]);
   });
 
   it('acepta cualquier dominio .ec', () => {
-    expect(validar({ email: 'ana@espe.edu.ec' })).toEqual([]);
-    expect(validar({ email: 'ana@epn.edu.ec' })).toEqual([]);
-    expect(validar({ email: 'ana@miempresa.com.ec' })).toEqual([]);
-    expect(validar({ email: 'ana@algo.ec' })).toEqual([]);
+    expect(validate({ email: 'ana@espe.edu.ec' })).toEqual([]);
+    expect(validate({ email: 'ana@epn.edu.ec' })).toEqual([]);
+    expect(validate({ email: 'ana@miempresa.com.ec' })).toEqual([]);
+    expect(validate({ email: 'ana@algo.ec' })).toEqual([]);
   });
 
   it('acepta un subdominio bajo .ec', () => {
-    expect(validar({ email: 'ana@mail.usfq.edu.ec' })).toEqual([]);
+    expect(validate({ email: 'ana@mail.usfq.edu.ec' })).toEqual([]);
   });
 
   it('normaliza antes de validar', () => {
-    expect(validar({ email: '  Ana@GMAIL.com ' })).toEqual([]);
+    expect(validate({ email: '  Ana@GMAIL.com ' })).toEqual([]);
   });
 
   it('rechaza un proveedor desechable', () => {
-    expect(validar({ email: 'ana@mailinator.com' })).toContain('email');
+    expect(validate({ email: 'ana@mailinator.com' })).toContain('email');
   });
 
   it('rechaza un dominio inventado que no es .ec', () => {
-    expect(validar({ email: 'ana@dominioinventado.xyz' })).toContain('email');
+    expect(validate({ email: 'ana@dominioinventado.xyz' })).toContain('email');
   });
 
   it('no se deja engañar por un sufijo parecido a .ec', () => {
-    expect(validar({ email: 'ana@midominio-ec.com' })).toContain('email');
+    expect(validate({ email: 'ana@midominio-ec.com' })).toContain('email');
   });
 
   it('un correo con formato inválido da un solo error', () => {
-    expect(validar({ email: 'noesuncorreo' })).toEqual(['email']);
+    expect(validate({ email: 'noesuncorreo' })).toEqual(['email']);
   });
 });
 
 describe('RegisterDto.password — política de fortaleza', () => {
   it('acepta una contraseña con mayúscula, número y carácter especial', () => {
-    expect(validar({ password: 'Contraseña-larga1!' })).toEqual([]);
+    expect(validate({ password: 'Contraseña-larga1!' })).toEqual([]);
   });
 
   it('rechaza una contraseña solo con minúsculas y números', () => {
-    expect(validar({ password: 'contraseñalarga1' })).toContain('password');
+    expect(validate({ password: 'contraseñalarga1' })).toContain('password');
   });
 
   it('rechaza una contraseña sin número', () => {
-    expect(validar({ password: 'Contraseña-larga!' })).toContain('password');
+    expect(validate({ password: 'Contraseña-larga!' })).toContain('password');
   });
 
   it('rechaza una contraseña sin carácter especial', () => {
-    expect(validar({ password: 'Contrasenalarga1' })).toContain('password');
+    expect(validate({ password: 'Contrasenalarga1' })).toContain('password');
   });
 
   it('rechaza una contraseña débil aunque cumpla el largo mínimo', () => {
-    expect(validar({ password: '12345678' })).toContain('password');
+    expect(validate({ password: '12345678' })).toContain('password');
   });
 
   it('sigue exigiendo el mínimo de 8 caracteres', () => {
-    expect(validar({ password: 'Ab1!' })).toContain('password');
+    expect(validate({ password: 'Ab1!' })).toContain('password');
   });
 });
 
 describe('RegisterDto.nombre / apellido — caracteres permitidos', () => {
   it('acepta un nombre simple', () => {
-    expect(validar({ nombre: 'Ana' })).toEqual([]);
+    expect(validate({ nombre: 'Ana' })).toEqual([]);
   });
 
   it('acepta tildes y ñ', () => {
-    expect(validar({ nombre: 'José' })).toEqual([]);
-    expect(validar({ nombre: 'Iñaki' })).toEqual([]);
+    expect(validate({ nombre: 'José' })).toEqual([]);
+    expect(validate({ nombre: 'Iñaki' })).toEqual([]);
   });
 
   it('acepta un nombre compuesto con espacio', () => {
-    expect(validar({ nombre: 'María José' })).toEqual([]);
+    expect(validate({ nombre: 'María José' })).toEqual([]);
   });
 
   it('rechaza un apellido con guion', () => {
-    expect(validar({ apellido: 'García-Torres' })).toContain('apellido');
+    expect(validate({ apellido: 'García-Torres' })).toContain('apellido');
   });
 
   it('rechaza un apóstrofe interno, aunque sea de un nombre compuesto real', () => {
-    expect(validar({ nombre: "D'Ángelo" })).toContain('nombre');
+    expect(validate({ nombre: "D'Ángelo" })).toContain('nombre');
   });
 
   it('rechaza una comilla simple suelta al final, el caso reportado', () => {
-    expect(validar({ nombre: "nombre'" })).toContain('nombre');
+    expect(validate({ nombre: "nombre'" })).toContain('nombre');
   });
 
   it('rechaza dígitos', () => {
-    expect(validar({ nombre: 'Ana123' })).toContain('nombre');
+    expect(validate({ nombre: 'Ana123' })).toContain('nombre');
   });
 
   it('rechaza comillas dobles', () => {
-    expect(validar({ nombre: '"Ana"' })).toContain('nombre');
+    expect(validate({ nombre: '"Ana"' })).toContain('nombre');
   });
 
   it('rechaza puntuación de código', () => {
-    expect(validar({ nombre: 'Ana;DROP' })).toContain('nombre');
-    expect(validar({ apellido: '<script>' })).toContain('apellido');
+    expect(validate({ nombre: 'Ana;DROP' })).toContain('nombre');
+    expect(validate({ apellido: '<script>' })).toContain('apellido');
   });
 
   it('rechaza un guion o apóstrofe en cualquier posición', () => {
-    expect(validar({ nombre: '-Ana' })).toContain('nombre');
-    expect(validar({ nombre: 'Ana-' })).toContain('nombre');
-    expect(validar({ nombre: "'Ana" })).toContain('nombre');
+    expect(validate({ nombre: '-Ana' })).toContain('nombre');
+    expect(validate({ nombre: 'Ana-' })).toContain('nombre');
+    expect(validate({ nombre: "'Ana" })).toContain('nombre');
   });
 
   it('rechaza separadores repetidos, como un espacio doble', () => {
-    expect(validar({ nombre: 'Ana  María' })).toContain('nombre');
+    expect(validate({ nombre: 'Ana  María' })).toContain('nombre');
   });
 });

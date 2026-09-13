@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import Recorrido from './Recorrido'
+import TrainingHistory from './Recorrido'
 import type { RunSummary } from '../lib/api'
 
 const { fetchMyRunsMock } = vi.hoisted(() => ({
@@ -9,16 +9,16 @@ const { fetchMyRunsMock } = vi.hoisted(() => ({
 }))
 
 vi.mock('../lib/api', async () => {
-  const actual = await vi.importActual<typeof import('../lib/api')>('../lib/api')
-  return { ...actual, fetchMyRuns: fetchMyRunsMock }
+  const current = await vi.importActual<typeof import('../lib/api')>('../lib/api')
+  return { ...current, fetchMyRuns: fetchMyRunsMock }
 })
 
-vi.mock('../context/AuthContext', async () => (await import('../test/escenario')).authFalso())
+vi.mock('../context/AuthContext', async () => (await import('../test/escenario')).mockAuth())
 
-function renderRecorrido() {
+function renderHistory() {
   return render(
     <MemoryRouter>
-      <Recorrido />
+      <TrainingHistory />
     </MemoryRouter>,
   )
 }
@@ -45,7 +45,7 @@ describe('Recorrido', () => {
   it('mientras carga, no muestra ni el error ni el vacío', () => {
     fetchMyRunsMock.mockReturnValue(new Promise(() => {}))
 
-    renderRecorrido()
+    renderHistory()
 
     expect(screen.getByText('Cargando…')).toBeDefined()
   })
@@ -53,7 +53,7 @@ describe('Recorrido', () => {
   it('sin corridas, dice que todavía no jugó nada', async () => {
     fetchMyRunsMock.mockResolvedValue([])
 
-    renderRecorrido()
+    renderHistory()
 
     expect(await screen.findByText('Todavía no has jugado ningún escenario.')).toBeDefined()
   })
@@ -61,7 +61,7 @@ describe('Recorrido', () => {
   it('si la petición falla, muestra el aviso de error', async () => {
     fetchMyRunsMock.mockRejectedValue(new Error('red caída'))
 
-    renderRecorrido()
+    renderHistory()
 
     expect(
       await screen.findByText('No se pudo cargar tu recorrido. Vuelve a intentarlo más tarde.'),
@@ -74,7 +74,7 @@ describe('Recorrido', () => {
       runFixture({ outcome: 'CORRECTO', score: 100, finishedAt: '2026-08-02T10:00:00.000Z' }),
     ])
 
-    renderRecorrido()
+    renderHistory()
 
     expect(await screen.findByText('Factura por validar')).toBeDefined()
     expect(screen.getByText('Aprobado')).toBeDefined()
@@ -87,7 +87,7 @@ describe('Recorrido', () => {
   it('un escenario nunca jugado no aparece en el listado', async () => {
     fetchMyRunsMock.mockResolvedValue([runFixture()])
 
-    renderRecorrido()
+    renderHistory()
 
     await screen.findByText('Factura por validar')
     expect(screen.queryByText('Contraseña por caducar')).toBeNull()

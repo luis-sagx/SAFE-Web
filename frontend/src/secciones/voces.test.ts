@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { VOCES } from '../data/voces'
+import { VOICES } from '../data/voces'
 import type { ScreenNode } from '../components/StoryEscenario'
 import type { Story } from '../hooks/useStoryEngine'
 import { STORY as antifraudeBanco } from './vishing/AntifraudeBanco'
@@ -32,7 +32,7 @@ import { STORY as vueltoDeMas } from './estafa/VueltoDeMas'
 /// de voz de suplantación. Cualquier escenario nuevo con audio entra aquí, y
 /// los tests de abajo se encargan de recordar que le faltan las voces. Van con
 /// nombre porque cada escenario se sintetiza con una voz distinta.
-const GUIONES: Record<string, Story<ScreenNode>> = {
+const DASHES: Record<string, Story<ScreenNode>> = {
   AntifraudeBanco: antifraudeBanco,
   BancoConfirma: bancoConfirma,
   DevolucionSri: devolucionSri,
@@ -64,24 +64,24 @@ const GUIONES: Record<string, Story<ScreenNode>> = {
 /// líneas propias no se sintetizan —en una llamada de verdad tampoco te oyes a
 /// ti mismo por el altavoz— y las notas propias tampoco: nadie se escucha los
 /// audios que acaba de mandar.
-const dichas = new Set<string>()
-const LINEAS = Object.entries(GUIONES).flatMap(([escenario, story]) =>
+const spoken = new Set<string>()
+const LINES = Object.entries(DASHES).flatMap(([scenario, story]) =>
   Object.values(story)
-    .flatMap((nodo) => {
-      if (nodo.view.kind === 'call') {
-        return (nodo.view.dialogo ?? [])
-          .filter((linea) => !linea.mio)
-          .map((linea) => ({ texto: linea.texto, rol: linea.rol }))
+    .flatMap((node) => {
+      if (node.view.kind === 'call') {
+        return (node.view.dialogo ?? [])
+          .filter((line) => !line.mio)
+          .map((line) => ({ texto: line.texto, rol: line.rol }))
       }
-      if (nodo.view.kind === 'sms') {
-        return nodo.view.msgs
+      if (node.view.kind === 'sms') {
+        return node.view.msgs
           .filter((msg) => msg.voz && !msg.mine)
           .map((msg) => ({ texto: msg.text, rol: msg.rol }))
       }
       return []
     })
-    .filter(({ texto }) => !dichas.has(texto) && dichas.add(texto))
-    .map((linea) => ({ escenario, ...linea })),
+    .filter(({ texto: text }) => !spoken.has(text) && spoken.add(text))
+    .map((line) => ({ escenario: scenario, ...line })),
 )
 
 describe('guiones de las llamadas', () => {
@@ -91,19 +91,19 @@ describe('guiones de las llamadas', () => {
   // llamada entrante quedan fuera: en ninguna de las dos hay nadie al otro
   // lado todavía, y sus dos botones ya son la decisión.
   it('en toda llamada en curso se puede contestar algo', () => {
-    const mudas = Object.entries(GUIONES).flatMap(([escenario, story]) =>
+    const muted = Object.entries(DASHES).flatMap(([scenario, story]) =>
       Object.entries(story)
         .filter(
-          ([, nodo]) =>
-            nodo.kind === 'scene' &&
-            nodo.view.kind === 'call' &&
-            !nodo.view.entrante &&
-            !nodo.view.marcando &&
-            !nodo.view.decir?.length,
+          ([, node]) =>
+            node.kind === 'scene' &&
+            node.view.kind === 'call' &&
+            !node.view.entrante &&
+            !node.view.marcando &&
+            !node.view.decir?.length,
         )
-        .map(([id]) => `${escenario}:${id}`),
+        .map(([id]) => `${scenario}:${id}`),
     )
-    expect(mudas).toEqual([])
+    expect(muted).toEqual([])
   })
 
   // Dos respuestas distintas que llevan a la misma pantalla suenan a que nadie
@@ -115,39 +115,39 @@ describe('guiones de las llamadas', () => {
   // un pasillo. Ceder tiene que estar siempre a la vista, igual que en la
   // pantalla del teléfono siguen estando la app del banco y la agenda.
   it('ninguna pantalla ofrece solo la respuesta correcta', () => {
-    const encarriladas = Object.entries(GUIONES).flatMap(([escenario, story]) =>
-      Object.entries(story).flatMap(([id, nodo]) => {
-        if (nodo.kind !== 'scene') return []
-        const frases =
-          nodo.view.kind === 'call'
-            ? (nodo.view.decir ?? [])
-            : nodo.view.kind === 'sms'
-              ? (nodo.view.respuestas ?? [])
+    const onTrack = Object.entries(DASHES).flatMap(([scenario, story]) =>
+      Object.entries(story).flatMap(([id, node]) => {
+        if (node.kind !== 'scene') return []
+        const phrases =
+          node.view.kind === 'call'
+            ? (node.view.decir ?? [])
+            : node.view.kind === 'sms'
+              ? (node.view.respuestas ?? [])
               : []
-        if (frases.length === 0) return []
-        const todasAciertan = frases.every((frase) => story[frase.goto]?.kind === 'good')
-        return todasAciertan ? [`${escenario}:${id}`] : []
+        if (phrases.length === 0) return []
+        const allAreCorrect = phrases.every((phrase) => story[phrase.goto]?.kind === 'good')
+        return allAreCorrect ? [`${scenario}:${id}`] : []
       }),
     )
-    expect(encarriladas).toEqual([])
+    expect(onTrack).toEqual([])
   })
 
   it('cada respuesta lleva a una pantalla distinta', () => {
-    const repetidas = Object.entries(GUIONES).flatMap(([escenario, story]) =>
-      Object.entries(story).flatMap(([id, nodo]) => {
-        if (nodo.view.kind !== 'call') return []
-        const destinos = (nodo.view.decir ?? []).map((frase) => frase.goto)
-        return new Set(destinos).size === destinos.length ? [] : [`${escenario}:${id}`]
+    const repeated = Object.entries(DASHES).flatMap(([scenario, story]) =>
+      Object.entries(story).flatMap(([id, node]) => {
+        if (node.view.kind !== 'call') return []
+        const destinations = (node.view.decir ?? []).map((phrase) => phrase.goto)
+        return new Set(destinations).size === destinations.length ? [] : [`${scenario}:${id}`]
       }),
     )
-    expect(repetidas).toEqual([])
+    expect(repeated).toEqual([])
   })
 })
 
 describe('voces de las llamadas', () => {
   it('cada frase de quien llama tiene su audio generado', () => {
-    const sinVoz = LINEAS.filter(({ texto }) => !VOCES[texto]).map(({ texto }) => texto)
-    expect(sinVoz, 'faltan audios: vuelve a correr scripts/voces.py').toEqual([])
+    const withoutVoice = LINES.filter(({ texto: text }) => !VOICES[text]).map(({ texto: text }) => text)
+    expect(withoutVoice, 'faltan audios: vuelve a correr scripts/voces.py').toEqual([])
   })
 
   // De aquí sale la lista que el generador sintetiza. Vive dentro del test y
@@ -162,6 +162,6 @@ describe('voces de las llamadas', () => {
   // recorta. Escribir el archivo desde aquí obligaría a meter los tipos de
   // Node en el tsconfig de la aplicación, y el navegador no tiene `process`.
   it.runIf(Boolean(import.meta.env.VITE_VOCES))('vuelca las frases para el generador', () => {
-    console.log(`VOCES_INICIO${JSON.stringify(LINEAS)}VOCES_FIN`)
+    console.log(`VOCES_INICIO${JSON.stringify(LINES)}VOCES_FIN`)
   })
 })

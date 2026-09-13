@@ -1,16 +1,16 @@
 import { Camera, Compass, MessageSquareText, Phone } from 'lucide-react'
-import StoryEscenario, { type AppTelefono, type ScreenNode } from '../../components/StoryEscenario'
-import type { Contexto } from '../../components/ui/ContextoEscenario'
+import ScenarioStory, { type PhoneApp, type ScreenNode } from '../../components/StoryEscenario'
+import type { Context } from '../../components/ui/ContextoEscenario'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
-import type { Senal } from '../../components/ui/PanelVeredicto'
+import type { Signal } from '../../components/ui/PanelVeredicto'
 import type { Story } from '../../hooks/useStoryEngine'
 
 // Único escenario que no empieza con el teléfono sonando: la llamada ya pasó
 // y el engaño depende de que decidas marcar tú, sin que nadie te apure.
 
-const NUMERO = '+225 07 55 21 88'
+const NUMBER = '+225 07 55 21 88'
 
-const REGISTRO: ScreenView = {
+const REGISTRATION_VIEW: ScreenView = {
   kind: 'web',
   app: 'Teléfono',
   url: 'recientes',
@@ -19,7 +19,7 @@ const REGISTRO: ScreenView = {
   title: 'Hoy',
   opciones: [
     {
-      texto: `${NUMERO} · Llamada perdida`,
+      texto: `${NUMBER} · Llamada perdida`,
       detalle: '03:12 · sonó una sola vez',
       goto: 'n1b',
       label: 'Abrió el detalle de la llamada perdida',
@@ -30,13 +30,13 @@ const REGISTRO: ScreenView = {
   button: '',
 }
 
-const FICHA: ScreenView = {
+const RECORD: ScreenView = {
   kind: 'web',
   app: 'Teléfono',
   url: 'recientes',
   secure: true,
   brand: 'Detalle de la llamada',
-  title: NUMERO,
+  title: NUMBER,
   subtitle: 'Llamada perdida · hoy a las 03:12 · sonó una sola vez',
   opciones: [
     {
@@ -60,7 +60,7 @@ const FICHA: ScreenView = {
   button: '',
 }
 
-const ESPERA = [
+const WAIT = [
   {
     texto:
       'Su llamada está siendo procesada. Por favor, permanezca en línea; en breve será atendido por el siguiente operador disponible.',
@@ -68,13 +68,13 @@ const ESPERA = [
   },
 ]
 
-const LLAMANDO: ScreenView = {
+const CALLING: ScreenView = {
   kind: 'call',
-  quien: NUMERO,
+  quien: NUMBER,
   numero: 'Costa de Marfil · tarifa internacional',
   etiqueta: 'Llamada saliente · $2,40 por minuto',
   senalQuien: 'tarifa',
-  dialogo: ESPERA,
+  dialogo: WAIT,
   decir: [
     {
       texto: '¿Aló? ¿Hay alguien ahí?',
@@ -86,10 +86,10 @@ const LLAMANDO: ScreenView = {
   colgarLabel: 'Colgó al oír la grabación',
 }
 
-const SIGUE_ESPERANDO: ScreenView = {
-  ...LLAMANDO,
+const KEEPS_WAITING: ScreenView = {
+  ...CALLING,
   dialogo: [
-    ...ESPERA,
+    ...WAIT,
     { texto: '¿Aló? ¿Hay alguien ahí?', mio: true },
     {
       texto:
@@ -106,7 +106,7 @@ const SIGUE_ESPERANDO: ScreenView = {
   ],
 }
 
-const NAVEGADOR: ScreenView = {
+const BROWSER: ScreenView = {
   kind: 'web',
   app: 'Navegador',
   url: 'inicio',
@@ -128,7 +128,7 @@ const NAVEGADOR: ScreenView = {
   button: '',
 }
 
-const BUSQUEDA: ScreenView = {
+const SEARCH: ScreenView = {
   kind: 'web',
   url: 'https://busca.ec/?q=%2B225+llamada+perdida',
   secure: true,
@@ -156,7 +156,7 @@ const BUSQUEDA: ScreenView = {
   button: '',
 }
 
-const APPS: AppTelefono[] = [
+const APPS: PhoneApp[] = [
   {
     Icono: Phone,
     texto: 'Teléfono',
@@ -186,28 +186,28 @@ const APPS: AppTelefono[] = [
 ]
 
 export const STORY: Story<ScreenNode> = {
-  n1: { kind: 'scene', view: REGISTRO },
-  n1b: { kind: 'scene', view: FICHA },
-  n2: { kind: 'scene', view: LLAMANDO },
-  n3: { kind: 'scene', view: SIGUE_ESPERANDO },
-  n4: { kind: 'scene', view: NAVEGADOR },
+  n1: { kind: 'scene', view: REGISTRATION_VIEW },
+  n1b: { kind: 'scene', view: RECORD },
+  n2: { kind: 'scene', view: CALLING },
+  n3: { kind: 'scene', view: KEEPS_WAITING },
+  n4: { kind: 'scene', view: BROWSER },
   e_bloquea: {
     kind: 'good',
-    view: FICHA,
+    view: RECORD,
     verdict: 'No caíste · no devolviste la llamada',
     outcome:
       'Bloqueaste el número y seguiste con tu día. Quien de verdad necesita hablar contigo vuelve a llamar, deja un mensaje o te escribe: nadie importante se comunica con un timbrazo a las tres de la mañana.',
   },
   e_busca: {
     kind: 'good',
-    view: BUSQUEDA,
+    view: SEARCH,
     verdict: 'No caíste · averiguaste antes de marcar',
     outcome:
       'Bastó buscar el número para encontrar el aviso: prefijo internacional, un solo timbre y una grabación que te hace esperar mientras corre el minuto. Medio minuto de búsqueda contra varios dólares de factura.',
   },
   e_cuelga: {
     kind: 'partial',
-    view: LLAMANDO,
+    view: CALLING,
     verdict: 'Colgaste rápido, pero la llamada ya estaba hecha',
     outcome:
       'Colgaste en cuanto oíste la grabación, así que la factura será de un par de dólares y no de treinta. Pero devolviste la llamada: ese número ya sabe que tu línea existe y que contestas, y volverá a intentarlo.',
@@ -215,14 +215,14 @@ export const STORY: Story<ScreenNode> = {
   },
   e_espera: {
     kind: 'bad',
-    view: SIGUE_ESPERANDO,
+    view: KEEPS_WAITING,
     verdict: 'Caíste en la trampa',
     outcome:
       'Nunca hubo ningún operador: la grabación existe solo para que te quedes en línea. Once minutos a tarifa especial aparecieron en tu factura del mes como veintiocho dólares, y una parte de ese dinero se la queda quien puso el número.',
   },
 }
 
-const SENALES: Senal[] = [
+const SIGNALS: Signal[] = [
   {
     id: 's1',
     pantalla: 'n1',
@@ -255,9 +255,9 @@ const SENALES: Senal[] = [
 const RULE =
   'Regla de oro: <b>a una llamada perdida de un número que no conoces no se le devuelve la llamada</b>, y menos si es internacional o sonó una sola vez. Si es importante, volverán a llamar o te dejarán un mensaje.'
 
-const RESUMEN = 'Amaneces con una llamada perdida de madrugada de un número extranjero.'
+const SUMMARY = 'Amaneces con una llamada perdida de madrugada de un número extranjero.'
 
-const CONTEXTO: Contexto = {
+const CONTEXT: Context = {
   antes: (
     <>
       No esperas ninguna llamada del exterior: <strong>no tienes familia fuera</strong> ni trámites
@@ -272,14 +272,14 @@ const CONTEXTO: Contexto = {
   ),
 }
 
-function LlamadaPerdida() {
+function MissedCall() {
   return (
-    <StoryEscenario
+    <ScenarioStory
       escenarioId="vishing/llamada-perdida"
-      resumen={RESUMEN}
-      contexto={CONTEXTO}
+      resumen={SUMMARY}
+      contexto={CONTEXT}
       story={STORY}
-      senales={SENALES}
+      senales={SIGNALS}
       rule={RULE}
       restartLabel="↻ Repetir el escenario"
       accionesEnPantalla
@@ -300,4 +300,4 @@ function LlamadaPerdida() {
   )
 }
 
-export default LlamadaPerdida
+export default MissedCall

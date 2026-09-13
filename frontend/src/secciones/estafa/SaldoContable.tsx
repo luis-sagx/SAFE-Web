@@ -1,26 +1,26 @@
 import { Camera, MessageCircle, Package, Wallet } from 'lucide-react'
-import StoryEscenario, { type AppTelefono, type ScreenNode } from '../../components/StoryEscenario'
-import type { Contexto } from '../../components/ui/ContextoEscenario'
+import ScenarioStory, { type PhoneApp, type ScreenNode } from '../../components/StoryEscenario'
+import type { Context } from '../../components/ui/ContextoEscenario'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
-import type { Senal } from '../../components/ui/PanelVeredicto'
+import type { Signal } from '../../components/ui/PanelVeredicto'
 import type { Story } from '../../hooks/useStoryEngine'
-import { CUENTA_FICTICIA, IDENTIDAD_FICTICIA } from '../../lib/identidadFicticia'
+import { ACCOUNT_FAKE, IDENTITY_FAKE } from '../../lib/identidadFicticia'
 
 /** Puerta de entrada del módulo: sin suplantación, el trato lo inicias tú. Todo se decide en tu banco —saldo
  *  contable vs. disponible— y el pago llega como cheque porque ahí es donde esas dos líneas de verdad se
  *  separan en un banco ecuatoriano ("salvo buen cobro"). El fraude de venta más común, y evitarlo es solo esperar. */
 
-const COMPRADOR = 'Fernando Zurita'
-const NUMERO_COMPRADOR = '+593 98 447 1926'
+const BUYER = 'Fernando Zurita'
+const NUMBER_BUYER = '+593 98 447 1926'
 
-const AVISA = {
+const WARNS = {
   text: `Buenas, ya le deposité los $1.000 por la laptop, con cheque, en su cuenta. Revise que ya debe estar reflejado. Le mando el comprobante.`,
   time: '10:12',
   senal: 'avisa',
 }
 
 // La papeleta va dibujada como foto real (banco + n.º de transacción): falsificarla cuesta 5 minutos, y creerla es el error que mide el escenario.
-const COMPROBANTE = {
+const RECEIPT = {
   text: 'Ahí está, mire 👆',
   time: '10:13',
   senal: 'comprobante',
@@ -30,7 +30,7 @@ const COMPROBANTE = {
     icono: 'banco' as const,
     datos: [
       { etiqueta: 'Valor', valor: '$1.000,00' },
-      { etiqueta: 'Cuenta destino', valor: IDENTIDAD_FICTICIA.cuenta },
+      { etiqueta: 'Cuenta destino', valor: IDENTITY_FAKE.cuenta },
       { etiqueta: 'Forma de pago', valor: 'Cheque otro banco n.º 0004821' },
       { etiqueta: 'Fecha', valor: 'Hoy · 10:09' },
       { etiqueta: 'N.º de transacción', valor: '884120397' },
@@ -40,9 +40,9 @@ const COMPROBANTE = {
 
 const CHAT: ScreenView = {
   kind: 'sms',
-  sender: COMPRADOR,
-  sub: `${NUMERO_COMPRADOR} · comprador de la laptop`,
-  msgs: [AVISA, COMPROBANTE],
+  sender: BUYER,
+  sub: `${NUMBER_BUYER} · comprador de la laptop`,
+  msgs: [WARNS, RECEIPT],
   respuestas: [
     {
       texto: 'Listo, ya mismo le despacho la laptop.',
@@ -59,11 +59,11 @@ const CHAT: ScreenView = {
   volverLabel: 'Salió del chat sin contestar ni comprobar',
 }
 
-const APURA: ScreenView = {
+const RUSHES: ScreenView = {
   ...CHAT,
   msgs: [
-    AVISA,
-    COMPROBANTE,
+    WARNS,
+    RECEIPT,
     { text: 'Deme un momento, reviso mi banco.', time: '10:14', mine: true },
     {
       text: 'Dele nomás, pero apúrese que el courier ya está en camino a recoger. Si no sale hoy me cobran otro flete 😤',
@@ -86,14 +86,14 @@ const APURA: ScreenView = {
 }
 
 // Las dos líneas van juntas, con las mismas letras: contable es lo que el banco anotó, disponible es lo que puedes usar.
-const BANCO: ScreenView = {
+const BANK: ScreenView = {
   kind: 'web',
-  app: IDENTIDAD_FICTICIA.banco,
+  app: IDENTITY_FAKE.banco,
   url: 'bancolitoral.ec',
   secure: true,
   brand: 'Banca móvil',
   title: 'Cuenta de ahorros',
-  subtitle: CUENTA_FICTICIA,
+  subtitle: ACCOUNT_FAKE,
   datos: [
     { etiqueta: 'Saldo contable', valor: '$1.240,50', senal: 'contable' },
     { etiqueta: 'Saldo disponible', valor: '$240,50', senal: 'disponible' },
@@ -116,9 +116,9 @@ const BANCO: ScreenView = {
   button: '',
 }
 
-const MOVIMIENTOS: ScreenView = {
+const TRANSACTIONS: ScreenView = {
   kind: 'web',
-  app: IDENTIDAD_FICTICIA.banco,
+  app: IDENTITY_FAKE.banco,
   url: 'bancolitoral.ec',
   secure: true,
   brand: 'Movimientos',
@@ -142,11 +142,11 @@ const MOVIMIENTOS: ScreenView = {
   button: '',
 }
 
-const DESPUES_DE_VER: ScreenView = {
+const AFTER_VIEWING: ScreenView = {
   ...CHAT,
   msgs: [
-    AVISA,
-    COMPROBANTE,
+    WARNS,
+    RECEIPT,
     { text: 'Deme un momento, reviso mi banco.', time: '10:14', mine: true },
     {
       text: 'Dele nomás, pero apúrese que el courier ya está en camino a recoger. Si no sale hoy me cobran otro flete 😤',
@@ -188,7 +188,7 @@ const COURIER: ScreenView = {
   subtitle: 'Revisa los datos antes de entregar el paquete al motorizado.',
   datos: [
     { etiqueta: 'Contenido', valor: 'Laptop usada, valor declarado $1.000,00' },
-    { etiqueta: 'Destinatario', valor: COMPRADOR },
+    { etiqueta: 'Destinatario', valor: BUYER },
     { etiqueta: 'Destino', valor: 'Guayaquil · dirección entregada por el comprador' },
     { etiqueta: 'Pago del flete', valor: 'Contra entrega, lo paga quien recibe' },
   ],
@@ -201,11 +201,11 @@ const COURIER: ScreenView = {
   fields: [],
 }
 
-const APPS: AppTelefono[] = [
+const APPS: PhoneApp[] = [
   { Icono: MessageCircle, texto: 'Mensajes', color: '#2f9e44', hilo: 'sms' },
   {
     Icono: Wallet,
-    texto: IDENTIDAD_FICTICIA.banco,
+    texto: IDENTITY_FAKE.banco,
     color: '#155e75',
     goto: 'n3',
     label: 'Abrió la app del banco',
@@ -227,10 +227,10 @@ const APPS: AppTelefono[] = [
 
 export const STORY: Story<ScreenNode> = {
   n1: { kind: 'scene', view: CHAT },
-  n2: { kind: 'scene', view: APURA },
-  n2b: { kind: 'scene', view: DESPUES_DE_VER },
-  n3: { kind: 'scene', view: BANCO },
-  n4: { kind: 'scene', view: MOVIMIENTOS },
+  n2: { kind: 'scene', view: RUSHES },
+  n2b: { kind: 'scene', view: AFTER_VIEWING },
+  n3: { kind: 'scene', view: BANK },
+  n4: { kind: 'scene', view: TRANSACTIONS },
   n5: { kind: 'scene', view: COURIER },
   e_envia: {
     kind: 'bad',
@@ -241,7 +241,7 @@ export const STORY: Story<ScreenNode> = {
   },
   e_espera: {
     kind: 'good',
-    view: DESPUES_DE_VER,
+    view: AFTER_VIEWING,
     verdict: 'No caíste · esperaste el saldo disponible',
     outcome:
       'No despachaste, y eso bastó. El cheque salió protestado al día siguiente y los mil dólares desaparecieron del saldo contable sin llegar nunca al disponible. Fernando dejó de escribir esa misma tarde. Tú seguías con tu laptop.',
@@ -256,7 +256,7 @@ export const STORY: Story<ScreenNode> = {
   },
 }
 
-const SENALES: Senal[] = [
+const SIGNALS: Signal[] = [
   {
     id: 's1',
     targetId: 'disponible',
@@ -304,10 +304,10 @@ const SENALES: Senal[] = [
 const RULE =
   'Regla de oro: no entregues nada hasta que el dinero esté en tu <b>saldo disponible</b>. Ni el comprobante, ni la captura, ni el saldo contable son el pago; solo el disponible es tuyo, y esperar un día no le cuesta nada a un comprador de verdad.'
 
-const RESUMEN =
+const SUMMARY =
   'Vendes una laptop y el comprador manda un comprobante de depósito pidiendo que despaches ya.'
 
-const CONTEXTO: Contexto = {
+const CONTEXT: Context = {
   antes: (
     <>
       Pusiste en venta tu <strong>laptop en $1.000</strong> por una página de compraventa, y un
@@ -322,14 +322,14 @@ const CONTEXTO: Contexto = {
   ),
 }
 
-function SaldoContable() {
+function AccountBalance() {
   return (
-    <StoryEscenario
+    <ScenarioStory
       escenarioId="estafa/saldo-contable"
-      resumen={RESUMEN}
-      contexto={CONTEXTO}
+      resumen={SUMMARY}
+      contexto={CONTEXT}
       story={STORY}
-      senales={SENALES}
+      senales={SIGNALS}
       rule={RULE}
       restartLabel="↻ Repetir el escenario"
       accionesEnPantalla
@@ -351,4 +351,4 @@ function SaldoContable() {
   )
 }
 
-export default SaldoContable
+export default AccountBalance

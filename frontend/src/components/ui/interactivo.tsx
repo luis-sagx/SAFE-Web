@@ -18,7 +18,7 @@ interface HotspotBaseProps {
 // href real: es la única "revelación" de URL que existe (la nativa del
 // navegador al pasar el mouse). preventDefault corta la navegación pero no
 // la propagación, así que el clic igual llega al manejador delegado.
-export function EnlaceHotspot({
+export function HotspotLink({
   goto,
   label,
   href,
@@ -40,7 +40,7 @@ export function EnlaceHotspot({
   )
 }
 
-export function BotonHotspot({ goto, label, signalId, className, style, ariaLabel, children }: Readonly<HotspotBaseProps>) {
+export function HotspotButton({ goto, label, signalId, className, style, ariaLabel, children }: Readonly<HotspotBaseProps>) {
   return (
     <button
       type="button"
@@ -58,7 +58,7 @@ export function BotonHotspot({ goto, label, signalId, className, style, ariaLabe
 
 // Los cuerpos de correo se inyectan como HTML sin manejador propio, así que
 // esto corta cualquier <a> real para no sacar al participante del entrenamiento.
-export function evitarNavegacion(event: React.MouseEvent) {
+export function preventNavigation(event: React.MouseEvent) {
   if ((event.target as HTMLElement).closest('a')) {
     event.preventDefault()
   }
@@ -66,17 +66,17 @@ export function evitarNavegacion(event: React.MouseEvent) {
 
 // Devuelve false cuando el clic no cayó en ningún hotspot, para que la
 // pantalla distinga "aquí no hay nada" de "la simulación se colgó".
-export function manejarClicHotspot(
+export function handleHotspotClick(
   event: React.MouseEvent,
   onHotspot: (goto: string, label?: string) => void,
 ): boolean {
-  evitarNavegacion(event)
+  preventNavigation(event)
 
-  const objetivo = (event.target as HTMLElement).closest<HTMLElement>('[data-hotspot-goto]')
-  if (!objetivo) {
+  const target = (event.target as HTMLElement).closest<HTMLElement>('[data-hotspot-goto]')
+  if (!target) {
     return false
   }
 
-  onHotspot(objetivo.dataset.hotspotGoto ?? '', objetivo.dataset.hotspotLabel)
+  onHotspot(target.dataset.hotspotGoto ?? '', target.dataset.hotspotLabel)
   return true
 }

@@ -1,13 +1,13 @@
 import { render, screen } from '@testing-library/react'
 import { BrowserRouter } from 'react-router'
 import { describe, expect, it } from 'vitest'
-import PoliticaDatos from './PoliticaDatos'
+import DataPolicy from './PoliticaDatos'
 
 describe('PoliticaDatos', () => {
   it('renderiza la página de política de datos', () => {
     const { container } = render(
       <BrowserRouter>
-        <PoliticaDatos />
+        <DataPolicy />
       </BrowserRouter>
     )
     expect(container).toBeDefined()
@@ -17,7 +17,7 @@ describe('PoliticaDatos', () => {
   it('muestra todos los títulos de secciones', () => {
     render(
       <BrowserRouter>
-        <PoliticaDatos />
+        <DataPolicy />
       </BrowserRouter>
     )
     expect(screen.getByText(/1\. Recopilación de Información/)).toBeDefined()
@@ -30,17 +30,17 @@ describe('PoliticaDatos', () => {
   it('muestra el enlace para volver al inicio', () => {
     render(
       <BrowserRouter>
-        <PoliticaDatos />
+        <DataPolicy />
       </BrowserRouter>
     )
-    const volverLink = screen.getByText('← Volver')
-    expect(volverLink).toBeDefined()
+    const backLink = screen.getByText('← Volver')
+    expect(backLink).toBeDefined()
   })
 
   it('muestra información de contacto', () => {
     render(
       <BrowserRouter>
-        <PoliticaDatos />
+        <DataPolicy />
       </BrowserRouter>
     )
     expect(screen.getByText('soporte@safe-web.com')).toBeDefined()

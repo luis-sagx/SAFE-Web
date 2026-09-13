@@ -1,32 +1,32 @@
 import { Building2, Camera, MessageCircle, Wallet } from 'lucide-react'
-import StoryEscenario, { type AppTelefono, type ScreenNode } from '../../components/StoryEscenario'
-import type { Contexto } from '../../components/ui/ContextoEscenario'
+import ScenarioStory, { type PhoneApp, type ScreenNode } from '../../components/StoryEscenario'
+import type { Context } from '../../components/ui/ContextoEscenario'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
-import type { Senal } from '../../components/ui/PanelVeredicto'
+import type { Signal } from '../../components/ui/PanelVeredicto'
 import type { Story } from '../../hooks/useStoryEngine'
-import { CUENTA_FICTICIA, IDENTIDAD_FICTICIA } from '../../lib/identidadFicticia'
+import { ACCOUNT_FAKE, IDENTITY_FAKE } from '../../lib/identidadFicticia'
 
 /** El departamento que no se puede ver: lo que aprieta es la necesidad de quien busca, no la prisa del
  *  estafador. La señal decisiva no está en ningún mensaje sino en el orden: piden pagar antes de ver, y
  *  todo lo demás existe para justificar ese orden invertido. */
 
-const DUENO = 'Sr. Patricio Moncayo'
-const NUMERO_DUENO = '+593 96 884 0257'
-const CUENTA_DUENO = '7712-3390-46 · Rosa Angélica Tumbaco'
-const DEPARTAMENTO = 'Departamento amoblado, 2 dormitorios, La Floresta'
-const DEPOSITO = '$700'
+const OWNER = 'Sr. Patricio Moncayo'
+const NUMBER_OWNER = '+593 96 884 0257'
+const ACCOUNT_OWNER = '7712-3390-46 · Rosa Angélica Tumbaco'
+const APARTMENT = 'Departamento amoblado, 2 dormitorios, La Floresta'
+const DEPOSIT = '$700'
 
-const OFRECE = {
-  text: `Buenas noches. Sí, el departamento sigue disponible: $350 mensuales, amoblado, incluye alícuota. Para reservarlo necesito el depósito de garantía de ${DEPOSITO} (dos meses), y le entrego las llaves apenas llegue a Quito.`,
+const OFFERS = {
+  text: `Buenas noches. Sí, el departamento sigue disponible: $350 mensuales, amoblado, incluye alícuota. Para reservarlo necesito el depósito de garantía de ${DEPOSIT} (dos meses), y le entrego las llaves apenas llegue a Quito.`,
   time: '20:38',
   senal: 'paga-primero',
 }
 
 const CHAT: ScreenView = {
   kind: 'sms',
-  sender: DUENO,
-  sub: `${NUMERO_DUENO} · dueño del anuncio`,
-  msgs: [OFRECE],
+  sender: OWNER,
+  sub: `${NUMBER_OWNER} · dueño del anuncio`,
+  msgs: [OFFERS],
   respuestas: [
     {
       texto: 'Quisiera verlo antes. ¿Cuándo puedo pasar?',
@@ -43,10 +43,10 @@ const CHAT: ScreenView = {
   volverLabel: 'Salió del chat sin seguir el trato',
 }
 
-const NO_SE_PUEDE_VER: ScreenView = {
+const CANNOT_BE_SEEN: ScreenView = {
   ...CHAT,
   msgs: [
-    OFRECE,
+    OFFERS,
     { text: 'Quisiera verlo antes. ¿Cuándo puedo pasar?', time: '20:41', mine: true },
     {
       text: 'Ese es el problema: yo estoy trabajando en Lago Agrio y bajo recién el 12. El departamento está cerrado y no hay quien le abra hasta que yo vuelva. Por eso lo doy tan barato, para no tenerlo vacío. Le mando más fotos y el contrato si quiere 📄',
@@ -68,13 +68,13 @@ const NO_SE_PUEDE_VER: ScreenView = {
   ],
 }
 
-const CUENTA: ScreenView = {
+const ACCOUNT: ScreenView = {
   ...CHAT,
   msgs: [
-    OFRECE,
+    OFFERS,
     { text: 'Me interesa. ¿A qué cuenta deposito la garantía?', time: '20:41', mine: true },
     {
-      text: `Deposite a esta cuenta: ${CUENTA_DUENO}. Está a nombre de mi hermana, que es la que me maneja las cosas mientras estoy fuera. Mándeme el comprobante y le paso el contrato firmado por correo esta misma noche.`,
+      text: `Deposite a esta cuenta: ${ACCOUNT_OWNER}. Está a nombre de mi hermana, que es la que me maneja las cosas mientras estoy fuera. Mándeme el comprobante y le paso el contrato firmado por correo esta misma noche.`,
       time: '20:43',
       senal: 'cuenta',
     },
@@ -93,10 +93,10 @@ const CUENTA: ScreenView = {
   ],
 }
 
-const APRIETA: ScreenView = {
+const PRESSES: ScreenView = {
   ...CHAT,
   msgs: [
-    OFRECE,
+    OFFERS,
     { text: 'Un contrato no me sirve si no he visto el lugar.', time: '20:46', mine: true },
     {
       text: 'Mire, tengo tres personas interesadas y una señorita ya me pidió los datos para depositar mañana temprano. Yo se lo doy al primero que reserve, es lo justo. Si usted no está seguro no hay problema, se lo entiendo perfectamente 🙏',
@@ -119,17 +119,17 @@ const APRIETA: ScreenView = {
 }
 
 // El anuncio: las fotos son de verdad, pero no son suyas (la búsqueda por imagen las encuentra en un anuncio de venta de hace dos años).
-const ANUNCIO: ScreenView = {
+const AD: ScreenView = {
   kind: 'web',
   app: 'Portal Inmobiliario',
   url: 'portalinmobiliario.ec',
   secure: true,
   brand: 'Anuncio de arriendo',
-  title: DEPARTAMENTO,
+  title: APARTMENT,
   subtitle: '$350 mensuales · publicado hace 5 días',
   datos: [
     { etiqueta: 'Precio de la zona', valor: '$520 a $650 por algo parecido', senal: 'precio' },
-    { etiqueta: 'Publicado por', valor: `${DUENO} · sin verificar`, senal: 'perfil' },
+    { etiqueta: 'Publicado por', valor: `${OWNER} · sin verificar`, senal: 'perfil' },
     { etiqueta: 'Dirección exacta', valor: 'No consta, solo el sector', senal: 'direccion' },
     { etiqueta: 'Fotos', valor: 'Ocho, muy buenas, con muebles que no se repiten en ninguna' },
     { etiqueta: 'Visitas', valor: 'No disponibles hasta el 12' },
@@ -150,7 +150,7 @@ const ANUNCIO: ScreenView = {
   button: '',
 }
 
-const IMAGENES: ScreenView = {
+const IMAGES: ScreenView = {
   kind: 'web',
   app: 'Navegador',
   url: 'buscador.com/imagen',
@@ -185,16 +185,16 @@ const IMAGENES: ScreenView = {
   button: '',
 }
 
-const TRANSFERENCIA: ScreenView = {
+const TRANSFER: ScreenView = {
   kind: 'web',
-  app: IDENTIDAD_FICTICIA.banco,
+  app: IDENTITY_FAKE.banco,
   url: 'bancolitoral.ec',
   secure: true,
   brand: 'Transferir a terceros',
   title: 'Confirma la transferencia',
-  subtitle: `Desde ${CUENTA_FICTICIA}`,
+  subtitle: `Desde ${ACCOUNT_FAKE}`,
   datos: [
-    { etiqueta: 'Cuenta de destino', valor: CUENTA_DUENO, senal: 'cuenta' },
+    { etiqueta: 'Cuenta de destino', valor: ACCOUNT_OWNER, senal: 'cuenta' },
     { etiqueta: 'Concepto', valor: 'Garantía de arriendo' },
     { etiqueta: 'Valor', valor: '$700,00' },
   ],
@@ -207,7 +207,7 @@ const TRANSFERENCIA: ScreenView = {
   fields: [],
 }
 
-const APPS: AppTelefono[] = [
+const APPS: PhoneApp[] = [
   { Icono: MessageCircle, texto: 'Mensajes', color: '#2f9e44', hilo: 'sms' },
   {
     Icono: Building2,
@@ -218,7 +218,7 @@ const APPS: AppTelefono[] = [
   },
   {
     Icono: Wallet,
-    texto: IDENTIDAD_FICTICIA.banco,
+    texto: IDENTITY_FAKE.banco,
     color: '#155e75',
     goto: 'n5',
     label: 'Abrió la app del banco para transferir',
@@ -233,22 +233,22 @@ const APPS: AppTelefono[] = [
 
 export const STORY: Story<ScreenNode> = {
   n1: { kind: 'scene', view: CHAT },
-  n2: { kind: 'scene', view: NO_SE_PUEDE_VER },
-  n3: { kind: 'scene', view: CUENTA },
-  n4: { kind: 'scene', view: APRIETA },
-  n5: { kind: 'scene', view: TRANSFERENCIA },
-  n6: { kind: 'scene', view: ANUNCIO },
-  n7: { kind: 'scene', view: IMAGENES },
+  n2: { kind: 'scene', view: CANNOT_BE_SEEN },
+  n3: { kind: 'scene', view: ACCOUNT },
+  n4: { kind: 'scene', view: PRESSES },
+  n5: { kind: 'scene', view: TRANSFER },
+  n6: { kind: 'scene', view: AD },
+  n7: { kind: 'scene', view: IMAGES },
   e_paga: {
     kind: 'bad',
-    view: TRANSFERENCIA,
+    view: TRANSFER,
     verdict: 'Caíste en la estafa',
     outcome:
       'Los $700 salieron a la cuenta de Rosa Tumbaco. El contrato llegó por correo esa misma noche, muy bien hecho y sin valor ninguno. El 12 no contestó, el 13 tampoco, y el 14 el número ya no existía. El departamento de las fotos se vendió hace dos años y nunca estuvo en arriendo: quien te escribía no tenía nada que entregar.',
   },
   e_deja: {
     kind: 'good',
-    view: APRIETA,
+    view: PRESSES,
     verdict: 'No caíste · no pagaste sin ver',
     outcome:
       'Lo dejaste ir sin poner un dólar. El anuncio siguió activo dos semanas más y después desapareció, junto con otro idéntico que el mismo número tenía puesto en Cuenca. Un arriendo se ve, se firma y se paga, en ese orden, y ningún dueño de verdad pide la garantía de alguien a quien no le puede abrir la puerta.',
@@ -263,7 +263,7 @@ export const STORY: Story<ScreenNode> = {
   },
 }
 
-const SENALES: Senal[] = [
+const SIGNALS: Signal[] = [
   {
     id: 's1',
     targetId: 'paga-primero',
@@ -311,9 +311,9 @@ const SENALES: Senal[] = [
 const RULE =
   'Regla de oro: en un arriendo el orden es <b>ver, firmar y después pagar</b>. Nunca deposites una garantía por un lugar que no has pisado, ni a una cuenta que está a otro nombre. Si el dueño no puede enseñártelo, no es tu problema resolverlo: es la señal de que no hay nada que enseñar.'
 
-const RESUMEN = 'Un departamento barato cuya garantía hay que depositar antes de poder verlo.'
+const SUMMARY = 'Un departamento barato cuya garantía hay que depositar antes de poder verlo.'
 
-const CONTEXTO: Contexto = {
+const CONTEXT: Context = {
   antes: (
     <>
       Llevas <strong>un mes buscando departamento</strong> y todo lo que ves en el sector que te
@@ -328,14 +328,14 @@ const CONTEXTO: Contexto = {
   ),
 }
 
-function ArriendoAnticipado() {
+function AdvanceRent() {
   return (
-    <StoryEscenario
+    <ScenarioStory
       escenarioId="estafa/arriendo-anticipado"
-      resumen={RESUMEN}
-      contexto={CONTEXTO}
+      resumen={SUMMARY}
+      contexto={CONTEXT}
       story={STORY}
-      senales={SENALES}
+      senales={SIGNALS}
       rule={RULE}
       restartLabel="↻ Repetir el escenario"
       accionesEnPantalla
@@ -357,4 +357,4 @@ function ArriendoAnticipado() {
   )
 }
 
-export default ArriendoAnticipado
+export default AdvanceRent

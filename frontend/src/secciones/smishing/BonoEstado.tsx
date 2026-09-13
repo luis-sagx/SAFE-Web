@@ -1,32 +1,32 @@
 import { Camera, Compass, MessageSquareText, Wallet } from 'lucide-react'
-import StoryEscenario, { type AppTelefono, type ScreenNode } from '../../components/StoryEscenario'
-import type { Contexto } from '../../components/ui/ContextoEscenario'
+import ScenarioStory, { type PhoneApp, type ScreenNode } from '../../components/StoryEscenario'
+import type { Context } from '../../components/ui/ContextoEscenario'
 import type { Story } from '../../hooks/useStoryEngine'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
-import type { Senal } from '../../components/ui/PanelVeredicto'
+import type { Signal } from '../../components/ui/PanelVeredicto'
 
 /// Mientras el formulario está abierto, los atacantes usan el usuario y la
 /// clave que acabas de escribir para entrar a tu banca de verdad, y el banco
 /// manda el código de verdad para autorizarlo. Ese código llega solo, como
 /// notificación, mientras la página sigue esperando que lo escribas ahí.
-const CODIGO = '625 914'
+const CODE = '625 914'
 
 /// El acortador se ve como texto y no como dirección: eso es justo lo que la
 /// señal s2 enseña, así que el enlace se pinta tal cual llega, sin desplegar.
-const ENLACE =
+const LINK =
   '<a href="https://bit.ly/bono-ec-2026" data-hotspot-goto="n2" data-hotspot-label="Abrió el enlace acortado del mensaje">bit.ly/bono-ec-2026</a>'
 
-const TEXTO_BONO = `MIES INFORMA: usted fue PRESELECCIONADO para el bono de $180. Registre su cuenta bancaria antes de las 18h00 de hoy o el cupo pasa a otro beneficiario: ${ENLACE}`
+const TEXT_BENEFIT = `MIES INFORMA: usted fue PRESELECCIONADO para el bono de $180. Registre su cuenta bancaria antes de las 18h00 de hoy o el cupo pasa a otro beneficiario: ${LINK}`
 
 const SMS: ScreenView = {
   kind: 'sms',
   sender: 'MIES-BONO',
   sub: 'Remitente sin verificar · SMS',
   senalRemitente: 'remitente',
-  msgs: [{ text: TEXTO_BONO, time: '09:41', senal: 'mensaje' }],
+  msgs: [{ text: TEXT_BENEFIT, time: '09:41', senal: 'mensaje' }],
 }
 
-const PAGINA: ScreenView = {
+const PAGE: ScreenView = {
   kind: 'web',
   url: 'http://bono-social-ec.online/registro', // NOSONAR: URL insegura intencional que el participante debe detectar.
   secure: false,
@@ -50,14 +50,14 @@ const PAGINA: ScreenView = {
 /// El mensaje auténtico, leído desde la notificación. Con `volverGoto`: aquí
 /// sí hace falta, porque de la página se sale al hilo y del hilo hay que
 /// poder volver a la página.
-const CODIGO_SMS: ScreenView = {
+const CODE_SMS: ScreenView = {
   kind: 'sms',
   sender: 'BANCO LITORAL',
   sub: 'Remitente habitual · SMS',
   senalRemitente: 'remitente-real',
   msgs: [
     {
-      text: `Su codigo de verificacion es ${CODIGO}. Vence en 5 minutos. NUNCA lo comparta con nadie, ni con personal del banco.`,
+      text: `Su codigo de verificacion es ${CODE}. Vence en 5 minutos. NUNCA lo comparta con nadie, ni con personal del banco.`,
       time: '09:47',
       senal: 'aviso-real',
     },
@@ -68,7 +68,7 @@ const CODIGO_SMS: ScreenView = {
 
 /// El navegador abre en sus sitios frecuentes. Abrirlo no comprueba nada: la
 /// dirección oficial la eliges tú, y esa elección es la lección.
-const NAVEGADOR: ScreenView = {
+const BROWSER: ScreenView = {
   kind: 'web',
   app: 'Navegador',
   url: 'inicio',
@@ -94,7 +94,7 @@ const NAVEGADOR: ScreenView = {
 /// que enseñarse en pantalla, no solo contarse en el veredicto: la lección es
 /// que la fuente oficial *da una respuesta*, y una pantalla que no cambia no
 /// lo demuestra.
-const PORTAL_MIES: ScreenView = {
+const MIES_PORTAL: ScreenView = {
   kind: 'web',
   url: 'https://www.inclusion.gob.ec/consulta-de-beneficiarios',
   secure: true,
@@ -112,7 +112,7 @@ const PORTAL_MIES: ScreenView = {
   button: '',
 }
 
-const APPS: AppTelefono[] = [
+const APPS: PhoneApp[] = [
   {
     Icono: Compass,
     texto: 'Navegador',
@@ -139,42 +139,42 @@ const STORY: Story<ScreenNode> = {
   n1: { kind: 'scene', view: SMS },
   n2: {
     kind: 'scene',
-    view: PAGINA,
+    view: PAGE,
     notificacion: {
       app: 'Mensajes',
       remitente: 'BANCO LITORAL',
       hora: '09:47',
-      texto: `Su codigo de verificacion es ${CODIGO}. Vence en 5 minutos. NUNCA lo comparta con nadie, ni con personal del banco.`,
+      texto: `Su codigo de verificacion es ${CODE}. Vence en 5 minutos. NUNCA lo comparta con nadie, ni con personal del banco.`,
       goto: 'n_codigo',
       label: 'Abrió la notificación del código que envió el banco',
     },
   },
-  n_codigo: { kind: 'scene', view: CODIGO_SMS },
-  n3: { kind: 'scene', view: NAVEGADOR },
+  n_codigo: { kind: 'scene', view: CODE_SMS },
+  n3: { kind: 'scene', view: BROWSER },
   e_datos: {
     kind: 'bad',
-    view: PAGINA,
+    view: PAGE,
     verdict: 'Caíste en la trampa',
     outcome:
       'Entregaste tu usuario, tu clave y el código de verificación. Con los tres entraron a tu banca en línea desde otro dispositivo y vaciaron tu cuenta de ahorros.',
   },
   e_cierra: {
     kind: 'good',
-    view: PAGINA,
+    view: PAGE,
     verdict: 'No caíste · el formulario te delató',
     outcome:
       'Ninguna institución pública necesita tu clave de banca en línea para depositarte. Saliste de la página y reportaste el mensaje.',
   },
   e_verifica: {
     kind: 'good',
-    view: PORTAL_MIES,
+    view: MIES_PORTAL,
     verdict: 'No caíste · buscaste la fuente oficial',
     outcome:
       'En el portal del MIES no constaba ningún bono a tu nombre ni ninguna preselección: no existía el registro exprés que anunciaba el SMS. El mensaje circulaba masivamente ese día.',
   },
 }
 
-const SENALES: Senal[] = [
+const SIGNALS: Signal[] = [
   {
     id: 's1',
     targetId: 'mensaje',
@@ -220,9 +220,9 @@ const SENALES: Senal[] = [
 const RULE =
   'Regla de oro: para <b>recibir</b> dinero nadie necesita tu clave ni tu código de verificación; solo tu número de cuenta. Cualquier bono o subsidio se confirma en el sitio oficial <b>.gob.ec</b>, escrito por ti.'
 
-const RESUMEN = 'Un SMS anuncia que tu cédula quedó preseleccionada para un bono de $180.'
+const SUMMARY = 'Un SMS anuncia que tu cédula quedó preseleccionada para un bono de $180.'
 
-const CONTEXTO: Contexto = {
+const CONTEXT: Context = {
   antes: 'Nunca postulaste a ningún bono, pero el dinero haría falta este mes.',
   ahora: (
     <>
@@ -232,14 +232,14 @@ const CONTEXTO: Contexto = {
   ),
 }
 
-function BonoEstado() {
+function GovernmentBenefit() {
   return (
-    <StoryEscenario
+    <ScenarioStory
       escenarioId="smishing/bono-estado"
-      resumen={RESUMEN}
-      contexto={CONTEXTO}
+      resumen={SUMMARY}
+      contexto={CONTEXT}
       story={STORY}
-      senales={SENALES}
+      senales={SIGNALS}
       rule={RULE}
       restartLabel="↻ Repetir el escenario"
       accionesEnPantalla
@@ -262,4 +262,4 @@ function BonoEstado() {
   )
 }
 
-export default BonoEstado
+export default GovernmentBenefit

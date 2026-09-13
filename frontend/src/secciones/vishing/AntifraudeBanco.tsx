@@ -1,26 +1,26 @@
 import { Camera, MessageSquareText, Phone, Wallet } from "lucide-react";
-import StoryEscenario, {
-  type AppTelefono,
+import ScenarioStory, {
+  type PhoneApp,
   type ScreenNode,
 } from "../../components/StoryEscenario";
-import type { Contexto } from "../../components/ui/ContextoEscenario";
+import type { Context } from "../../components/ui/ContextoEscenario";
 import type { ScreenView } from "../../components/ui/DeviceScreen";
-import type { Senal } from "../../components/ui/PanelVeredicto";
+import type { Signal } from "../../components/ui/PanelVeredicto";
 import type { Story } from "../../hooks/useStoryEngine";
-import { IDENTIDAD_FICTICIA } from "../../lib/identidadFicticia";
+import { IDENTITY_FAKE } from "../../lib/identidadFicticia";
 
 // Pareja de tarjeta-bloqueada, al revés: aquí la llamada te empuja a leer un
 // SMS auténtico del banco. El mensaje pasa cualquier chequeo; lo falso es
 // quien lo pide.
 
-const NUMERO = "+593 2 380 4412";
-const QUIEN = "Banco del Litoral";
-const CODIGO = "480913";
+const NUMBER = "+593 2 380 4412";
+const WHO = "Banco del Litoral";
+const CODE = "480913";
 
-const ENTRANTE: ScreenView = {
+const INCOMING: ScreenView = {
   kind: "call",
   entrante: true,
-  quien: NUMERO,
+  quien: NUMBER,
   numero: "Quito, Ecuador",
   etiqueta: "No está en tus contactos",
   senalQuien: "quien",
@@ -30,9 +30,9 @@ const ENTRANTE: ScreenView = {
   rechazarLabel: "Rechazó la llamada sin contestar",
 };
 
-const APERTURA = [
+const OPENING = [
   {
-    texto: `Buenas noches, le habla Andrés Villamar del departamento de seguridad del ${QUIEN}. ¿Hablo con el titular de la tarjeta terminada en ${IDENTIDAD_FICTICIA.tarjeta}?`,
+    texto: `Buenas noches, le habla Andrés Villamar del departamento de seguridad del ${WHO}. ¿Hablo con el titular de la tarjeta terminada en ${IDENTITY_FAKE.tarjeta}?`,
     senal: "llaman",
   },
   {
@@ -41,13 +41,13 @@ const APERTURA = [
   },
 ];
 
-const LLAMADA: ScreenView = {
+const CALL: ScreenView = {
   kind: "call",
-  quien: NUMERO,
+  quien: NUMBER,
   numero: "Quito, Ecuador",
   etiqueta: "No está en tus contactos",
   senalQuien: "quien",
-  dialogo: APERTURA,
+  dialogo: OPENING,
   decir: [
     {
       texto: "No, yo no hice esa compra.",
@@ -64,10 +64,10 @@ const LLAMADA: ScreenView = {
   colgarLabel: "Colgó al principio de la llamada",
 };
 
-const NO_RECONOZCO = "No, yo no hice esa compra.";
-const QUIEN_ES = "¿Y cómo sé yo que usted es del banco?";
+const DO_NOT_RECOGNIZE = "No, yo no hice esa compra.";
+const WHO_IS_IT = "¿Y cómo sé yo que usted es del banco?";
 
-const PIDE_CODIGO = [
+const ASKS_CODE = [
   {
     texto: `Para autorizar la anulación le acabo de enviar un código de seis dígitos por mensaje. Léamelo, por favor.`,
     senal: "piden-codigo",
@@ -79,19 +79,19 @@ const PIDE_CODIGO = [
   },
 ];
 
-function pidiendoCodigo(
-  respuesta: { texto: string; mio?: boolean }[],
+function askingCode(
+  response: { texto: string; mio?: boolean }[],
 ): ScreenView {
   return {
     kind: "call",
-    quien: NUMERO,
+    quien: NUMBER,
     numero: "Quito, Ecuador",
     etiqueta: "No está en tus contactos",
     senalQuien: "quien",
-    dialogo: [...APERTURA, ...respuesta, ...PIDE_CODIGO],
+    dialogo: [...OPENING, ...response, ...ASKS_CODE],
     decir: [
       {
-        texto: `Ya me llegó: es ${CODIGO}.`,
+        texto: `Ya me llegó: es ${CODE}.`,
         goto: "e_dicta",
         label: "Dictó por teléfono el código que le llegó",
       },
@@ -106,32 +106,32 @@ function pidiendoCodigo(
   };
 }
 
-const NOTIFICACION_CODIGO = {
+const NOTIFICATION_CODE = {
   app: "Mensajes",
   remitente: "BancoLitoral",
   hora: "21:07",
-  texto: `Su código de autorización es ${CODIGO}. Vence en 5 minutos. El Banco del Litoral nunca le pedirá este código por teléfono ni por mensaje: si alguien se lo pide, cuelgue.`,
+  texto: `Su código de autorización es ${CODE}. Vence en 5 minutos. El Banco del Litoral nunca le pedirá este código por teléfono ni por mensaje: si alguien se lo pide, cuelgue.`,
   goto: "n4",
   label: "Abrió la notificación del código que envió el banco",
 };
 
-const NIEGA_CONSUMO = pidiendoCodigo([
-  { texto: NO_RECONOZCO, mio: true },
+const DENIES_CONSUMPTION = askingCode([
+  { texto: DO_NOT_RECOGNIZE, mio: true },
   {
     texto:
       "Entendido, lo marco como consumo no reconocido. Lo anulamos ahora mismo desde aquí, antes de que se liquide.",
   },
 ]);
 
-const DUDA_QUIEN = pidiendoCodigo([
-  { texto: QUIEN_ES, mio: true },
+const QUESTIONS_IDENTITY = askingCode([
+  { texto: WHO_IS_IT, mio: true },
   {
     texto:
       "Es una pregunta muy sensata. Puede comprobar que este número aparece en la página del banco. Vamos a anular el cargo ahora mismo desde aquí.",
   },
 ]);
 
-const MENSAJE: ScreenView = {
+const MESSAGE: ScreenView = {
   kind: "sms",
   sender: "BancoLitoral",
   sub: "Remitente verificado · mismo hilo de siempre",
@@ -141,20 +141,20 @@ const MENSAJE: ScreenView = {
       time: "08:41",
     },
     {
-      text: `Su código de autorización es <b>${CODIGO}</b>. Vence en 5 minutos. El Banco del Litoral nunca le pedirá este código por teléfono ni por mensaje: si alguien se lo pide, cuelgue.`,
+      text: `Su código de autorización es <b>${CODE}</b>. Vence en 5 minutos. El Banco del Litoral nunca le pedirá este código por teléfono ni por mensaje: si alguien se lo pide, cuelgue.`,
       time: "21:07",
       senal: "texto-codigo",
     },
   ],
 };
 
-const BANCO: ScreenView = {
+const BANK: ScreenView = {
   kind: "web",
   app: "Banco del Litoral",
   url: "bancolitoral.ec",
   secure: true,
   brand: "Banca móvil",
-  title: `Tarjeta *${IDENTIDAD_FICTICIA.tarjeta}`,
+  title: `Tarjeta *${IDENTITY_FAKE.tarjeta}`,
   subtitle: "Cupo disponible $1.240,00",
   opciones: [
     {
@@ -176,12 +176,12 @@ const BANCO: ScreenView = {
   button: "",
 };
 
-const MOVIMIENTOS: ScreenView = {
+const TRANSACTIONS: ScreenView = {
   kind: "web",
   app: "Banco del Litoral",
   url: "bancolitoral.ec",
   secure: true,
-  brand: `Movimientos · Tarjeta *${IDENTIDAD_FICTICIA.tarjeta}`,
+  brand: `Movimientos · Tarjeta *${IDENTITY_FAKE.tarjeta}`,
   title: "Últimos consumos",
   subtitle: "Actualizado hace unos segundos.",
   datos: [
@@ -195,7 +195,7 @@ const MOVIMIENTOS: ScreenView = {
   button: "",
 };
 
-const APPS: AppTelefono[] = [
+const APPS: PhoneApp[] = [
   { Icono: Phone, texto: "Teléfono", color: "#2f9e44", hilo: "call" },
   {
     Icono: MessageSquareText,
@@ -220,15 +220,15 @@ const APPS: AppTelefono[] = [
 ];
 
 export const STORY: Story<ScreenNode> = {
-  n1: { kind: "scene", view: ENTRANTE },
-  n2: { kind: "scene", view: LLAMADA },
-  n3: { kind: "scene", view: NIEGA_CONSUMO, notificacion: NOTIFICACION_CODIGO },
-  n3b: { kind: "scene", view: DUDA_QUIEN, notificacion: NOTIFICACION_CODIGO },
-  n4: { kind: "scene", view: MENSAJE },
-  n5: { kind: "scene", view: BANCO },
+  n1: { kind: "scene", view: INCOMING },
+  n2: { kind: "scene", view: CALL },
+  n3: { kind: "scene", view: DENIES_CONSUMPTION, notificacion: NOTIFICATION_CODE },
+  n3b: { kind: "scene", view: QUESTIONS_IDENTITY, notificacion: NOTIFICATION_CODE },
+  n4: { kind: "scene", view: MESSAGE },
+  n5: { kind: "scene", view: BANK },
   e_rechaza: {
     kind: "partial",
-    view: ENTRANTE,
+    view: INCOMING,
     verdict: "No entregaste nada, pero te quedaste con la duda",
     outcome:
       "No contestaste, y eso evita el daño. Pero el mensaje del banco sí llegó, y no lo miraste: si alguien está intentando operar con tu tarjeta ahora mismo, lo verás cuando ya no sirva de nada. La llamada se ignora; la tarjeta se comprueba.",
@@ -236,27 +236,27 @@ export const STORY: Story<ScreenNode> = {
   },
   e_cuelga: {
     kind: "good",
-    view: NIEGA_CONSUMO,
+    view: DENIES_CONSUMPTION,
     verdict: "No caíste · colgaste",
     outcome:
       "Colgaste sin dictar nada. Ningún banco pide por teléfono el código que te envía, y la insistencia en que no cortaras era la señal más clara de todas. Lo que sigue es llamar tú al número del reverso de la tarjeta, que es el único que sabes que es del banco.",
   },
   e_dicta: {
     kind: "bad",
-    view: NIEGA_CONSUMO,
+    view: DENIES_CONSUMPTION,
     verdict: "Caíste en la trampa",
-    outcome: `El consumo de Guayaquil no existía. El código ${CODIGO} era el que tu banco acababa de enviarte para autorizar una transferencia que estaban haciendo ellos mientras hablabas. Ese código no identifica a nadie, firma operaciones.`,
+    outcome: `El consumo de Guayaquil no existía. El código ${CODE} era el que tu banco acababa de enviarte para autorizar una transferencia que estaban haciendo ellos mientras hablabas. Ese código no identifica a nadie, firma operaciones.`,
   },
   e_app: {
     kind: "good",
-    view: MOVIMIENTOS,
+    view: TRANSACTIONS,
     verdict: "No caíste · lo comprobaste donde consta",
     outcome:
       "En la app no había ningún consumo de ochocientos noventa dólares ni nada en revisión: el cargo del que hablaban nunca existió. Dejaste la llamada esperando mientras mirabas, que es exactamente lo que quien llama intenta impedir.",
   },
   e_bloquea: {
     kind: "partial",
-    view: BANCO,
+    view: BANK,
     verdict: "Reaccionaste sin comprobar",
     outcome:
       "Bloqueaste la tarjeta por un consumo que nunca existió. No perdiste dinero (y ante la duda es preferible eso a dictar un código), pero te quedaste sin tarjeta hasta que emitan otra, y los movimientos estaban a un toque en esa misma pantalla.",
@@ -264,7 +264,7 @@ export const STORY: Story<ScreenNode> = {
   },
 };
 
-const SENALES: Senal[] = [
+const SIGNALS: Signal[] = [
   {
     id: "s1",
     targetId: "quien",
@@ -312,10 +312,10 @@ const SENALES: Senal[] = [
 const RULE =
   "Regla de oro: el código que te llega por mensaje <b>no se dicta nunca</b>, ni siquiera a alguien que dice ser tu banco. Cuelga y llama tú al número impreso en el reverso de tu tarjeta: es el único que sabes a quién pertenece.";
 
-const RESUMEN =
+const SUMMARY =
   "Una llamada dice ser del banco y avisa de un consumo que no reconoces.";
 
-const CONTEXTO: Contexto = {
+const CONTEXT: Context = {
   antes: (
     <>
       Cliente del <strong>Banco del Litoral</strong>. Usas esa tarjeta casi a
@@ -330,14 +330,14 @@ const CONTEXTO: Contexto = {
   ),
 };
 
-function AntifraudeBanco() {
+function BankFraudPrevention() {
   return (
-    <StoryEscenario
+    <ScenarioStory
       escenarioId="vishing/antifraude-banco"
-      resumen={RESUMEN}
-      contexto={CONTEXTO}
+      resumen={SUMMARY}
+      contexto={CONTEXT}
       story={STORY}
-      senales={SENALES}
+      senales={SIGNALS}
       rule={RULE}
       restartLabel="↻ Recibir la llamada otra vez"
       accionesEnPantalla
@@ -363,4 +363,4 @@ function AntifraudeBanco() {
   );
 }
 
-export default AntifraudeBanco;
+export default BankFraudPrevention;

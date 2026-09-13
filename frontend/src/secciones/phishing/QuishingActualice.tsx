@@ -1,26 +1,26 @@
 import { Forward, Landmark, Newspaper, Reply, ShieldAlert, Trash2 } from 'lucide-react'
 import { useState } from 'react'
-import EscenarioLayout from '../../components/EscenarioLayout'
-import type { Contexto } from '../../components/ui/ContextoEscenario'
-import { carpetasCorreo } from '../../components/ui/carpetasCorreo'
+import ScenarioLayout from '../../components/EscenarioLayout'
+import type { Context } from '../../components/ui/ContextoEscenario'
+import { createEmailFolders } from '../../components/ui/carpetasCorreo'
 import {
-  CuerpoCorreo,
-  type AccionCorreo,
-  type CarpetaCorreo,
+  EmailBody,
+  type EmailAction,
+  type EmailFolder,
 } from '../../components/ui/DesktopChrome'
-import { AvisoSitio, CabeceraSitio, ENLACES_PIE, PieSitio } from '../../components/ui/armazonSitio'
+import { SiteNotice, SiteHeader, FOOTER_LINKS, SiteFooter } from '../../components/ui/armazonSitio'
 import styles from '../../components/ui/DeviceScreen.module.css'
-import { IDENTIDAD_FICTICIA } from '../../lib/identidadFicticia'
-import { crearSenal } from '../../lib/crearSenal'
-import Instrucciones from '../../components/ui/Instrucciones'
-import { BotonHotspot, manejarClicHotspot } from '../../components/ui/interactivo'
+import { IDENTITY_FAKE } from '../../lib/identidadFicticia'
+import { createSignal } from '../../lib/crearSenal'
+import Instructions from '../../components/ui/Instrucciones'
+import { HotspotButton, handleHotspotClick } from '../../components/ui/interactivo'
 import {
-  Navegador,
-  type MarcadorNavegador,
-  type PestanaConfig,
+  Browser,
+  type BrowserBookmark,
+  type TabConfig,
 } from '../../components/ui/Navegador'
-import PanelVeredicto, { type Senal } from '../../components/ui/PanelVeredicto'
-import { formatoHora } from '../../hooks/useRelojDelSistema'
+import VerdictPanel, { type Signal } from '../../components/ui/PanelVeredicto'
+import { formatTime } from '../../hooks/useRelojDelSistema'
 import { useStoryEngine, type Story, type StoryNode } from '../../hooks/useStoryEngine'
 
 // QR decorativo y fijo: no es escaneable de verdad, solo tiene que leerse
@@ -50,7 +50,7 @@ const STORY: Story<StoryNode> = {
   e_datos: {
     kind: 'bad',
     verdict: 'Caíste en la trampa',
-    outcome: `Entregaste tu cédula ${IDENTIDAD_FICTICIA.cedula} y tu clave ${IDENTIDAD_FICTICIA.clave} en litoral-actualiza.web.app, un sitio que no es del banco. Con esos datos entraron a tu cuenta esa misma noche.`,
+    outcome: `Entregaste tu cédula ${IDENTITY_FAKE.cedula} y tu clave ${IDENTITY_FAKE.clave} en litoral-actualiza.web.app, un sitio que no es del banco. Con esos datos entraron a tu cuenta esa misma noche.`,
   },
   // Absorbe el antiguo final "vista previa antes de escanear": un QR no tiene
   // href, así que no existe una vista previa real — escanear ya abre la
@@ -88,7 +88,7 @@ const STORY: Story<StoryNode> = {
   },
 }
 
-const ACCIONES: AccionCorreo[] = [
+const ACTIONS: EmailAction[] = [
   {
     Icono: Reply,
     etiqueta: 'Responder',
@@ -119,35 +119,35 @@ const ACCIONES: AccionCorreo[] = [
   },
 ]
 
-const ASUNTO = 'Actualice sus datos antes de que se limite su cuenta'
-const REMITENTE_NOMBRE = 'Banco del Litoral · Actualización de datos'
-const DIRECCION = 'notificaciones@bancodel1itoral.com'
+const SUBJECT = 'Actualice sus datos antes de que se limite su cuenta'
+const SENDER_NAME = 'Banco del Litoral · Actualización de datos'
+const ADDRESS = 'notificaciones@bancodel1itoral.com'
 
 /// El mensaje tal como lo muestran las carpetas cuando una acción de la barra
 /// lo mueve de bandeja. Lo pinta `carpetasCorreo`, compartido por todos los
 /// escenarios de correo.
-const MENSAJE = { nombre: REMITENTE_NOMBRE, direccion: DIRECCION, asunto: ASUNTO }
+const MESSAGE = { nombre: SENDER_NAME, direccion: ADDRESS, asunto: SUBJECT }
 
-const SENALES: Senal[] = [
-  crearSenal(
+const SIGNALS: Signal[] = [
+  createSignal(
     's1',
     'n1',
     'qr',
     'Un <b>código QR es un enlace escondido dentro de un dibujo</b>: no hay texto que leer, así que no puedes ver a dónde te lleva hasta que ya lo abriste.',
   ),
-  crearSenal(
+  createSignal(
     's2',
     'n1',
     'remitente',
     'El dominio del remitente escribe <b>bancodel1itoral.com</b> con el número <b>1</b> en lugar de la letra <b>l</b>. Es una imitación de la dirección del banco: un cambio mínimo que puede pasar desapercibido.',
   ),
-  crearSenal(
+  createSignal(
     's3',
     'n2',
     'campo-clave',
     'El formulario pide la <b>clave de acceso</b>. Actualizar unos datos no necesita tu clave: la clave es lo que se usa para entrar a la cuenta, y es justo lo que buscan.',
   ),
-  crearSenal(
+  createSignal(
     's4',
     'n1',
     'plazo',
@@ -158,9 +158,9 @@ const SENALES: Senal[] = [
 const RULE =
   'Regla de oro: al escanear un QR, primero <b>lee la vista previa de la URL</b> y recién ahí decide. Vale igual para los QR de correos, locales, surtidores y parquímetros.'
 
-const RESUMEN = 'Un correo del banco pide escanear un QR para "actualizar tus datos".'
+const SUMMARY = 'Un correo del banco pide escanear un QR para "actualizar tus datos".'
 
-const CONTEXTO: Contexto = {
+const CONTEXT: Context = {
   antes: (
     <>
       Eres cliente del <strong>Banco del Litoral</strong>. <strong>Este mes</strong> el banco sí
@@ -175,7 +175,7 @@ const CONTEXTO: Contexto = {
   ),
 }
 
-const NOTA = (
+const NOTE = (
   <>
     <p>
       Vas a ver tu computador con el correo abierto. Puedes actuar sobre la pantalla como lo harías
@@ -188,14 +188,14 @@ const NOTA = (
   </>
 )
 
-const MINUTOS_DE_ANTIGUEDAD = 40
+const MINUTES_OF_AGE = 40
 
-function horaDeLlegada(): string {
-  const llegada = new Date(Date.now() - MINUTOS_DE_ANTIGUEDAD * 60_000)
-  return `hoy ${formatoHora(llegada)}`
+function getArrivalTime(): string {
+  const arrival = new Date(Date.now() - MINUTES_OF_AGE * 60_000)
+  return `hoy ${formatTime(arrival)}`
 }
 
-const PESTANAS: Record<string, PestanaConfig> = {
+const TABS: Record<string, TabConfig> = {
   n1: { titulo: 'Correo', url: 'https://correo.safeweb.com/u/0/#recibidos', segura: true },
   n2: {
     titulo: 'Actualización de datos',
@@ -211,7 +211,7 @@ const PESTANAS: Record<string, PestanaConfig> = {
   },
 }
 
-const MARCADORES: MarcadorNavegador[] = [
+const MARKERS: BrowserBookmark[] = [
   {
     Icono: Landmark,
     texto: 'Banco del Litoral',
@@ -221,20 +221,20 @@ const MARCADORES: MarcadorNavegador[] = [
   { Icono: Newspaper, texto: 'El Comercio' },
 ]
 
-function ContenidoCorreo({ recibido, carpetas }: { recibido: string; carpetas: CarpetaCorreo[] }) {
+function EmailContent({ recibido: received, carpetas: folders }: { recibido: string; carpetas: EmailFolder[] }) {
   return (
-    <CuerpoCorreo
-      acciones={ACCIONES}
-      carpetas={carpetas}
-      asunto={ASUNTO}
+    <EmailBody
+      acciones={ACTIONS}
+      carpetas={folders}
+      asunto={SUBJECT}
       remitente={{
-        nombre: REMITENTE_NOMBRE,
-        direccion: DIRECCION,
+        nombre: SENDER_NAME,
+        direccion: ADDRESS,
         etiqueta: 'Externo',
         senalDireccion: 'remitente',
         senalEtiqueta: 'externo',
       }}
-      recibido={recibido}
+      recibido={received}
       marca={{
         nombre: 'Banco del Litoral',
         detalle: 'Actualización de información de clientes',
@@ -257,19 +257,19 @@ function ContenidoCorreo({ recibido, carpetas }: { recibido: string; carpetas: C
             no tiene ninguno: sin este span el botón quedaría sin nombre para
             un lector de pantalla (y sin forma de ubicarlo por rol+nombre en
             los tests). */}
-        <BotonHotspot goto="n2" label="Escaneó el código QR" signalId="qr">
+        <HotspotButton goto="n2" label="Escaneó el código QR" signalId="qr">
           <span className="sr-only">Código QR, escanear para continuar</span>
           <span dangerouslySetInnerHTML={{ __html: QR_SVG }} />
-        </BotonHotspot>
+        </HotspotButton>
       </div>
-    </CuerpoCorreo>
+    </EmailBody>
   )
 }
 
-function ContenidoPortalFalso() {
+function FakePortalContent() {
   return (
     <div className={styles.page}>
-      <CabeceraSitio
+      <SiteHeader
         marca="Banco del Litoral"
         menu={['Cuentas', 'Transferencias', 'Pagos', 'Ayuda']}
       />
@@ -283,7 +283,7 @@ function ContenidoPortalFalso() {
           <legend>Cédula</legend>
           <span className={styles.input}>
             <span className="sr-only">Tu cédula, ya completada: </span>
-            {' '}{IDENTIDAD_FICTICIA.cedula}
+            {' '}{IDENTITY_FAKE.cedula}
           </span>
         </fieldset>
         <fieldset className={styles.field} data-signal="campo-clave">
@@ -293,29 +293,29 @@ function ContenidoPortalFalso() {
             {' '}••••••••
           </span>
         </fieldset>
-        <BotonHotspot
+        <HotspotButton
           goto="e_datos"
           label="Ingresó su cédula y su clave de acceso"
           className={styles.submit}
         >
           Confirmar datos
-        </BotonHotspot>
+        </HotspotButton>
       </div>
 
-      <AvisoSitio>
+      <SiteNotice>
         La actualización es obligatoria para mantener activa su cuenta. Sus datos viajan cifrados y
         no se comparten con terceros.
-      </AvisoSitio>
+      </SiteNotice>
 
-      <PieSitio texto="Banco del Litoral · Entidad supervisada" enlaces={ENLACES_PIE} />
+      <SiteFooter texto="Banco del Litoral · Entidad supervisada" enlaces={FOOTER_LINKS} />
     </div>
   )
 }
 
-function ContenidoCentroSeguridad() {
+function SecurityCenterContent() {
   return (
     <div className={styles.page}>
-      <CabeceraSitio
+      <SiteHeader
         marca="Banco del Litoral"
         menu={['Cuentas', 'Transferencias', 'Pagos', 'Ayuda']}
       />
@@ -329,30 +329,30 @@ function ContenidoCentroSeguridad() {
           <legend>Actualización de datos</legend>
           <span className={styles.input}>No tienes solicitudes pendientes</span>
         </fieldset>
-        <BotonHotspot
+        <HotspotButton
           goto="e_app"
           label="Comprobó en el centro de seguridad que no había una actualización pendiente"
           className={styles.submit}
         >
           Revisar alertas recientes
-        </BotonHotspot>
+        </HotspotButton>
       </div>
 
-      <AvisoSitio>
+      <SiteNotice>
         El banco nunca te pedirá confirmar una actualización desde un enlace recibido por correo.
-      </AvisoSitio>
+      </SiteNotice>
 
-      <PieSitio texto="Banco del Litoral · Entidad supervisada" enlaces={ENLACES_PIE} />
+      <SiteFooter texto="Banco del Litoral · Entidad supervisada" enlaces={FOOTER_LINKS} />
     </div>
   )
 }
 
-function DecisionEnCurso({ fallo, enPagina }: { fallo: boolean; enPagina: boolean }) {
+function PendingDecision({ fallo: failure, enPagina: onPage }: { fallo: boolean; enPagina: boolean }) {
   return (
     <div className="grid gap-3">
       <p className="text-lg font-semibold text-ink">¿Qué haces?</p>
-      <Instrucciones
-        fallo={fallo}
+      <Instructions
+        fallo={failure}
         pista={
           <p>
             Tienes tres caminos posibles: escanear el código y ver a dónde lleva, dejarlo de lado y
@@ -367,7 +367,7 @@ function DecisionEnCurso({ fallo, enPagina }: { fallo: boolean; enPagina: boolea
           <strong>cualquier parte de ella</strong>, incluida la barra de abajo.
         </p>
 
-        {enPagina && (
+        {onPage && (
           <p className="rounded-md border border-hairline-strong bg-canvas-soft px-3 py-2 text-base leading-relaxed text-body">
             El formulario ya aparece con{' '}
             <strong className="text-ink">tu cédula y tu clave de acceso escritas</strong>. Es así
@@ -388,53 +388,53 @@ function DecisionEnCurso({ fallo, enPagina }: { fallo: boolean; enPagina: boolea
             decide nada.
           </p>
         </details>
-      </Instrucciones>
+      </Instructions>
     </div>
   )
 }
 
-function QuishingActualice() {
+function QuishingUpdate() {
   const engine = useStoryEngine(STORY, 'n1', 'phishing/quishing-actualice')
 
-  const [pantallaActual, setPantallaActual] = useState('n1')
-  const [tocoEnVacio, setTocoEnVacio] = useState(false)
-  const [recibido, setRecibido] = useState(horaDeLlegada)
-  const [pestanas, setPestanas] = useState(['n1'])
-  const [repasando, setRepasando] = useState(false)
+  const [currentScreen, setCurrentScreen] = useState('n1')
+  const [clickedEmptySpace, setClickedEmptySpace] = useState(false)
+  const [received, setReceived] = useState(getArrivalTime)
+  const [tabs, setTabs] = useState(['n1'])
+  const [reviewing, setReviewing] = useState(false)
 
-  function elegir(goto: string, label?: string) {
+  function choose(goto: string, label?: string) {
     if (engine.isEnding) return
     engine.choose(goto, label)
     if (STORY[goto]?.kind === 'scene') {
-      setPantallaActual(goto)
-      setPestanas((abiertas) => (abiertas.includes(goto) ? abiertas : [...abiertas, goto]))
+      setCurrentScreen(goto)
+      setTabs((open) => (open.includes(goto) ? open : [...open, goto]))
     }
   }
 
-  function reiniciar() {
+  function restart() {
     engine.restart()
-    setPantallaActual('n1')
-    setPestanas(['n1'])
-    setRepasando(false)
-    setTocoEnVacio(false)
-    setRecibido(horaDeLlegada())
+    setCurrentScreen('n1')
+    setTabs(['n1'])
+    setReviewing(false)
+    setClickedEmptySpace(false)
+    setReceived(getArrivalTime())
   }
 
   const onHotspot = (event: React.MouseEvent) => {
-    const cerrada = (event.target as HTMLElement).closest<HTMLElement>('[data-cierra]')?.dataset
+    const closed = (event.target as HTMLElement).closest<HTMLElement>('[data-cierra]')?.dataset
       .cierra
-    if (cerrada) {
-      const quedan = pestanas.filter((id) => id !== cerrada)
-      setPestanas(quedan)
+    if (closed) {
+      const remaining = tabs.filter((id) => id !== closed)
+      setTabs(remaining)
       // Cerrar la pestaña que se está viendo devuelve el navegador a la que
       // quede abierta (el correo). Con el escenario ya terminado `elegir` sale
       // sin tocar la pantalla, así que sin esto la página cerrada seguía a la
       // vista aunque su pestaña ya no estuviera en la barra (issue #26).
-      if (cerrada === pantallaActual) setPantallaActual(quedan.at(-1) ?? 'n1')
+      if (closed === currentScreen) setCurrentScreen(remaining.at(-1) ?? 'n1')
     }
 
-    if (!manejarClicHotspot(event, elegir) && !engine.isEnding) {
-      setTocoEnVacio(true)
+    if (!handleHotspotClick(event, choose) && !engine.isEnding) {
+      setClickedEmptySpace(true)
     }
   }
 
@@ -442,58 +442,58 @@ function QuishingActualice() {
   // en el repaso: las señales llevan a pantallas que se cerraron, o que nunca se
   // llegaron a abrir, y sin esto se explicaba la página con la pestaña del
   // correo marcada como activa.
-  const abiertas = pestanas.includes(pantallaActual) ? pestanas : [...pestanas, pantallaActual]
+  const open = tabs.includes(currentScreen) ? tabs : [...tabs, currentScreen]
 
-  const pantalla = (
-    <Navegador
-      pestanas={PESTANAS}
-      abiertas={abiertas}
-      activa={pantallaActual}
-      marcadores={MARCADORES}
+  const screen = (
+    <Browser
+      pestanas={TABS}
+      abiertas={open}
+      activa={currentScreen}
+      marcadores={MARKERS}
       onHotspot={onHotspot}
     >
-      {pantallaActual === 'n1' ? (
-        <ContenidoCorreo
-          recibido={recibido}
-          carpetas={carpetasCorreo(
-            MENSAJE,
-            engine.isEnding && !repasando ? engine.current : undefined,
+      {currentScreen === 'n1' ? (
+        <EmailContent
+          recibido={received}
+          carpetas={createEmailFolders(
+            MESSAGE,
+            engine.isEnding && !reviewing ? engine.current : undefined,
           )}
         />
-      ) : pantallaActual === 'n2' ? (
-        <ContenidoPortalFalso />
+      ) : currentScreen === 'n2' ? (
+        <FakePortalContent />
       ) : (
-        <ContenidoCentroSeguridad />
+        <SecurityCenterContent />
       )}
-    </Navegador>
+    </Browser>
   )
 
   const decision = engine.isEnding ? (
-    <PanelVeredicto
+    <VerdictPanel
       estadoGuardado={engine.runStatus}
       escenarioId="phishing/quishing-actualice"
       node={engine.node}
-      senales={SENALES}
+      senales={SIGNALS}
       regla={RULE}
       restartLabel="↻ Repetir el escenario"
-      onRestart={reiniciar}
+      onRestart={restart}
       contenedorId="pantalla-escenario"
       onPantalla={(id) => {
-        setRepasando(Boolean(id))
-        if (id) setPantallaActual(id)
+        setReviewing(Boolean(id))
+        if (id) setCurrentScreen(id)
       }}
     />
   ) : (
-    <DecisionEnCurso fallo={tocoEnVacio} enPagina={pantallaActual === 'n2'} />
+    <PendingDecision fallo={clickedEmptySpace} enPagina={currentScreen === 'n2'} />
   )
 
   return (
-    <EscenarioLayout
+    <ScenarioLayout
       escenarioId="phishing/quishing-actualice"
-      resumen={RESUMEN}
-      contexto={CONTEXTO}
-      nota={NOTA}
-      pantalla={pantalla}
+      resumen={SUMMARY}
+      contexto={CONTEXT}
+      nota={NOTE}
+      pantalla={screen}
       identidad={['cedula', 'clave']}
       decision={decision}
       resultado={engine.resultado}
@@ -503,4 +503,4 @@ function QuishingActualice() {
   )
 }
 
-export default QuishingActualice
+export default QuishingUpdate

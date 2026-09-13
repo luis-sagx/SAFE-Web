@@ -1,19 +1,19 @@
 import { Camera, Package, Phone, Wallet } from 'lucide-react'
-import StoryEscenario, { type AppTelefono, type ScreenNode } from '../../components/StoryEscenario'
-import type { Contexto } from '../../components/ui/ContextoEscenario'
+import ScenarioStory, { type PhoneApp, type ScreenNode } from '../../components/StoryEscenario'
+import type { Context } from '../../components/ui/ContextoEscenario'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
-import type { Senal } from '../../components/ui/PanelVeredicto'
+import type { Signal } from '../../components/ui/PanelVeredicto'
 import type { Story } from '../../hooks/useStoryEngine'
 
 // Llamada legítima común: mide si sabes dónde está el límite, no si
 // desconfías de todo. Confirmar la entrega está bien; dictar la tarjeta no.
 
-const NUMERO = '+593 99 214 0087'
+const NUMBER = '+593 99 214 0087'
 
-const ENTRANTE: ScreenView = {
+const INCOMING: ScreenView = {
   kind: 'call',
   entrante: true,
-  quien: NUMERO,
+  quien: NUMBER,
   numero: 'Celular · Ecuador',
   etiqueta: 'No está en tus contactos',
   senalQuien: 'quien',
@@ -23,7 +23,7 @@ const ENTRANTE: ScreenView = {
   rechazarLabel: 'Rechazó la llamada sin contestar',
 }
 
-const APERTURA = [
+const OPENING = [
   {
     texto:
       '¡Aló, buenas! Le habla Jonathan, de EnvíaExpress. Estoy abajo en la puerta con su paquete, la guía cuatro cuatro siete uno EC.',
@@ -36,13 +36,13 @@ const APERTURA = [
   },
 ]
 
-const LLAMADA: ScreenView = {
+const CALL: ScreenView = {
   kind: 'call',
-  quien: NUMERO,
+  quien: NUMBER,
   numero: 'Celular · Ecuador',
   etiqueta: 'No está en tus contactos',
   senalQuien: 'quien',
-  dialogo: APERTURA,
+  dialogo: OPENING,
   decir: [
     {
       texto: 'Déjelo con el conserje, ya bajo a pagarle los $3,50 en efectivo.',
@@ -82,7 +82,7 @@ const COURIER: ScreenView = {
   button: '',
 }
 
-const GUIA: ScreenView = {
+const GUIDE: ScreenView = {
   kind: 'web',
   app: 'EnvíaExpress',
   url: 'envia-express.ec',
@@ -101,7 +101,7 @@ const GUIA: ScreenView = {
   button: '',
 }
 
-const APPS: AppTelefono[] = [
+const APPS: PhoneApp[] = [
   { Icono: Phone, texto: 'Teléfono', color: '#2f9e44', hilo: 'call' },
   {
     Icono: Package,
@@ -125,12 +125,12 @@ const APPS: AppTelefono[] = [
 ]
 
 export const STORY: Story<ScreenNode> = {
-  n1: { kind: 'scene', view: ENTRANTE },
-  n2: { kind: 'scene', view: LLAMADA },
+  n1: { kind: 'scene', view: INCOMING },
+  n2: { kind: 'scene', view: CALL },
   n3: { kind: 'scene', view: COURIER },
   e_rechaza: {
     kind: 'partial',
-    view: ENTRANTE,
+    view: INCOMING,
     verdict: 'No perdiste nada, pero tampoco resolviste',
     outcome:
       'No contestaste. No perdiste ni un centavo (y no contestar a un desconocido nunca está mal), pero era el repartidor con el paquete que sí estabas esperando: se fue, el envío volvió a bodega y ahora te toca ir a retirarlo a la agencia.',
@@ -138,7 +138,7 @@ export const STORY: Story<ScreenNode> = {
   },
   e_cuelga: {
     kind: 'partial',
-    view: LLAMADA,
+    view: CALL,
     verdict: 'Colgaste a alguien que decía la verdad',
     outcome:
       'Colgar nunca te va a costar dinero, así que como reflejo no está mal. Pero el envío era real y no comprobaste nada: bastaba mirar la guía en la app del courier para saber que estaba en reparto y con cobro de $3,50.',
@@ -146,28 +146,28 @@ export const STORY: Story<ScreenNode> = {
   },
   e_recibe: {
     kind: 'good',
-    view: LLAMADA,
+    view: CALL,
     verdict: 'Acertaste · la llamada era legítima',
     outcome:
       'Era tu repartidor. La guía coincidía con tu compra, el cobro contra entrega estaba anunciado desde que hiciste el pedido y pagaste en efectivo en la puerta. No hacía falta desconfiar, porque no te pidió ni un dato.',
   },
   e_tarjeta: {
     kind: 'bad',
-    view: LLAMADA,
+    view: CALL,
     verdict: 'Llamada legítima, reacción peligrosa',
     outcome:
       'La llamada era de verdad, pero dictaste tu tarjeta por teléfono, y eso no se hace ni con quien está abajo con tu paquete. Un número completo con caducidad y CVV sirve para comprar en internet las veces que haga falta, y ya no depende de si el repartidor era honrado: lo oyó él, y quien estuviera cerca.',
   },
   e_app: {
     kind: 'good',
-    view: GUIA,
+    view: GUIDE,
     verdict: 'Acertaste · lo comprobaste en tu canal',
     outcome:
       'En la app estaba todo: la guía en reparto, el nombre del repartidor y el cobro de $3,50 contra entrega. Comprobar tarda quince segundos y sirve igual para descubrir un engaño que para confirmar que algo es verdad.',
   },
 }
 
-const SENALES: Senal[] = [
+const SIGNALS: Signal[] = [
   {
     id: 's1',
     targetId: 'guia',
@@ -201,9 +201,9 @@ const SENALES: Senal[] = [
 const RULE =
   'Regla de oro: que una llamada sea de verdad <b>no significa que valga todo</b>. Puedes confirmar una entrega sin problema, pero el número de tu tarjeta no se dicta por teléfono nunca: se paga en efectivo o en el datáfono, con la tarjeta en tu mano.'
 
-const RESUMEN = 'Un repartidor llama desde la puerta para entregarte un paquete.'
+const SUMMARY = 'Un repartidor llama desde la puerta para entregarte un paquete.'
 
-const CONTEXTO: Contexto = {
+const CONTEXT: Context = {
   antes: (
     <>
       Compraste algo por internet la semana pasada y{' '}
@@ -219,14 +219,14 @@ const CONTEXTO: Contexto = {
   ),
 }
 
-function EntregaCourier() {
+function CourierDelivery() {
   return (
-    <StoryEscenario
+    <ScenarioStory
       escenarioId="vishing/entrega-courier"
-      resumen={RESUMEN}
-      contexto={CONTEXTO}
+      resumen={SUMMARY}
+      contexto={CONTEXT}
       story={STORY}
-      senales={SENALES}
+      senales={SIGNALS}
       rule={RULE}
       restartLabel="↻ Recibir la llamada otra vez"
       accionesEnPantalla
@@ -247,4 +247,4 @@ function EntregaCourier() {
   )
 }
 
-export default EntregaCourier
+export default CourierDelivery

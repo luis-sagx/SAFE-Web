@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import { Landmark, School } from 'lucide-react'
 import { describe, expect, it, vi } from 'vitest'
-import { Navegador } from './Navegador'
+import { Browser } from './Navegador'
 
 vi.mock('../../context/AuthContext', () => ({
   useAuth: () => ({ usuarioSimulado: 'mariaperez' }),
@@ -10,7 +10,7 @@ vi.mock('../../context/AuthContext', () => ({
 describe('Navegador', () => {
   it('explica los sitios guardados y nombra cada control por la entidad que abre', () => {
     render(
-      <Navegador
+      <Browser
         pestanas={{
           correo: {
             titulo: 'Correo',
@@ -27,7 +27,7 @@ describe('Navegador', () => {
         onHotspot={() => undefined}
       >
         <p>Correo abierto</p>
-      </Navegador>,
+      </Browser>,
     )
 
     expect(screen.getByRole('navigation', { name: 'Sitios guardados' })).toBeDefined()

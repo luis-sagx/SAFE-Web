@@ -1,20 +1,20 @@
 import { Camera, MessageCircle, TrendingUp, Wallet } from 'lucide-react'
-import StoryEscenario, { type AppTelefono, type ScreenNode } from '../../components/StoryEscenario'
-import type { Contexto } from '../../components/ui/ContextoEscenario'
+import ScenarioStory, { type PhoneApp, type ScreenNode } from '../../components/StoryEscenario'
+import type { Context } from '../../components/ui/ContextoEscenario'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
-import type { Senal } from '../../components/ui/PanelVeredicto'
+import type { Signal } from '../../components/ui/PanelVeredicto'
 import type { Story } from '../../hooks/useStoryEngine'
-import { CUENTA_FICTICIA, IDENTIDAD_FICTICIA } from '../../lib/identidadFicticia'
+import { ACCOUNT_FAKE, IDENTITY_FAKE } from '../../lib/identidadFicticia'
 
 /** El más difícil: el primer retiro sí llega —de verdad— porque esa es toda la inversión del estafador,
  *  compra tu confianza para la entrega grande. Se gana sabiendo una regla, no desconfiando de la pantalla:
  *  ninguna inversión garantiza rentabilidad, y el dinero real no cobra por dejarte sacarlo. */
 
-const ASESOR = 'Andrés Villacís'
-const NUMERO_ASESOR = '+593 99 302 7715'
-const CUENTA_PLATAFORMA = '5520-1188-70 · Comercializadora Ruvel S.A.'
+const ADVISOR = 'Andrés Villacís'
+const NUMBER_ADVISOR = '+593 99 302 7715'
+const ACCOUNT_PLATFORM = '5520-1188-70 · Comercializadora Ruvel S.A.'
 
-const RETIRO_LLEGO = {
+const PICKUP_ARRIVED = {
   text: '¿Vio? Sus $50 de rendimiento ya están en su cuenta, tal como le dije 🎉 así de simple es. Con $200 usted habría retirado $260 este mes.',
   time: '11:05',
   senal: 'primer-pago',
@@ -22,9 +22,9 @@ const RETIRO_LLEGO = {
 
 const CHAT: ScreenView = {
   kind: 'sms',
-  sender: ASESOR,
-  sub: `${NUMERO_ASESOR} · asesor del grupo de inversión`,
-  msgs: [RETIRO_LLEGO],
+  sender: ADVISOR,
+  sub: `${NUMBER_ADVISOR} · asesor del grupo de inversión`,
+  msgs: [PICKUP_ARRIVED],
   respuestas: [
     {
       texto: 'Sí llegó. ¿Cuánto tendría que poner ahora?',
@@ -41,10 +41,10 @@ const CHAT: ScreenView = {
   volverLabel: 'Salió del chat sin seguir',
 }
 
-const PIDE_MAS: ScreenView = {
+const ASKS_MORE: ScreenView = {
   ...CHAT,
   msgs: [
-    RETIRO_LLEGO,
+    PICKUP_ARRIVED,
     { text: 'Sí llegó. ¿Cuánto tendría que poner ahora?', time: '11:07', mine: true },
     {
       text: 'El plan Plata arranca en $1.000 y le garantiza el 30% mensual, fijo, esté como esté el mercado. Es el que tienen casi todos en el grupo. Pero le soy honesto: los cupos de este mes se cierran mañana a mediodía.',
@@ -66,10 +66,10 @@ const PIDE_MAS: ScreenView = {
   ],
 }
 
-const EXPLICA: ScreenView = {
+const EXPLAINS: ScreenView = {
   ...CHAT,
   msgs: [
-    RETIRO_LLEGO,
+    PICKUP_ARRIVED,
     { text: '¿De dónde sale esa ganancia exactamente?', time: '11:07', mine: true },
     {
       text: 'De arbitraje de criptomonedas con inteligencia artificial 🤖 nuestro algoritmo opera 24/7 en doce mercados a la vez. No se preocupe por lo técnico, para eso estamos nosotros. Lo importante es que el 30% mensual está garantizado por contrato.',
@@ -91,13 +91,13 @@ const EXPLICA: ScreenView = {
   ],
 }
 
-const CUENTA: ScreenView = {
+const ACCOUNT: ScreenView = {
   ...CHAT,
   msgs: [
-    RETIRO_LLEGO,
+    PICKUP_ARRIVED,
     { text: 'Me interesa. ¿A qué cuenta deposito?', time: '11:10', mine: true },
     {
-      text: `Excelente decisión 🙌 deposite los $1.000 a esta cuenta: ${CUENTA_PLATAFORMA}. En cuanto me mande el comprobante le activo el plan y desde mañana ve el rendimiento subiendo en su panel.`,
+      text: `Excelente decisión 🙌 deposite los $1.000 a esta cuenta: ${ACCOUNT_PLATFORM}. En cuanto me mande el comprobante le activo el plan y desde mañana ve el rendimiento subiendo en su panel.`,
       time: '11:11',
       senal: 'cuenta',
     },
@@ -116,10 +116,10 @@ const CUENTA: ScreenView = {
   ],
 }
 
-const SE_MOLESTA: ScreenView = {
+const GETS_UPSET: ScreenView = {
   ...CHAT,
   msgs: [
-    RETIRO_LLEGO,
+    PICKUP_ARRIVED,
     { text: 'Ninguna inversión garantiza una ganancia fija.', time: '11:12', mine: true },
     {
       text: 'Con todo respeto, eso es lo que le enseñaron en el banco para que deje su plata ahí ganando el 3% al año 😅 en el grupo hay señoras que ya se compraron carro. Usted verá si quiere seguir donde está o quiere avanzar. El cupo se lo doy hasta mañana.',
@@ -182,7 +182,7 @@ const PANEL: ScreenView = {
   button: '',
 }
 
-const RETIRO: ScreenView = {
+const PICKUP: ScreenView = {
   kind: 'web',
   app: 'Ruvel Capital',
   url: 'ruvelcapital.io',
@@ -209,7 +209,7 @@ const RETIRO: ScreenView = {
   fields: [],
 }
 
-const REGISTRO: ScreenView = {
+const REGISTRATION_VIEW: ScreenView = {
   kind: 'web',
   app: 'Navegador',
   url: 'supercias.gob.ec',
@@ -240,16 +240,16 @@ const REGISTRO: ScreenView = {
   fields: [],
 }
 
-const TRANSFERENCIA: ScreenView = {
+const TRANSFER: ScreenView = {
   kind: 'web',
-  app: IDENTIDAD_FICTICIA.banco,
+  app: IDENTITY_FAKE.banco,
   url: 'bancolitoral.ec',
   secure: true,
   brand: 'Transferir a terceros',
   title: 'Confirma la transferencia',
-  subtitle: `Desde ${CUENTA_FICTICIA}`,
+  subtitle: `Desde ${ACCOUNT_FAKE}`,
   datos: [
-    { etiqueta: 'Cuenta de destino', valor: CUENTA_PLATAFORMA, senal: 'cuenta' },
+    { etiqueta: 'Cuenta de destino', valor: ACCOUNT_PLATFORM, senal: 'cuenta' },
     { etiqueta: 'Concepto', valor: 'Plan Plata · inversión' },
     { etiqueta: 'Valor', valor: '$1.000,00' },
   ],
@@ -262,7 +262,7 @@ const TRANSFERENCIA: ScreenView = {
   fields: [],
 }
 
-const APPS: AppTelefono[] = [
+const APPS: PhoneApp[] = [
   { Icono: MessageCircle, texto: 'Mensajes', color: '#2f9e44', hilo: 'sms' },
   {
     Icono: TrendingUp,
@@ -273,7 +273,7 @@ const APPS: AppTelefono[] = [
   },
   {
     Icono: Wallet,
-    texto: IDENTIDAD_FICTICIA.banco,
+    texto: IDENTITY_FAKE.banco,
     color: '#155e75',
     goto: 'n5',
     label: 'Abrió la app del banco para transferir',
@@ -288,24 +288,24 @@ const APPS: AppTelefono[] = [
 
 export const STORY: Story<ScreenNode> = {
   n1: { kind: 'scene', view: CHAT },
-  n2: { kind: 'scene', view: PIDE_MAS },
-  n2b: { kind: 'scene', view: EXPLICA },
-  n3: { kind: 'scene', view: CUENTA },
-  n4: { kind: 'scene', view: SE_MOLESTA },
-  n5: { kind: 'scene', view: TRANSFERENCIA },
+  n2: { kind: 'scene', view: ASKS_MORE },
+  n2b: { kind: 'scene', view: EXPLAINS },
+  n3: { kind: 'scene', view: ACCOUNT },
+  n4: { kind: 'scene', view: GETS_UPSET },
+  n5: { kind: 'scene', view: TRANSFER },
   n6: { kind: 'scene', view: PANEL },
-  n6b: { kind: 'scene', view: REGISTRO },
-  n7: { kind: 'scene', view: RETIRO },
+  n6b: { kind: 'scene', view: REGISTRATION_VIEW },
+  n7: { kind: 'scene', view: PICKUP },
   e_invierte: {
     kind: 'bad',
-    view: TRANSFERENCIA,
+    view: TRANSFER,
     verdict: 'Caíste en la estafa',
     outcome:
       'Los $1.000 salieron y el panel los mostró creciendo durante tres semanas, hasta $1.390. Cuando quisiste retirar te pidieron el 8% de comisión de liberación por adelantado; si lo pagas, aparece otra condición, y después otra. Los $50 que te devolvieron al principio eran tuyos desde el primer momento: fue lo que costó comprarte para la segunda entrega. El grupo se cerró y el número dejó de existir.',
   },
   e_corta: {
     kind: 'good',
-    view: SE_MOLESTA,
+    view: GETS_UPSET,
     verdict: 'No caíste · cortaste a tiempo',
     outcome:
       'Te quedaste con tus $200 recuperados y no pusiste un dólar más. La plataforma cerró siete semanas después con varios cientos de personas dentro, la mayoría con dinero puesto justo por lo mismo que a ti te ofrecieron: el primer retiro había llegado. Lo que te sacó no fue mirar bien la pantalla, fue saber que una ganancia garantizada no existe.',
@@ -320,7 +320,7 @@ export const STORY: Story<ScreenNode> = {
   },
 }
 
-const SENALES: Senal[] = [
+const SIGNALS: Signal[] = [
   {
     id: 's1',
     targetId: 'garantiza',
@@ -367,9 +367,9 @@ const SENALES: Senal[] = [
 const RULE =
   'Regla de oro: <b>ninguna inversión garantiza una ganancia fija</b>, y quien te cobra por dejarte retirar tu dinero no lo tiene. Antes de poner un dólar, comprueba en el registro público si la empresa existe y si está autorizada a recibir dinero del público. Que el primer retiro llegue no prueba nada: eso es lo que cuesta la trampa.'
 
-const RESUMEN = 'Una plataforma garantiza 30% mensual, y tu primer retiro pequeño sí llegó.'
+const SUMMARY = 'Una plataforma garantiza 30% mensual, y tu primer retiro pequeño sí llegó.'
 
-const CONTEXTO: Contexto = {
+const CONTEXT: Context = {
   antes: (
     <>
       Un conocido te metió en un <strong>grupo de inversión</strong> por mensajería, donde la gente
@@ -384,14 +384,14 @@ const CONTEXTO: Contexto = {
   ),
 }
 
-function GananciaGarantizada() {
+function GuaranteedProfit() {
   return (
-    <StoryEscenario
+    <ScenarioStory
       escenarioId="estafa/ganancia-garantizada"
-      resumen={RESUMEN}
-      contexto={CONTEXTO}
+      resumen={SUMMARY}
+      contexto={CONTEXT}
       story={STORY}
-      senales={SENALES}
+      senales={SIGNALS}
       rule={RULE}
       restartLabel="↻ Repetir el escenario"
       accionesEnPantalla
@@ -413,4 +413,4 @@ function GananciaGarantizada() {
   )
 }
 
-export default GananciaGarantizada
+export default GuaranteedProfit

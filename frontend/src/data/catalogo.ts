@@ -10,9 +10,9 @@ import {
 } from "lucide-react";
 import { lazy, type ComponentType, type LazyExoticComponent } from "react";
 
-export type Naturaleza = "fraude" | "legitimo";
+export type Nature = "fraude" | "legitimo";
 
-export interface Seccion {
+export interface Section {
   id: string;
   titulo: string;
   /** Qué es la amenaza, en lenguaje de alguien que no es técnico. Basada en
@@ -23,7 +23,7 @@ export interface Seccion {
   Icono: LucideIcon;
 }
 
-interface EscenarioBase {
+interface BaseScenario {
   seccionId: string;
   escenarioId: string;
   /** Segmento público de la URL cuando conviene que sea más comprensible que
@@ -36,17 +36,17 @@ interface EscenarioBase {
   /** Sube en +1 al editar el guion, para no mezclar corridas de versiones
    *  distintas en el análisis. */
   version: number;
-  naturaleza: Naturaleza;
+  naturaleza: Nature;
   dificultad: 1 | 2 | 3 | 4 | 5;
   espeja: string | null;
   Component: LazyExoticComponent<ComponentType>;
 }
 
-export interface Escenario extends EscenarioBase {
+export interface Scenario extends BaseScenario {
   id: string;
 }
 
-export const SECCIONES: Seccion[] = [
+export const SECTIONS: Section[] = [
   {
     id: "phishing",
     titulo: "Phishing",
@@ -107,27 +107,27 @@ export const SECCIONES: Seccion[] = [
 
 // Función en vez de cuatro objetos casi idénticos, para que el detector de
 // duplicados de Sonar no los lea como el mismo bloque cuatro veces.
-function escenarioAsistentesIA(
-  escenarioId: string,
-  titulo: string,
-  descripcion: string,
-  dificultad: EscenarioBase['dificultad'],
+function createAIAssistantScenario(
+  scenarioId: string,
+  title: string,
+  description: string,
+  difficulty: BaseScenario['dificultad'],
   Component: LazyExoticComponent<ComponentType>,
-): EscenarioBase {
+): BaseScenario {
   return {
     seccionId: 'asistentes-ia',
-    escenarioId,
-    titulo,
-    descripcion,
+    escenarioId: scenarioId,
+    titulo: title,
+    descripcion: description,
     version: 1,
     naturaleza: 'legitimo',
-    dificultad,
+    dificultad: difficulty,
     espeja: null,
     Component,
   };
 }
 
-const BASE: EscenarioBase[] = [
+const BASE: BaseScenario[] = [
   {
     // Sustituye a cobro-dirigido: ambos eran "paga poco para recibir algo".
     // Dificultad 1: la señal decisiva no está en pantalla —se responde con
@@ -778,7 +778,7 @@ const BASE: EscenarioBase[] = [
     espeja: null,
     Component: lazy(() => import('../secciones/fisico/CodigoQRCafe')),
   },
-  escenarioAsistentesIA(
+  createAIAssistantScenario(
     'correo-datos-terceros',
     'Correo con datos de una compañera',
     'Le pides a una IA que redacte un correo a nombre de una compañera, con el nombre, la cédula y el correo de ella a la mano.',
@@ -787,21 +787,21 @@ const BASE: EscenarioBase[] = [
   ),
   // El id sigue siendo `correo-credenciales`, el que tuvo este hueco antes: es
   // la clave con la que están guardadas las corridas y no puede cambiar.
-  escenarioAsistentesIA(
+  createAIAssistantScenario(
     'correo-credenciales',
     'Hoja de vida pegada en una IA',
     'Le pides a una IA que mejore la hoja de vida de tu prima, y el documento trae su cédula, su fecha de nacimiento y su domicilio.',
     2,
     lazy(() => import('../secciones/asistentes-ia/HojaDeVida')),
   ),
-  escenarioAsistentesIA(
+  createAIAssistantScenario(
     'resumen-documento-interno',
     'Resumen de un informe interno',
     'Preparas un resumen de un informe con cifras sin publicar y un plan que la empresa todavía no comunicó.',
     3,
     lazy(() => import('../secciones/asistentes-ia/ResumenDocumentoInterno')),
   ),
-  escenarioAsistentesIA(
+  createAIAssistantScenario(
     'historial-cliente',
     'Responder a un cliente con su historial',
     'Una clienta reclama un cobro de más y tienes a la mano su número de cuenta, su saldo y su teléfono para redactar la respuesta.',
@@ -812,23 +812,23 @@ const BASE: EscenarioBase[] = [
 
 // El id "<seccion>/<escenario>" es la clave que se guarda en la base: no puede
 // cambiar una vez que un escenario tenga corridas registradas.
-export const ESCENARIOS: Escenario[] = BASE.map((escenario) => ({
-  ...escenario,
-  id: `${escenario.seccionId}/${escenario.escenarioId}`,
+export const SCENARIOS: Scenario[] = BASE.map((scenario) => ({
+  ...scenario,
+  id: `${scenario.seccionId}/${scenario.escenarioId}`,
 }));
 
-export function getSeccion(seccionId: string | undefined): Seccion | undefined {
-  return SECCIONES.find((seccion) => seccion.id === seccionId);
+export function getSection(sectionId: string | undefined): Section | undefined {
+  return SECTIONS.find((section) => section.id === sectionId);
 }
 
-export function escenariosDeSeccion(seccionId: string): Escenario[] {
-  return ESCENARIOS.filter((escenario) => escenario.seccionId === seccionId);
+export function getSectionScenarios(sectionId: string): Scenario[] {
+  return SCENARIOS.filter((scenario) => scenario.seccionId === sectionId);
 }
 
-export function getEscenario(id: string): Escenario | undefined {
-  return ESCENARIOS.find((escenario) => escenario.id === id);
+export function getScenario(id: string): Scenario | undefined {
+  return SCENARIOS.find((scenario) => scenario.id === id);
 }
 
-export function rutaEscenario(escenario: Escenario): string {
-  return `/seccion/${escenario.seccionId}/${escenario.ruta ?? escenario.escenarioId}`;
+export function getScenarioPath(scenario: Scenario): string {
+  return `/seccion/${scenario.seccionId}/${scenario.ruta ?? scenario.escenarioId}`;
 }

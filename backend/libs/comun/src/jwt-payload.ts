@@ -19,10 +19,10 @@ export interface RefreshTokenPayload {
 // Pase de un solo salto para el certificado: entrenamiento firma, identidad verifica.
 // Reutilizable en sus 5 minutos de vida (se gasta dos veces: emitir y descargar).
 // identidad exige que `sub` coincida con el access token, para que no sirva ajena.
-export interface AtestacionPayload {
+export interface AttestationPayload {
   sub: string;
   seq: number;
-  // Módulos que entrenamiento verificó aprobados (de UMBRALES): lo que el certificado
+  // Módulos que entrenamiento verificó aprobados (de THRESHOLDS): lo que el certificado
   // imprime y lo que decide si un recorrido mayor debe actualizar uno ya emitido.
   modulos: string[];
   // CORRECTOS sobre los 48 del entrenamiento; lo calcula y firma entrenamiento porque

@@ -1,81 +1,81 @@
-import { cifrar, descifrar, descifrarOpcional, huellaEmail } from './pii';
+import { encrypt, decrypt, decryptOptional, hashEmail } from './pii';
 
 // Clave de 32 bytes real (openssl rand -base64 32), fija para que las pruebas
 // sean deterministas — no es la clave de ningún entorno real.
-const CLAVE = 'Zm9vYmFyZm9vYmFyZm9vYmFyZm9vYmFyZm9vYmFyZm8=';
-const OTRA_CLAVE = 'YmFyZm9vYmFyZm9vYmFyZm9vYmFyZm9vYmFyZm9vYmE=';
+const PASSWORD = 'Zm9vYmFyZm9vYmFyZm9vYmFyZm9vYmFyZm9vYmFyZm8=';
+const OTHER_KEY = 'YmFyZm9vYmFyZm9vYmFyZm9vYmFyZm9vYmFyZm9vYmE=';
 
-describe('pii — cifrar/descifrar', () => {
+describe('pii — encrypt/decrypt', () => {
   it('descifra exactamente lo que cifró', () => {
-    const cifrado = cifrar('María Pérez', CLAVE);
-    expect(descifrar(cifrado, CLAVE)).toBe('María Pérez');
+    const encryptedValue = encrypt('María Pérez', PASSWORD);
+    expect(decrypt(encryptedValue, PASSWORD)).toBe('María Pérez');
   });
 
   it('dos cifrados del mismo texto no son iguales (IV aleatorio)', () => {
-    const a = cifrar('ana@correo.com', CLAVE);
-    const b = cifrar('ana@correo.com', CLAVE);
+    const a = encrypt('ana@correo.com', PASSWORD);
+    const b = encrypt('ana@correo.com', PASSWORD);
     expect(a).not.toBe(b);
-    expect(descifrar(a, CLAVE)).toBe('ana@correo.com');
-    expect(descifrar(b, CLAVE)).toBe('ana@correo.com');
+    expect(decrypt(a, PASSWORD)).toBe('ana@correo.com');
+    expect(decrypt(b, PASSWORD)).toBe('ana@correo.com');
   });
 
   it('el texto cifrado lleva el prefijo de versión', () => {
-    expect(cifrar('x', CLAVE)).toMatch(/^v1:/);
+    expect(encrypt('x', PASSWORD)).toMatch(/^v1:/);
   });
 
   it('un texto sin el prefijo se devuelve tal cual (compatibilidad con filas sin migrar)', () => {
-    expect(descifrar('María Pérez', CLAVE)).toBe('María Pérez');
-    expect(descifrar('', CLAVE)).toBe('');
+    expect(decrypt('María Pérez', PASSWORD)).toBe('María Pérez');
+    expect(decrypt('', PASSWORD)).toBe('');
   });
 
   it('descifrar con la clave equivocada falla en vez de devolver basura', () => {
-    const cifrado = cifrar('dato sensible', CLAVE);
-    expect(() => descifrar(cifrado, OTRA_CLAVE)).toThrow();
+    const encryptedValue = encrypt('dato sensible', PASSWORD);
+    expect(() => decrypt(encryptedValue, OTHER_KEY)).toThrow();
   });
 
   it('un texto cifrado alterado falla la verificación (autenticado, no solo confidencial)', () => {
-    const cifrado = cifrar('dato sensible', CLAVE);
-    const alterado = cifrado.slice(0, -4) + 'AAAA';
-    expect(() => descifrar(alterado, CLAVE)).toThrow();
+    const encryptedValue = encrypt('dato sensible', PASSWORD);
+    const tampered = encryptedValue.slice(0, -4) + 'AAAA';
+    expect(() => decrypt(tampered, PASSWORD)).toThrow();
   });
 
   it('rechaza una clave que no mide 32 bytes', () => {
-    expect(() => cifrar('x', 'Y29ydGE=')).toThrow(/32 bytes/);
+    expect(() => encrypt('x', 'Y29ydGE=')).toThrow(/32 bytes/);
   });
 
   it('acepta tildes, ñ y textos largos', () => {
-    const texto = 'Iñaki Muñoz-Sáenz, correo con acentos: ñáéíóú@dominio.ec';
-    expect(descifrar(cifrar(texto, CLAVE), CLAVE)).toBe(texto);
+    const text = 'Iñaki Muñoz-Sáenz, correo con acentos: ñáéíóú@dominio.ec';
+    expect(decrypt(encrypt(text, PASSWORD), PASSWORD)).toBe(text);
   });
 });
 
-describe('pii — descifrarOpcional', () => {
+describe('pii — decryptOptional', () => {
   it('devuelve null sin intentar descifrar', () => {
-    expect(descifrarOpcional(null, CLAVE)).toBeNull();
+    expect(decryptOptional(null, PASSWORD)).toBeNull();
   });
 
   it('descifra un valor no nulo normalmente', () => {
-    const cifrado = cifrar('Ana', CLAVE);
-    expect(descifrarOpcional(cifrado, CLAVE)).toBe('Ana');
+    const encryptedValue = encrypt('Ana', PASSWORD);
+    expect(decryptOptional(encryptedValue, PASSWORD)).toBe('Ana');
   });
 });
 
 describe('pii — huellaEmail', () => {
   it('es determinista: el mismo correo da siempre la misma huella', () => {
-    expect(huellaEmail('ana@correo.com', 'pepper')).toBe(
-      huellaEmail('ana@correo.com', 'pepper'),
+    expect(hashEmail('ana@correo.com', 'pepper')).toBe(
+      hashEmail('ana@correo.com', 'pepper'),
     );
   });
 
   it('un pepper distinto da una huella distinta', () => {
-    expect(huellaEmail('ana@correo.com', 'pepper-a')).not.toBe(
-      huellaEmail('ana@correo.com', 'pepper-b'),
+    expect(hashEmail('ana@correo.com', 'pepper-a')).not.toBe(
+      hashEmail('ana@correo.com', 'pepper-b'),
     );
   });
 
   it('correos distintos dan huellas distintas', () => {
-    expect(huellaEmail('ana@correo.com', 'pepper')).not.toBe(
-      huellaEmail('otra@correo.com', 'pepper'),
+    expect(hashEmail('ana@correo.com', 'pepper')).not.toBe(
+      hashEmail('otra@correo.com', 'pepper'),
     );
   });
 });

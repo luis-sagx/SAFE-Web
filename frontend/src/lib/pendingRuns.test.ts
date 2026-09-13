@@ -6,8 +6,8 @@ const { createRunMock } = vi.hoisted(() => ({ createRunMock: vi.fn() }))
 const originalLocks = Object.getOwnPropertyDescriptor(navigator, 'locks')
 
 vi.mock('./api', async () => {
-  const actual = await vi.importActual<typeof import('./api')>('./api')
-  return { ...actual, createRun: createRunMock }
+  const current = await vi.importActual<typeof import('./api')>('./api')
+  return { ...current, createRun: createRunMock }
 })
 
 function run(scenarioId: string): RunPayload {

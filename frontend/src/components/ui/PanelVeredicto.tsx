@@ -1,13 +1,13 @@
 import { useContext, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
-import AccionesFinal from './AccionesFinal'
-import { RepasoVistoContext } from './repasoVisto'
-import EtiquetaAprobacion from './EtiquetaAprobacion'
+import FinalActions from './AccionesFinal'
+import { ViewedReviewContext } from './repasoVisto'
+import ApprovalLabel from './EtiquetaAprobacion'
 import type { StoryNode } from '../../hooks/useStoryEngine'
 import type { RunStatus } from '../../hooks/useScenarioRun'
 import { outcomeFromKind } from '../../hooks/useScenarioRun'
 
-export interface Senal {
+export interface Signal {
   id: string
   /** Lleva negritas <b>; contenido fijo del código, nunca de un usuario. */
   texto: string
@@ -18,67 +18,67 @@ export interface Senal {
   pantalla?: string
 }
 
-interface PanelVeredictoProps {
+interface VerdictPanelProps {
   escenarioId: string
   node: StoryNode
-  senales: Senal[]
+  senales: Signal[]
   regla: string
   /** @deprecated Se conserva por compatibilidad con escenarios existentes. */
   restartLabel?: string
   /** @deprecated La repetición ahora se inicia a nivel de módulo. */
   onRestart?: () => void
   contenedorId: string
-  onPantalla?: (pantallaId: string | undefined) => void
+  onPantalla?: (screenId: string | undefined) => void
   /** Si la corrida llegó al servidor; sin esto una corrida encolada por
    *  falta de red se veía igual que una guardada. */
   estadoGuardado?: RunStatus
 }
 
-const CLASE_RESALTADA = 'senal-resaltada'
-function PanelVeredicto({
-  escenarioId,
+const HIGHLIGHTED_CLASS = 'senal-resaltada'
+function VerdictPanel({
+  escenarioId: scenarioId,
   node,
-  senales,
-  regla,
+  senales: signals,
+  regla: rule,
   restartLabel,
   onRestart,
-  contenedorId,
-  onPantalla,
-  estadoGuardado,
-}: PanelVeredictoProps) {
-  const haySenales = senales.length > 0
+  contenedorId: containerId,
+  onPantalla: onScreen,
+  estadoGuardado: savedStatus,
+}: VerdictPanelProps) {
+  const hasSignals = signals.length > 0
 
   // -1 = veredicto, 0..N-1 = viendo esa señal, N = cierre. Sin señales
   // arranca ya en cierre para que siempre haya un botón que avance algo.
-  const [paso, setPaso] = useState(haySenales ? -1 : 0)
+  const [step, setStep] = useState(hasSignals ? -1 : 0)
 
   // Para reservar el alto del recorrido; se compara sin <b>, que no ocupa pantalla.
-  const largo = (texto: string) => texto.replace(/<[^>]+>/g, '').length
-  const masLarga = senales.reduce(
-    (mayor, senal) => (largo(senal.texto) > largo(mayor) ? senal.texto : mayor),
+  const length = (text: string) => text.replace(/<[^>]+>/g, '').length
+  const longest = signals.reduce(
+    (greater, signal) => (length(signal.texto) > length(greater) ? signal.texto : greater),
     '',
   )
 
-  const enVeredicto = paso === -1
-  const enSenal = haySenales && paso >= 0 && paso < senales.length
-  const enCierre = !enVeredicto && !enSenal
+  const showingVerdict = step === -1
+  const showingSignal = hasSignals && step >= 0 && step < signals.length
+  const completing = !showingVerdict && !showingSignal
 
-  const primerBotonRef = useRef<HTMLButtonElement>(null)
+  const firstButtonRef = useRef<HTMLButtonElement>(null)
 
   useEffect(() => {
-    primerBotonRef.current?.focus()
+    firstButtonRef.current?.focus()
   }, [])
 
   // Avisa al layout cuando no queda repaso pendiente para que "Salir" no advierta nada.
-  const avisarRepasoVisto = useContext(RepasoVistoContext)
+  const markReviewAsViewed = useContext(ViewedReviewContext)
   useEffect(() => {
-    if (enCierre) avisarRepasoVisto?.(true)
-  }, [enCierre, avisarRepasoVisto])
+    if (completing) markReviewAsViewed?.(true)
+  }, [completing, markReviewAsViewed])
 
   useEffect(() => {
-    const id = `run-status-${escenarioId}`
+    const id = `run-status-${scenarioId}`
 
-    if (estadoGuardado === 'queued') {
+    if (savedStatus === 'queued') {
       toast.warning('No pudimos enviar el intento.', {
         id,
         description:
@@ -86,53 +86,53 @@ function PanelVeredicto({
       })
     }
 
-    if (estadoGuardado === 'failed') {
+    if (savedStatus === 'failed') {
       toast.error('No se pudo registrar este intento.', {
         id,
         description: 'El intento fue rechazado y no volverá a enviarse automáticamente.',
       })
     }
-  }, [escenarioId, estadoGuardado])
+  }, [scenarioId, savedStatus])
 
   useEffect(() => {
-    onPantalla?.(enSenal ? senales[paso]?.pantalla : undefined)
-  }, [enSenal, paso, senales, onPantalla])
+    onScreen?.(showingSignal ? signals[step]?.pantalla : undefined)
+  }, [showingSignal, step, signals, onScreen])
 
   useEffect(() => {
-    if (!enSenal) {
+    if (!showingSignal) {
       return
     }
 
-    const targetId = senales[paso]?.targetId
+    const targetId = signals[step]?.targetId
     if (!targetId) {
       return
     }
 
-    let resaltado: HTMLElement | null = null
+    let highlighted: HTMLElement | null = null
 
     // Reintenta un cuadro después: la pantalla puede seguir montándose cuando corre este efecto.
-    function resaltar() {
-      const contenedor = document.getElementById(contenedorId)
-      const elemento = contenedor?.querySelector<HTMLElement>(`[data-signal="${targetId}"]`)
-      if (!elemento) {
+    function highlight() {
+      const container = document.getElementById(containerId)
+      const element = container?.querySelector<HTMLElement>(`[data-signal="${targetId}"]`)
+      if (!element) {
         return false
       }
-      resaltado = elemento
-      elemento.classList.add(CLASE_RESALTADA)
-      elemento.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      highlighted = element
+      element.classList.add(HIGHLIGHTED_CLASS)
+      element.scrollIntoView({ behavior: 'smooth', block: 'center' })
       return true
     }
 
-    const id = resaltar() ? 0 : window.setTimeout(resaltar, 60)
+    const id = highlight() ? 0 : window.setTimeout(highlight, 60)
 
     return () => {
       if (id) window.clearTimeout(id)
-      resaltado?.classList.remove(CLASE_RESALTADA)
+      highlighted?.classList.remove(HIGHLIGHTED_CLASS)
     }
-  }, [enSenal, paso, senales, contenedorId])
+  }, [showingSignal, step, signals, containerId])
 
   // 'partial' no es un fallo: no puede verse igual que haber entregado la clave.
-  const tono =
+  const tone =
     node.kind === 'good'
       ? { borde: 'border-success/40', fondo: 'bg-success', tinta: 'text-on-success', icono: '✓' }
       : node.kind === 'partial'
@@ -140,32 +140,32 @@ function PanelVeredicto({
         : { borde: 'border-danger/40', fondo: 'bg-danger', tinta: 'text-on-danger', icono: '✕' }
 
   return (
-    <div className={`rounded-lg border bg-surface p-4 ${tono.borde}`}>
+    <div className={`rounded-lg border bg-surface p-4 ${tone.borde}`}>
       <p className="flex items-center gap-2 text-lg font-semibold text-ink">
         <span
-          className={`flex size-6 shrink-0 items-center justify-center rounded-full text-sm ${tono.tinta} ${tono.fondo}`}
+          className={`flex size-6 shrink-0 items-center justify-center rounded-full text-sm ${tone.tinta} ${tone.fondo}`}
           aria-hidden
         >
-          {tono.icono}
+          {tone.icono}
         </span>
         {node.verdict}
       </p>
       <p className="mt-2 text-base leading-relaxed text-body">{node.outcome}</p>
 
-      <EtiquetaAprobacion node={node} />
+      <ApprovalLabel node={node} />
 
-      {enVeredicto && (
+      {showingVerdict && (
         <button
-          ref={primerBotonRef}
+          ref={firstButtonRef}
           type="button"
           className="mt-5 min-h-12 w-full rounded-md border border-hairline-strong bg-surface px-4 py-3 text-lg font-medium text-ink transition hover:bg-canvas-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link"
-          onClick={() => setPaso(0)}
+          onClick={() => setStep(0)}
         >
           Ver las señales
         </button>
       )}
 
-      {enSenal && (
+      {showingSignal && (
         <div
           role="region"
           aria-label="Repaso de señales"
@@ -173,12 +173,12 @@ function PanelVeredicto({
         >
           <div className="flex items-center justify-between">
             <h4 className="text-base font-semibold text-ink">
-              Señal {paso + 1} de {senales.length}
+              Señal {step + 1} de {signals.length}
             </h4>
             <button
               type="button"
               className="text-base font-medium text-link underline"
-              onClick={() => setPaso(senales.length)}
+              onClick={() => setStep(signals.length)}
             >
               Saltar
             </button>
@@ -189,11 +189,11 @@ function PanelVeredicto({
             <p
               aria-hidden
               className="invisible text-lg leading-relaxed"
-              dangerouslySetInnerHTML={{ __html: masLarga }}
+              dangerouslySetInnerHTML={{ __html: longest }}
             />
             <p
               className="absolute inset-0 text-lg leading-relaxed text-signal-body"
-              dangerouslySetInnerHTML={{ __html: senales[paso]?.texto ?? '' }}
+              dangerouslySetInnerHTML={{ __html: signals[step]?.texto ?? '' }}
             />
           </div>
           {/* "Anterior" se renderiza siempre (deshabilitado en el primer paso)
@@ -201,16 +201,16 @@ function PanelVeredicto({
           <div className="mt-4 flex gap-2">
             <button
               type="button"
-              disabled={paso === 0}
+              disabled={step === 0}
               className="h-12 flex-1 rounded-md border border-hairline-strong bg-surface text-base font-medium text-ink transition hover:bg-canvas-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link disabled:cursor-default disabled:border-hairline disabled:text-muted-soft disabled:hover:bg-surface"
-              onClick={() => setPaso((p) => p - 1)}
+              onClick={() => setStep((p) => p - 1)}
             >
               ← Anterior
             </button>
             <button
               type="button"
               className="h-12 flex-1 rounded-md bg-primary text-base font-medium text-on-primary transition hover:bg-primary-active focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link"
-              onClick={() => setPaso((p) => p + 1)}
+              onClick={() => setStep((p) => p + 1)}
             >
               Siguiente →
             </button>
@@ -218,21 +218,21 @@ function PanelVeredicto({
         </div>
       )}
 
-      {enCierre && (
+      {completing && (
         <>
           <div className="mt-5 rounded-md bg-canvas-soft p-4">
             <p
               className="text-lg leading-relaxed text-ink"
-              dangerouslySetInnerHTML={{ __html: regla }}
+              dangerouslySetInnerHTML={{ __html: rule }}
             />
           </div>
 
-          <AccionesFinal
-            escenarioId={escenarioId}
+          <FinalActions
+            escenarioId={scenarioId}
             outcome={node.resultado ?? outcomeFromKind(node.kind)}
             onRestart={onRestart}
             restartLabel={restartLabel}
-            autoFocus={!haySenales}
+            autoFocus={!hasSignals}
           />
         </>
       )}
@@ -240,4 +240,4 @@ function PanelVeredicto({
   )
 }
 
-export default PanelVeredicto
+export default VerdictPanel

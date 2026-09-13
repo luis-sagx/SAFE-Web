@@ -10,31 +10,31 @@ import {
   Trash2,
 } from 'lucide-react'
 import { useState } from 'react'
-import EscenarioLayout from '../../components/EscenarioLayout'
-import type { Contexto } from '../../components/ui/ContextoEscenario'
-import Instrucciones from '../../components/ui/Instrucciones'
+import ScenarioLayout from '../../components/EscenarioLayout'
+import type { Context } from '../../components/ui/ContextoEscenario'
+import Instructions from '../../components/ui/Instrucciones'
 import {
-  CuerpoCorreo,
-  type AccionCorreo,
-  type CarpetaCorreo,
+  EmailBody,
+  type EmailAction,
+  type EmailFolder,
 } from '../../components/ui/DesktopChrome'
-import { carpetasCorreo } from '../../components/ui/carpetasCorreo'
-import { AvisoSitio, CabeceraSitio, ENLACES_PIE, PieSitio } from '../../components/ui/armazonSitio'
+import { createEmailFolders } from '../../components/ui/carpetasCorreo'
+import { SiteNotice, SiteHeader, FOOTER_LINKS, SiteFooter } from '../../components/ui/armazonSitio'
 import styles from '../../components/ui/DeviceScreen.module.css'
-import { IDENTIDAD_FICTICIA } from '../../lib/identidadFicticia'
+import { IDENTITY_FAKE } from '../../lib/identidadFicticia'
 import {
-  BotonHotspot,
-  EnlaceHotspot,
-  evitarNavegacion,
-  manejarClicHotspot,
+  HotspotButton,
+  HotspotLink,
+  preventNavigation,
+  handleHotspotClick,
 } from '../../components/ui/interactivo'
 import {
-  Navegador,
-  type MarcadorNavegador,
-  type PestanaConfig,
+  Browser,
+  type BrowserBookmark,
+  type TabConfig,
 } from '../../components/ui/Navegador'
-import PanelVeredicto, { type Senal } from '../../components/ui/PanelVeredicto'
-import { formatoHora } from '../../hooks/useRelojDelSistema'
+import VerdictPanel, { type Signal } from '../../components/ui/PanelVeredicto'
+import { formatTime } from '../../hooks/useRelojDelSistema'
 import { useStoryEngine, type Story, type StoryNode } from '../../hooks/useStoryEngine'
 
 // Primer escenario interactivo: el participante actúa directamente sobre el correo y la página
@@ -55,7 +55,7 @@ const STORY: Story<StoryNode> = {
   e_datos: {
     kind: 'bad',
     verdict: 'Caíste en la trampa',
-    outcome: `Entregaste tu RUC ${IDENTIDAD_FICTICIA.ruc} y tu clave ${IDENTIDAD_FICTICIA.clave} en un sitio que no es del SRI. Con esos datos pueden emitir comprobantes a tu nombre y ver tu información tributaria.`,
+    outcome: `Entregaste tu RUC ${IDENTITY_FAKE.ruc} y tu clave ${IDENTITY_FAKE.clave} en un sitio que no es del SRI. Con esos datos pueden emitir comprobantes a tu nombre y ver tu información tributaria.`,
   },
 
   // Los cinco finales de la barra de acciones del cliente. Ninguno entrega la
@@ -88,7 +88,7 @@ const STORY: Story<StoryNode> = {
 }
 
 // Todas llevan a un final: en la barra de un cliente de correo no puede haber botones de adorno.
-const ACCIONES: AccionCorreo[] = [
+const ACTIONS: EmailAction[] = [
   {
     Icono: Reply,
     etiqueta: 'Responder',
@@ -119,13 +119,13 @@ const ACCIONES: AccionCorreo[] = [
   },
 ]
 
-const ASUNTO = 'Factura electrónica pendiente de validación'
-const REMITENTE_NOMBRE = 'SRI · Facturación Electrónica'
-const DIRECCION = 'notificaciones@sri-facturacion-ec.com'
+const SUBJECT = 'Factura electrónica pendiente de validación'
+const SENDER_NAME = 'SRI · Facturación Electrónica'
+const ADDRESS = 'notificaciones@sri-facturacion-ec.com'
 
 // Cada señal apunta a su data-signal en una de las dos pantallas; si esa
 // pantalla no es la que llevó al final, el recorrido igual muestra el texto sin resaltar.
-const SENALES: Senal[] = [
+const SIGNALS: Signal[] = [
   {
     id: 'dominio',
     pantalla: 'n1',
@@ -180,9 +180,9 @@ const SENALES: Senal[] = [
 const RULE =
   'Regla de oro: ninguna entidad pública te pide tu clave por correo. Si un mensaje dice que tienes algo pendiente, <b>entra al portal oficial escribiendo tú la dirección</b>, nunca por el enlace del correo.'
 
-const RESUMEN = 'Un correo dice que tienes una factura electrónica pendiente de validar.'
+const SUMMARY = 'Un correo dice que tienes una factura electrónica pendiente de validar.'
 
-const CONTEXTO: Contexto = {
+const CONTEXT: Context = {
   antes: (
     <>
       Emites facturas de vez en cuando, así que un aviso del <strong>SRI</strong> no te sorprende.
@@ -197,7 +197,7 @@ const CONTEXTO: Contexto = {
 }
 
 // Solo mecánica: el bloque de decisión ya explica la historia dentro del escenario.
-const NOTA = (
+const NOTE = (
   <>
     <p>
       Vas a ver tu computador con el correo abierto. Puedes actuar sobre la pantalla como lo harías
@@ -212,15 +212,15 @@ const NOTA = (
 
 // Se calcula a partir del ahora porque la barra de tareas muestra la hora real y avanza:
 // con una hora fija el mensaje quedaría fechado en un momento que el reloj desmiente.
-const MINUTOS_DE_ANTIGUEDAD = 5
+const MINUTES_OF_AGE = 5
 
-function horaDeLlegada(): string {
-  const llegada = new Date(Date.now() - MINUTOS_DE_ANTIGUEDAD * 60_000)
-  return `hoy ${formatoHora(llegada)}`
+function getArrivalTime(): string {
+  const arrival = new Date(Date.now() - MINUTES_OF_AGE * 60_000)
+  return `hoy ${formatTime(arrival)}`
 }
 
 // La dirección es la señal principal del escenario, así que vive junto al nodo, no en cada componente.
-const PESTANAS: Record<string, PestanaConfig> = {
+const TABS: Record<string, TabConfig> = {
   n1: { titulo: 'Correo', url: 'https://correo.safeweb.com/u/0/#recibidos', segura: true },
   n2: {
     titulo: 'Validación de comprobante',
@@ -243,7 +243,7 @@ const PESTANAS: Record<string, PestanaConfig> = {
   },
 }
 
-const MARCADORES: MarcadorNavegador[] = [
+const MARKERS: BrowserBookmark[] = [
   { Icono: Landmark, texto: 'Banco del Litoral' },
   {
     Icono: Building2,
@@ -254,20 +254,20 @@ const MARCADORES: MarcadorNavegador[] = [
   { Icono: Newspaper, texto: 'El Comercio' },
 ]
 
-function ContenidoCorreo({ recibido, carpetas }: { recibido: string; carpetas: CarpetaCorreo[] }) {
+function EmailContent({ recibido: received, carpetas: folders }: { recibido: string; carpetas: EmailFolder[] }) {
   return (
-    <CuerpoCorreo
-      acciones={ACCIONES}
-      carpetas={carpetas}
-      asunto={ASUNTO}
+    <EmailBody
+      acciones={ACTIONS}
+      carpetas={folders}
+      asunto={SUBJECT}
       remitente={{
-        nombre: REMITENTE_NOMBRE,
-        direccion: DIRECCION,
+        nombre: SENDER_NAME,
+        direccion: ADDRESS,
         etiqueta: 'Externo',
         senalDireccion: 'remitente',
         senalEtiqueta: 'externo',
       }}
-      recibido={recibido}
+      recibido={received}
       marca={{
         nombre: 'Servicio de Rentas Internas',
         detalle: 'Facturación electrónica',
@@ -275,7 +275,7 @@ function ContenidoCorreo({ recibido, carpetas }: { recibido: string; carpetas: C
         variante: 'institucional',
       }}
       adjunto={
-        <BotonHotspot
+        <HotspotButton
           goto="e_adjunto"
           label="Descargó el archivo adjunto"
           signalId="adjunto"
@@ -290,7 +290,7 @@ function ContenidoCorreo({ recibido, carpetas }: { recibido: string; carpetas: C
             {/* 12 KB: un script pesa unos pocos KB, no lo que pesa un PDF real — señal implícita. */}
             <span className={styles.attachmentPeso}>12 KB</span>
           </span>
-        </BotonHotspot>
+        </HotspotButton>
       }
       pie={
         <>
@@ -313,25 +313,25 @@ function ContenidoCorreo({ recibido, carpetas }: { recibido: string; carpetas: C
         , su comprobante será anulado y se aplicará una multa administrativa.
       </p>
       <p>
-        <EnlaceHotspot
+        <HotspotLink
           goto="n2"
           label="Abrió el enlace para validar la factura"
           href="http://sri-facturacion-ec.com/validar-ruc" // NOSONAR: URL insegura intencional que el participante debe detectar.
           className="cta"
         >
           Validar mi factura ahora
-        </EnlaceHotspot>
+        </HotspotLink>
       </p>
       <p className="fine">Este mensaje es automático, por favor no responda.</p>
-    </CuerpoCorreo>
+    </EmailBody>
   )
 }
 
-function ContenidoPortalFalso() {
+function FakePortalContent() {
   return (
     <>
       <div className={styles.page}>
-        <CabeceraSitio
+        <SiteHeader
           marca="Servicio de Rentas"
           menu={['Comprobantes', 'Declaraciones', 'Trámites', 'Ayuda']}
         />
@@ -346,7 +346,7 @@ function ContenidoPortalFalso() {
             {/* No editable y con un RUC que no es el de nadie: el participante nunca escribe credenciales reales. */}
             <span className={styles.input}>
               <span className="sr-only">Tu RUC, ya completado: </span>
-              {' '}{IDENTIDAD_FICTICIA.ruc}
+              {' '}{IDENTITY_FAKE.ruc}
             </span>
           </fieldset>
           <fieldset className={styles.field} data-signal="campo-clave">
@@ -356,23 +356,23 @@ function ContenidoPortalFalso() {
               {' '}••••••••
             </span>
           </fieldset>
-          <BotonHotspot
+          <HotspotButton
             goto="e_datos"
             label="Ingresó su RUC y su clave para liberar la factura"
             className={styles.submit}
           >
             Validar factura
-          </BotonHotspot>
+          </HotspotButton>
         </div>
 
-        <AvisoSitio>
+        <SiteNotice>
           El comprobante quedará habilitado en un plazo máximo de 24 horas tras la validación. No
           comparta sus credenciales con terceros.
-        </AvisoSitio>
+        </SiteNotice>
 
-        <PieSitio
+        <SiteFooter
           texto="Servicio de Rentas Internas · República del Ecuador"
-          enlaces={ENLACES_PIE}
+          enlaces={FOOTER_LINKS}
         />
       </div>
     </>
@@ -381,10 +381,10 @@ function ContenidoPortalFalso() {
 
 // No dice cuáles son los puntos accionables: señalarlos borraría lo que se mide
 // (si la persona reconoce sola el anzuelo). Quien se atasca tiene la pista opt-in.
-function DecisionEnCurso({
-  fallo,
-  enPortal,
-  enPortalReal,
+function PendingDecision({
+  fallo: failure,
+  enPortal: onPortal,
+  enPortalReal: onRealPortal,
 }: {
   fallo: boolean
   enPortal: boolean
@@ -393,8 +393,8 @@ function DecisionEnCurso({
   return (
     <div className="grid gap-3">
       <p className="text-lg font-semibold text-ink">¿Qué haces?</p>
-      <Instrucciones
-        fallo={fallo}
+      <Instructions
+        fallo={failure}
         pista={
           <p>
             Tienes tres caminos posibles: hacer lo que el correo te pide, abrir lo que trae adjunto,
@@ -408,7 +408,7 @@ function DecisionEnCurso({
           <strong>cualquier parte de ella</strong>, incluida la barra de abajo. Antes de tocar un
           enlace, mantén el cursor encima para ver a dónde lleva.
         </p>
-        {enPortalReal && (
+        {onRealPortal && (
           <p className="rounded-md border border-hairline-strong bg-canvas-soft px-3 py-2 text-base leading-relaxed text-body">
             Este es el portal del SRI de verdad, abierto por ti.{' '}
             <strong className="text-ink">No hay ninguna factura pendiente</strong>, así que el
@@ -417,7 +417,7 @@ function DecisionEnCurso({
         )}
 
         {/* Va aquí y no en la página: una página de phishing real jamás avisaría de qué son sus campos. */}
-        {enPortal && (
+        {onPortal && (
           <p className="rounded-md border border-hairline-strong bg-canvas-soft px-3 py-2 text-base leading-relaxed text-body">
             El formulario ya aparece con{' '}
             <strong className="text-ink">tu RUC y tu clave escritos</strong>. Es así para no pedirte
@@ -436,24 +436,24 @@ function DecisionEnCurso({
             decide nada.
           </p>
         </details>
-      </Instrucciones>
+      </Instructions>
     </div>
   )
 }
 
 // El portal verdadero: existe para que el camino acertado se vea y no solo se cuente,
 // en contraste con la página falsa (dominio real, sesión iniciada, sin formulario de clave).
-function ContenidoPortalReal() {
+function RealPortalContent() {
   return (
     <>
       <div className={styles.page}>
-        <CabeceraSitio
+        <SiteHeader
           marca="SRI · Servicio de Rentas Internas"
           menu={['Comprobantes', 'Declaraciones', 'Trámites', 'Ayuda']}
         />
         <h2 className={styles.pageTitle}>Comprobantes electrónicos</h2>
         <p className={styles.portalSesion}>
-          Sesión iniciada · RUC {IDENTIDAD_FICTICIA.ruc} · último ingreso hoy
+          Sesión iniciada · RUC {IDENTITY_FAKE.ruc} · último ingreso hoy
         </p>
 
         <table className={styles.portalTabla}>
@@ -481,129 +481,129 @@ function ContenidoPortalReal() {
           </span>
         </div>
 
-        <PieSitio
+        <SiteFooter
           texto="Servicio de Rentas Internas · República del Ecuador"
-          enlaces={ENLACES_PIE}
+          enlaces={FOOTER_LINKS}
         />
       </div>
     </>
   )
 }
 
-function FacturaSri() {
+function SriInvoice() {
   const engine = useStoryEngine(STORY, 'n1', 'phishing/factura-sri')
 
   // El nodo final no es una pantalla, sino la consecuencia de una; se guarda su
   // id (no una lista cerrada de valores) para que el repaso tenga sobre qué resaltar.
-  const [pantallaActual, setPantallaActual] = useState('n1')
+  const [currentScreen, setCurrentScreen] = useState('n1')
   // Se enciende con el primer clic en el vacío y ya no se apaga.
-  const [tocoEnVacio, setTocoEnVacio] = useState(false)
+  const [clickedEmptySpace, setClickedEmptySpace] = useState(false)
   // Se calcula una vez al montar, no en cada render, o el correo "rejuvenecería" con el reloj.
-  const [recibido, setRecibido] = useState(horaDeLlegada)
-  const [pestanas, setPestanas] = useState(['n1'])
+  const [received, setReceived] = useState(getArrivalTime)
+  const [tabs, setTabs] = useState(['n1'])
   // Durante el repaso el mensaje vuelve a Recibidos: Spam/Papelera dejaban la
   // bandeja vacía y sin nada que señalar.
-  const [repasando, setRepasando] = useState(false)
+  const [reviewing, setReviewing] = useState(false)
 
-  function elegir(goto: string, label?: string) {
+  function choose(goto: string, label?: string) {
     if (engine.isEnding) {
       return
     }
     engine.choose(goto, label)
     if (STORY[goto]?.kind === 'scene') {
-      setPantallaActual(goto)
-      setPestanas((abiertas) => (abiertas.includes(goto) ? abiertas : [...abiertas, goto]))
+      setCurrentScreen(goto)
+      setTabs((open) => (open.includes(goto) ? open : [...open, goto]))
     }
   }
 
-  function reiniciar() {
+  function restart() {
     engine.restart()
-    setPantallaActual('n1')
-    setPestanas(['n1'])
-    setRepasando(false)
-    setTocoEnVacio(false)
+    setCurrentScreen('n1')
+    setTabs(['n1'])
+    setReviewing(false)
+    setClickedEmptySpace(false)
     // Al repetir, el correo vuelve a acabar de llegar. Conservar la hora del
     // intento anterior dejaría un mensaje de hace media hora en una bandeja
     // cuyo reloj ya avanzó.
-    setRecibido(horaDeLlegada())
+    setReceived(getArrivalTime())
   }
 
   const onHotspot = (event: React.MouseEvent) => {
-    evitarNavegacion(event)
+    preventNavigation(event)
 
-    const cerrada = (event.target as HTMLElement).closest<HTMLElement>('[data-cierra]')?.dataset
+    const closed = (event.target as HTMLElement).closest<HTMLElement>('[data-cierra]')?.dataset
       .cierra
-    if (cerrada) {
-      const quedan = pestanas.filter((id) => id !== cerrada)
-      setPestanas(quedan)
+    if (closed) {
+      const remaining = tabs.filter((id) => id !== closed)
+      setTabs(remaining)
       // issue #26: con el escenario terminado `elegir` no toca la pantalla, así que sin
       // esto la pestaña cerrada seguía a la vista aunque ya no estuviera en la barra.
-      if (cerrada === pantallaActual) setPantallaActual(quedan.at(-1) ?? 'n1')
+      if (closed === currentScreen) setCurrentScreen(remaining.at(-1) ?? 'n1')
     }
 
-    if (!manejarClicHotspot(event, elegir) && !engine.isEnding) {
-      setTocoEnVacio(true)
+    if (!handleHotspotClick(event, choose) && !engine.isEnding) {
+      setClickedEmptySpace(true)
     }
   }
 
   // Importa en el repaso: las señales llevan a pantallas cerradas o nunca abiertas,
   // y sin esto se explicaba el portal con la pestaña del correo marcada como activa.
-  const abiertas = pestanas.includes(pantallaActual) ? pestanas : [...pestanas, pantallaActual]
+  const open = tabs.includes(currentScreen) ? tabs : [...tabs, currentScreen]
 
-  const pantalla = (
-    <Navegador
-      pestanas={PESTANAS}
-      abiertas={abiertas}
-      activa={pantallaActual}
-      marcadores={MARCADORES}
+  const screen = (
+    <Browser
+      pestanas={TABS}
+      abiertas={open}
+      activa={currentScreen}
+      marcadores={MARKERS}
       onHotspot={onHotspot}
     >
-      {pantallaActual === 'n1' ? (
-        <ContenidoCorreo
-          recibido={recibido}
-          carpetas={carpetasCorreo(
-            { nombre: REMITENTE_NOMBRE, direccion: DIRECCION, asunto: ASUNTO },
-            engine.isEnding && !repasando ? engine.current : undefined,
+      {currentScreen === 'n1' ? (
+        <EmailContent
+          recibido={received}
+          carpetas={createEmailFolders(
+            { nombre: SENDER_NAME, direccion: ADDRESS, asunto: SUBJECT },
+            engine.isEnding && !reviewing ? engine.current : undefined,
           )}
         />
-      ) : pantallaActual === 'n2' ? (
-        <ContenidoPortalFalso />
+      ) : currentScreen === 'n2' ? (
+        <FakePortalContent />
       ) : (
-        <ContenidoPortalReal />
+        <RealPortalContent />
       )}
-    </Navegador>
+    </Browser>
   )
 
   const decision = engine.isEnding ? (
-    <PanelVeredicto
+    <VerdictPanel
       estadoGuardado={engine.runStatus}
       escenarioId="phishing/factura-sri"
       node={engine.node}
-      senales={SENALES}
+      senales={SIGNALS}
       regla={RULE}
       restartLabel="↻ Repetir el escenario"
-      onRestart={reiniciar}
+      onRestart={restart}
       contenedorId="pantalla-escenario"
       onPantalla={(id) => {
-        setRepasando(Boolean(id))
-        if (id) setPantallaActual(id)
+        setReviewing(Boolean(id))
+        if (id) setCurrentScreen(id)
       }}
     />
   ) : (
-    <DecisionEnCurso
-      fallo={tocoEnVacio}
-      enPortal={pantallaActual === 'n2'}
-      enPortalReal={pantallaActual.startsWith('n3')}
+    <PendingDecision
+      fallo={clickedEmptySpace}
+      enPortal={currentScreen === 'n2'}
+      enPortalReal={currentScreen.startsWith('n3')}
     />
   )
 
   return (
-    <EscenarioLayout
+    <ScenarioLayout
       escenarioId="phishing/factura-sri"
-      resumen={RESUMEN}
-      contexto={CONTEXTO}
-      nota={NOTA}
-      pantalla={pantalla}
+      resumen={SUMMARY}
+      contexto={CONTEXT}
+      nota={NOTE}
+      pantalla={screen}
       identidad={['ruc', 'clave']}
       decision={decision}
       resultado={engine.resultado}
@@ -613,4 +613,4 @@ function FacturaSri() {
   )
 }
 
-export default FacturaSri
+export default SriInvoice

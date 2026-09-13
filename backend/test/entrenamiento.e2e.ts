@@ -2,11 +2,11 @@ import { INestApplication } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Test } from '@nestjs/testing';
 import { ThrottlerStorage } from '@nestjs/throttler';
-import { configurarApp, type JwtPayload } from '@comun';
+import { configureApp, type JwtPayload } from '@comun';
 import { AppModule } from '../apps/entrenamiento/src/app.module';
 import { PrismaService } from '../apps/entrenamiento/src/prisma/prisma.service';
 
-export interface Entorno {
+export interface TestEnvironment {
   app: INestApplication;
   prisma: PrismaService;
   /// Firma un token como lo haría `identidad`. Que estas pruebas puedan
@@ -15,7 +15,7 @@ export interface Entorno {
   token: (payload: Partial<JwtPayload>) => Promise<string>;
 }
 
-export async function crearApp(): Promise<Entorno> {
+export async function createTestApp(): Promise<TestEnvironment> {
   const moduleRef = await Test.createTestingModule({ imports: [AppModule] })
     .overrideProvider(ThrottlerStorage)
     .useValue({
@@ -29,7 +29,7 @@ export async function crearApp(): Promise<Entorno> {
     })
     .compile();
 
-  const app = configurarApp(moduleRef.createNestApplication());
+  const app = configureApp(moduleRef.createNestApplication());
   await app.init();
 
   const jwt = app.get(JwtService);
@@ -48,11 +48,11 @@ export async function crearApp(): Promise<Entorno> {
   };
 }
 
-export async function limpiar(prisma: PrismaService): Promise<void> {
+export async function cleanDatabase(prisma: PrismaService): Promise<void> {
   await prisma.scenarioRun.deleteMany();
 }
 
-export interface CorridaBody {
+export interface RunBody {
   id: string;
   scenarioId: string;
   outcome: string;
@@ -63,7 +63,7 @@ export interface ErrorBody {
   message: string | string[];
 }
 
-export interface ProgresoBody {
+export interface ProgressBody {
   modulo: string;
   escenarios: { id: string; ultimoOutcome: string }[];
   aprobados: number;
@@ -76,11 +76,11 @@ export interface ProgresoBody {
   } | null;
 }
 
-export function cuerpo<T>(res: { body: unknown }): T {
+export function responseBody<T>(res: { body: unknown }): T {
   return res.body as T;
 }
 
-export function corrida(overrides: Record<string, unknown> = {}) {
+export function run(overrides: Record<string, unknown> = {}) {
   return {
     scenarioId: 'phishing/factura-sri',
     version: 1,

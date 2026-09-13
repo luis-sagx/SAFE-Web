@@ -7,7 +7,7 @@ import { vi } from 'vitest'
 // fábricas deben importarse *dentro* del vi.mock, nunca arriba:
 //     vi.mock('../../context/AuthContext', async () =>
 //       (await import('../../test/escenario')).authFalso())
-export function authFalso() {
+export function mockAuth() {
   return {
     useAuth: () => ({
       participant: {
@@ -36,15 +36,15 @@ export function authFalso() {
 }
 
 // Deja el resto del módulo intacto: solo la llamada que sale a la red se mockea.
-export async function apiSinRed() {
-  const actual = await vi.importActual<typeof import('../lib/api')>('../lib/api')
-  return { ...actual, createRun: vi.fn().mockResolvedValue(undefined) }
+export async function offlineApi() {
+  const current = await vi.importActual<typeof import('../lib/api')>('../lib/api')
+  return { ...current, createRun: vi.fn().mockResolvedValue(undefined) }
 }
 
 // Busca dentro del marco del teléfono, no en toda la pantalla: el veredicto
 // repite textos que también están en la pantalla simulada.
-export function empezar(escenario: ReactElement): HTMLElement {
-  const { container } = render(<MemoryRouter>{escenario}</MemoryRouter>)
+export function start(scenario: ReactElement): HTMLElement {
+  const { container } = render(<MemoryRouter>{scenario}</MemoryRouter>)
   fireEvent.click(screen.getByRole('button', { name: 'Empezar' }))
   return container.querySelector('#pantalla-escenario') as HTMLElement
 }

@@ -1,20 +1,20 @@
 import type { ScreenView } from '../../components/ui/DeviceScreen'
-import { crearSenal } from '../../lib/crearSenal'
-import type { Senal } from '../../components/ui/PanelVeredicto'
+import { createSignal } from '../../lib/crearSenal'
+import type { Signal } from '../../components/ui/PanelVeredicto'
 
 /// Casi todas las señales de esta sección resaltan el elemento que lleva su
 /// mismo id (`data-signal`). El helper evita repetir `id` y `targetId` con el
 /// mismo valor en cada objeto, cuatro escenarios seguidos — que es como la
 /// duplicación estructural terminaba fallando el Quality Gate.
-export const senal = (id: string, pantalla: string, texto: string): Senal =>
-  crearSenal(id, pantalla, id, texto)
+export const signal = (id: string, screen: string, text: string): Signal =>
+  createSignal(id, screen, id, text)
 
-export type ChatIA = Extract<ScreenView, { kind: 'sms' }>
-export type RespuestaIA = NonNullable<ChatIA['respuestas']>[number]
-export type SitioIA = NonNullable<ChatIA['sitio']>
+export type AIChat = Extract<ScreenView, { kind: 'sms' }>
+export type AIResponse = NonNullable<AIChat['respuestas']>[number]
+export type AISite = NonNullable<AIChat['sitio']>
 
 /// Una línea del saludo inicial: sin `mio`, es la IA la que la escribe.
-export interface LineaApertura {
+export interface OpeningLine {
   texto: string
   mio?: boolean
 }
@@ -38,20 +38,20 @@ export interface LineaApertura {
 /// Con `sitio` el chat deja el marco del celular y se abre en una pestaña del
 /// navegador: en la oficina un asistente de IA se usa en el computador, y la
 /// barra de direcciones enseña de paso que es un sitio ajeno.
-export function crearChatIA(
+export function createAIChat(
   sub: string,
-  apertura: LineaApertura[],
-  hora: string,
-  respuestas: RespuestaIA[],
-  sitio?: SitioIA,
-): ChatIA {
+  opening: OpeningLine[],
+  time: string,
+  responses: AIResponse[],
+  site?: AISite,
+): AIChat {
   return {
     kind: 'sms',
     sender: 'Asistente IA',
     sub,
-    sitio,
-    msgs: apertura.map((linea) => ({ text: linea.texto, time: hora, mine: linea.mio })),
-    respuestas,
+    sitio: site,
+    msgs: opening.map((line) => ({ text: line.texto, time: time, mine: line.mio })),
+    respuestas: responses,
   }
 }
 
@@ -60,14 +60,14 @@ export function crearChatIA(
 /// el chat. Se usa tanto si el participante mandó el borrador tal cual como
 /// si lo reescribió antes. Sin `respuestas`: la decisión ya se tomó, no hay
 /// nada más que elegir.
-export function conRespuestaIA(chat: ChatIA, hora: string, textoEnviado: string, respuestaIA: string): ChatIA {
+export function withAIResponse(chat: AIChat, time: string, textSent: string, aiResponse: string): AIChat {
   return {
     ...chat,
     respuestas: undefined,
     msgs: [
       ...chat.msgs,
-      { text: textoEnviado, time: hora, mine: true, senal: 'borrador-enviado' },
-      { text: respuestaIA, time: hora },
+      { text: textSent, time: time, mine: true, senal: 'borrador-enviado' },
+      { text: aiResponse, time: time },
     ],
   }
 }
@@ -79,20 +79,20 @@ export function conRespuestaIA(chat: ChatIA, hora: string, textoEnviado: string,
 ///
 /// Las ramas que salen de ese segundo paso se arman con `conRespuestaIA` sobre
 /// el chat que devuelve esta función.
-export function conSeguimientoIA(
-  chat: ChatIA,
-  hora: string,
-  textoEnviado: string,
-  respuestaIA: string,
-  respuestas: RespuestaIA[],
-): ChatIA {
+export function withAIFollowUp(
+  chat: AIChat,
+  time: string,
+  textSent: string,
+  aiResponse: string,
+  responses: AIResponse[],
+): AIChat {
   return {
     ...chat,
-    respuestas,
+    respuestas: responses,
     msgs: [
       ...chat.msgs,
-      { text: textoEnviado, time: hora, mine: true, senal: 'borrador-enviado' },
-      { text: respuestaIA, time: hora },
+      { text: textSent, time: time, mine: true, senal: 'borrador-enviado' },
+      { text: aiResponse, time: time },
     ],
   }
 }
@@ -106,17 +106,17 @@ export function conSeguimientoIA(
 /// Solo para la burbuja: el botón de respuesta pinta texto plano y ahí las
 /// etiquetas se verían escritas. Por eso el mismo texto viaja crudo a
 /// `respuestas` y marcado a `conRespuestaIA`.
-export function marcar(texto: string, marcas: Record<string, string>): string {
-  return Object.entries(marcas).reduce((acc, [senal, fragmento]) => {
-    if (!acc.includes(fragmento)) {
+export function mark(text: string, brands: Record<string, string>): string {
+  return Object.entries(brands).reduce((acc, [signal, fragment]) => {
+    if (!acc.includes(fragment)) {
       // Un fragmento que no casa deja la señal sin nada que resaltar, y el
       // repaso se queda mudo justo en la pantalla que explica. Mejor que no
       // compile la historia a que falle en silencio delante del participante.
-      throw new Error(`marcar(): el fragmento "${fragmento}" no está en el mensaje.`)
+      throw new Error(`marcar(): el fragmento "${fragment}" no está en el mensaje.`)
     }
     // Reemplazo por función y no por plantilla: un fragmento que empieza con
     // `$` —un saldo, un monto— haría que `replace` leyera `$2` como grupo de
     // captura dentro del texto de reemplazo.
-    return acc.replace(fragmento, () => `<b data-signal="${senal}">${fragmento}</b>`)
-  }, texto)
+    return acc.replace(fragment, () => `<b data-signal="${signal}">${fragment}</b>`)
+  }, text)
 }

@@ -1,12 +1,12 @@
-import { esCedulaEcuatoriana, huellaCedula, mismaHuella } from './cedula';
+import { isEcuadorianId, hashEcuadorianId, hasSameHash } from './cedula';
 
 describe('esCedulaEcuatoriana', () => {
   // Cédulas construidas con el algoritmo, no de personas reales. La última
   // usa la provincia 30 (ecuatorianos registrados en el exterior).
   it.each(['1710034065', '0926687856', '1104535438', '3012345678'])(
     'acepta %s',
-    (cedula) => {
-      expect(esCedulaEcuatoriana(cedula)).toBe(true);
+    (ecuadorianId) => {
+      expect(isEcuadorianId(ecuadorianId)).toBe(true);
     },
   );
 
@@ -23,14 +23,14 @@ describe('esCedulaEcuatoriana', () => {
     ['once dígitos', '17100340651'],
     ['con letras', '17100340a5'],
     ['vacía', ''],
-  ])('rechaza %s', (_caso, cedula) => {
-    expect(esCedulaEcuatoriana(cedula)).toBe(false);
+  ])('rechaza %s', (_case, ecuadorianId) => {
+    expect(isEcuadorianId(ecuadorianId)).toBe(false);
   });
 
   it.each([null, undefined, 1710034065, {}, []])(
     'rechaza el valor no textual %p sin lanzar',
-    (valor) => {
-      expect(esCedulaEcuatoriana(valor)).toBe(false);
+    (value) => {
+      expect(isEcuadorianId(value)).toBe(false);
     },
   );
 });
@@ -38,34 +38,36 @@ describe('esCedulaEcuatoriana', () => {
 describe('huellaCedula', () => {
   // Determinista: es lo que le permite servir de índice único.
   it('da la misma huella para la misma cédula y el mismo pepper', () => {
-    expect(huellaCedula('1710034065', 'pepper-1')).toBe(
-      huellaCedula('1710034065', 'pepper-1'),
+    expect(hashEcuadorianId('1710034065', 'pepper-1')).toBe(
+      hashEcuadorianId('1710034065', 'pepper-1'),
     );
   });
 
   it('da huellas distintas para cédulas distintas', () => {
-    expect(huellaCedula('1710034065', 'pepper-1')).not.toBe(
-      huellaCedula('0926687856', 'pepper-1'),
+    expect(hashEcuadorianId('1710034065', 'pepper-1')).not.toBe(
+      hashEcuadorianId('0926687856', 'pepper-1'),
     );
   });
 
   // Esto es lo que hace que destruir el pepper anonimice de verdad: sin él,
   // ninguna huella vieja se puede reproducir.
   it('cambia por completo si cambia el pepper', () => {
-    expect(huellaCedula('1710034065', 'pepper-1')).not.toBe(
-      huellaCedula('1710034065', 'pepper-2'),
+    expect(hashEcuadorianId('1710034065', 'pepper-1')).not.toBe(
+      hashEcuadorianId('1710034065', 'pepper-2'),
     );
   });
 
   it('nunca contiene la cédula en claro', () => {
-    expect(huellaCedula('1710034065', 'pepper-1')).not.toContain('1710034065');
+    expect(hashEcuadorianId('1710034065', 'pepper-1')).not.toContain(
+      '1710034065',
+    );
   });
 
   it('compara huellas en tiempo constante', () => {
-    const uno = huellaCedula('1710034065', 'pepper-1');
-    const otro = huellaCedula('0926687856', 'pepper-1');
+    const one = hashEcuadorianId('1710034065', 'pepper-1');
+    const other = hashEcuadorianId('0926687856', 'pepper-1');
 
-    expect(mismaHuella(uno, uno)).toBe(true);
-    expect(mismaHuella(uno, otro)).toBe(false);
+    expect(hasSameHash(one, one)).toBe(true);
+    expect(hasSameHash(one, other)).toBe(false);
   });
 });

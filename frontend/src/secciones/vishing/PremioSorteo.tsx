@@ -1,23 +1,23 @@
 import { Camera, Compass, Phone, Wallet } from 'lucide-react'
-import StoryEscenario, { type AppTelefono, type ScreenNode } from '../../components/StoryEscenario'
-import type { Contexto } from '../../components/ui/ContextoEscenario'
+import ScenarioStory, { type PhoneApp, type ScreenNode } from '../../components/StoryEscenario'
+import type { Context } from '../../components/ui/ContextoEscenario'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
-import type { Senal } from '../../components/ui/PanelVeredicto'
+import type { Signal } from '../../components/ui/PanelVeredicto'
 import type { Story } from '../../hooks/useStoryEngine'
-import { CUENTA_FICTICIA } from '../../lib/identidadFicticia'
+import { ACCOUNT_FAKE } from '../../lib/identidadFicticia'
 
 // Puerta de entrada del módulo. Igual que loteria-premiada, pero aquí colgar
 // cuesta más que cerrar una pestaña porque hay una voz esperando del otro lado.
 
-const QUIEN = 'Almacenes La Ganga'
-const NUMERO = '+593 98 342 1177'
-const CUENTA_ESTAFA = '22-0074-1188 · Coop. de ahorro, cuenta personal'
+const WHO = 'Almacenes La Ganga'
+const NUMBER = '+593 98 342 1177'
+const ACCOUNT_SCAM = '22-0074-1188 · Coop. de ahorro, cuenta personal'
 
-const ENTRANTE: ScreenView = {
+const INCOMING: ScreenView = {
   kind: 'call',
   entrante: true,
-  quien: QUIEN,
-  numero: NUMERO,
+  quien: WHO,
+  numero: NUMBER,
   etiqueta: 'No está en tus contactos',
   senalQuien: 'quien',
   contestarGoto: 'n2',
@@ -26,7 +26,7 @@ const ENTRANTE: ScreenView = {
   rechazarLabel: 'Rechazó la llamada sin contestar',
 }
 
-const ANUNCIO = [
+const AD = [
   {
     texto:
       '¡Muy buenas tardes! Le llamo de Almacenes La Ganga. ¡Felicidades! Su número resultó ganador de una cocina de inducción en nuestro sorteo del mes.',
@@ -39,22 +39,22 @@ const ANUNCIO = [
   },
 ]
 
-const PREGUNTA = '¿Por qué tengo que pagar para recibir un premio?'
-const ACEPTA = 'Ya, está bien. ¿A qué cuenta deposito?'
-const CONTRA_ENTREGA = '¿Y no puedo pagar cuando me entreguen la cocina?'
+const QUESTION = '¿Por qué tengo que pagar para recibir un premio?'
+const ACCEPTS = 'Ya, está bien. ¿A qué cuenta deposito?'
+const CASH_ON_DELIVERY = '¿Y no puedo pagar cuando me entreguen la cocina?'
 
-const EXCUSA = {
+const EXCUSE = {
   texto:
     'No, el premio es gratis. Lo que se cobra es el impuesto de entrega, que lo pone la transportadora, no nosotros.',
 }
 
-const CUENTA = {
+const ACCOUNT = {
   texto:
     'Es el impuesto de entrega, y todos los ganadores lo pagan. Deposite a la cuenta de mi compañera María: veintidós, cero cero setenta y cuatro, once ochenta y ocho.',
   senal: 'cuenta',
 }
 
-const PRISA = {
+const RUSH = {
   texto:
     'Eso sí, la promoción vence en una hora. Si no deposita ahora mismo pierde la cocina y se la entregamos a la siguiente persona de la lista.',
   senal: 'prisa',
@@ -62,53 +62,53 @@ const PRISA = {
 
 // El pago por adelantado es el negocio entero: ninguna rama del guion acepta
 // cobrar al entregar.
-const ADELANTADO = {
+const ADVANCED = {
   texto:
     'No, el sistema no libera el despacho sin el pago del impuesto. Es una norma de la promoción, yo no la puedo saltar.',
   senal: 'adelantado',
 }
 
-type Linea = { texto: string; mio?: boolean; senal?: string }
-type Frase = { texto: string; goto: string; label?: string }
+type Line = { texto: string; mio?: boolean; senal?: string }
+type Phrase = { texto: string; goto: string; label?: string }
 
-function enLlamada(dialogo: Linea[], decir: Frase[], colgarLabel: string): ScreenView {
+function onCall(dialogue: Line[], phrases: Phrase[], hangUpLabel: string): ScreenView {
   return {
     kind: 'call',
-    quien: QUIEN,
-    numero: NUMERO,
+    quien: WHO,
+    numero: NUMBER,
     etiqueta: 'No está en tus contactos',
     senalQuien: 'quien',
-    dialogo,
-    decir,
+    dialogo: dialogue,
+    decir: phrases,
     colgarGoto: 'e_cuelga',
-    colgarLabel,
+    colgarLabel: hangUpLabel,
   }
 }
 
-const LLAMADA = enLlamada(
-  ANUNCIO,
+const CALL = onCall(
+  AD,
   [
-    { texto: PREGUNTA, goto: 'n3', label: 'Preguntó por qué debe pagar para recibir el premio' },
-    { texto: ACEPTA, goto: 'n3b', label: 'Aceptó pagar y pidió los datos de la cuenta' },
+    { texto: QUESTION, goto: 'n3', label: 'Preguntó por qué debe pagar para recibir el premio' },
+    { texto: ACCEPTS, goto: 'n3b', label: 'Aceptó pagar y pidió los datos de la cuenta' },
   ],
   'Colgó al oír lo del premio',
 )
 
-const HILO_PREGUNTA: Linea[] = [
-  ...ANUNCIO,
-  { texto: PREGUNTA, mio: true },
-  EXCUSA,
-  CUENTA,
-  PRISA,
+const THREAD_QUESTION: Line[] = [
+  ...AD,
+  { texto: QUESTION, mio: true },
+  EXCUSE,
+  ACCOUNT,
+  RUSH,
 ]
 
-const HILO_ACEPTA: Linea[] = [...ANUNCIO, { texto: ACEPTA, mio: true }, CUENTA, PRISA]
+const THREAD_ACCEPTS: Line[] = [...AD, { texto: ACCEPTS, mio: true }, ACCOUNT, RUSH]
 
-function pidenDeposito(hilo: Linea[], siguiente: string): ScreenView {
-  return enLlamada(
-    hilo,
+function askDeposit(thread: Line[], next: string): ScreenView {
+  return onCall(
+    thread,
     [
-      { texto: CONTRA_ENTREGA, goto: siguiente, label: 'Propuso pagar contra entrega' },
+      { texto: CASH_ON_DELIVERY, goto: next, label: 'Propuso pagar contra entrega' },
       {
         texto: 'No voy a depositar nada a la cuenta de una persona.',
         goto: 'e_niega',
@@ -119,9 +119,9 @@ function pidenDeposito(hilo: Linea[], siguiente: string): ScreenView {
   )
 }
 
-function seNiegan(hilo: Linea[]): ScreenView {
-  return enLlamada(
-    [...hilo, { texto: CONTRA_ENTREGA, mio: true }, ADELANTADO],
+function refuse(thread: Line[]): ScreenView {
+  return onCall(
+    [...thread, { texto: CASH_ON_DELIVERY, mio: true }, ADVANCED],
     [
       {
         texto: 'Entonces no, gracias. Así no me interesa.',
@@ -138,7 +138,7 @@ function seNiegan(hilo: Linea[]): ScreenView {
   )
 }
 
-const NAVEGADOR: ScreenView = {
+const BROWSER: ScreenView = {
   kind: 'web',
   app: 'Navegador',
   url: 'inicio',
@@ -160,7 +160,7 @@ const NAVEGADOR: ScreenView = {
   button: '',
 }
 
-const SITIO: ScreenView = {
+const SITE: ScreenView = {
   kind: 'web',
   url: 'https://www.laganga.com.ec/promociones',
   secure: true,
@@ -178,14 +178,14 @@ const SITIO: ScreenView = {
   button: '',
 }
 
-const BANCO: ScreenView = {
+const BANK: ScreenView = {
   kind: 'web',
   app: 'Banco del Litoral',
   url: 'bancolitoral.ec',
   secure: true,
   brand: 'Banca móvil',
   title: 'Tus cuentas',
-  subtitle: `${CUENTA_FICTICIA} · disponible $312,45`,
+  subtitle: `${ACCOUNT_FAKE} · disponible $312,45`,
   opciones: [
     {
       texto: 'Transferir',
@@ -201,7 +201,7 @@ const BANCO: ScreenView = {
   button: '',
 }
 
-const TRANSFERENCIA: ScreenView = {
+const TRANSFER: ScreenView = {
   kind: 'web',
   app: 'Banco del Litoral',
   url: 'bancolitoral.ec',
@@ -210,7 +210,7 @@ const TRANSFERENCIA: ScreenView = {
   title: 'Confirma la transferencia',
   subtitle: 'Revisa los datos antes de enviar el dinero.',
   datos: [
-    { etiqueta: 'Cuenta de destino', valor: CUENTA_ESTAFA, senal: 'cuenta' },
+    { etiqueta: 'Cuenta de destino', valor: ACCOUNT_SCAM, senal: 'cuenta' },
     { etiqueta: 'Titular', valor: 'María F. (persona natural)' },
     { etiqueta: 'Valor', valor: '$40,00' },
   ],
@@ -223,7 +223,7 @@ const TRANSFERENCIA: ScreenView = {
   fields: [],
 }
 
-const APPS: AppTelefono[] = [
+const APPS: PhoneApp[] = [
   { Icono: Phone, texto: 'Teléfono', color: '#2f9e44' },
   {
     Icono: Wallet,
@@ -248,53 +248,53 @@ const APPS: AppTelefono[] = [
 ]
 
 export const STORY: Story<ScreenNode> = {
-  n1: { kind: 'scene', view: ENTRANTE },
-  n2: { kind: 'scene', view: LLAMADA },
-  n3: { kind: 'scene', view: pidenDeposito(HILO_PREGUNTA, 'n3c') },
-  n3b: { kind: 'scene', view: pidenDeposito(HILO_ACEPTA, 'n3d') },
-  n3c: { kind: 'scene', view: seNiegan(HILO_PREGUNTA) },
-  n3d: { kind: 'scene', view: seNiegan(HILO_ACEPTA) },
-  n4: { kind: 'scene', view: NAVEGADOR },
-  n5: { kind: 'scene', view: BANCO },
-  n6: { kind: 'scene', view: TRANSFERENCIA },
+  n1: { kind: 'scene', view: INCOMING },
+  n2: { kind: 'scene', view: CALL },
+  n3: { kind: 'scene', view: askDeposit(THREAD_QUESTION, 'n3c') },
+  n3b: { kind: 'scene', view: askDeposit(THREAD_ACCEPTS, 'n3d') },
+  n3c: { kind: 'scene', view: refuse(THREAD_QUESTION) },
+  n3d: { kind: 'scene', view: refuse(THREAD_ACCEPTS) },
+  n4: { kind: 'scene', view: BROWSER },
+  n5: { kind: 'scene', view: BANK },
+  n6: { kind: 'scene', view: TRANSFER },
   e_rechaza: {
     kind: 'good',
-    view: ENTRANTE,
+    view: INCOMING,
     verdict: 'No caíste · no contestaste',
     outcome:
       'Rechazaste una llamada de un número que no conoces. Es una decisión válida y segura: nadie está obligado a contestarle a quien no tiene guardado, y quien de verdad necesite algo de ti vuelve a intentarlo o deja constancia por otro lado.',
   },
   e_cuelga: {
     kind: 'good',
-    view: pidenDeposito(HILO_PREGUNTA, 'n3c'),
+    view: askDeposit(THREAD_QUESTION, 'n3c'),
     verdict: 'No caíste · colgaste',
     outcome:
       'Colgaste. Nunca tienes obligación de seguir escuchando, y colgar es la única defensa que funciona siempre: sin llamada no hay prisa, y sin prisa el engaño no se sostiene.',
   },
   e_niega: {
     kind: 'good',
-    view: seNiegan(HILO_PREGUNTA),
+    view: refuse(THREAD_QUESTION),
     verdict: 'No caíste · dijiste que no',
     outcome:
       'Dijiste que no y se acabó. No hace falta demostrar que es una estafa ni discutir con quien llama: basta con no pagar por adelantado a una cuenta que no es de ninguna empresa.',
   },
   e_paga: {
     kind: 'bad',
-    view: TRANSFERENCIA,
+    view: TRANSFER,
     verdict: 'Caíste en la estafa',
     outcome:
       'Transferiste $40 a la cuenta personal de una desconocida. La cocina nunca llegó, ese número dejó de contestar y el banco no puede reversar una transferencia que autorizaste tú. En los días siguientes volvieron a llamarte: quien paga una vez entra en la lista de los que vuelven a pagar.',
   },
   e_verifica: {
     kind: 'good',
-    view: SITIO,
+    view: SITE,
     verdict: 'No caíste · lo comprobaste por tu cuenta',
     outcome:
       'En el sitio del almacén no había ningún sorteo en curso, y ahí mismo estaba escrito que sus promociones no tienen costo. La llamada seguía abierta mientras comprobabas: quien llama de verdad no tiene problema en que lo verifiques.',
   },
 }
 
-const SENALES: Senal[] = [
+const SIGNALS: Signal[] = [
   {
     id: 's1',
     targetId: 'quien',
@@ -349,9 +349,9 @@ const SENALES: Senal[] = [
 const RULE =
   'Regla de oro: <b>nunca pagues para recibir un premio</b>. Si dudas, cuelga y llama tú al número oficial del negocio o mira su sitio: quien llama de verdad no tiene prisa por impedírtelo.'
 
-const RESUMEN = 'Un número desconocido llama para avisarte de que ganaste un sorteo.'
+const SUMMARY = 'Un número desconocido llama para avisarte de que ganaste un sorteo.'
 
-const CONTEXTO: Contexto = {
+const CONTEXT: Context = {
   antes: (
     <>
       Estás en tu casa, sin ningún trámite pendiente, y{' '}
@@ -366,14 +366,14 @@ const CONTEXTO: Contexto = {
   ),
 }
 
-function PremioSorteo() {
+function RafflePrize() {
   return (
-    <StoryEscenario
+    <ScenarioStory
       escenarioId="vishing/premio-sorteo"
-      resumen={RESUMEN}
-      contexto={CONTEXTO}
+      resumen={SUMMARY}
+      contexto={CONTEXT}
       story={STORY}
-      senales={SENALES}
+      senales={SIGNALS}
       rule={RULE}
       restartLabel="↻ Recibir la llamada otra vez"
       accionesEnPantalla
@@ -395,4 +395,4 @@ function PremioSorteo() {
   )
 }
 
-export default PremioSorteo
+export default RafflePrize

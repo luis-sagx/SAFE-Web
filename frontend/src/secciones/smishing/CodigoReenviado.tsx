@@ -1,16 +1,16 @@
 import { Compass, MessageSquareText, Phone, Wallet } from 'lucide-react'
-import StoryEscenario, { type AppTelefono, type ScreenNode } from '../../components/StoryEscenario'
-import type { Contexto } from '../../components/ui/ContextoEscenario'
+import ScenarioStory, { type PhoneApp, type ScreenNode } from '../../components/StoryEscenario'
+import type { Context } from '../../components/ui/ContextoEscenario'
 import type { Story } from '../../hooks/useStoryEngine'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
-import type { Senal } from '../../components/ui/PanelVeredicto'
+import type { Signal } from '../../components/ui/PanelVeredicto'
 
 // El más difícil del módulo: la mitad de lo que se ve es auténtico. El código llega de
 // verdad (el atacante lo pidió con el número de la víctima); lo falso es que lo pidan reenviado.
 
-const CODIGO = '731 640'
+const CODE = '731 640'
 
-const HILO_FALSO: ScreenView = {
+const THREAD_FAKE: ScreenView = {
   kind: 'sms',
   sender: '+593 99 412 8867',
   sub: 'Número no guardado · SMS',
@@ -45,27 +45,27 @@ const HILO_FALSO: ScreenView = {
 }
 
 // El veredicto se ve sobre la burbuja propia: hay que enseñar que el código salió del teléfono.
-const HILO_ENVIADO: ScreenView = {
-  ...HILO_FALSO,
+const THREAD_SENT: ScreenView = {
+  ...THREAD_FAKE,
   respuestas: undefined,
   volverGoto: undefined,
   msgs: [
-    ...(HILO_FALSO.kind === 'sms' ? HILO_FALSO.msgs : []),
-    { text: `Te reenvío el código: ${CODIGO}`, time: '20:43', mine: true, senal: 'reenvio' },
+    ...(THREAD_FAKE.kind === 'sms' ? THREAD_FAKE.msgs : []),
+    { text: `Te reenvío el código: ${CODE}`, time: '20:43', mine: true, senal: 'reenvio' },
   ],
 }
 
-const HILO_NEGADO: ScreenView = {
-  ...HILO_ENVIADO,
+const DECLINED_THREAD: ScreenView = {
+  ...THREAD_SENT,
   msgs: [
-    ...(HILO_FALSO.kind === 'sms' ? HILO_FALSO.msgs : []),
+    ...(THREAD_FAKE.kind === 'sms' ? THREAD_FAKE.msgs : []),
     { text: 'Ese código no se lo puedo pasar a nadie.', time: '20:43', mine: true },
   ],
 }
 
 // Después de comprobar en la app: negarse ahora sí cierra el escenario, ya no queda nada pendiente.
-const HILO_COMPROBADO: ScreenView = {
-  ...HILO_FALSO,
+const VERIFIED_THREAD: ScreenView = {
+  ...THREAD_FAKE,
   respuestas: [
     {
       texto: 'Te reenvío el código.',
@@ -81,7 +81,7 @@ const HILO_COMPROBADO: ScreenView = {
 }
 
 // La vista previa del banco enseña el código, y los dos remitentes quedan uno debajo del otro para comparar.
-const LISTA: ScreenView = {
+const LIST: ScreenView = {
   kind: 'web',
   app: 'Mensajes',
   url: 'lista',
@@ -93,7 +93,7 @@ const LISTA: ScreenView = {
   opciones: [
     {
       texto: 'BANCO LITORAL',
-      detalle: `Su código de verificación es ${CODIGO}… · 20:40`,
+      detalle: `Su código de verificación es ${CODE}… · 20:40`,
       goto: 'n3',
       label: 'Abrió el mensaje que envió el banco',
     },
@@ -111,14 +111,14 @@ const LISTA: ScreenView = {
 }
 
 // El mensaje auténtico: todo en él está bien, y lleva escrita la defensa. El escenario entero en dos líneas.
-const HILO_BANCO: ScreenView = {
+const THREAD_BANK: ScreenView = {
   kind: 'sms',
   sender: 'BANCO LITORAL',
   sub: 'Remitente habitual · SMS',
   senalRemitente: 'remitente-real',
   msgs: [
     {
-      text: `Su codigo de verificacion es ${CODIGO}. Vence en 5 minutos. NUNCA lo comparta con nadie, ni con personal del banco.`,
+      text: `Su codigo de verificacion es ${CODE}. Vence en 5 minutos. NUNCA lo comparta con nadie, ni con personal del banco.`,
       time: '20:40',
       senal: 'aviso-real',
     },
@@ -129,7 +129,7 @@ const HILO_BANCO: ScreenView = {
 
 // Abrir la app todavía no es haber comprobado nada: se puede mirar la actividad
 // o cambiar la clave a ciegas, que es el gesto precipitado que este escenario mide.
-const BANCO_INICIO: ScreenView = {
+const BANK_HOME: ScreenView = {
   kind: 'web',
   app: 'Banco',
   url: 'inicio',
@@ -159,7 +159,7 @@ const BANCO_INICIO: ScreenView = {
   cerrarLabel: 'Cerró la app del banco',
 }
 
-const APP_BANCO: ScreenView = {
+const APP_BANK: ScreenView = {
   kind: 'web',
   app: 'Banco',
   url: 'inicio',
@@ -185,7 +185,7 @@ const APP_BANCO: ScreenView = {
   cerrarLabel: 'Cerró la app después de ver que no había accesos no autorizados',
 }
 
-const APPS: AppTelefono[] = [
+const APPS: PhoneApp[] = [
   {
     Icono: Wallet,
     texto: 'Banco',
@@ -211,25 +211,25 @@ const APPS: AppTelefono[] = [
 const STORY: Story<ScreenNode> = {
   n1: {
     kind: 'scene',
-    view: HILO_FALSO,
+    view: THREAD_FAKE,
     // El banner deja los seis dígitos y recorta la advertencia; leerla entera cuesta un toque.
     notificacion: {
       app: 'Mensajes',
       remitente: 'BANCO LITORAL',
       hora: '20:40',
-      texto: `Su codigo de verificacion es ${CODIGO}. Vence en 5 minutos. NUNCA lo comparta con nadie, ni con personal del banco.`,
+      texto: `Su codigo de verificacion es ${CODE}. Vence en 5 minutos. NUNCA lo comparta con nadie, ni con personal del banco.`,
       goto: 'n3',
       label: 'Abrió la notificación del código que envió el banco',
     },
   },
-  n1c: { kind: 'scene', view: HILO_COMPROBADO },
-  n2: { kind: 'scene', view: LISTA },
-  n3: { kind: 'scene', view: HILO_BANCO },
-  n4: { kind: 'scene', view: BANCO_INICIO },
-  n_seguridad: { kind: 'scene', view: APP_BANCO },
+  n1c: { kind: 'scene', view: VERIFIED_THREAD },
+  n2: { kind: 'scene', view: LIST },
+  n3: { kind: 'scene', view: THREAD_BANK },
+  n4: { kind: 'scene', view: BANK_HOME },
+  n_seguridad: { kind: 'scene', view: APP_BANK },
   e_reenvia: {
     kind: 'bad',
-    view: HILO_ENVIADO,
+    view: THREAD_SENT,
     verdict: 'Caíste en la trampa',
     outcome:
       'No había ningún intento de acceso: quien entraba a tu banca era quien te escribía, y le faltaba ese código. Vaciaron la cuenta en tres transferencias, y como el código lo enviaste tú, quedó autorizada.',
@@ -237,35 +237,35 @@ const STORY: Story<ScreenNode> = {
   e_app: {
     kind: 'good',
     // Misma burbuja que e_niega: el mensaje que sale del teléfono es idéntico, solo cambia que aquí ya habías comprobado.
-    view: HILO_NEGADO,
+    view: DECLINED_THREAD,
     verdict: 'No caíste · lo comprobaste donde consta',
     outcome:
       'No había ningún acceso desde otro dispositivo. Sí una solicitud de código de hace dos minutos, sin usar: la pidieron ellos, esperando que se la reenviaras. Y encima, te negaste a dársela.',
   },
   e_clave: {
     kind: 'partial',
-    view: BANCO_INICIO,
+    view: BANK_HOME,
     verdict: 'Cambiaste la clave, pero el código sigue vivo',
     outcome:
       'No reenviaste el código, que es lo que importaba. Pero cambiar la clave no cancela la solicitud ya hecha: ese código sirve hasta que venza. Los accesos estaban en "Seguridad de la cuenta".',
   },
   e_niega: {
     kind: 'partial',
-    view: HILO_NEGADO,
+    view: DECLINED_THREAD,
     verdict: 'No lo diste, pero les seguiste contestando',
     outcome:
       'No entregaste el código, que es lo que importaba. Pero contestaste a un número desconocido: ahora saben que alguien lee esa línea. Y la solicitud de ese código sigue viva.',
   },
   e_ignora: {
     kind: 'partial',
-    view: LISTA,
+    view: LIST,
     verdict: 'No lo reenviaste, pero te quedaste con la duda',
     outcome:
       'No diste el código, que es lo único que impedía que entraran. Pero saliste sin comprobar nada: si el aviso hubiera sido cierto, seguirían intentándolo.',
   },
 }
 
-const SENALES: Senal[] = [
+const SIGNALS: Signal[] = [
   {
     id: 's1',
     targetId: 'aviso-real',
@@ -306,9 +306,9 @@ const SENALES: Senal[] = [
 const RULE =
   'Regla de oro: <b>un código que llega a tu teléfono no se reenvía a nadie</b>, ni aunque quien lo pida diga ser del banco y el código sea de verdad. Ese código autoriza operaciones; el banco no necesita que se lo digas, porque fue él quien lo mandó.'
 
-const RESUMEN = 'Alguien dice ser del banco y pide que le reenvíes el código que acaba de llegarte.'
+const SUMMARY = 'Alguien dice ser del banco y pide que le reenvíes el código que acaba de llegarte.'
 
-const CONTEXTO: Contexto = {
+const CONTEXT: Context = {
   antes: 'Tienes la app del banco instalada y la usas de vez en cuando para revisar el saldo.',
   ahora: (
     <>
@@ -318,14 +318,14 @@ const CONTEXTO: Contexto = {
   ),
 }
 
-function CodigoReenviado() {
+function ForwardedCode() {
   return (
-    <StoryEscenario
+    <ScenarioStory
       escenarioId="smishing/codigo-reenviado"
-      resumen={RESUMEN}
-      contexto={CONTEXTO}
+      resumen={SUMMARY}
+      contexto={CONTEXT}
       story={STORY}
-      senales={SENALES}
+      senales={SIGNALS}
       rule={RULE}
       restartLabel="↻ Repetir el escenario"
       accionesEnPantalla
@@ -348,4 +348,4 @@ function CodigoReenviado() {
   )
 }
 
-export default CodigoReenviado
+export default ForwardedCode

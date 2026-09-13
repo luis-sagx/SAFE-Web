@@ -1,117 +1,117 @@
 import { fireEvent, screen, waitFor, within } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
-import { empezar } from '../../test/escenario'
-import SalidaSegura from './SalidaSegura'
+import { start } from '../../test/escenario'
+import SafeExit from './SalidaSegura'
 
-vi.mock('../../context/AuthContext', async () => (await import('../../test/escenario')).authFalso())
-vi.mock('../../lib/api', async () => (await import('../../test/escenario')).apiSinRed())
+vi.mock('../../context/AuthContext', async () => (await import('../../test/escenario')).mockAuth())
+vi.mock('../../lib/api', async () => (await import('../../test/escenario')).offlineApi())
 
-function asegurarEscritorio(escena: HTMLElement) {
-  for (const cerrar of within(escena).getAllByRole('button', { name: /^Cerrar la pestaña/ })) {
-    fireEvent.click(cerrar)
+function ensureDesktop(scene: HTMLElement) {
+  for (const close of within(scene).getAllByRole('button', { name: /^Cerrar la pestaña/ })) {
+    fireEvent.click(close)
   }
-  for (const documento of within(escena).getAllByRole('button', { name: /^Guardar / })) {
-    fireEvent.click(documento)
+  for (const document of within(scene).getAllByRole('button', { name: /^Guardar / })) {
+    fireEvent.click(document)
   }
-  fireEvent.click(within(escena).getByRole('button', { name: 'Bloquear la sesión' }))
+  fireEvent.click(within(scene).getByRole('button', { name: 'Bloquear la sesión' }))
 }
 
 describe('SalidaSegura', () => {
   it('abre con las cuatro pestañas, los tres documentos y la sesión sin bloquear', () => {
-    const escena = empezar(<SalidaSegura />)
+    const scene = start(<SafeExit />)
 
-    expect(within(escena).getAllByRole('button', { name: /^Cerrar la pestaña/ })).toHaveLength(4)
-    expect(within(escena).getAllByRole('button', { name: /^Guardar / })).toHaveLength(3)
-    expect(within(escena).getByText(/0 de 3 guardados/)).toBeDefined()
+    expect(within(scene).getAllByRole('button', { name: /^Cerrar la pestaña/ })).toHaveLength(4)
+    expect(within(scene).getAllByRole('button', { name: /^Guardar / })).toHaveLength(3)
+    expect(within(scene).getByText(/0 de 3 guardados/)).toBeDefined()
   })
 
   it('el checklist va marcando lo que ya está hecho', () => {
-    const escena = empezar(<SalidaSegura />)
+    const scene = start(<SafeExit />)
 
-    fireEvent.click(within(escena).getByRole('button', { name: 'Guardar Contratos en el cajón' }))
+    fireEvent.click(within(scene).getByRole('button', { name: 'Guardar Contratos en el cajón' }))
 
     expect(screen.getByText('(1 de 3)')).toBeDefined()
-    expect(within(escena).getAllByRole('button', { name: /^Guardar / })).toHaveLength(2)
+    expect(within(scene).getAllByRole('button', { name: /^Guardar / })).toHaveLength(2)
   })
 
   it('abre en la primera pestaña y muestra su URL', () => {
-    const escena = empezar(<SalidaSegura />)
+    const scene = start(<SafeExit />)
 
-    expect(within(escena).getByText('https://intranet.andes.ec/rrhh/nominas')).toBeDefined()
+    expect(within(scene).getByText('https://intranet.andes.ec/rrhh/nominas')).toBeDefined()
   })
 
   it('cerrar la pestaña del medio desliza las de la derecha y no deja hueco', () => {
-    const escena = empezar(<SalidaSegura />)
+    const scene = start(<SafeExit />)
 
-    fireEvent.click(within(escena).getByRole('button', { name: 'Cerrar la pestaña Clientes VIP' }))
+    fireEvent.click(within(scene).getByRole('button', { name: 'Cerrar la pestaña Clientes VIP' }))
 
     // Las que quedan ocupan los tres primeros sitios de la barra, en orden.
-    const sitios = [...escena.querySelectorAll<SVGGElement>('g[style*="translateX"]')].map(
+    const sites = [...scene.querySelectorAll<SVGGElement>('g[style*="translateX"]')].map(
       (g) => g.style.transform,
     )
-    expect(sitios).toEqual(['translateX(244px)', 'translateX(372px)', 'translateX(500px)'])
+    expect(sites).toEqual(['translateX(244px)', 'translateX(372px)', 'translateX(500px)'])
   })
 
   it('cerrar la pestaña activa pasa a la de al lado, no a una ventana en blanco', () => {
-    const escena = empezar(<SalidaSegura />)
+    const scene = start(<SafeExit />)
 
-    fireEvent.click(within(escena).getByRole('button', { name: 'Cerrar la pestaña Nóminas 2026' }))
+    fireEvent.click(within(scene).getByRole('button', { name: 'Cerrar la pestaña Nóminas 2026' }))
 
-    expect(within(escena).getByText('https://vault.andes.ec/mis-claves')).toBeDefined()
+    expect(within(scene).getByText('https://vault.andes.ec/mis-claves')).toBeDefined()
   })
 
   it('con la sesión bloqueada no se puede tocar el navegador', () => {
-    const escena = empezar(<SalidaSegura />)
+    const scene = start(<SafeExit />)
 
-    fireEvent.click(within(escena).getByRole('button', { name: 'Bloquear la sesión' }))
+    fireEvent.click(within(scene).getByRole('button', { name: 'Bloquear la sesión' }))
 
-    expect(within(escena).queryAllByRole('button', { name: /^Cerrar la pestaña/ })).toHaveLength(0)
-    expect(within(escena).getByText('SESIÓN BLOQUEADA')).toBeDefined()
+    expect(within(scene).queryAllByRole('button', { name: /^Cerrar la pestaña/ })).toHaveLength(0)
+    expect(within(scene).getByText('SESIÓN BLOQUEADA')).toBeDefined()
 
     // Desbloquear devuelve el navegador: bloquearse antes de tiempo no deja
     // encerrado a nadie.
-    fireEvent.click(within(escena).getByRole('button', { name: 'Desbloquear la sesión' }))
-    expect(within(escena).getAllByRole('button', { name: /^Cerrar la pestaña/ })).toHaveLength(4)
+    fireEvent.click(within(scene).getByRole('button', { name: 'Desbloquear la sesión' }))
+    expect(within(scene).getAllByRole('button', { name: /^Cerrar la pestaña/ })).toHaveLength(4)
   })
 
   it('el repaso de señales resalta la parte de la escena de la que habla', async () => {
-    const escena = empezar(<SalidaSegura />)
+    const scene = start(<SafeExit />)
 
-    asegurarEscritorio(escena)
+    ensureDesktop(scene)
     fireEvent.click(screen.getByRole('button', { name: 'Irme: el puesto está listo' }))
     fireEvent.click(await screen.findByRole('button', { name: 'Ver las señales' }))
 
     await waitFor(() => {
       expect(
-        escena.querySelector('[data-signal="pestanas"]')?.classList.contains('senal-resaltada'),
+        scene.querySelector('[data-signal="pestanas"]')?.classList.contains('senal-resaltada'),
       ).toBe(true)
     })
     // Y la escena vuelve a mostrar lo que ya se había cerrado: si no, no habría
     // nada que señalar.
-    expect(within(escena).getAllByRole('button', { name: /^Cerrar la pestaña/ })).toHaveLength(4)
+    expect(within(scene).getAllByRole('button', { name: /^Cerrar la pestaña/ })).toHaveLength(4)
 
     fireEvent.click(screen.getByRole('button', { name: 'Siguiente →' }))
 
     await waitFor(() => {
       expect(
-        escena.querySelector('[data-signal="papeles"]')?.classList.contains('senal-resaltada'),
+        scene.querySelector('[data-signal="papeles"]')?.classList.contains('senal-resaltada'),
       ).toBe(true)
     })
   })
 
   it('irse con todo asegurado cierra bien el escenario', async () => {
-    const escena = empezar(<SalidaSegura />)
+    const scene = start(<SafeExit />)
 
-    asegurarEscritorio(escena)
+    ensureDesktop(scene)
     fireEvent.click(screen.getByRole('button', { name: 'Irme: el puesto está listo' }))
 
     expect(await screen.findByText('Puesto asegurado')).toBeDefined()
   })
 
   it('irse dejando cosas a la vista es un fallo, y dice qué quedó expuesto', async () => {
-    const escena = empezar(<SalidaSegura />)
+    const scene = start(<SafeExit />)
 
-    fireEvent.click(within(escena).getByRole('button', { name: 'Bloquear la sesión' }))
+    fireEvent.click(within(scene).getByRole('button', { name: 'Bloquear la sesión' }))
     fireEvent.click(screen.getByRole('button', { name: 'Irme de la oficina' }))
 
     expect(await screen.findByText('Dejaste tu puesto expuesto')).toBeDefined()
@@ -120,7 +120,7 @@ describe('SalidaSegura', () => {
   })
 
   it('muestra el panel "¿Qué haces?" con la pista de los tres pasos', () => {
-    empezar(<SalidaSegura />)
+    start(<SafeExit />)
 
     expect(screen.getByText('¿Qué haces?')).toBeDefined()
     fireEvent.click(screen.getByText('No sé por dónde empezar'))
@@ -128,7 +128,7 @@ describe('SalidaSegura', () => {
   })
 
   it('explica cuándo termina el escenario', () => {
-    empezar(<SalidaSegura />)
+    start(<SafeExit />)
 
     fireEvent.click(screen.getByText('¿Cuándo termina el escenario?'))
 

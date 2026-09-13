@@ -2,20 +2,20 @@ import type { ReactNode } from 'react'
 import { Link } from 'react-router'
 import { useAuth } from '../context/AuthContext'
 import InfoLink from './InfoLink'
-import Marca from './Marca'
-import MenuUsuario from './MenuUsuario'
+import Brand from './Marca'
+import UserMenu from './MenuUsuario'
 
 // Barra de navegación única: fija la altura/margen del retorno y el tamaño de letra
 // (text-sm) para todas las páginas, y monta ella misma ayuda + menú de cuenta porque
 // cerrar sesión debe estar disponible en cualquier punto del recorrido.
 // CLASE_ATRAS no lleva el verde subrayado de un enlace (DESIGN.md §2 es para texto
 // corrido); es cromo de navegación, así que se viste gris como el resto del cromo.
-export const CLASE_ATRAS =
+export const BACK_CLASS =
   '-mx-2 inline-flex shrink-0 items-center rounded-md px-2 py-1.5 font-medium text-body transition hover:bg-surface-strong hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link'
 
 function AppHeader({
-  atras,
-  etiqueta,
+  atras: back,
+  etiqueta: label,
   children,
 }: {
   /** Enlace o botón de retorno. Va pegado a la marca, a la izquierda. */
@@ -41,18 +41,18 @@ function AppHeader({
             to={isSupervisor ? '/admin' : '/dashboard'}
             className="shrink-0 rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-link"
           >
-            <Marca variante="logo" className="h-10 w-auto" />
+            <Brand variante="logo" className="h-10 w-auto" />
           </Link>
 
-          {(etiqueta || atras) && <span aria-hidden className="h-6 w-px bg-hairline-strong" />}
+          {(label || back) && <span aria-hidden className="h-6 w-px bg-hairline-strong" />}
 
-          {etiqueta && (
+          {label && (
             <span className="text-xs font-semibold uppercase tracking-[0.88px] text-muted">
-              {etiqueta}
+              {label}
             </span>
           )}
 
-          {atras}
+          {back}
         </div>
 
         {/* Empuja los datos cortos y la cuenta al extremo derecho. */}
@@ -64,7 +64,7 @@ function AppHeader({
           {/* La bienvenida explica los tipos de engaño y qué pasa con los
               datos del participante; al supervisor no le dice nada. */}
           {!isSupervisor && <InfoLink />}
-          <MenuUsuario />
+          <UserMenu />
         </div>
       </div>
     </header>

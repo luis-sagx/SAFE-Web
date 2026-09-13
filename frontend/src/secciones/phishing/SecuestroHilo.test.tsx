@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
 import { describe, expect, it, vi } from 'vitest'
-import SecuestroHilo from './SecuestroHilo'
+import ThreadHijacking from './SecuestroHilo'
 
 vi.mock('../../context/AuthContext', () => ({
   useAuth: () => ({
@@ -29,15 +29,15 @@ vi.mock('../../context/AuthContext', () => ({
 }))
 
 vi.mock('../../lib/api', async () => {
-  const actual = await vi.importActual<typeof import('../../lib/api')>('../../lib/api')
-  return { ...actual, createRun: vi.fn().mockResolvedValue(undefined) }
+  const current = await vi.importActual<typeof import('../../lib/api')>('../../lib/api')
+  return { ...current, createRun: vi.fn().mockResolvedValue(undefined) }
 })
 
 describe('SecuestroHilo', () => {
   it('muestra un beneficiario distinto a la escuela para hacer visible la trampa', () => {
     render(
       <MemoryRouter>
-        <SecuestroHilo />
+        <ThreadHijacking />
       </MemoryRouter>,
     )
 

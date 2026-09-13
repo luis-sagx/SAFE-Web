@@ -1,18 +1,18 @@
 import { Landmark, School } from 'lucide-react'
-import StoryEscenario, { type ScreenNode } from '../../components/StoryEscenario'
-import type { Contexto } from '../../components/ui/ContextoEscenario'
-import { ENLACES_PIE } from '../../components/ui/armazonSitio'
-import type { MarcadorNavegador } from '../../components/ui/Navegador'
-import { ACCIONES_BARRA, finalesDeBarra } from './barraDeCorreo'
+import ScenarioStory, { type ScreenNode } from '../../components/StoryEscenario'
+import type { Context } from '../../components/ui/ContextoEscenario'
+import { FOOTER_LINKS } from '../../components/ui/armazonSitio'
+import type { BrowserBookmark } from '../../components/ui/Navegador'
+import { ACTIONS_BAR, createToolbarEndings } from './barraDeCorreo'
 import type { Story } from '../../hooks/useStoryEngine'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
-import type { Senal } from '../../components/ui/PanelVeredicto'
-import { crearSenal } from '../../lib/crearSenal'
+import type { Signal } from '../../components/ui/PanelVeredicto'
+import { createSignal } from '../../lib/crearSenal'
 
 // Único escenario sin nada raro que señalar: la cuenta de la secretaría está hackeada de
 // verdad, y todo lo que se aprendió a mirar sale bien igual. Solo el hábito de confirmar salva.
 
-const HILO_PREVIO = `
+const THREAD_PREVIOUS = `
   <div style="border-left:3px solid #d7dde1;padding-left:12px;margin:14px 0;color:#5f6b7a;font-size:13px;line-height:1.55;">
     <p style="margin:0 0 8px;"><b>Secretaría, Unidad Educativa San Rafael</b> · hace 3 días<br/>
     Buenas tardes, le recuerdo que la pensión de este mes vence en cinco días. El monto es $145.</p>
@@ -21,7 +21,7 @@ const HILO_PREVIO = `
   </div>
 `
 
-const CORREO: ScreenView = {
+const EMAIL: ScreenView = {
   kind: 'mail',
   from: 'Secretaría, Unidad Educativa San Rafael',
   address: 'secretaria@unidadsanrafael.edu.ec',
@@ -41,7 +41,7 @@ const CORREO: ScreenView = {
       <mark class="marca" data-signal="cuenta">cambiamos de banco</mark> este mes. Adjunto el
       comprobante corregido con el nuevo número de cuenta para la pensión de este mes.
     </p>
-    ${HILO_PREVIO}
+    ${THREAD_PREVIOUS}
   `,
   attachment: 'Comprobante_pension_mes_actual.pdf',
   adjuntoGoto: 'n4',
@@ -50,7 +50,7 @@ const CORREO: ScreenView = {
 }
 
 // La banca en línea: es donde la decisión se vuelve irreversible.
-const BANCA: ScreenView = {
+const BANKING: ScreenView = {
   kind: 'web',
   url: 'https://banca.bancodellitoral.ec/transferencias',
   secure: true,
@@ -76,7 +76,7 @@ const BANCA: ScreenView = {
   aviso:
     'Verifique el número de cuenta antes de confirmar. Las transferencias a terceros no pueden revertirse una vez procesadas.',
   footer: 'Banco del Litoral · Entidad supervisada',
-  pie: ENLACES_PIE,
+  pie: FOOTER_LINKS,
   button: 'Transferir $145',
   botonGoto: 'e_transfiere',
   botonLabel: 'Transfirió los $145 a la cuenta nueva',
@@ -85,7 +85,7 @@ const BANCA: ScreenView = {
 }
 
 // El canal alterno que hace falta para confirmar el cambio sin pasar por el correo.
-const COLEGIO: ScreenView = {
+const SCHOOL: ScreenView = {
   kind: 'web',
   url: 'https://www.unidadsanrafael.edu.ec/contacto',
   secure: true,
@@ -102,7 +102,7 @@ const COLEGIO: ScreenView = {
   aviso:
     'Cualquier cambio en las cuentas de pago se comunica por la agenda escolar y se confirma en secretaría. Ante la duda, llámenos antes de transferir.',
   footer: 'Unidad Educativa San Rafael · Quito',
-  pie: ENLACES_PIE,
+  pie: FOOTER_LINKS,
   button: '📞 Llamar al (02) 244 1180',
   botonGoto: 'e_llama',
   botonLabel: 'Llamó al colegio al número de su sitio oficial',
@@ -112,7 +112,7 @@ const COLEGIO: ScreenView = {
 
 // No es trampa técnica (PDF real, sin macros): un documento con membrete convence,
 // y aquí solo aporta el número de cuenta nuevo — que es justo lo que había que desconfiar.
-const COMPROBANTE: ScreenView = {
+const RECEIPT: ScreenView = {
   kind: 'web',
   url: 'C:\\Usuarios\\Descargas\\Comprobante_pension_mes_actual.pdf',
   secure: true,
@@ -134,21 +134,21 @@ const COMPROBANTE: ScreenView = {
 }
 
 const STORY: Story<ScreenNode> = {
-  ...finalesDeBarra('fraude', CORREO),
-  n1: { kind: 'scene', view: CORREO },
-  n2: { kind: 'scene', view: BANCA },
-  n3: { kind: 'scene', view: COLEGIO },
-  n4: { kind: 'scene', view: COMPROBANTE },
+  ...createToolbarEndings('fraude', EMAIL),
+  n1: { kind: 'scene', view: EMAIL },
+  n2: { kind: 'scene', view: BANKING },
+  n3: { kind: 'scene', view: SCHOOL },
+  n4: { kind: 'scene', view: RECEIPT },
   e_transfiere: {
     kind: 'bad',
-    view: BANCA,
+    view: BANKING,
     verdict: 'Caíste en la estafa',
     outcome:
       'Transferiste a la cuenta nueva. La cuenta de correo de la secretaría estaba comprometida: el atacante escribía desde ahí, con el hilo real y el PDF corregido. El dinero no llegó a la escuela, y la pensión sigue debiéndose.',
   },
   e_llama: {
     kind: 'good',
-    view: COLEGIO,
+    view: SCHOOL,
     verdict: 'No caíste · llamaste al número que ya tenías',
     outcome:
       'La secretaria no sabía nada de ningún cambio de banco: su cuenta de correo había sido hackeada. Evitaste transferir a la cuenta falsa y, al avisar, evitaste que otros padres transfirieran.',
@@ -157,7 +157,7 @@ const STORY: Story<ScreenNode> = {
   // correo es la que está en manos del atacante, así que contesta él.
   e_responder: {
     kind: 'bad',
-    view: CORREO,
+    view: EMAIL,
     verdict: 'Preguntaste por el canal equivocado',
     outcome:
       'Respondiste el mismo hilo preguntando si el cambio era real, y te contestaron que sí: porque quien contesta es el atacante, desde la cuenta que controla. Verificar por el mismo canal que trae el aviso no verifica nada.',
@@ -167,14 +167,14 @@ const STORY: Story<ScreenNode> = {
   // legítimos que vengan después.
   e_spam: {
     kind: 'partial',
-    view: CORREO,
+    view: EMAIL,
     verdict: 'No caíste, pero castigaste la dirección real',
     outcome:
       'No transferiste, y eso es lo importante. Pero la dirección es la auténtica del colegio: al marcarla como spam le enseñaste al filtro a esconder también las circulares y los recordatorios que sí vas a necesitar. El problema no era el remitente, era su cuenta hackeada, y eso se avisa llamando.',
   },
 }
 
-const MARCADORES: MarcadorNavegador[] = [
+const MARKERS: BrowserBookmark[] = [
   {
     Icono: Landmark,
     texto: 'Banco del Litoral',
@@ -189,7 +189,7 @@ const MARCADORES: MarcadorNavegador[] = [
   },
 ]
 
-const INSTRUCCION = (
+const INSTRUCTION = (
   <>
     <p className="text-lg leading-relaxed text-body">
       Actúa sobre la ventana como lo harías frente a tu correo de verdad: puedes usar{' '}
@@ -203,7 +203,7 @@ const INSTRUCCION = (
   </>
 )
 
-const PISTA = (
+const CLUE = (
   <p>
     Aquí no hay nada raro que descubrir en el correo. Puedes abrir el comprobante adjunto y mirarlo.
     Lo que se decide es otra cosa: si haces la transferencia, si preguntas por donde llegó el
@@ -212,38 +212,38 @@ const PISTA = (
   </p>
 )
 
-const SENALES: Senal[] = [
-  crearSenal(
+const SIGNALS: Signal[] = [
+  createSignal(
     's0',
     'n4',
     'cuenta-pdf',
     'El comprobante tiene membrete, fecha y monto correctos, y aun así <b>solo repite el número de cuenta nuevo</b>. Un archivo adjunto no confirma nada: lo escribió quien mandó el correo.',
   ),
-  crearSenal(
+  createSignal(
     's1',
     'n1',
     'remitente',
     'No hay una dirección imitada, ni errores de redacción, ni urgencia artificial: el hilo es <b>real</b> y la dirección también. La cuenta de la secretaría estaba hackeada, así que todo lo que sueles mirar salía bien.',
   ),
-  crearSenal(
+  createSignal(
     's2',
     'n1',
     'cuenta',
     'La única anomalía es el hecho en sí: <b>un cambio de número de cuenta</b>. Eso, por sí solo, ya obliga a confirmar por otra vía.',
   ),
-  crearSenal(
+  createSignal(
     's3',
     'n2',
     'beneficiario-ajeno',
     'El beneficiario es <b>una persona ajena a la escuela</b>. Aunque el número de cuenta pareciera correcto, ese nombre distinto confirma que no debes transferir.',
   ),
-  crearSenal(
+  createSignal(
     's4',
     'n2',
     'cuenta-nueva',
     'La cuenta destino <b>no es la de siempre</b>, y es lo último que ves antes de que el dinero salga. Ese es el momento de parar, no después.',
   ),
-  crearSenal(
+  createSignal(
     's5',
     'n3',
     'telefono',
@@ -254,9 +254,9 @@ const SENALES: Senal[] = [
 const RULE =
   'Regla de oro: todo cambio de número de cuenta se confirma <b>por llamada al número que ya tenías</b>, jamás por el mismo canal donde llegó el aviso. Responder el correo para verificar es preguntarle al estafador si es estafador.'
 
-const RESUMEN = 'La secretaría del colegio de tu hijo dice que "cambió de banco" para la pensión.'
+const SUMMARY = 'La secretaría del colegio de tu hijo dice que "cambió de banco" para la pensión.'
 
-const CONTEXTO: Contexto = {
+const CONTEXT: Context = {
   antes: (
     <>
       Pagas la pensión del colegio de tu hijo y tienes un hilo de correo real y en curso con la{' '}
@@ -271,23 +271,23 @@ const CONTEXTO: Contexto = {
   ),
 }
 
-function SecuestroHilo() {
+function ThreadHijacking() {
   return (
-    <StoryEscenario
+    <ScenarioStory
       escenarioId="phishing/secuestro-hilo"
-      resumen={RESUMEN}
-      contexto={CONTEXTO}
+      resumen={SUMMARY}
+      contexto={CONTEXT}
       story={STORY}
-      accionesCorreo={ACCIONES_BARRA}
+      accionesCorreo={ACTIONS_BAR}
       identidad={['cuenta']}
-      marcadores={MARCADORES}
-      instruccion={INSTRUCCION}
-      pista={PISTA}
-      senales={SENALES}
+      marcadores={MARKERS}
+      instruccion={INSTRUCTION}
+      pista={CLUE}
+      senales={SIGNALS}
       rule={RULE}
       restartLabel="↻ Repetir el escenario"
     />
   )
 }
 
-export default SecuestroHilo
+export default ThreadHijacking

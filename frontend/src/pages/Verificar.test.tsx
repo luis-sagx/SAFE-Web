@@ -1,22 +1,22 @@
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import Verificar from './Verificar'
+import VerifyCertificate from './Verificar'
 
-const { verificarCertificadoMock } = vi.hoisted(() => ({
-  verificarCertificadoMock: vi.fn(),
+const { verifyCertificateMock } = vi.hoisted(() => ({
+  verifyCertificateMock: vi.fn(),
 }))
 
 vi.mock('../lib/api', async () => {
-  const actual = await vi.importActual<typeof import('../lib/api')>('../lib/api')
-  return { ...actual, verificarCertificado: verificarCertificadoMock }
+  const current = await vi.importActual<typeof import('../lib/api')>('../lib/api')
+  return { ...current, verifyCertificate: verifyCertificateMock }
 })
 
-function renderVerificar(codigo = 'SW-RQFS-XBC2') {
+function renderVerification(code = 'SW-RQFS-XBC2') {
   return render(
-    <MemoryRouter initialEntries={[`/verificar/${codigo}`]}>
+    <MemoryRouter initialEntries={[`/verificar/${code}`]}>
       <Routes>
-        <Route path="/verificar/:codigo" element={<Verificar />} />
+        <Route path="/verificar/:codigo" element={<VerifyCertificate />} />
       </Routes>
     </MemoryRouter>,
   )
@@ -24,26 +24,26 @@ function renderVerificar(codigo = 'SW-RQFS-XBC2') {
 
 describe('Verificar', () => {
   beforeEach(() => {
-    verificarCertificadoMock.mockReset()
+    verifyCertificateMock.mockReset()
   })
 
   it('mientras verifica, no dice ni válido ni inválido', () => {
-    verificarCertificadoMock.mockReturnValue(new Promise(() => {}))
+    verifyCertificateMock.mockReturnValue(new Promise(() => {}))
 
-    renderVerificar()
+    renderVerification()
 
     expect(screen.getByText('Verificando…')).toBeDefined()
   })
 
   it('un código válido muestra la fecha, la duración y los módulos, nunca un nombre', async () => {
-    verificarCertificadoMock.mockResolvedValue({
+    verifyCertificateMock.mockResolvedValue({
       valido: true,
       emitidoAt: '2026-09-04T00:00:00.000Z',
       horas: 4,
       modulos: ['phishing', 'smishing'],
     })
 
-    renderVerificar()
+    renderVerification()
 
     expect(await screen.findByText('Certificado válido')).toBeDefined()
     expect(screen.getByText(/con una duración de 4 horas/)).toBeDefined()
@@ -51,9 +51,9 @@ describe('Verificar', () => {
   })
 
   it('un código inválido o revocado lo dice sin más detalle', async () => {
-    verificarCertificadoMock.mockResolvedValue({ valido: false })
+    verifyCertificateMock.mockResolvedValue({ valido: false })
 
-    renderVerificar()
+    renderVerification()
 
     expect(
       await screen.findByText('Este código no corresponde a un certificado vigente.'),
@@ -61,9 +61,9 @@ describe('Verificar', () => {
   })
 
   it('si la verificación falla, muestra el aviso de error', async () => {
-    verificarCertificadoMock.mockRejectedValue(new Error('red caída'))
+    verifyCertificateMock.mockRejectedValue(new Error('red caída'))
 
-    renderVerificar()
+    renderVerification()
 
     expect(
       await screen.findByText('No se pudo verificar el código. Vuelve a intentarlo más tarde.'),

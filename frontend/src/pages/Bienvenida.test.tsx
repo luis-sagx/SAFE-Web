@@ -3,7 +3,7 @@ import { MemoryRouter, Route, Routes } from 'react-router'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { AuthProvider } from '../context/AuthContext'
 import { setToken } from '../lib/api'
-import Bienvenida from './Bienvenida'
+import Welcome from './Bienvenida'
 
 const { fetchMeMock, patchMeMock } = vi.hoisted(() => ({
   fetchMeMock: vi.fn(),
@@ -11,11 +11,11 @@ const { fetchMeMock, patchMeMock } = vi.hoisted(() => ({
 }))
 
 vi.mock('../lib/api', async () => {
-  const actual = await vi.importActual<typeof import('../lib/api')>('../lib/api')
-  return { ...actual, fetchMe: fetchMeMock, patchMe: patchMeMock }
+  const current = await vi.importActual<typeof import('../lib/api')>('../lib/api')
+  return { ...current, fetchMe: fetchMeMock, patchMe: patchMeMock }
 })
 
-const PARTICIPANTE = {
+const PARTICIPANT = {
   id: 'p1',
   nombre: 'María',
   apellido: 'Pérez',
@@ -26,14 +26,14 @@ const PARTICIPANTE = {
 
 /// El aviso se abre con `from` en el estado de navegación, que es lo que pone
 /// el ícono ⓘ (y RequireAuth en el primer ingreso).
-function renderDesde(from?: unknown) {
+function renderFrom(from?: unknown) {
   return render(
     <MemoryRouter
       initialEntries={[{ pathname: '/bienvenida', state: from === undefined ? null : { from } }]}
     >
       <AuthProvider>
         <Routes>
-          <Route path="/bienvenida" element={<Bienvenida />} />
+          <Route path="/bienvenida" element={<Welcome />} />
           <Route path="/dashboard" element={<p>Panel</p>} />
           <Route path="/seccion/phishing/factura-sri" element={<p>Escenario 1</p>} />
         </Routes>
@@ -44,7 +44,7 @@ function renderDesde(from?: unknown) {
 
 /// El aviso pasa por seis amenazas antes de cerrarse: se avanza hasta que el
 /// botón deja de decir "Siguiente".
-async function continuar() {
+async function continueAction() {
   for (let i = 0; i < 6; i++) {
     fireEvent.click(await screen.findByRole('button', { name: 'Siguiente →' }))
   }
@@ -57,25 +57,25 @@ describe('Bienvenida', () => {
     fetchMeMock.mockReset()
     patchMeMock.mockReset()
     setToken('t0ken')
-    fetchMeMock.mockResolvedValue(PARTICIPANTE)
-    patchMeMock.mockResolvedValue(PARTICIPANTE)
+    fetchMeMock.mockResolvedValue(PARTICIPANT)
+    patchMeMock.mockResolvedValue(PARTICIPANT)
   })
 
   // El motivo del issue #36: el aviso se abre desde el ícono ⓘ, que está en
   // todas las pantallas. Devolver siempre al panel le costaba al participante
   // el escenario en el que estaba.
   it('vuelve a la pantalla desde la que se abrió', async () => {
-    renderDesde('/seccion/phishing/factura-sri')
+    renderFrom('/seccion/phishing/factura-sri')
 
-    await continuar()
+    await continueAction()
 
     expect(await screen.findByText('Escenario 1')).toBeDefined()
   })
 
   it('va al panel cuando no hay ruta de origen', async () => {
-    renderDesde()
+    renderFrom()
 
-    await continuar()
+    await continueAction()
 
     expect(await screen.findByText('Panel')).toBeDefined()
   })
@@ -84,25 +84,25 @@ describe('Bienvenida', () => {
   // enlace. Una dirección externa convertiría este botón en un salto fuera de
   // la aplicación.
   it('ignora un destino que no sea una ruta interna', async () => {
-    renderDesde('https://ejemplo.invalido/entrar')
+    renderFrom('https://ejemplo.invalido/entrar')
 
-    await continuar()
+    await continueAction()
 
     expect(await screen.findByText('Panel')).toBeDefined()
   })
 
   it('ignora el protocolo relativo, que también sale de la aplicación', async () => {
-    renderDesde('//ejemplo.invalido')
+    renderFrom('//ejemplo.invalido')
 
-    await continuar()
+    await continueAction()
 
     expect(await screen.findByText('Panel')).toBeDefined()
   })
 
   it('no se devuelve a sí misma', async () => {
-    renderDesde('/bienvenida')
+    renderFrom('/bienvenida')
 
-    await continuar()
+    await continueAction()
 
     expect(await screen.findByText('Panel')).toBeDefined()
   })
@@ -110,11 +110,11 @@ describe('Bienvenida', () => {
   // El recorrido es el motivo del cambio: seis párrafos juntos se saltaban
   // enteros, así que ahora va uno por pantalla y con su forma de evitarlo.
   it('presenta las seis amenazas de una en una, con qué hacer en cada caso', async () => {
-    renderDesde()
+    renderFrom()
 
     expect(await screen.findByText(/Hola, /)).toBeDefined()
 
-    for (const titulo of [
+    for (const title of [
       'Phishing',
       'Smishing',
       'Vishing',
@@ -123,7 +123,7 @@ describe('Bienvenida', () => {
       'Riesgo físico',
     ]) {
       fireEvent.click(await screen.findByRole('button', { name: 'Siguiente →' }))
-      expect(await screen.findByRole('heading', { name: titulo })).toBeDefined()
+      expect(await screen.findByRole('heading', { name: title })).toBeDefined()
       expect(screen.getByText(/Cómo evitarlo:/)).toBeDefined()
     }
 
@@ -131,7 +131,7 @@ describe('Bienvenida', () => {
   })
 
   it('deja volver a la amenaza anterior', async () => {
-    renderDesde()
+    renderFrom()
 
     fireEvent.click(await screen.findByRole('button', { name: 'Siguiente →' }))
     fireEvent.click(await screen.findByRole('button', { name: 'Siguiente →' }))
@@ -145,7 +145,7 @@ describe('Bienvenida', () => {
   // La casilla decide si el aviso vuelve a salir, así que solo tiene sentido
   // cuando ya se recorrió entero.
   it('la casilla de no volver a mostrarlo solo aparece al final', async () => {
-    renderDesde()
+    renderFrom()
 
     expect(screen.queryByRole('checkbox')).toBeNull()
 
@@ -161,9 +161,9 @@ describe('Bienvenida', () => {
   it('vuelve igual aunque falle el guardado', async () => {
     patchMeMock.mockRejectedValue(new Error('500'))
 
-    renderDesde('/seccion/phishing/factura-sri')
+    renderFrom('/seccion/phishing/factura-sri')
 
-    await continuar()
+    await continueAction()
 
     await waitFor(() => {
       expect(screen.getByText('Escenario 1')).toBeDefined()

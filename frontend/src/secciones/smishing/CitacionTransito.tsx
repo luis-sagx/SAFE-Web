@@ -1,15 +1,15 @@
 import { Camera, Compass, MessageSquareText, Wallet } from 'lucide-react'
-import StoryEscenario, { type AppTelefono, type ScreenNode } from '../../components/StoryEscenario'
-import type { Contexto } from '../../components/ui/ContextoEscenario'
+import ScenarioStory, { type PhoneApp, type ScreenNode } from '../../components/StoryEscenario'
+import type { Context } from '../../components/ui/ContextoEscenario'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
-import type { Senal } from '../../components/ui/PanelVeredicto'
+import type { Signal } from '../../components/ui/PanelVeredicto'
 import type { Story } from '../../hooks/useStoryEngine'
 
-const ENLACE =
+const LINK =
   '<a href="https://transito-ec-pagos.com/citacion" data-hotspot-goto="n2" data-hotspot-label="Abrió el enlace de pago del mensaje">https://transito-ec-pagos.com/citacion</a>'
 
-const PRIMER_SMS = {
-  text: `TRANSITO EC: tiene una citación pendiente. Cancele antes del viernes o el valor se duplica. Consulte y pague aquí: ${ENLACE}`,
+const FIRST_SMS = {
+  text: `TRANSITO EC: tiene una citación pendiente. Cancele antes del viernes o el valor se duplica. Consulte y pague aquí: ${LINK}`,
   time: '08:27',
   senal: 'mensaje',
 }
@@ -19,16 +19,16 @@ const SMS: ScreenView = {
   sender: 'TRANSITO-EC',
   sub: 'Remitente sin verificar · SMS',
   senalRemitente: 'remitente',
-  msgs: [PRIMER_SMS],
+  msgs: [FIRST_SMS],
   composerGoto: 'n1b',
   composerLabel: 'Respondió el mensaje preguntando qué placa tiene la multa',
 }
 
-const SMS_RESPONDIDO: ScreenView = {
+const REPLIED_SMS: ScreenView = {
   ...SMS,
   composerGoto: undefined,
   msgs: [
-    PRIMER_SMS,
+    FIRST_SMS,
     { text: '¿Cuál es la placa?', time: '08:31', mine: true },
     {
       text: 'Para consultar debe ingresar placa y cédula en el enlace. Último plazo viernes 17h00.',
@@ -38,7 +38,7 @@ const SMS_RESPONDIDO: ScreenView = {
   ],
 }
 
-const PAGINA: ScreenView = {
+const PAGE: ScreenView = {
   kind: 'web',
   url: 'https://transito-ec-pagos.com/citacion',
   secure: true,
@@ -63,7 +63,7 @@ const PAGINA: ScreenView = {
 /// El navegador abre en sus sitios frecuentes, no en el portal. Es el
 /// equivalente móvil de la barra de marcadores: entrar por tu cuenta sigue
 /// siendo una decisión con dirección, no un icono que resuelve el escenario.
-const NAVEGADOR: ScreenView = {
+const BROWSER: ScreenView = {
   kind: 'web',
   app: 'Navegador',
   url: 'inicio',
@@ -108,7 +108,7 @@ const PORTAL: ScreenView = {
 
 /// El navegador es aquí lo que el marcador del portal era en phishing: el
 /// camino para consultar la multa escribiendo tú la dirección oficial.
-const APPS: AppTelefono[] = [
+const APPS: PhoneApp[] = [
   { Icono: MessageSquareText, texto: 'Mensajes', color: '#2f9e44' },
   {
     Icono: Wallet,
@@ -133,19 +133,19 @@ const APPS: AppTelefono[] = [
 
 const STORY: Story<ScreenNode> = {
   n1: { kind: 'scene', view: SMS },
-  n1b: { kind: 'scene', view: SMS_RESPONDIDO },
-  n2: { kind: 'scene', view: PAGINA },
-  n3: { kind: 'scene', view: NAVEGADOR },
+  n1b: { kind: 'scene', view: REPLIED_SMS },
+  n2: { kind: 'scene', view: PAGE },
+  n3: { kind: 'scene', view: BROWSER },
   e_pago: {
     kind: 'bad',
-    view: PAGINA,
+    view: PAGE,
     verdict: 'Caíste en la trampa',
     outcome:
       'La citación no existía. Al escribir la tarjeta completa, entregaste los datos necesarios para compras por internet.',
   },
   e_cierra: {
     kind: 'good',
-    view: PAGINA,
+    view: PAGE,
     verdict: 'No caíste · el formulario pedía lo que debía saber',
     outcome:
       'Saliste de la página antes de enviar datos. Una institución que registra una multa no necesita pescar tu placa por un enlace.',
@@ -159,7 +159,7 @@ const STORY: Story<ScreenNode> = {
   },
 }
 
-const SENALES: Senal[] = [
+const SIGNALS: Signal[] = [
   {
     id: 's1',
     targetId: 'mensaje',
@@ -197,9 +197,9 @@ const SENALES: Senal[] = [
 const RULE =
   'Regla de oro: una multa se consulta entrando tú al portal oficial o en ventanilla. Si el mensaje te pide los datos que la entidad debería conocer, está pescando.'
 
-const RESUMEN = 'Un SMS avisa una citación de tránsito y amenaza con duplicar el valor.'
+const SUMMARY = 'Un SMS avisa una citación de tránsito y amenaza con duplicar el valor.'
 
-const CONTEXTO: Contexto = {
+const CONTEXT: Context = {
   antes: (
     <>
       Tienes carro y ya te ha pasado pagar multas tarde, así que una citación nueva no te parece
@@ -214,14 +214,14 @@ const CONTEXTO: Contexto = {
   ),
 }
 
-function CitacionTransito() {
+function TrafficCitation() {
   return (
-    <StoryEscenario
+    <ScenarioStory
       escenarioId="smishing/citacion-transito"
-      resumen={RESUMEN}
-      contexto={CONTEXTO}
+      resumen={SUMMARY}
+      contexto={CONTEXT}
       story={STORY}
-      senales={SENALES}
+      senales={SIGNALS}
       rule={RULE}
       restartLabel="↻ Repetir el escenario"
       accionesEnPantalla
@@ -244,4 +244,4 @@ function CitacionTransito() {
   )
 }
 
-export default CitacionTransito
+export default TrafficCitation

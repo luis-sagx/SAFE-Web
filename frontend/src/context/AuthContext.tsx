@@ -20,7 +20,7 @@ interface AuthValue {
   register: (credentials: Credentials) => Promise<Participant>
   logout: () => void
   /** true: la bienvenida no vuelve a aparecer sola. false: reactivarla. */
-  marcarOnboardingVisto: (visto: boolean) => Promise<void>
+  marcarOnboardingVisto: (seen: boolean) => Promise<void>
   /** Ya se pasó por la bienvenida en esta sesión: deja salir aunque el
    *  participante haya pedido que vuelva a aparecer en el próximo ingreso. */
   onboardingDismissed: boolean
@@ -40,11 +40,11 @@ function firstName(participant: Participant | null): string {
 }
 
 // Dominio inventado, para distinguir de un vistazo el ejercicio de la bandeja real.
-const DOMINIO_SIMULADO = 'safeweb.com'
+const SIMULATED_DOMAIN = 'safeweb.com'
 
 // Deja solo letras sin tilde: "sebastián" o "peña" no sobreviven a un buzón real.
-function normalizar(texto: string | null | undefined): string {
-  return (texto ?? '')
+function normalize(text: string | null | undefined): string {
+  return (text ?? '')
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase()
@@ -52,22 +52,22 @@ function normalizar(texto: string | null | undefined): string {
 }
 
 // Si la cuenta no tiene nombre (ya anonimizada), cae a "participante" para no quedar vacía.
-function usuarioSimuladoDe(participant: Participant | null): string {
-  const nombre = normalizar(participant?.nombre?.trim().split(/\s+/)[0])
-  const apellido = normalizar(participant?.apellido?.trim().split(/\s+/)[0])
+function getSimulatedUser(participant: Participant | null): string {
+  const name = normalize(participant?.nombre?.trim().split(/\s+/)[0])
+  const lastName = normalize(participant?.apellido?.trim().split(/\s+/)[0])
 
-  return `${nombre}${apellido}` || 'participante'
+  return `${name}${lastName}` || 'participante'
 }
 
 // Si falta el apellido (cuenta anonimizada), cae a las dos primeras palabras del nombre.
 function initialsOf(participant: Participant | null): string {
-  const nombre = participant?.nombre?.trim().split(/\s+/) ?? []
-  const apellido = participant?.apellido?.trim().split(/\s+/) ?? []
+  const name = participant?.nombre?.trim().split(/\s+/) ?? []
+  const lastName = participant?.apellido?.trim().split(/\s+/) ?? []
 
-  const partes = apellido.length > 0 ? [nombre[0], apellido[0]] : nombre.slice(0, 2)
-  const letras = partes.map((parte) => parte?.[0]?.toUpperCase() ?? '').join('')
+  const parts = lastName.length > 0 ? [name[0], lastName[0]] : name.slice(0, 2)
+  const letters = parts.map((part) => part?.[0]?.toUpperCase() ?? '').join('')
 
-  return letras || 'TU'
+  return letters || 'TU'
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -127,9 +127,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Se marca "visto" para esta sesión sin importar el valor elegido: desmarcada
   // solo reactiva la bienvenida en el próximo ingreso, no en esta sesión.
-  const marcarOnboardingVisto = useCallback(async (visto: boolean) => {
-    const actualizado = await api.patchMe({ onboardingVisto: visto })
-    setParticipant(actualizado)
+  const markOnboardingAsSeen = useCallback(async (seen: boolean) => {
+    const updated = await api.patchMe({ onboardingVisto: seen })
+    setParticipant(updated)
     setOnboardingDismissed(true)
   }, [])
 
@@ -142,15 +142,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       login,
       register,
       logout,
-      marcarOnboardingVisto,
+      marcarOnboardingVisto: markOnboardingAsSeen,
       onboardingDismissed,
       displayName: firstName(participant),
       roleLabel: 'Participante',
       initials: initialsOf(participant),
-      correoSimulado: `${usuarioSimuladoDe(participant)}@${DOMINIO_SIMULADO}`,
-      usuarioSimulado: usuarioSimuladoDe(participant),
+      correoSimulado: `${getSimulatedUser(participant)}@${SIMULATED_DOMAIN}`,
+      usuarioSimulado: getSimulatedUser(participant),
     }),
-    [participant, loading, login, register, logout, marcarOnboardingVisto, onboardingDismissed],
+    [participant, loading, login, register, logout, markOnboardingAsSeen, onboardingDismissed],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

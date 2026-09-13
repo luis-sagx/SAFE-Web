@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
-import Marca from './Marca'
-import SelectorTema from './SelectorTema'
+import Brand from './Marca'
+import ThemeSelector from './SelectorTema'
 
 interface AuthLayoutProps {
   titulo: string
@@ -11,18 +11,18 @@ interface AuthLayoutProps {
 
 /// Dos columnas en escritorio: el lado de marca explica de qué va la
 /// plataforma; el formulario queda en una tarjeta a la derecha.
-function AuthLayout({ titulo, subtitulo, children, pie }: AuthLayoutProps) {
+function AuthLayout({ titulo: title, subtitulo: subtitle, children, pie }: AuthLayoutProps) {
   return (
     // Flujo normal y no `absolute`: flotando arriba del todo, el selector se
     // salía de la vista al hacer scroll (o se montaba encima del logo en una
     // pantalla baja) — acá siempre tiene su propio espacio reservado.
     <div className="min-h-screen bg-gradient-to-b from-mint-light to-canvas">
       <div className="mx-auto flex max-w-5xl justify-end px-6 pt-6">
-        <SelectorTema />
+        <ThemeSelector />
       </div>
       <div className="mx-auto flex min-h-screen max-w-5xl flex-col justify-center gap-12 px-6 py-12 lg:flex-row lg:items-center lg:gap-16">
         <div className="flex-1">
-          <Marca variante="logo" className="h-12 w-auto" />
+          <Brand variante="logo" className="h-12 w-auto" />
           <h1 className="mt-4 text-4xl font-semibold leading-[1.1] tracking-tight text-ink sm:text-5xl">
             Aprende a reconocer un engaño antes de caer en uno.
           </h1>
@@ -33,8 +33,8 @@ function AuthLayout({ titulo, subtitulo, children, pie }: AuthLayoutProps) {
         </div>
 
         <section className="w-full rounded-xl border border-hairline-strong bg-surface p-8 shadow-card lg:w-[400px] lg:shrink-0">
-          <h2 className="text-2xl font-semibold tracking-tight text-ink">{titulo}</h2>
-          <p className="mt-2 text-base text-body">{subtitulo}</p>
+          <h2 className="text-2xl font-semibold tracking-tight text-ink">{title}</h2>
+          <p className="mt-2 text-base text-body">{subtitle}</p>
           {children}
           {pie}
         </section>

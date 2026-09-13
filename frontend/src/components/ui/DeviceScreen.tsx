@@ -1,17 +1,17 @@
 import { Bot, Landmark, Paperclip, Search, SendHorizontal, UserRound } from 'lucide-react'
 import { useEffect, useMemo, useRef } from 'react'
 import { useAuth } from '../../context/AuthContext'
-import { CUENTA_FICTICIA, IDENTIDAD_FICTICIA } from '../../lib/identidadFicticia'
-import { AvisoSitio, CabeceraSitio, PieSitio } from './armazonSitio'
+import { ACCOUNT_FAKE, IDENTITY_FAKE } from '../../lib/identidadFicticia'
+import { SiteNotice, SiteHeader, SiteFooter } from './armazonSitio'
 import {
-  CuerpoCorreo,
-  type AccionCorreo,
-  type CarpetaCorreo,
-  type MarcaCorreo,
+  EmailBody,
+  type EmailAction,
+  type EmailFolder,
+  type EmailBrand,
 } from './DesktopChrome'
-import NotaDeVoz from './NotaDeVoz'
-import PantallaLlamada from './PantallaLlamada'
-import { EscenaFoto, type DestelloEscena, type ProgresoEscena, type ZonaEscena } from '../../secciones/fisico/EscenaFoto'
+import VoiceNote from './NotaDeVoz'
+import CallScreen from './PantallaLlamada'
+import { PhotoScene, type SceneFlash, type SceneProgress, type SceneZone } from '../../secciones/fisico/EscenaFoto'
 import styles from './DeviceScreen.module.css'
 
 // Solo dibuja lo que la app real mostraría (regla diegética de
@@ -22,10 +22,10 @@ export type ScreenView =
       kind: 'escena'
       src: string
       alt: string
-      zonas?: ZonaEscena[]
+      zonas?: SceneZone[]
       // Punto a tocar para que aparezcan las opciones; sin esto se muestran de entrada.
-      destello?: DestelloEscena
-      progreso?: ProgresoEscena
+      destello?: SceneFlash
+      progreso?: SceneProgress
     }
   | {
       kind: 'mail'
@@ -44,7 +44,7 @@ export type ScreenView =
       senalDireccion?: string
       senalEtiqueta?: string
       senalAdjunto?: string
-      marca?: MarcaCorreo
+      marca?: EmailBrand
     }
   | {
       kind: 'web'
@@ -173,29 +173,29 @@ export type ScreenView =
 
 // Existe por el perfil clonado: una cuenta que suplanta lleva *tu* nombre en
 // la cabecera. Los escenarios escriben {nombre} y aquí se sustituye.
-const TOKEN_NOMBRE = /\{nombre\}/g
+const TOKEN_NAME = /\{nombre\}/g
 
-function conNombre<T>(valor: T, nombre: string): T {
-  if (typeof valor === 'string') return valor.replace(TOKEN_NOMBRE, nombre) as T
-  if (Array.isArray(valor)) return valor.map((parte) => conNombre(parte, nombre)) as T
-  if (valor !== null && typeof valor === 'object') {
+function withName<T>(value: T, name: string): T {
+  if (typeof value === 'string') return value.replace(TOKEN_NAME, name) as T
+  if (Array.isArray(value)) return value.map((parte) => withName(parte, name)) as T
+  if (value !== null && typeof value === 'object') {
     return Object.fromEntries(
-      Object.entries(valor).map(([clave, parte]) => [clave, conNombre(parte, nombre)]),
+      Object.entries(value).map(([password, parte]) => [password, withName(parte, name)]),
     ) as T
   }
-  return valor
+  return value
 }
 
 // Un formulario que ya trae *tus* datos se lee como el de un sitio que te conoce.
-const VALORES: Record<string, ((yo: { correo: string; usuario: string }) => string) | undefined> = {
-  correo: (yo) => yo.correo,
-  usuario: (yo) => yo.usuario,
-  cedula: () => IDENTIDAD_FICTICIA.cedula,
-  cuenta: () => CUENTA_FICTICIA,
+const VALUES: Record<string, ((me: { correo: string; usuario: string }) => string) | undefined> = {
+  correo: (me) => me.correo,
+  usuario: (me) => me.usuario,
+  cedula: () => IDENTITY_FAKE.cedula,
+  cuenta: () => ACCOUNT_FAKE,
 }
 
 // Sin botonGoto se pinta igual pero no responde (botón decorativo).
-function Accion({ view }: { view: Extract<ScreenView, { kind: 'web' }> }) {
+function Action({ view }: { view: Extract<ScreenView, { kind: 'web' }> }) {
   if (!view.botonGoto) return <div className={styles.submit}>{view.button}</div>
 
   return (
@@ -211,54 +211,54 @@ function Accion({ view }: { view: Extract<ScreenView, { kind: 'web' }> }) {
 }
 
 function DeviceScreen({
-  view: vista,
-  acciones,
-  carpetas,
-  destinatario,
-  carpetaForzada,
-  terminada,
+  view: toView,
+  acciones: actions,
+  carpetas: folders,
+  destinatario: recipient,
+  carpetaForzada: forcedFolder,
+  terminada: finished,
 }: {
   view: ScreenView
-  acciones?: AccionCorreo[]
-  carpetas?: CarpetaCorreo[]
+  acciones?: EmailAction[]
+  carpetas?: EmailFolder[]
   destinatario?: string
   carpetaForzada?: string
   // Solo lo mira la pantalla de llamada: colgada, deja de contar y de hablar.
   terminada?: boolean
 }) {
-  const { correoSimulado, displayName } = useAuth()
-  const correo = destinatario ?? correoSimulado
-  const usuario = correo.split('@')[0] ?? correo
+  const { correoSimulado: simulatedEmail, displayName } = useAuth()
+  const email = recipient ?? simulatedEmail
+  const user = email.split('@')[0] ?? email
 
   // Sin nombre queda "tu nombre" en minúscula, que sigue leyéndose en la frase.
-  const view = useMemo(() => conNombre(vista, displayName || 'tu nombre'), [vista, displayName])
-  const hiloRef = useRef<HTMLDivElement>(null)
+  const view = useMemo(() => withName(toView, displayName || 'tu nombre'), [toView, displayName])
+  const threadRef = useRef<HTMLDivElement>(null)
 
   // Sin autoscroll parece que no hubiera llegado respuesta (queda bajo el pliegue).
   useEffect(() => {
     if (view.kind !== 'sms') return
-    const hilo = hiloRef.current
-    if (!hilo) return
-    if (typeof hilo.scrollTo === 'function') {
-      hilo.scrollTo({ top: hilo.scrollHeight, behavior: 'smooth' })
+    const thread = threadRef.current
+    if (!thread) return
+    if (typeof thread.scrollTo === 'function') {
+      thread.scrollTo({ top: thread.scrollHeight, behavior: 'smooth' })
     } else {
-      hilo.scrollTop = hilo.scrollHeight
+      thread.scrollTop = thread.scrollHeight
     }
   }, [view])
 
   if (view.kind === 'escena') {
     return (
-      <EscenaFoto src={view.src} alt={view.alt} zonas={view.zonas} destello={view.destello} progreso={view.progreso} />
+      <PhotoScene src={view.src} alt={view.alt} zonas={view.zonas} destello={view.destello} progreso={view.progreso} />
     )
   }
 
   if (view.kind === 'mail') {
     return (
-      <CuerpoCorreo
-        acciones={acciones}
-        carpetas={carpetas}
-        destinatario={destinatario}
-        carpetaForzada={carpetaForzada}
+      <EmailBody
+        acciones={actions}
+        carpetas={folders}
+        destinatario={recipient}
+        carpetaForzada={forcedFolder}
         asunto={view.subject}
         remitente={{
           nombre: view.from,
@@ -290,7 +290,7 @@ function DeviceScreen({
       >
         {/* Contenido fijo del escenario: permite negritas y el enlace falso. */}
         <div dangerouslySetInnerHTML={{ __html: view.body }} />
-      </CuerpoCorreo>
+      </EmailBody>
     )
   }
 
@@ -298,7 +298,7 @@ function DeviceScreen({
     return (
       <div className={styles.page}>
         {view.menu ? (
-          <CabeceraSitio marca={view.brand} menu={view.menu} />
+          <SiteHeader marca={view.brand} menu={view.menu} />
         ) : (
           <p className={styles.brand}>{view.brand}</p>
         )}
@@ -316,18 +316,18 @@ function DeviceScreen({
 
         {view.opciones ? (
           <ul className={styles.opciones}>
-            {view.opciones.map((opcion) => (
-              <li key={opcion.texto}>
+            {view.opciones.map((option) => (
+              <li key={option.texto}>
                 <button
                   type="button"
                   className={styles.opcion}
-                  data-hotspot-goto={opcion.goto}
-                  data-hotspot-label={opcion.label}
+                  data-hotspot-goto={option.goto}
+                  data-hotspot-label={option.label}
                 >
                   <span className={styles.opcionTextos}>
-                    <span className={styles.opcionTexto}>{opcion.texto}</span>
-                    {opcion.detalle && (
-                      <span className={styles.opcionDetalle}>{opcion.detalle}</span>
+                    <span className={styles.opcionTexto}>{option.texto}</span>
+                    {option.detalle && (
+                      <span className={styles.opcionDetalle}>{option.detalle}</span>
                     )}
                   </span>
                   <span className={styles.opcionFlecha} aria-hidden>
@@ -339,25 +339,25 @@ function DeviceScreen({
           </ul>
         ) : view.resultados ? (
           <div className={styles.resultados}>
-            {view.resultados.map((resultado) => (
-              <div key={resultado.url} data-signal={resultado.senal}>
-                <span className={styles.resultadoUrl}>{resultado.url}</span>
-                <span className={styles.resultadoTitulo}>{resultado.titulo}</span>
-                <p className={styles.resultadoTexto}>{resultado.fragmento}</p>
+            {view.resultados.map((result) => (
+              <div key={result.url} data-signal={result.senal}>
+                <span className={styles.resultadoUrl}>{result.url}</span>
+                <span className={styles.resultadoTitulo}>{result.titulo}</span>
+                <p className={styles.resultadoTexto}>{result.fragmento}</p>
               </div>
             ))}
           </div>
         ) : view.datos ? (
           <div className={styles.datos}>
-            {view.datos.map((dato) => (
-              <div key={dato.etiqueta} className={styles.dato}>
-                <span className={styles.datoEtiqueta}>{dato.etiqueta}</span>
-                <span className={styles.datoValor} data-signal={dato.senal}>
-                  {dato.valor}
+            {view.datos.map((data) => (
+              <div key={data.etiqueta} className={styles.dato}>
+                <span className={styles.datoEtiqueta}>{data.etiqueta}</span>
+                <span className={styles.datoValor} data-signal={data.senal}>
+                  {data.valor}
                 </span>
               </div>
             ))}
-            {view.button && <Accion view={view} />}
+            {view.button && <Action view={view} />}
           </div>
         ) : (
           <div className={styles.form}>
@@ -365,28 +365,28 @@ function DeviceScreen({
               <label key={field.label} className={styles.field} data-signal={field.senal}>
                 <span>{field.label}</span>
                 <span className={styles.input}>
-                  {VALORES[field.valor ?? '']?.({ correo, usuario }) ?? field.placeholder}
+                  {VALUES[field.valor ?? '']?.({ correo: email, usuario: user }) ?? field.placeholder}
                 </span>
               </label>
             ))}
-            <Accion view={view} />
+            <Action view={view} />
           </div>
         )}
 
-        {view.aviso && <AvisoSitio>{view.aviso}</AvisoSitio>}
+        {view.aviso && <SiteNotice>{view.aviso}</SiteNotice>}
 
-        <PieSitio texto={view.footer} enlaces={view.pie} />
+        <SiteFooter texto={view.footer} enlaces={view.pie} />
       </div>
     )
   }
 
   if (view.kind === 'call') {
-    return <PantallaLlamada view={view} terminada={terminada} />
+    return <CallScreen view={view} terminada={finished} />
   }
 
   // Los mensajes nuevos entran uno detrás de otro, no todos a la vez, para
   // que se lean como un chat y no como un bloque de texto.
-  const ultimoMio = view.msgs.map((msg) => Boolean(msg.mine)).lastIndexOf(true)
+  const latestMine = view.msgs.map((msg) => Boolean(msg.mine)).lastIndexOf(true)
 
   return (
     <section
@@ -436,14 +436,14 @@ function DeviceScreen({
       </div>
       )}
 
-      <div ref={hiloRef} className={styles.smsThread}>
+      <div ref={threadRef} className={styles.smsThread}>
         {view.msgs.map((msg, i) => (
           <div
             key={msg.text}
             className={`${styles.smsRow} ${msg.mine ? styles.mine : styles.theirs} ${
-              i > ultimoMio ? styles.smsNuevo : ''
+              i > latestMine ? styles.smsNuevo : ''
             }`}
-            style={i > ultimoMio ? { animationDelay: `${(i - ultimoMio - 1) * 0.6}s` } : undefined}
+            style={i > latestMine ? { animationDelay: `${(i - latestMine - 1) * 0.6}s` } : undefined}
           >
             {/* Sin cabecera que diga quién escribe, el avatar es lo que
                 distingue al asistente: cada respuesta suya sale firmada. */}
@@ -454,7 +454,7 @@ function DeviceScreen({
             )}
             <div className={styles.smsBubble}>
               {msg.voz ? (
-                <NotaDeVoz texto={msg.text} duracion={msg.voz} senal={msg.senal} />
+                <VoiceNote texto={msg.text} duracion={msg.voz} senal={msg.senal} />
               ) : (
                 <span
                   data-signal={msg.captura ? undefined : msg.senal}
@@ -484,9 +484,9 @@ function DeviceScreen({
 
                   {msg.captura.mensajes && (
                     <div className={styles.capturaHilo}>
-                      {msg.captura.mensajes.map((linea) => (
-                        <span key={linea} className={styles.capturaBurbuja}>
-                          {linea}
+                      {msg.captura.mensajes.map((line) => (
+                        <span key={line} className={styles.capturaBurbuja}>
+                          {line}
                         </span>
                       ))}
                     </div>
@@ -494,10 +494,10 @@ function DeviceScreen({
 
                   {msg.captura.datos && (
                     <dl className={styles.capturaDatos}>
-                      {msg.captura.datos.map((dato) => (
-                        <div key={dato.etiqueta} className={styles.capturaDato}>
-                          <dt className={styles.capturaEtiqueta}>{dato.etiqueta}</dt>
-                          <dd className={styles.capturaValor}>{dato.valor}</dd>
+                      {msg.captura.datos.map((data) => (
+                        <div key={data.etiqueta} className={styles.capturaDato}>
+                          <dt className={styles.capturaEtiqueta}>{data.etiqueta}</dt>
+                          <dd className={styles.capturaValor}>{data.valor}</dd>
                         </div>
                       ))}
                     </dl>
@@ -516,15 +516,15 @@ function DeviceScreen({
       {view.respuestas && view.respuestas.length > 0 && (
         <div className={styles.smsRespuestas}>
           <span className={styles.smsRespuestasTag}>Tú escribes</span>
-          {view.respuestas.map((respuesta) => (
+          {view.respuestas.map((response) => (
             <button
-              key={respuesta.texto}
+              key={response.texto}
               type="button"
               className={styles.smsRespuesta}
-              data-hotspot-goto={respuesta.goto}
-              data-hotspot-label={respuesta.label}
+              data-hotspot-goto={response.goto}
+              data-hotspot-label={response.label}
             >
-              {respuesta.texto}
+              {response.texto}
             </button>
           ))}
         </div>

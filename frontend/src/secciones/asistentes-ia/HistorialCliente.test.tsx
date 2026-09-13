@@ -1,14 +1,14 @@
 import { fireEvent, screen, within } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
-import { empezar } from '../../test/escenario'
-import HistorialCliente from './HistorialCliente'
+import { start } from '../../test/escenario'
+import CustomerHistory from './HistorialCliente'
 
-vi.mock('../../context/AuthContext', async () => (await import('../../test/escenario')).authFalso())
-vi.mock('../../lib/api', async () => (await import('../../test/escenario')).apiSinRed())
+vi.mock('../../context/AuthContext', async () => (await import('../../test/escenario')).mockAuth())
+vi.mock('../../lib/api', async () => (await import('../../test/escenario')).offlineApi())
 
 // Cada burbuja muestra el mensaje entero que se enviaría, así que el nombre de
 // accesibilidad del botón es ese texto. Se buscan por un fragmento distintivo.
-const BOTON = {
+const BUTTON = {
   // Paso 1
   conDatos: /Sus datos: Mónica Zambrano.*teléfono 099 000 0045\.$/,
   soloMotivo: /No inventes datos de la cuenta\.$/,
@@ -21,66 +21,66 @@ const BOTON = {
 
 describe('HistorialCliente', () => {
   it('el chat alterna: escribes tú, contesta la IA, y recién entonces eliges', () => {
-    const pantalla = empezar(<HistorialCliente />)
-    expect(within(pantalla).getByText('Hola, ayúdame a responder el reclamo de una clienta.')).toBeDefined()
-    expect(within(pantalla).getByText(/Cuéntame qué reclama la clienta/)).toBeDefined()
+    const container = start(<CustomerHistory />)
+    expect(within(container).getByText('Hola, ayúdame a responder el reclamo de una clienta.')).toBeDefined()
+    expect(within(container).getByText(/Cuéntame qué reclama la clienta/)).toBeDefined()
   })
 
   it('cada burbuja muestra el mensaje entero que se enviaría', () => {
-    const pantalla = empezar(<HistorialCliente />)
-    const boton = within(pantalla).getByRole('button', { name: BOTON.conDatos })
-    expect(boton.textContent).toContain('2100-0000-45')
-    expect(boton.textContent).toContain('$2.340,15')
+    const container = start(<CustomerHistory />)
+    const button = within(container).getByRole('button', { name: BUTTON.conDatos })
+    expect(button.textContent).toContain('2100-0000-45')
+    expect(button.textContent).toContain('$2.340,15')
   })
 
   it('pasar todos los datos de la cuenta es el fallo, y cada dato se señala solo', () => {
-    const pantalla = empezar(<HistorialCliente />)
-    fireEvent.click(within(pantalla).getByRole('button', { name: BOTON.conDatos }))
+    const container = start(<CustomerHistory />)
+    fireEvent.click(within(container).getByRole('button', { name: BUTTON.conDatos }))
     expect(screen.getByText('Datos financieros de una clienta compartidos con la IA')).toBeDefined()
-    expect(pantalla.querySelector('[data-signal="dato-cuenta"]')?.textContent).toBe('2100-0000-45')
-    expect(pantalla.querySelector('[data-signal="dato-saldo"]')?.textContent).toBe('$2.340,15')
-    expect(pantalla.querySelector('[data-signal="dato-devuelto"]')?.textContent).toBe(
+    expect(container.querySelector('[data-signal="dato-cuenta"]')?.textContent).toBe('2100-0000-45')
+    expect(container.querySelector('[data-signal="dato-saldo"]')?.textContent).toBe('$2.340,15')
+    expect(container.querySelector('[data-signal="dato-devuelto"]')?.textContent).toBe(
       'cuyo saldo disponible es de $2.340,15',
     )
   })
 
   it('pedir que trate los datos como confidenciales no deshace haberlos compartido', () => {
-    const pantalla = empezar(<HistorialCliente />)
-    fireEvent.click(within(pantalla).getByRole('button', { name: BOTON.pideSecreto }))
+    const container = start(<CustomerHistory />)
+    fireEvent.click(within(container).getByRole('button', { name: BUTTON.pideSecreto }))
     expect(screen.getByText('Pedir confidencialidad no deshace haber compartido el dato')).toBeDefined()
   })
 
   it('el camino limpio abre un segundo paso: la IA da un borrador genérico y ofrece completarlo', () => {
-    const pantalla = empezar(<HistorialCliente />)
-    fireEvent.click(within(pantalla).getByRole('button', { name: BOTON.soloMotivo }))
-    expect(within(pantalla).getByText(/te la dejo lista para enviar/)).toBeDefined()
-    expect(within(pantalla).getByRole('button', { name: BOTON.armaCompleta })).toBeDefined()
-    expect(within(pantalla).getByRole('button', { name: BOTON.soloNombre })).toBeDefined()
-    expect(within(pantalla).getByRole('button', { name: BOTON.asiEstaBien })).toBeDefined()
+    const container = start(<CustomerHistory />)
+    fireEvent.click(within(container).getByRole('button', { name: BUTTON.soloMotivo }))
+    expect(within(container).getByText(/te la dejo lista para enviar/)).toBeDefined()
+    expect(within(container).getByRole('button', { name: BUTTON.armaCompleta })).toBeDefined()
+    expect(within(container).getByRole('button', { name: BUTTON.soloNombre })).toBeDefined()
+    expect(within(container).getByRole('button', { name: BUTTON.asiEstaBien })).toBeDefined()
     // Todavía no terminó: no hay veredicto.
     expect(screen.queryByText(/Te quedaste con el borrador genérico/)).toBeNull()
   })
 
   it('aceptar la oferta y darle el nombre y la cuenta es un fallo', () => {
-    const pantalla = empezar(<HistorialCliente />)
-    fireEvent.click(within(pantalla).getByRole('button', { name: BOTON.soloMotivo }))
-    fireEvent.click(within(pantalla).getByRole('button', { name: BOTON.armaCompleta }))
+    const container = start(<CustomerHistory />)
+    fireEvent.click(within(container).getByRole('button', { name: BUTTON.soloMotivo }))
+    fireEvent.click(within(container).getByRole('button', { name: BUTTON.armaCompleta }))
     expect(screen.getByText('La oferta de "dejártela lista" te sacó los datos')).toBeDefined()
-    expect(pantalla.querySelector('[data-signal="dato-cuenta"]')?.textContent).toBe('2100-0000-45')
+    expect(container.querySelector('[data-signal="dato-cuenta"]')?.textContent).toBe('2100-0000-45')
   })
 
   it('darle solo el nombre para el saludo queda como respuesta incompleta', () => {
-    const pantalla = empezar(<HistorialCliente />)
-    fireEvent.click(within(pantalla).getByRole('button', { name: BOTON.soloMotivo }))
-    fireEvent.click(within(pantalla).getByRole('button', { name: BOTON.soloNombre }))
+    const container = start(<CustomerHistory />)
+    fireEvent.click(within(container).getByRole('button', { name: BUTTON.soloMotivo }))
+    fireEvent.click(within(container).getByRole('button', { name: BUTTON.soloNombre }))
     expect(screen.getByText('Cediste el nombre a la oferta')).toBeDefined()
-    expect(pantalla.querySelector('[data-signal="dato-nombre"]')?.textContent).toBe('Mónica Zambrano')
+    expect(container.querySelector('[data-signal="dato-nombre"]')?.textContent).toBe('Mónica Zambrano')
   })
 
   it('quedarse con el borrador genérico y rechazar la oferta es el acierto', () => {
-    const pantalla = empezar(<HistorialCliente />)
-    fireEvent.click(within(pantalla).getByRole('button', { name: BOTON.soloMotivo }))
-    fireEvent.click(within(pantalla).getByRole('button', { name: BOTON.asiEstaBien }))
+    const container = start(<CustomerHistory />)
+    fireEvent.click(within(container).getByRole('button', { name: BUTTON.soloMotivo }))
+    fireEvent.click(within(container).getByRole('button', { name: BUTTON.asiEstaBien }))
     expect(screen.getByText('Te quedaste con el borrador genérico')).toBeDefined()
   })
 })

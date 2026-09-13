@@ -1,12 +1,12 @@
 import { Forward, Reply, ShieldAlert, Trash2 } from 'lucide-react'
 import type { ScreenNode } from '../../components/StoryEscenario'
-import type { AccionCorreo } from '../../components/ui/DesktopChrome'
+import type { EmailAction } from '../../components/ui/DesktopChrome'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
-import type { Naturaleza } from '../../data/catalogo'
+import type { Nature } from '../../data/catalogo'
 
 // Los finales se generan por naturaleza (fraude/legítimo) en vez de escribirse
 // ocho veces. En los legítimos eliminar/spam son el fallo: enseña que descartar todo no es criterio.
-export const ACCIONES_BARRA: AccionCorreo[] = [
+export const ACTIONS_BAR: EmailAction[] = [
   {
     Icono: Reply,
     etiqueta: 'Responder',
@@ -37,7 +37,7 @@ export const ACCIONES_BARRA: AccionCorreo[] = [
   },
 ]
 
-const FRAUDE = {
+const FRAUD = {
   e_spam: {
     kind: 'good' as const,
     verdict: 'No caíste · lo reportaste',
@@ -64,7 +64,7 @@ const FRAUDE = {
   },
 }
 
-const LEGITIMO = {
+const LEGITIMATE = {
   e_spam: {
     kind: 'bad' as const,
     verdict: 'Descartaste un mensaje real',
@@ -94,13 +94,13 @@ const LEGITIMO = {
 }
 
 // `vista` es la pantalla donde se muestra el veredicto: se hereda del correo que lo provocó.
-export function finalesDeBarra(
-  naturaleza: Naturaleza,
-  vista: ScreenView,
+export function createToolbarEndings(
+  nature: Nature,
+  toView: ScreenView,
 ): Record<string, ScreenNode> {
-  const finales = naturaleza === 'fraude' ? FRAUDE : LEGITIMO
+  const endings = nature === 'fraude' ? FRAUD : LEGITIMATE
 
   return Object.fromEntries(
-    Object.entries(finales).map(([id, nodo]) => [id, { ...nodo, view: vista }]),
+    Object.entries(endings).map(([id, node]) => [id, { ...node, view: toView }]),
   )
 }

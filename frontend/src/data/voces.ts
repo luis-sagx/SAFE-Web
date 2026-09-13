@@ -1,6 +1,6 @@
 // Generado por scripts/voces.py — no editar a mano. Clave = frase entera (no
 // un id corto) para que un cambio de guion deje de encontrar el audio en vez de seguir sonando con el texto viejo.
-export const VOCES: Record<string, string> = {
+export const VOICES: Record<string, string> = {
   "Anotado. Y para registrarle el beneficio necesito dos datos más: los cuatro últimos dígitos de su tarjeta y la agencia donde abrió la cuenta.": "/voz/7decbb8ebf3b.mp3",
   "Banco del Litoral, departamento de seguridad, buenas noches. Le confirmo: hablo con el titular de la tarjeta terminada en 4417, ¿verdad?": "/voz/8e64d6bde001.mp3",
   "Buenas noches, le habla Andrés Villamar del departamento de seguridad del Banco del Litoral. ¿Hablo con el titular de la tarjeta terminada en 4417?": "/voz/4f662bd609b6.mp3",

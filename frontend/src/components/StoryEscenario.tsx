@@ -1,61 +1,61 @@
 import { Lock, TriangleAlert } from 'lucide-react'
 import { useCallback, useEffect, useState, type ReactNode } from 'react'
-import EscenarioLayout from './EscenarioLayout'
-import Instrucciones from './ui/Instrucciones'
-import { carpetasCorreo } from './ui/carpetasCorreo'
-import type { Contexto } from './ui/ContextoEscenario'
+import ScenarioLayout from './EscenarioLayout'
+import Instructions from './ui/Instrucciones'
+import { createEmailFolders } from './ui/carpetasCorreo'
+import type { Context } from './ui/ContextoEscenario'
 import DeviceScreen, { type ScreenView } from './ui/DeviceScreen'
-import { evitarNavegacion, manejarClicHotspot } from './ui/interactivo'
-import type { AccionCorreo, Reloj } from './ui/DesktopChrome'
-import { Navegador, type MarcadorNavegador, type PestanaConfig } from './ui/Navegador'
-import NotificacionTelefono, { type Notificacion } from './ui/NotificacionTelefono'
+import { preventNavigation, handleHotspotClick } from './ui/interactivo'
+import type { EmailAction, Clock } from './ui/DesktopChrome'
+import { Browser, type BrowserBookmark, type TabConfig } from './ui/Navegador'
+import PhoneNotification, { type Notification } from './ui/NotificacionTelefono'
 import StoryChoices from './ui/StoryChoices'
-import type { DatoIdentidad } from './ui/TarjetaIdentidad'
-import PanelVeredicto, { type Senal } from './ui/PanelVeredicto'
+import type { IdentityData } from './ui/TarjetaIdentidad'
+import VerdictPanel, { type Signal } from './ui/PanelVeredicto'
 import { useAuth } from '../context/AuthContext'
 import { useStoryEngine, type Story, type StoryNode } from '../hooks/useStoryEngine'
 import styles from './ui/DeviceScreen.module.css'
 
 export interface ScreenNode extends StoryNode {
   view: ScreenView
-  senales?: Senal[]
+  senales?: Signal[]
   // Va en el nodo y no en la vista: dos nodos con la misma pantalla pueden
   // diferir en si la notificación ya llegó.
-  notificacion?: Notificacion
+  notificacion?: Notification
   // Pantallas que solo se observan: pasado este tiempo el grafo avanza solo.
   autoAvanza?: { ms: number; goto: string }
 }
 
-interface StoryEscenarioProps {
+interface ScenarioStoryProps {
   escenarioId: string
   resumen: string
-  contexto: Contexto
+  contexto: Context
   nota?: ReactNode
   story: Story<ScreenNode>
   initialNode?: string
-  senales: Senal[]
+  senales: Signal[]
   rule: string
   /** @deprecated La repetición ahora se inicia a nivel de módulo. */
   restartLabel?: string
   pregunta?: string
   // El escenario que las pasa debe declarar también sus finales en el grafo.
-  accionesCorreo?: AccionCorreo[]
+  accionesCorreo?: EmailAction[]
   dominioCorreo?: string
-  reloj?: Reloj
-  marcadores?: MarcadorNavegador[]
+  reloj?: Clock
+  marcadores?: BrowserBookmark[]
   instruccion?: ReactNode
   cuandoTermina?: ReactNode
   pista?: ReactNode
-  identidad?: DatoIdentidad[]
+  identidad?: IdentityData[]
   accionesEnPantalla?: boolean
-  apps?: AppTelefono[]
+  apps?: PhoneApp[]
 }
 
 // Todas las apps del dock reaccionan al pulsarlas (deliberado: si solo
 // reaccionara la que decide, el realce del cursor delataría la respuesta).
 // goto = decisión en la traza; vacia = estado vacío, no entra en la traza;
 // ninguno = vuelve al hilo de Mensajes.
-export type AppTelefono = MarcadorNavegador & {
+export type PhoneApp = BrowserBookmark & {
   vacia?: string
   // A qué pantalla vuelve si no lleva goto ni vacia; solo hace falta cuando
   // el escenario tiene mensajes y llamada a la vez.
@@ -65,11 +65,11 @@ export type AppTelefono = MarcadorNavegador & {
   gotoEnLlamada?: string
 }
 
-function pestanaDeVista(view: ScreenView, dominio: string): PestanaConfig | null {
+function viewTab(view: ScreenView, domain: string): TabConfig | null {
   if (view.kind === 'mail') {
     return {
       titulo: 'Correo',
-      url: `https://correo.${dominio}/recibidos`,
+      url: `https://correo.${domain}/recibidos`,
       segura: true,
     }
   }
@@ -90,103 +90,103 @@ function pestanaDeVista(view: ScreenView, dominio: string): PestanaConfig | null
   return null
 }
 
-function urlMovil(url: string): string {
+function mobileUrl(url: string): string {
   return url.replace(/^https?:\/\//, '')
 }
 
 // La hora de la barra de estado sale del último mensaje del hilo (el "ahora"
 // de la escena), no de una constante; descarta sellos relativos ("ayer").
-const HORA_DEL_DIA = /^\d{1,2}:\d{2}$/
+const TIME_OF_DAY = /^\d{1,2}:\d{2}$/
 
-function horaDeVista(view: ScreenView): string | undefined {
+function getViewTime(view: ScreenView): string | undefined {
   if (view.kind !== 'sms') return undefined
-  const ultima = view.msgs.at(-1)?.time
-  return ultima && HORA_DEL_DIA.test(ultima) ? ultima : undefined
+  const latest = view.msgs.at(-1)?.time
+  return latest && TIME_OF_DAY.test(latest) ? latest : undefined
 }
 
-function StoryEscenario({
-  escenarioId,
-  resumen,
-  contexto,
-  nota,
+function ScenarioStory({
+  escenarioId: scenarioId,
+  resumen: summary,
+  contexto: context,
+  nota: note,
   story,
   initialNode = 'n1',
-  senales,
+  senales: signals,
   rule,
   restartLabel,
-  pregunta = '¿Qué haces?',
-  accionesCorreo,
-  dominioCorreo,
-  reloj,
-  marcadores,
-  instruccion,
-  cuandoTermina,
-  pista,
-  identidad,
-  accionesEnPantalla = false,
+  pregunta: question = '¿Qué haces?',
+  accionesCorreo: emailActions,
+  dominioCorreo: emailDomain,
+  reloj: clock,
+  marcadores: markers,
+  instruccion: instruction,
+  cuandoTermina: onFinished,
+  pista: clue,
+  identidad: identity,
+  accionesEnPantalla: screenActions = false,
   apps,
-}: StoryEscenarioProps) {
-  const engine = useStoryEngine(story, initialNode, escenarioId)
-  const { usuarioSimulado } = useAuth()
-  const destinatario = dominioCorreo ? `${usuarioSimulado}@${dominioCorreo}` : undefined
+}: ScenarioStoryProps) {
+  const engine = useStoryEngine(story, initialNode, scenarioId)
+  const { usuarioSimulado: simulatedUser } = useAuth()
+  const recipient = emailDomain ? `${simulatedUser}@${emailDomain}` : undefined
 
   // Durante el repaso vuelve a la pantalla que contiene cada señal.
-  const [pantallaRepaso, setPantallaRepaso] = useState<string | undefined>()
+  const [reviewScreen, setReviewScreen] = useState<string | undefined>()
   // Cambiar de pestaña es mirar, no decidir: no entra en la traza.
-  const [pestanaMirada, setPestanaMirada] = useState<string | undefined>()
+  const [viewedTab, setViewedTab] = useState<string | undefined>()
   // Se enciende con el primer clic en el vacío y ya no se apaga.
-  const [tocoEnVacio, setTocoEnVacio] = useState(false)
+  const [clickedEmptySpace, setClickedEmptySpace] = useState(false)
   // App del dock que no decide nada (cámara, galería); vive fuera del grafo
   // igual que `pestanaMirada`.
-  const [appAbierta, setAppAbierta] = useState<{ nombre: string; vacia: string } | undefined>()
+  const [appOpen, setAppOpen] = useState<{ nombre: string; vacia: string } | undefined>()
   // Última pantalla de cada app de comunicación (hilo SMS y llamada en curso);
   // su icono vuelve a ella sin tocar el grafo. Son dos porque un escenario
   // puede tener las dos cosas y "volver" depende del icono pulsado.
-  const [hilos, setHilos] = useState<{ sms?: string; call?: string }>({})
+  const [threads, setThreads] = useState<{ sms?: string; call?: string }>({})
   // Notificaciones ya vistas; `reiniciar` las limpia junto con engine.restart.
-  const [descartadas, setDescartadas] = useState<string[]>([])
-  const nodoVisible = pantallaRepaso ?? pestanaMirada ?? engine.current
-  const vistaDelNodo = story[nodoVisible]?.view ?? engine.node.view
+  const [discarded, setDiscarded] = useState<string[]>([])
+  const visibleNode = reviewScreen ?? viewedTab ?? engine.current
+  const getNodeView = story[visibleNode]?.view ?? engine.node.view
   // Releer el hilo desde otra pantalla no puede terminar la corrida: la flecha
   // de la cabecera solo cierra el hilo.
-  const vista =
-    vistaDelNodo.kind === 'sms' && !pantallaRepaso && nodoVisible !== engine.current
-      ? { ...vistaDelNodo, volverGoto: undefined, volverLabel: undefined }
-      : vistaDelNodo
+  const toView =
+    getNodeView.kind === 'sms' && !reviewScreen && visibleNode !== engine.current
+      ? { ...getNodeView, volverGoto: undefined, volverLabel: undefined }
+      : getNodeView
 
   // El reloj se queda en la última hora que enseñó un hilo y no retrocede;
   // sin ningún hilo (una llamada) se queda en la hora neutra.
-  const horaVista = horaDeVista(vista)
-  const [horaTelefono, setHoraTelefono] = useState(
+  const currentViewTime = getViewTime(toView)
+  const [phoneTime, setPhoneTime] = useState(
     () =>
       Object.values(story)
-        .map((nodo) => horaDeVista(nodo.view))
+        .map((node) => getViewTime(node.view))
         .find(Boolean) ?? '09:41',
   )
 
   useEffect(() => {
-    if (horaVista) setHoraTelefono(horaVista)
-  }, [horaVista])
+    if (currentViewTime) setPhoneTime(currentViewTime)
+  }, [currentViewTime])
 
-  const dominio = dominioCorreo ?? 'safeweb.com'
+  const domain = emailDomain ?? 'safeweb.com'
   // Cada pantalla nueva abre una pestaña; se indexan por dirección para que
   // dos nodos con la misma página la compartan.
-  const [abiertas, setAbiertas] = useState<string[]>(['n1'])
+  const [open, setOpen] = useState<string[]>(['n1'])
 
   useEffect(() => {
     // Un final no abre pantalla (issue #26).
     if (engine.isEnding) return
-    if (!pestanaDeVista(engine.node.view, dominio)) return
-    setAbiertas((ids) => (ids.includes(engine.current) ? ids : [...ids, engine.current]))
-    setPestanaMirada(undefined)
-  }, [engine.current, engine.isEnding, engine.node.view, dominio])
+    if (!viewTab(engine.node.view, domain)) return
+    setOpen((ids) => (ids.includes(engine.current) ? ids : [...ids, engine.current]))
+    setViewedTab(undefined)
+  }, [engine.current, engine.isEnding, engine.node.view, domain])
 
   useEffect(() => {
     // Cuál es "Mensajes" cambia durante la corrida (tras responder, es el hilo
     // con el borrador, no el original).
     const kind = engine.node.view.kind
     if (kind === 'sms' || kind === 'call') {
-      setHilos((previos) => ({ ...previos, [kind]: engine.current }))
+      setThreads((previous) => ({ ...previous, [kind]: engine.current }))
     }
   }, [engine.current, engine.node.view])
 
@@ -201,123 +201,123 @@ function StoryEscenario({
 
   // Pertenece a engine.current, no a la pantalla que se mira; no se pinta
   // sobre el veredicto ni durante el repaso.
-  const notificacionNodo = story[engine.current]?.notificacion
-  const mostrarNotificacion = Boolean(
-    notificacionNodo && !engine.isEnding && !pantallaRepaso && !descartadas.includes(engine.current),
+  const nodeNotification = story[engine.current]?.notificacion
+  const showNotification = Boolean(
+    nodeNotification && !engine.isEnding && !reviewScreen && !discarded.includes(engine.current),
   )
 
   useEffect(() => {
-    if (!mostrarNotificacion) return
+    if (!showNotification) return
     // Se marca al salir del nodo, no al entrar: el momento ya pasó y no vuelve.
-    return () => setDescartadas((ids) => [...ids, engine.current])
-  }, [mostrarNotificacion, engine.current])
+    return () => setDiscarded((ids) => [...ids, engine.current])
+  }, [showNotification, engine.current])
 
-  const reiniciar = useCallback(() => {
-    setDescartadas([])
+  const restart = useCallback(() => {
+    setDiscarded([])
     engine.restart()
   }, [engine.restart])
 
-  const pestanas: Record<string, PestanaConfig> = {}
-  const porUrl = new Map<string, string>()
-  const visibles: string[] = []
+  const tabs: Record<string, TabConfig> = {}
+  const byUrl = new Map<string, string>()
+  const visible: string[] = []
   // Durante el repaso entra también la pantalla que se explica aunque no se
   // haya abierto (issue #24).
-  const paraPestanas =
-    pantallaRepaso && !abiertas.includes(pantallaRepaso) ? [...abiertas, pantallaRepaso] : abiertas
+  const tabNodeIds =
+    reviewScreen && !open.includes(reviewScreen) ? [...open, reviewScreen] : open
 
-  for (const id of paraPestanas) {
-    const meta = story[id] && pestanaDeVista(story[id]!.view, dominio)
+  for (const id of tabNodeIds) {
+    const meta = story[id] && viewTab(story[id]!.view, domain)
     if (!meta) continue
     // Dos pantallas del mismo sitio comparten pestaña, pero la pestaña toma
     // el título y el cierre de la última que se abrió en ella.
-    const yaAbierta = porUrl.get(meta.url)
-    if (yaAbierta) {
-      pestanas[yaAbierta] = meta
+    const alreadyOpen = byUrl.get(meta.url)
+    if (alreadyOpen) {
+      tabs[alreadyOpen] = meta
       continue
     }
-    porUrl.set(meta.url, id)
-    pestanas[id] = meta
-    visibles.push(id)
+    byUrl.set(meta.url, id)
+    tabs[id] = meta
+    visible.push(id)
   }
 
-  const correo = Object.values(story).find((nodo) => nodo.view.kind === 'mail')?.view
-  const carpetas =
-    correo?.kind === 'mail'
-      ? carpetasCorreo(
+  const email = Object.values(story).find((node) => node.view.kind === 'mail')?.view
+  const folders =
+    email?.kind === 'mail'
+      ? createEmailFolders(
           {
-            nombre: correo.from,
-            direccion: correo.address,
-            asunto: correo.subject,
+            nombre: email.from,
+            direccion: email.address,
+            asunto: email.subject,
           },
           // Durante el repaso la bandeja vuelve a tener el mensaje.
-          engine.isEnding && !pantallaRepaso ? engine.current : undefined,
+          engine.isEnding && !reviewScreen ? engine.current : undefined,
         )
       : undefined
 
-  const metaVisible = pestanaDeVista(vista, dominio)
-  const pestanaVisible = metaVisible && porUrl.get(metaVisible.url)
-  if (pestanaVisible && pestanas[pestanaVisible]) {
-    pestanas[pestanaVisible] = metaVisible
+  const metaVisible = viewTab(toView, domain)
+  const tabVisible = metaVisible && byUrl.get(metaVisible.url)
+  if (tabVisible && tabs[tabVisible]) {
+    tabs[tabVisible] = metaVisible
   }
 
-  const urlVisible = pestanaDeVista(vista, dominio)?.url
-  const activa = (urlVisible && porUrl.get(urlVisible)) ?? visibles[0] ?? 'n1'
+  const urlVisible = viewTab(toView, domain)?.url
+  const active = (urlVisible && byUrl.get(urlVisible)) ?? visible[0] ?? 'n1'
 
   const onHotspot = (event: React.MouseEvent) => {
-    evitarNavegacion(event)
+    preventNavigation(event)
 
     // Cambiar de pestaña se resuelve aquí y no llega al grafo.
-    const cerrada = (event.target as HTMLElement).closest<HTMLElement>('[data-cierra]')?.dataset
+    const closed = (event.target as HTMLElement).closest<HTMLElement>('[data-cierra]')?.dataset
       .cierra
-    if (cerrada) {
+    if (closed) {
       // Una pestaña puede plegar varias pantallas del mismo sitio: se cierran
       // todas con ella.
-      const url = pestanas[cerrada]?.url
-      const quedan = abiertas.filter(
+      const url = tabs[closed]?.url
+      const remaining = open.filter(
         (id) =>
-          id !== cerrada && (!story[id] || pestanaDeVista(story[id]!.view, dominio)?.url !== url),
+          id !== closed && (!story[id] || viewTab(story[id]!.view, domain)?.url !== url),
       )
-      setAbiertas(quedan)
+      setOpen(remaining)
       // Pasa a la pestaña que sigue abierta, como al cerrar una de verdad.
-      setPestanaMirada(quedan.at(-1))
-      if (!engine.isEnding) manejarClicHotspot(event, engine.choose)
+      setViewedTab(remaining.at(-1))
+      if (!engine.isEnding) handleHotspotClick(event, engine.choose)
       return
     }
 
-    const pestana = (event.target as HTMLElement).closest<HTMLElement>('[data-pestana]')?.dataset
+    const tab = (event.target as HTMLElement).closest<HTMLElement>('[data-pestana]')?.dataset
       .pestana
-    if (pestana) {
-      setPestanaMirada(pestana)
+    if (tab) {
+      setViewedTab(tab)
       return
     }
 
     // App de Mensajes: cierra lo que hubiera encima y muestra el hilo sin
     // avanzar el grafo.
-    const hilo = (event.target as HTMLElement).closest<HTMLElement>('[data-app-hilo]')?.dataset
+    const thread = (event.target as HTMLElement).closest<HTMLElement>('[data-app-hilo]')?.dataset
       .appHilo
-    if (hilo !== undefined) {
+    if (thread !== undefined) {
       if (!engine.isEnding) {
-        const cerrarGoto = engine.node.view.kind === 'web' ? engine.node.view.cerrarGoto : undefined
-        const cerrarLabel = engine.node.view.kind === 'web' ? engine.node.view.cerrarLabel : undefined
-        const destinoAlCerrar =
-          cerrarGoto && story[cerrarGoto]?.view.kind === hilo ? cerrarGoto : undefined
+        const closeGoto = engine.node.view.kind === 'web' ? engine.node.view.cerrarGoto : undefined
+        const closeLabel = engine.node.view.kind === 'web' ? engine.node.view.cerrarLabel : undefined
+        const closeDestination =
+          closeGoto && story[closeGoto]?.view.kind === thread ? closeGoto : undefined
 
         // Desde una app intermedia, Mensajes cierra esa app para continuar el chat.
-        if (destinoAlCerrar) {
-          setAppAbierta(undefined)
-          setPestanaMirada(undefined)
-          engine.choose(destinoAlCerrar, cerrarLabel)
+        if (closeDestination) {
+          setAppOpen(undefined)
+          setViewedTab(undefined)
+          engine.choose(closeDestination, closeLabel)
           return
         }
 
-        const destino =
-          (hilo === 'sms' || hilo === 'call' ? hilos[hilo] : undefined) ??
-          hilos.call ??
-          hilos.sms ??
+        const destination =
+          (thread === 'sms' || thread === 'call' ? threads[thread] : undefined) ??
+          threads.call ??
+          threads.sms ??
           'n1'
         // Con una app encima el botón no alterna: solo la cierra y deja el hilo.
-        setPestanaMirada((mirando) => (appAbierta ? destino : mirando ? undefined : destino))
-        setAppAbierta(undefined)
+        setViewedTab((viewing) => (appOpen ? destination : viewing ? undefined : destination))
+        setAppOpen(undefined)
       }
       return
     }
@@ -326,74 +326,74 @@ function StoryEscenario({
     const app = (event.target as HTMLElement).closest<HTMLElement>('[data-app]')?.dataset
     if (app) {
       if (!engine.isEnding) {
-        setAppAbierta(app.appVacia ? { nombre: app.app ?? '', vacia: app.appVacia } : undefined)
+        setAppOpen(app.appVacia ? { nombre: app.app ?? '', vacia: app.appVacia } : undefined)
       }
       return
     }
 
     if (engine.isEnding) return
 
-    const objetivo = (event.target as HTMLElement).closest<HTMLElement>('[data-hotspot-goto]')
-    if (!objetivo) {
+    const target = (event.target as HTMLElement).closest<HTMLElement>('[data-hotspot-goto]')
+    if (!target) {
       // Los controles del propio aparato (nota de voz, silenciar llamada) sí
       // responden sin decidir nada.
       const control = (event.target as HTMLElement).closest('[data-control]')
-      if (!engine.node.choices && !control) setTocoEnVacio(true)
+      if (!engine.node.choices && !control) setClickedEmptySpace(true)
       return
     }
 
     // No puede dejarse al efecto que limpia pestanaMirada al cambiar de nodo:
     // si el destino es el nodo actual, el nodo no cambia y ese efecto no corre.
-    setAppAbierta(undefined)
-    setPestanaMirada(undefined)
+    setAppOpen(undefined)
+    setViewedTab(undefined)
 
     // Volver a la pantalla en la que ya estás no es una decisión (evita n3→n3).
-    if (objetivo.dataset.hotspotGoto !== engine.current) {
-      manejarClicHotspot(event, engine.choose)
+    if (target.dataset.hotspotGoto !== engine.current) {
+      handleHotspotClick(event, engine.choose)
     }
   }
 
   // Un chat de IA con `sitio` (ver DeviceScreen) manda el marco de escritorio.
-  const chatEnNavegador = vista.kind === 'sms' && Boolean(vista.sitio)
+  const chatInBrowser = toView.kind === 'sms' && Boolean(toView.sitio)
 
   const decision = engine.isEnding ? (
-    <PanelVeredicto
+    <VerdictPanel
       estadoGuardado={engine.runStatus}
-      escenarioId={escenarioId}
+      escenarioId={scenarioId}
       node={engine.node}
-      senales={engine.node.senales ?? senales}
+      senales={engine.node.senales ?? signals}
       regla={rule}
       restartLabel={restartLabel}
-      onRestart={reiniciar}
+      onRestart={restart}
       contenedorId="pantalla-escenario"
-      onPantalla={setPantallaRepaso}
+      onPantalla={setReviewScreen}
     />
   ) : (
     (() => {
       // Antes de tocar el destello la escena ya avisa qué tocar (ver
       // EscenaFoto), así que "¿Qué haces?" y la pista aún no dicen nada.
-      const antesDelDestello = vista.kind === 'escena' && vista.destello && !engine.node.choices
+      const beforeFlash = toView.kind === 'escena' && toView.destello && !engine.node.choices
 
       return (
         <div className="grid gap-3">
-          {!antesDelDestello && <p className="text-lg font-semibold text-ink">{pregunta}</p>}
+          {!beforeFlash && <p className="text-lg font-semibold text-ink">{question}</p>}
           {engine.node.choices && <StoryChoices choices={engine.node.choices} onChoose={engine.choose} />}
-          <Instrucciones
-            pista={antesDelDestello ? undefined : pista}
-            cuandoTermina={cuandoTermina}
-            fallo={tocoEnVacio}
+          <Instructions
+            pista={beforeFlash ? undefined : clue}
+            cuandoTermina={onFinished}
+            fallo={clickedEmptySpace}
           >
-            {engine.node.choices ? undefined : instruccion}
-          </Instrucciones>
+            {engine.node.choices ? undefined : instruction}
+          </Instructions>
         </div>
       )
     })()
   )
 
-  const pantallaTelefono = (
+  const phoneScreen = (
     <div className={styles.phoneStage} onClick={onHotspot}>
       <div className={styles.phoneStatusBar} aria-hidden>
-        <span>{horaTelefono}</span>
+        <span>{phoneTime}</span>
         <span className={styles.phoneSensors}>
           <span className={styles.phoneSignal}>▮▮▮</span>
           <span>5G</span>
@@ -401,48 +401,48 @@ function StoryEscenario({
         </span>
       </div>
       <div className={styles.phoneBody}>
-        {mostrarNotificacion && notificacionNodo && (
-          <NotificacionTelefono
-            notificacion={notificacionNodo}
-            onDescartar={() => setDescartadas((ids) => [...ids, engine.current])}
+        {showNotification && nodeNotification && (
+          <PhoneNotification
+            notificacion={nodeNotification}
+            onDescartar={() => setDiscarded((ids) => [...ids, engine.current])}
           />
         )}
         <div className={styles.phoneApp}>
-          {appAbierta && !engine.isEnding ? (
+          {appOpen && !engine.isEnding ? (
             <>
               <div className={styles.phoneAppBar}>
                 <button
                   type="button"
                   className={`${styles.hotspot} ${styles.phoneAppVolver}`}
                   aria-label={
-                    vista.kind === 'call' ? 'Volver a la llamada' : 'Volver al hilo de mensajes'
+                    toView.kind === 'call' ? 'Volver a la llamada' : 'Volver al hilo de mensajes'
                   }
                   data-app=""
                 >
                   ‹
                 </button>
-                <span className={styles.phoneAppBarNombre}>{appAbierta.nombre}</span>
+                <span className={styles.phoneAppBarNombre}>{appOpen.nombre}</span>
                 <span className={styles.phoneAppVolver} aria-hidden />
               </div>
               <div className={styles.phoneViewport}>
-                <p className={styles.appVacia}>{appAbierta.vacia}</p>
+                <p className={styles.appVacia}>{appOpen.vacia}</p>
               </div>
             </>
           ) : (
             <>
-              {vista.kind === 'web' &&
-                (vista.app ? (
+              {toView.kind === 'web' &&
+                (toView.app ? (
                   // Una app no tiene barra de direcciones: no hay dominio que
                   // comprobar porque no se llegó por un enlace.
                   <div className={styles.phoneAppBar}>
                     {/* Salir es a veces la decisión (colgar una llamada). */}
-                    {vista.cerrarGoto ? (
+                    {toView.cerrarGoto ? (
                       <button
                         type="button"
                         className={`${styles.hotspot} ${styles.phoneBrowserControl}`}
                         aria-label="Salir de la aplicación"
-                        data-hotspot-goto={vista.cerrarGoto}
-                        data-hotspot-label={vista.cerrarLabel}
+                        data-hotspot-goto={toView.cerrarGoto}
+                        data-hotspot-label={toView.cerrarLabel}
                       >
                         ‹
                       </button>
@@ -451,18 +451,18 @@ function StoryEscenario({
                         ‹
                       </span>
                     )}
-                    <span className={styles.phoneAppBarNombre}>{vista.app}</span>
+                    <span className={styles.phoneAppBarNombre}>{toView.app}</span>
                   </div>
                 ) : (
-                  <div className={styles.phoneBrowserBar} data-signal={vista.senalUrl}>
+                  <div className={styles.phoneBrowserBar} data-signal={toView.senalUrl}>
                     {/* Sin pestaña que cerrar, salir es la flecha de atrás. */}
-                    {vista.cerrarGoto ? (
+                    {toView.cerrarGoto ? (
                       <button
                         type="button"
                         className={`${styles.hotspot} ${styles.phoneBrowserControl}`}
                         aria-label="Volver atrás"
-                        data-hotspot-goto={vista.cerrarGoto}
-                        data-hotspot-label={vista.cerrarLabel}
+                        data-hotspot-goto={toView.cerrarGoto}
+                        data-hotspot-label={toView.cerrarLabel}
                       >
                         ‹
                       </button>
@@ -473,7 +473,7 @@ function StoryEscenario({
                     )}
                     <span className={styles.phoneBrowserUrl}>
                       {/* El indicador de seguridad es justo lo que el módulo enseña a leer. */}
-                      {vista.secure ? (
+                      {toView.secure ? (
                         <Lock
                           aria-label="Conexión segura"
                           className={`${styles.phoneBrowserSecurity} ${styles.phoneBrowserSafe}`}
@@ -488,7 +488,7 @@ function StoryEscenario({
                           />
                         </span>
                       )}
-                      <span className={styles.phoneBrowserAddress}>{urlMovil(vista.url)}</span>
+                      <span className={styles.phoneBrowserAddress}>{mobileUrl(toView.url)}</span>
                     </span>
                     <span className={styles.phoneBrowserControl} aria-hidden>
                       ⋮
@@ -497,11 +497,11 @@ function StoryEscenario({
                 ))}
               <div className={styles.phoneViewport}>
                 <DeviceScreen
-                  view={vista}
-                  acciones={accionesCorreo}
-                  carpetas={carpetas}
-                  destinatario={destinatario}
-                  carpetaForzada={pantallaRepaso ? 'Recibidos' : undefined}
+                  view={toView}
+                  acciones={emailActions}
+                  carpetas={folders}
+                  destinatario={recipient}
+                  carpetaForzada={reviewScreen ? 'Recibidos' : undefined}
                   terminada={engine.isEnding}
                 />
               </div>
@@ -514,29 +514,29 @@ function StoryEscenario({
           el único camino al acierto. */}
       {apps && apps.length > 0 && (
         <div className={styles.phoneDock} aria-label="Apps del teléfono">
-          {apps.map(({ Icono, texto, goto, gotoEnLlamada, label, vacia, color, hilo }) => {
+          {apps.map(({ Icono: Icon, texto: text, goto, gotoEnLlamada: callTarget, label, vacia: empty, color, hilo: thread }) => {
             // El marcador no cuenta como llamada: tocar un número no es haber llamado.
-            const enLlamada = vista.kind === 'call' && !vista.marcando
-            const destino = (enLlamada && gotoEnLlamada) || goto
+            const onCall = toView.kind === 'call' && !toView.marcando
+            const destination = (onCall && callTarget) || goto
             return (
             <button
-              key={texto}
+              key={text}
               type="button"
               className={styles.phoneDockApp}
-              data-hotspot-goto={destino}
+              data-hotspot-goto={destination}
               data-hotspot-label={label}
               // Las que no deciden se abren igual (ver AppTelefono).
-              data-app={destino || !vacia ? undefined : texto}
-              data-app-vacia={destino ? undefined : vacia}
-              data-app-hilo={destino || vacia ? undefined : (hilo ?? '')}
+              data-app={destination || !empty ? undefined : text}
+              data-app-vacia={destination ? undefined : empty}
+              data-app-hilo={destination || empty ? undefined : (thread ?? '')}
             >
               <span
                 className={styles.phoneDockIcono}
                 style={color ? { background: color } : undefined}
               >
-                <Icono aria-hidden className={styles.phoneDockGlifo} strokeWidth={2} />
+                <Icon aria-hidden className={styles.phoneDockGlifo} strokeWidth={2} />
               </span>
-              <span className={styles.phoneDockNombre}>{texto}</span>
+              <span className={styles.phoneDockNombre}>{text}</span>
             </button>
             )
           })}
@@ -550,53 +550,53 @@ function StoryEscenario({
   )
 
   return (
-    <EscenarioLayout
-      escenarioId={escenarioId}
-      resumen={resumen}
-      contexto={contexto}
-      nota={nota}
-      dominioCorreo={dominioCorreo}
+    <ScenarioLayout
+      escenarioId={scenarioId}
+      resumen={summary}
+      contexto={context}
+      nota={note}
+      dominioCorreo={emailDomain}
       pantalla={
-        accionesEnPantalla && !chatEnNavegador ? (
-          pantallaTelefono
-        ) : !chatEnNavegador && (vista.kind === 'sms' || vista.kind === 'escena') ? (
+        screenActions && !chatInBrowser ? (
+          phoneScreen
+        ) : !chatInBrowser && (toView.kind === 'sms' || toView.kind === 'escena') ? (
           <div className="contents" onClick={onHotspot}> {/* NOSONAR: delega el clic a los <button>/<a> nativos que contiene, que ya manejan teclado por sí solos */}
             <DeviceScreen
-              view={vista}
-              acciones={accionesCorreo}
-              carpetas={carpetas}
-              destinatario={destinatario}
+              view={toView}
+              acciones={emailActions}
+              carpetas={folders}
+              destinatario={recipient}
             />
           </div>
         ) : (
-          <Navegador
-            pestanas={pestanas}
-            abiertas={visibles}
-            activa={activa}
-            marcadores={marcadores ?? []}
-            reloj={reloj}
+          <Browser
+            pestanas={tabs}
+            abiertas={visible}
+            activa={active}
+            marcadores={markers ?? []}
+            reloj={clock}
             onHotspot={onHotspot}
           >
             <DeviceScreen
-              view={vista}
-              acciones={accionesCorreo}
-              carpetas={carpetas}
-              destinatario={destinatario}
-              carpetaForzada={pantallaRepaso ? 'Recibidos' : undefined}
+              view={toView}
+              acciones={emailActions}
+              carpetas={folders}
+              destinatario={recipient}
+              carpetaForzada={reviewScreen ? 'Recibidos' : undefined}
             />
-          </Navegador>
+          </Browser>
         )
       }
-      identidad={identidad}
+      identidad={identity}
       decision={decision}
       resultado={engine.resultado}
-      onEmpezar={reiniciar}
+      onEmpezar={restart}
       // El correo y la web se abren más en computador que en celular; el SMS
       // se queda en celular, que es donde de verdad llegan los mensajes.
       dispositivo={
-        vista.kind === 'escena'
+        toView.kind === 'escena'
           ? 'escena'
-          : !chatEnNavegador && (accionesEnPantalla || vista.kind === 'sms')
+          : !chatInBrowser && (screenActions || toView.kind === 'sms')
             ? 'telefono'
             : 'escritorio'
       }
@@ -604,4 +604,4 @@ function StoryEscenario({
   )
 }
 
-export default StoryEscenario
+export default ScenarioStory

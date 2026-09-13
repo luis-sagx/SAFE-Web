@@ -4,7 +4,7 @@ import { compare } from 'bcryptjs';
 import { AdminService } from './admin.service';
 import type { PrismaService } from '../prisma/prisma.service';
 
-function fila(overrides: Record<string, unknown> = {}) {
+function row(overrides: Record<string, unknown> = {}) {
   return {
     id: 'p1',
     seq: 7,
@@ -19,9 +19,9 @@ function fila(overrides: Record<string, unknown> = {}) {
 
 /// Mock mínimo: cada test pasa las funciones de Prisma que necesita. El
 /// `ConfigService` es un valor fijo cualquiera: los fixtures de este archivo
-/// son texto plano sin el prefijo "v1:", así que `descifrarOpcional()` los
+/// son texto plano sin el prefijo "v1:", así que `decryptOptional()` los
 /// deja pasar tal cual sin necesitar la clave real.
-function servicio(prisma: Partial<Record<string, unknown>>) {
+function service(prisma: Partial<Record<string, unknown>>) {
   return new AdminService(
     { participant: prisma } as unknown as PrismaService,
     { getOrThrow: () => 'clave-de-prueba' } as unknown as ConfigService,
@@ -30,111 +30,109 @@ function servicio(prisma: Partial<Record<string, unknown>>) {
 
 describe('AdminService.listar', () => {
   it('solo pide participantes y marca activo desde disabledAt', async () => {
-    let whereRecibido: unknown;
-    const admin = servicio({
+    let whereReceived: unknown;
+    const admin = service({
       findMany: (args: { where: unknown }) => {
-        whereRecibido = args.where;
+        whereReceived = args.where;
         return Promise.resolve([
-          fila(),
-          fila({ id: 'p2', disabledAt: new Date() }),
+          row(),
+          row({ id: 'p2', disabledAt: new Date() }),
         ]);
       },
     });
 
-    const lista = await admin.listar();
+    const list = await admin.list();
 
-    expect(whereRecibido).toEqual({ role: 'PARTICIPANT' });
-    expect(lista[0]).toMatchObject({ id: 'p1', activo: true });
+    expect(whereReceived).toEqual({ role: 'PARTICIPANT' });
+    expect(list[0]).toMatchObject({ id: 'p1', activo: true });
     // El seudónimo es la llave de pareo con el pre/post-test, y tiene que ser
     // el mismo código que emite `entrenamiento` para esa misma `seq`.
-    expect(lista[0].seudonimo).toBe('P007');
-    expect(lista[1]).toMatchObject({ id: 'p2', activo: false });
+    expect(list[0].seudonimo).toBe('P007');
+    expect(list[1]).toMatchObject({ id: 'p2', activo: false });
     // Nunca sale cédula ni hash.
-    expect(JSON.stringify(lista)).not.toContain('passwordHash');
-    expect(JSON.stringify(lista)).not.toContain('cedula');
+    expect(JSON.stringify(list)).not.toContain('passwordHash');
+    expect(JSON.stringify(list)).not.toContain('cedula');
   });
 });
 
 describe('AdminService.cambiarEstado', () => {
   it('desactiva fijando disabledAt', async () => {
-    let dataRecibido: { disabledAt: Date | null } | undefined;
-    const admin = servicio({
-      findFirst: () => Promise.resolve(fila()),
+    let receivedData: { disabledAt: Date | null } | undefined;
+    const admin = service({
+      findFirst: () => Promise.resolve(row()),
       update: (args: { data: { disabledAt: Date | null } }) => {
-        dataRecibido = args.data;
-        return Promise.resolve(fila({ disabledAt: args.data.disabledAt }));
+        receivedData = args.data;
+        return Promise.resolve(row({ disabledAt: args.data.disabledAt }));
       },
     });
 
-    const res = await admin.cambiarEstado('p1', false);
+    const res = await admin.changeStatus('p1', false);
 
-    expect(dataRecibido?.disabledAt).toBeInstanceOf(Date);
+    expect(receivedData?.disabledAt).toBeInstanceOf(Date);
     expect(res.activo).toBe(false);
   });
 
   it('404 si el id no es de un participante', async () => {
-    const admin = servicio({ findFirst: () => Promise.resolve(null) });
-    await expect(admin.cambiarEstado('sup', true)).rejects.toBeInstanceOf(
+    const admin = service({ findFirst: () => Promise.resolve(null) });
+    await expect(admin.changeStatus('sup', true)).rejects.toBeInstanceOf(
       NotFoundException,
     );
   });
 
   it('reactiva limpiando disabledAt', async () => {
-    let dataRecibido: { disabledAt: Date | null } | undefined;
-    const admin = servicio({
-      findFirst: () => Promise.resolve(fila({ disabledAt: new Date() })),
+    let receivedData: { disabledAt: Date | null } | undefined;
+    const admin = service({
+      findFirst: () => Promise.resolve(row({ disabledAt: new Date() })),
       update: (args: { data: { disabledAt: Date | null } }) => {
-        dataRecibido = args.data;
-        return Promise.resolve(fila({ disabledAt: args.data.disabledAt }));
+        receivedData = args.data;
+        return Promise.resolve(row({ disabledAt: args.data.disabledAt }));
       },
     });
 
-    const res = await admin.cambiarEstado('p1', true);
+    const res = await admin.changeStatus('p1', true);
 
-    expect(dataRecibido?.disabledAt).toBeNull();
+    expect(receivedData?.disabledAt).toBeNull();
     expect(res.activo).toBe(true);
   });
 });
 
-describe('AdminService.restablecerPassword', () => {
+describe('AdminService.resetPassword', () => {
   it('devuelve una contraseña nueva y guarda su hash, no el claro', async () => {
-    let hashGuardado: string | undefined;
-    const admin = servicio({
-      findFirst: () => Promise.resolve(fila()),
+    let storedHash: string | undefined;
+    const admin = service({
+      findFirst: () => Promise.resolve(row()),
       update: (args: { data: { passwordHash: string } }) => {
-        hashGuardado = args.data.passwordHash;
-        return Promise.resolve(fila());
+        storedHash = args.data.passwordHash;
+        return Promise.resolve(row());
       },
     });
 
-    const { password } = await admin.restablecerPassword('p1');
+    const { password } = await admin.resetPassword('p1');
 
     expect(password).toHaveLength(12);
-    expect(hashGuardado).toBeDefined();
-    expect(hashGuardado).not.toContain(password);
-    expect(await compare(password, hashGuardado as string)).toBe(true);
+    expect(storedHash).toBeDefined();
+    expect(storedHash).not.toContain(password);
+    expect(await compare(password, storedHash as string)).toBe(true);
   });
 });
 
 describe('AdminService.eliminar', () => {
   it('borra a un participante', async () => {
-    let borrado: unknown;
-    const admin = servicio({
+    let deleted: unknown;
+    const admin = service({
       findFirst: () => Promise.resolve({ id: 'p1' }),
       delete: (args: { where: unknown }) => {
-        borrado = args.where;
-        return Promise.resolve(fila());
+        deleted = args.where;
+        return Promise.resolve(row());
       },
     });
 
-    await admin.eliminar('p1');
-    expect(borrado).toEqual({ id: 'p1' });
+    await admin.delete('p1');
+    expect(deleted).toEqual({ id: 'p1' });
   });
 
   it('404 si el id no es de un participante (p.ej. un supervisor)', async () => {
-    const admin = servicio({ findFirst: () => Promise.resolve(null) });
-    await expect(admin.eliminar('sup')).rejects.toBeInstanceOf(
-      NotFoundException,
-    );
+    const admin = service({ findFirst: () => Promise.resolve(null) });
+    await expect(admin.delete('sup')).rejects.toBeInstanceOf(NotFoundException);
   });
 });

@@ -1,69 +1,69 @@
-import type { Escenario } from '../data/catalogo'
-import type { Progreso, ProgresoEscenario, RunOutcome } from './api'
+import type { Scenario } from '../data/catalogo'
+import type { Progress, ScenarioProgress, RunOutcome } from './api'
 
 // Idempotente. La corrida recién terminada se guarda en paralelo; hasta que el
 // servidor la registre, el gating debe darla por hecha en vez de leer un estado viejo.
-export function conEscenarioIntentado(
-  progreso: Progreso,
-  escenarioId: string,
+export function withAttemptedScenario(
+  progress: Progress,
+  scenarioId: string,
   outcome: RunOutcome = 'CORRECTO',
-  iniciandoRepeticion = false,
-): Progreso {
-  const figura = (lista: ProgresoEscenario[]) => lista.some((e) => e.id === escenarioId)
-  const nuevo: ProgresoEscenario = { id: escenarioId, ultimoOutcome: outcome }
+  startingReplay = false,
+): Progress {
+  const figure = (list: ScenarioProgress[]) => list.some((e) => e.id === scenarioId)
+  const newScenario: ScenarioProgress = { id: scenarioId, ultimoOutcome: outcome }
 
-  if (progreso.rondaEnCurso) {
-    if (figura(progreso.rondaEnCurso.escenarios)) return progreso
+  if (progress.rondaEnCurso) {
+    if (figure(progress.rondaEnCurso.escenarios)) return progress
     return {
-      ...progreso,
+      ...progress,
       rondaEnCurso: {
-        ...progreso.rondaEnCurso,
-        escenarios: [...progreso.rondaEnCurso.escenarios, nuevo],
+        ...progress.rondaEnCurso,
+        escenarios: [...progress.rondaEnCurso.escenarios, newScenario],
       },
     }
   }
 
   // En una repetición, el GET puede devolver todavía la ronda oficial completa.
-  if (figura(progreso.escenarios)) {
-    if (iniciandoRepeticion) {
-      return { ...progreso, rondaEnCurso: { jugados: 1, escenarios: [nuevo] } }
+  if (figure(progress.escenarios)) {
+    if (startingReplay) {
+      return { ...progress, rondaEnCurso: { jugados: 1, escenarios: [newScenario] } }
     }
-    return progreso
+    return progress
   }
-  return { ...progreso, escenarios: [...progreso.escenarios, nuevo] }
+  return { ...progress, escenarios: [...progress.escenarios, newScenario] }
 }
 
-export function escenarioFueJugado(progreso: Progreso | null, escenarioId: string): boolean {
-  return progreso?.escenarios.some((escenario) => {
-    return escenario.id === escenarioId && escenario.ultimoOutcome !== undefined
+export function wasScenarioPlayed(progress: Progress | null, scenarioId: string): boolean {
+  return progress?.escenarios.some((scenario) => {
+    return scenario.id === scenarioId && scenario.ultimoOutcome !== undefined
   }) ?? false
 }
 
-export function escenarioEstaDisponible(
-  escenarios: Escenario[],
-  progreso: Progreso | null,
-  escenarioId: string,
-  opciones: { iniciandoRepeticion?: boolean } = {},
+export function isScenarioAvailable(
+  scenarios: Scenario[],
+  progress: Progress | null,
+  scenarioId: string,
+  options: { iniciandoRepeticion?: boolean } = {},
 ): boolean {
-  if (!progreso) return true
+  if (!progress) return true
 
-  const indiceEscenario = escenarios.findIndex((escenario) => escenario.id === escenarioId)
-  if (indiceEscenario === -1) return false
+  const scenarioIndex = scenarios.findIndex((scenario) => scenario.id === scenarioId)
+  if (scenarioIndex === -1) return false
 
-  const enRepeticion = progreso.rondaEnCurso != null
-  const reposo = !enRepeticion && progreso.escenarios.length >= escenarios.length
-  if (reposo) return opciones.iniciandoRepeticion === true && indiceEscenario === 0
-  const jugados = enRepeticion ? progreso.rondaEnCurso!.escenarios : progreso.escenarios
-  const ids = new Set(jugados.map((e) => e.id))
-  return !ids.has(escenarioId) && escenarios.find((e) => !ids.has(e.id))?.id === escenarioId
+  const replaying = progress.rondaEnCurso != null
+  const rest = !replaying && progress.escenarios.length >= scenarios.length
+  if (rest) return options.iniciandoRepeticion === true && scenarioIndex === 0
+  const played = replaying ? progress.rondaEnCurso!.escenarios : progress.escenarios
+  const ids = new Set(played.map((e) => e.id))
+  return !ids.has(scenarioId) && scenarios.find((e) => !ids.has(e.id))?.id === scenarioId
 }
 
-export function siguienteEnRonda(escenarios: Escenario[], progreso: Progreso | null): Escenario | null {
-  if (!progreso) return escenarios[0] ?? null
-  const enRepeticion = progreso.rondaEnCurso != null
-  const reposo = !enRepeticion && progreso.escenarios.length >= escenarios.length
-  if (reposo) return null
-  const jugados = enRepeticion ? progreso.rondaEnCurso!.escenarios : progreso.escenarios
-  const ids = new Set(jugados.map((e) => e.id))
-  return escenarios.find((e) => !ids.has(e.id)) ?? null
+export function nextInRound(scenarios: Scenario[], progress: Progress | null): Scenario | null {
+  if (!progress) return scenarios[0] ?? null
+  const replaying = progress.rondaEnCurso != null
+  const rest = !replaying && progress.escenarios.length >= scenarios.length
+  if (rest) return null
+  const played = replaying ? progress.rondaEnCurso!.escenarios : progress.escenarios
+  const ids = new Set(played.map((e) => e.id))
+  return scenarios.find((e) => !ids.has(e.id)) ?? null
 }

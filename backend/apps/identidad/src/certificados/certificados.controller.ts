@@ -10,20 +10,20 @@ import {
 import { Throttle } from '@nestjs/throttler';
 import type { Response } from 'express';
 import { CurrentParticipant, JwtAuthGuard, type JwtPayload } from '@comun';
-import { CanjearAtestacionDto } from './dto/canjear-atestacion.dto';
-import { CertificadosService } from './certificados.service';
+import { RedeemAttestationDto } from './dto/canjear-atestacion.dto';
+import { CertificatesService } from './certificados.service';
 
 @Controller('certificados')
-export class CertificadosController {
-  constructor(private readonly certificados: CertificadosService) {}
+export class CertificatesController {
+  constructor(private readonly certificates: CertificatesService) {}
 
   @UseGuards(JwtAuthGuard)
   @Post()
-  emitir(
+  issue(
     @CurrentParticipant() participant: JwtPayload,
-    @Body() dto: CanjearAtestacionDto,
+    @Body() dto: RedeemAttestationDto,
   ) {
-    return this.certificados.emitir(participant, dto.atestacion);
+    return this.certificates.issue(participant, dto.atestacion);
   }
 
   /// `POST` y no `GET`: la atestación es un JWT, y en la query string acabaría
@@ -32,10 +32,10 @@ export class CertificadosController {
   @Post('pdf')
   async pdf(
     @CurrentParticipant() participant: JwtPayload,
-    @Body() dto: CanjearAtestacionDto,
+    @Body() dto: RedeemAttestationDto,
     @Res() res: Response,
   ) {
-    const buffer = await this.certificados.generarPdf(
+    const buffer = await this.certificates.generatePdf(
       participant,
       dto.atestacion,
     );
@@ -54,7 +54,7 @@ export class CertificadosController {
   /// global (120/min) no basta para una ruta sin sesión.
   @Throttle({ default: { limit: 20, ttl: 60_000 } })
   @Get('verificar/:codigo')
-  verificar(@Param('codigo') codigo: string) {
-    return this.certificados.verificar(codigo);
+  verify(@Param('codigo') code: string) {
+    return this.certificates.verify(code);
   }
 }

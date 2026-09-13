@@ -1,23 +1,23 @@
 import { Forward, Landmark, Reply, ShieldAlert, Trash2 } from 'lucide-react'
 import { useState } from 'react'
-import EscenarioLayout from '../../components/EscenarioLayout'
-import type { Contexto } from '../../components/ui/ContextoEscenario'
-import { carpetasCorreo } from '../../components/ui/carpetasCorreo'
+import ScenarioLayout from '../../components/EscenarioLayout'
+import type { Context } from '../../components/ui/ContextoEscenario'
+import { createEmailFolders } from '../../components/ui/carpetasCorreo'
 import {
-  CuerpoCorreo,
-  type AccionCorreo,
-  type CarpetaCorreo,
+  EmailBody,
+  type EmailAction,
+  type EmailFolder,
 } from '../../components/ui/DesktopChrome'
-import { AvisoSitio, CabeceraSitio, ENLACES_PIE, PieSitio } from '../../components/ui/armazonSitio'
+import { SiteNotice, SiteHeader, FOOTER_LINKS, SiteFooter } from '../../components/ui/armazonSitio'
 import styles from '../../components/ui/DeviceScreen.module.css'
-import Instrucciones from '../../components/ui/Instrucciones'
-import { BotonHotspot, EnlaceHotspot, manejarClicHotspot } from '../../components/ui/interactivo'
+import Instructions from '../../components/ui/Instrucciones'
+import { HotspotButton, HotspotLink, handleHotspotClick } from '../../components/ui/interactivo'
 import {
-  Navegador,
-  type MarcadorNavegador,
-  type PestanaConfig,
+  Browser,
+  type BrowserBookmark,
+  type TabConfig,
 } from '../../components/ui/Navegador'
-import PanelVeredicto, { type Senal } from '../../components/ui/PanelVeredicto'
+import VerdictPanel, { type Signal } from '../../components/ui/PanelVeredicto'
 import { useStoryEngine, type Story, type StoryNode } from '../../hooks/useStoryEngine'
 
 const STORY: Story<StoryNode> = {
@@ -63,7 +63,7 @@ const STORY: Story<StoryNode> = {
   },
 }
 
-const ACCIONES: AccionCorreo[] = [
+const ACTIONS: EmailAction[] = [
   {
     Icono: Reply,
     etiqueta: 'Responder',
@@ -94,21 +94,21 @@ const ACCIONES: AccionCorreo[] = [
   },
 ]
 
-const ASUNTO = 'Alerta de seguridad: nuevo inicio de sesión'
-const REMITENTE_NOMBRE = 'Banco del Litoral · Seguridad'
-const DIRECCION = 'alertas@bancodellitoral.com.ec'
+const SUBJECT = 'Alerta de seguridad: nuevo inicio de sesión'
+const SENDER_NAME = 'Banco del Litoral · Seguridad'
+const ADDRESS = 'alertas@bancodellitoral.com.ec'
 
 /// El mensaje tal como lo muestran las carpetas cuando una acción de la barra
 /// lo mueve de bandeja. Lo pinta `carpetasCorreo`, compartido por todos los
 /// escenarios de correo.
-const MENSAJE = { nombre: REMITENTE_NOMBRE, direccion: DIRECCION, asunto: ASUNTO }
+const MESSAGE = { nombre: SENDER_NAME, direccion: ADDRESS, asunto: SUBJECT }
 
 // s2 anclada a la URL de n2 (la página falsa), no al remitente: el
 // remitente muestra un dominio limpio (bancodellitoral.com.ec), que es
 // justo lo que dice s4 sobre lo impecable del correo — el truco del dominio
 // está en la página, no en el mensaje. s3 anclada al campo de n3 (el OTP),
 // no al de n2 (la contraseña).
-const SENALES: Senal[] = [
+const SIGNALS: Signal[] = [
   {
     id: 's1',
     targetId: 'cta-trampa',
@@ -140,9 +140,9 @@ const SENALES: Senal[] = [
 const RULE =
   'Regla de oro: en una dirección web manda el nombre que está <b>justo antes de la primera barra</b>. Todo lo que va antes puede escribirlo el atacante, incluido el nombre de tu banco. Y ninguna alerta se atiende desde el enlace de la propia alerta.'
 
-const RESUMEN = 'Un correo avisa que alguien inició sesión en tu cuenta desde Bogotá.'
+const SUMMARY = 'Un correo avisa que alguien inició sesión en tu cuenta desde Bogotá.'
 
-const CONTEXTO: Contexto = {
+const CONTEXT: Context = {
   antes: (
     <>
       Eres cliente del <strong>Banco del Litoral</strong>.
@@ -156,7 +156,7 @@ const CONTEXTO: Contexto = {
   ),
 }
 
-const NOTA = (
+const NOTE = (
   <>
     <p>
       Vas a ver tu computador con el correo abierto. Puedes actuar sobre la pantalla como lo harías
@@ -169,29 +169,29 @@ const NOTA = (
   </>
 )
 
-const FALSO = 'bancodellitoral.com.ec.seguridad-alertas.com'
+const FAKE = 'bancodellitoral.com.ec.seguridad-alertas.com'
 
 // n3 lleva `mismaPestana: true`: pasar de la página de clave al OTP es el
 // mismo sitio avanzando un paso, no una pestaña nueva (spec §2.2 y §5).
-const PESTANAS: Record<string, PestanaConfig & { mismaPestana?: boolean }> = {
+const TABS: Record<string, TabConfig & { mismaPestana?: boolean }> = {
   n1: { titulo: 'Correo', url: 'https://correo.safeweb.com/u/0/#recibidos', segura: true },
   n2: {
     titulo: 'Verificación de seguridad',
-    url: `https://${FALSO}/clave`,
+    url: `https://${FAKE}/clave`,
     segura: true,
     cierra: 'n1',
     senalUrl: 'url-falsa',
   },
   n3: {
     titulo: 'Un paso más',
-    url: `https://${FALSO}/otp`,
+    url: `https://${FAKE}/otp`,
     segura: true,
     cierra: 'n1',
     mismaPestana: true,
   },
 }
 
-const MARCADORES: MarcadorNavegador[] = [
+const MARKERS: BrowserBookmark[] = [
   {
     Icono: Landmark,
     texto: 'Banco del Litoral',
@@ -200,20 +200,20 @@ const MARCADORES: MarcadorNavegador[] = [
   },
 ]
 
-function ContenidoCorreo({ recibido, carpetas }: { recibido: string; carpetas: CarpetaCorreo[] }) {
+function EmailContent({ recibido: received, carpetas: folders }: { recibido: string; carpetas: EmailFolder[] }) {
   return (
-    <CuerpoCorreo
-      acciones={ACCIONES}
-      carpetas={carpetas}
-      asunto={ASUNTO}
+    <EmailBody
+      acciones={ACTIONS}
+      carpetas={folders}
+      asunto={SUBJECT}
       remitente={{
-        nombre: REMITENTE_NOMBRE,
-        direccion: DIRECCION,
+        nombre: SENDER_NAME,
+        direccion: ADDRESS,
         etiqueta: 'Externo',
         senalDireccion: 'remitente',
         senalEtiqueta: 'externo',
       }}
-      recibido={recibido}
+      recibido={received}
       marca={{
         nombre: 'Banco del Litoral',
         detalle: 'Centro de seguridad y alertas',
@@ -229,24 +229,24 @@ function ContenidoCorreo({ recibido, carpetas }: { recibido: string; carpetas: C
       </p>
       <p>Si fue usted, puede ignorar este mensaje. Si no, actúe de inmediato:</p>
       <p>
-        <EnlaceHotspot
+        <HotspotLink
           goto="n2"
           label="Hizo clic en 'No fui yo (proteger mi cuenta)'"
-          href={`https://${FALSO}/clave`}
+          href={`https://${FAKE}/clave`}
           signalId="cta-trampa"
           className="cta"
         >
           No fui yo (proteger mi cuenta)
-        </EnlaceHotspot>
+        </HotspotLink>
       </p>
-    </CuerpoCorreo>
+    </EmailBody>
   )
 }
 
-function ContenidoPaginaClave() {
+function PasswordPageContent() {
   return (
     <div className={styles.page}>
-      <CabeceraSitio
+      <SiteHeader
         marca="Banco del Litoral"
         menu={['Cuentas', 'Transferencias', 'Pagos', 'Ayuda']}
       />
@@ -261,29 +261,29 @@ function ContenidoPaginaClave() {
             {' '}••••••••
           </span>
         </fieldset>
-        <BotonHotspot
+        <HotspotButton
           goto="n3"
           label="Escribió su contraseña para cerrar el acceso no reconocido"
           className={styles.submit}
         >
           Cerrar acceso no reconocido
-        </BotonHotspot>
+        </HotspotButton>
       </div>
 
-      <AvisoSitio>
+      <SiteNotice>
         Por su seguridad, cierre todas las sesiones activas si no reconoce el acceso. Nunca le
         pediremos su clave por correo ni por teléfono.
-      </AvisoSitio>
+      </SiteNotice>
 
-      <PieSitio texto="Banco del Litoral · Entidad supervisada" enlaces={ENLACES_PIE} />
+      <SiteFooter texto="Banco del Litoral · Entidad supervisada" enlaces={FOOTER_LINKS} />
     </div>
   )
 }
 
-function ContenidoPaginaOtp() {
+function OtpPageContent() {
   return (
     <div className={styles.page}>
-      <CabeceraSitio
+      <SiteHeader
         marca="Banco del Litoral"
         menu={['Cuentas', 'Transferencias', 'Pagos', 'Ayuda']}
       />
@@ -298,31 +298,31 @@ function ContenidoPaginaOtp() {
             {' '}418 902
           </span>
         </fieldset>
-        <BotonHotspot
+        <HotspotButton
           goto="e_otp"
           label="Escribió el código que llegó por SMS"
           className={styles.submit}
         >
           Confirmar y cerrar sesión
-        </BotonHotspot>
+        </HotspotButton>
       </div>
 
-      <AvisoSitio>
+      <SiteNotice>
         El código caduca en cinco minutos. Si no lo recibió, verifique que su número esté
         actualizado en la aplicación.
-      </AvisoSitio>
+      </SiteNotice>
 
-      <PieSitio texto="Banco del Litoral · Entidad supervisada" enlaces={ENLACES_PIE} />
+      <SiteFooter texto="Banco del Litoral · Entidad supervisada" enlaces={FOOTER_LINKS} />
     </div>
   )
 }
 
-function DecisionEnCurso({ fallo, pantalla }: { fallo: boolean; pantalla: string }) {
+function PendingDecision({ fallo: failure, pantalla: screen }: { fallo: boolean; pantalla: string }) {
   return (
     <div className="grid gap-3">
       <p className="text-lg font-semibold text-ink">¿Qué haces?</p>
-      <Instrucciones
-        fallo={fallo}
+      <Instructions
+        fallo={failure}
         pista={
           <p>
             Tienes dos caminos posibles: hacer lo que la alerta pide, o dejarla de lado y entrar a
@@ -337,13 +337,13 @@ function DecisionEnCurso({ fallo, pantalla }: { fallo: boolean; pantalla: string
           enlace, mantén el cursor encima para ver a dónde lleva.
         </p>
 
-        {pantalla === 'n2' && (
+        {screen === 'n2' && (
           <p className="rounded-md border border-hairline-strong bg-canvas-soft px-3 py-2 text-base leading-relaxed text-body">
             El campo ya aparece con <strong className="text-ink">tu contraseña escrita</strong>. Es
             así para no pedirte datos reales, pero enviarla cuenta como entregarla.
           </p>
         )}
-        {pantalla === 'n3' && (
+        {screen === 'n3' && (
           <p className="rounded-md border border-hairline-strong bg-canvas-soft px-3 py-2 text-base leading-relaxed text-body">
             El campo ya aparece con <strong className="text-ink">el código escrito</strong>. Es así
             para no pedirte datos reales, pero enviarlo cuenta como entregarlo.
@@ -363,57 +363,57 @@ function DecisionEnCurso({ fallo, pantalla }: { fallo: boolean; pantalla: string
             decide nada.
           </p>
         </details>
-      </Instrucciones>
+      </Instructions>
     </div>
   )
 }
 
-function SesionBogota() {
+function BogotaSession() {
   const engine = useStoryEngine(STORY, 'n1', 'phishing/sesion-bogota')
 
-  const [pantallaActual, setPantallaActual] = useState('n1')
-  const [tocoEnVacio, setTocoEnVacio] = useState(false)
-  const [pestanas, setPestanas] = useState(['n1'])
-  const [repasando, setRepasando] = useState(false)
+  const [currentScreen, setCurrentScreen] = useState('n1')
+  const [clickedEmptySpace, setClickedEmptySpace] = useState(false)
+  const [tabs, setTabs] = useState(['n1'])
+  const [reviewing, setReviewing] = useState(false)
 
-  function elegir(goto: string, label?: string) {
+  function choose(goto: string, label?: string) {
     if (engine.isEnding) return
     engine.choose(goto, label)
     if (STORY[goto]?.kind === 'scene') {
-      const destino = pantallaActual
-      setPantallaActual(goto)
-      setPestanas((abiertas) => {
-        if (PESTANAS[goto]?.mismaPestana) {
-          return abiertas.map((id) => (id === destino ? goto : id))
+      const destination = currentScreen
+      setCurrentScreen(goto)
+      setTabs((open) => {
+        if (TABS[goto]?.mismaPestana) {
+          return open.map((id) => (id === destination ? goto : id))
         }
-        return abiertas.includes(goto) ? abiertas : [...abiertas, goto]
+        return open.includes(goto) ? open : [...open, goto]
       })
     }
   }
 
-  function reiniciar() {
+  function restart() {
     engine.restart()
-    setPantallaActual('n1')
-    setPestanas(['n1'])
-    setRepasando(false)
-    setTocoEnVacio(false)
+    setCurrentScreen('n1')
+    setTabs(['n1'])
+    setReviewing(false)
+    setClickedEmptySpace(false)
   }
 
   const onHotspot = (event: React.MouseEvent) => {
-    const cerrada = (event.target as HTMLElement).closest<HTMLElement>('[data-cierra]')?.dataset
+    const closed = (event.target as HTMLElement).closest<HTMLElement>('[data-cierra]')?.dataset
       .cierra
-    if (cerrada) {
-      const quedan = pestanas.filter((id) => id !== cerrada)
-      setPestanas(quedan)
+    if (closed) {
+      const remaining = tabs.filter((id) => id !== closed)
+      setTabs(remaining)
       // Cerrar la pestaña que se está viendo devuelve el navegador a la que
       // quede abierta (el correo). Con el escenario ya terminado `elegir` sale
       // sin tocar la pantalla, así que sin esto la página cerrada seguía a la
       // vista aunque su pestaña ya no estuviera en la barra (issue #26).
-      if (cerrada === pantallaActual) setPantallaActual(quedan.at(-1) ?? 'n1')
+      if (closed === currentScreen) setCurrentScreen(remaining.at(-1) ?? 'n1')
     }
 
-    if (!manejarClicHotspot(event, elegir) && !engine.isEnding) {
-      setTocoEnVacio(true)
+    if (!handleHotspotClick(event, choose) && !engine.isEnding) {
+      setClickedEmptySpace(true)
     }
   }
 
@@ -421,58 +421,58 @@ function SesionBogota() {
   // en el repaso: las señales llevan a pantallas que se cerraron, o que nunca se
   // llegaron a abrir, y sin esto se explicaba la página con la pestaña del
   // correo marcada como activa.
-  const abiertas = pestanas.includes(pantallaActual) ? pestanas : [...pestanas, pantallaActual]
+  const open = tabs.includes(currentScreen) ? tabs : [...tabs, currentScreen]
 
-  const pantalla = (
-    <Navegador
-      pestanas={PESTANAS}
-      abiertas={abiertas}
-      activa={pantallaActual}
-      marcadores={MARCADORES}
+  const screen = (
+    <Browser
+      pestanas={TABS}
+      abiertas={open}
+      activa={currentScreen}
+      marcadores={MARKERS}
       onHotspot={onHotspot}
     >
-      {pantallaActual === 'n1' ? (
-        <ContenidoCorreo
-          carpetas={carpetasCorreo(
-            MENSAJE,
-            engine.isEnding && !repasando ? engine.current : undefined,
+      {currentScreen === 'n1' ? (
+        <EmailContent
+          carpetas={createEmailFolders(
+            MESSAGE,
+            engine.isEnding && !reviewing ? engine.current : undefined,
           )}
           recibido="hoy 21:47"
         />
-      ) : pantallaActual === 'n2' ? (
-        <ContenidoPaginaClave />
+      ) : currentScreen === 'n2' ? (
+        <PasswordPageContent />
       ) : (
-        <ContenidoPaginaOtp />
+        <OtpPageContent />
       )}
-    </Navegador>
+    </Browser>
   )
 
   const decision = engine.isEnding ? (
-    <PanelVeredicto
+    <VerdictPanel
       estadoGuardado={engine.runStatus}
       escenarioId="phishing/sesion-bogota"
       node={engine.node}
-      senales={SENALES}
+      senales={SIGNALS}
       regla={RULE}
       restartLabel="↻ Repetir el escenario"
-      onRestart={reiniciar}
+      onRestart={restart}
       contenedorId="pantalla-escenario"
       onPantalla={(id) => {
-        setRepasando(Boolean(id))
-        if (id) setPantallaActual(id)
+        setReviewing(Boolean(id))
+        if (id) setCurrentScreen(id)
       }}
     />
   ) : (
-    <DecisionEnCurso fallo={tocoEnVacio} pantalla={pantallaActual} />
+    <PendingDecision fallo={clickedEmptySpace} pantalla={currentScreen} />
   )
 
   return (
-    <EscenarioLayout
+    <ScenarioLayout
       escenarioId="phishing/sesion-bogota"
-      resumen={RESUMEN}
-      contexto={CONTEXTO}
-      nota={NOTA}
-      pantalla={pantalla}
+      resumen={SUMMARY}
+      contexto={CONTEXT}
+      nota={NOTE}
+      pantalla={screen}
       identidad={['clave']}
       decision={decision}
       resultado={engine.resultado}
@@ -482,4 +482,4 @@ function SesionBogota() {
   )
 }
 
-export default SesionBogota
+export default BogotaSession

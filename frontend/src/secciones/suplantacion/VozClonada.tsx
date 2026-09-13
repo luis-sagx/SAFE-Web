@@ -1,22 +1,22 @@
 import { Contact, MessageCircle, Phone, Wallet } from 'lucide-react'
-import StoryEscenario, { type AppTelefono, type ScreenNode } from '../../components/StoryEscenario'
-import type { Contexto } from '../../components/ui/ContextoEscenario'
+import ScenarioStory, { type PhoneApp, type ScreenNode } from '../../components/StoryEscenario'
+import type { Context } from '../../components/ui/ContextoEscenario'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
-import type { Senal } from '../../components/ui/PanelVeredicto'
+import type { Signal } from '../../components/ui/PanelVeredicto'
 import type { Story } from '../../hooks/useStoryEngine'
-import { CUENTA_FICTICIA } from '../../lib/identidadFicticia'
+import { ACCOUNT_FAKE } from '../../lib/identidadFicticia'
 
 // El más difícil del módulo: la voz clonada no deja nada que comprobar por sí
 // sola. Lo único que funciona es colgar y marcar tú al número de siempre.
 
-const DESCONOCIDO = '+593 96 302 8874'
-const NUMERO_HIJA = '+593 99 712 3380'
-const CUENTA_ESTAFA = '5580-3311-27 · Deuna · Luis A. Paredes'
+const UNKNOWN = '+593 96 302 8874'
+const NUMBER_DAUGHTER = '+593 99 712 3380'
+const ACCOUNT_SCAM = '5580-3311-27 · Deuna · Luis A. Paredes'
 
-const ENTRANTE: ScreenView = {
+const INCOMING: ScreenView = {
   kind: 'call',
   entrante: true,
-  quien: DESCONOCIDO,
+  quien: UNKNOWN,
   numero: 'Celular · Ecuador',
   etiqueta: 'No está en tus contactos',
   senalQuien: 'quien',
@@ -26,26 +26,26 @@ const ENTRANTE: ScreenView = {
   rechazarLabel: 'Rechazó la llamada sin contestar',
 }
 
-const GRITO = {
+const SHOUT = {
   texto: '¡Papi! Papi ayúdame por favor, me chocaron y se llevaron el carro, tengo miedo…',
   rol: 'hija',
   senal: 'voz',
 }
 
-const POLICIA = {
+const POLICE = {
   texto:
     'Buenas tardes, le habla el sargento Aguirre, de tránsito. Su hija está bien, pero el vehículo con el que chocó es de una persona que no quiere denunciar si se le cubre el daño ahora mismo.',
   rol: 'policia',
   senal: 'autoridad',
 }
 
-const LLAMADA: ScreenView = {
+const CALL: ScreenView = {
   kind: 'call',
-  quien: DESCONOCIDO,
+  quien: UNKNOWN,
   numero: 'Celular · Ecuador',
   etiqueta: 'No está en tus contactos',
   senalQuien: 'quien',
-  dialogo: [GRITO, POLICIA],
+  dialogo: [SHOUT, POLICE],
   decir: [
     {
       texto: 'Pásemela otra vez, quiero hablar con mi hija.',
@@ -58,11 +58,11 @@ const LLAMADA: ScreenView = {
   colgarLabel: 'Colgó al principio de la llamada',
 }
 
-const NO_PASA: ScreenView = {
-  ...LLAMADA,
+const DOES_NOT_CONTINUE: ScreenView = {
+  ...CALL,
   dialogo: [
-    GRITO,
-    POLICIA,
+    SHOUT,
+    POLICE,
     { texto: 'Pásemela otra vez, quiero hablar con mi hija.', mio: true },
     {
       texto:
@@ -81,14 +81,14 @@ const NO_PASA: ScreenView = {
   ],
 }
 
-const MONTO: ScreenView = {
-  ...LLAMADA,
+const AMOUNT: ScreenView = {
+  ...CALL,
   dialogo: [
-    GRITO,
-    POLICIA,
+    SHOUT,
+    POLICE,
     { texto: '¿Cuánto es y a dónde deposito?', mio: true },
     {
-      texto: `Son cuatrocientos dólares y hay que hacerlo ya. Anote: ${CUENTA_ESTAFA}. No cuelgue mientras transfiere, yo le voy confirmando.`,
+      texto: `Son cuatrocientos dólares y hay que hacerlo ya. Anote: ${ACCOUNT_SCAM}. No cuelgue mientras transfiere, yo le voy confirmando.`,
       rol: 'policia',
       senal: 'cuenta',
     },
@@ -107,11 +107,11 @@ const MONTO: ScreenView = {
   ],
 }
 
-const AMENAZA: ScreenView = {
-  ...LLAMADA,
+const THREAT: ScreenView = {
+  ...CALL,
   dialogo: [
-    GRITO,
-    POLICIA,
+    SHOUT,
+    POLICE,
     { texto: 'Voy a llamar a mi hija ahora mismo.', mio: true },
     {
       texto:
@@ -134,7 +134,7 @@ const AMENAZA: ScreenView = {
   ],
 }
 
-const AGENDA: ScreenView = {
+const CONTACTS: ScreenView = {
   kind: 'web',
   app: 'Teléfono',
   url: 'contactos',
@@ -144,7 +144,7 @@ const AGENDA: ScreenView = {
   opciones: [
     {
       texto: 'Camila · Hija',
-      detalle: `${NUMERO_HIJA} · su número de siempre`,
+      detalle: `${NUMBER_DAUGHTER} · su número de siempre`,
       goto: 'e_verifica',
       label: 'Llamó a su hija al número de siempre',
     },
@@ -156,10 +156,10 @@ const AGENDA: ScreenView = {
   button: '',
 }
 
-const LLAMADA_HIJA: ScreenView = {
+const CALL_DAUGHTER: ScreenView = {
   kind: 'call',
   quien: 'Camila · Hija',
-  numero: NUMERO_HIJA,
+  numero: NUMBER_DAUGHTER,
   etiqueta: 'Guardada en tus contactos',
   dialogo: [
     {
@@ -171,14 +171,14 @@ const LLAMADA_HIJA: ScreenView = {
   ],
 }
 
-const BANCO: ScreenView = {
+const BANK: ScreenView = {
   kind: 'web',
   app: 'Banco del Litoral',
   url: 'bancolitoral.ec',
   secure: true,
   brand: 'Banca móvil',
   title: 'Tus cuentas',
-  subtitle: `${CUENTA_FICTICIA} · disponible $980,20`,
+  subtitle: `${ACCOUNT_FAKE} · disponible $980,20`,
   opciones: [
     {
       texto: 'Transferir',
@@ -194,7 +194,7 @@ const BANCO: ScreenView = {
   button: '',
 }
 
-const TRANSFERENCIA: ScreenView = {
+const TRANSFER: ScreenView = {
   kind: 'web',
   app: 'Banco del Litoral',
   url: 'bancolitoral.ec',
@@ -203,7 +203,7 @@ const TRANSFERENCIA: ScreenView = {
   title: 'Confirma la transferencia',
   subtitle: 'Revisa los datos antes de enviar el dinero.',
   datos: [
-    { etiqueta: 'Cuenta de destino', valor: CUENTA_ESTAFA, senal: 'cuenta' },
+    { etiqueta: 'Cuenta de destino', valor: ACCOUNT_SCAM, senal: 'cuenta' },
     { etiqueta: 'Titular', valor: 'Luis A. Paredes' },
     { etiqueta: 'Valor', valor: '$400,00' },
   ],
@@ -216,7 +216,7 @@ const TRANSFERENCIA: ScreenView = {
   fields: [],
 }
 
-const APPS: AppTelefono[] = [
+const APPS: PhoneApp[] = [
   { Icono: Phone, texto: 'Teléfono', color: '#2f9e44', hilo: 'call' },
   {
     Icono: Contact,
@@ -241,17 +241,17 @@ const APPS: AppTelefono[] = [
 ]
 
 export const STORY: Story<ScreenNode> = {
-  n1: { kind: 'scene', view: ENTRANTE },
-  n2: { kind: 'scene', view: LLAMADA },
-  n3: { kind: 'scene', view: NO_PASA },
-  n3b: { kind: 'scene', view: MONTO },
-  n3c: { kind: 'scene', view: AMENAZA },
-  n4: { kind: 'scene', view: AGENDA },
-  n5: { kind: 'scene', view: BANCO },
-  n6: { kind: 'scene', view: TRANSFERENCIA },
+  n1: { kind: 'scene', view: INCOMING },
+  n2: { kind: 'scene', view: CALL },
+  n3: { kind: 'scene', view: DOES_NOT_CONTINUE },
+  n3b: { kind: 'scene', view: AMOUNT },
+  n3c: { kind: 'scene', view: THREAT },
+  n4: { kind: 'scene', view: CONTACTS },
+  n5: { kind: 'scene', view: BANK },
+  n6: { kind: 'scene', view: TRANSFER },
   e_rechaza: {
     kind: 'partial',
-    view: ENTRANTE,
+    view: INCOMING,
     verdict: 'No perdiste nada, pero no contestar no siempre basta',
     outcome:
       'No contestaste y no perdiste un centavo. Aun así, quien monta esto vuelve a intentarlo, y a veces con alguien de tu casa que sí contesta: lo que conviene es hablarlo en familia y acordar una pregunta que solo ustedes sepan responder.',
@@ -259,7 +259,7 @@ export const STORY: Story<ScreenNode> = {
   },
   e_cuelga: {
     kind: 'partial',
-    view: LLAMADA,
+    view: CALL,
     verdict: 'Colgaste, pero te quedaste con el susto',
     outcome:
       'Colgar fue lo correcto y no entregaste nada. Lo que falta es la otra mitad: llamar a tu hija para saber que está bien. Sin eso te queda la duda toda la tarde, que es exactamente con lo que cuentan para que vuelvas a llamarles tú.',
@@ -267,28 +267,28 @@ export const STORY: Story<ScreenNode> = {
   },
   e_cuelga_llama: {
     kind: 'good',
-    view: LLAMADA_HIJA,
+    view: CALL_DAUGHTER,
     verdict: 'No caíste · colgaste y la llamaste',
     outcome:
       'Camila contestó desde la universidad, en clase y con el carro en el parqueadero. Colgaste mientras te decían que no colgaras, que es lo más difícil de hacer con miedo y lo único que funciona.',
   },
   e_verifica: {
     kind: 'good',
-    view: LLAMADA_HIJA,
+    view: CALL_DAUGHTER,
     verdict: 'No caíste · la llamaste a su número',
     outcome:
       'Dejaste la llamada esperando y marcaste el número de tu hija: contestó a la primera, estaba en clase y no había pasado nada. Nunca hubo accidente ni sargento; la voz que oíste llorando se hizo con unos segundos de audio de sus redes.',
   },
   e_paga: {
     kind: 'bad',
-    view: TRANSFERENCIA,
+    view: TRANSFER,
     verdict: 'Caíste en la suplantación',
     outcome:
       'Transferiste $400 mientras seguías al teléfono. No hubo accidente: tu hija estaba en clase. La voz que te hizo llorar se generó con unos segundos de audio de un video suyo, y el "sargento" no existe. En cuanto llegó el dinero, cortaron.',
   },
 }
 
-const SENALES: Senal[] = [
+const SIGNALS: Signal[] = [
   {
     id: 's1',
     targetId: 'voz',
@@ -329,9 +329,9 @@ const SENALES: Senal[] = [
 const RULE =
   'Regla de oro: cuando alguien llame diciendo que un familiar tuyo está en problemas, <b>cuelga y llama tú a esa persona</b> a su número de siempre. La voz ya no es una prueba, y el "no cuelgue" es justamente la señal de que hay que colgar.'
 
-const RESUMEN = 'Llamas a contestar y oyes a tu hija llorando: dice que tuvo un accidente.'
+const SUMMARY = 'Llamas a contestar y oyes a tu hija llorando: dice que tuvo un accidente.'
 
-const CONTEXTO: Contexto = {
+const CONTEXT: Context = {
   antes: (
     <>
       Tu hija <strong>Camila</strong> está en la universidad esta tarde y se llevó el carro, como
@@ -345,14 +345,14 @@ const CONTEXTO: Contexto = {
   ),
 }
 
-function VozClonada() {
+function ClonedVoice() {
   return (
-    <StoryEscenario
+    <ScenarioStory
       escenarioId="suplantacion/voz-clonada"
-      resumen={RESUMEN}
-      contexto={CONTEXTO}
+      resumen={SUMMARY}
+      contexto={CONTEXT}
       story={STORY}
-      senales={SENALES}
+      senales={SIGNALS}
       rule={RULE}
       restartLabel="↻ Recibir la llamada otra vez"
       accionesEnPantalla
@@ -373,4 +373,4 @@ function VozClonada() {
   )
 }
 
-export default VozClonada
+export default ClonedVoice

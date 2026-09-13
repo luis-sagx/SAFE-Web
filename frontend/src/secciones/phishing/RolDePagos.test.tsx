@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
 import { describe, expect, it, vi } from 'vitest'
-import RolDePagos from './RolDePagos'
+import PayrollStatement from './RolDePagos'
 
 vi.mock('../../context/AuthContext', () => ({
   useAuth: () => ({
@@ -29,14 +29,14 @@ vi.mock('../../context/AuthContext', () => ({
 }))
 
 vi.mock('../../lib/api', async () => {
-  const actual = await vi.importActual<typeof import('../../lib/api')>('../../lib/api')
-  return { ...actual, createRun: vi.fn().mockResolvedValue(undefined) }
+  const current = await vi.importActual<typeof import('../../lib/api')>('../../lib/api')
+  return { ...current, createRun: vi.fn().mockResolvedValue(undefined) }
 })
 
-function renderEscenario() {
+function renderScenario() {
   render(
     <MemoryRouter>
-      <RolDePagos />
+      <PayrollStatement />
     </MemoryRouter>,
   )
 
@@ -45,7 +45,7 @@ function renderEscenario() {
 
 describe('RolDePagos', () => {
   it('al eliminar el correo, la barra lateral lo refleja: sale de Recibidos y aparece en Papelera', () => {
-    renderEscenario()
+    renderScenario()
 
     fireEvent.click(screen.getByRole('button', { name: 'Eliminar' }))
 
@@ -58,7 +58,7 @@ describe('RolDePagos', () => {
   })
 
   it('responder deja el veredicto de haber entregado la contraseña', () => {
-    renderEscenario()
+    renderScenario()
 
     fireEvent.click(screen.getByRole('button', { name: 'Responder' }))
 
@@ -66,7 +66,7 @@ describe('RolDePagos', () => {
   })
 
   it('entrar al portal desde los marcadores y pulsar Ingresar acredita el escenario', () => {
-    renderEscenario()
+    renderScenario()
 
     fireEvent.click(screen.getByRole('button', { name: 'Abrir Portal Andes' }))
     fireEvent.click(screen.getByRole('button', { name: 'Ingresar' }))
@@ -75,7 +75,7 @@ describe('RolDePagos', () => {
   })
 
   it('personaliza el saludo y permite abrir el portal legítimo desde su URL visible', () => {
-    renderEscenario()
+    renderScenario()
 
     expect(screen.getByText('Hola, María:')).toBeDefined()
     fireEvent.click(screen.getByRole('link', { name: 'portal.andes.com.ec' }))

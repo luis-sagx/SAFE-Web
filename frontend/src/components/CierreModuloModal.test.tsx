@@ -1,17 +1,17 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import CierreModuloModal from './CierreModuloModal'
-import type { Escenario, Seccion } from '../data/catalogo'
-import type { Progreso } from '../lib/api'
+import ModuleCompletionModal from './CierreModuloModal'
+import type { Scenario, Section } from '../data/catalogo'
+import type { Progress } from '../lib/api'
 
 vi.mock('../lib/api', async () => {
-  const actual = await vi.importActual<typeof import('../lib/api')>('../lib/api')
-  return { ...actual, fetchMyRuns: () => new Promise(() => {}) }
+  const current = await vi.importActual<typeof import('../lib/api')>('../lib/api')
+  return { ...current, fetchMyRuns: () => new Promise(() => {}) }
 })
 
-const SECCION = { id: 'phishing', titulo: 'Phishing' } as Seccion
-const ESCENARIOS = [{ id: 'phishing/e0' } as Escenario]
-const PROGRESO: Progreso = {
+const SECTION = { id: 'phishing', titulo: 'Phishing' } as Section
+const SCENARIOS = [{ id: 'phishing/e0' } as Scenario]
+const PROGRESS: Progress = {
   modulo: 'phishing',
   escenarios: [],
   aprobados: 6,
@@ -28,10 +28,10 @@ describe('CierreModuloModal', () => {
 
   it('muestra el contenido de CierreModulo dentro del diálogo', () => {
     render(
-      <CierreModuloModal
-        seccion={SECCION}
-        escenarios={ESCENARIOS}
-        progreso={PROGRESO}
+      <ModuleCompletionModal
+        seccion={SECTION}
+        escenarios={SCENARIOS}
+        progreso={PROGRESS}
         onClose={onClose}
       />,
     )
@@ -42,42 +42,42 @@ describe('CierreModuloModal', () => {
 
   it('el botón de cerrar (✕) llama a onClose', () => {
     render(
-      <CierreModuloModal
-        seccion={SECCION}
-        escenarios={ESCENARIOS}
-        progreso={PROGRESO}
+      <ModuleCompletionModal
+        seccion={SECTION}
+        escenarios={SCENARIOS}
+        progreso={PROGRESS}
         onClose={onClose}
       />,
     )
 
-    const [, botonCerrar] = screen.getAllByRole('button', { name: 'Cerrar resumen del módulo' })
-    fireEvent.click(botonCerrar!)
+    const [, closeButton] = screen.getAllByRole('button', { name: 'Cerrar resumen del módulo' })
+    fireEvent.click(closeButton!)
 
     expect(onClose).toHaveBeenCalledTimes(1)
   })
 
   it('el fondo también cierra al hacer clic (es un botón real, no un div)', () => {
     render(
-      <CierreModuloModal
-        seccion={SECCION}
-        escenarios={ESCENARIOS}
-        progreso={PROGRESO}
+      <ModuleCompletionModal
+        seccion={SECTION}
+        escenarios={SCENARIOS}
+        progreso={PROGRESS}
         onClose={onClose}
       />,
     )
 
-    const [botonFondo] = screen.getAllByRole('button', { name: 'Cerrar resumen del módulo' })
-    fireEvent.click(botonFondo!)
+    const [backgroundButton] = screen.getAllByRole('button', { name: 'Cerrar resumen del módulo' })
+    fireEvent.click(backgroundButton!)
 
     expect(onClose).toHaveBeenCalledTimes(1)
   })
 
   it('Escape cierra el modal', () => {
     render(
-      <CierreModuloModal
-        seccion={SECCION}
-        escenarios={ESCENARIOS}
-        progreso={PROGRESO}
+      <ModuleCompletionModal
+        seccion={SECTION}
+        escenarios={SCENARIOS}
+        progreso={PROGRESS}
         onClose={onClose}
       />,
     )

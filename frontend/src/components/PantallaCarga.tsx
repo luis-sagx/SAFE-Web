@@ -1,8 +1,8 @@
-import Marca from './Marca'
+import Brand from './Marca'
 
 // El texto "Cargando…" se mantiene porque es lo que role="status" anuncia a
 // un lector de pantalla, para el que la animación no existe.
-function PantallaCarga({ mensaje = 'Cargando…' }: { mensaje?: string }) {
+function LoadingScreen({ mensaje: message = 'Cargando…' }: { mensaje?: string }) {
   return (
     <div
       role="status"
@@ -14,12 +14,12 @@ function PantallaCarga({ mensaje = 'Cargando…' }: { mensaje?: string }) {
           aria-hidden
           className="absolute inset-0 animate-spin rounded-full border-2 border-hairline-strong border-t-primary [animation-duration:1.1s] motion-reduce:animate-none"
         />
-        <Marca variante="isotipo" className="size-14" />
+        <Brand variante="isotipo" className="size-14" />
       </div>
 
-      <p className="text-base text-muted">{mensaje}</p>
+      <p className="text-base text-muted">{message}</p>
     </div>
   )
 }
 
-export default PantallaCarga
+export default LoadingScreen

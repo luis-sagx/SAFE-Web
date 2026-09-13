@@ -1,33 +1,33 @@
 import { act, renderHook } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { ApiError, type RunPayload } from '../lib/api'
-import { getEscenario } from '../data/catalogo'
+import { getScenario } from '../data/catalogo'
 import { pendingCount } from '../lib/pendingRuns'
 import { outcomeFromKind, scoreFromOutcome, useScenarioRun } from './useScenarioRun'
 
 const { createRunMock } = vi.hoisted(() => ({ createRunMock: vi.fn() }))
 
 vi.mock('../lib/api', async () => {
-  const actual = await vi.importActual<typeof import('../lib/api')>('../lib/api')
-  return { ...actual, createRun: createRunMock }
+  const current = await vi.importActual<typeof import('../lib/api')>('../lib/api')
+  return { ...current, createRun: createRunMock }
 })
 
 // Cualquier escenario activo del catálogo sirve como fixture: la prueba no
 // depende de su contenido, solo de que exista.
-const ESCENARIO = 'phishing/factura-sri'
+const SCENARIO = 'phishing/factura-sri'
 
 // Se lee del catálogo en vez de fijarla a mano: lo que esta prueba verifica es
 // que la versión del catálogo viaje en el payload, no cuál es. Escrita a mano,
 // rompía cada vez que se editaba el guion de ese escenario, que es justo cuando
 // la versión debe subir.
-const VERSION_ESPERADA = getEscenario(ESCENARIO)!.version
+const EXPECTED_VERSION = getScenario(SCENARIO)!.version
 
-function payloadEnviado(): RunPayload {
-  const [primeraLlamada] = createRunMock.mock.calls
-  if (!primeraLlamada) {
+function payloadSent(): RunPayload {
+  const [firstCall] = createRunMock.mock.calls
+  if (!firstCall) {
     throw new Error('No se envió ninguna corrida al servidor.')
   }
-  return primeraLlamada[0] as RunPayload
+  return firstCall[0] as RunPayload
 }
 
 describe('outcomeFromKind / scoreFromOutcome', () => {
@@ -56,7 +56,7 @@ describe('useScenarioRun', () => {
   })
 
   it('envía la corrida con la traza de decisiones y la versión del catálogo', async () => {
-    const { result } = renderHook(() => useScenarioRun(ESCENARIO))
+    const { result } = renderHook(() => useScenarioRun(SCENARIO))
 
     act(() => {
       result.current.recordDecision({ desde: 'n1', hacia: 'n2', eleccion: 'Verificar' })
@@ -65,9 +65,9 @@ describe('useScenarioRun', () => {
       await result.current.finish({ endingId: 'e_verifica', outcome: 'CORRECTO' })
     })
 
-    const payload = payloadEnviado()
-    expect(payload.scenarioId).toBe(ESCENARIO)
-    expect(payload.version).toBe(VERSION_ESPERADA)
+    const payload = payloadSent()
+    expect(payload.scenarioId).toBe(SCENARIO)
+    expect(payload.version).toBe(EXPECTED_VERSION)
     expect(payload.endingId).toBe('e_verifica')
     expect(payload.score).toBe(100)
     expect(payload.decisions).toHaveLength(1)
@@ -76,18 +76,18 @@ describe('useScenarioRun', () => {
   })
 
   it('respeta el puntaje explícito del final', async () => {
-    const { result } = renderHook(() => useScenarioRun(ESCENARIO))
+    const { result } = renderHook(() => useScenarioRun(SCENARIO))
 
     await act(async () => {
       await result.current.finish({ endingId: 'e_dudo', outcome: 'PARCIAL', score: 70 })
     })
 
-    expect(payloadEnviado().score).toBe(70)
+    expect(payloadSent().score).toBe(70)
   })
 
   // StrictMode ejecuta los efectos dos veces: sin la guarda se duplican filas.
   it('envía una sola vez aunque se llame a finish dos veces', async () => {
-    const { result } = renderHook(() => useScenarioRun(ESCENARIO))
+    const { result } = renderHook(() => useScenarioRun(SCENARIO))
 
     await act(async () => {
       await result.current.finish({ endingId: 'e_verifica', outcome: 'CORRECTO' })
@@ -99,7 +99,7 @@ describe('useScenarioRun', () => {
 
   it('encola la corrida cuando falla la red', async () => {
     createRunMock.mockRejectedValue(new TypeError('Failed to fetch'))
-    const { result } = renderHook(() => useScenarioRun(ESCENARIO))
+    const { result } = renderHook(() => useScenarioRun(SCENARIO))
 
     await act(async () => {
       await result.current.finish({ endingId: 'e_pago', outcome: 'INCORRECTO' })
@@ -111,7 +111,7 @@ describe('useScenarioRun', () => {
 
   it('no encola una corrida inválida que nunca podrá reenviarse', async () => {
     createRunMock.mockRejectedValue(new ApiError('scenarioId inválido', 400))
-    const { result } = renderHook(() => useScenarioRun(ESCENARIO))
+    const { result } = renderHook(() => useScenarioRun(SCENARIO))
 
     await act(async () => {
       await result.current.finish({ endingId: 'e_pago', outcome: 'INCORRECTO' })
@@ -122,7 +122,7 @@ describe('useScenarioRun', () => {
   })
 
   it('permite volver a enviar después de reiniciar el escenario', async () => {
-    const { result } = renderHook(() => useScenarioRun(ESCENARIO))
+    const { result } = renderHook(() => useScenarioRun(SCENARIO))
 
     await act(async () => {
       await result.current.finish({ endingId: 'e_pago', outcome: 'INCORRECTO' })
@@ -139,7 +139,7 @@ describe('useScenarioRun', () => {
   })
 
   it('reinicia la traza al reiniciar', async () => {
-    const { result } = renderHook(() => useScenarioRun(ESCENARIO))
+    const { result } = renderHook(() => useScenarioRun(SCENARIO))
 
     act(() => {
       result.current.recordDecision({ desde: 'n1', hacia: 'n2' })
@@ -149,7 +149,7 @@ describe('useScenarioRun', () => {
       await result.current.finish({ endingId: 'e_verifica', outcome: 'CORRECTO' })
     })
 
-    expect(payloadEnviado().decisions).toHaveLength(0)
+    expect(payloadSent().decisions).toHaveLength(0)
     expect(result.current.status).toBe('saved')
   })
 })

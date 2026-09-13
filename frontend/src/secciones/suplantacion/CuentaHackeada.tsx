@@ -1,25 +1,25 @@
 import { Camera, MessageCircle, Phone, Wallet } from 'lucide-react'
-import StoryEscenario, { type AppTelefono, type ScreenNode } from '../../components/StoryEscenario'
-import type { Contexto } from '../../components/ui/ContextoEscenario'
+import ScenarioStory, { type PhoneApp, type ScreenNode } from '../../components/StoryEscenario'
+import type { Context } from '../../components/ui/ContextoEscenario'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
-import type { Senal } from '../../components/ui/PanelVeredicto'
+import type { Signal } from '../../components/ui/PanelVeredicto'
 import type { Story } from '../../hooks/useStoryEngine'
-import { CUENTA_FICTICIA } from '../../lib/identidadFicticia'
+import { ACCOUNT_FAKE } from '../../lib/identidadFicticia'
 
 // El más difícil del módulo: la cuenta es de verdad, quien escribe no (le robaron el WhatsApp).
 // Solo queda para dudar lo que no se puede robar: cómo escribe, y su voz.
 
-const AMIGO = 'Byron Mendoza'
-const NUMERO_BYRON = '+593 98 447 1093'
-const CUENTA_ESTAFA = '4410-2287-63 · Wilmer Chalá Ordóñez'
+const FRIEND = 'Byron Mendoza'
+const NUMBER_BYRON = '+593 98 447 1093'
+const ACCOUNT_SCAM = '4410-2287-63 · Wilmer Chalá Ordóñez'
 
-const HISTORIAL = [
+const HISTORY = [
   { text: 'Bro, ¿al final vas el sábado al partido? 😄', time: '12 ago' },
   { text: 'Sí men, paso por ti a las 3', time: '12 ago', mine: true },
   { text: 'Listo 🙌', time: '12 ago' },
 ]
 
-const PEDIDO = {
+const ORDER = {
   text: 'Estimado amigo, buenas tardes. Necesito solicitarte un favor urgente: estoy en el hospital con mi madre y requiero 180 dólares para poder cancelar unos exámenes. ¿Me podrías ayudar?',
   time: '17:41',
   senal: 'escritura',
@@ -27,12 +27,12 @@ const PEDIDO = {
 
 const CHAT: ScreenView = {
   kind: 'sms',
-  sender: AMIGO,
+  sender: FRIEND,
   sub: 'Guardado en tus contactos · mismo chat de siempre',
   senalRemitente: 'remitente',
   perfilGoto: 'n1b',
   perfilLabel: 'Abrió el perfil del contacto',
-  msgs: [...HISTORIAL, PEDIDO],
+  msgs: [...HISTORY, ORDER],
   respuestas: [
     {
       texto: 'Claro men, ¿a qué cuenta te mando?',
@@ -51,16 +51,16 @@ const CHAT: ScreenView = {
 
 /// La ficha no delata nada, y eso es lo importante: es la cuenta de siempre.
 /// Quien mira aquí buscando la señal se va con las manos vacías.
-const PERFIL: ScreenView = {
+const PROFILE: ScreenView = {
   kind: 'web',
   app: 'Mensajes',
   url: 'perfil',
   secure: true,
   brand: 'Información del contacto',
-  title: AMIGO,
+  title: FRIEND,
   subtitle: 'Guardado en tu agenda como "Byron 🏀".',
   datos: [
-    { etiqueta: 'Número', valor: `${NUMERO_BYRON} · el de siempre`, senal: 'todo-cuadra' },
+    { etiqueta: 'Número', valor: `${NUMBER_BYRON} · el de siempre`, senal: 'todo-cuadra' },
     { etiqueta: 'En esta app desde', valor: '2019', senal: 'todo-cuadra' },
     { etiqueta: 'Grupos en común', valor: '3 · "Los del barrio", "Partido sábados", "Promo 2011"' },
     { etiqueta: 'Foto de perfil', valor: 'La suya de siempre, sin cambios recientes' },
@@ -71,14 +71,14 @@ const PERFIL: ScreenView = {
   button: '',
 }
 
-const CUENTA: ScreenView = {
+const ACCOUNT: ScreenView = {
   ...CHAT,
   msgs: [
-    ...HISTORIAL,
-    PEDIDO,
+    ...HISTORY,
+    ORDER,
     { text: 'Claro men, ¿a qué cuenta te mando?', time: '17:43', mine: true },
     {
-      text: `Te agradezco muchísimo. La transferencia va a esta cuenta: ${CUENTA_ESTAFA}. Es de mi cuñado, la mía tiene un inconveniente con el banco en este momento.`,
+      text: `Te agradezco muchísimo. La transferencia va a esta cuenta: ${ACCOUNT_SCAM}. Es de mi cuñado, la mía tiene un inconveniente con el banco en este momento.`,
       time: '17:44',
       senal: 'cuenta',
     },
@@ -97,11 +97,11 @@ const CUENTA: ScreenView = {
   ],
 }
 
-const NO_PUEDE_HABLAR: ScreenView = {
+const CANNOT_TALK: ScreenView = {
   ...CHAT,
   msgs: [
-    ...HISTORIAL,
-    PEDIDO,
+    ...HISTORY,
+    ORDER,
     { text: 'Uy, qué pasó. Te llamo ahorita.', time: '17:43', mine: true },
     {
       text: 'No es posible en este momento, estoy dentro del área de emergencia y no permiten llamadas. Prefiero que coordinemos por este medio.',
@@ -123,11 +123,11 @@ const NO_PUEDE_HABLAR: ScreenView = {
   ],
 }
 
-const SIN_AUDIO: ScreenView = {
+const WITHOUT_AUDIO: ScreenView = {
   ...CHAT,
   msgs: [
-    ...HISTORIAL,
-    PEDIDO,
+    ...HISTORY,
+    ORDER,
     { text: 'Mándame un audio entonces.', time: '17:45', mine: true },
     {
       text: 'Tampoco puedo grabar audios aquí adentro. Amigo, es urgente, mi madre está esperando por los exámenes. ¿Me ayudas o no?',
@@ -149,7 +149,7 @@ const SIN_AUDIO: ScreenView = {
   ],
 }
 
-const AGENDA: ScreenView = {
+const CONTACTS: ScreenView = {
   kind: 'web',
   app: 'Teléfono',
   url: 'contactos',
@@ -159,7 +159,7 @@ const AGENDA: ScreenView = {
   opciones: [
     {
       texto: 'Byron 🏀',
-      detalle: `${NUMERO_BYRON} · el mismo número desde hace años`,
+      detalle: `${NUMBER_BYRON} · el mismo número desde hace años`,
       goto: 'e_llama',
       label: 'Llamó a su amigo en vez de seguir escribiendo',
     },
@@ -171,10 +171,10 @@ const AGENDA: ScreenView = {
   button: '',
 }
 
-const LLAMADA_BYRON: ScreenView = {
+const CALL_BYRON: ScreenView = {
   kind: 'call',
   quien: 'Byron 🏀',
-  numero: NUMERO_BYRON,
+  numero: NUMBER_BYRON,
   etiqueta: 'Guardado en tus contactos',
   dialogo: [
     {
@@ -185,14 +185,14 @@ const LLAMADA_BYRON: ScreenView = {
   ],
 }
 
-const BANCO: ScreenView = {
+const BANK: ScreenView = {
   kind: 'web',
   app: 'Banco del Litoral',
   url: 'bancolitoral.ec',
   secure: true,
   brand: 'Banca móvil',
   title: 'Tus cuentas',
-  subtitle: `${CUENTA_FICTICIA} · disponible $980,20`,
+  subtitle: `${ACCOUNT_FAKE} · disponible $980,20`,
   opciones: [
     {
       texto: 'Transferir',
@@ -208,7 +208,7 @@ const BANCO: ScreenView = {
   button: '',
 }
 
-const TRANSFERENCIA: ScreenView = {
+const TRANSFER: ScreenView = {
   kind: 'web',
   app: 'Banco del Litoral',
   url: 'bancolitoral.ec',
@@ -217,7 +217,7 @@ const TRANSFERENCIA: ScreenView = {
   title: 'Confirma la transferencia',
   subtitle: 'Revisa los datos antes de enviar el dinero.',
   datos: [
-    { etiqueta: 'Cuenta de destino', valor: CUENTA_ESTAFA, senal: 'cuenta' },
+    { etiqueta: 'Cuenta de destino', valor: ACCOUNT_SCAM, senal: 'cuenta' },
     { etiqueta: 'Titular', valor: 'Wilmer Chalá Ordóñez' },
     { etiqueta: 'Valor', valor: '$180,00' },
   ],
@@ -230,7 +230,7 @@ const TRANSFERENCIA: ScreenView = {
   fields: [],
 }
 
-const APPS: AppTelefono[] = [
+const APPS: PhoneApp[] = [
   { Icono: MessageCircle, texto: 'Mensajes', color: '#2f9e44', hilo: 'sms' },
   {
     Icono: Phone,
@@ -256,23 +256,23 @@ const APPS: AppTelefono[] = [
 
 export const STORY: Story<ScreenNode> = {
   n1: { kind: 'scene', view: CHAT },
-  n1b: { kind: 'scene', view: PERFIL },
-  n2: { kind: 'scene', view: CUENTA },
-  n2b: { kind: 'scene', view: NO_PUEDE_HABLAR },
-  n3: { kind: 'scene', view: SIN_AUDIO },
-  n4: { kind: 'scene', view: AGENDA },
-  n5: { kind: 'scene', view: BANCO },
-  n6: { kind: 'scene', view: TRANSFERENCIA },
+  n1b: { kind: 'scene', view: PROFILE },
+  n2: { kind: 'scene', view: ACCOUNT },
+  n2b: { kind: 'scene', view: CANNOT_TALK },
+  n3: { kind: 'scene', view: WITHOUT_AUDIO },
+  n4: { kind: 'scene', view: CONTACTS },
+  n5: { kind: 'scene', view: BANK },
+  n6: { kind: 'scene', view: TRANSFER },
   e_paga: {
     kind: 'bad',
-    view: TRANSFERENCIA,
+    view: TRANSFER,
     verdict: 'Caíste en la suplantación',
     outcome:
       'Los $180 se fueron a la cuenta de un desconocido. A Byron le robaron el WhatsApp la noche anterior y quien escribía era el ladrón: por eso el número, la foto y el historial eran auténticos. Nada de lo que mirabas iba a delatarlo, porque la cuenta sí era suya. Lo que no podía imitar era su voz.',
   },
   e_llama: {
     kind: 'good',
-    view: LLAMADA_BYRON,
+    view: CALL_BYRON,
     verdict: 'No caíste · lo llamaste',
     outcome:
       'Byron contestó al primer timbre desde su casa: le habían robado la cuenta esa madrugada y estaban escribiéndole a toda su agenda. La llamada fue lo único que sirvió, porque el chat, el número y la foto eran de verdad.',
@@ -287,7 +287,7 @@ export const STORY: Story<ScreenNode> = {
   },
 }
 
-const SENALES: Senal[] = [
+const SIGNALS: Signal[] = [
   {
     id: 's1',
     targetId: 'escritura',
@@ -335,9 +335,9 @@ const SENALES: Senal[] = [
 const RULE =
   'Regla de oro: que el <b>número y la foto sean los de siempre no prueba nada</b>: las cuentas de mensajería se roban. Si un contacto tuyo pide dinero por chat, llámalo antes de mandar nada, y desconfía de cualquier excusa para no hablar.'
 
-const RESUMEN = 'Un amigo te escribe desde su chat de siempre pidiendo dinero por una urgencia.'
+const SUMMARY = 'Un amigo te escribe desde su chat de siempre pidiendo dinero por una urgencia.'
 
-const CONTEXTO: Contexto = {
+const CONTEXT: Context = {
   antes: (
     <>
       <strong>Byron</strong> es amigo tuyo desde el colegio. Tienes su número guardado hace años y
@@ -352,14 +352,14 @@ const CONTEXTO: Contexto = {
   ),
 }
 
-function CuentaHackeada() {
+function HackedAccount() {
   return (
-    <StoryEscenario
+    <ScenarioStory
       escenarioId="suplantacion/cuenta-hackeada"
-      resumen={RESUMEN}
-      contexto={CONTEXTO}
+      resumen={SUMMARY}
+      contexto={CONTEXT}
       story={STORY}
-      senales={SENALES}
+      senales={SIGNALS}
       rule={RULE}
       restartLabel="↻ Repetir el escenario"
       accionesEnPantalla
@@ -381,4 +381,4 @@ function CuentaHackeada() {
   )
 }
 
-export default CuentaHackeada
+export default HackedAccount

@@ -1,6 +1,6 @@
 import { Link } from 'react-router'
 
-export default function PoliticaDatos() {
+export default function DataPolicy() {
   return (
     <div className="min-h-screen bg-surface">
       <div className="mx-auto max-w-3xl px-6 py-12">

@@ -3,10 +3,10 @@ import { Test } from '@nestjs/testing';
 import request from 'supertest';
 import type { App } from 'supertest/types';
 import { AppModule } from '../apps/identidad/src/app.module';
-import { configurarApp } from '@comun';
+import { configureApp } from '@comun';
 import { MailService } from '../apps/identidad/src/mail/mail.service';
 import { PrismaService } from '../apps/identidad/src/prisma/prisma.service';
-import { cuerpo, limpiar, type ErrorBody } from './identidad.e2e';
+import { responseBody, cleanDatabase, type ErrorBody } from './identidad.e2e';
 
 /// Única suite con el límite activo: es lo que protege el login contra fuerza
 /// bruta (OWASP Authentication).
@@ -21,41 +21,41 @@ describe('Límite de peticiones (e2e)', () => {
       imports: [AppModule],
     })
       // Sin RESEND_API_KEY en CI, MailService.getOrThrow tumbaría el arranque
-      // (ver crearApp() en identidad.e2e.ts, mismo override).
+      // (ver createTestApp() en identidad.e2e.ts, mismo override).
       .overrideProvider(MailService)
       .useValue({ enviarCertificado: () => Promise.resolve(true) })
       .compile();
 
-    app = configurarApp(moduleRef.createNestApplication());
+    app = configureApp(moduleRef.createNestApplication());
     await app.init();
     prisma = app.get(PrismaService);
-    await limpiar(prisma);
+    await cleanDatabase(prisma);
   });
 
   afterAll(async () => {
-    await limpiar(prisma);
+    await cleanDatabase(prisma);
     await app.close();
   });
 
   it('corta el sexto intento de login del mismo origen', async () => {
-    const intento = () =>
+    const attempt = () =>
       server()
         .post('/api/auth/login')
         .send({ email: 'atacante@ejemplo.ec', password: 'adivinando' });
 
-    const respuestas: Awaited<ReturnType<typeof intento>>[] = [];
+    const responses: Awaited<ReturnType<typeof attempt>>[] = [];
     for (let i = 0; i < 6; i++) {
-      respuestas.push(await intento());
+      responses.push(await attempt());
     }
 
-    expect(respuestas.slice(0, 5).map((r) => r.status)).toEqual([
+    expect(responses.slice(0, 5).map((r) => r.status)).toEqual([
       401, 401, 401, 401, 401,
     ]);
-    expect(respuestas[5].status).toBe(429);
+    expect(responses[5].status).toBe(429);
 
     // Toda la app está en español; el 429 no puede llegar con el mensaje en
     // inglés que trae @nestjs/throttler por defecto.
-    expect(cuerpo<ErrorBody>(respuestas[5]).message).toBe(
+    expect(responseBody<ErrorBody>(responses[5]).message).toBe(
       'Demasiadas solicitudes. Espera un momento e inténtalo de nuevo.',
     );
   });

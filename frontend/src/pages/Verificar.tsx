@@ -1,21 +1,21 @@
 import { CheckCircle2, XCircle } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router'
-import { verificarCertificado, type VerificacionCertificado } from '../lib/api'
+import { verifyCertificate, type CertificateVerification } from '../lib/api'
 
 // Verificación pública (sin sesión ni nombre, §5.6): el PDF ya trae el nombre; aquí solo se confirma que el código es real y no fue revocado.
-function Verificar() {
-  const { codigo } = useParams()
-  const [resultado, setResultado] = useState<VerificacionCertificado | null>(null)
+function VerifyCertificate() {
+  const { codigo: code } = useParams()
+  const [result, setResult] = useState<CertificateVerification | null>(null)
   const [error, setError] = useState(false)
 
   useEffect(() => {
-    if (!codigo) return
+    if (!code) return
     let cancelled = false
 
-    verificarCertificado(codigo)
+    verifyCertificate(code)
       .then((r) => {
-        if (!cancelled) setResultado(r)
+        if (!cancelled) setResult(r)
       })
       .catch(() => {
         if (!cancelled) setError(true)
@@ -24,7 +24,7 @@ function Verificar() {
     return () => {
       cancelled = true
     }
-  }, [codigo])
+  }, [code])
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-canvas px-6 py-12">
@@ -32,7 +32,7 @@ function Verificar() {
         <p className="text-xs font-semibold uppercase tracking-[0.88px] text-muted">
           Verificación de certificado
         </p>
-        <p className="mt-1 font-mono text-sm text-body">{codigo}</p>
+        <p className="mt-1 font-mono text-sm text-body">{code}</p>
 
         {error && (
           <p className="mt-4 text-base text-body">
@@ -40,9 +40,9 @@ function Verificar() {
           </p>
         )}
 
-        {!error && resultado === null && <p className="mt-4 text-base text-muted">Verificando…</p>}
+        {!error && result === null && <p className="mt-4 text-base text-muted">Verificando…</p>}
 
-        {!error && resultado !== null && resultado.valido && (
+        {!error && result !== null && result.valido && (
           <div className="mt-4">
             <p className="flex items-center gap-1.5 text-base font-semibold text-success-ink">
               <CheckCircle2 aria-hidden className="size-5" strokeWidth={2.5} />
@@ -50,20 +50,20 @@ function Verificar() {
             </p>
             <p className="mt-3 text-base leading-relaxed text-body">
               Emitido el{' '}
-              {new Date(resultado.emitidoAt ?? '').toLocaleDateString('es-EC', {
+              {new Date(result.emitidoAt ?? '').toLocaleDateString('es-EC', {
                 day: 'numeric',
                 month: 'long',
                 year: 'numeric',
               })}
-              , con una duración de {resultado.horas} horas.
+              , con una duración de {result.horas} horas.
             </p>
-            {resultado.modulos && (
-              <p className="mt-2 text-sm text-muted">Módulos: {resultado.modulos.join(', ')}</p>
+            {result.modulos && (
+              <p className="mt-2 text-sm text-muted">Módulos: {result.modulos.join(', ')}</p>
             )}
           </div>
         )}
 
-        {!error && resultado !== null && !resultado.valido && (
+        {!error && result !== null && !result.valido && (
           <p className="mt-4 flex items-center gap-1.5 text-base font-semibold text-danger">
             <XCircle aria-hidden className="size-5" strokeWidth={2.5} />
             Este código no corresponde a un certificado vigente.
@@ -78,4 +78,4 @@ function Verificar() {
   )
 }
 
-export default Verificar
+export default VerifyCertificate

@@ -1,35 +1,35 @@
 import { fireEvent, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
-import { empezar } from '../../test/escenario'
-import TrampaUSB from './TrampaUSB'
+import { start } from '../../test/escenario'
+import UsbTrap from './TrampaUSB'
 
-vi.mock('../../context/AuthContext', async () => (await import('../../test/escenario')).authFalso())
-vi.mock('../../lib/api', async () => (await import('../../test/escenario')).apiSinRed())
+vi.mock('../../context/AuthContext', async () => (await import('../../test/escenario')).mockAuth())
+vi.mock('../../lib/api', async () => (await import('../../test/escenario')).offlineApi())
 
-function tocarDestello() {
+function triggerFlash() {
   fireEvent.click(screen.getByRole('button', { name: 'Inspeccionar' }))
 }
 
 describe('TrampaUSB', () => {
   it('abre en el estacionamiento con el USB en el suelo', () => {
-    empezar(<TrampaUSB />)
+    start(<UsbTrap />)
 
     expect(screen.getByAltText('USB abandonado en el estacionamiento')).toBeDefined()
   })
 
   it('las opciones no aparecen hasta tocar el destello', () => {
-    empezar(<TrampaUSB />)
+    start(<UsbTrap />)
 
     expect(screen.queryByRole('button', { name: /Dejarlo donde está y avisar a IT/ })).toBeNull()
 
-    tocarDestello()
+    triggerFlash()
 
     expect(screen.getByRole('button', { name: /Dejarlo donde está y avisar a IT/ })).toBeDefined()
   })
 
   it('agarrar el USB es la decisión de riesgo', async () => {
-    empezar(<TrampaUSB />)
-    tocarDestello()
+    start(<UsbTrap />)
+    triggerFlash()
 
     fireEvent.click(screen.getByRole('button', { name: /Agarrarlo, alguien lo dejó/ }))
 
@@ -37,8 +37,8 @@ describe('TrampaUSB', () => {
   })
 
   it('reportar el USB es la decisión segura', async () => {
-    empezar(<TrampaUSB />)
-    tocarDestello()
+    start(<UsbTrap />)
+    triggerFlash()
 
     fireEvent.click(screen.getByRole('button', { name: /Dejarlo donde está y avisar a IT/ }))
 
@@ -46,8 +46,8 @@ describe('TrampaUSB', () => {
   })
 
   it('dejarlo ahí sin reportar queda como decisión parcial', async () => {
-    empezar(<TrampaUSB />)
-    tocarDestello()
+    start(<UsbTrap />)
+    triggerFlash()
 
     fireEvent.click(screen.getByRole('button', { name: /Dejarlo ahí, no es asunto tuyo/ }))
 

@@ -1,16 +1,16 @@
 import { render, screen } from '@testing-library/react'
 import { BrowserRouter, MemoryRouter } from 'react-router'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import AccionesFinal from './AccionesFinal'
-import { escenariosDeSeccion } from '../../data/catalogo'
+import FinalActions from './AccionesFinal'
+import { getSectionScenarios } from '../../data/catalogo'
 
-const { fetchProgresoMock } = vi.hoisted(() => ({
-  fetchProgresoMock: vi.fn(),
+const { fetchProgressMock } = vi.hoisted(() => ({
+  fetchProgressMock: vi.fn(),
 }))
 
 vi.mock('../../lib/api', async () => {
-  const actual = await vi.importActual<typeof import('../../lib/api')>('../../lib/api')
-  return { ...actual, fetchProgreso: fetchProgresoMock }
+  const current = await vi.importActual<typeof import('../../lib/api')>('../../lib/api')
+  return { ...current, fetchProgress: fetchProgressMock }
 })
 
 describe('AccionesFinal', () => {
@@ -18,11 +18,11 @@ describe('AccionesFinal', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
-    fetchProgresoMock.mockReset()
+    fetchProgressMock.mockReset()
   })
 
   it('renderiza sin errores cuando hay progreso', async () => {
-    fetchProgresoMock.mockResolvedValue({
+    fetchProgressMock.mockResolvedValue({
       escenarios: [{ id: 'fisico/salida-segura' }],
       aprobados: 1,
       requeridos: 5,
@@ -30,7 +30,7 @@ describe('AccionesFinal', () => {
 
     const { container } = render(
       <BrowserRouter>
-        <AccionesFinal
+        <FinalActions
           escenarioId="fisico/salida-segura"
           outcome="CORRECTO"
           onRestart={mockOnRestart}
@@ -43,7 +43,7 @@ describe('AccionesFinal', () => {
   })
 
   it('apunta al siguiente escenario del catálogo', async () => {
-    fetchProgresoMock.mockResolvedValue({
+    fetchProgressMock.mockResolvedValue({
       escenarios: [{ id: 'fisico/salida-segura', ultimoOutcome: 'CORRECTO' }],
       aprobados: 1,
       requeridos: 5,
@@ -51,15 +51,15 @@ describe('AccionesFinal', () => {
       ronda: 1,
       rondaEnCurso: null,
     })
-    render(<BrowserRouter><AccionesFinal escenarioId="fisico/salida-segura" outcome="CORRECTO" /></BrowserRouter>)
+    render(<BrowserRouter><FinalActions escenarioId="fisico/salida-segura" outcome="CORRECTO" /></BrowserRouter>)
     expect((await screen.findByRole('link', { name: 'Siguiente escenario →' })).getAttribute('href')).toBe(
       '/seccion/fisico/trampa-usb',
     )
   })
 
   it('al aprobar el módulo lleva al siguiente módulo y no ofrece repetir', async () => {
-    fetchProgresoMock.mockResolvedValue({
-      escenarios: escenariosDeSeccion('phishing').map(({ id }) => ({ id, ultimoOutcome: 'CORRECTO' })),
+    fetchProgressMock.mockResolvedValue({
+      escenarios: getSectionScenarios('phishing').map(({ id }) => ({ id, ultimoOutcome: 'CORRECTO' })),
       aprobados: 6,
       requeridos: 6,
       aprobado: true,
@@ -67,15 +67,15 @@ describe('AccionesFinal', () => {
       rondaEnCurso: null,
     })
 
-    render(<BrowserRouter><AccionesFinal escenarioId="phishing/sesion-bogota" outcome="CORRECTO" /></BrowserRouter>)
+    render(<BrowserRouter><FinalActions escenarioId="phishing/sesion-bogota" outcome="CORRECTO" /></BrowserRouter>)
 
     expect((await screen.findByRole('link', { name: 'Ir al siguiente módulo →' })).getAttribute('href')).toBe('/seccion/smishing')
     expect(screen.queryByRole('button', { name: 'Repetir el módulo' })).toBeNull()
   })
 
   it('al no aprobar mantiene la opción de repetir además de avanzar', async () => {
-    fetchProgresoMock.mockResolvedValue({
-      escenarios: escenariosDeSeccion('phishing').map(({ id }) => ({ id, ultimoOutcome: 'INCORRECTO' })),
+    fetchProgressMock.mockResolvedValue({
+      escenarios: getSectionScenarios('phishing').map(({ id }) => ({ id, ultimoOutcome: 'INCORRECTO' })),
       aprobados: 5,
       requeridos: 6,
       aprobado: false,
@@ -83,18 +83,18 @@ describe('AccionesFinal', () => {
       rondaEnCurso: null,
     })
 
-    render(<BrowserRouter><AccionesFinal escenarioId="phishing/sesion-bogota" outcome="INCORRECTO" /></BrowserRouter>)
+    render(<BrowserRouter><FinalActions escenarioId="phishing/sesion-bogota" outcome="INCORRECTO" /></BrowserRouter>)
 
     expect(await screen.findByRole('link', { name: 'Ir al siguiente módulo →' })).toBeDefined()
     expect(screen.getByRole('button', { name: 'Repetir el módulo' })).toBeDefined()
   })
 
   it('calcula la nota final con el resultado que aún se está guardando', async () => {
-    const escenariosPrevios = escenariosDeSeccion('phishing').filter(({ id }) => id !== 'phishing/sesion-bogota')
-    fetchProgresoMock.mockResolvedValue({
-      escenarios: escenariosPrevios.map(({ id }, indice) => ({
+    const previousScenarios = getSectionScenarios('phishing').filter(({ id }) => id !== 'phishing/sesion-bogota')
+    fetchProgressMock.mockResolvedValue({
+      escenarios: previousScenarios.map(({ id }, index) => ({
         id,
-        ultimoOutcome: indice < 5 ? 'CORRECTO' : 'INCORRECTO',
+        ultimoOutcome: index < 5 ? 'CORRECTO' : 'INCORRECTO',
       })),
       aprobados: 5,
       requeridos: 6,
@@ -103,15 +103,15 @@ describe('AccionesFinal', () => {
       rondaEnCurso: null,
     })
 
-    render(<BrowserRouter><AccionesFinal escenarioId="phishing/sesion-bogota" outcome="CORRECTO" /></BrowserRouter>)
+    render(<BrowserRouter><FinalActions escenarioId="phishing/sesion-bogota" outcome="CORRECTO" /></BrowserRouter>)
 
     expect(await screen.findByRole('link', { name: 'Ir al siguiente módulo →' })).toBeDefined()
     expect(screen.queryByRole('button', { name: 'Repetir el módulo' })).toBeNull()
   })
 
   it('continúa la repetición cuando el primer resultado todavía no llegó al servidor', async () => {
-    fetchProgresoMock.mockResolvedValue({
-      escenarios: escenariosDeSeccion('phishing').map(({ id }) => ({ id, ultimoOutcome: 'CORRECTO' })),
+    fetchProgressMock.mockResolvedValue({
+      escenarios: getSectionScenarios('phishing').map(({ id }) => ({ id, ultimoOutcome: 'CORRECTO' })),
       aprobados: 8,
       requeridos: 6,
       aprobado: true,
@@ -121,19 +121,19 @@ describe('AccionesFinal', () => {
 
     render(
       <MemoryRouter initialEntries={[{ pathname: '/seccion/phishing/loteria-premiada', state: { iniciarRepeticion: true } }]}>
-        <AccionesFinal escenarioId="phishing/loteria-premiada" outcome="CORRECTO" />
+        <FinalActions escenarioId="phishing/loteria-premiada" outcome="CORRECTO" />
       </MemoryRouter>,
     )
 
     await screen.findByText(
-      (_, elemento) => elemento?.textContent === 'Llevas 1 de los 6 que necesitas para aprobar el módulo.',
+      (_, element) => element?.textContent === 'Llevas 1 de los 6 que necesitas para aprobar el módulo.',
     )
     expect(screen.getByRole('link', { name: 'Siguiente escenario →' }).getAttribute('href')).toBe('/seccion/phishing/factura-sri')
   })
 
   it('conserva todos los escenarios provisionales al avanzar una repetición', async () => {
-    fetchProgresoMock.mockResolvedValue({
-      escenarios: escenariosDeSeccion('phishing').map(({ id }) => ({ id, ultimoOutcome: 'CORRECTO' })),
+    fetchProgressMock.mockResolvedValue({
+      escenarios: getSectionScenarios('phishing').map(({ id }) => ({ id, ultimoOutcome: 'CORRECTO' })),
       aprobados: 8,
       requeridos: 6,
       aprobado: true,
@@ -149,19 +149,19 @@ describe('AccionesFinal', () => {
           repeticionIntentados: [{ id: 'phishing/loteria-premiada', outcome: 'CORRECTO' }],
         },
       }]}>
-        <AccionesFinal escenarioId="phishing/factura-sri" outcome="CORRECTO" />
+        <FinalActions escenarioId="phishing/factura-sri" outcome="CORRECTO" />
       </MemoryRouter>,
     )
 
     await screen.findByText(
-      (_, elemento) => elemento?.textContent === 'Llevas 2 de los 6 que necesitas para aprobar el módulo.',
+      (_, element) => element?.textContent === 'Llevas 2 de los 6 que necesitas para aprobar el módulo.',
     )
     expect(screen.getByRole('link', { name: 'Siguiente escenario →' }).getAttribute('href')).toBe('/seccion/phishing/clave-caducada')
   })
 
   it('conserva el resultado incorrecto de intentos provisionales', async () => {
-    fetchProgresoMock.mockResolvedValue({
-      escenarios: escenariosDeSeccion('phishing').map(({ id }) => ({ id, ultimoOutcome: 'CORRECTO' })),
+    fetchProgressMock.mockResolvedValue({
+      escenarios: getSectionScenarios('phishing').map(({ id }) => ({ id, ultimoOutcome: 'CORRECTO' })),
       aprobados: 8,
       requeridos: 6,
       aprobado: true,
@@ -177,18 +177,18 @@ describe('AccionesFinal', () => {
           repeticionIntentados: [{ id: 'phishing/loteria-premiada', outcome: 'INCORRECTO' }],
         },
       }]}>
-        <AccionesFinal escenarioId="phishing/factura-sri" outcome="CORRECTO" />
+        <FinalActions escenarioId="phishing/factura-sri" outcome="CORRECTO" />
       </MemoryRouter>,
     )
 
     expect(await screen.findByText(
-      (_, elemento) => elemento?.textContent === 'Llevas 1 de los 6 que necesitas para aprobar el módulo.',
+      (_, element) => element?.textContent === 'Llevas 1 de los 6 que necesitas para aprobar el módulo.',
     )).toBeDefined()
   })
 
   it('lleva al panel al terminar el último módulo', async () => {
-    fetchProgresoMock.mockResolvedValue({
-      escenarios: escenariosDeSeccion('asistentes-ia').map(({ id }) => ({ id, ultimoOutcome: 'CORRECTO' })),
+    fetchProgressMock.mockResolvedValue({
+      escenarios: getSectionScenarios('asistentes-ia').map(({ id }) => ({ id, ultimoOutcome: 'CORRECTO' })),
       aprobados: 4,
       requeridos: 3,
       aprobado: true,
@@ -196,17 +196,17 @@ describe('AccionesFinal', () => {
       rondaEnCurso: null,
     })
 
-    render(<BrowserRouter><AccionesFinal escenarioId="asistentes-ia/historial-cliente" outcome="CORRECTO" /></BrowserRouter>)
+    render(<BrowserRouter><FinalActions escenarioId="asistentes-ia/historial-cliente" outcome="CORRECTO" /></BrowserRouter>)
 
     expect((await screen.findByRole('link', { name: 'Volver al panel →' })).getAttribute('href')).toBe('/dashboard')
   })
 
   it('renderiza sin errores cuando no hay progreso', async () => {
-    fetchProgresoMock.mockRejectedValue(new Error('sin red'))
+    fetchProgressMock.mockRejectedValue(new Error('sin red'))
 
     const { container } = render(
       <BrowserRouter>
-        <AccionesFinal
+        <FinalActions
           escenarioId="fisico/salida-segura"
           outcome="CORRECTO"
           onRestart={mockOnRestart}
@@ -219,7 +219,7 @@ describe('AccionesFinal', () => {
   })
 
   it('renderiza sin errores cuando autoFocus está activado', async () => {
-    fetchProgresoMock.mockResolvedValue({
+    fetchProgressMock.mockResolvedValue({
       escenarios: [{ id: 'fisico/salida-segura' }],
       aprobados: 1,
       requeridos: 5,
@@ -227,7 +227,7 @@ describe('AccionesFinal', () => {
 
     const { container } = render(
       <BrowserRouter>
-        <AccionesFinal
+        <FinalActions
           escenarioId="fisico/salida-segura"
           outcome="CORRECTO"
           onRestart={mockOnRestart}
