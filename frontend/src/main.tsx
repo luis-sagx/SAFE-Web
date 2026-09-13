@@ -5,19 +5,23 @@ import { BrowserRouter } from 'react-router'
 // <link>, y si esa petición fallaba o se bloqueaba (red, extensión,
 // firewall) el navegador caía a system-ui, que tiene métricas distintas y se
 // leía más amontonado que con Manrope cargada. Self-host quita esa variable.
-import '@fontsource/manrope/400.css'
-import '@fontsource/manrope/500.css'
-import '@fontsource/manrope/600.css'
-import '@fontsource/manrope/700.css'
-import '@fontsource/manrope/800.css'
-import '@fontsource/oswald/500.css'
-import '@fontsource/oswald/600.css'
-import '@fontsource/oswald/700.css'
-import '@fontsource/ibm-plex-serif/400.css'
-import '@fontsource/ibm-plex-serif/400-italic.css'
-import '@fontsource/ibm-plex-serif/600.css'
-import '@fontsource/ibm-plex-mono/400.css'
-import '@fontsource/ibm-plex-mono/500.css'
+//
+// Solo el subset `latin`: cubre todo el español (tildes, ñ, ¿¡, comillas y
+// guiones tipográficos). Los `400.css` completos arrastraban al bundle también
+// cyrillic, greek y vietnamese, unos 1.2 MB de fuentes que nadie descargaba.
+import '@fontsource/manrope/latin-400.css'
+import '@fontsource/manrope/latin-500.css'
+import '@fontsource/manrope/latin-600.css'
+import '@fontsource/manrope/latin-700.css'
+import '@fontsource/manrope/latin-800.css'
+import '@fontsource/oswald/latin-500.css'
+import '@fontsource/oswald/latin-600.css'
+import '@fontsource/oswald/latin-700.css'
+import '@fontsource/ibm-plex-serif/latin-400.css'
+import '@fontsource/ibm-plex-serif/latin-400-italic.css'
+import '@fontsource/ibm-plex-serif/latin-600.css'
+import '@fontsource/ibm-plex-mono/latin-400.css'
+import '@fontsource/ibm-plex-mono/latin-500.css'
 import './index.css'
 import App from './App'
 import { AuthProvider } from './context/AuthContext'
