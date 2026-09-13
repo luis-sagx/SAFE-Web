@@ -3,35 +3,107 @@ import type { Context } from '../../components/ui/ContextoEscenario'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
 import type { Signal } from '../../components/ui/PanelVeredicto'
 import type { Story } from '../../hooks/useStoryEngine'
-import suspiciousChargerImg from '../../assets/escenarios/fisico/cargador-sospechoso.webp'
-import desktopCableImg from '../../assets/escenarios/fisico/imagen-escritorio.webp'
+import publicChargerImg from '../../assets/escenarios/fisico/cargador-publico.webp'
 
-const REST: ScreenView = { kind: 'escena', src: suspiciousChargerImg, alt: 'Cable desconocido en la sala de descanso', zonas: [{ id: 'cable-descanso', x: '63%', y: '66%', ancho: '18%', alto: '22%' }] }
-const REST_WITH_FLASH: ScreenView = { ...REST, destello: { x: '69%', y: '81%', goto: 'n1', label: 'Inspeccionó el cable' } }
-const DESKTOP: ScreenView = { kind: 'escena', src: desktopCableImg, alt: 'Cable desconocido sobre un escritorio', zonas: [{ id: 'cable-escritorio', x: '42%', y: '53%', ancho: '22%', alto: '20%' }] }
-const DESKTOP_WITH_FLASH: ScreenView = { ...DESKTOP, destello: { x: '53%', y: '63%', goto: 'n2', label: 'Inspeccionó el cable' } }
-const SIGNALS_REST: Signal[] = [{ id: 'cable-descanso', targetId: 'cable-descanso', pantalla: 'n1', texto: 'Un <b>cable sin dueño</b> también puede ser un dispositivo de ataque.' }]
-const SIGNALS_COMPLETE: Signal[] = [...SIGNALS_REST, { id: 'cable-escritorio', targetId: 'cable-escritorio', pantalla: 'n2', texto: 'Llevarlo al escritorio no lo hace seguro: <b>no se conecta</b>; se entrega a IT o se desecha.' }]
-const STORY: Story<ScreenNode> = {
-  n1_ver: { kind: 'scene', view: REST_WITH_FLASH },
-  n1: { kind: 'scene', view: REST, choices: [
-    { label: 'Usarlo para cargar tu celular aquí', goto: 'e_carga_alli' },
-    { label: 'Dejarlo donde está y avisar a IT', goto: 'e_avisa' },
-    { label: 'Llevártelo a tu escritorio, ahí lo necesitas más', goto: 'n2_ver' },
-  ] },
-  n2_ver: { kind: 'scene', view: DESKTOP_WITH_FLASH },
-  n2: { kind: 'scene', view: DESKTOP, choices: [
-    { label: 'Conectarlo a tu celular para cargar', goto: 'e_celular' },
-    { label: 'Conectarlo a tu computadora para revisar qué es', goto: 'e_pc' },
-    { label: 'Entregarlo a IT para análisis', goto: 'e_it' },
-    { label: 'Descartarlo directamente', goto: 'e_basura' },
-  ] },
-  e_carga_alli: { kind: 'bad', view: REST, senales: SIGNALS_REST, verdict: 'Riesgo detectado', outcome: 'Conectaste un cable desconocido. Un cable puede llevar electrónica para robar datos o ejecutar acciones cuando se conecta.' },
-  e_avisa: { kind: 'good', view: REST, senales: SIGNALS_REST, verdict: 'Decisión segura', outcome: 'No lo conectaste y avisaste a IT para que lo retire y analice de forma segura.' },
-  e_celular: { kind: 'bad', view: DESKTOP, senales: SIGNALS_COMPLETE, verdict: 'Riesgo detectado', outcome: 'Conectar el cable a tu celular expone el dispositivo a una interfaz desconocida.' },
-  e_pc: { kind: 'bad', view: DESKTOP, senales: SIGNALS_COMPLETE, verdict: 'Riesgo detectado', outcome: 'Conectar un cable desconocido a la computadora puede comprometer tu equipo y la red.' },
-  e_it: { kind: 'good', view: DESKTOP, senales: SIGNALS_COMPLETE, verdict: 'Decisión segura', outcome: 'Entregaste el cable a IT sin conectarlo; el análisis se hará en un entorno controlado.' },
-  e_basura: { kind: 'good', view: DESKTOP, senales: SIGNALS_COMPLETE, verdict: 'Decisión segura', outcome: 'Lo descartaste sin conectarlo. No se expuso ningún equipo al cable desconocido.' },
+// El "juice jacking": el mismo cable que carga también puede llevar datos. Un
+// puerto USB público que nadie de confianza controla es indistinguible por
+// fuera de uno seguro — la señal no está en cómo se ve el puerto, sino en si
+// hay o no un tomacorriente normal para el propio cargador.
+const KIOSK: ScreenView = {
+  kind: 'escena',
+  src: publicChargerImg,
+  alt: 'Estación de carga pública con varios puertos USB en un centro comercial',
+  zonas: [{ id: 'panel-usb', x: '57%', y: '30%', ancho: '16%', alto: '17%' }],
 }
-const context: Context = { antes: 'Los cables y cargadores desconocidos pueden ocultar electrónica maliciosa, igual que un USB.', ahora: <><strong>En la sala de descanso</strong> encuentras un cable conectado que no parece pertenecer a nadie. Si lo llevas a tu escritorio, la segunda escena mostrará el mismo cable en tu puesto: es una continuación, no un final.</> }
-export default function CompromisedCable() { return <ScenarioStory escenarioId="fisico/cable-comprometido" resumen="Cable desconocido — decide cómo actuar" contexto={context} nota="Un cable no es confiable solo porque parece servir para cargar." story={STORY} initialNode="n1_ver" senales={SIGNALS_REST} rule="<b>No conectes cables desconocidos.</b> Repórtalos o entrégalos para análisis sin exponer un dispositivo." restartLabel="Intentar de nuevo" cuandoTermina="El escenario termina al conectar, reportar o descartar el cable; llevártelo abre una segunda decisión." pista="No hace falta conectar el cable a nada para decidir: evita cualquier opción que lo enchufe —a tu celular o a tu computadora— y prefiere reportarlo o descartarlo." /> }
+const KIOSK_WITH_FLASH: ScreenView = {
+  ...KIOSK,
+  destello: { x: '65%', y: '45%', goto: 'n1', label: 'Inspeccionó la estación de carga' },
+}
+
+const SIGNALS: Signal[] = [
+  {
+    id: 'panel-usb',
+    targetId: 'panel-usb',
+    pantalla: 'n1',
+    texto:
+      'El letrero dice <b>"SOLO USB"</b>: no hay ningún tomacorriente normal, solo puertos que llevan corriente y datos por el mismo cable.',
+  },
+]
+
+const STORY: Story<ScreenNode> = {
+  n1_ver: { kind: 'scene', view: KIOSK_WITH_FLASH },
+  n1: {
+    kind: 'scene',
+    view: KIOSK,
+    choices: [
+      { label: 'Conectar tu cable directo a uno de los puertos USB del mueble', goto: 'e_carga_directa' },
+      { label: 'Buscar un tomacorriente normal cerca y usar tu propio cargador', goto: 'e_tomacorriente' },
+      {
+        label: 'Conectar primero tu batería portátil al puerto USB, y el celular a la batería',
+        goto: 'e_power_bank',
+      },
+      { label: 'Aguantar sin cargar hasta llegar a casa', goto: 'e_espera' },
+    ],
+  },
+  e_carga_directa: {
+    kind: 'bad',
+    view: KIOSK,
+    senales: SIGNALS,
+    verdict: 'Riesgo detectado',
+    outcome:
+      'El cable de carga lleva también las líneas de datos. Un puerto público que nadie de confianza controla puede copiar lo que hay en tu celular o instalarle algo mientras carga, sin que veas nada raro en la pantalla.',
+  },
+  e_tomacorriente: {
+    kind: 'good',
+    view: KIOSK,
+    senales: SIGNALS,
+    verdict: 'Decisión segura',
+    outcome:
+      'Un tomacorriente solo entrega corriente eléctrica: no tiene forma de leer ni escribir nada en tu celular. Es la forma más segura de cargar fuera de casa, aunque tome un poco más buscarlo.',
+  },
+  e_power_bank: {
+    kind: 'good',
+    view: KIOSK,
+    senales: SIGNALS,
+    verdict: 'Decisión segura',
+    outcome:
+      'La batería portátil corta la conexión de datos entre el puerto público y tu celular: por ese tramo solo pasa corriente, igual que si fuera un tomacorriente.',
+  },
+  e_espera: {
+    kind: 'partial',
+    view: KIOSK,
+    senales: SIGNALS,
+    verdict: 'Respuesta incompleta',
+    outcome:
+      'Evitaste el riesgo, pero te quedaste sin batería el resto del día sin necesidad: bastaba buscar un tomacorriente para tu propio cargador, o cargar primero una batería portátil.',
+  },
+}
+
+const context: Context = {
+  antes: 'Sales de casa con poca batería, confiando en que durante el día vas a encontrar dónde cargar.',
+  ahora: (
+    <>
+      <strong>A media tarde</strong> el celular te queda en 3%, y justo ahí, en el pasillo del centro
+      comercial, ves un mueble de carga pública con varios puertos USB — pero ningún tomacorriente normal
+      para tu propio cargador.
+    </>
+  ),
+}
+
+export default function CompromisedCable() {
+  return (
+    <ScenarioStory
+      escenarioId="fisico/cable-comprometido"
+      resumen="Estación de carga pública — decide cómo cargar tu celular"
+      contexto={context}
+      nota="Un puerto de carga no se distingue por fuera; lo que importa es si hay o no un tomacorriente normal."
+      story={STORY}
+      initialNode="n1_ver"
+      senales={SIGNALS}
+      rule="<b>Nunca conectes tu celular directo a un puerto de carga público desconocido.</b> El cable lleva datos, no solo corriente: usa tu propio cargador en un tomacorriente, o carga primero una batería portátil."
+      restartLabel="Intentar de nuevo"
+      cuandoTermina="El escenario termina al elegir cómo cargas el celular."
+      pista="Piensa en qué parte del cable puede llevar más que corriente eléctrica, y busca la opción que evita que tu celular quede conectado directo a ese puerto."
+    />
+  )
+}

@@ -709,10 +709,14 @@ const BASE: BaseScenario[] = [
   {
     seccionId: 'fisico',
     escenarioId: 'cable-comprometido',
-    titulo: 'Cable sospechoso',
+    titulo: 'Estación de carga pública',
     descripcion:
-      'Un cable USB desconocido está conectado en un punto de carga compartido de la oficina.',
-    version: 1,
+      'Te quedas con la batería casi en cero y solo encuentras un mueble de carga con puertos USB, sin ningún tomacorriente para tu propio cargador.',
+    // v2: cambió la premisa completa (issue reportado por el usuario): de un
+    // cable suelto en la oficina a una estación de carga pública ("juice
+    // jacking"). El id y el escenarioId no cambian, para no perder el
+    // historial de corridas ya guardadas.
+    version: 2,
     naturaleza: 'fraude',
     dificultad: 2,
     espeja: null,
