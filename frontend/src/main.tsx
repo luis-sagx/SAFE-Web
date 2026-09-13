@@ -27,6 +27,22 @@ import App from './App'
 import { AuthProvider } from './context/AuthContext'
 import { ThemeProvider } from './context/ThemeContext'
 
+// Tras un despliegue, una pestaña abierta sigue con el index viejo y pide
+// chunks con hashes que ya no existen: el import del escenario falla y la
+// página queda en blanco. Recargar trae el index nuevo. El sello evita un
+// bucle de recargas si el chunk falla por otra causa (red caída).
+window.addEventListener('vite:preloadError', (event) => {
+  try {
+    const last = Number(sessionStorage.getItem('chunk-reload') ?? 0)
+    if (Date.now() - last < 10_000) return
+    sessionStorage.setItem('chunk-reload', String(Date.now()))
+  } catch {
+    return
+  }
+  event.preventDefault()
+  window.location.reload()
+})
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
