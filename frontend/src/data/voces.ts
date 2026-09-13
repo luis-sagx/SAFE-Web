@@ -3,7 +3,10 @@
 export const VOICES: Record<string, string> = {
   "Anotado. Y para registrarle el beneficio necesito dos datos más: los cuatro últimos dígitos de su tarjeta y la agencia donde abrió la cuenta.": "/voz/7decbb8ebf3b.mp3",
   "Banco del Litoral, departamento de seguridad, buenas noches. Le confirmo: hablo con el titular de la tarjeta terminada en 4417, ¿verdad?": "/voz/8e64d6bde001.mp3",
-  "Buenas noches, le habla Andrés Villamar del departamento de seguridad del Banco del Litoral. ¿Hablo con el titular de la tarjeta terminada en 4417?": "/voz/4f662bd609b6.mp3",
+  // PRUEBA TEMPORAL (Piper, voz es_ES-sharvard-medium hablante M, no Edge TTS)
+  // — revertir a "/voz/4f662bd609b6.mp3" antes de mergear o de volver a
+  // correr scripts/voces.py.
+  "Buenas noches, le habla Andrés Villamar del departamento de seguridad del Banco del Litoral. ¿Hablo con el titular de la tarjeta terminada en 4417?": "/voz/piper-prueba-banco.wav",
   "Buenas noches, le llamo del monitoreo antifraude del Banco del Litoral. No le voy a pedir claves, códigos ni datos suyos en toda la llamada.": "/voz/1c812acd6c81.mp3",
   "Buenas tardes, le habla Katherine del área de calidad del Banco del Litoral. Estamos haciendo una encuesta de dos minutos sobre la atención en su agencia, ¿me regala un momentito?": "/voz/fbb2dd463d3f.mp3",
   "Buenas tardes, le habla el sargento Aguirre, de tránsito. Su hija está bien, pero el vehículo con el que chocó es de una persona que no quiere denunciar si se le cubre el daño ahora mismo.": "/voz/f821e1c82965.mp3",
