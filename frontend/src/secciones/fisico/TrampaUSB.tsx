@@ -3,10 +3,11 @@ import type { Context } from '../../components/ui/ContextoEscenario'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
 import type { Signal } from '../../components/ui/PanelVeredicto'
 import type { Story } from '../../hooks/useStoryEngine'
+import parkingLotUsbImg from '../../assets/escenarios/fisico/usb-estacionamiento.webp'
 
 const SCENE: ScreenView = {
   kind: 'escena',
-  src: '/escenarios/fisico/usb-estacionamiento.webp',
+  src: parkingLotUsbImg,
   alt: 'USB abandonado en el estacionamiento',
   zonas: [
     { id: 'usb-suelo', x: '39%', y: '61%', ancho: '22%', alto: '18%' },

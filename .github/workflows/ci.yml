@@ -254,6 +254,18 @@ jobs:
 
       - run: docker compose build
 
+      # Docker Hub corta conexiones de vez en cuando (`connection reset by
+      # peer`) y tumbaba el job sin que nada del repo estuviera mal. Se bajan
+      # aquí, con reintentos, las imágenes que después usan `up` y k6.
+      - name: Descargar imágenes de Docker Hub (con reintentos)
+        run: |
+          for intento in 1 2 3; do
+            docker compose pull db && docker pull grafana/k6:2.1.0 && exit 0
+            echo "Intento $intento fallido; reintentando en 15 s"
+            sleep 15
+          done
+          exit 1
+
       # --wait respeta los HEALTHCHECK: falla si el API no aplica las
       # migraciones o si Nginx no levanta.
       - run: docker compose up -d --wait --wait-timeout 180
@@ -285,6 +297,7 @@ jobs:
       # de su límite de 120 solicitudes/minuto por IP y fija SLOs de error y
       # latencia mediante los thresholds del script.
       - name: Carga nominal con k6
+        id: k6
         run: |
           docker run --rm \
             -e BASE_URL=http://host.docker.internal:8080 \
@@ -295,8 +308,11 @@ jobs:
             --summary-export /work/k6-nominal-summary.json \
             tests/carga/nominal.js
 
+      # Se publica también si k6 falla sus thresholds (el resumen explica por
+      # qué), pero no si k6 ni llegó a correr: ahí no hay archivo y el error
+      # de "No files were found" solo tapaba el fallo real de un paso anterior.
       - name: Publicar resumen de k6
-        if: always()
+        if: always() && steps.k6.outcome != 'skipped'
         uses: actions/upload-artifact@v4
         with:
           name: k6-nominal-summary

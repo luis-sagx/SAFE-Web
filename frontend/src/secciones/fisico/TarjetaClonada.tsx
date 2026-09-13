@@ -3,10 +3,12 @@ import type { Context } from '../../components/ui/ContextoEscenario'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
 import type { Signal } from '../../components/ui/PanelVeredicto'
 import type { Story } from '../../hooks/useStoryEngine'
+import bankCallImg from '../../assets/escenarios/fisico/llamada-banco.webp'
+import walletScanImg from '../../assets/escenarios/fisico/escaneo-billetera.webp'
 
-const CALL: ScreenView = { kind: 'escena', src: '/escenarios/fisico/llamada-banco.webp', alt: 'Llamada del banco por fraude en la tarjeta', zonas: [{ id: 'alerta-banco', x: '31%', y: '28%', ancho: '38%', alto: '35%' }] }
+const CALL: ScreenView = { kind: 'escena', src: bankCallImg, alt: 'Llamada del banco por fraude en la tarjeta', zonas: [{ id: 'alerta-banco', x: '31%', y: '28%', ancho: '38%', alto: '35%' }] }
 const CALL_WITH_FLASH: ScreenView = { ...CALL, destello: { x: '53%', y: '57%', goto: 'n1', label: 'Atendió la llamada' } }
-const MEMORY: ScreenView = { kind: 'escena', src: '/escenarios/fisico/escaneo-billetera.webp', alt: 'Escaneo de una billetera en la calle', zonas: [{ id: 'billetera-escaneada', x: '62%', y: '68%', ancho: '18%', alto: '20%' }] }
+const MEMORY: ScreenView = { kind: 'escena', src: walletScanImg, alt: 'Escaneo de una billetera en la calle', zonas: [{ id: 'billetera-escaneada', x: '62%', y: '68%', ancho: '18%', alto: '20%' }] }
 const MEMORY_WITH_PROGRESS: ScreenView = { ...MEMORY, progreso: { ms: 4000, texto: 'Recordando cómo pasó…' } }
 const SIGNALS: Signal[] = [{ id: 'alerta', targetId: 'alerta-banco', pantalla: 'n1', texto: 'Una <b>alerta del banco</b> por fraude exige actuar de inmediato: bloquea y reporta.' }, { id: 'escaneo', targetId: 'billetera-escaneada', pantalla: 'n_recuerdo', texto: 'Mientras te distraían, alguien pudo <b>escanear tu billetera</b>. La prevención física evita que el fraude empiece.' }]
 const STORY: Story<ScreenNode> = {

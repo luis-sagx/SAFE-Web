@@ -17,7 +17,11 @@ RUN pnpm build
 # ---------- runtime ----------
 # Imagen no privilegiada de Nginx (escucha en 8080 y corre como usuario sin
 # privilegios), acorde al OWASP Docker Security Cheat Sheet.
-FROM nginxinc/nginx-unprivileged:1.29-alpine AS runtime
+#
+# Variante `alpine-slim`: la `alpine` suma ~44 MB de módulos (njs, xslt,
+# geoip, image-filter) y plantillas con envsubst que nginx.conf no usa. gzip y
+# el wget del HEALTHCHECK siguen presentes.
+FROM nginxinc/nginx-unprivileged:1.29-alpine-slim AS runtime
 
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 COPY proxy-comun.inc /etc/nginx/conf.d/proxy-comun.inc
