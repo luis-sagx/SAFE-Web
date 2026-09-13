@@ -37,7 +37,7 @@ const COOKIE_OPTIONS: CookieOptions = {
 export class AuthController {
   constructor(private readonly auth: AuthService) {}
 
-  private ponerCookieRefresh(
+  private setRefreshCookie(
     res: Response,
     refreshToken: string,
     expiresAt: Date,
@@ -55,13 +55,16 @@ export class AuthController {
     @Body() dto: RegisterDto,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const sesion = await this.auth.register(dto);
-    this.ponerCookieRefresh(
+    const session = await this.auth.register(dto);
+    this.setRefreshCookie(
       res,
-      sesion.refreshToken,
-      sesion.refreshTokenExpiresAt,
+      session.refreshToken,
+      session.refreshTokenExpiresAt,
     );
-    return { accessToken: sesion.accessToken, participant: sesion.participant };
+    return {
+      accessToken: session.accessToken,
+      participant: session.participant,
+    };
   }
 
   /// Límite estricto contra fuerza bruta (OWASP Authentication):
@@ -73,13 +76,16 @@ export class AuthController {
     @Body() dto: LoginDto,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const sesion = await this.auth.login(dto);
-    this.ponerCookieRefresh(
+    const session = await this.auth.login(dto);
+    this.setRefreshCookie(
       res,
-      sesion.refreshToken,
-      sesion.refreshTokenExpiresAt,
+      session.refreshToken,
+      session.refreshTokenExpiresAt,
     );
-    return { accessToken: sesion.accessToken, participant: sesion.participant };
+    return {
+      accessToken: session.accessToken,
+      participant: session.participant,
+    };
   }
 
   /// No lleva JwtAuthGuard: es la ruta que se usa precisamente cuando el
@@ -100,15 +106,15 @@ export class AuthController {
       // no perder el chequeo del compilador en el resto del método.
       const cookie = req.cookies as
         Record<string, string | undefined> | undefined;
-      const sesion = await this.auth.refrescar(cookie?.[REFRESH_COOKIE]);
-      this.ponerCookieRefresh(
+      const session = await this.auth.refreshSession(cookie?.[REFRESH_COOKIE]);
+      this.setRefreshCookie(
         res,
-        sesion.refreshToken,
-        sesion.refreshTokenExpiresAt,
+        session.refreshToken,
+        session.refreshTokenExpiresAt,
       );
       return {
-        accessToken: sesion.accessToken,
-        participant: sesion.participant,
+        accessToken: session.accessToken,
+        participant: session.participant,
       };
     } catch (error) {
       // Cookie inválida, vencida, o de una cuenta ya desactivada: se borra
@@ -137,10 +143,10 @@ export class AuthController {
 
   @UseGuards(JwtAuthGuard)
   @Patch('me')
-  actualizarMe(
+  updateMe(
     @CurrentParticipant() participant: JwtPayload,
     @Body() dto: PatchMeDto,
   ) {
-    return this.auth.actualizarMe(participant.sub, dto);
+    return this.auth.updateMe(participant.sub, dto);
   }
 }

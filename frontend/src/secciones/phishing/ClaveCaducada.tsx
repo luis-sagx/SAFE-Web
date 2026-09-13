@@ -1,16 +1,16 @@
 import { Building2, Landmark, Newspaper } from 'lucide-react'
-import StoryEscenario, { type ScreenNode } from '../../components/StoryEscenario'
-import type { Contexto } from '../../components/ui/ContextoEscenario'
-import type { MarcadorNavegador } from '../../components/ui/Navegador'
-import { ACCIONES_BARRA, finalesDeBarra } from './barraDeCorreo'
+import ScenarioStory, { type ScreenNode } from '../../components/StoryEscenario'
+import type { Context } from '../../components/ui/ContextoEscenario'
+import type { BrowserBookmark } from '../../components/ui/Navegador'
+import { ACTIONS_BAR, createToolbarEndings } from './barraDeCorreo'
 import type { Story } from '../../hooks/useStoryEngine'
-import { IDENTIDAD_FICTICIA } from '../../lib/identidadFicticia'
+import { IDENTITY_FAKE } from '../../lib/identidadFicticia'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
-import type { Senal } from '../../components/ui/PanelVeredicto'
+import type { Signal } from '../../components/ui/PanelVeredicto'
 
-const URL_FALSA = 'https://correo.andes-ec.net/owa/login'
+const FAKE_URL = 'https://correo.andes-ec.net/owa/login'
 
-const CORREO: ScreenView = {
+const EMAIL: ScreenView = {
   kind: 'mail',
   from: 'Soporte TI · Corporación Andes',
   address: 'soporte-ti@andes-ec.net',
@@ -32,7 +32,7 @@ const CORREO: ScreenView = {
       perderás el acceso a tu buzón y tendrás que abrir un ticket con Sistemas para
       recuperarlo.
     </p>
-    <p><a class="cta" href="${URL_FALSA}" data-hotspot-goto="n2" data-hotspot-label="Pulsó &quot;Renovar mi contraseña ahora&quot; en el correo">Renovar mi contraseña ahora</a></p>
+    <p><a class="cta" href="${FAKE_URL}" data-hotspot-goto="n2" data-hotspot-label="Pulsó &quot;Renovar mi contraseña ahora&quot; en el correo">Renovar mi contraseña ahora</a></p>
   `,
   footer: `
     <p>Departamento de Tecnología · Corporación Andes<br />
@@ -40,9 +40,9 @@ const CORREO: ScreenView = {
   `,
 }
 
-const PAGINA: ScreenView = {
+const PAGE: ScreenView = {
   kind: 'web',
-  url: URL_FALSA,
+  url: FAKE_URL,
   secure: true,
   senalUrl: 'url',
   brand: 'Corporación Andes',
@@ -100,19 +100,19 @@ const INTRANET: ScreenView = {
 
 const STORY: Story<ScreenNode> = {
   // Responder, reenviar, eliminar y marcar como spam.
-  ...finalesDeBarra('fraude', CORREO),
-  n1: { kind: 'scene', view: CORREO },
-  n2: { kind: 'scene', view: PAGINA },
+  ...createToolbarEndings('fraude', EMAIL),
+  n1: { kind: 'scene', view: EMAIL },
+  n2: { kind: 'scene', view: PAGE },
   n3: { kind: 'scene', view: INTRANET },
   e_clave: {
     kind: 'bad',
-    view: PAGINA,
+    view: PAGE,
     verdict: 'Caíste en la trampa',
-    outcome: `La página era una copia alojada en andes-ec.net. Con tu contraseña ${IDENTIDAD_FICTICIA.clave} entraron a tu buzón y desde ahí escribieron a contabilidad pidiendo una transferencia a tu nombre.`,
+    outcome: `La página era una copia alojada en andes-ec.net. Con tu contraseña ${IDENTITY_FAKE.clave} entraron a tu buzón y desde ahí escribieron a contabilidad pidiendo una transferencia a tu nombre.`,
   },
 }
 
-const SENALES: Senal[] = [
+const SIGNALS: Signal[] = [
   {
     id: 's1',
     targetId: 'remitente',
@@ -153,7 +153,7 @@ const SENALES: Senal[] = [
 /// cuenta propia es lo que aquí equivale a "entrar al portal escribiendo tú la
 /// dirección". Los otros dos marcadores son sitios de siempre, para que el
 /// bueno no sea el único pulsable y se delate.
-const MARCADORES: MarcadorNavegador[] = [
+const MARKERS: BrowserBookmark[] = [
   { Icono: Landmark, texto: 'Banco del Litoral' },
   {
     Icono: Building2,
@@ -164,7 +164,7 @@ const MARCADORES: MarcadorNavegador[] = [
   { Icono: Newspaper, texto: 'El Comercio' },
 ]
 
-const INSTRUCCION = (
+const INSTRUCTION = (
   <>
     <p className="text-lg leading-relaxed text-body">
       Actúa sobre la ventana como lo harías frente a tu correo de verdad: puedes usar{' '}
@@ -179,7 +179,7 @@ const INSTRUCCION = (
   </>
 )
 
-const PISTA = (
+const CLUE = (
   <p>
     Tienes cuatro caminos posibles: hacer lo que el correo pide, contestarle, decidir qué hacer con
     el mensaje desde la barra del cliente, o dejarlo de lado y buscar a Soporte TI por tu cuenta en
@@ -187,7 +187,7 @@ const PISTA = (
   </p>
 )
 
-const SENAL_REAL: Senal = {
+const SIGNAL_REAL: Signal = {
   id: 's6',
   targetId: 'correo-real',
   pantalla: 'n3',
@@ -198,9 +198,9 @@ const SENAL_REAL: Senal = {
 const RULE =
   'Regla de oro: el candado verde no significa que el sitio sea legítimo, solo que la conexión va cifrada. <b>Lee el dominio completo</b> y cambia tus contraseñas entrando por el sistema de la empresa, nunca desde un enlace.'
 
-const RESUMEN = 'Un correo de "Soporte TI" avisa que tu contraseña caduca hoy a las 18:00.'
+const SUMMARY = 'Un correo de "Soporte TI" avisa que tu contraseña caduca hoy a las 18:00.'
 
-const CONTEXTO: Contexto = {
+const CONTEXT: Context = {
   antes: (
     <>
       Trabajas en <strong>Corporación Andes</strong> y tu correo institucional termina en{' '}
@@ -215,20 +215,20 @@ const CONTEXTO: Contexto = {
   ),
 }
 
-function ClaveCaducada() {
+function ExpiredPassword() {
   return (
-    <StoryEscenario
+    <ScenarioStory
       escenarioId="phishing/clave-caducada"
-      resumen={RESUMEN}
-      contexto={CONTEXTO}
+      resumen={SUMMARY}
+      contexto={CONTEXT}
       story={STORY}
-      accionesCorreo={ACCIONES_BARRA}
+      accionesCorreo={ACTIONS_BAR}
       identidad={['clave']}
-      marcadores={MARCADORES}
-      instruccion={INSTRUCCION}
-      pista={PISTA}
+      marcadores={MARKERS}
+      instruccion={INSTRUCTION}
+      pista={CLUE}
       dominioCorreo="andes.com.ec"
-      senales={[...SENALES, SENAL_REAL]}
+      senales={[...SIGNALS, SIGNAL_REAL]}
       rule={RULE}
       reloj={{ hora: '16:12' }}
       restartLabel="↻ Repetir el escenario"
@@ -236,4 +236,4 @@ function ClaveCaducada() {
   )
 }
 
-export default ClaveCaducada
+export default ExpiredPassword

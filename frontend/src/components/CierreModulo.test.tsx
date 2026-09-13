@@ -1,21 +1,21 @@
 import { render, screen } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import CierreModulo from './CierreModulo'
-import type { Escenario, Seccion } from '../data/catalogo'
-import type { Progreso, RunSummary } from '../lib/api'
+import ModuleCompletion from './CierreModulo'
+import type { Scenario, Section } from '../data/catalogo'
+import type { Progress, RunSummary } from '../lib/api'
 
 const { fetchMyRunsMock } = vi.hoisted(() => ({
   fetchMyRunsMock: vi.fn(),
 }))
 
 vi.mock('../lib/api', async () => {
-  const actual = await vi.importActual<typeof import('../lib/api')>('../lib/api')
-  return { ...actual, fetchMyRuns: fetchMyRunsMock }
+  const current = await vi.importActual<typeof import('../lib/api')>('../lib/api')
+  return { ...current, fetchMyRuns: fetchMyRunsMock }
 })
 
-const SECCION = { id: 'phishing', titulo: 'Phishing' } as Seccion
-const ESCENARIOS = Array.from({ length: 8 }, (_, i) => ({ id: `phishing/e${i}` }) as Escenario)
-const PROGRESO: Progreso = {
+const SECTION = { id: 'phishing', titulo: 'Phishing' } as Section
+const SCENARIOS = Array.from({ length: 8 }, (_, i) => ({ id: `phishing/e${i}` }) as Scenario)
+const PROGRESS: Progress = {
   modulo: 'phishing',
   escenarios: [],
   aprobados: 6,
@@ -45,7 +45,7 @@ describe('CierreModulo', () => {
   it('muestra el conteo de aprobados y los cuatro discriminadores', () => {
     fetchMyRunsMock.mockReturnValue(new Promise(() => {}))
 
-    render(<CierreModulo seccion={SECCION} escenarios={ESCENARIOS} progreso={PROGRESO} />)
+    render(<ModuleCompletion seccion={SECTION} escenarios={SCENARIOS} progreso={PROGRESS} />)
 
     expect(screen.getByText('Módulo aprobado')).toBeDefined()
     expect(screen.getByText('¿Qué te piden?')).toBeDefined()
@@ -64,7 +64,7 @@ describe('CierreModulo', () => {
       runFixture({ scenarioId: 'smishing/e0', durationMs: 999_000, finishedAt: '2026-08-01T10:00:00.000Z' }),
     ])
 
-    render(<CierreModulo seccion={SECCION} escenarios={ESCENARIOS} progreso={PROGRESO} />)
+    render(<ModuleCompletion seccion={SECTION} escenarios={SCENARIOS} progreso={PROGRESS} />)
 
     // (60_000 + 30_000) ms = 1 minuto y 30s, redondeado a 2 minutos.
     expect(await screen.findByText(/en 2 minutos/)).toBeDefined()
@@ -73,7 +73,7 @@ describe('CierreModulo', () => {
   it('menos de un minuto se dice en palabras, no como "0 minutos"', async () => {
     fetchMyRunsMock.mockResolvedValue([runFixture({ durationMs: 20_000 })])
 
-    render(<CierreModulo seccion={SECCION} escenarios={ESCENARIOS} progreso={PROGRESO} />)
+    render(<ModuleCompletion seccion={SECTION} escenarios={SCENARIOS} progreso={PROGRESS} />)
 
     expect(await screen.findByText(/en menos de un minuto/)).toBeDefined()
   })
@@ -81,7 +81,7 @@ describe('CierreModulo', () => {
   it('si falla la petición del tiempo, el cierre se muestra igual', async () => {
     fetchMyRunsMock.mockRejectedValue(new Error('red caída'))
 
-    render(<CierreModulo seccion={SECCION} escenarios={ESCENARIOS} progreso={PROGRESO} />)
+    render(<ModuleCompletion seccion={SECTION} escenarios={SCENARIOS} progreso={PROGRESS} />)
 
     expect(await screen.findByText('Módulo aprobado')).toBeDefined()
     expect(screen.queryByText(/en \d/)).toBeNull()

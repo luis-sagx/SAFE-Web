@@ -3,7 +3,7 @@ import type { RunOutcome } from '../lib/api'
 import {
   outcomeFromKind,
   useScenarioRun,
-  type ResultadoEscenario,
+  type ScenarioResult,
   type RunStatus,
   type StoryKind,
 } from './useScenarioRun'
@@ -37,7 +37,7 @@ export interface StoryEngine<N extends StoryNode = StoryNode> {
   /** Con qué cerró, o nada si sigue abierta. Es `node.kind` ya estrechado: sin
    *  esto, cada pantalla tenía que repetir el mismo ternario contra `'scene'`
    *  para que el tipo cuadrara. */
-  resultado?: ResultadoEscenario
+  resultado?: ScenarioResult
   choose: (goto: string, label?: string) => void
   restart: () => void
   runStatus: RunStatus

@@ -1,6 +1,6 @@
 import { useTheme } from '../context/ThemeContext'
 
-const VARIANTES = {
+const VARIANTS = {
   logo: {
     claro: '/marca/logo-safeweb.webp',
     oscuro: '/marca/logo-safeweb-oscuro.webp',
@@ -17,7 +17,7 @@ const VARIANTES = {
   },
 } as const
 
-interface MarcaProps {
+interface BrandProps {
   variante: 'logo' | 'isotipo'
   className?: string
 }
@@ -25,13 +25,13 @@ interface MarcaProps {
 // El logo lleva "Safe" en tinta casi negra, invisible en oscuro; la variante
 // -oscuro.webp recolorea solo esos píxeles neutros (no filter: invert(),
 // que también invertiría el verde de marca).
-function Marca({ variante, className }: MarcaProps) {
-  const { temaEfectivo } = useTheme()
-  const { width, height, alt, ...rutas } = VARIANTES[variante]
+function Brand({ variante: variant, className }: BrandProps) {
+  const { temaEfectivo: themeEffective } = useTheme()
+  const { width, height, alt, ...paths } = VARIANTS[variant]
 
   return (
     <img
-      src={rutas[temaEfectivo]}
+      src={paths[themeEffective]}
       alt={alt}
       width={width}
       height={height}
@@ -40,4 +40,4 @@ function Marca({ variante, className }: MarcaProps) {
   )
 }
 
-export default Marca
+export default Brand

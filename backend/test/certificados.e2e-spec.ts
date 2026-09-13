@@ -2,31 +2,31 @@ import { INestApplication } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import request from 'supertest';
 import type { App } from 'supertest/types';
-import type { AtestacionPayload, JwtPayload } from '@comun';
+import type { AttestationPayload, JwtPayload } from '@comun';
 import { PrismaService } from '../apps/identidad/src/prisma/prisma.service';
 import {
-  crearApp,
-  cuerpo,
-  limpiar,
-  registro,
-  type SesionBody,
+  createTestApp,
+  responseBody,
+  cleanDatabase,
+  registrationData,
+  type SessionBody,
 } from './identidad.e2e';
 
-interface CertificadoBody {
+interface CertificateBody {
   codigo: string;
   emitidoAt: string;
   modulos: string[];
   horas: number;
 }
 
-interface VerificacionBody {
+interface VerificationBody {
   valido: boolean;
   emitidoAt?: string;
   horas?: number;
   modulos?: string[];
 }
 
-const MODULOS = [
+const MODULES = [
   'phishing',
   'smishing',
   'vishing',
@@ -43,43 +43,43 @@ describe('Certificados (e2e)', () => {
   const server = () => request(app.getHttpServer() as App);
 
   beforeAll(async () => {
-    ({ app, prisma } = await crearApp());
+    ({ app, prisma } = await createTestApp());
     jwt = app.get(JwtService);
-    await limpiar(prisma);
+    await cleanDatabase(prisma);
   });
 
   afterAll(async () => {
-    await limpiar(prisma);
+    await cleanDatabase(prisma);
     await app.close();
   });
 
   /// `identidad` nunca calcula el progreso: la atestación es lo único que
   /// `entrenamiento` firmaría en producción, y aquí se firma igual, con el
   /// mismo `JwtService` que ya comparten los dos servicios.
-  function atestacion(payload: Partial<AtestacionPayload>): Promise<string> {
+  function attestation(payload: Partial<AttestationPayload>): Promise<string> {
     return jwt.signAsync({
       sub: 'sin-usar',
       seq: 0,
-      modulos: MODULOS,
+      modulos: MODULES,
       calificacion: 36,
       typ: 'atestacion',
       ...payload,
-    } satisfies AtestacionPayload);
+    } satisfies AttestationPayload);
   }
 
   /// Registra un participante real y decodifica su propio access token para
   /// sacarle `sub`/`seq`: el perfil que devuelve `/auth/register` nunca trae
   /// `seq` (el participante no debe verlo), así que es el único lugar de
   /// donde tomarlo sin tocar la base a mano.
-  async function participante(sufijo: string) {
+  async function participant(suffix: string) {
     const res = await server()
       .post('/api/auth/register')
-      .send(registro(sufijo))
+      .send(registrationData(suffix))
       .expect(201);
-    const sesion = cuerpo<SesionBody>(res);
-    const payload = jwt.decode<JwtPayload>(sesion.accessToken);
+    const session = responseBody<SessionBody>(res);
+    const payload = jwt.decode<JwtPayload>(session.accessToken);
     return {
-      accessToken: sesion.accessToken,
+      accessToken: session.accessToken,
       sub: payload.sub,
       seq: payload.seq,
     };
@@ -87,7 +87,7 @@ describe('Certificados (e2e)', () => {
 
   describe('POST /api/certificados', () => {
     it('exige token de acceso', async () => {
-      const pase = await atestacion({});
+      const pase = await attestation({});
       await server()
         .post('/api/certificados')
         .send({ atestacion: pase })
@@ -95,7 +95,7 @@ describe('Certificados (e2e)', () => {
     });
 
     it('rechaza un cuerpo sin la forma de un JWT antes de tocar el servicio', async () => {
-      const { accessToken } = await participante('cert-1');
+      const { accessToken } = await participant('cert-1');
       await server()
         .post('/api/certificados')
         .set('Authorization', `Bearer ${accessToken}`)
@@ -104,7 +104,7 @@ describe('Certificados (e2e)', () => {
     });
 
     it('rechaza una atestación con la forma de un JWT pero mal firmada', async () => {
-      const { accessToken } = await participante('cert-1b');
+      const { accessToken } = await participant('cert-1b');
       await server()
         .post('/api/certificados')
         .set('Authorization', `Bearer ${accessToken}`)
@@ -113,7 +113,7 @@ describe('Certificados (e2e)', () => {
     });
 
     it('rechaza un access token presentado como si fuera la atestación', async () => {
-      const { accessToken } = await participante('cert-2');
+      const { accessToken } = await participant('cert-2');
       await server()
         .post('/api/certificados')
         .set('Authorization', `Bearer ${accessToken}`)
@@ -124,45 +124,50 @@ describe('Certificados (e2e)', () => {
     // La comprobación que sostiene todo el flujo: sin ella, la atestación de
     // otra persona serviría para emitirse un certificado con su progreso.
     it('rechaza una atestación de un participante distinto al que la presenta', async () => {
-      const { accessToken } = await participante('cert-3');
-      const deOtro = await atestacion({ sub: 'otro-participante', seq: 999 });
+      const { accessToken } = await participant('cert-3');
+      const otherToken = await attestation({
+        sub: 'otro-participante',
+        seq: 999,
+      });
 
       await server()
         .post('/api/certificados')
         .set('Authorization', `Bearer ${accessToken}`)
-        .send({ atestacion: deOtro })
+        .send({ atestacion: otherToken })
         .expect(403);
     });
 
     it('emite el certificado y el mismo código al pedirlo dos veces', async () => {
-      const { accessToken, sub, seq } = await participante('cert-4');
-      const pase = await atestacion({ sub, seq });
+      const { accessToken, sub, seq } = await participant('cert-4');
+      const pase = await attestation({ sub, seq });
 
-      const primera = await server()
+      const first = await server()
         .post('/api/certificados')
         .set('Authorization', `Bearer ${accessToken}`)
         .send({ atestacion: pase })
         .expect(201);
 
-      const cuerpoUno = cuerpo<CertificadoBody>(primera);
-      expect(cuerpoUno.codigo).toMatch(/^SW-[A-Z0-9]{4}-[A-Z0-9]{4}$/);
-      expect(cuerpoUno.horas).toBe(4);
-      expect(cuerpoUno.modulos).toEqual(MODULOS);
+      const firstCertificate = responseBody<CertificateBody>(first);
+      expect(firstCertificate.codigo).toMatch(/^SW-[A-Z0-9]{4}-[A-Z0-9]{4}$/);
+      expect(firstCertificate.horas).toBe(4);
+      expect(firstCertificate.modulos).toEqual(MODULES);
 
-      const segunda = await server()
+      const secondResponse = await server()
         .post('/api/certificados')
         .set('Authorization', `Bearer ${accessToken}`)
         .send({ atestacion: pase })
         .expect(201);
 
-      expect(cuerpo<CertificadoBody>(segunda).codigo).toBe(cuerpoUno.codigo);
+      expect(responseBody<CertificateBody>(secondResponse).codigo).toBe(
+        firstCertificate.codigo,
+      );
     });
   });
 
   describe('POST /api/certificados/pdf', () => {
     it('devuelve el PDF de un certificado ya emitido', async () => {
-      const { accessToken, sub, seq } = await participante('cert-5');
-      const pase = await atestacion({ sub, seq });
+      const { accessToken, sub, seq } = await participant('cert-5');
+      const pase = await attestation({ sub, seq });
 
       await server()
         .post('/api/certificados')
@@ -176,9 +181,9 @@ describe('Certificados (e2e)', () => {
         .send({ atestacion: pase })
         .buffer(true)
         .parse((response, callback) => {
-          const trozos: Buffer[] = [];
-          response.on('data', (trozo: Buffer) => trozos.push(trozo));
-          response.on('end', () => callback(null, Buffer.concat(trozos)));
+          const chunks: Buffer[] = [];
+          response.on('data', (chunk: Buffer) => chunks.push(chunk));
+          response.on('end', () => callback(null, Buffer.concat(chunks)));
         })
         .expect(200);
 
@@ -189,8 +194,8 @@ describe('Certificados (e2e)', () => {
     });
 
     it('sin certificado emitido, 404', async () => {
-      const { accessToken, sub, seq } = await participante('cert-6');
-      const pase = await atestacion({ sub, seq });
+      const { accessToken, sub, seq } = await participant('cert-6');
+      const pase = await attestation({ sub, seq });
 
       await server()
         .post('/api/certificados/pdf')
@@ -202,9 +207,9 @@ describe('Certificados (e2e)', () => {
 
   describe('GET /api/certificados/verificar/:codigo', () => {
     it('no exige sesión y no revela nombre alguno', async () => {
-      const { accessToken, sub, seq } = await participante('cert-7');
-      const pase = await atestacion({ sub, seq });
-      const emitido = cuerpo<CertificadoBody>(
+      const { accessToken, sub, seq } = await participant('cert-7');
+      const pase = await attestation({ sub, seq });
+      const issuedCertificate = responseBody<CertificateBody>(
         await server()
           .post('/api/certificados')
           .set('Authorization', `Bearer ${accessToken}`)
@@ -213,12 +218,12 @@ describe('Certificados (e2e)', () => {
       );
 
       const res = await server()
-        .get(`/api/certificados/verificar/${emitido.codigo}`)
+        .get(`/api/certificados/verificar/${issuedCertificate.codigo}`)
         .expect(200);
 
-      const cuerpoVerificacion = cuerpo<VerificacionBody>(res);
-      expect(cuerpoVerificacion.valido).toBe(true);
-      expect(cuerpoVerificacion.modulos).toEqual(MODULOS);
+      const verificationBody = responseBody<VerificationBody>(res);
+      expect(verificationBody.valido).toBe(true);
+      expect(verificationBody.modulos).toEqual(MODULES);
       expect(res.text).not.toContain('María');
     });
 
@@ -227,7 +232,7 @@ describe('Certificados (e2e)', () => {
         .get('/api/certificados/verificar/SW-0000-0000')
         .expect(200);
 
-      expect(cuerpo<VerificacionBody>(res)).toEqual({ valido: false });
+      expect(responseBody<VerificationBody>(res)).toEqual({ valido: false });
     });
   });
 });

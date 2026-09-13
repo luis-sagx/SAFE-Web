@@ -2,7 +2,7 @@
 // es para el total del entrenamiento, donde las celdas serían demasiado finas. La marca de
 // meta es necesaria porque el gating exige `requeridos` de `total`, no completar todo.
 
-interface BarraProgresoProps {
+interface ProgressBarProps {
   aprobados: number
   total: number
   /** Umbral que exige el servidor. Se dibuja como marca de meta sobre la barra. */
@@ -14,51 +14,51 @@ interface BarraProgresoProps {
   className?: string
 }
 
-function BarraProgreso({
-  aprobados,
+function ProgressBar({
+  aprobados: approvedCount,
   total,
-  requeridos,
-  aprobado = false,
-  variante,
-  etiqueta,
+  requeridos: required,
+  aprobado: isApproved = false,
+  variante: variant,
+  etiqueta: label,
   className = '',
-}: BarraProgresoProps) {
+}: ProgressBarProps) {
   // Un total de 0 solo pasa en una sección sin escenarios, donde esta barra no
   // se pinta; aun así se evita la división por cero antes que confiar en eso.
-  const seguro = Math.max(total, 1)
-  const hechos = Math.min(Math.max(aprobados, 0), total)
-  const forma = variante ?? (total <= 12 ? 'segmentada' : 'continua')
+  const safe = Math.max(total, 1)
+  const done = Math.min(Math.max(approvedCount, 0), total)
+  const form = variant ?? (total <= 12 ? 'segmentada' : 'continua')
 
   // Verde de acierto solo al aprobar; mientras tanto, el verde de marca. En una
   // app donde verde significa "acertaste", teñir de éxito un avance a medias
   // sería decir algo que todavía no es cierto (DESIGN.md §1).
-  const relleno = aprobado ? 'bg-success' : 'bg-primary'
+  const padding = isApproved ? 'bg-success' : 'bg-primary'
 
-  const textoAccesible = requeridos
-    ? `${hechos} de ${total} escenarios aprobados; se necesitan ${requeridos}`
-    : `${hechos} de ${total} escenarios aprobados`
+  const textAccessible = required
+    ? `${done} de ${total} escenarios aprobados; se necesitan ${required}`
+    : `${done} de ${total} escenarios aprobados`
 
   return (
     <div className={`relative ${className}`}>
       <progress
         className="sr-only"
         max={total}
-        value={hechos}
-        aria-label={etiqueta}
-        aria-valuetext={textoAccesible}
+        value={done}
+        aria-label={label}
+        aria-valuetext={textAccessible}
       />
-      {forma === 'segmentada' ? (
+      {form === 'segmentada' ? (
         <div className="flex gap-1">
           {Array.from({ length: total }, (_, i) => {
             // La celda que marca la meta lleva un borde inferior más oscuro:
             // señala "de aquí en adelante ya aprobaste" sin añadir otro color.
-            const esMeta = requeridos !== undefined && i + 1 === requeridos
+            const isTarget = required !== undefined && i + 1 === required
             return (
               <span
                 key={i}
                 className={`h-2 flex-1 rounded-xs transition-colors duration-500 motion-reduce:transition-none ${
-                  i < hechos ? relleno : 'bg-surface-strong'
-                } ${esMeta ? 'ring-1 ring-inset ring-ink/25' : ''}`}
+                  i < done ? padding : 'bg-surface-strong'
+                } ${isTarget ? 'ring-1 ring-inset ring-ink/25' : ''}`}
               />
             )
           })}
@@ -66,23 +66,23 @@ function BarraProgreso({
       ) : (
         <div className="h-2 overflow-hidden rounded-xs bg-surface-strong">
           <div
-            className={`h-full rounded-xs transition-[width] duration-500 motion-reduce:transition-none ${relleno}`}
-            style={{ width: `${(hechos / seguro) * 100}%` }}
+            className={`h-full rounded-xs transition-[width] duration-500 motion-reduce:transition-none ${padding}`}
+            style={{ width: `${(done / safe) * 100}%` }}
           />
         </div>
       )}
 
       {/* Marca de meta en la barra continua: una línea vertical fina. En la
           segmentada el propio anillo de la celda ya la indica. */}
-      {forma === 'continua' && requeridos !== undefined && requeridos < total && (
+      {form === 'continua' && required !== undefined && required < total && (
         <span
           aria-hidden
           className="absolute top-0 h-2 w-px bg-ink/40"
-          style={{ left: `${(requeridos / seguro) * 100}%` }}
+          style={{ left: `${(required / safe) * 100}%` }}
         />
       )}
     </div>
   )
 }
 
-export default BarraProgreso
+export default ProgressBar

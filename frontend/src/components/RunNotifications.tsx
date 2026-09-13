@@ -8,7 +8,7 @@ interface RunNotificationsProps {
 }
 
 function RunNotifications({ enabled }: RunNotificationsProps) {
-  const { temaEfectivo } = useTheme()
+  const { temaEfectivo: themeEffective } = useTheme()
   const requestedSync = useRef(0)
   const syncing = useRef(false)
 
@@ -88,7 +88,7 @@ function RunNotifications({ enabled }: RunNotificationsProps) {
       visibleToasts={3}
       closeButton
       richColors
-      theme={temaEfectivo === 'oscuro' ? 'dark' : 'light'}
+      theme={themeEffective === 'oscuro' ? 'dark' : 'light'}
       offset={16}
       mobileOffset={12}
       containerAriaLabel="Notificaciones"

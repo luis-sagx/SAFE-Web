@@ -3,11 +3,11 @@ import request from 'supertest';
 import type { App } from 'supertest/types';
 import { PrismaService } from '../apps/identidad/src/prisma/prisma.service';
 import {
-  crearApp,
-  cuerpo,
-  limpiar,
-  registro,
-  type SesionBody,
+  createTestApp,
+  responseBody,
+  cleanDatabase,
+  registrationData,
+  type SessionBody,
 } from './identidad.e2e';
 
 describe('Gestión de cuentas por el supervisor (e2e)', () => {
@@ -21,45 +21,49 @@ describe('Gestión de cuentas por el supervisor (e2e)', () => {
       .post('/api/auth/login')
       .send({ email, password })
       .expect(200);
-    return cuerpo<SesionBody>(res).accessToken;
+    return responseBody<SessionBody>(res).accessToken;
   }
 
   /// Registra un participante y devuelve su id y token.
-  async function nuevoParticipante(sufijo: string) {
-    const datos = registro(sufijo);
+  async function newParticipant(suffix: string) {
+    const data = registrationData(suffix);
     const res = await server()
       .post('/api/auth/register')
-      .send(datos)
+      .send(data)
       .expect(201);
-    const sesion = cuerpo<SesionBody>(res);
-    return { id: sesion.participant.id, datos, token: sesion.accessToken };
+    const session = responseBody<SessionBody>(res);
+    return {
+      id: session.participant.id,
+      datos: data,
+      token: session.accessToken,
+    };
   }
 
   let supervisorToken: string;
 
   beforeAll(async () => {
-    ({ app, prisma } = await crearApp());
-    await limpiar(prisma);
+    ({ app, prisma } = await createTestApp());
+    await cleanDatabase(prisma);
 
     // Un supervisor: se registra como cualquiera y luego se le sube el rol en
     // la base (en producción lo hace `pnpm seed`).
-    const sup = registro('supervisor');
+    const sup = registrationData('supervisor');
     const res = await server().post('/api/auth/register').send(sup).expect(201);
     await prisma.participant.update({
-      where: { id: cuerpo<SesionBody>(res).participant.id },
+      where: { id: responseBody<SessionBody>(res).participant.id },
       data: { role: 'SUPERVISOR' },
     });
     supervisorToken = await login(sup.email, sup.password);
   });
 
   afterAll(async () => {
-    await limpiar(prisma);
+    await cleanDatabase(prisma);
     await app.close();
   });
 
   describe('GET /api/admin/participantes', () => {
     it('401 sin token, 403 a un participante', async () => {
-      const { token } = await nuevoParticipante('lista-guard');
+      const { token } = await newParticipant('lista-guard');
       await server().get('/api/admin/participantes').expect(401);
       await server()
         .get('/api/admin/participantes')
@@ -73,14 +77,14 @@ describe('Gestión de cuentas por el supervisor (e2e)', () => {
         .set('Authorization', `Bearer ${supervisorToken}`)
         .expect(200);
 
-      const texto = res.text;
-      expect(texto).not.toContain('passwordHash');
-      expect(texto).not.toContain('cedulaHash');
+      const text = res.text;
+      expect(text).not.toContain('passwordHash');
+      expect(text).not.toContain('cedulaHash');
 
-      const lista = cuerpo<Array<Record<string, unknown>>>(res);
-      expect(lista.every((p) => p.activo === true)).toBe(true);
+      const list = responseBody<Array<Record<string, unknown>>>(res);
+      expect(list.every((p) => p.activo === true)).toBe(true);
       // El supervisor no aparece: la lista es solo de participantes.
-      expect(lista.some((p) => p.email === 'maria.supervisor@ejemplo.ec')).toBe(
+      expect(list.some((p) => p.email === 'maria.supervisor@ejemplo.ec')).toBe(
         false,
       );
     });
@@ -88,7 +92,7 @@ describe('Gestión de cuentas por el supervisor (e2e)', () => {
 
   describe('PATCH /api/admin/participantes/:id/estado', () => {
     it('desactivar bloquea el login; reactivar lo restablece', async () => {
-      const { id, datos } = await nuevoParticipante('estado');
+      const { id, datos: data } = await newParticipant('estado');
 
       await server()
         .patch(`/api/admin/participantes/${id}/estado`)
@@ -99,7 +103,7 @@ describe('Gestión de cuentas por el supervisor (e2e)', () => {
       // Credenciales correctas pero cuenta desactivada: 403, no 401.
       await server()
         .post('/api/auth/login')
-        .send({ email: datos.email, password: datos.password })
+        .send({ email: data.email, password: data.password })
         .expect(403);
 
       await server()
@@ -108,11 +112,11 @@ describe('Gestión de cuentas por el supervisor (e2e)', () => {
         .send({ activo: true })
         .expect(200);
 
-      await login(datos.email, datos.password);
+      await login(data.email, data.password);
     });
 
     it('rechaza un campo fuera del DTO (400)', async () => {
-      const { id } = await nuevoParticipante('estado-whitelist');
+      const { id } = await newParticipant('estado-whitelist');
       await server()
         .patch(`/api/admin/participantes/${id}/estado`)
         .set('Authorization', `Bearer ${supervisorToken}`)
@@ -123,25 +127,25 @@ describe('Gestión de cuentas por el supervisor (e2e)', () => {
 
   describe('POST /api/admin/participantes/:id/restablecer-password', () => {
     it('la contraseña nueva funciona y la vieja deja de servir', async () => {
-      const { id, datos } = await nuevoParticipante('reset');
+      const { id, datos: data } = await newParticipant('reset');
 
       const res = await server()
         .post(`/api/admin/participantes/${id}/restablecer-password`)
         .set('Authorization', `Bearer ${supervisorToken}`)
         .expect(200);
 
-      const { password } = cuerpo<{ password: string }>(res);
-      await login(datos.email, password);
+      const { password } = responseBody<{ password: string }>(res);
+      await login(data.email, password);
       await server()
         .post('/api/auth/login')
-        .send({ email: datos.email, password: datos.password })
+        .send({ email: data.email, password: data.password })
         .expect(401);
     });
   });
 
   describe('DELETE /api/admin/participantes/:id', () => {
     it('borra al participante', async () => {
-      const { id, datos } = await nuevoParticipante('borrado');
+      const { id, datos: data } = await newParticipant('borrado');
 
       await server()
         .delete(`/api/admin/participantes/${id}`)
@@ -150,7 +154,7 @@ describe('Gestión de cuentas por el supervisor (e2e)', () => {
 
       await server()
         .post('/api/auth/login')
-        .send({ email: datos.email, password: datos.password })
+        .send({ email: data.email, password: data.password })
         .expect(401);
     });
 

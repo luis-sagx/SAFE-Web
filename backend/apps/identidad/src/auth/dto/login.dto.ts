@@ -1,10 +1,10 @@
 import { IsEmail, IsString, MaxLength } from 'class-validator';
-import { NormalizarEmail } from '@comun';
+import { NormalizeEmail } from '@comun';
 
 export class LoginDto {
   @IsEmail({}, { message: 'El correo no tiene un formato válido.' })
   @MaxLength(120)
-  @NormalizarEmail()
+  @NormalizeEmail()
   email: string;
 
   // Sin MinLength: acá no se valida la política de contraseñas, solo se

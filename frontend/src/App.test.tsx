@@ -5,14 +5,14 @@ import App from './App'
 import { AuthProvider } from './context/AuthContext'
 import { setToken } from './lib/api'
 
-const { fetchMeMock, fetchProgresoMock } = vi.hoisted(() => ({
+const { fetchMeMock, fetchProgressMock } = vi.hoisted(() => ({
   fetchMeMock: vi.fn(),
-  fetchProgresoMock: vi.fn(),
+  fetchProgressMock: vi.fn(),
 }))
 
 vi.mock('./lib/api', async () => {
-  const actual = await vi.importActual<typeof import('./lib/api')>('./lib/api')
-  return { ...actual, fetchMe: fetchMeMock, fetchProgreso: fetchProgresoMock }
+  const current = await vi.importActual<typeof import('./lib/api')>('./lib/api')
+  return { ...current, fetchMe: fetchMeMock, fetchProgress: fetchProgressMock }
 })
 
 vi.mock('./secciones/phishing/RolDePagos', () => ({
@@ -23,7 +23,7 @@ vi.mock('./secciones/phishing/SecuestroHilo', () => ({
   default: () => <p>Escenario pago del colegio montado</p>,
 }))
 
-function participante() {
+function participant() {
   return {
     id: 'p1',
     nombre: 'María',
@@ -37,13 +37,13 @@ function participante() {
 describe('App', () => {
   beforeEach(() => {
     fetchMeMock.mockReset()
-    fetchProgresoMock.mockReset()
+    fetchProgressMock.mockReset()
   })
 
   it('redirige a la sección cuando se entra por URL a un escenario bloqueado', async () => {
     setToken('t0ken')
-    fetchMeMock.mockResolvedValue(participante())
-    fetchProgresoMock.mockResolvedValue({
+    fetchMeMock.mockResolvedValue(participant())
+    fetchProgressMock.mockResolvedValue({
       modulo: 'phishing',
       escenarios: [{ id: 'phishing/factura-sri', ultimoOutcome: 'INCORRECTO' }],
       aprobados: 0,
@@ -68,10 +68,10 @@ describe('App', () => {
   it.each([
     '/seccion/phishing/pago-pension-colegio',
     '/seccion/phishing/secuestro-hilo',
-  ])('abre el escenario del colegio desde la ruta pública o la ruta histórica: %s', async (ruta) => {
+  ])('abre el escenario del colegio desde la ruta pública o la ruta histórica: %s', async (path) => {
     setToken('t0ken')
-    fetchMeMock.mockResolvedValue(participante())
-    fetchProgresoMock.mockResolvedValue({
+    fetchMeMock.mockResolvedValue(participant())
+    fetchProgressMock.mockResolvedValue({
       modulo: 'phishing',
       escenarios: [
         'loteria-premiada',
@@ -86,7 +86,7 @@ describe('App', () => {
     })
 
     render(
-      <MemoryRouter initialEntries={[ruta]}>
+      <MemoryRouter initialEntries={[path]}>
         <AuthProvider>
           <App />
         </AuthProvider>

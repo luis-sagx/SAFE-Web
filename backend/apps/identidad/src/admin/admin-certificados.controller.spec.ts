@@ -1,19 +1,19 @@
-import { AdminCertificadosController } from './admin-certificados.controller';
-import type { CertificadosService } from '../certificados/certificados.service';
+import { AdminCertificatesController } from './admin-certificados.controller';
+import type { CertificatesService } from '../certificados/certificados.service';
 
 describe('AdminCertificadosController', () => {
   it('revocar delega en el servicio con el id de la ruta', async () => {
-    let idRecibido: string | undefined;
-    const servicio = {
-      revocar: (id: string) => {
-        idRecibido = id;
+    let idReceived: string | undefined;
+    const service = {
+      revoke: (id: string) => {
+        idReceived = id;
         return Promise.resolve();
       },
-    } as unknown as CertificadosService;
+    } as unknown as CertificatesService;
 
-    const controller = new AdminCertificadosController(servicio);
-    await controller.revocar('c1');
+    const controller = new AdminCertificatesController(service);
+    await controller.revoke('c1');
 
-    expect(idRecibido).toBe('c1');
+    expect(idReceived).toBe('c1');
   });
 });

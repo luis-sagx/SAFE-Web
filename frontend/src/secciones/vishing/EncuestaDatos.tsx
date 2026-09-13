@@ -1,26 +1,26 @@
 import { Camera, Images, Landmark, Phone } from "lucide-react";
-import StoryEscenario, {
-  type AppTelefono,
+import ScenarioStory, {
+  type PhoneApp,
   type ScreenNode,
 } from "../../components/StoryEscenario";
-import type { Contexto } from "../../components/ui/ContextoEscenario";
+import type { Context } from "../../components/ui/ContextoEscenario";
 import type { ScreenView } from "../../components/ui/DeviceScreen";
-import type { Senal } from "../../components/ui/PanelVeredicto";
+import type { Signal } from "../../components/ui/PanelVeredicto";
 import type { Story } from "../../hooks/useStoryEngine";
-import { IDENTIDAD_FICTICIA } from "../../lib/identidadFicticia";
+import { IDENTITY_FAKE } from "../../lib/identidadFicticia";
 
 // El más difícil del módulo: no pide dinero ni mete prisa, así que todo lo
 // que enseñan los otros escenarios sale bien aquí. La lección es que los
 // datos que no parecen secretos son los que abren la puerta.
 
-const NUMERO = "+593 4 500 1180";
-const NACIMIENTO = "14 de marzo del 78";
-const MADRE = "Rosa Elena Cedeño";
+const NUMBER = "+593 4 500 1180";
+const BIRTH = "14 de marzo del 78";
+const MOTHER = "Rosa Elena Cedeño";
 
-const ENTRANTE: ScreenView = {
+const INCOMING: ScreenView = {
   kind: "call",
   entrante: true,
-  quien: NUMERO,
+  quien: NUMBER,
   numero: "Guayaquil, Ecuador",
   etiqueta: "No está en tus contactos",
   senalQuien: "quien",
@@ -30,7 +30,7 @@ const ENTRANTE: ScreenView = {
   rechazarLabel: "Rechazó la llamada sin contestar",
 };
 
-const APERTURA = [
+const OPENING = [
   {
     texto:
       "Buenas tardes, le habla Katherine del área de calidad del Banco del Litoral. Estamos haciendo una encuesta de dos minutos sobre la atención en su agencia, ¿me regala un momentito?",
@@ -43,16 +43,16 @@ const APERTURA = [
   },
 ];
 
-const LLAMADA: ScreenView = {
+const CALL: ScreenView = {
   kind: "call",
-  quien: NUMERO,
+  quien: NUMBER,
   numero: "Guayaquil, Ecuador",
   etiqueta: "No está en tus contactos",
   senalQuien: "quien",
-  dialogo: APERTURA,
+  dialogo: OPENING,
   decir: [
     {
-      texto: `${NACIMIENTO}, y mi mamá es ${MADRE}.`,
+      texto: `${BIRTH}, y mi mamá es ${MOTHER}.`,
       goto: "n3",
       label: "Dio su fecha de nacimiento y el nombre de su madre",
     },
@@ -66,7 +66,7 @@ const LLAMADA: ScreenView = {
   colgarLabel: "Colgó sin dar ningún dato",
 };
 
-const SIGUE = [
+const CONTINUES = [
   {
     texto:
       "Perfecto, gracias. Primera pregunta: del uno al cinco, ¿cómo calificaría el tiempo de espera en ventanilla?",
@@ -78,19 +78,19 @@ const SIGUE = [
   },
 ];
 
-function encuestando(
-  previas: { texto: string; mio?: boolean; senal?: string }[],
+function createSurveyView(
+  previous: { texto: string; mio?: boolean; senal?: string }[],
 ): ScreenView {
   return {
     kind: "call",
-    quien: NUMERO,
+    quien: NUMBER,
     numero: "Guayaquil, Ecuador",
     etiqueta: "No está en tus contactos",
     senalQuien: "quien",
-    dialogo: [...APERTURA, ...previas, ...SIGUE],
+    dialogo: [...OPENING, ...previous, ...CONTINUES],
     decir: [
       {
-        texto: `Termina en ${IDENTIDAD_FICTICIA.tarjeta}, y la abrí en la agencia Alborada.`,
+        texto: `Termina en ${IDENTITY_FAKE.tarjeta}, y la abrí en la agencia Alborada.`,
         goto: "e_datos",
         label: "Dio los últimos dígitos de la tarjeta y su agencia",
       },
@@ -100,24 +100,24 @@ function encuestando(
   };
 }
 
-const DIO_DATOS = encuestando([
-  { texto: `${NACIMIENTO}, y mi mamá es ${MADRE}.`, mio: true },
+const GAVE_DATA = createSurveyView([
+  { texto: `${BIRTH}, y mi mamá es ${MOTHER}.`, mio: true },
 ]);
 
-const CEDIO = encuestando([
+const GAVE_IN = createSurveyView([
   { texto: "¿Y para una encuesta necesitan todo eso?", mio: true },
   {
     texto:
       "Es solo para validar que hablo con el titular de la cuenta, es el protocolo. Si prefiere lo dejamos, aunque el beneficio de la comisión se registra hoy y mañana ya no le puedo ayudar.",
     senal: "protocolo",
   },
-  { texto: `Bueno, está bien: ${NACIMIENTO}, mi mamá es ${MADRE}.`, mio: true },
+  { texto: `Bueno, está bien: ${BIRTH}, mi mamá es ${MOTHER}.`, mio: true },
 ]);
 
-const DUDO: ScreenView = {
-  ...LLAMADA,
+const DOUBTED: ScreenView = {
+  ...CALL,
   dialogo: [
-    ...APERTURA,
+    ...OPENING,
     { texto: "¿Y para una encuesta necesitan todo eso?", mio: true },
     {
       texto:
@@ -127,7 +127,7 @@ const DUDO: ScreenView = {
   ],
   decir: [
     {
-      texto: `Bueno, está bien: ${NACIMIENTO}, mi mamá es ${MADRE}.`,
+      texto: `Bueno, está bien: ${BIRTH}, mi mamá es ${MOTHER}.`,
       goto: "n3c",
       label: "Terminó dando sus datos tras la insistencia",
     },
@@ -141,14 +141,14 @@ const DUDO: ScreenView = {
   colgarLabel: "Colgó sin dar ningún dato",
 };
 
-const BANCO: ScreenView = {
+const BANK: ScreenView = {
   kind: "web",
   app: "Banco del Litoral",
   url: "bancolitoral.ec",
   secure: true,
   brand: "Banca móvil",
   title: "Hola de nuevo",
-  subtitle: `Tarjeta *${IDENTIDAD_FICTICIA.tarjeta} · cupo disponible $1.240,00`,
+  subtitle: `Tarjeta *${IDENTITY_FAKE.tarjeta} · cupo disponible $1.240,00`,
   opciones: [
     {
       texto: "Mensajes del banco",
@@ -167,7 +167,7 @@ const BANCO: ScreenView = {
   button: "",
 };
 
-const BUZON: ScreenView = {
+const MAILBOX: ScreenView = {
   kind: "web",
   app: "Banco del Litoral",
   url: "bancolitoral.ec",
@@ -190,7 +190,7 @@ const BUZON: ScreenView = {
   button: "",
 };
 
-const APPS: AppTelefono[] = [
+const APPS: PhoneApp[] = [
   { Icono: Phone, texto: "Teléfono", color: "#2f9e44", hilo: "call" },
   {
     Icono: Landmark,
@@ -214,56 +214,56 @@ const APPS: AppTelefono[] = [
 ];
 
 export const STORY: Story<ScreenNode> = {
-  n1: { kind: "scene", view: ENTRANTE },
-  n2: { kind: "scene", view: LLAMADA },
-  n3: { kind: "scene", view: DIO_DATOS },
-  n3b: { kind: "scene", view: DUDO },
-  n3c: { kind: "scene", view: CEDIO },
-  n5: { kind: "scene", view: BANCO },
+  n1: { kind: "scene", view: INCOMING },
+  n2: { kind: "scene", view: CALL },
+  n3: { kind: "scene", view: GAVE_DATA },
+  n3b: { kind: "scene", view: DOUBTED },
+  n3c: { kind: "scene", view: GAVE_IN },
+  n5: { kind: "scene", view: BANK },
   e_rechaza: {
     kind: "good",
-    view: ENTRANTE,
+    view: INCOMING,
     verdict: "No caíste · no contestaste",
     outcome:
       "No contestaste a un número desconocido. Una encuesta no es urgente ni obligatoria, y tu banco no necesita hacerte preguntas por teléfono: lo que tenga que decirte te lo deja en la app.",
   },
   e_cuelga: {
     kind: "good",
-    view: DUDO,
+    view: DOUBTED,
     verdict: "No caíste · colgaste sin dar nada",
     outcome:
       "Colgaste sin soltar un dato. Aunque la llamada fuera de verdad, no pierdes nada: siempre puedes acercarte a la agencia o llamar tú. Y si era falsa, se quedaron sin lo único que buscaban.",
   },
   e_niega: {
     kind: "good",
-    view: DUDO,
+    view: DOUBTED,
     verdict: "No caíste · te negaste con calma",
     outcome:
       "Dijiste que no y ofreciste ir tú a la agencia, que es la respuesta perfecta: no hace falta ser brusco ni acusar a nadie. Quien de verdad trabaja en un banco lo entiende; quien está estafando cuelga solo.",
   },
   e_cuelga_datos: {
     kind: "partial",
-    view: DIO_DATOS,
+    view: GAVE_DATA,
     verdict: "Colgaste, pero ya habías dado lo importante",
     outcome: `Cortaste antes de dar lo de la tarjeta. Aun así les dejaste tu fecha de nacimiento y el nombre de tu mamá: son dos de las preguntas con las que el banco comprueba por teléfono que eres tú, y ahora las sabe alguien más.`,
     score: 50,
   },
   e_datos: {
     kind: "bad",
-    view: DIO_DATOS,
+    view: GAVE_DATA,
     verdict: "Caíste en la trampa",
     outcome: `No hubo encuesta ni exoneración. Con tu fecha de nacimiento, el apellido de tu mamá, tu agencia y los últimos dígitos de tu tarjeta llamaron ellos al banco haciéndose pasar por ti: contestaron todas las preguntas de seguridad, pidieron una clave nueva de banca en línea y entraron a tu cuenta. `,
   },
   e_verifica: {
     kind: "good",
-    view: BUZON,
+    view: MAILBOX,
     verdict: "No caíste · lo comprobaste en tu canal",
     outcome:
       "En la app no había ninguna encuesta ni beneficio a tu nombre, y ahí mismo estaba escrito por qué esas preguntas no son inocentes: son las que usa el banco para identificarte. Dejaste la llamada esperando mientras mirabas.",
   },
 };
 
-const SENALES: Senal[] = [
+const SIGNALS: Signal[] = [
   {
     id: "s1",
     targetId: "preguntas",
@@ -304,10 +304,10 @@ const SENALES: Senal[] = [
 const RULE =
   "Regla de oro: los datos que <b>no parecen secretos</b> (tu fecha de nacimiento, el apellido de tu madre, tu agencia, los últimos dígitos de tu tarjeta) son los que usan para hacerse pasar por ti. No hace falta que te pidan una clave para robarte: cuelga y llama tú.";
 
-const RESUMEN =
+const SUMMARY =
   'Una encuesta de satisfacción de tu banco te hace unas preguntas para "validarte".';
 
-const CONTEXTO: Contexto = {
+const CONTEXT: Context = {
   antes: (
     <>
       Cliente del <strong>Banco del Litoral</strong> desde hace años. La semana
@@ -323,14 +323,14 @@ const CONTEXTO: Contexto = {
   ),
 };
 
-function EncuestaDatos() {
+function DataSurvey() {
   return (
-    <StoryEscenario
+    <ScenarioStory
       escenarioId="vishing/encuesta-datos"
-      resumen={RESUMEN}
-      contexto={CONTEXTO}
+      resumen={SUMMARY}
+      contexto={CONTEXT}
       story={STORY}
-      senales={SENALES}
+      senales={SIGNALS}
       rule={RULE}
       restartLabel="↻ Recibir la llamada otra vez"
       accionesEnPantalla
@@ -356,4 +356,4 @@ function EncuestaDatos() {
   );
 }
 
-export default EncuestaDatos;
+export default DataSurvey;

@@ -1,26 +1,26 @@
 import { Building2, Forward, Landmark, Newspaper, Reply, ShieldAlert, Trash2 } from 'lucide-react'
 import { useState } from 'react'
-import EscenarioLayout from '../../components/EscenarioLayout'
-import type { Contexto } from '../../components/ui/ContextoEscenario'
-import { carpetasCorreo } from '../../components/ui/carpetasCorreo'
+import ScenarioLayout from '../../components/EscenarioLayout'
+import type { Context } from '../../components/ui/ContextoEscenario'
+import { createEmailFolders } from '../../components/ui/carpetasCorreo'
 import {
-  CuerpoCorreo,
-  type AccionCorreo,
-  type CarpetaCorreo,
+  EmailBody,
+  type EmailAction,
+  type EmailFolder,
 } from '../../components/ui/DesktopChrome'
-import { AvisoSitio, CabeceraSitio, ENLACES_PIE, PieSitio } from '../../components/ui/armazonSitio'
+import { SiteNotice, SiteHeader, FOOTER_LINKS, SiteFooter } from '../../components/ui/armazonSitio'
 import styles from '../../components/ui/DeviceScreen.module.css'
 import { useAuth } from '../../context/AuthContext'
-import { IDENTIDAD_FICTICIA } from '../../lib/identidadFicticia'
-import Instrucciones from '../../components/ui/Instrucciones'
-import { BotonHotspot, EnlaceHotspot, manejarClicHotspot } from '../../components/ui/interactivo'
+import { IDENTITY_FAKE } from '../../lib/identidadFicticia'
+import Instructions from '../../components/ui/Instrucciones'
+import { HotspotButton, HotspotLink, handleHotspotClick } from '../../components/ui/interactivo'
 import {
-  Navegador,
-  type MarcadorNavegador,
-  type PestanaConfig,
+  Browser,
+  type BrowserBookmark,
+  type TabConfig,
 } from '../../components/ui/Navegador'
-import PanelVeredicto, { type Senal } from '../../components/ui/PanelVeredicto'
-import { formatoHora } from '../../hooks/useRelojDelSistema'
+import VerdictPanel, { type Signal } from '../../components/ui/PanelVeredicto'
+import { formatTime } from '../../hooks/useRelojDelSistema'
 import { useStoryEngine, type Story, type StoryNode } from '../../hooks/useStoryEngine'
 
 const STORY: Story<StoryNode> = {
@@ -40,7 +40,7 @@ const STORY: Story<StoryNode> = {
   e_credenciales: {
     kind: 'bad',
     verdict: 'Correo legítimo, reacción peligrosa',
-    outcome: `El remitente era real, pero tu contraseña ${IDENTIDAD_FICTICIA.clave} quedó escrita en un correo. Cualquiera que lea ese buzón (o que lo intercepte) la tiene, y el propio mensaje avisaba que Talento Humano nunca la pide.`,
+    outcome: `El remitente era real, pero tu contraseña ${IDENTITY_FAKE.clave} quedó escrita en un correo. Cualquiera que lea ese buzón (o que lo intercepte) la tiene, y el propio mensaje avisaba que Talento Humano nunca la pide.`,
     score: 0,
   },
   e_borra: {
@@ -66,7 +66,7 @@ const STORY: Story<StoryNode> = {
   },
 }
 
-const ACCIONES: AccionCorreo[] = [
+const ACTIONS: EmailAction[] = [
   {
     Icono: Reply,
     etiqueta: 'Responder',
@@ -97,35 +97,35 @@ const ACCIONES: AccionCorreo[] = [
   },
 ]
 
-const HOY = new Date()
-const PERIODO_ROL = new Intl.DateTimeFormat('es-EC', {
+const TODAY = new Date()
+const PERIOD_ROLE = new Intl.DateTimeFormat('es-EC', {
   month: 'long',
   year: 'numeric',
-}).format(HOY)
-const FECHA_LIMITE = new Intl.DateTimeFormat('es-EC', {
+}).format(TODAY)
+const DEADLINE = new Intl.DateTimeFormat('es-EC', {
   day: 'numeric',
   month: 'long',
-}).format(new Date(HOY.getFullYear(), HOY.getMonth(), HOY.getDate() + 5))
-const ASUNTO = `Tu rol de pagos de ${PERIODO_ROL} ya está disponible`
-const REMITENTE_NOMBRE = 'Talento Humano · Corporación Andes'
-const DIRECCION = 'nomina@andes.com.ec'
+}).format(new Date(TODAY.getFullYear(), TODAY.getMonth(), TODAY.getDate() + 5))
+const SUBJECT = `Tu rol de pagos de ${PERIOD_ROLE} ya está disponible`
+const SENDER_NAME = 'Talento Humano · Corporación Andes'
+const ADDRESS = 'nomina@andes.com.ec'
 
 /// El mensaje tal como lo muestran las carpetas cuando una acción de la barra
 /// lo mueve de bandeja. Lo pinta `carpetasCorreo`, compartido por todos los
 /// escenarios de correo.
-const MENSAJE = { nombre: REMITENTE_NOMBRE, direccion: DIRECCION, asunto: ASUNTO }
+const MESSAGE = { nombre: SENDER_NAME, direccion: ADDRESS, asunto: SUBJECT }
 
 /// Este escenario nombró dos de sus finales antes de que la barra tuviera
 /// nombres comunes. Se traducen aquí, en la única línea que le importa a las
 /// carpetas, en vez de renombrarlos en el grafo: el id del final viaja al
 /// backend con cada corrida, y cambiarlo dejaría las corridas ya registradas
 /// hablando de finales que no existen.
-const ALIAS_FINAL: Record<string, string> = {
+const FINAL_ALIAS: Record<string, string> = {
   e_borra: 'e_eliminar',
   e_credenciales: 'e_responder',
 }
 
-const SENALES: Senal[] = [
+const SIGNALS: Signal[] = [
   {
     id: 's1',
     targetId: 'remitente',
@@ -161,9 +161,9 @@ const SENALES: Senal[] = [
 const RULE =
   'Regla de oro: no todo correo es una trampa. Lo que distingue a uno legítimo es que <b>no te pide tu clave y su dominio es el real</b>. Aun así, entra al portal escribiendo tú la dirección: es la costumbre que te protege siempre.'
 
-const RESUMEN = `Talento Humano avisa que tu rol de pagos de ${PERIODO_ROL} ya está en el portal.`
+const SUMMARY = `Talento Humano avisa que tu rol de pagos de ${PERIOD_ROLE} ya está en el portal.`
 
-const CONTEXTO: Contexto = {
+const CONTEXT: Context = {
   antes: (
     <>
       Trabajas en <strong>Corporación Andes</strong>. Todos los meses Talento Humano publica el rol
@@ -177,7 +177,7 @@ const CONTEXTO: Contexto = {
   ),
 }
 
-const NOTA = (
+const NOTE = (
   <>
     <p>
       Vas a ver tu computador con el correo abierto. Puedes actuar sobre la pantalla como lo harías
@@ -190,13 +190,13 @@ const NOTA = (
   </>
 )
 
-function horaDeLlegada(): string {
-  const ahora = new Date()
-  const ayer = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate() - 1, 17, 20)
-  return `ayer ${formatoHora(ayer)}`
+function getArrivalTime(): string {
+  const now = new Date()
+  const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1, 17, 20)
+  return `ayer ${formatTime(yesterday)}`
 }
 
-const PESTANAS: Record<string, PestanaConfig> = {
+const TABS: Record<string, TabConfig> = {
   n1: { titulo: 'Correo', url: 'https://correo.safeweb.com/u/0/#recibidos', segura: true },
   n2: {
     titulo: 'Portal del colaborador',
@@ -208,7 +208,7 @@ const PESTANAS: Record<string, PestanaConfig> = {
   },
 }
 
-const MARCADORES: MarcadorNavegador[] = [
+const MARKERS: BrowserBookmark[] = [
   { Icono: Landmark, texto: 'Banco del Litoral' },
   {
     Icono: Building2,
@@ -219,16 +219,16 @@ const MARCADORES: MarcadorNavegador[] = [
   { Icono: Newspaper, texto: 'El Comercio' },
 ]
 
-function ContenidoCorreo({ recibido, carpetas }: { recibido: string; carpetas: CarpetaCorreo[] }) {
+function EmailContent({ recibido: received, carpetas: folders }: { recibido: string; carpetas: EmailFolder[] }) {
   const { displayName } = useAuth()
 
   return (
-    <CuerpoCorreo
-      acciones={ACCIONES}
-      carpetas={carpetas}
-      asunto={ASUNTO}
-      remitente={{ nombre: REMITENTE_NOMBRE, direccion: DIRECCION, senalDireccion: 'remitente' }}
-      recibido={recibido}
+    <EmailBody
+      acciones={ACTIONS}
+      carpetas={folders}
+      asunto={SUBJECT}
+      remitente={{ nombre: SENDER_NAME, direccion: ADDRESS, senalDireccion: 'remitente' }}
+      recibido={received}
       marca={{
         nombre: 'Corporación Andes',
         detalle: 'Talento Humano · Portal del colaborador',
@@ -244,33 +244,33 @@ function ContenidoCorreo({ recibido, carpetas }: { recibido: string; carpetas: C
     >
       <p data-signal="saludo">Hola, {displayName || 'colaborador'}:</p>
       <p>
-        Tu rol de pagos del período <b>{PERIODO_ROL}</b> ya está publicado en el portal del
+        Tu rol de pagos del período <b>{PERIOD_ROLE}</b> ya está publicado en el portal del
         colaborador, junto con el detalle de horas extra y descuentos.
       </p>
       <p>
         Puedes consultarlo en{' '}
-        <EnlaceHotspot
+        <HotspotLink
           goto="n2"
           label="Abrió el portal legítimo desde la dirección visible del correo"
           href="https://portal.andes.com.ec/rrhh/rol"
           signalId="portal"
         >
           portal.andes.com.ec
-        </EnlaceHotspot>
+        </HotspotLink>
         , con el mismo usuario de tu correo institucional. Si algo no cuadra, responde a este
         correo o llama a{' '}
-        <span data-signal="canal">la extensión 214</span> antes del {FECHA_LIMITE}.
+        <span data-signal="canal">la extensión 214</span> antes del {DEADLINE}.
       </p>
-    </CuerpoCorreo>
+    </EmailBody>
   )
 }
 
-function ContenidoPortal() {
-  const { usuarioSimulado } = useAuth()
+function PortalContent() {
+  const { usuarioSimulado: simulatedUser } = useAuth()
 
   return (
     <div className={styles.page}>
-      <CabeceraSitio
+      <SiteHeader
         marca="Corporación Andes"
         menu={['Rol de pagos', 'Vacaciones', 'Certificados', 'Ayuda']}
       />
@@ -284,7 +284,7 @@ function ContenidoPortal() {
           <legend>Usuario</legend>
           <span className={styles.input}>
             <span className="sr-only">Tu usuario, ya completado: </span>
-            {' '}{usuarioSimulado}
+            {' '}{simulatedUser}
           </span>
         </fieldset>
         <fieldset className={styles.field}>
@@ -294,31 +294,31 @@ function ContenidoPortal() {
             {' '}••••••••
           </span>
         </fieldset>
-        <BotonHotspot
+        <HotspotButton
           goto="e_bien"
           label="Ingresó a su portal del colaborador"
           className={styles.submit}
         >
           Ingresar
-        </BotonHotspot>
+        </HotspotButton>
       </div>
 
-      <AvisoSitio>
+      <SiteNotice>
         Tu rol de pagos está disponible los primeros cinco días de cada mes. Los reclamos se
         registran desde el mismo portal.
-      </AvisoSitio>
+      </SiteNotice>
 
-      <PieSitio texto="Corporación Andes · Talento Humano" enlaces={ENLACES_PIE} />
+      <SiteFooter texto="Corporación Andes · Talento Humano" enlaces={FOOTER_LINKS} />
     </div>
   )
 }
 
-function DecisionEnCurso({ fallo, enFormulario }: { fallo: boolean; enFormulario: boolean }) {
+function PendingDecision({ fallo: failure, enFormulario: onForm }: { fallo: boolean; enFormulario: boolean }) {
   return (
     <div className="grid gap-3">
       <p className="text-lg font-semibold text-ink">¿Qué haces?</p>
-      <Instrucciones
-        fallo={fallo}
+      <Instructions
+        fallo={failure}
         pista={
           <p>
             Tienes varios caminos posibles: entrar al portal por tu cuenta desde los marcadores del
@@ -332,7 +332,7 @@ function DecisionEnCurso({ fallo, enFormulario }: { fallo: boolean; enFormulario
           <strong>cualquier parte de ella</strong>, incluida la barra de abajo.
         </p>
 
-        {enFormulario && (
+        {onForm && (
           <p className="rounded-md border border-hairline-strong bg-canvas-soft px-3 py-2 text-base leading-relaxed text-body">
             El formulario ya aparece con{' '}
             <strong className="text-ink">tu usuario y tu clave escritos</strong>. Es así para no
@@ -353,53 +353,53 @@ function DecisionEnCurso({ fallo, enFormulario }: { fallo: boolean; enFormulario
             decide nada.
           </p>
         </details>
-      </Instrucciones>
+      </Instructions>
     </div>
   )
 }
 
-function RolDePagos() {
+function PayrollStatement() {
   const engine = useStoryEngine(STORY, 'n1', 'phishing/rol-de-pagos')
 
-  const [pantallaActual, setPantallaActual] = useState('n1')
-  const [tocoEnVacio, setTocoEnVacio] = useState(false)
-  const [recibido, setRecibido] = useState(horaDeLlegada)
-  const [pestanas, setPestanas] = useState(['n1'])
-  const [repasando, setRepasando] = useState(false)
+  const [currentScreen, setCurrentScreen] = useState('n1')
+  const [clickedEmptySpace, setClickedEmptySpace] = useState(false)
+  const [received, setReceived] = useState(getArrivalTime)
+  const [tabs, setTabs] = useState(['n1'])
+  const [reviewing, setReviewing] = useState(false)
 
-  function elegir(goto: string, label?: string) {
+  function choose(goto: string, label?: string) {
     if (engine.isEnding) return
     engine.choose(goto, label)
     if (STORY[goto]?.kind === 'scene') {
-      setPantallaActual(goto)
-      setPestanas((abiertas) => (abiertas.includes(goto) ? abiertas : [...abiertas, goto]))
+      setCurrentScreen(goto)
+      setTabs((open) => (open.includes(goto) ? open : [...open, goto]))
     }
   }
 
-  function reiniciar() {
+  function restart() {
     engine.restart()
-    setPantallaActual('n1')
-    setPestanas(['n1'])
-    setRepasando(false)
-    setTocoEnVacio(false)
-    setRecibido(horaDeLlegada())
+    setCurrentScreen('n1')
+    setTabs(['n1'])
+    setReviewing(false)
+    setClickedEmptySpace(false)
+    setReceived(getArrivalTime())
   }
 
   const onHotspot = (event: React.MouseEvent) => {
-    const cerrada = (event.target as HTMLElement).closest<HTMLElement>('[data-cierra]')?.dataset
+    const closed = (event.target as HTMLElement).closest<HTMLElement>('[data-cierra]')?.dataset
       .cierra
-    if (cerrada) {
-      const quedan = pestanas.filter((id) => id !== cerrada)
-      setPestanas(quedan)
+    if (closed) {
+      const remaining = tabs.filter((id) => id !== closed)
+      setTabs(remaining)
       // Cerrar la pestaña que se está viendo devuelve el navegador a la que
       // quede abierta (el correo). Con el escenario ya terminado `elegir` sale
       // sin tocar la pantalla, así que sin esto la página cerrada seguía a la
       // vista aunque su pestaña ya no estuviera en la barra (issue #26).
-      if (cerrada === pantallaActual) setPantallaActual(quedan.at(-1) ?? 'n1')
+      if (closed === currentScreen) setCurrentScreen(remaining.at(-1) ?? 'n1')
     }
 
-    if (!manejarClicHotspot(event, elegir) && !engine.isEnding) {
-      setTocoEnVacio(true)
+    if (!handleHotspotClick(event, choose) && !engine.isEnding) {
+      setClickedEmptySpace(true)
     }
   }
 
@@ -407,58 +407,58 @@ function RolDePagos() {
   // en el repaso: las señales llevan a pantallas que se cerraron, o que nunca se
   // llegaron a abrir, y sin esto se explicaba la página con la pestaña del
   // correo marcada como activa.
-  const abiertas = pestanas.includes(pantallaActual) ? pestanas : [...pestanas, pantallaActual]
+  const open = tabs.includes(currentScreen) ? tabs : [...tabs, currentScreen]
 
-  const pantalla = (
-    <Navegador
-      pestanas={PESTANAS}
-      abiertas={abiertas}
-      activa={pantallaActual}
-      marcadores={MARCADORES}
+  const screen = (
+    <Browser
+      pestanas={TABS}
+      abiertas={open}
+      activa={currentScreen}
+      marcadores={MARKERS}
       onHotspot={onHotspot}
     >
-      {pantallaActual === 'n1' ? (
-        <ContenidoCorreo
-          recibido={recibido}
-          carpetas={carpetasCorreo(
-            MENSAJE,
-            engine.isEnding && !repasando
-              ? (ALIAS_FINAL[engine.current] ?? engine.current)
+      {currentScreen === 'n1' ? (
+        <EmailContent
+          recibido={received}
+          carpetas={createEmailFolders(
+            MESSAGE,
+            engine.isEnding && !reviewing
+              ? (FINAL_ALIAS[engine.current] ?? engine.current)
               : undefined,
           )}
         />
       ) : (
-        <ContenidoPortal />
+        <PortalContent />
       )}
-    </Navegador>
+    </Browser>
   )
 
   const decision = engine.isEnding ? (
-    <PanelVeredicto
+    <VerdictPanel
       estadoGuardado={engine.runStatus}
       escenarioId="phishing/rol-de-pagos"
       node={engine.node}
-      senales={SENALES}
+      senales={SIGNALS}
       regla={RULE}
       restartLabel="↻ Repetir el escenario"
-      onRestart={reiniciar}
+      onRestart={restart}
       contenedorId="pantalla-escenario"
       onPantalla={(id) => {
-        setRepasando(Boolean(id))
-        if (id) setPantallaActual(id)
+        setReviewing(Boolean(id))
+        if (id) setCurrentScreen(id)
       }}
     />
   ) : (
-    <DecisionEnCurso fallo={tocoEnVacio} enFormulario={pantallaActual === 'n2'} />
+    <PendingDecision fallo={clickedEmptySpace} enFormulario={currentScreen === 'n2'} />
   )
 
   return (
-    <EscenarioLayout
+    <ScenarioLayout
       escenarioId="phishing/rol-de-pagos"
-      resumen={RESUMEN}
-      contexto={CONTEXTO}
-      nota={NOTA}
-      pantalla={pantalla}
+      resumen={SUMMARY}
+      contexto={CONTEXT}
+      nota={NOTE}
+      pantalla={screen}
       identidad={['usuario', 'clave']}
       decision={decision}
       resultado={engine.resultado}
@@ -468,4 +468,4 @@ function RolDePagos() {
   )
 }
 
-export default RolDePagos
+export default PayrollStatement

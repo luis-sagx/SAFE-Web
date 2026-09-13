@@ -1,10 +1,10 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { BrowserRouter } from 'react-router'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import Registro from './Registro'
-import { esCedulaEcuatoriana } from '../lib/cedula'
+import Registration from './Registro'
+import { isEcuadorianId } from '../lib/cedula'
 
-function llenarCamposValidos() {
+function fillValidFields() {
   fireEvent.change(screen.getByLabelText(/Nombre/), { target: { value: 'María' } })
   fireEvent.change(screen.getByLabelText(/Apellido/), { target: { value: 'Pérez' } })
   fireEvent.change(screen.getByLabelText(/Cédula/), { target: { value: '1710034065' } })
@@ -22,8 +22,8 @@ vi.mock('../context/AuthContext', () => ({
 }))
 
 vi.mock('../lib/cedula', () => ({
-  esCedulaEcuatoriana: vi.fn(() => true),
-  normalizarCedula: vi.fn((c: string) => c.replace(/\D/g, '')),
+  isEcuadorianId: vi.fn(() => true),
+  normalizeEcuadorianId: vi.fn((value: string) => value.replace(/\D/g, '')),
 }))
 
 describe('Registro', () => {
@@ -40,7 +40,7 @@ describe('Registro', () => {
 
     render(
       <BrowserRouter>
-        <Registro />
+        <Registration />
       </BrowserRouter>
     )
 
@@ -56,7 +56,7 @@ describe('Registro', () => {
 
     render(
       <BrowserRouter>
-        <Registro />
+        <Registration />
       </BrowserRouter>
     )
 
@@ -74,7 +74,7 @@ describe('Registro', () => {
 
     render(
       <BrowserRouter>
-        <Registro />
+        <Registration />
       </BrowserRouter>
     )
 
@@ -90,15 +90,15 @@ describe('Registro', () => {
 
     render(
       <BrowserRouter>
-        <Registro />
+        <Registration />
       </BrowserRouter>
     )
 
-    const campoNombre = screen.getByLabelText(/Nombre/)
-    fireEvent.change(campoNombre, { target: { value: 'A' } })
+    const nameField = screen.getByLabelText(/Nombre/)
+    fireEvent.change(nameField, { target: { value: 'A' } })
     expect(screen.queryByText(/al menos 2 caracteres/)).toBeNull()
 
-    fireEvent.blur(campoNombre)
+    fireEvent.blur(nameField)
     expect(screen.getByText(/al menos 2 caracteres/)).toBeDefined()
   })
 
@@ -111,15 +111,15 @@ describe('Registro', () => {
 
     render(
       <BrowserRouter>
-        <Registro />
+        <Registration />
       </BrowserRouter>
     )
 
-    const campoNombre = screen.getByLabelText(/Nombre/)
-    fireEvent.change(campoNombre, { target: { value: 'María' } })
+    const nameField = screen.getByLabelText(/Nombre/)
+    fireEvent.change(nameField, { target: { value: 'María' } })
     expect(screen.queryByText(/\/60/)).toBeNull()
 
-    fireEvent.change(campoNombre, { target: { value: 'M'.repeat(52) } })
+    fireEvent.change(nameField, { target: { value: 'M'.repeat(52) } })
     expect(screen.getByText('52/60')).toBeDefined()
   })
 
@@ -132,15 +132,15 @@ describe('Registro', () => {
 
     render(
       <BrowserRouter>
-        <Registro />
+        <Registration />
       </BrowserRouter>
     )
 
-    const campoApellido = screen.getByLabelText(/Apellido/)
-    fireEvent.change(campoApellido, { target: { value: 'P' } })
+    const lastNameField = screen.getByLabelText(/Apellido/)
+    fireEvent.change(lastNameField, { target: { value: 'P' } })
     expect(screen.queryByText(/al menos 2 caracteres/)).toBeNull()
 
-    fireEvent.blur(campoApellido)
+    fireEvent.blur(lastNameField)
     expect(screen.getByText(/al menos 2 caracteres/)).toBeDefined()
   })
 
@@ -153,15 +153,15 @@ describe('Registro', () => {
 
     render(
       <BrowserRouter>
-        <Registro />
+        <Registration />
       </BrowserRouter>
     )
 
-    const campoApellido = screen.getByLabelText(/Apellido/)
-    fireEvent.change(campoApellido, { target: { value: 'Pérez' } })
+    const lastNameField = screen.getByLabelText(/Apellido/)
+    fireEvent.change(lastNameField, { target: { value: 'Pérez' } })
     expect(screen.queryByText(/\/60/)).toBeNull()
 
-    fireEvent.change(campoApellido, { target: { value: 'P'.repeat(52) } })
+    fireEvent.change(lastNameField, { target: { value: 'P'.repeat(52) } })
     expect(screen.getByText('52/60')).toBeDefined()
   })
 
@@ -174,15 +174,15 @@ describe('Registro', () => {
 
     render(
       <BrowserRouter>
-        <Registro />
+        <Registration />
       </BrowserRouter>
     )
 
-    const campoEmail = screen.getByLabelText(/Correo/)
-    fireEvent.change(campoEmail, { target: { value: 'sinarroba' } })
+    const emailField = screen.getByLabelText(/Correo/)
+    fireEvent.change(emailField, { target: { value: 'sinarroba' } })
     expect(screen.queryByText(/no tiene un formato válido/)).toBeNull()
 
-    fireEvent.blur(campoEmail)
+    fireEvent.blur(emailField)
     expect(screen.getByText('El correo no tiene un formato válido.')).toBeDefined()
   })
 
@@ -195,13 +195,13 @@ describe('Registro', () => {
 
     render(
       <BrowserRouter>
-        <Registro />
+        <Registration />
       </BrowserRouter>
     )
 
-    const campoEmail = screen.getByLabelText(/Correo/)
-    fireEvent.change(campoEmail, { target: { value: 'ana@correo.com' } })
-    fireEvent.blur(campoEmail)
+    const emailField = screen.getByLabelText(/Correo/)
+    fireEvent.change(emailField, { target: { value: 'ana@correo.com' } })
+    fireEvent.blur(emailField)
 
     expect(screen.queryByText(/no tiene un formato válido/)).toBeNull()
   })
@@ -215,15 +215,15 @@ describe('Registro', () => {
 
     render(
       <BrowserRouter>
-        <Registro />
+        <Registration />
       </BrowserRouter>
     )
 
-    const campoPassword = screen.getByLabelText(/Contraseña/)
-    fireEvent.change(campoPassword, { target: { value: '123' } })
+    const passwordField = screen.getByLabelText(/Contraseña/)
+    fireEvent.change(passwordField, { target: { value: '123' } })
     expect(screen.queryByText(/No cumple los requisitos/)).toBeNull()
 
-    fireEvent.blur(campoPassword)
+    fireEvent.blur(passwordField)
     expect(screen.getByText(/No cumple los requisitos/)).toBeDefined()
   })
 
@@ -236,13 +236,13 @@ describe('Registro', () => {
 
     render(
       <BrowserRouter>
-        <Registro />
+        <Registration />
       </BrowserRouter>
     )
 
-    const campoPassword = screen.getByLabelText(/Contraseña/)
-    fireEvent.change(campoPassword, { target: { value: 'UnaClaveLarga123!' } })
-    fireEvent.blur(campoPassword)
+    const passwordField = screen.getByLabelText(/Contraseña/)
+    fireEvent.change(passwordField, { target: { value: 'UnaClaveLarga123!' } })
+    fireEvent.blur(passwordField)
 
     expect(screen.queryByText(/No cumple los requisitos/)).toBeNull()
   })
@@ -256,23 +256,23 @@ describe('Registro', () => {
 
     render(
       <BrowserRouter>
-        <Registro />
+        <Registration />
       </BrowserRouter>
     )
 
-    const campoPassword = screen.getByLabelText(/Contraseña/)
+    const passwordField = screen.getByLabelText(/Contraseña/)
     expect(screen.queryByText(/Fortaleza de la contraseña/)).toBeNull()
 
     // Solo minúsculas: cumple nada más el largo, es débil.
-    fireEvent.change(campoPassword, { target: { value: 'clavesola' } })
+    fireEvent.change(passwordField, { target: { value: 'clavesola' } })
     expect(screen.getByText(/Fortaleza de la contraseña: Débil/)).toBeDefined()
 
     // Le falta el carácter especial: 3 de 4 criterios, media.
-    fireEvent.change(campoPassword, { target: { value: 'ClaveConNumero1' } })
+    fireEvent.change(passwordField, { target: { value: 'ClaveConNumero1' } })
     expect(screen.getByText(/Fortaleza de la contraseña: Media/)).toBeDefined()
 
     // Los 4 criterios: fuerte.
-    fireEvent.change(campoPassword, { target: { value: 'ClaveSegura1!' } })
+    fireEvent.change(passwordField, { target: { value: 'ClaveSegura1!' } })
     expect(screen.getByText(/Fortaleza de la contraseña: Fuerte/)).toBeDefined()
   })
 
@@ -286,11 +286,11 @@ describe('Registro', () => {
 
     render(
       <BrowserRouter>
-        <Registro />
+        <Registration />
       </BrowserRouter>
     )
 
-    llenarCamposValidos()
+    fillValidFields()
     fireEvent.change(screen.getByLabelText(/Correo/), { target: { value: 'sinarroba' } })
     fireEvent.click(screen.getByRole('button', { name: 'Crear cuenta' }))
 
@@ -310,11 +310,11 @@ describe('Registro', () => {
 
     render(
       <BrowserRouter>
-        <Registro />
+        <Registration />
       </BrowserRouter>
     )
 
-    llenarCamposValidos()
+    fillValidFields()
     // Cumple el largo pero le falta mayúscula, número y símbolo.
     fireEvent.change(screen.getByLabelText(/Contraseña/), { target: { value: 'claveinsegura' } })
     fireEvent.click(screen.getByRole('button', { name: 'Crear cuenta' }))
@@ -333,7 +333,7 @@ describe('Registro', () => {
 
     render(
       <BrowserRouter>
-        <Registro />
+        <Registration />
       </BrowserRouter>
     )
 
@@ -360,15 +360,15 @@ describe('Registro', () => {
 
     render(
       <BrowserRouter>
-        <Registro />
+        <Registration />
       </BrowserRouter>
     )
 
-    llenarCamposValidos()
+    fillValidFields()
     // Se pone justo antes del envío, no antes: el componente ya llama a esta
     // función en cada render para pintar (o no) el error de la cédula, y un
     // "Once" puesto más temprano se consumiría ahí en vez de en el envío.
-    vi.mocked(esCedulaEcuatoriana).mockReturnValueOnce(false)
+    vi.mocked(isEcuadorianId).mockReturnValueOnce(false)
     fireEvent.click(screen.getByRole('button', { name: 'Crear cuenta' }))
 
     expect(screen.getByText('Revisa tu número de cédula: son 10 dígitos.')).toBeDefined()
@@ -385,11 +385,11 @@ describe('Registro', () => {
 
     render(
       <BrowserRouter>
-        <Registro />
+        <Registration />
       </BrowserRouter>
     )
 
-    llenarCamposValidos()
+    fillValidFields()
     // La deja sin marcar otra vez: llenarCamposValidos() la marcó al hacer clic.
     fireEvent.click(screen.getByRole('checkbox'))
     fireEvent.click(screen.getByRole('button', { name: 'Crear cuenta' }))
@@ -408,11 +408,11 @@ describe('Registro', () => {
 
     render(
       <BrowserRouter>
-        <Registro />
+        <Registration />
       </BrowserRouter>
     )
 
-    llenarCamposValidos()
+    fillValidFields()
     fireEvent.click(screen.getByRole('button', { name: 'Crear cuenta' }))
 
     await waitFor(() =>
@@ -436,11 +436,11 @@ describe('Registro', () => {
 
     render(
       <BrowserRouter>
-        <Registro />
+        <Registration />
       </BrowserRouter>
     )
 
-    llenarCamposValidos()
+    fillValidFields()
     fireEvent.click(screen.getByRole('button', { name: 'Crear cuenta' }))
 
     expect(await screen.findByText('Ese correo ya está registrado.')).toBeDefined()
@@ -455,14 +455,14 @@ describe('Registro', () => {
 
     render(
       <BrowserRouter>
-        <Registro />
+        <Registration />
       </BrowserRouter>
     )
 
-    const campoNombre = screen.getByLabelText(/Nombre/)
+    const nameField = screen.getByLabelText(/Nombre/)
     // A diferencia de "muy corto", este no espera al blur: un carácter
     // inválido no se resuelve solo con seguir escribiendo.
-    fireEvent.change(campoNombre, { target: { value: "nombre'" } })
+    fireEvent.change(nameField, { target: { value: "nombre'" } })
     expect(
       screen.getByText('Solo se permiten letras y espacios entre palabras.'),
     ).toBeDefined()
@@ -477,13 +477,13 @@ describe('Registro', () => {
 
     render(
       <BrowserRouter>
-        <Registro />
+        <Registration />
       </BrowserRouter>
     )
 
-    const campoNombre = screen.getByLabelText(/Nombre/)
-    fireEvent.change(campoNombre, { target: { value: 'María José' } })
-    fireEvent.blur(campoNombre)
+    const nameField = screen.getByLabelText(/Nombre/)
+    fireEvent.change(nameField, { target: { value: 'María José' } })
+    fireEvent.blur(nameField)
     expect(screen.queryByText(/Solo se permiten letras/)).toBeNull()
   })
 
@@ -496,17 +496,17 @@ describe('Registro', () => {
 
     render(
       <BrowserRouter>
-        <Registro />
+        <Registration />
       </BrowserRouter>
     )
 
-    const campoNombre = screen.getByLabelText(/Nombre/)
-    const campoApellido = screen.getByLabelText(/Apellido/)
+    const nameField = screen.getByLabelText(/Nombre/)
+    const lastNameField = screen.getByLabelText(/Apellido/)
 
-    fireEvent.change(campoNombre, { target: { value: "D'Ángelo" } })
+    fireEvent.change(nameField, { target: { value: "D'Ángelo" } })
     expect(screen.getByText('Solo se permiten letras y espacios entre palabras.')).toBeDefined()
 
-    fireEvent.change(campoApellido, { target: { value: 'García-Torres' } })
+    fireEvent.change(lastNameField, { target: { value: 'García-Torres' } })
     expect(screen.getAllByText('Solo se permiten letras y espacios entre palabras.').length).toBeGreaterThan(0)
   })
 
@@ -519,13 +519,13 @@ describe('Registro', () => {
 
     render(
       <BrowserRouter>
-        <Registro />
+        <Registration />
       </BrowserRouter>
     )
 
-    const campoApellido = screen.getByLabelText(/Apellido/)
-    fireEvent.change(campoApellido, { target: { value: 'Perez123' } })
-    fireEvent.blur(campoApellido)
+    const lastNameField = screen.getByLabelText(/Apellido/)
+    fireEvent.change(lastNameField, { target: { value: 'Perez123' } })
+    fireEvent.blur(lastNameField)
     expect(screen.getByText('Solo se permiten letras y espacios entre palabras.')).toBeDefined()
   })
 
@@ -539,11 +539,11 @@ describe('Registro', () => {
 
     render(
       <BrowserRouter>
-        <Registro />
+        <Registration />
       </BrowserRouter>
     )
 
-    llenarCamposValidos()
+    fillValidFields()
     fireEvent.change(screen.getByLabelText(/Nombre/), { target: { value: "nombre'" } })
     fireEvent.click(screen.getByRole('button', { name: 'Crear cuenta' }))
 

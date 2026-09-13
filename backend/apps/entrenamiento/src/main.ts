@@ -1,5 +1,5 @@
 import { NestFactory } from '@nestjs/core';
-import { arrancar } from '@comun';
+import { bootstrap } from '@comun';
 import { AppModule } from './app.module';
 
-void arrancar(() => NestFactory.create(AppModule), 3002);
+void bootstrap(() => NestFactory.create(AppModule), 3002);

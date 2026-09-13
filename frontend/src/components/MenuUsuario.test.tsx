@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import MenuUsuario from './MenuUsuario'
+import UserMenu from './MenuUsuario'
 
 const { useAuthMock, logoutMock } = vi.hoisted(() => ({
   useAuthMock: vi.fn(),
@@ -13,7 +13,7 @@ vi.mock('../context/AuthContext', () => ({ useAuth: useAuthMock }))
 function renderMenu() {
   return render(
     <MemoryRouter>
-      <MenuUsuario />
+      <UserMenu />
     </MemoryRouter>,
   )
 }
@@ -46,9 +46,9 @@ describe('MenuUsuario', () => {
   it('Escape cierra el menú', () => {
     renderMenu()
 
-    const boton = screen.getByRole('button', { name: /María/ })
-    fireEvent.click(boton)
-    fireEvent.keyDown(boton, { key: 'Escape' })
+    const button = screen.getByRole('button', { name: /María/ })
+    fireEvent.click(button)
+    fireEvent.keyDown(button, { key: 'Escape' })
 
     expect(screen.queryByRole('menu')).toBeNull()
   })
@@ -59,9 +59,9 @@ describe('MenuUsuario', () => {
   it('perder el foco del grupo cierra el menú', () => {
     renderMenu()
 
-    const boton = screen.getByRole('button', { name: /María/ })
-    fireEvent.click(boton)
-    fireEvent.blur(boton, { relatedTarget: document.body })
+    const button = screen.getByRole('button', { name: /María/ })
+    fireEvent.click(button)
+    fireEvent.blur(button, { relatedTarget: document.body })
 
     expect(screen.queryByRole('menu')).toBeNull()
   })
@@ -71,9 +71,9 @@ describe('MenuUsuario', () => {
   it('el foco moviéndose dentro del menú no lo cierra', () => {
     renderMenu()
 
-    const boton = screen.getByRole('button', { name: /María/ })
-    fireEvent.click(boton)
-    fireEvent.blur(boton, { relatedTarget: screen.getByRole('menu') })
+    const button = screen.getByRole('button', { name: /María/ })
+    fireEvent.click(button)
+    fireEvent.blur(button, { relatedTarget: screen.getByRole('menu') })
 
     expect(screen.getByRole('menu')).toBeDefined()
   })
@@ -83,11 +83,11 @@ describe('MenuUsuario', () => {
   it('otra tecla no cierra el menú, y Escape sin el menú abierto no hace nada', () => {
     renderMenu()
 
-    const boton = screen.getByRole('button', { name: /María/ })
-    fireEvent.keyDown(boton, { key: 'Escape' })
+    const button = screen.getByRole('button', { name: /María/ })
+    fireEvent.keyDown(button, { key: 'Escape' })
 
-    fireEvent.click(boton)
-    fireEvent.keyDown(boton, { key: 'a' })
+    fireEvent.click(button)
+    fireEvent.keyDown(button, { key: 'a' })
 
     expect(screen.getByRole('menu')).toBeDefined()
   })

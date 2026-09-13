@@ -8,8 +8,8 @@ import RunNotifications from './RunNotifications'
 const { createRunMock } = vi.hoisted(() => ({ createRunMock: vi.fn() }))
 
 vi.mock('../lib/api', async () => {
-  const actual = await vi.importActual<typeof import('../lib/api')>('../lib/api')
-  return { ...actual, createRun: createRunMock }
+  const current = await vi.importActual<typeof import('../lib/api')>('../lib/api')
+  return { ...current, createRun: createRunMock }
 })
 
 const RUN: RunPayload = {

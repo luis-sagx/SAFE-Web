@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
 import { describe, expect, it, vi } from 'vitest'
-import AvisoFiltracion from './AvisoFiltracion'
+import DataLeakNotice from './AvisoFiltracion'
 
 vi.mock('../../context/AuthContext', () => ({
   useAuth: () => ({
@@ -29,14 +29,14 @@ vi.mock('../../context/AuthContext', () => ({
 }))
 
 vi.mock('../../lib/api', async () => {
-  const actual = await vi.importActual<typeof import('../../lib/api')>('../../lib/api')
-  return { ...actual, createRun: vi.fn().mockResolvedValue(undefined) }
+  const current = await vi.importActual<typeof import('../../lib/api')>('../../lib/api')
+  return { ...current, createRun: vi.fn().mockResolvedValue(undefined) }
 })
 
-function renderEscenario() {
+function renderScenario() {
   render(
     <MemoryRouter>
-      <AvisoFiltracion />
+      <DataLeakNotice />
     </MemoryRouter>,
   )
 
@@ -45,7 +45,7 @@ function renderEscenario() {
 
 describe('AvisoFiltracion', () => {
   it('cerrar la pestaña que dispara el final devuelve el navegador al correo', () => {
-    renderEscenario()
+    renderScenario()
 
     fireEvent.click(screen.getByRole('button', { name: 'Abrir TiendaExpress' }))
     fireEvent.click(screen.getByRole('button', { name: 'Guardar contraseña' }))

@@ -7,12 +7,12 @@ import { registerDecorator, type ValidationOptions } from 'class-validator';
 // Sufijo, no lista: `.ec` es el ccTLD de Ecuador, cubre .edu.ec/.com.ec/.gob.ec/etc. sin
 // mantener catálogo de instituciones. endsWith incluye el punto, así que "midominio-ec.com"
 // no pasa pero "mail.epn.edu.ec" sí.
-const SUFIJOS_PERMITIDOS = ['.ec'];
+const ALLOWED_SUFFIXES = ['.ec'];
 
 // Aquí no hay regla posible, hay que enumerar (único lugar con la lista). Cubre los grandes
 // proveedores y algunos genéricos internacionales para no bloquear a alguien legítimo; los
 // desechables (mailinator) quedan fuera a propósito, igual que todo lo no listado ni en .ec.
-const DOMINIOS_PERMITIDOS = new Set([
+const ALLOWED_DOMAINS = new Set([
   'gmail.com',
   'googlemail.com',
   'hotmail.com',
@@ -42,24 +42,24 @@ const DOMINIOS_PERMITIDOS = new Set([
   'fastmail.com',
 ]);
 
-export function dominioPermitido(valor: unknown): boolean {
+export function allowedDomain(value: unknown): boolean {
   // Guarda contra el doble mensaje: si no es texto o no tiene "@", deja que
   // hable solo @IsEmail en vez de sumar un segundo error para el mismo dato.
-  if (typeof valor !== 'string') return true;
-  const arroba = valor.lastIndexOf('@');
-  if (arroba === -1) return true;
+  if (typeof value !== 'string') return true;
+  const atSign = value.lastIndexOf('@');
+  if (atSign === -1) return true;
 
-  const dominio = valor.slice(arroba + 1);
+  const domain = value.slice(atSign + 1);
   return (
-    DOMINIOS_PERMITIDOS.has(dominio) ||
-    SUFIJOS_PERMITIDOS.some((sufijo) => dominio.endsWith(sufijo))
+    ALLOWED_DOMAINS.has(domain) ||
+    ALLOWED_SUFFIXES.some((suffix) => domain.endsWith(suffix))
   );
 }
 
-/// No se normaliza dos veces: `@NormalizarEmail()` (`libs/comun/src/transform.ts`)
+/// No se normaliza dos veces: `@NormalizeEmail()` (`libs/comun/src/transform.ts`)
 /// ya aplicó `trim().toLowerCase()` antes de que corran los validadores,
 /// porque `plainToInstance` precede a `validate`.
-export function EsDominioPermitido(options?: ValidationOptions) {
+export function IsAllowedDomain(options?: ValidationOptions) {
   return function (object: object, propertyName: string) {
     registerDecorator({
       name: 'esDominioPermitido',
@@ -67,7 +67,7 @@ export function EsDominioPermitido(options?: ValidationOptions) {
       propertyName,
       options,
       validator: {
-        validate: (valor: unknown) => dominioPermitido(valor),
+        validate: (value: unknown) => allowedDomain(value),
         defaultMessage: () =>
           'Ese proveedor de correo no está permitido para el registro.',
       },

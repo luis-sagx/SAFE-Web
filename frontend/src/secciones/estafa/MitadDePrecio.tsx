@@ -1,32 +1,32 @@
 import { Camera, MessageCircle, ShoppingBag, Wallet } from 'lucide-react'
-import StoryEscenario, { type AppTelefono, type ScreenNode } from '../../components/StoryEscenario'
-import type { Contexto } from '../../components/ui/ContextoEscenario'
+import ScenarioStory, { type PhoneApp, type ScreenNode } from '../../components/StoryEscenario'
+import type { Context } from '../../components/ui/ContextoEscenario'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
-import type { Senal } from '../../components/ui/PanelVeredicto'
+import type { Signal } from '../../components/ui/PanelVeredicto'
 import type { Story } from '../../hooks/useStoryEngine'
-import { CUENTA_FICTICIA, IDENTIDAD_FICTICIA } from '../../lib/identidadFicticia'
+import { ACCOUNT_FAKE, IDENTITY_FAKE } from '../../lib/identidadFicticia'
 
 /** El lado del comprador: aquí el que arriesga eres tú, así que el precio bajo se siente como suerte, no como
  *  alarma. No hay urgencia inventada —la pone la ganga misma— y todo lo demás está a la vista desde el
  *  principio para quien mire. */
 
-const VENDEDOR = 'Marlon Cedeño'
-const NUMERO_VENDEDOR = '+593 98 052 6613'
-const CUENTA_VENDEDOR = '4471-2280-33 · Jessica Bravo Mera'
-const PRECIO = '$430'
+const SELLER = 'Marlon Cedeño'
+const NUMBER_SELLER = '+593 98 052 6613'
+const ACCOUNT_SELLER = '4471-2280-33 · Jessica Bravo Mera'
+const PRICE = '$430'
 
-const OFERTA = {
-  text: `Buenas 👋 sí está disponible el celular, nuevo en caja, sellado. Se lo dejo en ${PRECIO} porque necesito venderlo rápido. Es el último que me queda.`,
+const OFFER = {
+  text: `Buenas 👋 sí está disponible el celular, nuevo en caja, sellado. Se lo dejo en ${PRICE} porque necesito venderlo rápido. Es el último que me queda.`,
   time: '19:20',
   senal: 'precio',
 }
 
 const CHAT: ScreenView = {
   kind: 'sms',
-  sender: VENDEDOR,
-  sub: `${NUMERO_VENDEDOR} · vendedor del anuncio`,
+  sender: SELLER,
+  sub: `${NUMBER_SELLER} · vendedor del anuncio`,
   senalRemitente: 'remitente',
-  msgs: [OFERTA],
+  msgs: [OFFER],
   respuestas: [
     {
       texto: '¿Podemos vernos y lo reviso antes de pagar?',
@@ -43,10 +43,10 @@ const CHAT: ScreenView = {
   volverLabel: 'Salió del chat sin seguir el trato',
 }
 
-const NO_SE_VE: ScreenView = {
+const NOT_VISIBLE: ScreenView = {
   ...CHAT,
   msgs: [
-    OFERTA,
+    OFFER,
     { text: '¿Podemos vernos y lo reviso antes de pagar?', time: '19:22', mine: true },
     {
       text: 'Es que yo estoy en Santo Domingo y trabajo todo el día 😕 se lo mando por encomienda, llega mañana. Pero necesito el pago completo primero para despacharlo, es la política.',
@@ -68,13 +68,13 @@ const NO_SE_VE: ScreenView = {
   ],
 }
 
-const CUENTA: ScreenView = {
+const ACCOUNT: ScreenView = {
   ...CHAT,
   msgs: [
-    OFERTA,
+    OFFER,
     { text: 'Me interesa. ¿A qué cuenta le deposito?', time: '19:22', mine: true },
     {
-      text: `Perfecto 🙌 deposite los ${PRECIO} a esta cuenta: ${CUENTA_VENDEDOR}. Está a nombre de mi esposa, la mía la tengo bloqueada. Mándeme el comprobante y despacho hoy mismo.`,
+      text: `Perfecto 🙌 deposite los ${PRICE} a esta cuenta: ${ACCOUNT_SELLER}. Está a nombre de mi esposa, la mía la tengo bloqueada. Mándeme el comprobante y despacho hoy mismo.`,
       time: '19:23',
       senal: 'cuenta',
     },
@@ -93,10 +93,10 @@ const CUENTA: ScreenView = {
   ],
 }
 
-const PRESIONA: ScreenView = {
+const PRESSES: ScreenView = {
   ...CHAT,
   msgs: [
-    OFERTA,
+    OFFER,
     { text: 'Prefiero pagar contra entrega. Si no, lo dejamos.', time: '19:25', mine: true },
     {
       text: 'Mire, tengo a otras dos personas preguntando por el mismo equipo y una ya me dijo que deposita ahorita. Yo se lo estoy guardando a usted por orden de llegada, pero si no me confirma en media hora se lo doy al otro 🤷',
@@ -119,21 +119,21 @@ const PRESIONA: ScreenView = {
 }
 
 // El anuncio: todo lo que hace falta para dudar está aquí, a dos toques, mientras el chat mete prisa por otro lado.
-const ANUNCIO: ScreenView = {
+const AD: ScreenView = {
   kind: 'web',
   app: 'Mercado Abierto',
   url: 'mercadoabierto.ec',
   secure: true,
   brand: 'Anuncio',
   title: 'Celular gama alta, nuevo en caja',
-  subtitle: `${PRECIO} · publicado hace 2 días`,
+  subtitle: `${PRICE} · publicado hace 2 días`,
   datos: [
     {
       etiqueta: 'Precio en tiendas',
       valor: '$860 a $910 · este anuncio pide la mitad',
       senal: 'precio',
     },
-    { etiqueta: 'Vendedor', valor: `${VENDEDOR} · cuenta creada hace 3 días`, senal: 'perfil' },
+    { etiqueta: 'Vendedor', valor: `${SELLER} · cuenta creada hace 3 días`, senal: 'perfil' },
     { etiqueta: 'Calificaciones', valor: 'Ninguna todavía', senal: 'perfil' },
     {
       etiqueta: 'Fotos',
@@ -158,7 +158,7 @@ const ANUNCIO: ScreenView = {
   button: '',
 }
 
-const BUSQUEDA: ScreenView = {
+const SEARCH: ScreenView = {
   kind: 'web',
   app: 'Mercado Abierto',
   url: 'mercadoabierto.ec',
@@ -171,8 +171,8 @@ const BUSQUEDA: ScreenView = {
     { etiqueta: 'Tecnomundo Quito', valor: '$879 · local en el centro comercial' },
     { etiqueta: 'Usuario particular', valor: '$820 · usado, seis meses de uso' },
     {
-      etiqueta: `${VENDEDOR}`,
-      valor: `${PRECIO} · nuevo en caja, solo encomienda`,
+      etiqueta: `${SELLER}`,
+      valor: `${PRICE} · nuevo en caja, solo encomienda`,
       senal: 'comparacion',
     },
   ],
@@ -184,16 +184,16 @@ const BUSQUEDA: ScreenView = {
   button: '',
 }
 
-const TRANSFERENCIA: ScreenView = {
+const TRANSFER: ScreenView = {
   kind: 'web',
-  app: IDENTIDAD_FICTICIA.banco,
+  app: IDENTITY_FAKE.banco,
   url: 'bancolitoral.ec',
   secure: true,
   brand: 'Transferir a terceros',
   title: 'Confirma la transferencia',
-  subtitle: `Desde ${CUENTA_FICTICIA}`,
+  subtitle: `Desde ${ACCOUNT_FAKE}`,
   datos: [
-    { etiqueta: 'Cuenta de destino', valor: CUENTA_VENDEDOR, senal: 'cuenta' },
+    { etiqueta: 'Cuenta de destino', valor: ACCOUNT_SELLER, senal: 'cuenta' },
     { etiqueta: 'Titular', valor: 'Jessica Bravo Mera' },
     { etiqueta: 'Valor', valor: '$430,00' },
   ],
@@ -206,7 +206,7 @@ const TRANSFERENCIA: ScreenView = {
   fields: [],
 }
 
-const APPS: AppTelefono[] = [
+const APPS: PhoneApp[] = [
   { Icono: MessageCircle, texto: 'Mensajes', color: '#2f9e44', hilo: 'sms' },
   {
     Icono: ShoppingBag,
@@ -217,7 +217,7 @@ const APPS: AppTelefono[] = [
   },
   {
     Icono: Wallet,
-    texto: IDENTIDAD_FICTICIA.banco,
+    texto: IDENTITY_FAKE.banco,
     color: '#155e75',
     goto: 'n5',
     label: 'Abrió la app del banco para transferir',
@@ -232,22 +232,22 @@ const APPS: AppTelefono[] = [
 
 export const STORY: Story<ScreenNode> = {
   n1: { kind: 'scene', view: CHAT },
-  n2: { kind: 'scene', view: NO_SE_VE },
-  n3: { kind: 'scene', view: CUENTA },
-  n4: { kind: 'scene', view: PRESIONA },
-  n5: { kind: 'scene', view: TRANSFERENCIA },
-  n6: { kind: 'scene', view: ANUNCIO },
-  n7: { kind: 'scene', view: BUSQUEDA },
+  n2: { kind: 'scene', view: NOT_VISIBLE },
+  n3: { kind: 'scene', view: ACCOUNT },
+  n4: { kind: 'scene', view: PRESSES },
+  n5: { kind: 'scene', view: TRANSFER },
+  n6: { kind: 'scene', view: AD },
+  n7: { kind: 'scene', view: SEARCH },
   e_paga: {
     kind: 'bad',
-    view: TRANSFERENCIA,
+    view: TRANSFER,
     verdict: 'Caíste en la estafa',
     outcome:
       'Los $430 salieron a la cuenta de Jessica Bravo, que no es quien te escribía. El celular nunca se despachó: al día siguiente el chat decía "este número ya no existe" y el anuncio había desaparecido de la página. Una transferencia enviada no se reversa, y el nombre al que pagaste no es el de nadie a quien puedas reclamar.',
   },
   e_deja: {
     kind: 'good',
-    view: PRESIONA,
+    view: PRESSES,
     verdict: 'No caíste · dejaste pasar la ganga',
     outcome:
       'Lo dejaste ir, y no perdiste nada más que un anuncio que no existía. Nadie más se lo llevó: la cuenta se cerró tres días después y el mismo texto reapareció con otro nombre y otro número. Un equipo a mitad de precio que solo se paga por adelantado no es una oferta, es el anzuelo.',
@@ -262,7 +262,7 @@ export const STORY: Story<ScreenNode> = {
   },
 }
 
-const SENALES: Senal[] = [
+const SIGNALS: Signal[] = [
   {
     id: 's1',
     targetId: 'precio',
@@ -310,9 +310,9 @@ const SENALES: Senal[] = [
 const RULE =
   'Regla de oro: <b>no pagues por adelantado lo que no has visto</b>, y desconfía del precio que es demasiado bueno. Compara con otros anuncios del mismo producto, exige verlo o pagar contra entrega, y no transfieras nunca a una cuenta que está a otro nombre.'
 
-const RESUMEN = 'Un celular a mitad de precio, pero solo se paga por adelantado y sin verlo.'
+const SUMMARY = 'Un celular a mitad de precio, pero solo se paga por adelantado y sin verlo.'
 
-const CONTEXTO: Contexto = {
+const CONTEXT: Context = {
   antes: (
     <>
       Llevas semanas queriendo cambiar de celular y vas mirando anuncios en una{' '}
@@ -327,14 +327,14 @@ const CONTEXTO: Contexto = {
   ),
 }
 
-function MitadDePrecio() {
+function HalfPrice() {
   return (
-    <StoryEscenario
+    <ScenarioStory
       escenarioId="estafa/mitad-de-precio"
-      resumen={RESUMEN}
-      contexto={CONTEXTO}
+      resumen={SUMMARY}
+      contexto={CONTEXT}
       story={STORY}
-      senales={SENALES}
+      senales={SIGNALS}
       rule={RULE}
       restartLabel="↻ Repetir el escenario"
       accionesEnPantalla
@@ -356,4 +356,4 @@ function MitadDePrecio() {
   )
 }
 
-export default MitadDePrecio
+export default HalfPrice

@@ -1,30 +1,30 @@
 import { renderHook } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { useSiguienteEscenario } from './useSiguienteEscenario'
+import { useNextScenario } from './useSiguienteEscenario'
 
-const { fetchProgresoMock } = vi.hoisted(() => ({
-  fetchProgresoMock: vi.fn(),
+const { fetchProgressMock } = vi.hoisted(() => ({
+  fetchProgressMock: vi.fn(),
 }))
 
 vi.mock('../lib/api', async () => {
-  const actual = await vi.importActual<typeof import('../lib/api')>('../lib/api')
-  return { ...actual, fetchProgreso: fetchProgresoMock }
+  const current = await vi.importActual<typeof import('../lib/api')>('../lib/api')
+  return { ...current, fetchProgress: fetchProgressMock }
 })
 
-describe('useSiguienteEscenario', () => {
+describe('useNextScenario', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    fetchProgresoMock.mockReset()
+    fetchProgressMock.mockReset()
   })
 
   it('retorna siguiente escenario no intentado', async () => {
-    fetchProgresoMock.mockResolvedValue({
+    fetchProgressMock.mockResolvedValue({
       escenarios: [{ id: 'fisico/salida-segura' }],
       aprobados: 1,
       requeridos: 5,
     })
 
-    const { result } = renderHook(() => useSiguienteEscenario('fisico/salida-segura'))
+    const { result } = renderHook(() => useNextScenario('fisico/salida-segura'))
 
     // Esperar a que se resuelva el fetch
     await new Promise((resolve) => setTimeout(resolve, 50))
@@ -46,13 +46,13 @@ describe('useSiguienteEscenario', () => {
       'fisico/qr-cafe-wifi',
     ]
 
-    fetchProgresoMock.mockResolvedValue({
+    fetchProgressMock.mockResolvedValue({
       escenarios: allScenarios.map((id) => ({ id })),
       aprobados: 5,
       requeridos: 5,
     })
 
-    const { result } = renderHook(() => useSiguienteEscenario('fisico/qr-cafe-wifi'))
+    const { result } = renderHook(() => useNextScenario('fisico/qr-cafe-wifi'))
 
     await new Promise((resolve) => setTimeout(resolve, 50))
 
@@ -61,9 +61,9 @@ describe('useSiguienteEscenario', () => {
   })
 
   it('usa orden del catálogo si el fetch falla', async () => {
-    fetchProgresoMock.mockRejectedValue(new Error('sin red'))
+    fetchProgressMock.mockRejectedValue(new Error('sin red'))
 
-    const { result } = renderHook(() => useSiguienteEscenario('fisico/salida-segura'))
+    const { result } = renderHook(() => useNextScenario('fisico/salida-segura'))
 
     await new Promise((resolve) => setTimeout(resolve, 50))
 
@@ -73,9 +73,9 @@ describe('useSiguienteEscenario', () => {
   })
 
   it('usa la sección si el fetch falla y ya no hay siguiente en el catálogo', async () => {
-    fetchProgresoMock.mockRejectedValue(new Error('sin red'))
+    fetchProgressMock.mockRejectedValue(new Error('sin red'))
 
-    const { result } = renderHook(() => useSiguienteEscenario('fisico/qr-cafe-wifi'))
+    const { result } = renderHook(() => useNextScenario('fisico/qr-cafe-wifi'))
 
     await new Promise((resolve) => setTimeout(resolve, 50))
 
@@ -84,17 +84,17 @@ describe('useSiguienteEscenario', () => {
   })
 
   it('inicia con cargando=true', () => {
-    fetchProgresoMock.mockImplementation(
+    fetchProgressMock.mockImplementation(
       () => new Promise((resolve) => setTimeout(resolve, 100))
     )
 
-    const { result } = renderHook(() => useSiguienteEscenario('fisico/baiting'))
+    const { result } = renderHook(() => useNextScenario('fisico/baiting'))
 
     expect(result.current.cargando).toBe(true)
   })
 
   it('retorna null cuando no hay escenarios', async () => {
-    const { result } = renderHook(() => useSiguienteEscenario('seccion-inexistente/scenario'))
+    const { result } = renderHook(() => useNextScenario('seccion-inexistente/scenario'))
 
     await new Promise((resolve) => setTimeout(resolve, 50))
 

@@ -12,11 +12,11 @@ const { fetchMeMock, patchMeMock } = vi.hoisted(() => ({
 }))
 
 vi.mock('../lib/api', async () => {
-  const actual = await vi.importActual<typeof import('../lib/api')>('../lib/api')
-  return { ...actual, fetchMe: fetchMeMock, patchMe: patchMeMock }
+  const current = await vi.importActual<typeof import('../lib/api')>('../lib/api')
+  return { ...current, fetchMe: fetchMeMock, patchMe: patchMeMock }
 })
 
-function participante(overrides: Record<string, unknown> = {}) {
+function participant(overrides: Record<string, unknown> = {}) {
   return {
     id: 'p1',
     nombre: 'María',
@@ -28,9 +28,9 @@ function participante(overrides: Record<string, unknown> = {}) {
   }
 }
 
-function renderRuta(inicial: string) {
+function renderRoute(initial: string) {
   return render(
-    <MemoryRouter initialEntries={[inicial]}>
+    <MemoryRouter initialEntries={[initial]}>
       <AuthProvider>
         <Routes>
           <Route path="/" element={<p>Pantalla de acceso</p>} />
@@ -46,14 +46,14 @@ function renderRuta(inicial: string) {
 
 // Repite lo que hace Bienvenida.tsx al continuar con el checkbox
 // desmarcado: pide onboardingVisto: false y navega a /dashboard.
-function ContinuarConCheckboxDesmarcado() {
-  const { marcarOnboardingVisto } = useAuth()
+function ContinueWithUncheckedCheckbox() {
+  const { marcarOnboardingVisto: markOnboardingAsSeen } = useAuth()
   const navigate = useNavigate()
 
   return (
     <button
       onClick={async () => {
-        await marcarOnboardingVisto(false)
+        await markOnboardingAsSeen(false)
         navigate('/dashboard')
       }}
     >
@@ -62,7 +62,7 @@ function ContinuarConCheckboxDesmarcado() {
   )
 }
 
-function renderBienvenidaConContinuar() {
+function renderWelcomeWithContinue() {
   return render(
     <MemoryRouter initialEntries={['/bienvenida']}>
       <AuthProvider>
@@ -70,7 +70,7 @@ function renderBienvenidaConContinuar() {
           <Route path="/" element={<p>Pantalla de acceso</p>} />
           <Route element={<RequireAuth />}>
             <Route path="/dashboard" element={<p>Zona del participante</p>} />
-            <Route path="/bienvenida" element={<ContinuarConCheckboxDesmarcado />} />
+            <Route path="/bienvenida" element={<ContinueWithUncheckedCheckbox />} />
           </Route>
         </Routes>
       </AuthProvider>
@@ -85,16 +85,16 @@ describe('RequireAuth', () => {
   })
 
   it('manda al acceso cuando no hay sesión', async () => {
-    renderRuta('/dashboard')
+    renderRoute('/dashboard')
 
     expect(await screen.findByText('Pantalla de acceso')).toBeDefined()
   })
 
   it('deja pasar cuando el token rehidrata una sesión que ya vio la bienvenida', async () => {
     setToken('t0ken')
-    fetchMeMock.mockResolvedValue(participante())
+    fetchMeMock.mockResolvedValue(participant())
 
-    renderRuta('/dashboard')
+    renderRoute('/dashboard')
 
     expect(await screen.findByText('Zona del participante')).toBeDefined()
   })
@@ -103,7 +103,7 @@ describe('RequireAuth', () => {
     setToken('vencido')
     fetchMeMock.mockRejectedValue(new Error('401'))
 
-    renderRuta('/dashboard')
+    renderRoute('/dashboard')
 
     await waitFor(() => {
       expect(screen.getByText('Pantalla de acceso')).toBeDefined()
@@ -114,7 +114,7 @@ describe('RequireAuth', () => {
     setToken('t0ken')
     fetchMeMock.mockReturnValue(new Promise(() => {}))
 
-    renderRuta('/dashboard')
+    renderRoute('/dashboard')
 
     expect(screen.getByText('Cargando…')).toBeDefined()
   })
@@ -122,9 +122,9 @@ describe('RequireAuth', () => {
   // El primer ingreso, o volver a activar el aviso desde el ícono ⓘ.
   it('manda a la bienvenida antes que al dashboard si onboardingVisto es false', async () => {
     setToken('t0ken')
-    fetchMeMock.mockResolvedValue(participante({ onboardingVisto: false }))
+    fetchMeMock.mockResolvedValue(participant({ onboardingVisto: false }))
 
-    renderRuta('/dashboard')
+    renderRoute('/dashboard')
 
     expect(await screen.findByText('Pantalla de bienvenida')).toBeDefined()
   })
@@ -133,9 +133,9 @@ describe('RequireAuth', () => {
   // rebotaría de vuelta a /bienvenida en un bucle.
   it('no rebota si ya está en /bienvenida', async () => {
     setToken('t0ken')
-    fetchMeMock.mockResolvedValue(participante({ onboardingVisto: false }))
+    fetchMeMock.mockResolvedValue(participant({ onboardingVisto: false }))
 
-    renderRuta('/bienvenida')
+    renderRoute('/bienvenida')
 
     expect(await screen.findByText('Pantalla de bienvenida')).toBeDefined()
   })
@@ -145,10 +145,10 @@ describe('RequireAuth', () => {
   // atrapando al participante ahí sin poder avanzar.
   it('deja salir al dashboard al continuar aunque el checkbox quede desmarcado', async () => {
     setToken('t0ken')
-    fetchMeMock.mockResolvedValue(participante({ onboardingVisto: false }))
-    patchMeMock.mockResolvedValue(participante({ onboardingVisto: false }))
+    fetchMeMock.mockResolvedValue(participant({ onboardingVisto: false }))
+    patchMeMock.mockResolvedValue(participant({ onboardingVisto: false }))
 
-    renderBienvenidaConContinuar()
+    renderWelcomeWithContinue()
 
     fireEvent.click(await screen.findByText('Continuar'))
 

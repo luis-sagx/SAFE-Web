@@ -1,18 +1,18 @@
 import { fireEvent, screen, within } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
-import { empezar } from '../../test/escenario'
-import EntregaProgramada from './EntregaProgramada'
+import { start } from '../../test/escenario'
+import ScheduledDelivery from './EntregaProgramada'
 
-vi.mock('../../context/AuthContext', async () => (await import('../../test/escenario')).authFalso())
-vi.mock('../../lib/api', async () => (await import('../../test/escenario')).apiSinRed())
+vi.mock('../../context/AuthContext', async () => (await import('../../test/escenario')).mockAuth())
+vi.mock('../../lib/api', async () => (await import('../../test/escenario')).offlineApi())
 
 describe('EntregaProgramada', () => {
   it('muestra la respuesta predeterminada como opción, sin activar el input', () => {
-    const telefono = empezar(<EntregaProgramada />)
+    const phone = start(<ScheduledDelivery />)
 
-    expect(within(telefono).queryByRole('button', { name: 'Mensaje de texto' })).toBeNull()
+    expect(within(phone).queryByRole('button', { name: 'Mensaje de texto' })).toBeNull()
     fireEvent.click(
-      within(telefono).getByRole('button', {
+      within(phone).getByRole('button', {
         name: '¿A qué hora exactamente? No voy a estar en la mañana.',
       }),
     )

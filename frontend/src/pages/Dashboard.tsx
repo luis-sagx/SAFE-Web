@@ -1,53 +1,59 @@
 import { CheckCircle2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import AppHeader from '../components/AppHeader'
-import BarraProgreso from '../components/BarraProgreso'
-import CertificadoBoton from '../components/CertificadoBoton'
+import ProgressBar from '../components/BarraProgreso'
+import CertificateButton from '../components/CertificadoBoton'
 import { Link } from 'react-router'
 import { useAuth } from '../context/AuthContext'
-import { escenariosDeSeccion, SECCIONES } from '../data/catalogo'
-import { fetchProgreso, type Progreso } from '../lib/api'
+import { getSectionScenarios, SECTIONS } from '../data/catalogo'
+import { fetchProgress, type Progress } from '../lib/api'
 
 // Solo secciones con escenarios tienen gating; las demás muestran "Pronto" sin pedir progreso.
-const SECCIONES_ACTIVAS = SECCIONES.filter((s) => escenariosDeSeccion(s.id).length > 0)
+const SECTIONS_ACTIVE = SECTIONS.filter((s) => getSectionScenarios(s.id).length > 0)
 
 // Secciones sin escenarios y módulos sin progreso quedan fuera del denominador: contarlos daría un avance que
 // nadie puede mover hoy (sin escenarios) o nunca completar (sin umbral en el servidor).
-function calcularGlobal(progresos: Record<string, Progreso>) {
-  let aprobados = 0
+function calculateOverallProgress(progressByModule: Record<string, Progress>) {
+  let approved = 0
   let total = 0
-  let requeridos = 0
-  let modulosAprobados = 0
-  let modulos = 0
+  let required = 0
+  let approvedModules = 0
+  let modules = 0
 
-  for (const seccion of SECCIONES_ACTIVAS) {
-    const progreso = progresos[seccion.id]
-    if (!progreso) continue
-    modulos += 1
-    total += escenariosDeSeccion(seccion.id).length
-    aprobados += progreso.aprobados
-    requeridos += progreso.requeridos
-    if (progreso.aprobado) modulosAprobados += 1
+  for (const section of SECTIONS_ACTIVE) {
+    const progress = progressByModule[section.id]
+    if (!progress) continue
+    modules += 1
+    total += getSectionScenarios(section.id).length
+    approved += progress.aprobados
+    required += progress.requeridos
+    if (progress.aprobado) approvedModules += 1
   }
 
-  return { aprobados, total, requeridos, modulosAprobados, modulos }
+  return {
+    aprobados: approved,
+    total,
+    requeridos: required,
+    modulosAprobados: approvedModules,
+    modulos: modules,
+  }
 }
 
 function Dashboard() {
   const { displayName } = useAuth()
-  const [progresos, setProgresos] = useState<Record<string, Progreso>>({})
+  const [progressByModule, setProgressByModule] = useState<Record<string, Progress>>({})
 
   useEffect(() => {
     let cancelled = false
 
     // allSettled: un módulo sin umbral aún responde 404, y con Promise.all ese rechazo vaciaba el progreso de todos.
-    Promise.allSettled(SECCIONES_ACTIVAS.map((s) => fetchProgreso(s.id)))
-      .then((resultados) => {
+    Promise.allSettled(SECTIONS_ACTIVE.map((s) => fetchProgress(s.id)))
+      .then((results) => {
         if (cancelled) return
-        const cargados = resultados
+        const loaded = results
           .filter((r) => r.status === 'fulfilled')
           .map((r) => r.value)
-        setProgresos(Object.fromEntries(cargados.map((p) => [p.modulo, p])))
+        setProgressByModule(Object.fromEntries(loaded.map((p) => [p.modulo, p])))
       })
 
     return () => {
@@ -55,10 +61,10 @@ function Dashboard() {
     }
   }, [])
 
-  const global = calcularGlobal(progresos)
+  const global = calculateOverallProgress(progressByModule)
 
   // Primer módulo sin aprobar, solo entre los que ya respondieron: evita marcar "empieza aquí" antes de tiempo.
-  const entrada = SECCIONES_ACTIVAS.find((s) => progresos[s.id] && !progresos[s.id]?.aprobado)
+  const entry = SECTIONS_ACTIVE.find((s) => progressByModule[s.id] && !progressByModule[s.id]?.aprobado)
 
   return (
     <div className="min-h-screen bg-canvas">
@@ -104,7 +110,7 @@ function Dashboard() {
               </p>
             </div>
 
-            <BarraProgreso
+            <ProgressBar
               className="mt-3"
               variante="continua"
               aprobados={global.aprobados}
@@ -114,105 +120,105 @@ function Dashboard() {
               etiqueta="Avance del entrenamiento completo"
             />
 
-            {/* Aparece solo cuando coincide con lo que UMBRALES del servidor exige, nunca un número fijo aquí. */}
+            {/* Aparece solo cuando coincide con lo que THRESHOLDS del servidor exige, nunca un número fijo aquí. */}
             {global.modulos > 0 && global.modulosAprobados === global.modulos && (
-              <CertificadoBoton />
+              <CertificateButton />
             )}
           </section>
         )}
 
         {/* Tres columnas: las seis secciones caben en dos filas exactas (cuatro dejaba una fila coja). */}
         <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {SECCIONES.map((seccion) => {
-            const escenarios = escenariosDeSeccion(seccion.id)
-            const disponible = escenarios.length > 0
-            const progreso = progresos[seccion.id]
-            const esEntrada = seccion.id === entrada?.id
-            const empezado = (progreso?.escenarios.length ?? 0) > 0
+          {SECTIONS.map((section) => {
+            const scenarios = getSectionScenarios(section.id)
+            const available = scenarios.length > 0
+            const progress = progressByModule[section.id]
+            const isEntry = section.id === entry?.id
+            const started = (progress?.escenarios.length ?? 0) > 0
 
-            const Icono = seccion.Icono
+            const Icon = section.Icono
 
-            const contenido = (
+            const content = (
               <>
                 <div className="flex items-start justify-between gap-3">
                   <span
                     className={`flex size-9 items-center justify-center rounded-md ${
-                      esEntrada ? 'bg-mint-light' : 'bg-surface-strong'
-                    } ${disponible ? 'text-link' : 'text-muted'}`}
+                      isEntry ? 'bg-mint-light' : 'bg-surface-strong'
+                    } ${available ? 'text-link' : 'text-muted'}`}
                   >
-                    <Icono aria-hidden className="size-[18px]" strokeWidth={1.75} />
+                    <Icon aria-hidden className="size-[18px]" strokeWidth={1.75} />
                   </span>
-                  {!disponible && (
+                  {!available && (
                     <span className="text-xs font-semibold uppercase tracking-[0.88px] text-muted">
                       Pronto
                     </span>
                   )}
-                  {progreso?.aprobado && (
+                  {progress?.aprobado && (
                     <span className="inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-[0.88px] text-success-ink">
                       <CheckCircle2 aria-hidden className="size-3.5" strokeWidth={2.5} />
                       Aprobado
                     </span>
                   )}
                   {/* Única insignia: marca el primer módulo sin aprobar, el orden de entrada al recorrido. */}
-                  {esEntrada && (
+                  {isEntry && (
                     <span className="inline-flex items-center gap-1 rounded-full bg-primary px-2.5 py-1 text-xs font-semibold uppercase tracking-[0.88px] text-on-primary">
-                      {empezado ? 'Continúa aquí' : 'Empieza aquí'}
+                      {started ? 'Continúa aquí' : 'Empieza aquí'}
                     </span>
                   )}
                 </div>
 
-                <h2 className="mt-4 text-lg font-semibold text-ink">{seccion.titulo}</h2>
+                <h2 className="mt-4 text-lg font-semibold text-ink">{section.titulo}</h2>
                 <p className="mt-2 flex-1 text-base leading-relaxed text-body">
-                  {seccion.descripcion}
+                  {section.descripcion}
                 </p>
 
                 <div className="mt-5 border-t border-hairline pt-3">
                   <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
-                    <span className="text-sm text-muted">{seccion.canal}</span>
-                    {progreso && (
+                    <span className="text-sm text-muted">{section.canal}</span>
+                    {progress && (
                       <span className="text-sm font-medium text-ink tabular-nums">
-                        {progreso.aprobados}/{escenarios.length}
+                        {progress.aprobados}/{scenarios.length}
                       </span>
                     )}
                   </div>
 
                   {/* Cuenta de escenarios antes de entrar; el umbral no se repite, ya lo marca la barra de abajo. */}
-                  {disponible && (
-                    <p className="mt-1.5 text-sm text-muted">{escenarios.length} escenarios</p>
+                  {available && (
+                    <p className="mt-1.5 text-sm text-muted">{scenarios.length} escenarios</p>
                   )}
 
-                  {progreso && (
-                    <BarraProgreso
+                  {progress && (
+                    <ProgressBar
                       className="mt-2.5"
-                      aprobados={progreso.aprobados}
-                      total={escenarios.length}
-                      requeridos={progreso.requeridos}
-                      aprobado={progreso.aprobado}
-                      etiqueta={`Avance de ${seccion.titulo}`}
+                      aprobados={progress.aprobados}
+                      total={scenarios.length}
+                      requeridos={progress.requeridos}
+                      aprobado={progress.aprobado}
+                      etiqueta={`Avance de ${section.titulo}`}
                     />
                   )}
                 </div>
               </>
             )
 
-            const clases = 'flex flex-col rounded-lg border p-5 transition'
+            const className = 'flex flex-col rounded-lg border p-5 transition'
 
             // Se distinguen por superficie/insignia, no opacidad: bajarla dejaría el texto bajo el contraste mínimo.
-            return disponible ? (
+            return available ? (
               <Link
-                key={seccion.id}
-                to={`/seccion/${seccion.id}`}
-                className={`${clases} bg-surface hover:-translate-y-0.5 hover:shadow-card ${
-                  esEntrada
+                key={section.id}
+                to={`/seccion/${section.id}`}
+                className={`${className} bg-surface hover:-translate-y-0.5 hover:shadow-card ${
+                  isEntry
                     ? 'border-link/50 shadow-card hover:border-link'
                     : 'border-hairline-strong hover:border-link/40'
                 }`}
               >
-                {contenido}
+                {content}
               </Link>
             ) : (
-              <div key={seccion.id} className={`${clases} border-hairline-strong bg-canvas-soft`}>
-                {contenido}
+              <div key={section.id} className={`${className} border-hairline-strong bg-canvas-soft`}>
+                {content}
               </div>
             )
           })}
@@ -234,7 +240,7 @@ function Dashboard() {
               </a>
             </>
           ) : (
-            `Completa las ${global.modulos || SECCIONES_ACTIVAS.length} secciones y se habilitará un formulario para valorar tu opinión.`
+            `Completa las ${global.modulos || SECTIONS_ACTIVE.length} secciones y se habilitará un formulario para valorar tu opinión.`
           )}
         </p>
       </main>

@@ -3,16 +3,16 @@ import request from 'supertest';
 import type { App } from 'supertest/types';
 import { PrismaService } from '../apps/identidad/src/prisma/prisma.service';
 import {
-  cookieRefresh,
-  crearApp,
-  cuerpo,
-  limpiar,
-  PASSWORD_INVALIDA,
-  PASSWORD_PRUEBA,
-  registro,
+  getRefreshCookie,
+  createTestApp,
+  responseBody,
+  cleanDatabase,
+  PASSWORD_INVALID,
+  PASSWORD_TEST,
+  registrationData,
   type ErrorBody,
-  type PerfilBody,
-  type SesionBody,
+  type ProfileBody,
+  type SessionBody,
 } from './identidad.e2e';
 
 describe('Autenticación (e2e)', () => {
@@ -22,31 +22,31 @@ describe('Autenticación (e2e)', () => {
   const server = () => request(app.getHttpServer() as App);
 
   beforeAll(async () => {
-    ({ app, prisma } = await crearApp());
-    await limpiar(prisma);
+    ({ app, prisma } = await createTestApp());
+    await cleanDatabase(prisma);
   });
 
   afterAll(async () => {
-    await limpiar(prisma);
+    await cleanDatabase(prisma);
     await app.close();
   });
 
   it('GET /api/health responde ok', async () => {
     const res = await server().get('/api/health').expect(200);
 
-    expect(cuerpo<{ status: string }>(res).status).toBe('ok');
+    expect(responseBody<{ status: string }>(res).status).toBe('ok');
   });
 
   describe('POST /api/auth/register', () => {
     it('crea el participante y devuelve un token', async () => {
       const res = await server()
         .post('/api/auth/register')
-        .send(registro('alta'))
+        .send(registrationData('alta'))
         .expect(201);
 
-      const sesion = cuerpo<SesionBody>(res);
-      expect(typeof sesion.accessToken).toBe('string');
-      expect(sesion.participant).toMatchObject({
+      const session = responseBody<SessionBody>(res);
+      expect(typeof session.accessToken).toBe('string');
+      expect(session.participant).toMatchObject({
         nombre: 'María',
         apellido: 'Pérez',
         email: 'maria.alta@ejemplo.ec',
@@ -55,99 +55,101 @@ describe('Autenticación (e2e)', () => {
     });
 
     it('no devuelve el hash de la contraseña, el seudónimo ni la cédula', async () => {
-      const datos = registro('privacidad');
+      const data = registrationData('privacidad');
       const res = await server()
         .post('/api/auth/register')
-        .send(datos)
+        .send(data)
         .expect(201);
 
-      const sesion = cuerpo<SesionBody>(res);
-      expect(sesion.participant.passwordHash).toBeUndefined();
-      expect(sesion.participant.seq).toBeUndefined();
-      expect(sesion.participant.cedulaHash).toBeUndefined();
-      expect(JSON.stringify(sesion)).not.toContain(PASSWORD_PRUEBA);
-      expect(JSON.stringify(sesion)).not.toContain(datos.cedula);
+      const session = responseBody<SessionBody>(res);
+      expect(session.participant.passwordHash).toBeUndefined();
+      expect(session.participant.seq).toBeUndefined();
+      expect(session.participant.cedulaHash).toBeUndefined();
+      expect(JSON.stringify(session)).not.toContain(PASSWORD_TEST);
+      expect(JSON.stringify(session)).not.toContain(data.cedula);
     });
 
     // La regla que sostiene el diseño de privacidad: la cédula solo existe el
     // tiempo de calcular su HMAC. Si alguien la guardara en claro "por si
     // acaso", esto lo atrapa.
     it('nunca guarda la cédula en claro, solo su huella', async () => {
-      const datos = registro('cedula');
+      const data = registrationData('cedula');
       const res = await server()
         .post('/api/auth/register')
-        .send(datos)
+        .send(data)
         .expect(201);
-      const { id } = cuerpo<SesionBody>(res).participant;
+      const { id } = responseBody<SessionBody>(res).participant;
 
-      const guardado = await prisma.participant.findUnique({
+      const saved = await prisma.participant.findUnique({
         where: { id },
       });
 
-      expect(guardado?.cedulaHash).toEqual(expect.any(String));
-      expect(guardado?.cedulaHash).not.toContain(datos.cedula);
-      expect(JSON.stringify(guardado)).not.toContain(datos.cedula);
+      expect(saved?.cedulaHash).toEqual(expect.any(String));
+      expect(saved?.cedulaHash).not.toContain(data.cedula);
+      expect(JSON.stringify(saved)).not.toContain(data.cedula);
     });
 
     // La regla que sostiene el issue #95: quien se lleve solo la base no
     // debe poder leer nombre, apellido ni correo — aunque la app sí pueda,
     // descifrándolos con la clave que vive solo en el servidor.
     it('nunca guarda nombre, apellido ni correo en claro', async () => {
-      const datos = registro('cifrado');
+      const data = registrationData('cifrado');
       const res = await server()
         .post('/api/auth/register')
-        .send(datos)
+        .send(data)
         .expect(201);
-      const { id } = cuerpo<SesionBody>(res).participant;
+      const { id } = responseBody<SessionBody>(res).participant;
 
-      const guardado = await prisma.participant.findUnique({ where: { id } });
+      const saved = await prisma.participant.findUnique({ where: { id } });
 
-      expect(guardado?.nombre).toMatch(/^v1:/);
-      expect(guardado?.apellido).toMatch(/^v1:/);
-      expect(guardado?.email).toMatch(/^v1:/);
-      expect(guardado?.nombre).not.toBe(datos.nombre);
-      expect(guardado?.email).not.toBe(datos.email);
-      expect(JSON.stringify(guardado)).not.toContain(datos.email);
+      expect(saved?.nombre).toMatch(/^v1:/);
+      expect(saved?.apellido).toMatch(/^v1:/);
+      expect(saved?.email).toMatch(/^v1:/);
+      expect(saved?.nombre).not.toBe(data.nombre);
+      expect(saved?.email).not.toBe(data.email);
+      expect(JSON.stringify(saved)).not.toContain(data.email);
 
       // Pero la app sí lo descifra de vuelta para quien tiene sesión.
-      expect(cuerpo<SesionBody>(res).participant.email).toBe(datos.email);
-      expect(cuerpo<SesionBody>(res).participant.nombre).toBe(datos.nombre);
+      expect(responseBody<SessionBody>(res).participant.email).toBe(data.email);
+      expect(responseBody<SessionBody>(res).participant.nombre).toBe(
+        data.nombre,
+      );
     });
 
     it('normaliza el correo y acepta la cédula con guiones', async () => {
-      const datos = registro('normaliza');
+      const data = registrationData('normaliza');
       const res = await server()
         .post('/api/auth/register')
         .send({
-          ...datos,
+          ...data,
           email: '  Maria.NORMALIZA@Ejemplo.ec ',
-          cedula: `${datos.cedula.slice(0, 9)}-${datos.cedula.slice(9)}`,
+          cedula: `${data.cedula.slice(0, 9)}-${data.cedula.slice(9)}`,
         })
         .expect(201);
 
       // El correo normalizado se ve en la propia respuesta —descifrado de
       // vuelta por el servidor—, así que no hace falta releer la base para
       // comprobar que se guardó en minúsculas y sin espacios.
-      expect(cuerpo<SesionBody>(res).participant.email).toBe(
+      expect(responseBody<SessionBody>(res).participant.email).toBe(
         'maria.normaliza@ejemplo.ec',
       );
 
-      const guardado = await prisma.participant.findUnique({
-        where: { id: cuerpo<SesionBody>(res).participant.id },
+      const saved = await prisma.participant.findUnique({
+        where: { id: responseBody<SessionBody>(res).participant.id },
       });
 
-      expect(guardado?.cedulaHash).toEqual(expect.any(String));
+      expect(saved?.cedulaHash).toEqual(expect.any(String));
     });
 
     // Dos cuentas de la misma persona parten sus corridas en el análisis.
     it('rechaza un correo ya registrado aunque cambie la capitalización', async () => {
-      const datos = registro('duplicado');
-      await server().post('/api/auth/register').send(datos).expect(201);
+      const data = registrationData('duplicado');
+      await server().post('/api/auth/register').send(data).expect(201);
 
       await server()
         .post('/api/auth/register')
         .send({
-          ...registro('duplicado-2'),
+          ...registrationData('duplicado-2'),
           email: 'MARIA.DUPLICADO@ejemplo.ec',
         })
         .expect(409);
@@ -155,35 +157,35 @@ describe('Autenticación (e2e)', () => {
 
     // El motivo por el que se pide la cédula: una persona, una cuenta.
     it('rechaza una cédula ya registrada aunque el correo sea otro', async () => {
-      const datos = registro('cedula-unica');
-      await server().post('/api/auth/register').send(datos).expect(201);
+      const data = registrationData('cedula-unica');
+      await server().post('/api/auth/register').send(data).expect(201);
 
       await server()
         .post('/api/auth/register')
         .send({
-          ...registro('cedula-unica-2'),
-          cedula: datos.cedula,
+          ...registrationData('cedula-unica-2'),
+          cedula: data.cedula,
         })
         .expect(409);
     });
 
     // Distinguirlos diría si una persona concreta participó en el estudio.
     it('da el mismo error para correo repetido que para cédula repetida', async () => {
-      const datos = registro('mismo-error');
-      await server().post('/api/auth/register').send(datos).expect(201);
+      const data = registrationData('mismo-error');
+      await server().post('/api/auth/register').send(data).expect(201);
 
-      const porCorreo = await server()
+      const byEmail = await server()
         .post('/api/auth/register')
-        .send({ ...registro('mismo-error-a'), email: datos.email })
+        .send({ ...registrationData('mismo-error-a'), email: data.email })
         .expect(409);
 
-      const porCedula = await server()
+      const byEcuadorianId = await server()
         .post('/api/auth/register')
-        .send({ ...registro('mismo-error-b'), cedula: datos.cedula })
+        .send({ ...registrationData('mismo-error-b'), cedula: data.cedula })
         .expect(409);
 
-      expect(cuerpo<ErrorBody>(porCorreo).message).toEqual(
-        cuerpo<ErrorBody>(porCedula).message,
+      expect(responseBody<ErrorBody>(byEmail).message).toEqual(
+        responseBody<ErrorBody>(byEcuadorianId).message,
       );
     });
 
@@ -196,17 +198,17 @@ describe('Autenticación (e2e)', () => {
       ['cédula de nueve dígitos', { cedula: '171003406' }],
       ['cédula con letras', { cedula: '17100340a5' }],
       ['cédula de provincia inexistente', { cedula: '2510034065' }],
-    ])('rechaza el registro con %s', async (_caso, override) => {
+    ])('rechaza el registro con %s', async (_case, override) => {
       await server()
         .post('/api/auth/register')
-        .send({ ...registro('invalido'), ...override })
+        .send({ ...registrationData('invalido'), ...override })
         .expect(400);
     });
 
     it('rechaza campos que no están en el DTO', async () => {
       await server()
         .post('/api/auth/register')
-        .send({ ...registro('escalada'), role: 'SUPERVISOR' })
+        .send({ ...registrationData('escalada'), role: 'SUPERVISOR' })
         .expect(400);
     });
   });
@@ -215,17 +217,17 @@ describe('Autenticación (e2e)', () => {
     beforeAll(async () => {
       await server()
         .post('/api/auth/register')
-        .send(registro('login'))
+        .send(registrationData('login'))
         .expect(201);
     });
 
     it('entrega un token con las credenciales correctas', async () => {
       const res = await server()
         .post('/api/auth/login')
-        .send({ email: 'maria.login@ejemplo.ec', password: PASSWORD_PRUEBA })
+        .send({ email: 'maria.login@ejemplo.ec', password: PASSWORD_TEST })
         .expect(200);
 
-      expect(typeof cuerpo<SesionBody>(res).accessToken).toBe('string');
+      expect(typeof responseBody<SessionBody>(res).accessToken).toBe('string');
     });
 
     // El registro ya lo comprobaba; el login no, y ahí sí se llegó a filtrar
@@ -233,30 +235,30 @@ describe('Autenticación (e2e)', () => {
     it('tampoco devuelve el hash de la contraseña ni la huella de la cédula', async () => {
       const res = await server()
         .post('/api/auth/login')
-        .send({ email: 'maria.login@ejemplo.ec', password: PASSWORD_PRUEBA })
+        .send({ email: 'maria.login@ejemplo.ec', password: PASSWORD_TEST })
         .expect(200);
 
-      const sesion = cuerpo<SesionBody>(res);
-      expect(sesion.participant.passwordHash).toBeUndefined();
-      expect(sesion.participant.cedulaHash).toBeUndefined();
-      expect(sesion.participant.seq).toBeUndefined();
-      expect(JSON.stringify(sesion)).not.toContain('$2b$');
+      const session = responseBody<SessionBody>(res);
+      expect(session.participant.passwordHash).toBeUndefined();
+      expect(session.participant.cedulaHash).toBeUndefined();
+      expect(session.participant.seq).toBeUndefined();
+      expect(JSON.stringify(session)).not.toContain('$2b$');
     });
 
     // Distinguirlos revelaría qué correos están registrados.
     it('no distingue entre correo inexistente y contraseña incorrecta', async () => {
-      const inexistente = await server()
+      const nonexistent = await server()
         .post('/api/auth/login')
-        .send({ email: 'nadie@ejemplo.ec', password: PASSWORD_PRUEBA })
+        .send({ email: 'nadie@ejemplo.ec', password: PASSWORD_TEST })
         .expect(401);
 
-      const claveMala = await server()
+      const wrongPasswordResponse = await server()
         .post('/api/auth/login')
-        .send({ email: 'maria.login@ejemplo.ec', password: PASSWORD_INVALIDA })
+        .send({ email: 'maria.login@ejemplo.ec', password: PASSWORD_INVALID })
         .expect(401);
 
-      expect(cuerpo<ErrorBody>(inexistente).message).toBe(
-        cuerpo<ErrorBody>(claveMala).message,
+      expect(responseBody<ErrorBody>(nonexistent).message).toBe(
+        responseBody<ErrorBody>(wrongPasswordResponse).message,
       );
     });
   });
@@ -267,8 +269,8 @@ describe('Autenticación (e2e)', () => {
     beforeAll(async () => {
       const res = await server()
         .post('/api/auth/register')
-        .send(registro('perfil'));
-      token = cuerpo<SesionBody>(res).accessToken;
+        .send(registrationData('perfil'));
+      token = responseBody<SessionBody>(res).accessToken;
     });
 
     it('devuelve el perfil del token', async () => {
@@ -277,9 +279,9 @@ describe('Autenticación (e2e)', () => {
         .set('Authorization', `Bearer ${token}`)
         .expect(200);
 
-      const perfil = cuerpo<PerfilBody>(res);
-      expect(perfil.email).toBe('maria.perfil@ejemplo.ec');
-      expect(perfil.passwordHash).toBeUndefined();
+      const profile = responseBody<ProfileBody>(res);
+      expect(profile.email).toBe('maria.perfil@ejemplo.ec');
+      expect(profile.passwordHash).toBeUndefined();
     });
 
     // Nunca vio la bienvenida: recién se registró.
@@ -289,7 +291,7 @@ describe('Autenticación (e2e)', () => {
         .set('Authorization', `Bearer ${token}`)
         .expect(200);
 
-      expect(cuerpo<PerfilBody>(res).onboardingVisto).toBe(false);
+      expect(responseBody<ProfileBody>(res).onboardingVisto).toBe(false);
     });
 
     it.each([
@@ -299,7 +301,7 @@ describe('Autenticación (e2e)', () => {
         'Basic ' + Buffer.from('a:b').toString('base64'),
       ],
       ['con token inventado', 'Bearer no.es.un.token'],
-    ])('responde 401 %s', async (_caso, header) => {
+    ])('responde 401 %s', async (_case, header) => {
       const req = server().get('/api/auth/me');
       if (header) req.set('Authorization', header);
       await req.expect(401);
@@ -312,25 +314,25 @@ describe('Autenticación (e2e)', () => {
     beforeAll(async () => {
       const res = await server()
         .post('/api/auth/register')
-        .send(registro('onboarding'));
-      token = cuerpo<SesionBody>(res).accessToken;
+        .send(registrationData('onboarding'));
+      token = responseBody<SessionBody>(res).accessToken;
     });
 
     it('marca onboardingVisto y luego lo puede volver a desmarcar', async () => {
-      const visto = await server()
+      const seen = await server()
         .patch('/api/auth/me')
         .set('Authorization', `Bearer ${token}`)
         .send({ onboardingVisto: true })
         .expect(200);
-      expect(cuerpo<PerfilBody>(visto).onboardingVisto).toBe(true);
+      expect(responseBody<ProfileBody>(seen).onboardingVisto).toBe(true);
 
       // El ícono ⓘ reactiva el aviso: debe poder volver a false.
-      const otraVez = await server()
+      const again = await server()
         .patch('/api/auth/me')
         .set('Authorization', `Bearer ${token}`)
         .send({ onboardingVisto: false })
         .expect(200);
-      expect(cuerpo<PerfilBody>(otraVez).onboardingVisto).toBe(false);
+      expect(responseBody<ProfileBody>(again).onboardingVisto).toBe(false);
     });
 
     it('exige token', async () => {
@@ -350,7 +352,7 @@ describe('Autenticación (e2e)', () => {
       ],
       ['un valor que no es booleano', { onboardingVisto: 'si' }],
       ['el cuerpo vacío', {}],
-    ])('rechaza %s', async (_caso, body) => {
+    ])('rechaza %s', async (_case, body) => {
       await server()
         .patch('/api/auth/me')
         .set('Authorization', `Bearer ${token}`)
@@ -366,7 +368,7 @@ describe('Autenticación (e2e)', () => {
     it('pone la cookie del refresh token, httpOnly y restringida a esta ruta', async () => {
       const res = await server()
         .post('/api/auth/register')
-        .send(registro('refresh-cookie'))
+        .send(registrationData('refresh-cookie'))
         .expect(201);
 
       const cookie = (res.headers['set-cookie'] as unknown as string[]).find(
@@ -377,33 +379,33 @@ describe('Autenticación (e2e)', () => {
       expect(cookie).toContain('HttpOnly');
       expect(cookie).toContain('SameSite=Strict');
       expect(cookie).toContain('Path=/api/auth/refresh');
-      expect(cuerpo<SesionBody>(res)).not.toHaveProperty('refreshToken');
+      expect(responseBody<SessionBody>(res)).not.toHaveProperty('refreshToken');
     });
 
     it('entrega un access token nuevo y rota la cookie', async () => {
-      const registrado = await server()
+      const registered = await server()
         .post('/api/auth/register')
-        .send(registro('refresh'))
+        .send(registrationData('refresh'))
         .expect(201);
-      const cookieOriginal = cookieRefresh(registrado);
+      const originalCookie = getRefreshCookie(registered);
 
       const res = await server()
         .post('/api/auth/refresh')
-        .set('Cookie', cookieOriginal)
+        .set('Cookie', originalCookie)
         .expect(200);
 
-      const renovado = cuerpo<SesionBody>(res);
-      expect(typeof renovado.accessToken).toBe('string');
-      expect(renovado).not.toHaveProperty('refreshToken');
+      const refreshedSession = responseBody<SessionBody>(res);
+      expect(typeof refreshedSession.accessToken).toBe('string');
+      expect(refreshedSession).not.toHaveProperty('refreshToken');
       // Rotación: el refresh también pone una cookie nueva (mismo nombre,
       // mismo `sub` — puede coincidir byte a byte con la original si cae en
       // el mismo segundo de `iat`, así que no se compara el valor).
-      expect(cookieRefresh(res)).toBeDefined();
+      expect(getRefreshCookie(res)).toBeDefined();
 
       // El access token nuevo sirve de verdad en una ruta protegida.
       await server()
         .get('/api/auth/me')
-        .set('Authorization', `Bearer ${renovado.accessToken}`)
+        .set('Authorization', `Bearer ${refreshedSession.accessToken}`)
         .expect(200);
     });
 
@@ -425,9 +427,9 @@ describe('Autenticación (e2e)', () => {
     it('rechaza un access token usado como refresh token', async () => {
       const res = await server()
         .post('/api/auth/register')
-        .send(registro('refresh-typ'))
+        .send(registrationData('refresh-typ'))
         .expect(201);
-      const { accessToken } = cuerpo<SesionBody>(res);
+      const { accessToken } = responseBody<SessionBody>(res);
 
       await server()
         .post('/api/auth/refresh')
@@ -440,9 +442,9 @@ describe('Autenticación (e2e)', () => {
     it('rechaza un refresh token usado como access token', async () => {
       const res = await server()
         .post('/api/auth/register')
-        .send(registro('refresh-typ-2'))
+        .send(registrationData('refresh-typ-2'))
         .expect(201);
-      const refreshToken = cookieRefresh(res).split('=')[1];
+      const refreshToken = getRefreshCookie(res).split('=')[1];
 
       await server()
         .get('/api/auth/me')
@@ -451,15 +453,15 @@ describe('Autenticación (e2e)', () => {
     });
 
     it('rechaza el refresh de una cuenta desactivada', async () => {
-      const datos = registro('refresh-desactivada');
+      const data = registrationData('refresh-desactivada');
       const res = await server()
         .post('/api/auth/register')
-        .send(datos)
+        .send(data)
         .expect(201);
-      const cookie = cookieRefresh(res);
+      const cookie = getRefreshCookie(res);
 
       await prisma.participant.update({
-        where: { id: cuerpo<SesionBody>(res).participant.id },
+        where: { id: responseBody<SessionBody>(res).participant.id },
         data: { disabledAt: new Date() },
       });
 

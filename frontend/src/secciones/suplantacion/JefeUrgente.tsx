@@ -1,31 +1,31 @@
 import { Camera, MessageCircle, Phone, ShoppingBag } from 'lucide-react'
-import StoryEscenario, { type AppTelefono, type ScreenNode } from '../../components/StoryEscenario'
-import type { Contexto } from '../../components/ui/ContextoEscenario'
+import ScenarioStory, { type PhoneApp, type ScreenNode } from '../../components/StoryEscenario'
+import type { Context } from '../../components/ui/ContextoEscenario'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
-import type { Senal } from '../../components/ui/PanelVeredicto'
+import type { Signal } from '../../components/ui/PanelVeredicto'
 import type { Story } from '../../hooks/useStoryEngine'
 
 // La suplantación explota la jerarquía, no la tecnología: a la gerente no se
 // le pregunta dos veces. El acierto es comprobar por el canal de siempre.
 
-const JEFA = 'Patricia Cedeño'
-const DESCONOCIDO = '+593 98 776 5510'
-const INTERNO = '+593 99 501 2244'
+const MANAGER = 'Patricia Cedeño'
+const UNKNOWN = '+593 98 776 5510'
+const INTERNAL = '+593 99 501 2244'
 
-const APERTURA = {
-  text: `Buenos días. Habla la Ing. ${JEFA}, de gerencia. Estoy en una reunión con auditoría y no puedo hablar. ¿Me ayuda con un encargo?`,
+const OPENING = {
+  text: `Buenos días. Habla la Ing. ${MANAGER}, de gerencia. Estoy en una reunión con auditoría y no puedo hablar. ¿Me ayuda con un encargo?`,
   time: '09:12',
   senal: 'apertura',
 }
 
 const CHAT: ScreenView = {
   kind: 'sms',
-  sender: DESCONOCIDO,
+  sender: UNKNOWN,
   sub: 'No está en tus contactos · toca para ver el perfil',
   senalRemitente: 'remitente',
   perfilGoto: 'n1b',
   perfilLabel: 'Abrió el perfil del número que le escribía',
-  msgs: [APERTURA],
+  msgs: [OPENING],
   respuestas: [
     { texto: 'Claro, ingeniera, dígame.', goto: 'n2', label: 'Se puso a disposición del encargo' },
     {
@@ -38,13 +38,13 @@ const CHAT: ScreenView = {
   volverLabel: 'Salió del chat sin contestar ni comprobar',
 }
 
-const PERFIL: ScreenView = {
+const PROFILE: ScreenView = {
   kind: 'web',
   app: 'Mensajes',
   url: 'perfil',
   secure: true,
   brand: 'Información del contacto',
-  title: DESCONOCIDO,
+  title: UNKNOWN,
   subtitle: 'No guardado en tu agenda.',
   datos: [
     {
@@ -61,25 +61,25 @@ const PERFIL: ScreenView = {
   button: '',
 }
 
-const ENCARGO = {
+const REQUEST = {
   text: 'Compre 4 tarjetas de regalo de $100 para un cliente que llega al mediodía. Hoy mismo se le reembolsa con el rol.',
   time: '09:14',
   senal: 'tarjetas',
 }
 
-const RESERVA = {
+const BOOKING = {
   text: 'Mándeme la foto de los códigos por aquí. Y no lo comente con el área: es una cortesía fuera de presupuesto.',
   time: '09:14',
   senal: 'secreto',
 }
 
-const PIDE: ScreenView = {
+const ASKS: ScreenView = {
   ...CHAT,
   msgs: [
-    APERTURA,
+    OPENING,
     { text: 'Claro, ingeniera, dígame.', time: '09:13', mine: true },
-    ENCARGO,
-    RESERVA,
+    REQUEST,
+    BOOKING,
   ],
   respuestas: [
     { texto: 'Voy saliendo a comprarlas.', goto: 'n3', label: 'Aceptó ir a comprar las tarjetas' },
@@ -91,18 +91,18 @@ const PIDE: ScreenView = {
   ],
 }
 
-const EXCUSA_NUMERO: ScreenView = {
+const EXCUSE_NUMBER: ScreenView = {
   ...CHAT,
   msgs: [
-    APERTURA,
+    OPENING,
     { text: '¿De qué número me escribe? El suyo lo tengo guardado.', time: '09:13', mine: true },
     {
       text: 'Es mi línea personal, la corporativa se quedó en la oficina. Salgo de la reunión en veinte minutos.',
       time: '09:13',
       senal: 'apura',
     },
-    ENCARGO,
-    RESERVA,
+    REQUEST,
+    BOOKING,
   ],
   respuestas: [
     { texto: 'Voy saliendo a comprarlas.', goto: 'n3', label: 'Aceptó ir a comprar las tarjetas' },
@@ -114,12 +114,12 @@ const EXCUSA_NUMERO: ScreenView = {
   ],
 }
 
-const VOY: ScreenView = {
+const GO: ScreenView = {
   ...CHAT,
   msgs: [
-    APERTURA,
-    ENCARGO,
-    RESERVA,
+    OPENING,
+    REQUEST,
+    BOOKING,
     { text: 'Voy saliendo a comprarlas.', time: '09:16', mine: true },
     {
       text: 'Perfecto. Mándeme la foto de los códigos raspados apenas las tenga.',
@@ -141,12 +141,12 @@ const VOY: ScreenView = {
   ],
 }
 
-const NO_LLAMA: ScreenView = {
+const DOES_NOT_CALL: ScreenView = {
   ...CHAT,
   msgs: [
-    APERTURA,
-    ENCARGO,
-    RESERVA,
+    OPENING,
+    REQUEST,
+    BOOKING,
     { text: 'Prefiero confirmarlo con usted por teléfono.', time: '09:16', mine: true },
     {
       text: 'Ya le dije que estoy en reunión. Si no puede con el encargo, se lo pido a otra persona.',
@@ -168,7 +168,7 @@ const NO_LLAMA: ScreenView = {
   ],
 }
 
-const AGENDA: ScreenView = {
+const CONTACTS: ScreenView = {
   kind: 'web',
   app: 'Teléfono',
   url: 'contactos',
@@ -177,8 +177,8 @@ const AGENDA: ScreenView = {
   title: 'Tu agenda',
   opciones: [
     {
-      texto: `${JEFA} · Gerencia`,
-      detalle: `${INTERNO} · el número corporativo que usa a diario`,
+      texto: `${MANAGER} · Gerencia`,
+      detalle: `${INTERNAL} · el número corporativo que usa a diario`,
       goto: 'e_verifica',
       label: 'Llamó a su jefa al número corporativo de siempre',
     },
@@ -190,10 +190,10 @@ const AGENDA: ScreenView = {
   button: '',
 }
 
-const LLAMADA_JEFA: ScreenView = {
+const CALL_MANAGER: ScreenView = {
   kind: 'call',
-  quien: `${JEFA} · Gerencia`,
-  numero: INTERNO,
+  quien: `${MANAGER} · Gerencia`,
+  numero: INTERNAL,
   etiqueta: 'Guardada en tus contactos',
   dialogo: [
     {
@@ -204,7 +204,7 @@ const LLAMADA_JEFA: ScreenView = {
   ],
 }
 
-const TIENDA: ScreenView = {
+const STORE: ScreenView = {
   kind: 'web',
   app: 'Tienda',
   url: 'tienda',
@@ -227,7 +227,7 @@ const TIENDA: ScreenView = {
   button: '',
 }
 
-const CODIGOS: ScreenView = {
+const CODES: ScreenView = {
   kind: 'web',
   app: 'Tienda',
   url: 'tienda',
@@ -251,7 +251,7 @@ const CODIGOS: ScreenView = {
   fields: [],
 }
 
-const APPS: AppTelefono[] = [
+const APPS: PhoneApp[] = [
   { Icono: MessageCircle, texto: 'Mensajes', color: '#2f9e44', hilo: 'sms' },
   {
     Icono: Phone,
@@ -277,31 +277,31 @@ const APPS: AppTelefono[] = [
 
 export const STORY: Story<ScreenNode> = {
   n1: { kind: 'scene', view: CHAT },
-  n1b: { kind: 'scene', view: PERFIL },
-  n2: { kind: 'scene', view: PIDE },
-  n2b: { kind: 'scene', view: EXCUSA_NUMERO },
-  n3: { kind: 'scene', view: VOY },
-  n3b: { kind: 'scene', view: NO_LLAMA },
-  n4: { kind: 'scene', view: AGENDA },
-  n5: { kind: 'scene', view: TIENDA },
-  n6: { kind: 'scene', view: CODIGOS },
+  n1b: { kind: 'scene', view: PROFILE },
+  n2: { kind: 'scene', view: ASKS },
+  n2b: { kind: 'scene', view: EXCUSE_NUMBER },
+  n3: { kind: 'scene', view: GO },
+  n3b: { kind: 'scene', view: DOES_NOT_CALL },
+  n4: { kind: 'scene', view: CONTACTS },
+  n5: { kind: 'scene', view: STORE },
+  n6: { kind: 'scene', view: CODES },
   e_codigos: {
     kind: 'bad',
-    view: CODIGOS,
+    view: CODES,
     verdict: 'Caíste en la suplantación',
     outcome:
       'Gastaste $400 de tu propio dinero y mandaste los códigos por el chat. Se consumieron en minutos, en otro país, y no hay forma de anularlos ni de saber quién los usó. Tu gerente nunca escribió ese mensaje: el mismo texto le llegó esa semana a media empresa, con su foto sacada de la web corporativa.',
   },
   e_verifica: {
     kind: 'good',
-    view: LLAMADA_JEFA,
+    view: CALL_MANAGER,
     verdict: 'No caíste · confirmaste por el canal de siempre',
     outcome:
       'Llamaste al número corporativo que usas a diario y ella misma lo desmintió. Preguntar no te hizo quedar mal: al contrario, avisaste de una campaña que estaba llegándole a toda la empresa.',
   },
   e_niega: {
     kind: 'good',
-    view: NO_LLAMA,
+    view: DOES_NOT_CALL,
     verdict: 'No caíste · no compraste nada sin confirmar',
     outcome:
       'No hiciste el encargo sin poder hablar con quien lo pedía, y aguantaste la presión de que "se lo pido a otra persona". Ningún jefe real despide a nadie por confirmar una compra de $400. Lo que falta es avisar a Sistemas: si te llegó a ti, le está llegando a más gente.',
@@ -316,7 +316,7 @@ export const STORY: Story<ScreenNode> = {
   },
 }
 
-const SENALES: Senal[] = [
+const SIGNALS: Signal[] = [
   {
     id: 's1',
     targetId: 'remitente',
@@ -371,9 +371,9 @@ const SENALES: Senal[] = [
 const RULE =
   'Regla de oro: un encargo que llega por un <b>número nuevo</b>, con prisa y pidiendo silencio, se confirma por el canal de siempre antes de gastar un dólar. Y las <b>tarjetas de regalo</b> nunca son una forma de pagar a un proveedor: son la forma de cobrar de una estafa.'
 
-const RESUMEN = 'Tu jefa escribe desde otro número y pide comprar tarjetas de regalo con urgencia.'
+const SUMMARY = 'Tu jefa escribe desde otro número y pide comprar tarjetas de regalo con urgencia.'
 
-const CONTEXTO: Contexto = {
+const CONTEXT: Context = {
   antes: (
     <>
       Trabajas en una empresa mediana. Tu gerente, la <strong>Ing. Patricia Cedeño</strong>, te
@@ -388,14 +388,14 @@ const CONTEXTO: Contexto = {
   ),
 }
 
-function JefeUrgente() {
+function UrgentManager() {
   return (
-    <StoryEscenario
+    <ScenarioStory
       escenarioId="suplantacion/jefe-urgente"
-      resumen={RESUMEN}
-      contexto={CONTEXTO}
+      resumen={SUMMARY}
+      contexto={CONTEXT}
       story={STORY}
-      senales={SENALES}
+      senales={SIGNALS}
       rule={RULE}
       restartLabel="↻ Repetir el escenario"
       accionesEnPantalla
@@ -416,4 +416,4 @@ function JefeUrgente() {
   )
 }
 
-export default JefeUrgente
+export default UrgentManager

@@ -1,12 +1,12 @@
 import { CheckCircle2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import type { Escenario, Seccion as SeccionCatalogo } from '../data/catalogo'
-import { fetchMyRuns, type Progreso } from '../lib/api'
+import type { Scenario, Section } from '../data/catalogo'
+import { fetchMyRuns, type Progress } from '../lib/api'
 
 // Los cuatro discriminadores del diseño pedagógico (spec 2026-07-25 §3.1), fijos para
 // los seis módulos. El tercero va destacado: el propio diseño lo llama el más fiable y
 // el más fácil de usar sin conocimiento técnico.
-const DISCRIMINADORES = [
+const DISCRIMINATORS = [
   {
     pregunta: '¿Qué te piden?',
     legitimo: 'Que actúes por tu cuenta, en tu app, en la ventanilla.',
@@ -30,23 +30,23 @@ const DISCRIMINADORES = [
   },
 ] as const
 
-function formatearDuracion(ms: number): string {
-  const totalMinutos = Math.round(ms / 60000)
-  if (totalMinutos < 1) return 'menos de un minuto'
-  return totalMinutos === 1 ? '1 minuto' : `${totalMinutos} minutos`
+function formatDuration(ms: number): string {
+  const totalMinutes = Math.round(ms / 60000)
+  if (totalMinutes < 1) return 'menos de un minuto'
+  return totalMinutes === 1 ? '1 minuto' : `${totalMinutes} minutos`
 }
 
-interface CierreModuloProps {
-  seccion: SeccionCatalogo
-  escenarios: Escenario[]
-  progreso: Progreso
+interface ModuleCompletionProps {
+  seccion: Section
+  escenarios: Scenario[]
+  progreso: Progress
 }
 
 // Contenido pedagógico (los discriminadores), no una animación de recompensa. Vive en un
 // modal y no en el flujo de la página: un bloque de este tamaño siempre visible al volver
 // a la sección ya aprobada competía con las tarjetas de escenarios.
-function CierreModulo({ seccion, escenarios, progreso }: CierreModuloProps) {
-  const [duracionMs, setDuracionMs] = useState<number | null>(null)
+function ModuleCompletion({ seccion: section, escenarios: scenarios, progreso: progress }: ModuleCompletionProps) {
+  const [durationMs, setDurationMs] = useState<number | null>(null)
 
   useEffect(() => {
     let cancelled = false
@@ -57,15 +57,15 @@ function CierreModulo({ seccion, escenarios, progreso }: CierreModuloProps) {
         // Último intento por escenario, la misma regla que el gating: sumar
         // todos los intentos contaría también los que no valieron para
         // aprobar.
-        const ultimaPorEscenario = new Map<string, number>()
-        const propios = [...runs]
-          .filter((r) => r.scenarioId.startsWith(`${seccion.id}/`))
+        const latestByScenario = new Map<string, number>()
+        const own = [...runs]
+          .filter((r) => r.scenarioId.startsWith(`${section.id}/`))
           .sort((a, b) => new Date(a.finishedAt).getTime() - new Date(b.finishedAt).getTime())
-        for (const run of propios) {
-          ultimaPorEscenario.set(run.scenarioId, run.durationMs)
+        for (const run of own) {
+          latestByScenario.set(run.scenarioId, run.durationMs)
         }
-        const total = [...ultimaPorEscenario.values()].reduce((suma, ms) => suma + ms, 0)
-        setDuracionMs(total)
+        const total = [...latestByScenario.values()].reduce((sum, ms) => sum + ms, 0)
+        setDurationMs(total)
       })
       .catch(() => {
         // Informativo: sin el tiempo, el cierre se muestra igual.
@@ -74,7 +74,7 @@ function CierreModulo({ seccion, escenarios, progreso }: CierreModuloProps) {
     return () => {
       cancelled = true
     }
-  }, [seccion.id])
+  }, [section.id])
 
   return (
     <section
@@ -90,20 +90,20 @@ function CierreModulo({ seccion, escenarios, progreso }: CierreModuloProps) {
       </p>
 
       <p className="mt-2 text-base leading-relaxed text-body">
-        Aprobaste <span className="font-semibold text-ink tabular-nums">{progreso.aprobados}</span>{' '}
-        de los <span className="tabular-nums">{escenarios.length}</span> escenarios de{' '}
-        {seccion.titulo}
-        {duracionMs !== null && <> en {formatearDuracion(duracionMs)}</>}. Puedes repetir el módulo completo
+        Aprobaste <span className="font-semibold text-ink tabular-nums">{progress.aprobados}</span>{' '}
+        de los <span className="tabular-nums">{scenarios.length}</span> escenarios de{' '}
+        {section.titulo}
+        {durationMs !== null && <> en {formatDuration(durationMs)}</>}. Puedes repetir el módulo completo
         cuando quieras.
       </p>
 
       <ul aria-label="Resultado por escenario" className="mt-4 grid gap-2 sm:grid-cols-2">
-        {escenarios.map((escenario) => {
-          const resultado = progreso.escenarios.find((e) => e.id === escenario.id)
-          const ok = resultado?.ultimoOutcome === 'CORRECTO'
-          return <li key={escenario.id} className="flex items-center gap-2 text-sm text-body">
+        {scenarios.map((scenario) => {
+          const result = progress.escenarios.find((e) => e.id === scenario.id)
+          const ok = result?.ultimoOutcome === 'CORRECTO'
+          return <li key={scenario.id} className="flex items-center gap-2 text-sm text-body">
             <span aria-hidden className={ok ? 'text-success-ink' : 'text-danger'}>{ok ? '✓' : '✗'}</span>
-            {escenario.titulo}
+            {scenario.titulo}
           </li>
         })}
       </ul>
@@ -114,7 +114,7 @@ function CierreModulo({ seccion, escenarios, progreso }: CierreModuloProps) {
         </p>
 
         <dl className="mt-3 flex flex-col gap-3">
-          {DISCRIMINADORES.map((d) => (
+          {DISCRIMINATORS.map((d) => (
             <div
               key={d.pregunta}
               className={`rounded-md border p-3 ${
@@ -140,4 +140,4 @@ function CierreModulo({ seccion, escenarios, progreso }: CierreModuloProps) {
   )
 }
 
-export default CierreModulo
+export default ModuleCompletion

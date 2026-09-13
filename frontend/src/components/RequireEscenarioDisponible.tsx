@@ -1,16 +1,16 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { Navigate, useLocation } from 'react-router'
-import PantallaCarga from './PantallaCarga'
-import { escenariosDeSeccion, type Escenario } from '../data/catalogo'
-import { fetchProgreso, type Progreso } from '../lib/api'
+import LoadingScreen from './PantallaCarga'
+import { getSectionScenarios, type Scenario } from '../data/catalogo'
+import { fetchProgress, type Progress } from '../lib/api'
 import type { RunOutcome } from '../lib/api'
-import { conEscenarioIntentado, escenarioEstaDisponible } from '../lib/bloqueoEscenarios'
+import { withAttemptedScenario, isScenarioAvailable } from '../lib/bloqueoEscenarios'
 
-function RequireEscenarioDisponible({
-  escenario,
+function RequireAvailableScenario({
+  escenario: scenario,
   children,
 }: {
-  escenario: Escenario
+  escenario: Scenario
   children: ReactNode
 }) {
   // Viene del botón "Siguiente escenario": esa corrida se guarda en paralelo
@@ -18,14 +18,14 @@ function RequireEscenarioDisponible({
   // esto, la comprobación de abajo vería el escenario recién terminado como
   // "sin intentar" y rebotaría de vuelta a la sección aunque sí se completó.
   const location = useLocation()
-  const estadoNavegacion = location.state as {
+  const navigationState = location.state as {
     recienCompletado?: string
     iniciarRepeticion?: boolean
     repeticionIntentados?: { id: string; outcome: RunOutcome }[]
   } | null
-  const recienCompletado = estadoNavegacion?.recienCompletado
-  const iniciarRepeticion = estadoNavegacion?.iniciarRepeticion
-  const [progreso, setProgreso] = useState<Progreso | null>(null)
+  const recentlyCompleted = navigationState?.recienCompletado
+  const startReplay = navigationState?.iniciarRepeticion
+  const [progress, setProgress] = useState<Progress | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
 
@@ -34,9 +34,9 @@ function RequireEscenarioDisponible({
     setLoading(true)
     setError(false)
 
-    fetchProgreso(escenario.seccionId)
+    fetchProgress(scenario.seccionId)
       .then((p) => {
-        if (!cancelled) setProgreso(p)
+        if (!cancelled) setProgress(p)
       })
       .catch(() => {
         if (!cancelled) setError(true)
@@ -48,47 +48,47 @@ function RequireEscenarioDisponible({
     return () => {
       cancelled = true
     }
-  }, [escenario.seccionId])
+  }, [scenario.seccionId])
 
   if (loading) {
-    return <PantallaCarga />
+    return <LoadingScreen />
   }
 
   if (!error) {
-    const catalogo = escenariosDeSeccion(escenario.seccionId)
-    const indiceDestino = catalogo.findIndex((e) => e.id === escenario.id)
-    const indiceCompletado = recienCompletado
-      ? catalogo.findIndex((e) => e.id === recienCompletado)
+    const catalog = getSectionScenarios(scenario.seccionId)
+    const destinationIndex = catalog.findIndex((e) => e.id === scenario.id)
+    const completedIndex = recentlyCompleted
+      ? catalog.findIndex((e) => e.id === recentlyCompleted)
       : -1
     // La acción "Siguiente escenario" ya validó el orden y navega al vecino
     // inmediato. Durante esa ventana el POST puede seguir en vuelo; no hay
     // motivo para devolver al participante a la lista por una lectura vieja.
-    const siguienteTrasUnaCorrida = indiceCompletado >= 0 && indiceDestino === indiceCompletado + 1
-    const intentosProvisionales = iniciarRepeticion
-      ? estadoNavegacion?.repeticionIntentados ?? []
-      : recienCompletado ? [{ id: recienCompletado, outcome: 'CORRECTO' as const }] : []
-    const progresoEfectivo: Progreso | null = progreso
-      ? intentosProvisionales.reduce(
-          (actual, intento) => conEscenarioIntentado(actual, intento.id, intento.outcome, iniciarRepeticion),
-          progreso,
+    const nextAfterRun = completedIndex >= 0 && destinationIndex === completedIndex + 1
+    const provisionalAttempts = startReplay
+      ? navigationState?.repeticionIntentados ?? []
+      : recentlyCompleted ? [{ id: recentlyCompleted, outcome: 'CORRECTO' as const }] : []
+    const effectiveProgress: Progress | null = progress
+      ? provisionalAttempts.reduce(
+          (current, attempt) => withAttemptedScenario(current, attempt.id, attempt.outcome, startReplay),
+          progress,
         )
-      : progreso
+      : progress
 
-    const disponible = siguienteTrasUnaCorrida || escenarioEstaDisponible(
-      catalogo,
-      progresoEfectivo,
-      escenario.id,
-      { iniciandoRepeticion: iniciarRepeticion },
+    const available = nextAfterRun || isScenarioAvailable(
+      catalog,
+      effectiveProgress,
+      scenario.id,
+      { iniciandoRepeticion: startReplay },
     )
 
-    if (!disponible) {
+    if (!available) {
       // Con el título a cuestas: la sección lo usa para decir por qué cambió
       // la página sola. Sin eso, quien llega por un enlace guardado o por el
       // historial ve otra pantalla y no sabe si se equivocó de dirección, si
       // la aplicación falló o si le quitaron el acceso.
       return (
         <Navigate
-          to={`/seccion/${escenario.seccionId}`}
+          to={`/seccion/${scenario.seccionId}`}
           replace
           state={null}
         />
@@ -99,4 +99,4 @@ function RequireEscenarioDisponible({
   return children
 }
 
-export default RequireEscenarioDisponible
+export default RequireAvailableScenario

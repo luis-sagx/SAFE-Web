@@ -1,20 +1,20 @@
 import { Landmark, Newspaper, Search } from 'lucide-react'
-import StoryEscenario, { type ScreenNode } from '../../components/StoryEscenario'
-import type { Contexto } from '../../components/ui/ContextoEscenario'
-import type { MarcadorNavegador } from '../../components/ui/Navegador'
-import { ACCIONES_BARRA, finalesDeBarra } from './barraDeCorreo'
+import ScenarioStory, { type ScreenNode } from '../../components/StoryEscenario'
+import type { Context } from '../../components/ui/ContextoEscenario'
+import type { BrowserBookmark } from '../../components/ui/Navegador'
+import { ACTIONS_BAR, createToolbarEndings } from './barraDeCorreo'
 import type { Story } from '../../hooks/useStoryEngine'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
-import type { Senal } from '../../components/ui/PanelVeredicto'
-import { ENLACES_PIE } from '../../components/ui/armazonSitio'
-import { CUENTA_FICTICIA, IDENTIDAD_FICTICIA } from '../../lib/identidadFicticia'
+import type { Signal } from '../../components/ui/PanelVeredicto'
+import { FOOTER_LINKS } from '../../components/ui/armazonSitio'
+import { ACCOUNT_FAKE, IDENTITY_FAKE } from '../../lib/identidadFicticia'
 
 // Anzuelo no técnico (sin dominio casi idéntico ni clon difícil de distinguir): la señal decisiva
 // no está en la pantalla, se responde con "¿yo jugué?" — de ahí la dificultad 1.
 
-const URL_FALSA = 'http://loteria-pacifico-premios.online/reclamo'
+const FAKE_URL = 'http://loteria-pacifico-premios.online/reclamo'
 
-const CORREO: ScreenView = {
+const EMAIL: ScreenView = {
   kind: 'mail',
   from: 'Lotería del Pacífico · Premios',
   address: 'notificaciones@loteria-pacifico-premios.online',
@@ -43,7 +43,7 @@ const CORREO: ScreenView = {
       <mark class="marca" data-signal="pago">USD 85 por concepto de impuestos y validación</mark>
       antes de <mark class="marca" data-signal="plazo">hoy a las 18:00</mark>. Si el pago no se
       registra dentro del plazo, el premio será reasignado automáticamente.</p>
-    <p><a class="cta" href="${URL_FALSA}" data-hotspot-goto="n2" data-hotspot-label="Pulsó &quot;Reclamar mi premio ahora&quot; en el correo">Reclamar mi premio ahora</a></p>
+    <p><a class="cta" href="${FAKE_URL}" data-hotspot-goto="n2" data-hotspot-label="Pulsó &quot;Reclamar mi premio ahora&quot; en el correo">Reclamar mi premio ahora</a></p>
     <p class="fine">Este mensaje fue generado automáticamente. No responda a este correo.</p>
   `,
   footer: `
@@ -52,9 +52,9 @@ const CORREO: ScreenView = {
   `,
 }
 
-const RECLAMO: ScreenView = {
+const CLAIM: ScreenView = {
   kind: 'web',
-  url: URL_FALSA,
+  url: FAKE_URL,
   secure: false,
   senalUrl: 'url-insegura',
   brand: 'Lotería del Pacífico',
@@ -70,7 +70,7 @@ const RECLAMO: ScreenView = {
   aviso:
     'El pago del impuesto es un requisito de ley y no puede descontarse del monto premiado. Los datos que registre se usan únicamente para acreditar la transferencia.',
   footer: 'Lotería del Pacífico · Departamento de Premios y Reclamos',
-  pie: ENLACES_PIE,
+  pie: FOOTER_LINKS,
   button: 'Pagar $85 y liberar mi premio',
   botonGoto: 'e_paga',
   botonLabel: 'Pagó los $85 para liberar el premio',
@@ -79,7 +79,7 @@ const RECLAMO: ScreenView = {
 }
 
 // El buscador: no existe ninguna lotería con ese nombre, y eso desmonta el correo entero.
-const BUSCADOR: ScreenView = {
+const SEARCH: ScreenView = {
   kind: 'web',
   url: 'https://www.buscador.ec/?q=loteria+del+pacifico',
   secure: true,
@@ -116,19 +116,19 @@ const BUSCADOR: ScreenView = {
 }
 
 const STORY: Story<ScreenNode> = {
-  ...finalesDeBarra('fraude', CORREO),
-  n1: { kind: 'scene', view: CORREO },
-  n2: { kind: 'scene', view: RECLAMO },
-  n3: { kind: 'scene', view: BUSCADOR },
+  ...createToolbarEndings('fraude', EMAIL),
+  n1: { kind: 'scene', view: EMAIL },
+  n2: { kind: 'scene', view: CLAIM },
+  n3: { kind: 'scene', view: SEARCH },
   e_paga: {
     kind: 'bad',
-    view: RECLAMO,
+    view: CLAIM,
     verdict: 'Caíste en la estafa',
-    outcome: `Pagaste los $85 y, de paso, entregaste tu cédula ${IDENTIDAD_FICTICIA.cedula} y tu cuenta ${CUENTA_FICTICIA}. El premio no llegó: llegó otro correo pidiendo un "seguro de transferencia" de $190. Así funciona: cada pago abre la puerta al siguiente, y quien ya pagó cuesta más que se detenga. Los datos, además, ya no se pueden recuperar.`,
+    outcome: `Pagaste los $85 y, de paso, entregaste tu cédula ${IDENTITY_FAKE.cedula} y tu cuenta ${ACCOUNT_FAKE}. El premio no llegó: llegó otro correo pidiendo un "seguro de transferencia" de $190. Así funciona: cada pago abre la puerta al siguiente, y quien ya pagó cuesta más que se detenga. Los datos, además, ya no se pueden recuperar.`,
   },
 }
 
-const MARCADORES: MarcadorNavegador[] = [
+const MARKERS: BrowserBookmark[] = [
   { Icono: Landmark, texto: 'Banco del Litoral' },
   {
     Icono: Search,
@@ -139,7 +139,7 @@ const MARCADORES: MarcadorNavegador[] = [
   { Icono: Newspaper, texto: 'Diario Andino' },
 ]
 
-const INSTRUCCION = (
+const INSTRUCTION = (
   <>
     <p className="text-lg leading-relaxed text-body">
       Actúa sobre la ventana como lo harías frente a tu correo de verdad: puedes usar{' '}
@@ -154,7 +154,7 @@ const INSTRUCCION = (
   </>
 )
 
-const PISTA = (
+const CLUE = (
   <p>
     Tienes cuatro caminos posibles: hacer lo que el correo pide, contestarle, decidir qué hacer con
     el mensaje desde la barra del cliente, o comprobar por tu cuenta si esa lotería existe. Cuál de
@@ -162,7 +162,7 @@ const PISTA = (
   </p>
 )
 
-const SENALES: Senal[] = [
+const SIGNALS: Signal[] = [
   {
     id: 'sin-jugar',
     pantalla: 'n1',
@@ -200,7 +200,7 @@ const SENALES: Senal[] = [
   },
 ]
 
-const SENAL_BUSCADOR: Senal = {
+const SIGNAL_SEARCH: Signal = {
   id: 'sin-registro',
   pantalla: 'n3',
   targetId: 'sin-registro',
@@ -211,10 +211,10 @@ const SENAL_BUSCADOR: Senal = {
 const RULE =
   'Regla de oro: <b>nunca se paga para cobrar un premio</b>. Y antes de mirar cualquier otra señal, pregúntate si llegaste a jugar: si no compraste el boleto, no hay premio que reclamar.'
 
-const RESUMEN =
+const SUMMARY =
   'Un correo anuncia que ganaste un premio de una lotería y pide un pago para cobrarlo.'
 
-const CONTEXTO: Contexto = {
+const CONTEXT: Context = {
   antes: 'No juegas a la lotería: no recuerdas haber comprado ningún boleto.',
   ahora: (
     <>
@@ -224,23 +224,23 @@ const CONTEXTO: Contexto = {
   ),
 }
 
-function LoteriaPremiada() {
+function LotteryPrize() {
   return (
-    <StoryEscenario
+    <ScenarioStory
       escenarioId="phishing/loteria-premiada"
-      resumen={RESUMEN}
-      contexto={CONTEXTO}
+      resumen={SUMMARY}
+      contexto={CONTEXT}
       story={STORY}
-      accionesCorreo={ACCIONES_BARRA}
+      accionesCorreo={ACTIONS_BAR}
       identidad={['cedula', 'cuenta']}
-      marcadores={MARCADORES}
-      instruccion={INSTRUCCION}
-      pista={PISTA}
-      senales={[...SENALES, SENAL_BUSCADOR]}
+      marcadores={MARKERS}
+      instruccion={INSTRUCTION}
+      pista={CLUE}
+      senales={[...SIGNALS, SIGNAL_SEARCH]}
       rule={RULE}
       restartLabel="↻ Repetir el escenario"
     />
   )
 }
 
-export default LoteriaPremiada
+export default LotteryPrize

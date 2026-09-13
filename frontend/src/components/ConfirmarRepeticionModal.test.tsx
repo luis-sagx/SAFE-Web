@@ -1,14 +1,14 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
 import { describe, expect, it, vi } from 'vitest'
-import ConfirmarRepeticionModal from './ConfirmarRepeticionModal'
+import ConfirmReplayModal from './ConfirmarRepeticionModal'
 
-function renderModal(props: Partial<React.ComponentProps<typeof ConfirmarRepeticionModal>> = {}) {
+function renderModal(props: Partial<React.ComponentProps<typeof ConfirmReplayModal>> = {}) {
   const onClose = vi.fn()
   const onConfirm = vi.fn()
   render(
     <MemoryRouter>
-      <ConfirmarRepeticionModal
+      <ConfirmReplayModal
         seccionId="fisico"
         titulo="Seguridad física"
         aprobados={6}

@@ -1,4 +1,4 @@
-interface CampoProps {
+interface FieldProps {
   id: string
   label: string
   type?: string
@@ -16,7 +16,7 @@ interface CampoProps {
   error?: string
 }
 
-function Campo({
+function Field({
   id,
   label,
   type = 'text',
@@ -25,12 +25,12 @@ function Campo({
   onBlur,
   autoComplete,
   placeholder,
-  ayuda,
+  ayuda: help,
   maxLength,
   inputMode,
   error,
-}: CampoProps) {
-  const ayudaId = ayuda ? `${id}-ayuda` : undefined
+}: FieldProps) {
+  const helpId = help ? `${id}-ayuda` : undefined
   const errorId = error ? `${id}-error` : undefined
 
   return (
@@ -51,7 +51,7 @@ function Campo({
         inputMode={inputMode}
         required
         aria-invalid={error ? true : undefined}
-        aria-describedby={[errorId, ayudaId].filter(Boolean).join(' ') || undefined}
+        aria-describedby={[errorId, helpId].filter(Boolean).join(' ') || undefined}
         className={`mt-1.5 h-11 w-full rounded-md border bg-surface px-4 text-base text-ink placeholder:text-muted-soft focus:outline-none focus:ring-1 ${
           error
             ? 'border-danger focus:border-danger focus:ring-danger'
@@ -66,13 +66,13 @@ function Campo({
           {error}
         </p>
       )}
-      {ayuda && !error && (
-        <p id={ayudaId} className="mt-1 text-sm text-muted">
-          {ayuda}
+      {help && !error && (
+        <p id={helpId} className="mt-1 text-sm text-muted">
+          {help}
         </p>
       )}
     </div>
   )
 }
 
-export default Campo
+export default Field

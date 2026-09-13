@@ -1,31 +1,31 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import CertificadoBoton from './CertificadoBoton'
+import CertificateButton from './CertificadoBoton'
 import { ApiError } from '../lib/api'
 
-const { fetchAtestacionMock, emitirCertificadoMock, descargarCertificadoPdfMock } = vi.hoisted(
+const { fetchAttestationMock, issueCertificateMock, downloadCertificatePdfMock } = vi.hoisted(
   () => ({
-    fetchAtestacionMock: vi.fn(),
-    emitirCertificadoMock: vi.fn(),
-    descargarCertificadoPdfMock: vi.fn(),
+    fetchAttestationMock: vi.fn(),
+    issueCertificateMock: vi.fn(),
+    downloadCertificatePdfMock: vi.fn(),
   }),
 )
 
 vi.mock('../lib/api', async () => {
-  const actual = await vi.importActual<typeof import('../lib/api')>('../lib/api')
+  const current = await vi.importActual<typeof import('../lib/api')>('../lib/api')
   return {
-    ...actual,
-    fetchAtestacion: fetchAtestacionMock,
-    emitirCertificado: emitirCertificadoMock,
-    descargarCertificadoPdf: descargarCertificadoPdfMock,
+    ...current,
+    fetchAttestation: fetchAttestationMock,
+    issueCertificate: issueCertificateMock,
+    downloadCertificatePdf: downloadCertificatePdfMock,
   }
 })
 
 describe('CertificadoBoton', () => {
   beforeEach(() => {
-    fetchAtestacionMock.mockReset()
-    emitirCertificadoMock.mockReset()
-    descargarCertificadoPdfMock.mockReset()
+    fetchAttestationMock.mockReset()
+    issueCertificateMock.mockReset()
+    downloadCertificatePdfMock.mockReset()
     URL.createObjectURL = vi.fn(() => 'blob:falso')
     URL.revokeObjectURL = vi.fn()
   })
@@ -35,26 +35,26 @@ describe('CertificadoBoton', () => {
   })
 
   it('encadena atestación → emisión → descarga, en ese orden', async () => {
-    const orden: string[] = []
-    fetchAtestacionMock.mockImplementation(async () => {
-      orden.push('atestacion')
+    const order: string[] = []
+    fetchAttestationMock.mockImplementation(async () => {
+      order.push('atestacion')
       return { atestacion: 'un.jwt.firmado' }
     })
-    emitirCertificadoMock.mockImplementation(async (atestacion: string) => {
-      orden.push('emitir:' + atestacion)
+    issueCertificateMock.mockImplementation(async (attestation: string) => {
+      order.push('emitir:' + attestation)
       return { codigo: 'SW-AAAA-BBBB' }
     })
-    descargarCertificadoPdfMock.mockImplementation(async (atestacion: string) => {
-      orden.push('pdf:' + atestacion)
+    downloadCertificatePdfMock.mockImplementation(async (attestation: string) => {
+      order.push('pdf:' + attestation)
       return new Blob(['%PDF-'])
     })
 
-    render(<CertificadoBoton />)
+    render(<CertificateButton />)
     fireEvent.click(screen.getByRole('button', { name: 'Descargar certificado' }))
 
     await waitFor(() => expect(URL.createObjectURL).toHaveBeenCalled())
 
-    expect(orden).toEqual([
+    expect(order).toEqual([
       'atestacion',
       'emitir:un.jwt.firmado',
       'pdf:un.jwt.firmado',
@@ -65,10 +65,10 @@ describe('CertificadoBoton', () => {
   })
 
   it('un ApiError (p. ej. 409 por progreso cambiado) muestra el aviso sin registrar en consola', async () => {
-    fetchAtestacionMock.mockRejectedValue(new ApiError('Todavía no apruebas todos los módulos.', 409))
+    fetchAttestationMock.mockRejectedValue(new ApiError('Todavía no apruebas todos los módulos.', 409))
     const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
 
-    render(<CertificadoBoton />)
+    render(<CertificateButton />)
     fireEvent.click(screen.getByRole('button', { name: 'Descargar certificado' }))
 
     expect(
@@ -78,10 +78,10 @@ describe('CertificadoBoton', () => {
   })
 
   it('un error inesperado también muestra el aviso, y sí se registra en consola', async () => {
-    fetchAtestacionMock.mockRejectedValue(new Error('falla de red'))
+    fetchAttestationMock.mockRejectedValue(new Error('falla de red'))
     const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
 
-    render(<CertificadoBoton />)
+    render(<CertificateButton />)
     fireEvent.click(screen.getByRole('button', { name: 'Descargar certificado' }))
 
     await screen.findByText('No se pudo generar el certificado. Vuelve a intentarlo en un momento.')

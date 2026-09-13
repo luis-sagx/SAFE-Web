@@ -1,15 +1,15 @@
 import type { ReactNode } from 'react'
-import StoryEscenario, { type ScreenNode } from '../../components/StoryEscenario'
-import type { Contexto } from '../../components/ui/ContextoEscenario'
-import type { Senal } from '../../components/ui/PanelVeredicto'
+import ScenarioStory, { type ScreenNode } from '../../components/StoryEscenario'
+import type { Context } from '../../components/ui/ContextoEscenario'
+import type { Signal } from '../../components/ui/PanelVeredicto'
 import type { Story } from '../../hooks/useStoryEngine'
 
-interface EscenarioChatIAProps {
+interface AIChatScenarioProps {
   escenarioId: string
   resumen: string
-  contexto: Contexto
+  contexto: Context
   story: Story<ScreenNode>
-  senales: Senal[]
+  senales: Signal[]
   rule: string
   /** Reemplaza el texto por defecto ("...para contestarle a la IA"). Los guiones
    *  donde la elección es qué se pega, y no qué se responde, lo cambian. */
@@ -20,36 +20,36 @@ interface EscenarioChatIAProps {
 }
 
 // Marco común de los 4 escenarios de asistentes-ia: el mismo <StoryEscenario> se repetía en los cuatro archivos (SonarCloud lo marcaba como duplicación).
-function EscenarioChatIA({
-  escenarioId,
-  resumen,
-  contexto,
+function AIChatScenario({
+  escenarioId: scenarioId,
+  resumen: summary,
+  contexto: context,
   story,
-  senales,
+  senales: signals,
   rule,
-  instruccion,
-  pista,
-}: EscenarioChatIAProps) {
+  instruccion: instruction,
+  pista: clue,
+}: AIChatScenarioProps) {
   return (
-    <StoryEscenario
-      escenarioId={escenarioId}
-      resumen={resumen}
-      contexto={contexto}
+    <ScenarioStory
+      escenarioId={scenarioId}
+      resumen={summary}
+      contexto={context}
       story={story}
-      senales={senales}
+      senales={signals}
       rule={rule}
       accionesEnPantalla
       cuandoTermina="Cuando toques una de las respuestas del chat."
       instruccion={
-        instruccion ?? (
+        instruction ?? (
           <p className="text-lg leading-relaxed text-body">
             Toca una de las respuestas para contestarle a la IA.
           </p>
         )
       }
-      pista={pista}
+      pista={clue}
     />
   )
 }
 
-export default EscenarioChatIA
+export default AIChatScenario

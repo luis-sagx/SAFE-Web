@@ -1,24 +1,24 @@
 import PDFDocument from 'pdfkit';
-import { ISOTIPO_SAFEWEB_PNG_BASE64 } from './isotipo-safeweb';
+import { SAFEWEB_MARK_PNG_BASE64 } from './isotipo-safeweb';
 
-const ISOTIPO_SAFEWEB = Buffer.from(ISOTIPO_SAFEWEB_PNG_BASE64, 'base64');
+const SAFEWEB_MARK = Buffer.from(SAFEWEB_MARK_PNG_BASE64, 'base64');
 
 // Paleta propia del PDF, más ornamentada que la del sistema de diseño de la app: las
 // reglas de DESIGN.md (un solo verde, sin degradados) son para la interfaz en pantalla,
 // no para un documento que se imprime; el PDF tampoco tiene acceso a los tokens de Tailwind.
-const VERDE_OSCURO = '#00401f';
-const VERDE_MARCA = '#006837';
-const DORADO = '#b6903f';
-const DORADO_CLARO = '#d9bd7a';
-const CREMA = '#faf7ef';
-const TINTA = '#1a1a1a';
-const GRIS_TEXTO = '#4a4f57';
-const GRIS_LINEA = '#d8cfb8';
+const DARK_GREEN = '#00401f';
+const BRAND_GREEN = '#006837';
+const GOLD = '#b6903f';
+const LIGHT_GOLD = '#d9bd7a';
+const CREAM = '#faf7ef';
+const INK = '#1a1a1a';
+const TEXT_GRAY = '#4a4f57';
+const LINE_GRAY = '#d8cfb8';
 
-const ALTO_BANNER = 148;
-const MARGEN = 46;
+const BANNER_HEIGHT = 148;
+const MARGIN = 46;
 
-export interface DatosCertificado {
+export interface CertificateData {
   nombreCompleto: string;
   modulos: string[];
   horas: number;
@@ -30,13 +30,13 @@ export interface DatosCertificado {
   origen: string;
 }
 
-const FORMATO_FECHA = new Intl.DateTimeFormat('es-EC', {
+const DATE_FORMAT = new Intl.DateTimeFormat('es-EC', {
   day: 'numeric',
   month: 'long',
   year: 'numeric',
 });
 
-const TITULO_MODULO: Record<string, string> = {
+const MODULE_TITLE: Record<string, string> = {
   phishing: 'Phishing',
   smishing: 'Smishing',
   vishing: 'Vishing',
@@ -45,15 +45,15 @@ const TITULO_MODULO: Record<string, string> = {
   fisico: 'Riesgo físico',
 };
 
-function tituloDe(modulo: string): string {
-  return TITULO_MODULO[modulo] ?? modulo;
+function getTitle(module: string): string {
+  return MODULE_TITLE[module] ?? module;
 }
 
 type Doc = PDFKit.PDFDocument;
 
-function dibujarReloj(doc: Doc, cx: number, cy: number, r: number): void {
+function drawClock(doc: Doc, cx: number, cy: number, r: number): void {
   doc.save();
-  doc.lineWidth(1.4).strokeColor(DORADO).circle(cx, cy, r).stroke();
+  doc.lineWidth(1.4).strokeColor(GOLD).circle(cx, cy, r).stroke();
   doc
     .lineWidth(1.2)
     .lineCap('round')
@@ -65,13 +65,13 @@ function dibujarReloj(doc: Doc, cx: number, cy: number, r: number): void {
   doc.restore();
 }
 
-function dibujarCalendario(doc: Doc, cx: number, cy: number, r: number): void {
+function drawCalendar(doc: Doc, cx: number, cy: number, r: number): void {
   const w = r * 1.8;
   const h = r * 1.6;
   const x = cx - w / 2;
   const y = cy - h / 2 + r * 0.15;
   doc.save();
-  doc.lineWidth(1.4).strokeColor(DORADO).roundedRect(x, y, w, h, 1.5).stroke();
+  doc.lineWidth(1.4).strokeColor(GOLD).roundedRect(x, y, w, h, 1.5).stroke();
   doc
     .moveTo(x, y + h * 0.32)
     .lineTo(x + w, y + h * 0.32)
@@ -90,9 +90,7 @@ function dibujarCalendario(doc: Doc, cx: number, cy: number, r: number): void {
 // pdfkit porque escribir un PDF a mano no son "unas pocas líneas" (§10 ARQUITECTURA.md) y
 // un navegador headless costaría cientos de MB por una página. Sin QR ni firma (el código
 // de verificación basta), sin escudo ESPE (requiere autorización) y sin cédula (§7.1).
-export function generarCertificadoPdf(
-  datos: DatosCertificado,
-): Promise<Buffer> {
+export function generateCertificatePdf(data: CertificateData): Promise<Buffer> {
   return new Promise((resolve, reject) => {
     const doc = new PDFDocument({ size: 'A4', layout: 'landscape', margin: 0 });
     const chunks: Buffer[] = [];
@@ -101,53 +99,49 @@ export function generarCertificadoPdf(
     doc.on('end', () => resolve(Buffer.concat(chunks)));
     doc.on('error', reject);
 
-    const ancho = doc.page.width;
-    const alto = doc.page.height;
+    const width = doc.page.width;
+    const height = doc.page.height;
 
-    doc.rect(0, 0, ancho, alto).fill(CREMA);
+    doc.rect(0, 0, width, height).fill(CREAM);
     doc
-      .rect(10, 10, ancho - 20, alto - 20)
+      .rect(10, 10, width - 20, height - 20)
       .lineWidth(1.5)
-      .strokeColor(DORADO)
+      .strokeColor(GOLD)
       .stroke();
 
     // Degradado vertical sutil, no el tricolor horizontal "brillo de plástico" de la v1:
     // un solo tono que oscurece hacia abajo lee como impreso, no como un ícono generado por IA.
-    const degradado = doc.linearGradient(0, 0, 0, ALTO_BANNER);
-    degradado.stop(0, VERDE_MARCA).stop(1, VERDE_OSCURO);
-    doc.rect(0, 0, ancho, ALTO_BANNER).fill(degradado);
-    doc.rect(0, ALTO_BANNER - 2, ancho, 2).fill(DORADO);
+    const gradient = doc.linearGradient(0, 0, 0, BANNER_HEIGHT);
+    gradient.stop(0, BRAND_GREEN).stop(1, DARK_GREEN);
+    doc.rect(0, 0, width, BANNER_HEIGHT).fill(gradient);
+    doc.rect(0, BANNER_HEIGHT - 2, width, 2).fill(GOLD);
 
     // El lockup insignia + título se centra como grupo: se mide el texto
     // antes de dibujar nada, para no adivinar un ancho fijo que se
     // desalinee si el nombre "SAFE Web" cambiara de tamaño de fuente.
     doc.font('Times-Bold').fontSize(38);
-    const anchoTitulo = doc.widthOfString('SAFE Web');
-    const insigniaLado = 58;
-    const espacioIconoTexto = 18;
-    const anchoGrupo = insigniaLado + espacioIconoTexto + anchoTitulo;
-    const xGrupo = (ancho - anchoGrupo) / 2;
+    const titleWidth = doc.widthOfString('SAFE Web');
+    const badgeSide = 58;
+    const iconTextSpacing = 18;
+    const groupWidth = badgeSide + iconTextSpacing + titleWidth;
+    const xGrupo = (width - groupWidth) / 2;
     // Centrado más arriba de la mitad del banner, con hueco fijo debajo para el subtítulo:
     // pdfkit reserva el texto de 38pt más alto de lo que el ojo ve, y centrar ambos en el
     // mismo punto medio dejaba el subtítulo pegado contra la "W".
-    const yLockup = ALTO_BANNER * 0.4;
-    const ySubtitulo = yLockup + 34;
+    const yLockup = BANNER_HEIGHT * 0.4;
+    const ySubtitle = yLockup + 34;
 
     // Isotipo real de SafeWeb sobre insignia blanca, para que su verde no se pierda contra
     // el del banner.
-    const insigniaY = yLockup - insigniaLado / 2 - 4;
+    const badgeY = yLockup - badgeSide / 2 - 4;
     doc
       .save()
-      .circle(
-        xGrupo + insigniaLado / 2,
-        insigniaY + insigniaLado / 2,
-        insigniaLado / 2,
-      )
+      .circle(xGrupo + badgeSide / 2, badgeY + badgeSide / 2, badgeSide / 2)
       .fill('#ffffff');
-    const relleno = 9;
-    doc.image(ISOTIPO_SAFEWEB, xGrupo + relleno / 2, insigniaY + relleno / 2, {
-      width: insigniaLado - relleno,
-      height: insigniaLado - relleno,
+    const padding = 9;
+    doc.image(SAFEWEB_MARK, xGrupo + padding / 2, badgeY + padding / 2, {
+      width: badgeSide - padding,
+      height: badgeSide - padding,
     });
     doc.restore();
 
@@ -155,37 +149,32 @@ export function generarCertificadoPdf(
       .fillColor('#ffffff')
       .font('Times-Bold')
       .fontSize(38)
-      .text(
-        'SAFE Web',
-        xGrupo + insigniaLado + espacioIconoTexto,
-        yLockup - 27,
-        {
-          width: anchoTitulo + 4,
-          lineBreak: false,
-        },
-      );
+      .text('SAFE Web', xGrupo + badgeSide + iconTextSpacing, yLockup - 27, {
+        width: titleWidth + 4,
+        lineBreak: false,
+      });
 
     // characterSpacing (Tc, avance fijo en puntos) y no espacios literales: un espacio de
     // verdad mide distinto según la fuente que sustituya el lector, y con un título largo
     // eso bastaba para salirse de la página en algunos lectores.
     doc
-      .fillColor(DORADO_CLARO)
+      .fillColor(LIGHT_GOLD)
       .font('Helvetica-Bold')
       .fontSize(11)
-      .text('ENTRENAMIENTO EN CIBERSEGURIDAD', 0, ySubtitulo, {
-        width: ancho,
+      .text('ENTRENAMIENTO EN CIBERSEGURIDAD', 0, ySubtitle, {
+        width: width,
         align: 'center',
         characterSpacing: 1.5,
       });
 
-    let y = ALTO_BANNER + 34;
+    let y = BANNER_HEIGHT + 34;
 
     doc
-      .fillColor(TINTA)
+      .fillColor(INK)
       .font('Times-Bold')
       .fontSize(20)
-      .text('CERTIFICADO DE APROVECHAMIENTO', MARGEN, y, {
-        width: ancho - MARGEN * 2,
+      .text('CERTIFICADO DE APROVECHAMIENTO', MARGIN, y, {
+        width: width - MARGIN * 2,
         align: 'center',
         characterSpacing: 2,
       });
@@ -195,180 +184,180 @@ export function generarCertificadoPdf(
     // nombres y apellidos pasa fácil los ~28 caracteres a tamaño 40, y envolver a una segunda
     // línea empujaba el resto del certificado a desbordar a una página en blanco.
     doc.font('Times-BoldItalic');
-    const anchoNombreDisponible = ancho - MARGEN * 2 - 20;
-    let nombreFontSize = 40;
+    const availableNameWidth = width - MARGIN * 2 - 20;
+    let nameFontSize = 40;
     while (
-      nombreFontSize > 22 &&
-      doc.fontSize(nombreFontSize).widthOfString(datos.nombreCompleto) >
-        anchoNombreDisponible
+      nameFontSize > 22 &&
+      doc.fontSize(nameFontSize).widthOfString(data.nombreCompleto) >
+        availableNameWidth
     ) {
-      nombreFontSize -= 2;
+      nameFontSize -= 2;
     }
     doc
-      .fillColor(TINTA)
-      .fontSize(nombreFontSize)
-      .text(datos.nombreCompleto, MARGEN, y, {
-        width: ancho - MARGEN * 2,
+      .fillColor(INK)
+      .fontSize(nameFontSize)
+      .text(data.nombreCompleto, MARGIN, y, {
+        width: width - MARGIN * 2,
         align: 'center',
         lineBreak: false,
       });
     y = doc.y + 16;
 
     doc
-      .fillColor(GRIS_TEXTO)
+      .fillColor(TEXT_GRAY)
       .font('Helvetica')
       .fontSize(12)
       .text(
         'Ha completado satisfactoriamente el entrenamiento especializado en el ' +
           'reconocimiento de las principales ciberamenazas dirigidas a usuarios ' +
           'no técnicos en el Ecuador.',
-        ancho * 0.14,
+        width * 0.14,
         y,
-        { width: ancho * 0.72, align: 'center', lineGap: 3 },
+        { width: width * 0.72, align: 'center', lineGap: 3 },
       );
     y = doc.y + 22;
 
     doc
-      .moveTo(ancho * 0.12, y)
-      .lineTo(ancho * 0.88, y)
+      .moveTo(width * 0.12, y)
+      .lineTo(width * 0.88, y)
       .lineWidth(1)
-      .strokeColor(GRIS_LINEA)
+      .strokeColor(LINE_GRAY)
       .stroke();
     y += 28;
 
     // Tres columnas con espacio de sobra para su contenido más largo. La v1 las apretaba en
     // cuatro contra "temas de estudio" y ni la etiqueta ni la fecha cabían; separarlas en
     // dos filas les da el ancho que necesitan.
-    const xCol1 = ancho * 0.06;
-    const xCol2 = ancho * 0.37;
-    const xCol3 = ancho * 0.68;
-    const xFinFila = ancho * 0.94;
-    const separador1 = (xCol1 + xCol2) / 2;
-    const separador2 = (xCol2 + xCol3) / 2;
+    const xCol1 = width * 0.06;
+    const xCol2 = width * 0.37;
+    const xCol3 = width * 0.68;
+    const xFinRow = width * 0.94;
+    const separator1 = (xCol1 + xCol2) / 2;
+    const separator2 = (xCol2 + xCol3) / 2;
     const yColBase = y;
 
-    dibujarReloj(doc, xCol1 + 9, yColBase + 9, 9);
+    drawClock(doc, xCol1 + 9, yColBase + 9, 9);
     doc
-      .fillColor(GRIS_TEXTO)
+      .fillColor(TEXT_GRAY)
       .font('Helvetica-Bold')
       .fontSize(9)
       .text('DURACIÓN', xCol1 + 24, yColBase, { characterSpacing: 0.5 });
     doc
-      .fillColor(TINTA)
+      .fillColor(INK)
       .font('Helvetica-Bold')
       .fontSize(13)
-      .text(`${datos.horas} horas`, xCol1 + 24, yColBase + 15);
+      .text(`${data.horas} horas`, xCol1 + 24, yColBase + 15);
 
     doc
-      .fillColor(GRIS_TEXTO)
+      .fillColor(TEXT_GRAY)
       .font('Helvetica-Bold')
       .fontSize(9)
       .text('CALIFICACIÓN', xCol2, yColBase, {
-        width: separador2 - xCol2 - 16,
+        width: separator2 - xCol2 - 16,
         characterSpacing: 0.5,
       });
     doc
-      .fillColor(TINTA)
+      .fillColor(INK)
       .font('Helvetica-Bold')
       .fontSize(13)
-      .text(`${datos.calificacion}/48`, xCol2, yColBase + 15);
+      .text(`${data.calificacion}/48`, xCol2, yColBase + 15);
 
-    dibujarCalendario(doc, xCol3 + 9, yColBase + 9, 9);
+    drawCalendar(doc, xCol3 + 9, yColBase + 9, 9);
     doc
-      .fillColor(GRIS_TEXTO)
+      .fillColor(TEXT_GRAY)
       .font('Helvetica-Bold')
       .fontSize(9)
       .text('EMITIDO', xCol3 + 24, yColBase, { characterSpacing: 0.5 });
     doc
-      .fillColor(TINTA)
+      .fillColor(INK)
       .font('Helvetica-Bold')
       .fontSize(12)
-      .text(FORMATO_FECHA.format(datos.emitidoAt), xCol3 + 24, yColBase + 15, {
-        width: xFinFila - (xCol3 + 24),
+      .text(DATE_FORMAT.format(data.emitidoAt), xCol3 + 24, yColBase + 15, {
+        width: xFinRow - (xCol3 + 24),
         lineBreak: false,
       });
 
-    const altoFilaStats = 46;
+    const statsRowHeight = 46;
     doc
-      .moveTo(separador1, yColBase - 4)
-      .lineTo(separador1, yColBase + altoFilaStats)
+      .moveTo(separator1, yColBase - 4)
+      .lineTo(separator1, yColBase + statsRowHeight)
       .lineWidth(0.75)
-      .strokeColor(GRIS_LINEA)
+      .strokeColor(LINE_GRAY)
       .stroke();
     doc
-      .moveTo(separador2, yColBase - 4)
-      .lineTo(separador2, yColBase + altoFilaStats)
+      .moveTo(separator2, yColBase - 4)
+      .lineTo(separator2, yColBase + statsRowHeight)
       .lineWidth(0.75)
-      .strokeColor(GRIS_LINEA)
+      .strokeColor(LINE_GRAY)
       .stroke();
 
     // Párrafo centrado con punto medio como separador, no una grilla con un glifo por
     // amenaza: los íconos a este tamaño se leían como emojis sueltos, no formales.
-    let yTemas = yColBase + altoFilaStats + 14;
+    let yTemas = yColBase + statsRowHeight + 14;
     doc
-      .moveTo(MARGEN, yTemas - 10)
-      .lineTo(ancho - MARGEN, yTemas - 10)
+      .moveTo(MARGIN, yTemas - 10)
+      .lineTo(width - MARGIN, yTemas - 10)
       .lineWidth(1)
-      .strokeColor(GRIS_LINEA)
+      .strokeColor(LINE_GRAY)
       .stroke();
 
     doc
-      .fillColor(GRIS_TEXTO)
+      .fillColor(TEXT_GRAY)
       .font('Helvetica-Bold')
       .fontSize(9)
-      .text('TEMAS DE ESTUDIO', MARGEN, yTemas, {
-        width: ancho - MARGEN * 2,
+      .text('TEMAS DE ESTUDIO', MARGIN, yTemas, {
+        width: width - MARGIN * 2,
         align: 'center',
         characterSpacing: 0.5,
       });
     yTemas += 18;
 
     doc
-      .fillColor(TINTA)
+      .fillColor(INK)
       .font('Helvetica')
       .fontSize(11)
       .text(
-        datos.modulos.map((modulo) => tituloDe(modulo)).join('   ·   '),
-        MARGEN,
+        data.modulos.map((module) => getTitle(module)).join('   ·   '),
+        MARGIN,
         yTemas,
-        { width: ancho - MARGEN * 2, align: 'center', lineGap: 4 },
+        { width: width - MARGIN * 2, align: 'center', lineGap: 4 },
       );
     yTemas = doc.y;
 
     // La línea sigue al contenido real (temas o fecha, lo que llegue más abajo) en vez de
     // una distancia fija: con 5 módulos en dos filas y 6 en tres, una posición fija dejaba
     // hueco muerto o apretaba. Con un mínimo, para que una lista corta no suba el pie.
-    const finContenido = Math.max(yTemas, yColBase + 46);
-    const yPie = Math.max(finContenido + 32, alto - 96);
+    const contentEnd = Math.max(yTemas, yColBase + 46);
+    const yPie = Math.max(contentEnd + 32, height - 96);
 
     doc
-      .moveTo(MARGEN, yPie)
-      .lineTo(ancho - MARGEN, yPie)
+      .moveTo(MARGIN, yPie)
+      .lineTo(width - MARGIN, yPie)
       .lineWidth(1)
-      .strokeColor(DORADO)
+      .strokeColor(GOLD)
       .stroke();
 
     // Bloque centrado: sin el sello que ocupaba el centro, la verificación pegada al margen
     // dejaba la mitad derecha del pie vacía y descompensada.
     doc
-      .fillColor(GRIS_TEXTO)
+      .fillColor(TEXT_GRAY)
       .font('Helvetica-Bold')
       .fontSize(9)
       .text('CÓDIGO DE VERIFICACIÓN', 0, yPie + 20, {
-        width: ancho,
+        width: width,
         align: 'center',
       });
     doc
-      .fillColor(TINTA)
+      .fillColor(INK)
       .font('Helvetica-Bold')
       .fontSize(15)
-      .text(datos.codigo, 0, yPie + 33, { width: ancho, align: 'center' });
+      .text(data.codigo, 0, yPie + 33, { width: width, align: 'center' });
     doc
-      .fillColor(GRIS_TEXTO)
+      .fillColor(TEXT_GRAY)
       .font('Helvetica')
       .fontSize(9.5)
-      .text(`${datos.origen}/verificar/${datos.codigo}`, 0, yPie + 53, {
-        width: ancho,
+      .text(`${data.origen}/verificar/${data.codigo}`, 0, yPie + 53, {
+        width: width,
         align: 'center',
       });
 

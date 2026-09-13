@@ -4,7 +4,7 @@ import cookieParser from 'cookie-parser';
 
 /// Aparte de main.ts para que las pruebas end-to-end levanten la misma app que
 /// corre en el servidor, y para que los dos servicios se configuren igual.
-export function configurarApp(app: INestApplication): INestApplication {
+export function configureApp(app: INestApplication): INestApplication {
   app.setGlobalPrefix('api');
 
   // Solo `identidad` lee una cookie (el refresh token, en POST /auth/refresh),
@@ -34,11 +34,11 @@ export function configurarApp(app: INestApplication): INestApplication {
 }
 
 /// Arranque compartido: misma configuración, mismo CORS, distinto puerto.
-export async function arrancar(
+export async function bootstrap(
   crear: () => Promise<INestApplication>,
-  puertoPorDefecto: number,
+  defaultPort: number,
 ): Promise<void> {
-  const app = configurarApp(await crear());
+  const app = configureApp(await crear());
 
   // En producción comparten origen vía Nginx; CORS solo hace falta en dev.
   const origins = process.env.CORS_ORIGINS?.split(',').filter(Boolean) ?? [];
@@ -46,5 +46,5 @@ export async function arrancar(
     app.enableCors({ origin: origins, credentials: false });
   }
 
-  await app.listen(process.env.PORT ?? puertoPorDefecto);
+  await app.listen(process.env.PORT ?? defaultPort);
 }

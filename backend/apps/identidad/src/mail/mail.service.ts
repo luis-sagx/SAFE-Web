@@ -23,16 +23,16 @@ export class MailService {
     this.from = config.get('MAIL_FROM', 'SAFE-Web <noreply@luis-sagx.xyz>');
   }
 
-  async enviarCertificado(
+  async sendCertificate(
     email: string,
-    nombre: string,
+    name: string,
     pdf: Buffer,
   ): Promise<boolean> {
     const { error } = await this.resend.emails.send({
       from: this.from,
       to: email,
       subject: 'Tu certificado SAFE-Web',
-      html: `<p>Hola ${nombre}, adjunto tu certificado del entrenamiento SAFE-Web.</p>`,
+      html: `<p>Hola ${name}, adjunto tu certificado del entrenamiento SAFE-Web.</p>`,
       attachments: [{ filename: 'certificado-safe-web.pdf', content: pdf }],
     });
 

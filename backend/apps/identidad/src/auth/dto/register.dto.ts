@@ -5,9 +5,9 @@ import {
   MaxLength,
   MinLength,
 } from 'class-validator';
-import { NormalizarEmail, TransformarTexto } from '@comun';
-import { EsCedulaEcuatoriana } from '../../cedula/cedula';
-import { EsDominioPermitido } from '../dominios-correo';
+import { NormalizeEmail, TransformText } from '@comun';
+import { IsEcuadorianId } from '../../cedula/cedula';
+import { IsAllowedDomain } from '../dominios-correo';
 
 /// Solo letras (con tildes y ñ) y espacios entre palabras — y ningún espacio
 /// como primer o último carácter, ni dos seguidos: eso es lo que distingue un
@@ -20,29 +20,29 @@ import { EsDominioPermitido } from '../dominios-correo';
 /// caso que `esCedulaEcuatoriana` (cedula.ts en los dos lados), no el del
 /// dominio de correo — aquí sí hace falta la regla en el cliente para el
 /// error antes de enviar, y no hay ningún endpoint al que consultarla.
-export const NOMBRE_PATRON =
+export const NAME_PATTERN =
   /^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+(?: [A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+)*$/;
-const NOMBRE_MENSAJE = 'Solo se permiten letras y espacios entre palabras.';
+const MESSAGE_NAME = 'Solo se permiten letras y espacios entre palabras.';
 
 export class RegisterDto {
   @IsString()
   @MinLength(2)
   @MaxLength(60)
-  @Matches(NOMBRE_PATRON, { message: NOMBRE_MENSAJE })
-  @TransformarTexto((valor) => valor.trim())
+  @Matches(NAME_PATTERN, { message: MESSAGE_NAME })
+  @TransformText((value) => value.trim())
   nombre: string;
 
   @IsString()
   @MinLength(2)
   @MaxLength(60)
-  @Matches(NOMBRE_PATRON, { message: NOMBRE_MENSAJE })
-  @TransformarTexto((valor) => valor.trim())
+  @Matches(NAME_PATTERN, { message: MESSAGE_NAME })
+  @TransformText((value) => value.trim())
   apellido: string;
 
   @IsEmail({}, { message: 'El correo no tiene un formato válido.' })
-  @EsDominioPermitido()
+  @IsAllowedDomain()
   @MaxLength(120)
-  @NormalizarEmail()
+  @NormalizeEmail()
   email: string;
 
   /// Se limpian espacios, puntos y guiones antes de validar: mucha gente la
@@ -50,8 +50,8 @@ export class RegisterDto {
   ///
   /// El valor en claro se usa solo para calcular su HMAC y se descarta ahí
   /// mismo. Ver `apps/identidad/src/cedula/cedula.ts`.
-  @EsCedulaEcuatoriana()
-  @TransformarTexto((valor) => valor.replace(/[\s.-]/g, ''))
+  @IsEcuadorianId()
+  @TransformText((value) => value.replace(/[\s.-]/g, ''))
   cedula: string;
 
   @IsString()

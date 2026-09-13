@@ -1,25 +1,25 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import Seccion from './Seccion'
+import Section from './Seccion'
 
-const { fetchProgresoMock, fetchMyRunsMock } = vi.hoisted(() => ({
-  fetchProgresoMock: vi.fn(),
+const { fetchProgressMock, fetchMyRunsMock } = vi.hoisted(() => ({
+  fetchProgressMock: vi.fn(),
   fetchMyRunsMock: vi.fn(),
 }))
 
 vi.mock('../lib/api', async () => {
-  const actual = await vi.importActual<typeof import('../lib/api')>('../lib/api')
-  return { ...actual, fetchProgreso: fetchProgresoMock, fetchMyRuns: fetchMyRunsMock }
+  const current = await vi.importActual<typeof import('../lib/api')>('../lib/api')
+  return { ...current, fetchProgress: fetchProgressMock, fetchMyRuns: fetchMyRunsMock }
 })
 
-vi.mock('../context/AuthContext', async () => (await import('../test/escenario')).authFalso())
+vi.mock('../context/AuthContext', async () => (await import('../test/escenario')).mockAuth())
 
-function renderSeccion() {
+function renderSection() {
   return render(
     <MemoryRouter initialEntries={['/seccion/phishing']}>
       <Routes>
-        <Route path="/seccion/:seccionId" element={<Seccion />} />
+        <Route path="/seccion/:seccionId" element={<Section />} />
       </Routes>
     </MemoryRouter>,
   )
@@ -27,13 +27,13 @@ function renderSeccion() {
 
 describe('Seccion', () => {
   beforeEach(() => {
-    fetchProgresoMock.mockReset()
+    fetchProgressMock.mockReset()
     fetchMyRunsMock.mockReset()
     fetchMyRunsMock.mockResolvedValue([])
   })
 
   it('solo deja como link activo el próximo escenario pendiente y bloquea los posteriores', async () => {
-    fetchProgresoMock.mockResolvedValue({
+    fetchProgressMock.mockResolvedValue({
       modulo: 'phishing',
       escenarios: [{ id: 'phishing/loteria-premiada', ultimoOutcome: 'INCORRECTO' }],
       aprobados: 0,
@@ -41,7 +41,7 @@ describe('Seccion', () => {
       aprobado: false,
     })
 
-    const { container } = renderSeccion()
+    const { container } = renderSection()
 
     expect(await screen.findByText('Factura por validar')).toBeDefined()
     expect(
@@ -55,7 +55,7 @@ describe('Seccion', () => {
   })
 
   it('con el módulo aprobado, abre el resumen en un modal al pedirlo', async () => {
-    fetchProgresoMock.mockResolvedValue({
+    fetchProgressMock.mockResolvedValue({
       modulo: 'phishing',
       escenarios: [],
       aprobados: 6,
@@ -63,12 +63,12 @@ describe('Seccion', () => {
       aprobado: true,
     })
 
-    renderSeccion()
+    renderSection()
 
-    const boton = await screen.findByRole('button', { name: 'Ver resumen del módulo' })
+    const button = await screen.findByRole('button', { name: 'Ver resumen del módulo' })
     expect(screen.queryByRole('dialog')).toBeNull()
 
-    fireEvent.click(boton)
+    fireEvent.click(button)
 
     expect(await screen.findByRole('dialog')).toBeDefined()
   })
@@ -78,7 +78,7 @@ describe('Seccion', () => {
   // escenario (`rondaEnCurso`). Los otros siete no dejan de estar aprobados
   // solo porque todavía no se repitieron en esta ronda.
   it('repetir un escenario no borra la insignia de "Aprobado" de los demás', async () => {
-    fetchProgresoMock.mockResolvedValue({
+    fetchProgressMock.mockResolvedValue({
       modulo: 'phishing',
       escenarios: Array.from({ length: 8 }, (_, i) => ({
         id: `phishing/${['loteria-premiada', 'factura-sri', 'clave-caducada', 'rol-de-pagos', 'quishing-actualice', 'secuestro-hilo', 'aviso-filtracion', 'sesion-bogota'][i]}`,
@@ -94,13 +94,13 @@ describe('Seccion', () => {
       },
     })
 
-    renderSeccion()
+    renderSection()
 
     expect(await screen.findAllByText('Aprobado')).toHaveLength(8)
   })
 
   it('considera desbloqueado el módulo siguiente al terminar todos los escenarios aunque la nota sea menor a 6', async () => {
-    fetchProgresoMock.mockResolvedValue({
+    fetchProgressMock.mockResolvedValue({
       modulo: 'phishing',
       escenarios: Array.from({ length: 8 }, (_, i) => ({ id: `phishing/e${i}`, ultimoOutcome: 'INCORRECTO' })),
       aprobados: 4,
@@ -109,7 +109,7 @@ describe('Seccion', () => {
       ronda: 1,
       rondaEnCurso: null,
     })
-    renderSeccion()
+    renderSection()
     expect(await screen.findByText('Smishing')).toBeDefined()
     expect(screen.getByRole('link', { name: /Smishing/ })).toBeDefined()
   })

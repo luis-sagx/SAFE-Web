@@ -1,19 +1,19 @@
 import { Camera, Contact, MessageCircle, Phone } from 'lucide-react'
-import StoryEscenario, { type AppTelefono, type ScreenNode } from '../../components/StoryEscenario'
-import type { Contexto } from '../../components/ui/ContextoEscenario'
+import ScenarioStory, { type PhoneApp, type ScreenNode } from '../../components/StoryEscenario'
+import type { Context } from '../../components/ui/ContextoEscenario'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
-import type { Senal } from '../../components/ui/PanelVeredicto'
+import type { Signal } from '../../components/ui/PanelVeredicto'
 import type { Story } from '../../hooks/useStoryEngine'
-import { CUENTA_FICTICIA, IDENTIDAD_FICTICIA } from '../../lib/identidadFicticia'
+import { ACCOUNT_FAKE, IDENTITY_FAKE } from '../../lib/identidadFicticia'
 
 // Espeja a cambio-numero: mismo montaje, pero aquí el mensaje es real. Existe
 // para no enseñar "desconfía de todo número nuevo" — y para mostrar que ni
 // siendo ella, la cédula se manda por chat.
 
-const TIA = 'Rocío'
-const NUMERO_NUEVO = '+593 98 052 6614'
+const AUNT = 'Rocío'
+const NUMBER_NEW = '+593 98 052 6614'
 
-const SALUDO = {
+const GREETING = {
   text: 'Mijo, soy tu tía Rocío 🙋‍♀️ se me perdió el celular el sábado en el bus. Ya saqué otro chip, este es mi número nuevo, guárdamelo cuando puedas.',
   time: '11:05',
   senal: 'saludo',
@@ -29,12 +29,12 @@ const AUDIO = {
 
 const CHAT: ScreenView = {
   kind: 'sms',
-  sender: NUMERO_NUEVO,
+  sender: NUMBER_NEW,
   sub: 'No está en tus contactos · toca para ver el perfil',
   senalRemitente: 'remitente',
   perfilGoto: 'n1b',
   perfilLabel: 'Abrió el perfil del número que le escribía',
-  msgs: [SALUDO, AUDIO],
+  msgs: [GREETING, AUDIO],
   respuestas: [
     {
       texto: 'Tía, ¿usted es? Déjeme llamarla.',
@@ -56,13 +56,13 @@ const CHAT: ScreenView = {
   volverLabel: 'Salió del chat sin contestar',
 }
 
-const PERFIL: ScreenView = {
+const PROFILE: ScreenView = {
   kind: 'web',
   app: 'Mensajes',
   url: 'perfil',
   secure: true,
   brand: 'Información del contacto',
-  title: NUMERO_NUEVO,
+  title: NUMBER_NEW,
   subtitle: 'No guardado en tu agenda.',
   datos: [
     { etiqueta: 'Foto de perfil', valor: 'La de tu tía con tu prima, de la fiesta de diciembre' },
@@ -77,10 +77,10 @@ const PERFIL: ScreenView = {
   button: '',
 }
 
-const CONTESTA: ScreenView = {
+const ANSWERS: ScreenView = {
   kind: 'call',
-  quien: TIA,
-  numero: NUMERO_NUEVO,
+  quien: AUNT,
+  numero: NUMBER_NEW,
   etiqueta: 'Número nuevo, sin guardar',
   dialogo: [
     {
@@ -101,10 +101,10 @@ const CONTESTA: ScreenView = {
   colgarLabel: 'Colgó tras confirmar que era su tía',
 }
 
-const RESPONDE_BIEN: ScreenView = {
+const RESPONDS_WELL: ScreenView = {
   ...CHAT,
   msgs: [
-    SALUDO,
+    GREETING,
     AUDIO,
     {
       text: '¿Cómo se llamaba el perro que tenía en Santo Domingo?',
@@ -127,10 +127,10 @@ const RESPONDE_BIEN: ScreenView = {
 }
 
 // La foto de la cédula es lo único que no se manda ni a la familia.
-const PIDE_CEDULA: ScreenView = {
+const ASKS_ECUADORIAN_ID: ScreenView = {
   ...CHAT,
   msgs: [
-    SALUDO,
+    GREETING,
     AUDIO,
     { text: 'Listo tía, ya la guardo.', time: '11:10', mine: true },
     {
@@ -141,7 +141,7 @@ const PIDE_CEDULA: ScreenView = {
   ],
   respuestas: [
     {
-      texto: `Le paso mi cuenta: ${CUENTA_FICTICIA}. Y la cédula ya se la mando.`,
+      texto: `Le paso mi cuenta: ${ACCOUNT_FAKE}. Y la cédula ya se la mando.`,
       goto: 'e_cedula',
       label: 'Mandó su cuenta y la foto de su cédula por el chat',
     },
@@ -153,7 +153,7 @@ const PIDE_CEDULA: ScreenView = {
   ],
 }
 
-const AGENDA: ScreenView = {
+const CONTACTS: ScreenView = {
   kind: 'web',
   app: 'Teléfono',
   url: 'contactos',
@@ -162,7 +162,7 @@ const AGENDA: ScreenView = {
   title: 'Tu agenda',
   opciones: [
     {
-      texto: `Tía ${TIA} · número anterior`,
+      texto: `Tía ${AUNT} · número anterior`,
       detalle: '+593 99 331 7742 · el que tenías guardado, ahora apagado',
       goto: 'n5',
       label: 'Llamó al número anterior de su tía',
@@ -175,7 +175,7 @@ const AGENDA: ScreenView = {
   button: '',
 }
 
-const APAGADO: ScreenView = {
+const OFF: ScreenView = {
   kind: 'web',
   app: 'Teléfono',
   url: 'llamada',
@@ -197,7 +197,7 @@ const APAGADO: ScreenView = {
   button: '',
 }
 
-const APPS: AppTelefono[] = [
+const APPS: PhoneApp[] = [
   { Icono: MessageCircle, texto: 'Mensajes', color: '#2f9e44', hilo: 'sms' },
   {
     Icono: Contact,
@@ -222,29 +222,29 @@ const APPS: AppTelefono[] = [
 
 export const STORY: Story<ScreenNode> = {
   n1: { kind: 'scene', view: CHAT },
-  n1b: { kind: 'scene', view: PERFIL },
-  n2: { kind: 'scene', view: CONTESTA },
-  n2b: { kind: 'scene', view: RESPONDE_BIEN },
-  n3: { kind: 'scene', view: PIDE_CEDULA },
-  n4: { kind: 'scene', view: AGENDA },
-  n5: { kind: 'scene', view: APAGADO },
+  n1b: { kind: 'scene', view: PROFILE },
+  n2: { kind: 'scene', view: ANSWERS },
+  n2b: { kind: 'scene', view: RESPONDS_WELL },
+  n3: { kind: 'scene', view: ASKS_ECUADORIAN_ID },
+  n4: { kind: 'scene', view: CONTACTS },
+  n5: { kind: 'scene', view: OFF },
   e_cedula: {
     kind: 'bad',
-    view: PIDE_CEDULA,
+    view: ASKS_ECUADORIAN_ID,
     verdict: 'Era tu tía, y aun así entregaste de más',
-    outcome: `El mensaje era auténtico: tu tía Rocío sí cambió de número. Pero le mandaste por chat la foto de tu cédula ${IDENTIDAD_FICTICIA.cedula} por los dos lados, y eso ya no depende de ella: queda guardado en un teléfono que acaba de perder una vez, y con esa foto se abren cuentas y se piden créditos a tu nombre. El número de cuenta sí se puede dar; la cédula, no por ahí.`,
+    outcome: `El mensaje era auténtico: tu tía Rocío sí cambió de número. Pero le mandaste por chat la foto de tu cédula ${IDENTITY_FAKE.cedula} por los dos lados, y eso ya no depende de ella: queda guardado en un teléfono que acaba de perder una vez, y con esa foto se abren cuentas y se piden créditos a tu nombre. El número de cuenta sí se puede dar; la cédula, no por ahí.`,
     score: 0,
   },
   e_prudente: {
     kind: 'good',
-    view: PIDE_CEDULA,
+    view: ASKS_ECUADORIAN_ID,
     verdict: 'Acertaste · era ella, y aun así no mandaste la cédula',
     outcome:
       'El mensaje era de verdad y tú contestaste como se debe: le diste lo que no cuesta nada dar y dejaste la cédula para entregársela en mano. Que alguien sea de confianza no vuelve seguro al canal por el que le escribes.',
   },
   e_verifica: {
     kind: 'good',
-    view: CONTESTA,
+    view: ANSWERS,
     verdict: 'Acertaste · comprobaste sin desconfiar de más',
     outcome:
       'Era ella. Una llamada de treinta segundos, o una pregunta que solo tu tía podía responder, y asunto resuelto: guardaste el número y quedaron de verse el domingo. Comprobar no es ofender a nadie.',
@@ -259,7 +259,7 @@ export const STORY: Story<ScreenNode> = {
   },
 }
 
-const SENALES: Senal[] = [
+const SIGNALS: Signal[] = [
   {
     id: 's1',
     targetId: 'saludo',
@@ -307,9 +307,9 @@ const SENALES: Senal[] = [
 const RULE =
   'Regla de oro: comprobar no es desconfiar. Una llamada o una pregunta que solo esa persona sepa responder resuelve un cambio de número en medio minuto, sin ofender a nadie. Y aunque sea tu familia, <b>la cédula y las claves no viajan por chat</b>.'
 
-const RESUMEN = 'Tu tía escribe desde un número nuevo para avisar que perdió el celular.'
+const SUMMARY = 'Tu tía escribe desde un número nuevo para avisar que perdió el celular.'
 
-const CONTEXTO: Contexto = {
+const CONTEXT: Context = {
   antes: (
     <>
       Tu tía <strong>Rocío</strong> te escribe cada tanto y la ves en las reuniones familiares.
@@ -324,14 +324,14 @@ const CONTEXTO: Contexto = {
   ),
 }
 
-function NumeroNuevoReal() {
+function RealNewNumber() {
   return (
-    <StoryEscenario
+    <ScenarioStory
       escenarioId="suplantacion/numero-nuevo-real"
-      resumen={RESUMEN}
-      contexto={CONTEXTO}
+      resumen={SUMMARY}
+      contexto={CONTEXT}
       story={STORY}
-      senales={SENALES}
+      senales={SIGNALS}
       rule={RULE}
       restartLabel="↻ Repetir el escenario"
       accionesEnPantalla
@@ -353,4 +353,4 @@ function NumeroNuevoReal() {
   )
 }
 
-export default NumeroNuevoReal
+export default RealNewNumber

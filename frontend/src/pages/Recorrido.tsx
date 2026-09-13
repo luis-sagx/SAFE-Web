@@ -1,27 +1,27 @@
 import { CheckCircle2, Loader2, TriangleAlert, XCircle } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router'
-import AppHeader, { CLASE_ATRAS } from '../components/AppHeader'
-import { escenariosDeSeccion, SECCIONES } from '../data/catalogo'
+import AppHeader, { BACK_CLASS } from '../components/AppHeader'
+import { getSectionScenarios, SECTIONS } from '../data/catalogo'
 import { fetchMyRuns, type RunOutcome, type RunSummary } from '../lib/api'
 
 /// Solo las secciones con escenarios pueden tener corridas que mostrar.
-const SECCIONES_ACTIVAS = SECCIONES.filter((s) => escenariosDeSeccion(s.id).length > 0)
+const SECTIONS_ACTIVE = SECTIONS.filter((s) => getSectionScenarios(s.id).length > 0)
 
-const TONO_OUTCOME: Record<RunOutcome, { Icono: typeof CheckCircle2; clase: string; texto: string }> = {
+const TONE_OUTCOME: Record<RunOutcome, { Icono: typeof CheckCircle2; clase: string; texto: string }> = {
   CORRECTO: { Icono: CheckCircle2, clase: 'text-success-ink', texto: 'Aprobado' },
   PARCIAL: { Icono: TriangleAlert, clase: 'text-warning', texto: 'A medias' },
   INCORRECTO: { Icono: XCircle, clase: 'text-danger', texto: 'No aprobado' },
 }
 
-function formatearDuracion(ms: number): string {
-  const totalSegundos = Math.round(ms / 1000)
-  const minutos = Math.floor(totalSegundos / 60)
-  const segundos = totalSegundos % 60
-  return `${minutos}:${String(segundos).padStart(2, '0')}`
+function formatDuration(ms: number): string {
+  const totalSeconds = Math.round(ms / 1000)
+  const minutes = Math.floor(totalSeconds / 60)
+  const seconds = totalSeconds % 60
+  return `${minutes}:${String(seconds).padStart(2, '0')}`
 }
 
-function formatearFecha(iso: string): string {
+function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString('es-EC', {
     day: 'numeric',
     month: 'short',
@@ -30,23 +30,23 @@ function formatearFecha(iso: string): string {
 }
 
 // Última corrida por escenario: misma regla que el gating del backend (mayor finishedAt), para no contradecir la insignia "Aprobado".
-function ultimaPorEscenario(runs: RunSummary[]): Map<string, RunSummary> {
-  const ordenadas = [...runs].sort(
+function latestByScenario(runs: RunSummary[]): Map<string, RunSummary> {
+  const sorted = [...runs].sort(
     (a, b) => new Date(a.finishedAt).getTime() - new Date(b.finishedAt).getTime(),
   )
-  const ultima = new Map<string, RunSummary>()
-  for (const run of ordenadas) {
-    ultima.set(run.scenarioId, run)
+  const latest = new Map<string, RunSummary>()
+  for (const run of sorted) {
+    latest.set(run.scenarioId, run)
   }
-  return ultima
+  return latest
 }
 
-function contarIntentos(runs: RunSummary[], scenarioId: string): number {
+function countAttempts(runs: RunSummary[], scenarioId: string): number {
   return runs.filter((r) => r.scenarioId === scenarioId).length
 }
 
 // Usa GET /api/runs/me (ya existía, sin llamador). Solo escenarios ya jugados: no se filtra su naturaleza antes de tiempo.
-function Recorrido() {
+function TrainingHistory() {
   const [runs, setRuns] = useState<RunSummary[] | null>(null)
   const [error, setError] = useState(false)
 
@@ -70,7 +70,7 @@ function Recorrido() {
     <div className="min-h-screen bg-canvas">
       <AppHeader
         atras={
-          <Link to="/dashboard" className={CLASE_ATRAS}>
+          <Link to="/dashboard" className={BACK_CLASS}>
             ← Volver
           </Link>
         }
@@ -106,56 +106,56 @@ function Recorrido() {
 
         {!error && runs !== null && runs.length > 0 && (
           <div className="mt-10 flex flex-col gap-8">
-            {SECCIONES_ACTIVAS.map((seccion) => {
-              const escenarios = escenariosDeSeccion(seccion.id)
-              const ultima = ultimaPorEscenario(runs)
-              const jugados = escenarios.filter((e) => ultima.has(e.id))
+            {SECTIONS_ACTIVE.map((section) => {
+              const scenarios = getSectionScenarios(section.id)
+              const latest = latestByScenario(runs)
+              const played = scenarios.filter((e) => latest.has(e.id))
 
-              if (jugados.length === 0) return null
+              if (played.length === 0) return null
 
               return (
-                <section key={seccion.id} aria-labelledby={`titulo-${seccion.id}`}>
+                <section key={section.id} aria-labelledby={`titulo-${section.id}`}>
                   <h2
-                    id={`titulo-${seccion.id}`}
+                    id={`titulo-${section.id}`}
                     className="flex items-center gap-2 text-lg font-semibold text-ink"
                   >
-                    <seccion.Icono aria-hidden className="size-4 text-link" strokeWidth={2} />
-                    {seccion.titulo}
+                    <section.Icono aria-hidden className="size-4 text-link" strokeWidth={2} />
+                    {section.titulo}
                   </h2>
 
                   <ul className="mt-3 flex flex-col gap-2">
-                    {jugados.map((escenario) => {
-                      const run = ultima.get(escenario.id)
+                    {played.map((scenario) => {
+                      const run = latest.get(scenario.id)
                       if (!run) return null
-                      const tono = TONO_OUTCOME[run.outcome]
-                      const intentos = contarIntentos(runs, escenario.id)
+                      const tone = TONE_OUTCOME[run.outcome]
+                      const attempts = countAttempts(runs, scenario.id)
 
                       return (
                         <li
-                          key={escenario.id}
+                          key={scenario.id}
                           className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 rounded-lg border border-hairline-strong bg-surface p-4"
                         >
                           <div className="flex min-w-0 items-center gap-2">
-                            <tono.Icono
+                            <tone.Icono
                               aria-hidden
-                              className={`size-4 shrink-0 ${tono.clase}`}
+                              className={`size-4 shrink-0 ${tone.clase}`}
                               strokeWidth={2.5}
                             />
                             <span className="truncate text-base font-medium text-ink">
-                              {escenario.titulo}
+                              {scenario.titulo}
                             </span>
                           </div>
 
                           <div className="flex shrink-0 items-center gap-4 text-sm text-body">
-                            <span className={`font-medium ${tono.clase}`}>{tono.texto}</span>
+                            <span className={`font-medium ${tone.clase}`}>{tone.texto}</span>
                             <span className="tabular-nums text-muted">{run.score}/100</span>
                             <span className="tabular-nums text-muted">
-                              {formatearDuracion(run.durationMs)}
+                              {formatDuration(run.durationMs)}
                             </span>
                             <span className="tabular-nums text-muted">
-                              {intentos === 1 ? '1 intento' : `${intentos} intentos`}
+                              {attempts === 1 ? '1 intento' : `${attempts} intentos`}
                             </span>
-                            <span className="text-muted">{formatearFecha(run.finishedAt)}</span>
+                            <span className="text-muted">{formatDate(run.finishedAt)}</span>
                           </div>
                         </li>
                       )
@@ -171,4 +171,4 @@ function Recorrido() {
   )
 }
 
-export default Recorrido
+export default TrainingHistory

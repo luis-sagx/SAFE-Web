@@ -1,32 +1,32 @@
 import { Compass, MessageSquareText, Phone, Wallet } from 'lucide-react'
-import StoryEscenario, { type AppTelefono, type ScreenNode } from '../../components/StoryEscenario'
-import type { Contexto } from '../../components/ui/ContextoEscenario'
+import ScenarioStory, { type PhoneApp, type ScreenNode } from '../../components/StoryEscenario'
+import type { Context } from '../../components/ui/ContextoEscenario'
 import type { Story } from '../../hooks/useStoryEngine'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
-import type { Senal } from '../../components/ui/PanelVeredicto'
-import { IDENTIDAD_FICTICIA } from '../../lib/identidadFicticia'
+import type { Signal } from '../../components/ui/PanelVeredicto'
+import { IDENTITY_FAKE } from '../../lib/identidadFicticia'
 
 // La trampa es un número de teléfono, no un enlace: marcarlo mete en una llamada donde el
 // engaño se escucha, no se lee. Puente natural hacia el módulo de vishing.
 
-const NUMERO_FALSO = '09 87 654 321'
-const PREGUNTA = '¿Qué consumo fue? No reconozco ningún bloqueo.'
-const CODIGO = '508 213'
+const NUMBER_FAKE = '09 87 654 321'
+const QUESTION = '¿Qué consumo fue? No reconozco ningún bloqueo.'
+const CODE = '508 213'
 
 // Va como enlace porque en un teléfono lo es: el sistema lo detecta y lo vuelve pulsable.
-const TEXTO = `BANCO DEL LITORAL: su tarjeta terminada en ${IDENTIDAD_FICTICIA.tarjeta} fue BLOQUEADA por un intento de consumo no reconocido. Para reactivarla comuniquese de inmediato al <a href="tel:0987654321" data-hotspot-goto="n2" data-hotspot-label="Tocó el número que venía en el mensaje">${NUMERO_FALSO}</a>.`
+const TEXT = `BANCO DEL LITORAL: su tarjeta terminada en ${IDENTITY_FAKE.tarjeta} fue BLOQUEADA por un intento de consumo no reconocido. Para reactivarla comuniquese de inmediato al <a href="tel:0987654321" data-hotspot-goto="n2" data-hotspot-label="Tocó el número que venía en el mensaje">${NUMBER_FAKE}</a>.`
 
 const SMS: ScreenView = {
   kind: 'sms',
   sender: 'BANCO-LIT',
   sub: 'Remitente sin verificar · SMS',
   senalRemitente: 'remitente',
-  msgs: [{ text: TEXTO, time: '20:36', senal: 'mensaje' }],
+  msgs: [{ text: TEXT, time: '20:36', senal: 'mensaje' }],
   // Ninguna de las dos entrega un dato, y aun así ninguna es gratis: contestar
   // ya confirma que la línea existe. La segunda además encadena con la prisa
   // que el mensaje intenta meter, y por eso lleva a la llamada.
   respuestas: [
-    { texto: PREGUNTA, goto: 'e_responde', label: 'Contestó el mensaje preguntando por el consumo' },
+    { texto: QUESTION, goto: 'e_responde', label: 'Contestó el mensaje preguntando por el consumo' },
     {
       texto: 'No me anulen la tarjeta, ya los llamo.',
       goto: 'n2',
@@ -38,21 +38,21 @@ const SMS: ScreenView = {
 }
 
 // El final se ve sobre lo que de verdad salió del teléfono, no un borrador nunca mandado.
-const SMS_RESPONDIDO: ScreenView = {
+const REPLIED_SMS: ScreenView = {
   ...SMS,
   respuestas: undefined,
   volverGoto: undefined,
   msgs: [
-    { text: TEXTO, time: '20:36', senal: 'mensaje' },
-    { text: PREGUNTA, time: '20:38', mine: true },
+    { text: TEXT, time: '20:36', senal: 'mensaje' },
+    { text: QUESTION, time: '20:38', mine: true },
   ],
 }
 
 // Marcar no termina el escenario: termina lo que se dice dentro, y aún se puede colgar.
 // Es una llamada saliente (la hiciste tú), y eso es la mitad del desenlace.
-const APERTURA = [
+const OPENING = [
   {
-    texto: `Banco del Litoral, departamento de seguridad, buenas noches. Le confirmo: hablo con el titular de la tarjeta terminada en ${IDENTIDAD_FICTICIA.tarjeta}, ¿verdad?`,
+    texto: `Banco del Litoral, departamento de seguridad, buenas noches. Le confirmo: hablo con el titular de la tarjeta terminada en ${IDENTITY_FAKE.tarjeta}, ¿verdad?`,
   },
   {
     texto:
@@ -62,10 +62,10 @@ const APERTURA = [
 
 // Tocar un número abre el marcador, no la llamada directa: sin ese paso, marcar dejaba
 // de ser una decisión. Salir de aquí no termina la corrida: sigues sin saber si había bloqueo.
-const MARCADOR: ScreenView = {
+const MARKER: ScreenView = {
   kind: 'call',
   marcando: true,
-  quien: NUMERO_FALSO,
+  quien: NUMBER_FAKE,
   numero: 'Copiado del mensaje',
   etiqueta: 'No está en tus contactos',
   senalQuien: 'marcado',
@@ -75,13 +75,13 @@ const MARCADOR: ScreenView = {
   rechazarLabel: 'Salió del marcador sin llamar',
 }
 
-const LLAMADA: ScreenView = {
+const CALL: ScreenView = {
   kind: 'call',
-  quien: NUMERO_FALSO,
+  quien: NUMBER_FAKE,
   numero: 'Marcado desde el mensaje',
   etiqueta: 'No está en tus contactos',
   senalQuien: 'marcado',
-  dialogo: APERTURA,
+  dialogo: OPENING,
   decir: [
     {
       texto: 'Sí, soy yo. ¿Qué consumo fue?',
@@ -98,10 +98,10 @@ const LLAMADA: ScreenView = {
   colgarLabel: 'Colgó la llamada',
 }
 
-const PIDEN_CODIGO: ScreenView = {
-  ...LLAMADA,
+const ASK_CODE: ScreenView = {
+  ...CALL,
   dialogo: [
-    ...APERTURA,
+    ...OPENING,
     { texto: 'Sí, soy yo. ¿Qué consumo fue?', mio: true },
     {
       texto:
@@ -127,14 +127,14 @@ const PIDEN_CODIGO: ScreenView = {
 }
 
 // Sin `volverGoto`: no hay lista a la que volver, el icono `Teléfono` ya restaura la llamada.
-const CODIGO_SMS: ScreenView = {
+const CODE_SMS: ScreenView = {
   kind: 'sms',
   sender: 'BANCO LITORAL',
   sub: 'Remitente habitual · SMS',
   senalRemitente: 'remitente-real',
   msgs: [
     {
-      text: `Su codigo de autorizacion es ${CODIGO}. Vence en 5 minutos. El Banco del Litoral nunca le pedira este codigo por telefono ni por mensaje: si alguien se lo pide, cuelgue.`,
+      text: `Su codigo de autorizacion es ${CODE}. Vence en 5 minutos. El Banco del Litoral nunca le pedira este codigo por telefono ni por mensaje: si alguien se lo pide, cuelgue.`,
       time: '20:44',
       senal: 'aviso-real',
     },
@@ -143,13 +143,13 @@ const CODIGO_SMS: ScreenView = {
 
 // Abrir la app todavía no es haber comprobado nada: se puede mirar el estado
 // o anular a ciegas, que es el gesto precipitado que este escenario mide.
-const BANCO_INICIO: ScreenView = {
+const BANK_HOME: ScreenView = {
   kind: 'web',
   app: 'Banco',
   url: 'inicio',
   secure: true,
   brand: 'Banco del Litoral · Banca móvil',
-  title: `Tarjeta ${IDENTIDAD_FICTICIA.tarjeta}`,
+  title: `Tarjeta ${IDENTITY_FAKE.tarjeta}`,
   subtitle: 'Cupo disponible $1.240,00',
   opciones: [
     { texto: 'Transferir', detalle: 'A cuentas propias o de terceros' },
@@ -172,8 +172,8 @@ const BANCO_INICIO: ScreenView = {
 }
 
 // Mirar tarjetas aquí no cierra el escenario: colgar sigue pendiente. Solo cambia a dónde lleva "Mis tarjetas".
-const BANCO_INICIO_EN_LLAMADA: ScreenView = {
-  ...BANCO_INICIO,
+const BANK_HOME_DURING_CALL: ScreenView = {
+  ...BANK_HOME,
   opciones: [
     { texto: 'Transferir', detalle: 'A cuentas propias o de terceros' },
     {
@@ -194,7 +194,7 @@ const BANCO_INICIO_EN_LLAMADA: ScreenView = {
 
 // Mismo contenido cuando se mira en plena llamada (`n_tarjetas_llamada`): sin
 // `cerrarGoto` ahí, porque lo único que cierra el escenario en llamada es colgar.
-const APP_BANCO: ScreenView = {
+const APP_BANK: ScreenView = {
   kind: 'web',
   app: 'Banco',
   url: 'inicio',
@@ -204,7 +204,7 @@ const APP_BANCO: ScreenView = {
   subtitle: 'Estado en tiempo real, actualizado hace un minuto.',
   datos: [
     {
-      etiqueta: `Tarjeta ${IDENTIDAD_FICTICIA.tarjeta}`,
+      etiqueta: `Tarjeta ${IDENTITY_FAKE.tarjeta}`,
       valor: 'Activa · sin bloqueos ni intentos rechazados',
       senal: 'sin-bloqueo',
     },
@@ -217,7 +217,7 @@ const APP_BANCO: ScreenView = {
   button: '',
 }
 
-const APPS: AppTelefono[] = [
+const APPS: PhoneApp[] = [
   {
     Icono: Wallet,
     texto: 'Banco',
@@ -240,27 +240,27 @@ const APPS: AppTelefono[] = [
 
 export const STORY: Story<ScreenNode> = {
   n1: { kind: 'scene', view: SMS },
-  n2: { kind: 'scene', view: MARCADOR },
-  n3: { kind: 'scene', view: LLAMADA },
+  n2: { kind: 'scene', view: MARKER },
+  n3: { kind: 'scene', view: CALL },
   n4: {
     kind: 'scene',
-    view: PIDEN_CODIGO,
+    view: ASK_CODE,
     notificacion: {
       app: 'Mensajes',
       remitente: 'BANCO LITORAL',
       hora: '20:44',
-      texto: `Su codigo de autorizacion es ${CODIGO}. Vence en 5 minutos. El Banco del Litoral nunca le pedira este codigo por telefono ni por mensaje: si alguien se lo pide, cuelgue.`,
+      texto: `Su codigo de autorizacion es ${CODE}. Vence en 5 minutos. El Banco del Litoral nunca le pedira este codigo por telefono ni por mensaje: si alguien se lo pide, cuelgue.`,
       goto: 'n_codigo',
       label: 'Abrió la notificación del código que envió el banco',
     },
   },
-  n_codigo: { kind: 'scene', view: CODIGO_SMS },
-  n5: { kind: 'scene', view: BANCO_INICIO },
-  n5c: { kind: 'scene', view: BANCO_INICIO_EN_LLAMADA },
-  n_tarjetas_llamada: { kind: 'scene', view: APP_BANCO },
+  n_codigo: { kind: 'scene', view: CODE_SMS },
+  n5: { kind: 'scene', view: BANK_HOME },
+  n5c: { kind: 'scene', view: BANK_HOME_DURING_CALL },
+  n_tarjetas_llamada: { kind: 'scene', view: APP_BANK },
   e_dicta: {
     kind: 'bad',
-    view: PIDEN_CODIGO,
+    view: ASK_CODE,
     verdict: 'Caíste en la trampa',
     outcome:
       'Tu tarjeta nunca estuvo bloqueada. El código que dictaste autorizaba una compra que ellos hacían mientras hablabas: mil doscientos dólares en electrónica. Y la llamada la hiciste tú.',
@@ -269,7 +269,7 @@ export const STORY: Story<ScreenNode> = {
   // fuerte que un SMS. Mismo reparto que banco-confirma en vishing.
   e_cuelga: {
     kind: 'partial',
-    view: PIDEN_CODIGO,
+    view: ASK_CODE,
     verdict: 'Colgaste bien, pero ya habías marcado',
     outcome:
       'Colgar es lo único que rompe el engaño, y no diste nada. Pero marcaste el número del mensaje, y eso les confirmó tu línea mejor que cualquier respuesta: espera más intentos. Y sigues sin saber si la tarjeta tenía algún bloqueo.',
@@ -277,21 +277,21 @@ export const STORY: Story<ScreenNode> = {
   },
   e_devuelve: {
     kind: 'good',
-    view: LLAMADA,
+    view: CALL,
     verdict: 'Acertaste · colgaste y llamaste tú',
     outcome:
       'Marcaste el número impreso en el reverso de tu tarjeta. Era el banco de verdad y no había ningún bloqueo: nada que levantar. Esta respuesta funciona siempre, sin tener que adivinar quién habla.',
   },
   e_bloquea: {
     kind: 'partial',
-    view: BANCO_INICIO,
+    view: BANK_HOME,
     verdict: 'Anulaste una tarjeta que estaba sana',
     outcome:
       'No entregaste nada, pero la tarjeta no tenía ningún bloqueo: la anulaste tú. Te quedas sin ella hasta que llegue la nueva. Su estado estaba a un toque, en "Mis tarjetas".',
   },
   e_responde: {
     kind: 'partial',
-    view: SMS_RESPONDIDO,
+    view: REPLIED_SMS,
     verdict: 'No entregaste nada, pero contestaste',
     outcome:
       'No diste ningún dato, pero confirmaste que alguien lee esa línea. Ahora tienen una conversación abierta contigo para insistir mejor.',
@@ -305,14 +305,14 @@ export const STORY: Story<ScreenNode> = {
   },
   e_app: {
     kind: 'good',
-    view: APP_BANCO,
+    view: APP_BANK,
     verdict: 'No caíste · lo comprobaste donde consta',
     outcome:
       'Tu tarjeta estaba activa y sin intentos rechazados: no había bloqueo que levantar. En la misma pantalla estaba el número de atención de verdad.',
   },
 }
 
-const SENALES: Senal[] = [
+const SIGNALS: Signal[] = [
   {
     id: 's1',
     targetId: 'mensaje',
@@ -360,9 +360,9 @@ const SENALES: Senal[] = [
 const RULE =
   'Regla de oro: <b>al número del mensaje no se llama</b>. Si de verdad hubiera un problema con tu tarjeta, lo ves en la app o llamas al número impreso en su reverso. Y ningún banco te pide por teléfono el código que te envía por mensaje: ese código autoriza, no identifica.'
 
-const RESUMEN = 'Un SMS avisa que tu tarjeta fue bloqueada y da un número para reactivarla.'
+const SUMMARY = 'Un SMS avisa que tu tarjeta fue bloqueada y da un número para reactivarla.'
 
-const CONTEXTO: Contexto = {
+const CONTEXT: Context = {
   antes:
     'Usas esa tarjeta casi a diario y la última compra fue hace unos días, en el supermercado.',
   ahora: (
@@ -373,14 +373,14 @@ const CONTEXTO: Contexto = {
   ),
 }
 
-function TarjetaBloqueada() {
+function BlockedCard() {
   return (
-    <StoryEscenario
+    <ScenarioStory
       escenarioId="smishing/tarjeta-bloqueada"
-      resumen={RESUMEN}
-      contexto={CONTEXTO}
+      resumen={SUMMARY}
+      contexto={CONTEXT}
       story={STORY}
-      senales={SENALES}
+      senales={SIGNALS}
       rule={RULE}
       restartLabel="↻ Repetir el escenario"
       accionesEnPantalla
@@ -403,4 +403,4 @@ function TarjetaBloqueada() {
   )
 }
 
-export default TarjetaBloqueada
+export default BlockedCard

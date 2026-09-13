@@ -8,8 +8,8 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService, type JwtSignOptions } from '@nestjs/jwt';
 import { compare, hash } from 'bcryptjs';
 import type { JwtPayload, RefreshTokenPayload } from '@comun';
-import { huellaCedula } from '../cedula/cedula';
-import { cifrar, descifrarOpcional, huellaEmail } from '../pii/pii';
+import { hashEcuadorianId } from '../cedula/cedula';
+import { encrypt, decryptOptional, hashEmail } from '../pii/pii';
 import { PrismaService } from '../prisma/prisma.service';
 import { LoginDto } from './dto/login.dto';
 import { PatchMeDto } from './dto/patch-me.dto';
@@ -20,15 +20,15 @@ const BCRYPT_ROUNDS = 12;
 
 /// Hash señuelo contra el que se compara cuando el correo no existe, para que
 /// el tiempo de respuesta no delate qué correos están registrados.
-const HASH_SENUELO =
+const DECOY_HASH =
   '$2b$12$0000000000000000000000000000000000000000000000000000';
 
 /// Un solo mensaje para "correo ya registrado" y "cédula ya registrada":
 /// distinguirlos permitiría averiguar quién participó en el estudio.
-const YA_REGISTRADO =
+const ALREADY_REGISTERED =
   'Ya existe una cuenta con esos datos. Inicia sesión o revisa lo que escribiste.';
 
-export interface Perfil {
+export interface Profile {
   id: string;
   nombre: string | null;
   apellido: string | null;
@@ -37,7 +37,7 @@ export interface Perfil {
   onboardingVisto: boolean;
 }
 
-interface ParticipantConOnboarding {
+interface ParticipantWithOnboarding {
   id: string;
   nombre: string | null;
   apellido: string | null;
@@ -49,7 +49,7 @@ interface ParticipantConOnboarding {
 /// Lo que la interfaz sabe del participante. No incluye el seudónimo —ese
 /// pertenece al análisis y el participante nunca debe verlo— ni `cedulaHash`,
 /// que no tiene por qué salir del servidor.
-const CAMPOS_PERFIL = {
+const PROFILE_FIELDS = {
   id: true,
   nombre: true,
   apellido: true,
@@ -59,29 +59,29 @@ const CAMPOS_PERFIL = {
 } as const;
 
 /// `seq` se necesita para firmar el token pero no se devuelve al cliente.
-const CAMPOS_SESION = { ...CAMPOS_PERFIL, seq: true } as const;
+const SESSION_FIELDS = { ...PROFILE_FIELDS, seq: true } as const;
 
 /// El perfil se construye campo por campo en vez de descartando los que
 /// sobran: así, agregar una columna al modelo nunca la filtra a la respuesta
 /// por olvidarse de excluirla. Descifra antes de devolver: lo que sale de
 /// Prisma es el texto cifrado (o, en una fila sin migrar, texto plano —
-/// `descifrarOpcional` reconoce cuál es cuál).
-function perfilPublico(
-  participant: ParticipantConOnboarding,
+/// `decryptOptional` reconoce cuál es cuál).
+function publicProfile(
+  participant: ParticipantWithOnboarding,
   piiKey: string,
-): Perfil {
+): Profile {
   return {
     id: participant.id,
-    nombre: descifrarOpcional(participant.nombre, piiKey),
-    apellido: descifrarOpcional(participant.apellido, piiKey),
-    email: descifrarOpcional(participant.email, piiKey),
+    nombre: decryptOptional(participant.nombre, piiKey),
+    apellido: decryptOptional(participant.apellido, piiKey),
+    email: decryptOptional(participant.email, piiKey),
     role: participant.role,
     onboardingVisto: participant.onboardingVistoAt !== null,
   };
 }
 
 /// P2002 es el código de Prisma para violación de índice único.
-function esColisionDeUnicidad(error: unknown): boolean {
+function isUniqueConstraintViolation(error: unknown): boolean {
   return (
     typeof error === 'object' &&
     error !== null &&
@@ -91,7 +91,7 @@ function esColisionDeUnicidad(error: unknown): boolean {
 
 @Injectable()
 export class AuthService {
-  private readonly cedulaPepper: string;
+  private readonly ecuadorianIdPepper: string;
   private readonly emailPepper: string;
   private readonly piiKey: string;
   private readonly refreshExpiresIn: string;
@@ -104,53 +104,62 @@ export class AuthService {
     // getOrThrow y no get: sin estos secretos, las huellas serían reversibles
     // por fuerza bruta o los datos cifrados no se podrían leer nunca más.
     // Mejor que el servicio no arranque a que arranque roto.
-    this.cedulaPepper = config.getOrThrow<string>('CEDULA_PEPPER');
+    this.ecuadorianIdPepper = config.getOrThrow<string>('CEDULA_PEPPER');
     this.emailPepper = config.getOrThrow<string>('EMAIL_PEPPER');
     this.piiKey = config.getOrThrow<string>('PII_ENCRYPTION_KEY');
     this.refreshExpiresIn = config.get('REFRESH_TOKEN_EXPIRES_IN', '12h');
   }
 
   async register(dto: RegisterDto) {
-    const cedulaHash = huellaCedula(dto.cedula, this.cedulaPepper);
-    const emailHash = huellaEmail(dto.email, this.emailPepper);
+    const ecuadorianIdHash = hashEcuadorianId(
+      dto.cedula,
+      this.ecuadorianIdPepper,
+    );
+    const emailHash = hashEmail(dto.email, this.emailPepper);
 
     // El `OR` con `email` cubre las cuentas que ya existían antes del
     // cifrado y que `backfill-pii.mts` todavía no alcanzó: esas todavía
     // guardan el correo en claro, sin huella con la que compararlas por
     // `emailHash`.
-    const yaExiste = await this.prisma.participant.findFirst({
-      where: { OR: [{ emailHash }, { email: dto.email }, { cedulaHash }] },
+    const alreadyExists = await this.prisma.participant.findFirst({
+      where: {
+        OR: [
+          { emailHash },
+          { email: dto.email },
+          { cedulaHash: ecuadorianIdHash },
+        ],
+      },
       select: { id: true },
     });
 
-    if (yaExiste) {
-      throw new ConflictException(YA_REGISTRADO);
+    if (alreadyExists) {
+      throw new ConflictException(ALREADY_REGISTERED);
     }
 
-    let participant: ParticipantConOnboarding & { seq: number };
+    let participant: ParticipantWithOnboarding & { seq: number };
     try {
       participant = await this.prisma.participant.create({
         data: {
-          nombre: cifrar(dto.nombre, this.piiKey),
-          apellido: cifrar(dto.apellido, this.piiKey),
-          email: cifrar(dto.email, this.piiKey),
+          nombre: encrypt(dto.nombre, this.piiKey),
+          apellido: encrypt(dto.apellido, this.piiKey),
+          email: encrypt(dto.email, this.piiKey),
           emailHash,
-          cedulaHash,
+          cedulaHash: ecuadorianIdHash,
           passwordHash: await hash(dto.password, BCRYPT_ROUNDS),
         },
-        select: CAMPOS_SESION,
+        select: SESSION_FIELDS,
       });
     } catch (error) {
       // Dos registros simultáneos pasan los dos la comprobación de arriba y
       // solo uno gana el índice único. Sin esto, el segundo recibe un 500 y
       // el participante se queda fuera del estudio sin saber por qué.
-      if (esColisionDeUnicidad(error)) {
-        throw new ConflictException(YA_REGISTRADO);
+      if (isUniqueConstraintViolation(error)) {
+        throw new ConflictException(ALREADY_REGISTERED);
       }
       throw error;
     }
 
-    return this.sesion(participant);
+    return this.session(participant);
   }
 
   async login(dto: LoginDto) {
@@ -163,18 +172,18 @@ export class AuthService {
     const participant = await this.prisma.participant.findFirst({
       where: {
         OR: [
-          { emailHash: huellaEmail(dto.email, this.emailPepper) },
+          { emailHash: hashEmail(dto.email, this.emailPepper) },
           { email: dto.email },
         ],
       },
       // `select` explícito, no el registro entero: sin esto el passwordHash
       // viaja hasta `sesion()` y termina en la respuesta al cliente.
-      select: { ...CAMPOS_SESION, passwordHash: true, disabledAt: true },
+      select: { ...SESSION_FIELDS, passwordHash: true, disabledAt: true },
     });
 
     const ok = await compare(
       dto.password,
-      participant?.passwordHash ?? HASH_SENUELO,
+      participant?.passwordHash ?? DECOY_HASH,
     );
 
     // Un solo mensaje para correo inexistente y para contraseña incorrecta:
@@ -192,13 +201,13 @@ export class AuthService {
       );
     }
 
-    return this.sesion(participant);
+    return this.session(participant);
   }
 
   async me(participantId: string) {
     const participant = await this.prisma.participant.findUnique({
       where: { id: participantId },
-      select: { ...CAMPOS_PERFIL, disabledAt: true },
+      select: { ...PROFILE_FIELDS, disabledAt: true },
     });
 
     if (!participant) {
@@ -212,20 +221,20 @@ export class AuthService {
       throw new UnauthorizedException('Tu cuenta está desactivada.');
     }
 
-    return perfilPublico(participant, this.piiKey);
+    return publicProfile(participant, this.piiKey);
   }
 
   /// `onboardingVisto: true` marca la fecha (no vuelve a aparecer sola);
   /// `false` la borra (vuelve a aparecer en el siguiente inicio de sesión, y
   /// es lo que permite reactivarla desde el ícono ⓘ).
-  async actualizarMe(participantId: string, dto: PatchMeDto) {
+  async updateMe(participantId: string, dto: PatchMeDto) {
     const participant = await this.prisma.participant.update({
       where: { id: participantId },
       data: { onboardingVistoAt: dto.onboardingVisto ? new Date() : null },
-      select: CAMPOS_PERFIL,
+      select: PROFILE_FIELDS,
     });
 
-    return perfilPublico(participant, this.piiKey);
+    return publicProfile(participant, this.piiKey);
   }
 
   /// Cambia el access token (vida corta) por uno nuevo, junto con un refresh
@@ -235,7 +244,7 @@ export class AuthService {
   ///
   /// `refreshToken` puede venir vacío: es lo que llega cuando la cookie
   /// httpOnly nunca se puso (primera visita) o ya la borró el navegador.
-  async refrescar(refreshToken: string | undefined) {
+  async refreshSession(refreshToken: string | undefined) {
     if (!refreshToken) {
       throw new UnauthorizedException('Refresh token inválido o expirado.');
     }
@@ -253,18 +262,18 @@ export class AuthService {
 
     const participant = await this.prisma.participant.findUnique({
       where: { id: payload.sub },
-      select: { ...CAMPOS_SESION, disabledAt: true },
+      select: { ...SESSION_FIELDS, disabledAt: true },
     });
 
     if (!participant || participant.disabledAt) {
       throw new UnauthorizedException('Refresh token inválido o expirado.');
     }
 
-    return this.sesion(participant);
+    return this.session(participant);
   }
 
-  private async sesion(
-    participant: ParticipantConOnboarding & { seq: number },
+  private async session(
+    participant: ParticipantWithOnboarding & { seq: number },
   ) {
     const payload: JwtPayload = {
       sub: participant.id,
@@ -296,7 +305,7 @@ export class AuthService {
       accessToken,
       refreshToken,
       refreshTokenExpiresAt: new Date(exp * 1000),
-      participant: perfilPublico(participant, this.piiKey),
+      participant: publicProfile(participant, this.piiKey),
     };
   }
 }

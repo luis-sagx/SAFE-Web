@@ -1,8 +1,8 @@
 import { Navigate, Outlet, useLocation } from 'react-router'
 import { useAuth } from '../context/AuthContext'
-import PantallaCarga from './PantallaCarga'
+import LoadingScreen from './PantallaCarga'
 
-const BIENVENIDA = '/bienvenida'
+const WELCOME = '/bienvenida'
 
 // Puerta única de la zona autenticada: si un escenario está montado, ya hay
 // sesión válida y no necesita comprobarla otra vez.
@@ -11,7 +11,7 @@ function RequireAuth() {
   const location = useLocation()
 
   if (loading) {
-    return <PantallaCarga />
+    return <LoadingScreen />
   }
 
   if (!isAuthenticated) {
@@ -33,11 +33,11 @@ function RequireAuth() {
     participant &&
     !participant.onboardingVisto &&
     !onboardingDismissed &&
-    location.pathname !== BIENVENIDA
+    location.pathname !== WELCOME
   ) {
     // Con el destino al que iba: tras el aviso se sigue hasta ahí, en vez de
     // aterrizar siempre en el panel.
-    return <Navigate to={BIENVENIDA} replace state={{ from: location.pathname }} />
+    return <Navigate to={WELCOME} replace state={{ from: location.pathname }} />
   }
 
   return <Outlet />

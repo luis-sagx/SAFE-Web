@@ -8,24 +8,24 @@ import type { JwtService } from '@nestjs/jwt';
 import { hash } from 'bcryptjs';
 import { AuthService } from './auth.service';
 import type { PrismaService } from '../prisma/prisma.service';
-import { cifrar } from '../pii/pii';
+import { encrypt } from '../pii/pii';
 
 // Clave de 32 bytes real y pepper cualquiera: los mismos que exige la
 // política de `pii.ts`, fijos para que las pruebas sean deterministas — no
 // son secretos de ningún entorno real.
 const PII_KEY = 'Zm9vYmFyZm9vYmFyZm9vYmFyZm9vYmFyZm9vYmFyZm8=';
 const EMAIL_PEPPER = 'pepper-de-prueba';
-const CEDULA_PEPPER = 'otro-pepper-de-prueba';
+const ECUADORIAN_ID_PEPPER = 'otro-pepper-de-prueba';
 
-function configFake() {
-  const valores: Record<string, string> = {
-    CEDULA_PEPPER,
+function fakeConfig() {
+  const values: Record<string, string> = {
+    CEDULA_PEPPER: ECUADORIAN_ID_PEPPER,
     EMAIL_PEPPER,
     PII_ENCRYPTION_KEY: PII_KEY,
   };
   return {
-    getOrThrow: (clave: string) => valores[clave],
-    get: (_clave: string, fallback: string) => fallback,
+    getOrThrow: (password: string) => values[password],
+    get: (_password: string, fallback: string) => fallback,
   } as unknown as ConfigService;
 }
 
@@ -42,24 +42,28 @@ function jwtFake(overrides: Partial<JwtService> = {}) {
   } as unknown as JwtService;
 }
 
-function servicio(
+function verifyPayload(payload: object): JwtService['verifyAsync'] {
+  return <T extends object = object>() => Promise.resolve(payload as T);
+}
+
+function service(
   prisma: Partial<Record<string, unknown>>,
   jwt: JwtService = jwtFake(),
 ) {
   return new AuthService(
     { participant: prisma } as unknown as PrismaService,
     jwt,
-    configFake(),
+    fakeConfig(),
   );
 }
 
-function filaParticipante(overrides: Record<string, unknown> = {}) {
+function participantRow(overrides: Record<string, unknown> = {}) {
   return {
     id: 'p1',
     seq: 7,
-    nombre: cifrar('Ana', PII_KEY),
-    apellido: cifrar('Pérez', PII_KEY),
-    email: cifrar('ana@correo.com', PII_KEY),
+    nombre: encrypt('Ana', PII_KEY),
+    apellido: encrypt('Pérez', PII_KEY),
+    email: encrypt('ana@correo.com', PII_KEY),
     role: 'PARTICIPANT',
     onboardingVistoAt: null,
     disabledAt: null,
@@ -68,7 +72,7 @@ function filaParticipante(overrides: Record<string, unknown> = {}) {
 }
 
 describe('AuthService.register', () => {
-  function registroDto(overrides: Record<string, unknown> = {}) {
+  function registrationDto(overrides: Record<string, unknown> = {}) {
     return {
       nombre: 'Ana',
       apellido: 'Pérez',
@@ -80,43 +84,43 @@ describe('AuthService.register', () => {
   }
 
   it('cifra nombre, apellido y correo, y guarda la huella del correo', async () => {
-    let dataCreada: Record<string, unknown> | undefined;
-    const auth = servicio({
+    let createdData: Record<string, unknown> | undefined;
+    const auth = service({
       findFirst: () => Promise.resolve(null),
       create: ({ data }: { data: Record<string, unknown> }) => {
-        dataCreada = data;
-        return Promise.resolve(filaParticipante({ ...data, seq: 1 }));
+        createdData = data;
+        return Promise.resolve(participantRow({ ...data, seq: 1 }));
       },
     });
 
-    await auth.register(registroDto());
+    await auth.register(registrationDto());
 
-    expect(dataCreada?.nombre).toMatch(/^v1:/);
-    expect(dataCreada?.apellido).toMatch(/^v1:/);
-    expect(dataCreada?.email).toMatch(/^v1:/);
-    expect(dataCreada?.emailHash).toEqual(expect.any(String));
-    expect(dataCreada?.nombre).not.toBe('Ana');
+    expect(createdData?.nombre).toMatch(/^v1:/);
+    expect(createdData?.apellido).toMatch(/^v1:/);
+    expect(createdData?.email).toMatch(/^v1:/);
+    expect(createdData?.emailHash).toEqual(expect.any(String));
+    expect(createdData?.nombre).not.toBe('Ana');
   });
 
   it('la sesión devuelta trae el nombre y el correo descifrados', async () => {
-    const auth = servicio({
+    const auth = service({
       findFirst: () => Promise.resolve(null),
       create: ({ data }: { data: Record<string, unknown> }) =>
-        Promise.resolve(filaParticipante({ ...data, seq: 1 })),
+        Promise.resolve(participantRow({ ...data, seq: 1 })),
     });
 
-    const sesion = await auth.register(registroDto());
+    const session = await auth.register(registrationDto());
 
-    expect(sesion.participant.nombre).toBe('Ana');
-    expect(sesion.participant.email).toBe('ana@correo.com');
+    expect(session.participant.nombre).toBe('Ana');
+    expect(session.participant.email).toBe('ana@correo.com');
   });
 
   it('rechaza un correo o cédula ya registrados con el mismo mensaje', async () => {
-    const auth = servicio({
+    const auth = service({
       findFirst: () => Promise.resolve({ id: 'ya-existe' }),
     });
 
-    await expect(auth.register(registroDto())).rejects.toBeInstanceOf(
+    await expect(auth.register(registrationDto())).rejects.toBeInstanceOf(
       ConflictException,
     );
   });
@@ -124,34 +128,34 @@ describe('AuthService.register', () => {
   // Dos registros simultáneos pasan los dos la comprobación previa: solo uno
   // gana el índice único, y el segundo debe recibir el mismo 409, no un 500.
   it('convierte una colisión de índice único (P2002) en el mismo 409', async () => {
-    const auth = servicio({
+    const auth = service({
       findFirst: () => Promise.resolve(null),
       create: () =>
         Promise.reject(Object.assign(new Error('unique'), { code: 'P2002' })),
     });
 
-    await expect(auth.register(registroDto())).rejects.toBeInstanceOf(
+    await expect(auth.register(registrationDto())).rejects.toBeInstanceOf(
       ConflictException,
     );
   });
 
   it('un error que no es una colisión de índice se propaga tal cual', async () => {
-    const fallo = new Error('la base no respondió');
-    const auth = servicio({
+    const failure = new Error('la base no respondió');
+    const auth = service({
       findFirst: () => Promise.resolve(null),
-      create: () => Promise.reject(fallo),
+      create: () => Promise.reject(failure),
     });
 
-    await expect(auth.register(registroDto())).rejects.toBe(fallo);
+    await expect(auth.register(registrationDto())).rejects.toBe(failure);
   });
 });
 
 describe('AuthService.login', () => {
   it('con credenciales correctas, entrega una sesión con los datos descifrados', async () => {
-    const auth = servicio({
+    const auth = service({
       findFirst: () =>
         Promise.resolve({
-          ...filaParticipante(),
+          ...participantRow(),
           passwordHash: '$2b$12$hash-de-prueba',
         }),
     });
@@ -163,7 +167,7 @@ describe('AuthService.login', () => {
   });
 
   it('sin ninguna cuenta con ese correo, 401 con el mensaje genérico', async () => {
-    const auth = servicio({ findFirst: () => Promise.resolve(null) });
+    const auth = service({ findFirst: () => Promise.resolve(null) });
 
     await expect(
       auth.login({ email: 'nadie@correo.com', password: 'x' }),
@@ -174,10 +178,10 @@ describe('AuthService.login', () => {
     // bcryptjs real: se genera un hash de verdad para que `compare` de
     // adentro del servicio lo acepte.
     const passwordHash = await hash('ClaveSegura123!', 4);
-    const auth = servicio({
+    const auth = service({
       findFirst: () =>
         Promise.resolve({
-          ...filaParticipante({ disabledAt: new Date() }),
+          ...participantRow({ disabledAt: new Date() }),
           passwordHash,
         }),
     });
@@ -192,142 +196,142 @@ describe('AuthService.login', () => {
 
   it('con todo correcto, entrega la sesión', async () => {
     const passwordHash = await hash('ClaveSegura123!', 4);
-    const auth = servicio({
-      findFirst: () => Promise.resolve({ ...filaParticipante(), passwordHash }),
+    const auth = service({
+      findFirst: () => Promise.resolve({ ...participantRow(), passwordHash }),
     });
 
-    const sesion = await auth.login({
+    const session = await auth.login({
       email: 'ana@correo.com',
       password: 'ClaveSegura123!',
     });
 
-    expect(sesion.participant.email).toBe('ana@correo.com');
-    expect(sesion.accessToken).toEqual(expect.any(String));
+    expect(session.participant.email).toBe('ana@correo.com');
+    expect(session.accessToken).toEqual(expect.any(String));
   });
 });
 
 describe('AuthService.me', () => {
   it('devuelve el perfil descifrado', async () => {
-    const auth = servicio({
-      findUnique: () => Promise.resolve(filaParticipante()),
+    const auth = service({
+      findUnique: () => Promise.resolve(participantRow()),
     });
 
-    const perfil = await auth.me('p1');
+    const profile = await auth.me('p1');
 
-    expect(perfil.nombre).toBe('Ana');
-    expect(perfil.apellido).toBe('Pérez');
+    expect(profile.nombre).toBe('Ana');
+    expect(profile.apellido).toBe('Pérez');
   });
 
   it('sin la cuenta, 401', async () => {
-    const auth = servicio({ findUnique: () => Promise.resolve(null) });
+    const auth = service({ findUnique: () => Promise.resolve(null) });
     await expect(auth.me('p1')).rejects.toBeInstanceOf(UnauthorizedException);
   });
 
   it('con la cuenta desactivada, 401', async () => {
-    const auth = servicio({
+    const auth = service({
       findUnique: () =>
-        Promise.resolve(filaParticipante({ disabledAt: new Date() })),
+        Promise.resolve(participantRow({ disabledAt: new Date() })),
     });
     await expect(auth.me('p1')).rejects.toBeInstanceOf(UnauthorizedException);
   });
 });
 
-describe('AuthService.actualizarMe', () => {
+describe('AuthService.updateMe', () => {
   it('marca onboardingVistoAt y devuelve el perfil descifrado', async () => {
-    let dataRecibida: unknown;
-    const auth = servicio({
+    let receivedData: unknown;
+    const auth = service({
       update: ({ data }: { data: unknown }) => {
-        dataRecibida = data;
+        receivedData = data;
         return Promise.resolve(
-          filaParticipante({ onboardingVistoAt: new Date() }),
+          participantRow({ onboardingVistoAt: new Date() }),
         );
       },
     });
 
-    const perfil = await auth.actualizarMe('p1', {
+    const profile = await auth.updateMe('p1', {
       onboardingVisto: true,
     });
 
     expect(
-      (dataRecibida as { onboardingVistoAt: Date }).onboardingVistoAt,
+      (receivedData as { onboardingVistoAt: Date }).onboardingVistoAt,
     ).toBeInstanceOf(Date);
-    expect(perfil.onboardingVisto).toBe(true);
+    expect(profile.onboardingVisto).toBe(true);
   });
 
   // El ícono ⓘ reactiva el aviso: manda `onboardingVisto: false` para
   // volver a verlo, y eso debe limpiar la fecha, no dejarla puesta.
   it('con onboardingVisto false, borra onboardingVistoAt', async () => {
-    let dataRecibida: unknown;
-    const auth = servicio({
+    let receivedData: unknown;
+    const auth = service({
       update: ({ data }: { data: unknown }) => {
-        dataRecibida = data;
-        return Promise.resolve(filaParticipante({ onboardingVistoAt: null }));
+        receivedData = data;
+        return Promise.resolve(participantRow({ onboardingVistoAt: null }));
       },
     });
 
-    const perfil = await auth.actualizarMe('p1', {
+    const profile = await auth.updateMe('p1', {
       onboardingVisto: false,
     });
 
     expect(
-      (dataRecibida as { onboardingVistoAt: Date | null }).onboardingVistoAt,
+      (receivedData as { onboardingVistoAt: Date | null }).onboardingVistoAt,
     ).toBeNull();
-    expect(perfil.onboardingVisto).toBe(false);
+    expect(profile.onboardingVisto).toBe(false);
   });
 });
 
 describe('AuthService.refrescar', () => {
   it('sin cookie, 401', async () => {
-    const auth = servicio({});
-    await expect(auth.refrescar(undefined)).rejects.toBeInstanceOf(
+    const auth = service({});
+    await expect(auth.refreshSession(undefined)).rejects.toBeInstanceOf(
       UnauthorizedException,
     );
   });
 
   it('con un token que no verifica, 401', async () => {
-    const auth = servicio(
+    const auth = service(
       {},
       jwtFake({ verifyAsync: () => Promise.reject(new Error('inválido')) }),
     );
-    await expect(auth.refrescar('token-cualquiera')).rejects.toBeInstanceOf(
-      UnauthorizedException,
-    );
+    await expect(
+      auth.refreshSession('token-cualquiera'),
+    ).rejects.toBeInstanceOf(UnauthorizedException);
   });
 
   it('con un access token en vez de un refresh token, 401', async () => {
-    const auth = servicio(
+    const auth = service(
       {},
       jwtFake({
-        verifyAsync: () => Promise.resolve({ sub: 'p1', typ: 'access' }),
+        verifyAsync: verifyPayload({ sub: 'p1', typ: 'access' }),
       }),
     );
-    await expect(auth.refrescar('token-cualquiera')).rejects.toBeInstanceOf(
-      UnauthorizedException,
-    );
+    await expect(
+      auth.refreshSession('token-cualquiera'),
+    ).rejects.toBeInstanceOf(UnauthorizedException);
   });
 
   it('con la cuenta ya no encontrada o desactivada, 401', async () => {
-    const auth = servicio(
+    const auth = service(
       { findUnique: () => Promise.resolve(null) },
       jwtFake({
-        verifyAsync: () => Promise.resolve({ sub: 'p1', typ: 'refresh' }),
+        verifyAsync: verifyPayload({ sub: 'p1', typ: 'refresh' }),
       }),
     );
-    await expect(auth.refrescar('token-cualquiera')).rejects.toBeInstanceOf(
-      UnauthorizedException,
-    );
+    await expect(
+      auth.refreshSession('token-cualquiera'),
+    ).rejects.toBeInstanceOf(UnauthorizedException);
   });
 
   it('con todo válido, entrega una sesión nueva', async () => {
-    const auth = servicio(
-      { findUnique: () => Promise.resolve(filaParticipante()) },
+    const auth = service(
+      { findUnique: () => Promise.resolve(participantRow()) },
       jwtFake({
-        verifyAsync: () => Promise.resolve({ sub: 'p1', typ: 'refresh' }),
+        verifyAsync: verifyPayload({ sub: 'p1', typ: 'refresh' }),
       }),
     );
 
-    const sesion = await auth.refrescar('token-cualquiera');
+    const session = await auth.refreshSession('token-cualquiera');
 
-    expect(sesion.participant.email).toBe('ana@correo.com');
+    expect(session.participant.email).toBe('ana@correo.com');
   });
 });

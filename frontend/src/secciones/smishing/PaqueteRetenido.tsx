@@ -1,15 +1,15 @@
 import { Camera, MessageSquareText, Package, Wallet } from 'lucide-react'
-import StoryEscenario, { type AppTelefono, type ScreenNode } from '../../components/StoryEscenario'
-import type { Contexto } from '../../components/ui/ContextoEscenario'
+import ScenarioStory, { type PhoneApp, type ScreenNode } from '../../components/StoryEscenario'
+import type { Context } from '../../components/ui/ContextoEscenario'
 import type { Story } from '../../hooks/useStoryEngine'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
-import type { Senal } from '../../components/ui/PanelVeredicto'
+import type { Signal } from '../../components/ui/PanelVeredicto'
 
-const ENLACE =
+const LINK =
   '<a href="http://envia-express.info/pago" data-hotspot-goto="n2" data-hotspot-label="Abrió el enlace del mensaje">http://envia-express.info/pago</a>' // NOSONAR: URL insegura intencional que el participante debe detectar.
 
-const PRIMER_SMS = {
-  text: `ENVIAEXPRESS: su paquete 4471-EC está RETENIDO en aduana por un valor pendiente de $1,20. Regularice hoy para evitar la devolución: ${ENLACE}`,
+const FIRST_SMS = {
+  text: `ENVIAEXPRESS: su paquete 4471-EC está RETENIDO en aduana por un valor pendiente de $1,20. Regularice hoy para evitar la devolución: ${LINK}`,
   time: '10:12',
   senal: 'mensaje',
 }
@@ -19,7 +19,7 @@ const SMS: ScreenView = {
   sender: '+593 98 774 2210',
   sub: 'Número no guardado · SMS',
   senalRemitente: 'remitente',
-  msgs: [PRIMER_SMS],
+  msgs: [FIRST_SMS],
   // Preguntar sigue la conversación y deja ver que la urgencia sube en vez de
   // llegar el dato; negarlo la cierra. Ninguna de las dos es gratis: contestar
   // ya confirma que la línea existe y que alguien la lee.
@@ -37,11 +37,11 @@ const SMS: ScreenView = {
   ],
 }
 
-const SMS_RESPONDIDO: ScreenView = {
+const REPLIED_SMS: ScreenView = {
   ...SMS,
   respuestas: undefined,
   msgs: [
-    PRIMER_SMS,
+    FIRST_SMS,
     { text: '¿De qué paquete se trata?', time: '10:14', mine: true },
     {
       text: 'Estimado(a) cliente, su envío será devuelto en 2 horas. Complete el pago en el enlace enviado.',
@@ -53,13 +53,13 @@ const SMS_RESPONDIDO: ScreenView = {
 
 /// El hilo con la negativa ya enviada. Un final que nace de contestar se ve
 /// sobre la burbuja propia: sin ella no se sabe qué salió del teléfono.
-const SMS_NEGADO: ScreenView = {
+const DECLINED_SMS: ScreenView = {
   ...SMS,
   respuestas: undefined,
-  msgs: [PRIMER_SMS, { text: 'No espero ningún paquete.', time: '10:14', mine: true }],
+  msgs: [FIRST_SMS, { text: 'No espero ningún paquete.', time: '10:14', mine: true }],
 }
 
-const PAGINA: ScreenView = {
+const PAGE: ScreenView = {
   kind: 'web',
   url: 'http://envia-express.info/pago', // NOSONAR: URL insegura intencional que el participante debe detectar.
   secure: false,
@@ -82,7 +82,7 @@ const PAGINA: ScreenView = {
 
 /// El inicio de la app, que es donde te deja abrirla. La consulta la haces tú:
 /// tocar el icono no es haber comprobado nada todavía.
-const APP_INICIO: ScreenView = {
+const APP_HOME: ScreenView = {
   kind: 'web',
   app: 'EnvíaExpress',
   url: 'envia-express.ec',
@@ -130,7 +130,7 @@ const APP_COURIER: ScreenView = {
 /// Las cuatro se abren; solo la del courier decide. Las otras muestran su
 /// estado normal y se vuelve con la flecha, para que abrir apps sea explorar
 /// el teléfono y no descartar opciones de una lista.
-const APPS: AppTelefono[] = [
+const APPS: PhoneApp[] = [
   { Icono: MessageSquareText, texto: 'Mensajes', color: '#2f9e44' },
   {
     Icono: Package,
@@ -155,26 +155,26 @@ const APPS: AppTelefono[] = [
 
 const STORY: Story<ScreenNode> = {
   n1: { kind: 'scene', view: SMS },
-  n1b: { kind: 'scene', view: SMS_RESPONDIDO },
-  n2: { kind: 'scene', view: PAGINA },
-  n3: { kind: 'scene', view: APP_INICIO },
+  n1b: { kind: 'scene', view: REPLIED_SMS },
+  n2: { kind: 'scene', view: PAGE },
+  n3: { kind: 'scene', view: APP_HOME },
   e_pago: {
     kind: 'bad',
-    view: PAGINA,
+    view: PAGE,
     verdict: 'Caíste en la trampa',
     outcome:
       'El cobro de $1,20 nunca existió. Copiaron los datos completos de tu tarjeta y esa misma noche aparecieron tres consumos por internet que no hiciste.',
   },
   e_cierra: {
     kind: 'good',
-    view: PAGINA,
+    view: PAGE,
     verdict: 'No caíste · el monto no justificaba los datos',
     outcome:
       'Saliste de la página. Un cobro de un dólar no necesita tu tarjeta completa con CVV, y la dirección ni siquiera era del courier.',
   },
   e_responde: {
     kind: 'partial',
-    view: SMS_NEGADO,
+    view: DECLINED_SMS,
     verdict: 'No entregaste nada, pero contestaste',
     outcome:
       'No diste ningún dato ni abriste el enlace, que es lo que evita el daño. Pero contestar confirma que la línea está activa y que alguien la lee, y eso es lo que buscan para insistir con algo mejor preparado. Y si el envío hubiera sido tuyo de verdad, seguirías sin saberlo.',
@@ -188,7 +188,7 @@ const STORY: Story<ScreenNode> = {
   },
 }
 
-const SENALES: Senal[] = [
+const SIGNALS: Signal[] = [
   {
     id: 's1',
     targetId: 'remitente',
@@ -225,9 +225,9 @@ const SENALES: Senal[] = [
 const RULE =
   'Regla de oro: un aviso de paquete se comprueba <b>en la app o la web del courier con tu número de guía</b>, nunca por el enlace del mensaje. Nadie necesita tu CVV para cobrarte un dólar.'
 
-const RESUMEN = 'Un SMS dice que tu paquete está retenido por $1,20 de aduana.'
+const SUMMARY = 'Un SMS dice que tu paquete está retenido por $1,20 de aduana.'
 
-const CONTEXTO: Contexto = {
+const CONTEXT: Context = {
   antes: (
     <>
       Compraste algo por internet la semana pasada y <strong>sí estás esperando un paquete</strong>:
@@ -242,14 +242,14 @@ const CONTEXTO: Contexto = {
   ),
 }
 
-function PaqueteRetenido() {
+function HeldPackage() {
   return (
-    <StoryEscenario
+    <ScenarioStory
       escenarioId="smishing/paquete-retenido"
-      resumen={RESUMEN}
-      contexto={CONTEXTO}
+      resumen={SUMMARY}
+      contexto={CONTEXT}
       story={STORY}
-      senales={SENALES}
+      senales={SIGNALS}
       rule={RULE}
       restartLabel="↻ Repetir el escenario"
       accionesEnPantalla
@@ -272,4 +272,4 @@ function PaqueteRetenido() {
   )
 }
 
-export default PaqueteRetenido
+export default HeldPackage

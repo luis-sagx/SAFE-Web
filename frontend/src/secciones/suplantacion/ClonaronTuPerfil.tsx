@@ -1,18 +1,18 @@
 import { Camera, MessageCircle, Users, Wallet } from 'lucide-react'
-import StoryEscenario, { type AppTelefono, type ScreenNode } from '../../components/StoryEscenario'
-import type { Contexto } from '../../components/ui/ContextoEscenario'
+import ScenarioStory, { type PhoneApp, type ScreenNode } from '../../components/StoryEscenario'
+import type { Context } from '../../components/ui/ContextoEscenario'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
-import type { Senal } from '../../components/ui/PanelVeredicto'
+import type { Signal } from '../../components/ui/PanelVeredicto'
 import type { Story } from '../../hooks/useStoryEngine'
-import { IDENTIDAD_FICTICIA } from '../../lib/identidadFicticia'
+import { IDENTITY_FAKE } from '../../lib/identidadFicticia'
 
 // El otro lado del módulo: el perfil clonado eres tú. El error que mide no es caer en
 // nada, sino escribirle a la cuenta falsa — eso entrega datos reales a quien ya usa tu nombre.
 
-const AMIGA = 'Verónica'
-const NUMERO_AMIGA = '+593 99 618 2274'
+const FRIEND = 'Verónica'
+const NUMBER_FRIEND = '+593 99 618 2274'
 
-const AVISO = {
+const NOTICE = {
   text: 'Oyeee, ¿tú abriste otra cuenta? Me está escribiendo alguien con tu nombre y tus mismas fotos, pidiéndome que le preste 150 dólares 😳',
   time: '19:32',
   senal: 'aviso',
@@ -20,10 +20,10 @@ const AVISO = {
 
 const CHAT: ScreenView = {
   kind: 'sms',
-  sender: AMIGA,
-  sub: `${NUMERO_AMIGA} · guardada en tus contactos`,
+  sender: FRIEND,
+  sub: `${NUMBER_FRIEND} · guardada en tus contactos`,
   senalRemitente: 'remitente',
-  msgs: [AVISO],
+  msgs: [NOTICE],
   respuestas: [
     {
       texto: 'No, esa no soy yo. Gracias por avisar 🙏',
@@ -40,10 +40,10 @@ const CHAT: ScreenView = {
   volverLabel: 'Salió del chat sin hacer nada',
 }
 
-const GRACIAS: ScreenView = {
+const THANKS: ScreenView = {
   ...CHAT,
   msgs: [
-    AVISO,
+    NOTICE,
     {
       text: 'No, esa no soy yo. Gracias por avisar 🙏',
       time: '19:34',
@@ -71,10 +71,10 @@ const GRACIAS: ScreenView = {
 
 // Única pantalla del proyecto que enseña la suplantación desde fuera: lo que Verónica ve.
 // Por eso va dibujada como captura de verdad, no contada en texto.
-const CAPTURA: ScreenView = {
+const CAPTURE: ScreenView = {
   ...CHAT,
   msgs: [
-    AVISO,
+    NOTICE,
     { text: '¿Me mandas una captura?', time: '19:34', mine: true },
     {
       text: 'Mira, esto es lo que me llegó 😳',
@@ -104,7 +104,7 @@ const CAPTURA: ScreenView = {
   ],
 }
 
-const RED: ScreenView = {
+const NETWORK: ScreenView = {
   kind: 'web',
   app: 'Red social',
   url: 'inicio',
@@ -126,7 +126,7 @@ const RED: ScreenView = {
   button: '',
 }
 
-const RESULTADOS: ScreenView = {
+const RESULTS: ScreenView = {
   kind: 'web',
   app: 'Red social',
   url: 'buscar',
@@ -154,7 +154,7 @@ const RESULTADOS: ScreenView = {
   button: '',
 }
 
-const CLON: ScreenView = {
+const CLONE: ScreenView = {
   kind: 'web',
   app: 'Red social',
   url: 'perfil',
@@ -196,7 +196,7 @@ const CLON: ScreenView = {
   button: '',
 }
 
-const TU_PERFIL: ScreenView = {
+const YOUR_PROFILE: ScreenView = {
   kind: 'web',
   app: 'Red social',
   url: 'perfil',
@@ -224,7 +224,7 @@ const TU_PERFIL: ScreenView = {
   button: '',
 }
 
-const CHAT_CLON: ScreenView = {
+const CHAT_CLONE: ScreenView = {
   kind: 'sms',
   sender: '{nombre} (cuenta falsa)',
   sub: 'Cuenta creada hace 4 días',
@@ -238,7 +238,7 @@ const CHAT_CLON: ScreenView = {
   ],
   respuestas: [
     {
-      texto: `Aquí está mi cédula ${IDENTIDAD_FICTICIA.cedula}, mírala y borra esa cuenta.`,
+      texto: `Aquí está mi cédula ${IDENTITY_FAKE.cedula}, mírala y borra esa cuenta.`,
       goto: 'e_escribe',
       label: 'Le mandó su cédula a la cuenta que lo suplantaba',
     },
@@ -250,7 +250,7 @@ const CHAT_CLON: ScreenView = {
   ],
 }
 
-const APPS: AppTelefono[] = [
+const APPS: PhoneApp[] = [
   { Icono: MessageCircle, texto: 'Mensajes', color: '#2f9e44', hilo: 'sms' },
   {
     Icono: Users,
@@ -275,32 +275,32 @@ const APPS: AppTelefono[] = [
 
 export const STORY: Story<ScreenNode> = {
   n1: { kind: 'scene', view: CHAT },
-  n2: { kind: 'scene', view: GRACIAS },
-  n2b: { kind: 'scene', view: CAPTURA },
-  n3: { kind: 'scene', view: RED },
-  n4: { kind: 'scene', view: RESULTADOS },
-  n5: { kind: 'scene', view: CLON },
-  n6: { kind: 'scene', view: TU_PERFIL },
-  n7: { kind: 'scene', view: CHAT_CLON },
+  n2: { kind: 'scene', view: THANKS },
+  n2b: { kind: 'scene', view: CAPTURE },
+  n3: { kind: 'scene', view: NETWORK },
+  n4: { kind: 'scene', view: RESULTS },
+  n5: { kind: 'scene', view: CLONE },
+  n6: { kind: 'scene', view: YOUR_PROFILE },
+  n7: { kind: 'scene', view: CHAT_CLONE },
   e_reporta: {
     kind: 'good',
-    view: CLON,
+    view: CLONE,
     verdict: 'Acertaste · reportaste la copia',
     outcome:
       'Reportaste el perfil, que es lo único que lo baja: la red lo revisa y lo cierra. Verónica no perdió sus 150 dólares porque preguntó, y ahora conviene rematar avisando a tus contactos, porque a Karina también le escribieron.',
   },
   e_avisa: {
     kind: 'good',
-    view: TU_PERFIL,
+    view: YOUR_PROFILE,
     verdict: 'Acertaste · avisaste a tu gente',
     outcome:
       'Publicaste el aviso y tus contactos lo vieron antes de que alguien mandara dinero. Es lo que más rápido corta el daño: la cuenta falsa vive de que la gente crea que eres tú, y un aviso tuyo la deja sin nada. Repórtala también, para que la cierren.',
   },
   e_escribe: {
     kind: 'bad',
-    view: CHAT_CLON,
+    view: CHAT_CLONE,
     verdict: 'Le entregaste justo lo que le faltaba',
-    outcome: `Le mandaste tu cédula ${IDENTIDAD_FICTICIA.cedula} a quien estaba usando tu nombre. No borró nada: ahora, además de tus fotos, tiene un documento tuyo para hacer las estafas más creíbles y para abrir cuentas a tu nombre. A una cuenta falsa no se le demuestra nada: se reporta y se avisa a los demás.`,
+    outcome: `Le mandaste tu cédula ${IDENTITY_FAKE.cedula} a quien estaba usando tu nombre. No borró nada: ahora, además de tus fotos, tiene un documento tuyo para hacer las estafas más creíbles y para abrir cuentas a tu nombre. A una cuenta falsa no se le demuestra nada: se reporta y se avisa a los demás.`,
     score: 0,
   },
   e_ignora: {
@@ -313,7 +313,7 @@ export const STORY: Story<ScreenNode> = {
   },
 }
 
-const SENALES: Senal[] = [
+const SIGNALS: Signal[] = [
   {
     id: 's1',
     targetId: 'aviso',
@@ -354,9 +354,9 @@ const SENALES: Senal[] = [
 const RULE =
   'Regla de oro: si copian tu perfil, <b>repórtalo y avisa a tus contactos</b>, en ese orden y sin escribirle a la cuenta falsa. Lo que la sostiene es que tu gente crea que eres tú, así que un aviso tuyo la desarma; y a quien te suplanta no se le demuestra nada con documentos.'
 
-const RESUMEN = 'Una amiga te avisa de que alguien usa tu nombre y tus fotos para pedir dinero.'
+const SUMMARY = 'Una amiga te avisa de que alguien usa tu nombre y tus fotos para pedir dinero.'
 
-const CONTEXTO: Contexto = {
+const CONTEXT: Context = {
   antes: (
     <>
       Tienes una cuenta en la red social desde hace años, con <strong>fotos públicas</strong> y tu
@@ -371,14 +371,14 @@ const CONTEXTO: Contexto = {
   ),
 }
 
-function ClonaronTuPerfil() {
+function ClonedProfileAlert() {
   return (
-    <StoryEscenario
+    <ScenarioStory
       escenarioId="suplantacion/clonaron-tu-perfil"
-      resumen={RESUMEN}
-      contexto={CONTEXTO}
+      resumen={SUMMARY}
+      contexto={CONTEXT}
       story={STORY}
-      senales={SENALES}
+      senales={SIGNALS}
       rule={RULE}
       restartLabel="↻ Repetir el escenario"
       accionesEnPantalla
@@ -402,4 +402,4 @@ function ClonaronTuPerfil() {
   )
 }
 
-export default ClonaronTuPerfil
+export default ClonedProfileAlert

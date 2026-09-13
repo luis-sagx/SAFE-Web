@@ -1,60 +1,60 @@
 import { useEffect, useState } from 'react'
-import { escenariosDeSeccion, rutaEscenario } from '../data/catalogo'
-import { fetchProgreso } from '../lib/api'
-import { conEscenarioIntentado, siguienteEnRonda } from '../lib/bloqueoEscenarios'
+import { getSectionScenarios, getScenarioPath } from '../data/catalogo'
+import { fetchProgress } from '../lib/api'
+import { withAttemptedScenario, nextInRound } from '../lib/bloqueoEscenarios'
 
-interface SiguienteEscenarioResult {
+interface NextScenarioResult {
   ruta: string | null
   cargando: boolean
 }
 
-export function useSiguienteEscenario(escenarioId: string): SiguienteEscenarioResult {
-  const [ruta, setRuta] = useState<string | null>(null)
-  const [cargando, setCargando] = useState(true)
+export function useNextScenario(scenarioId: string): NextScenarioResult {
+  const [path, setPath] = useState<string | null>(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const seccionId = escenarioId.split('/')[0] ?? ''
-    const escenarios = escenariosDeSeccion(seccionId)
+    const sectionId = scenarioId.split('/')[0] ?? ''
+    const scenarios = getSectionScenarios(sectionId)
 
-    if (escenarios.length === 0) {
-      setCargando(false)
+    if (scenarios.length === 0) {
+      setLoading(false)
       return
     }
 
-    let cancelado = false
+    let cancelled = false
 
-    fetchProgreso(seccionId)
-      .then((progreso) => {
-        if (cancelado) return
+    fetchProgress(sectionId)
+      .then((progress) => {
+        if (cancelled) return
 
-        const siguiente = siguienteEnRonda(
-          escenarios,
-          conEscenarioIntentado(progreso, escenarioId),
+        const next = nextInRound(
+          scenarios,
+          withAttemptedScenario(progress, scenarioId),
         )
 
-        if (siguiente) {
-          setRuta(rutaEscenario(siguiente))
+        if (next) {
+          setPath(getScenarioPath(next))
         } else {
-          setRuta(`/seccion/${seccionId}`)
+          setPath(`/seccion/${sectionId}`)
         }
-        setCargando(false)
+        setLoading(false)
       })
       .catch(() => {
-        if (cancelado) return
+        if (cancelled) return
 
-        const siguiente = escenarios[escenarios.findIndex((e) => e.id === escenarioId) + 1]
-        if (siguiente) {
-          setRuta(rutaEscenario(siguiente))
+        const next = scenarios[scenarios.findIndex((e) => e.id === scenarioId) + 1]
+        if (next) {
+          setPath(getScenarioPath(next))
         } else {
-          setRuta(`/seccion/${seccionId}`)
+          setPath(`/seccion/${sectionId}`)
         }
-        setCargando(false)
+        setLoading(false)
       })
 
     return () => {
-      cancelado = true
+      cancelled = true
     }
-  }, [escenarioId])
+  }, [scenarioId])
 
-  return { ruta, cargando }
+  return { ruta: path, cargando: loading }
 }

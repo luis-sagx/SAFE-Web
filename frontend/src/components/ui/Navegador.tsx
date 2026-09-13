@@ -13,13 +13,13 @@ import {
 } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { useAuth } from '../../context/AuthContext'
-import { BotonesVentana, Taskbar, type Reloj } from './DesktopChrome'
+import { WindowButtons, Taskbar, type Clock } from './DesktopChrome'
 import styles from './DeviceScreen.module.css'
 
 // Navegador con pestañas reutilizado por los escenarios de correo/web.
 // Ver docs/superpowers/specs/2026-08-05-escenarios-interactivos-phishing-design.md §2.1.
 
-export interface PestanaConfig {
+export interface TabConfig {
   titulo: string
   url: string
   segura: boolean
@@ -35,7 +35,7 @@ export interface PestanaConfig {
   senalUrl?: string
 }
 
-export interface MarcadorNavegador {
+export interface BrowserBookmark {
   Icono: LucideIcon
   texto: string
   /** Sin `goto` el marcador es decorativo: se ve pero no hace nada al
@@ -45,17 +45,17 @@ export interface MarcadorNavegador {
   label?: string
 }
 
-interface NavegadorProps {
+interface BrowserProps {
   /** Todas las pestañas que el escenario puede llegar a mostrar, por id de
    *  nodo del grafo. */
-  pestanas: Record<string, PestanaConfig>
+  pestanas: Record<string, TabConfig>
   /** Las que están abiertas ahora mismo, en el orden en que se abrieron. */
   abiertas: string[]
   activa: string
-  marcadores: MarcadorNavegador[]
+  marcadores: BrowserBookmark[]
   /** Hora del sistema. Los escenarios cuya historia fija una hora la pasan
    *  para que el reloj de la ventana no la contradiga. */
-  reloj?: Reloj
+  reloj?: Clock
   /** Final al que lleva cerrar la pestaña marcada como `pestanaCierreDinamico`
    *  cuando esa pestaña no trae su propio `cierra` fijo. */
   cierrePortal?: string
@@ -64,24 +64,24 @@ interface NavegadorProps {
   children: ReactNode
 }
 
-export function Navegador({
-  pestanas,
-  abiertas,
-  activa,
-  marcadores,
-  reloj = 'vivo',
-  cierrePortal,
-  pestanaCierreDinamico,
+export function Browser({
+  pestanas: tabs,
+  abiertas: open,
+  activa: active,
+  marcadores: markers,
+  reloj: clock = 'vivo',
+  cierrePortal: portalCompletion,
+  pestanaCierreDinamico: dynamicClosingTab,
   onHotspot,
   children,
-}: NavegadorProps) {
-  const actual = pestanas[activa]
+}: BrowserProps) {
+  const current = tabs[active]
   /// La misma inicial que el cliente de correo usa para el avatar: es la misma
   /// persona, con su sesión abierta en el navegador.
-  const { usuarioSimulado } = useAuth()
+  const { usuarioSimulado: simulatedUser } = useAuth()
   /// Con reserva: una cuenta ya anonimizada puede no tener nombre, y un avatar
   /// vacío no debería tumbar la pantalla entera.
-  const inicial = (usuarioSimulado || 'participante').slice(0, 1).toUpperCase()
+  const initial = (simulatedUser || 'participante').slice(0, 1).toUpperCase()
 
   return (
     <section
@@ -92,32 +92,32 @@ export function Navegador({
       {/* Sin barra de título aparte: las pestañas ocupan el borde superior,
           como en cualquier navegador. */}
       <div className={styles.tabstrip} role="tablist">
-        {abiertas.map((id) => {
-          const meta = pestanas[id]
+        {open.map((id) => {
+          const meta = tabs[id]
           if (!meta) return null
-          const esActiva = id === activa
-          const cierra = id === pestanaCierreDinamico ? cierrePortal : meta.cierra
+          const isActive = id === active
+          const closingTarget = id === dynamicClosingTab ? portalCompletion : meta.cierra
 
           return (
             <span
               key={id}
-              className={`${styles.tab} ${esActiva ? '' : styles.tabInactiva}`}
+              className={`${styles.tab} ${isActive ? '' : styles.tabInactiva}`}
               role="tab"
-              aria-selected={esActiva}
+              aria-selected={isActive}
               data-pestana={id}
-              data-hotspot-goto={esActiva ? undefined : id}
+              data-hotspot-goto={isActive ? undefined : id}
               data-hotspot-label={`Cambió a la pestaña "${meta.titulo}"`}
             >
               <Globe aria-hidden className={styles.tabIcono} strokeWidth={1.75} />
               <span className={styles.tabTexto}>{meta.titulo}</span>
-              {cierra && (
+              {closingTarget && (
                 <button
                   type="button"
                   className={styles.tabClose}
                   title={`Cerrar ${meta.titulo}`}
                   aria-label={`Cerrar la pestaña ${meta.titulo}`}
                   data-cierra={id}
-                  data-hotspot-goto={cierra}
+                  data-hotspot-goto={closingTarget}
                   data-hotspot-label={`Cerró la pestaña "${meta.titulo}"`}
                 >
                   <X aria-hidden className={styles.tabCloseIcono} strokeWidth={2} />
@@ -129,7 +129,7 @@ export function Navegador({
         <span className={styles.tabNueva} aria-hidden>
           +
         </span>
-        <BotonesVentana />
+        <WindowButtons />
       </div>
 
       <div className={styles.urlbar}>
@@ -144,9 +144,9 @@ export function Navegador({
 
         {/* Iconos de trazo y no emoji: 🔒/⚠ varían según el sistema operativo
             y el indicador de seguridad es justo lo que este módulo enseña. */}
-        {actual?.local ? (
+        {current?.local ? (
           <FileText aria-hidden className={styles.urlIcono} strokeWidth={1.75} />
-        ) : actual?.segura ? (
+        ) : current?.segura ? (
           <Lock aria-hidden className={`${styles.urlIcono} ${styles.lock}`} strokeWidth={2} />
         ) : (
           <span className={styles.warn}>
@@ -154,18 +154,18 @@ export function Navegador({
             No seguro
           </span>
         )}
-        <span className={styles.url} data-signal={actual?.senalUrl}>
-          {actual?.url}
+        <span className={styles.url} data-signal={current?.senalUrl}>
+          {current?.url}
         </span>
 
         <span className={styles.navBotones} aria-hidden>
           <Star className={styles.navIcono} strokeWidth={2} />
-          <span className={styles.navPerfil}>{inicial}</span>
+          <span className={styles.navPerfil}>{initial}</span>
           <EllipsisVertical className={styles.navIcono} strokeWidth={2} />
         </span>
       </div>
 
-      {marcadores.length > 0 && (
+      {markers.length > 0 && (
         <nav className={styles.marcadores} aria-label="Sitios guardados">
           {/* Nombrada porque sin marcadores conocidos la franja se lee como
               decoración; sigue sin decir cuál pulsar. */}
@@ -175,18 +175,18 @@ export function Navegador({
               Abre una entidad sin usar los enlaces del correo
             </span>
           </span>
-          {marcadores.map(({ Icono, texto, goto, label }) => (
+          {markers.map(({ Icono: Icon, texto: text, goto, label }) => (
             <button
-              key={texto}
+              key={text}
               type="button"
               className={styles.marcador}
-              aria-label={`Abrir ${texto}`}
-              title={`Abrir ${texto}`}
+              aria-label={`Abrir ${text}`}
+              title={`Abrir ${text}`}
               data-hotspot-goto={goto}
               data-hotspot-label={label}
             >
-              <Icono aria-hidden className={styles.marcadorIcono} strokeWidth={1.75} />
-              {texto}
+              <Icon aria-hidden className={styles.marcadorIcono} strokeWidth={1.75} />
+              {text}
             </button>
           ))}
         </nav>
@@ -194,7 +194,7 @@ export function Navegador({
 
       {children}
 
-      <Taskbar apps={[{ Icono: Globe, texto: 'Navegador' }]} reloj={reloj} />
+      <Taskbar apps={[{ Icono: Globe, texto: 'Navegador' }]} reloj={clock} />
     </section>
   )
 }
