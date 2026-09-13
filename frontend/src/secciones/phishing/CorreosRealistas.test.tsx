@@ -65,13 +65,13 @@ describe('correos de phishing realistas', () => {
   it('usa los dos banners nuevos y elimina las ilustraciones genéricas', () => {
     const lottery = openEmail(LotteryPrize)
     expect(
-      lottery.container.querySelector('img[src="/escenarios/phishing/premio-loteria.webp"]'),
+      lottery.container.querySelector('img[src$="premio-loteria.webp"]'),
     ).not.toBeNull()
     lottery.unmount()
 
     const leak = openEmail(DataLeakNotice)
     expect(
-      leak.container.querySelector('img[src="/escenarios/phishing/aviso-seguridad.webp"]'),
+      leak.container.querySelector('img[src$="aviso-seguridad.webp"]'),
     ).not.toBeNull()
     leak.unmount()
 

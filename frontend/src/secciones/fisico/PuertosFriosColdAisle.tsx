@@ -3,8 +3,9 @@ import type { Context } from '../../components/ui/ContextoEscenario'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
 import type { Signal } from '../../components/ui/PanelVeredicto'
 import type { Story } from '../../hooks/useStoryEngine'
+import openServerDoorImg from '../../assets/escenarios/fisico/puerta-abierta-servidores.webp'
 
-const SCENE: ScreenView = { kind: 'escena', src: '/escenarios/fisico/puerta-abierta-servidores.webp', alt: 'Puerta abierta del pasillo frío de servidores', zonas: [{ id: 'puerta-abierta', x: '41%', y: '10%', ancho: '30%', alto: '80%' }] }
+const SCENE: ScreenView = { kind: 'escena', src: openServerDoorImg, alt: 'Puerta abierta del pasillo frío de servidores', zonas: [{ id: 'puerta-abierta', x: '41%', y: '10%', ancho: '30%', alto: '80%' }] }
 const SCENE_WITH_FLASH: ScreenView = { ...SCENE, destello: { x: '56%', y: '45%', goto: 'n_opciones', label: 'Se acercó a la puerta' } }
 const STORY: Story<ScreenNode> = {
   n1: { kind: 'scene', view: SCENE_WITH_FLASH },

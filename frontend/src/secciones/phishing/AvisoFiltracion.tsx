@@ -7,6 +7,7 @@ import { ACTIONS_BAR, createToolbarEndings } from './barraDeCorreo'
 import type { Story } from '../../hooks/useStoryEngine'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
 import type { Signal } from '../../components/ui/PanelVeredicto'
+import securityNoticeImg from '../../assets/escenarios/phishing/aviso-seguridad.webp'
 
 // Cierra el módulo con la lección que falta a los otros siete: desconfiar de
 // todo también se paga. Sin enlace a propósito, para forzar el hábito de entrar por marcadores.
@@ -26,7 +27,7 @@ const EMAIL: ScreenView = {
   },
   body: `
     <p>Estimado(a) cliente:</p>
-    <img class="mailHero" src="/escenarios/phishing/aviso-seguridad.webp" alt="" />
+    <img class="mailHero" src="${securityNoticeImg}" alt="" />
     <p>
       Hace tres días detectamos un <b>incidente de seguridad</b> que expuso los correos,
       teléfonos e historial de pedidos de un grupo de clientes, incluido el suyo.

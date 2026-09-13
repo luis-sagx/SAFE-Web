@@ -8,6 +8,7 @@ import type { ScreenView } from '../../components/ui/DeviceScreen'
 import type { Signal } from '../../components/ui/PanelVeredicto'
 import { FOOTER_LINKS } from '../../components/ui/armazonSitio'
 import { ACCOUNT_FAKE, IDENTITY_FAKE } from '../../lib/identidadFicticia'
+import lotteryPrizeImg from '../../assets/escenarios/phishing/premio-loteria.webp'
 
 // Anzuelo no técnico (sin dominio casi idéntico ni clon difícil de distinguir): la señal decisiva
 // no está en la pantalla, se responde con "¿yo jugué?" — de ahí la dificultad 1.
@@ -31,7 +32,7 @@ const EMAIL: ScreenView = {
   },
   body: `
     <p><span data-signal="saludo">Estimado(a) ganador(a):</span></p>
-    <img class="mailHero" src="/escenarios/phishing/premio-loteria.webp" alt="" />
+    <img class="mailHero" src="${lotteryPrizeImg}" alt="" />
     <p>
       Su correo fue seleccionado como ganador del Sorteo Internacional de este mes.
     </p>

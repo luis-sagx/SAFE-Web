@@ -42,7 +42,7 @@ function resolve(preference: Preference): EffectiveTheme {
 }
 
 // Montado fuera de AuthProvider: el tema no depende de la sesión y debe existir en
-// rutas públicas. data-tema ya lo puso index.html antes del pintado; esto solo sincroniza.
+// rutas públicas. data-tema ya lo puso public/tema.js antes del pintado; esto solo sincroniza.
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [preference, setPreferenceState] = useState<Preference>(readPreference)
   const [themeEffective, setEffectiveTheme] = useState<EffectiveTheme>(() => resolve(preference))
