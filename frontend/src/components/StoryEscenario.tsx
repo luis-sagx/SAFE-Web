@@ -1,4 +1,4 @@
-import { Lock, TriangleAlert } from 'lucide-react'
+import { Lock, TriangleAlert, type LucideIcon } from 'lucide-react'
 import { useCallback, useEffect, useState, type ReactNode } from 'react'
 import ScenarioLayout from './EscenarioLayout'
 import Instructions from './ui/Instrucciones'
@@ -138,7 +138,9 @@ function ScenarioStory({
   const [clickedEmptySpace, setClickedEmptySpace] = useState(false)
   // App del dock que no decide nada (cámara, galería); vive fuera del grafo
   // igual que `pestanaMirada`.
-  const [appOpen, setAppOpen] = useState<{ nombre: string; vacia: string } | undefined>()
+  const [appOpen, setAppOpen] = useState<
+    { nombre: string; vacia: string; Icono?: LucideIcon; color?: string } | undefined
+  >()
   // Última pantalla de cada app de comunicación (hilo SMS y llamada en curso);
   // su icono vuelve a ella sin tocar el grafo. Son dos porque un escenario
   // puede tener las dos cosas y "volver" depende del icono pulsado.
@@ -326,7 +328,12 @@ function ScenarioStory({
     const app = (event.target as HTMLElement).closest<HTMLElement>('[data-app]')?.dataset
     if (app) {
       if (!engine.isEnding) {
-        setAppOpen(app.appVacia ? { nombre: app.app ?? '', vacia: app.appVacia } : undefined)
+        const appDef = apps?.find((a) => a.texto === app.app)
+        setAppOpen(
+          app.appVacia
+            ? { nombre: app.app ?? '', vacia: app.appVacia, Icono: appDef?.Icono, color: appDef?.color }
+            : undefined,
+        )
       }
       return
     }
@@ -425,7 +432,18 @@ function ScenarioStory({
                 <span className={styles.phoneAppVolver} aria-hidden />
               </div>
               <div className={styles.phoneViewport}>
-                <p className={styles.appVacia}>{appOpen.vacia}</p>
+                <div className={styles.appVacia}>
+                  {appOpen.Icono && (
+                    <span
+                      className={styles.appVaciaIcono}
+                      style={appOpen.color ? { background: appOpen.color } : undefined}
+                      aria-hidden
+                    >
+                      <appOpen.Icono className={styles.appVaciaGlifo} strokeWidth={1.75} />
+                    </span>
+                  )}
+                  <p className={styles.appVaciaTexto}>{appOpen.vacia}</p>
+                </div>
               </div>
             </>
           ) : (

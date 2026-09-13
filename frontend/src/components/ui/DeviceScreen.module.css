@@ -2138,19 +2138,44 @@ button.mailNavItem {
 }
 
 /* Una app abierta que no tiene nada que ver con el escenario. Existe para que
-   el dock no sea una lista de opciones con un solo elemento vivo. */
+   el dock no sea una lista de opciones con un solo elemento vivo — pero tiene
+   que seguir viéndose como la pantalla de inicio de una app real, no como un
+   párrafo suelto: el ícono (el mismo del dock, agrandado) le da ese peso. */
 .appVacia {
-  margin: 0;
   flex: 1;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 1rem;
   padding: 2rem 1.5rem;
   text-align: center;
+  background: #f2f4f7;
+}
+
+.appVaciaIcono {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 4rem;
+  height: 4rem;
+  border-radius: 1.25rem;
+  background: #94a3b8;
+  color: #fff;
+  box-shadow: 0 8px 20px rgb(15 23 42 / 18%);
+}
+
+.appVaciaGlifo {
+  width: 2rem;
+  height: 2rem;
+}
+
+.appVaciaTexto {
+  margin: 0;
+  max-width: 22rem;
   font-size: 1rem;
   line-height: 1.5;
   color: #475569;
-  background: #f2f4f7;
 }
 
 .phoneBrowserUrl {
