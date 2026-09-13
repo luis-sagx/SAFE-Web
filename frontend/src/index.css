@@ -170,3 +170,14 @@ body {
   color: var(--color-ink);
   font-family: var(--font-sans);
 }
+
+/* Tailwind v4 dejó de poner cursor:pointer en los botones por defecto (antes
+   sí lo hacía Preflight), y la mayoría de botones de la app nunca lo pedían
+   aparte: por eso unos mostraban la manito y otros la flecha, sin patrón.
+   :where() para que esto cuente como especificidad cero — así un
+   `disabled:cursor-default` o el `cursor-default` a propósito del fondo del
+   modal (CierreModuloModal) siguen ganando siempre, sin tener que tocarlos. */
+button:where(:not(:disabled)),
+:where([role="button"]) {
+  cursor: pointer;
+}

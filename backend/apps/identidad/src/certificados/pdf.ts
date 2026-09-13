@@ -43,6 +43,7 @@ const MODULE_TITLE: Record<string, string> = {
   suplantacion: 'Suplantación de identidad',
   estafa: 'Estafa electrónica',
   fisico: 'Riesgo físico',
+  'asistentes-ia': 'Asistentes de IA',
 };
 
 function getTitle(module: string): string {
