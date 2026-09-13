@@ -10,30 +10,37 @@ function triggerFlash() {
 }
 
 describe('CableComprometido', () => {
- it('abre la escena de descanso sin mostrar opciones hasta tocar el destello', () => {
-   start(<CompromisedCable />)
-   expect(screen.getByAltText(/sala de descanso/)).toBeDefined()
-   expect(screen.queryByRole('button', { name: /avisar a IT/ })).toBeNull()
- })
- it('tocar el destello revela las opciones y permite reportar', async () => {
-   start(<CompromisedCable />)
-   triggerFlash()
-   fireEvent.click(screen.getByRole('button',{name:/avisar a IT/}))
-   expect(await screen.findByText('Decisión segura')).toBeDefined()
- })
- it('llevarlo al escritorio no termina la corrida', () => {
-   start(<CompromisedCable />)
-   triggerFlash()
-   fireEvent.click(screen.getByRole('button',{name:/Llevártelo/}))
-   expect(screen.getByAltText(/sobre un escritorio/)).toBeDefined()
-   expect(screen.queryByText('Ver las señales')).toBeNull()
- })
- it('entregarlo a IT desde escritorio es seguro', async () => {
-   start(<CompromisedCable />)
-   triggerFlash()
-   fireEvent.click(screen.getByRole('button',{name:/Llevártelo/}))
-   triggerFlash()
-   fireEvent.click(screen.getByRole('button',{name:/Entregarlo a IT/}))
-   expect(await screen.findByText('Decisión segura')).toBeDefined()
- })
+  it('abre la estación de carga sin mostrar opciones hasta tocar el destello', () => {
+    start(<CompromisedCable />)
+    expect(screen.getByAltText(/carga pública/)).toBeDefined()
+    expect(screen.queryByRole('button', { name: /tomacorriente/ })).toBeNull()
+  })
+
+  it('conectar el cable directo al puerto público es el riesgo', async () => {
+    start(<CompromisedCable />)
+    triggerFlash()
+    fireEvent.click(screen.getByRole('button', { name: /Conectar tu cable directo/ }))
+    expect(await screen.findByText('Riesgo detectado')).toBeDefined()
+  })
+
+  it('buscar un tomacorriente para el propio cargador es seguro', async () => {
+    start(<CompromisedCable />)
+    triggerFlash()
+    fireEvent.click(screen.getByRole('button', { name: /Buscar un tomacorriente/ }))
+    expect(await screen.findByText('Decisión segura')).toBeDefined()
+  })
+
+  it('cargar primero una batería portátil también es seguro', async () => {
+    start(<CompromisedCable />)
+    triggerFlash()
+    fireEvent.click(screen.getByRole('button', { name: /Conectar primero tu batería portátil/ }))
+    expect(await screen.findByText('Decisión segura')).toBeDefined()
+  })
+
+  it('aguantar sin cargar evita el riesgo pero queda como respuesta incompleta', async () => {
+    start(<CompromisedCable />)
+    triggerFlash()
+    fireEvent.click(screen.getByRole('button', { name: /Aguantar sin cargar/ }))
+    expect(await screen.findByText('Respuesta incompleta')).toBeDefined()
+  })
 })

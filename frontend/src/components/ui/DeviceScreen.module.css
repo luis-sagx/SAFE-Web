@@ -140,7 +140,6 @@
   font-weight: 600;
   padding: 0.3125rem 0.6875rem;
   border-radius: 0.375rem;
-  cursor: pointer;
 }
 /* La rayita de "app anclada" al pie del icono. */
 .taskbarAtajo::after {
@@ -218,7 +217,6 @@
   display: inline-flex;
   padding: 0.3125rem;
   border-radius: 0.375rem;
-  cursor: pointer;
 }
 .energiaBoton:hover {
   background: rgba(255, 255, 255, 0.24);
@@ -252,7 +250,6 @@
   padding: 0.5rem 0.625rem;
   border-radius: 0.375rem;
   text-align: left;
-  cursor: pointer;
 }
 .energiaItem:hover {
   background: rgba(255, 255, 255, 0.14);
@@ -291,7 +288,6 @@
   font: inherit;
   text-align: inherit;
   color: inherit;
-  cursor: pointer;
 }
 /* El realce al pasar por encima tiene que verse: con solo brightness(0.97) —un
    3%— no había forma de descubrir que el adjunto o el atajo eran accionables, y
@@ -390,9 +386,6 @@
   padding: 0.4375rem 0.5rem;
   border-radius: 0.375rem;
 }
-button.mailNavItem {
-  cursor: pointer;
-}
 .mailNavIcon {
   width: 1.125rem;
   height: 1.125rem;
@@ -439,7 +432,6 @@ button.mailNavItem {
   min-width: 4.375rem;
   padding: 0.4375rem 0.5625rem;
   border-radius: 0.375rem;
-  cursor: pointer;
 }
 .mailToolbarBtn:hover {
   background: #e9eef4;
@@ -819,7 +811,6 @@ button.mailNavItem {
   color: #3b4553;
   font: inherit;
   font-size: 0.84375rem;
-  cursor: pointer;
   white-space: nowrap;
 }
 .marcador:hover {
@@ -852,7 +843,6 @@ button.mailNavItem {
   background: transparent;
   color: #5f6b7a;
   line-height: 1;
-  cursor: pointer;
 }
 /* Icono de trazo en vez del carácter ✕: el glifo se dibuja más alto que ancho
    en la tipografía de la pantalla y la cruz se veía rectangular. El icono son
@@ -984,7 +974,6 @@ button.mailNavItem {
   gap: 0.75rem;
   padding: 0.875rem 0.25rem;
   text-align: left;
-  cursor: pointer;
   color: #16202c;
 }
 
@@ -1811,10 +1800,6 @@ button.mailNavItem {
 .smsFieldEscrito {
   color: #16202c;
 }
-.smsFieldBoton {
-  cursor: pointer;
-}
-
 .smsEnviar {
   flex-shrink: 0;
   display: inline-flex;
@@ -1962,7 +1947,6 @@ button.mailNavItem {
   padding: 0;
   font: inherit;
   color: inherit;
-  cursor: pointer;
 }
 
 .phoneNotificacionCabecera {
@@ -2017,7 +2001,6 @@ button.mailNavItem {
   border: none;
   background: rgb(15 23 42 / 8%);
   color: #475569;
-  cursor: pointer;
   font-size: 0.75rem;
   line-height: 1;
 }
@@ -2243,7 +2226,6 @@ button.mailNavItem {
   align-items: center;
   gap: 0.25rem;
   padding: 0.125rem 0.0625rem;
-  cursor: pointer;
   color: #dbe2ea;
 }
 
@@ -2652,7 +2634,6 @@ button.mailNavItem {
   font-size: 0.875rem;
   font-weight: 600;
   color: #334155;
-  cursor: pointer;
 }
 
 .callRepetir:hover,
@@ -2725,7 +2706,6 @@ button.mailNavItem {
   font: inherit;
   font-size: 1rem;
   line-height: 1.4;
-  cursor: pointer;
 }
 
 .callFrase:hover,
@@ -2759,7 +2739,6 @@ button.mailNavItem {
   font-size: 0.75rem;
   font-weight: 600;
   color: #475569;
-  cursor: pointer;
 }
 
 .callControlIcono {
@@ -2823,7 +2802,6 @@ button.mailNavItem {
   font-size: 0.75rem;
   font-weight: 600;
   color: #475569;
-  cursor: pointer;
 }
 
 .callBotonIcono {
@@ -2910,7 +2888,6 @@ button.mailNavItem {
   border: none;
   background: #1a73e8;
   color: #fff;
-  cursor: pointer;
 }
 
 .notaPlay:hover,
@@ -3033,7 +3010,6 @@ button.mailNavItem {
   background: transparent;
   font: inherit;
   text-align: center;
-  cursor: pointer;
   display: flex;
   flex-direction: column;
   gap: 0.0625rem;
@@ -3135,7 +3111,6 @@ button.mailNavItem {
   font: inherit;
   font-size: 1.0625rem;
   line-height: 1.4;
-  cursor: pointer;
 }
 
 .smsRespuesta:hover,

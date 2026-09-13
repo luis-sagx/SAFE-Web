@@ -24,17 +24,6 @@
   height: 100%;
 }
 
-/* Lo que responde al clic se anuncia solo: cursor de mano y un halo que
-   aparece al pasar por encima. Sin esto había que adivinar qué era tocable, y
-   la gente probaba con doble clic.
-
-   El halo va en el verde del sistema (--color-primary), no en un azul suelto:
-   es el mismo color con el que la aplicación marca lo accionable. */
-.hotspot,
-.cerrar {
-  cursor: pointer;
-}
-
 /* Lo que aparece al pasar por encima. Separado del trazo del contorno a
    propósito: cuando una sola clase llevaba `stroke` y opacidad a la vez, el
    grupo de la pastilla le pasaba ese trazo verde de 3px por herencia al texto
@@ -211,7 +200,6 @@
   height: 2.75rem;
   transform: translate(-50%, -50%);
   border-radius: 999px;
-  cursor: pointer;
 }
 
 .destelloPulso {
