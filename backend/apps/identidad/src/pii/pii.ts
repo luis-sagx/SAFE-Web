@@ -21,7 +21,7 @@ const PREFIX = 'v1:';
 function password(passwordBase64: string): Buffer {
   const buffer = Buffer.from(passwordBase64, 'base64');
   if (buffer.length !== 32) {
-    throw new Error(
+    throw new TypeError(
       'PII_ENCRYPTION_KEY debe ser una clave de 32 bytes en base64 (openssl rand -base64 32).',
     );
   }

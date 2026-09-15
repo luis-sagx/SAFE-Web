@@ -104,6 +104,33 @@ interface RequestOptions {
   auth?: boolean
 }
 
+function requestHeaders(body: unknown, auth: boolean): Record<string, string> {
+  const headers: Record<string, string> = {}
+  if (body !== undefined) headers['Content-Type'] = 'application/json'
+
+  const token = auth ? getToken() : null
+  if (token) headers.Authorization = `Bearer ${token}`
+  return headers
+}
+
+async function throwResponseError(response: Response): Promise<never> {
+  if (response.status === 401) setToken(null)
+
+  const detail = (await response.json().catch(() => null)) as {
+    message?: string | string[]
+  } | null
+  const message = Array.isArray(detail?.message) ? detail.message[0] : detail?.message
+
+  if (response.status >= 500 || message === 'Internal server error') {
+    throw new ApiError(
+      'No pudimos completar la solicitud. Inténtalo de nuevo en unos minutos.',
+      response.status,
+    )
+  }
+
+  throw new ApiError(message ?? 'No se pudo conectar con el servidor.', response.status)
+}
+
 /// Varias peticiones pueden vencer a la vez (varias pestañas, varias llamadas
 /// en paralelo): sin esto cada una dispararía su propio POST /auth/refresh.
 /// Comparten esta promesa y solo se llama al backend una vez.
@@ -145,22 +172,10 @@ async function request<T>(
   retried = false,
 ): Promise<T> {
   const { method = 'GET', body, auth = true } = options
-  const headers: Record<string, string> = {}
-
-  if (body !== undefined) {
-    headers['Content-Type'] = 'application/json'
-  }
-
-  if (auth) {
-    const token = getToken()
-    if (token) {
-      headers.Authorization = `Bearer ${token}`
-    }
-  }
 
   const response = await fetch(`${BASE_URL}${path}`, {
     method,
-    headers,
+    headers: requestHeaders(body, auth),
     // Sin esto el navegador no manda (ni guarda) la cookie httpOnly del
     // refresh token en /auth/refresh. Mismo origen siempre (gateway único),
     // así que no hace falta 'include' ni CORS con credenciales.
@@ -168,40 +183,18 @@ async function request<T>(
     body: body === undefined ? undefined : JSON.stringify(body),
   })
 
-  if (!response.ok) {
-    // Access token vencido: se intenta renovar UNA vez con la cookie del
-    // refresh token antes de rendirse. `auth` excluye la propia llamada a
-    // /auth/refresh, que nunca debe reintentarse a sí misma.
-    if (response.status === 401 && auth && !retried && (await refreshSession())) {
-      return request<T>(path, options, true)
-    }
-
-    // Sigue sin autorizar (o ya se reintentó): se descarta el access token
-    // para que el siguiente render mande al login. La cookie del refresh la
-    // limpia el propio backend cuando el refresh falla (ver auth.controller).
-    if (response.status === 401) {
-      setToken(null)
-    }
-
-    const detail = (await response.json().catch(() => null)) as {
-      message?: string | string[]
-    } | null
-    const message = Array.isArray(detail?.message) ? detail.message[0] : detail?.message
-
-    // Los errores 5xx no describen una acción que el usuario pueda corregir.
-    // En particular Nest responde "Internal server error" por defecto, que
-    // expone un detalle técnico en inglés y no sirve para continuar.
-    if (response.status >= 500 || message === 'Internal server error') {
-      throw new ApiError(
-        'No pudimos completar la solicitud. Inténtalo de nuevo en unos minutos.',
-        response.status,
-      )
-    }
-
-    throw new ApiError(message ?? 'No se pudo conectar con el servidor.', response.status)
+  if (response.ok) {
+    return response.status === 204 ? (null as T) : ((await response.json()) as T)
   }
 
-  return response.status === 204 ? (null as T) : ((await response.json()) as T)
+  // Access token vencido: se intenta renovar UNA vez con la cookie del
+  // refresh token antes de rendirse. `auth` excluye la propia llamada a
+  // /auth/refresh, que nunca debe reintentarse a sí misma.
+  if (response.status === 401 && auth && !retried && (await refreshSession())) {
+    return request<T>(path, options, true)
+  }
+
+  return throwResponseError(response)
 }
 
 // Variante de `request` para la única respuesta no-JSON del API (el PDF del

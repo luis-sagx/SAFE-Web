@@ -22,13 +22,14 @@ export function getYouTubeId(url: string): string | null {
 
   if (!YOUTUBE_HOSTS.has(parsed.hostname)) return null
 
-  const id = parsed.hostname === 'youtu.be'
-    ? parsed.pathname.slice(1)
-    : parsed.pathname.startsWith('/embed/')
-      ? parsed.pathname.slice('/embed/'.length)
-      : parsed.pathname === '/watch'
-        ? parsed.searchParams.get('v')
-        : null
+  let id: string | null = null
+  if (parsed.hostname === 'youtu.be') {
+    id = parsed.pathname.slice(1)
+  } else if (parsed.pathname.startsWith('/embed/')) {
+    id = parsed.pathname.slice('/embed/'.length)
+  } else if (parsed.pathname === '/watch') {
+    id = parsed.searchParams.get('v')
+  }
 
   return id && YOUTUBE_ID.test(id) ? id : null
 }

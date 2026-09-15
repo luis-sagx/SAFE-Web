@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type SyntheticEvent } from "react";
 import {
   KeyRound,
   Loader2,
@@ -385,7 +385,7 @@ function Trainers() {
 
   useEffect(load, [load]);
 
-  async function submit(event: FormEvent) {
+  async function submit(event: SyntheticEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
     setPassword("");
@@ -421,15 +421,15 @@ function Trainers() {
         </p>
         <form className="mt-5 grid gap-4 sm:grid-cols-2" onSubmit={submit}>
           <label className="text-sm font-medium text-ink">
-            Nombre
+            <span>Nombre</span>
             <input required value={form.nombre} onChange={(e) => setForm({ ...form, nombre: e.target.value })} className="mt-1 block h-10 w-full rounded-md border border-hairline-strong bg-canvas px-3 text-ink" />
           </label>
           <label className="text-sm font-medium text-ink">
-            Apellido
+            <span>Apellido</span>
             <input required value={form.apellido} onChange={(e) => setForm({ ...form, apellido: e.target.value })} className="mt-1 block h-10 w-full rounded-md border border-hairline-strong bg-canvas px-3 text-ink" />
           </label>
           <label className="text-sm font-medium text-ink sm:col-span-2">
-            Correo
+            <span>Correo</span>
             <input required type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="mt-1 block h-10 w-full rounded-md border border-hairline-strong bg-canvas px-3 text-ink" />
           </label>
           <button type="submit" disabled={submitting} className="h-10 rounded-md bg-primary px-4 text-sm font-medium text-on-primary disabled:opacity-60 sm:w-fit">
@@ -442,9 +442,9 @@ function Trainers() {
       {error && <p role="alert" className="mt-4 text-sm text-danger">{error}</p>}
 
       <h2 className="mt-8 text-xl font-semibold text-ink">Capacitadores</h2>
-      {loading ? <p role="status" className="mt-3 text-base text-muted">Cargando capacitadores…</p> : list.length === 0 ? (
-        <p className="mt-3 text-base text-muted">Todavía no hay capacitadores creados.</p>
-      ) : (
+      {loading && <output className="mt-3 block text-base text-muted">Cargando capacitadores…</output>}
+      {!loading && list.length === 0 && <p className="mt-3 text-base text-muted">Todavía no hay capacitadores creados.</p>}
+      {!loading && list.length > 0 && (
         <div className="mt-4 overflow-x-auto rounded-lg border border-hairline-strong">
           <table className="w-full min-w-[580px] text-left text-sm">
             <thead><tr className="border-b border-hairline bg-canvas-soft text-muted"><th className="px-4 py-3">Nombre</th><th className="px-4 py-3">Correo</th><th className="px-4 py-3">Estado</th><th className="px-4 py-3 text-right">Acción</th></tr></thead>
@@ -542,6 +542,12 @@ function Results() {
 
 function Admin() {
   const [tab, setTab] = useState<Tab>("participantes");
+  let content = <Results />;
+  if (tab === "participantes") {
+    content = <Participants />;
+  } else if (tab === "formadores") {
+    content = <Trainers />;
+  }
 
   const tabClassName = (active: boolean) =>
     `h-9 rounded-md px-3 text-sm font-medium transition ${
@@ -594,7 +600,7 @@ function Admin() {
         </div>
 
         <section className="mt-8">
-          {tab === "participantes" ? <Participants /> : tab === "formadores" ? <Trainers /> : <Results />}
+          {content}
         </section>
       </main>
     </div>

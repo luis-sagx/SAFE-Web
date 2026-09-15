@@ -8,11 +8,12 @@ function Portada() {
   const { isAuthenticated, isAdmin } = useAuth()
   const general = TRAINING_VIDEOS[0]
   const modules = TRAINING_VIDEOS.slice(1)
-  const destination = !isAuthenticated
-    ? { to: '/login', label: 'Iniciar sesión' }
-    : isAdmin
-      ? { to: '/admin', label: 'Ir a administración' }
-      : { to: '/dashboard', label: 'Ir a mi entrenamiento' }
+  let destination = { to: '/dashboard', label: 'Ir a mi entrenamiento' }
+  if (!isAuthenticated) {
+    destination = { to: '/login', label: 'Iniciar sesión' }
+  } else if (isAdmin) {
+    destination = { to: '/admin', label: 'Ir a administración' }
+  }
 
   return (
     <div className="min-h-screen bg-canvas">
