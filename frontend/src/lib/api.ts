@@ -11,7 +11,7 @@ export interface Participant {
   nombre: string | null
   apellido: string | null
   email: string | null
-  role: 'PARTICIPANT' | 'SUPERVISOR'
+  role: 'PARTICIPANT' | 'ADMIN' | 'TRAINER'
   /** Si ya vio la pantalla de bienvenida y no pidió que volviera a aparecer. */
   onboardingVisto: boolean
 }
@@ -188,6 +188,16 @@ async function request<T>(
     } | null
     const message = Array.isArray(detail?.message) ? detail.message[0] : detail?.message
 
+    // Los errores 5xx no describen una acción que el usuario pueda corregir.
+    // En particular Nest responde "Internal server error" por defecto, que
+    // expone un detalle técnico en inglés y no sirve para continuar.
+    if (response.status >= 500 || message === 'Internal server error') {
+      throw new ApiError(
+        'No pudimos completar la solicitud. Inténtalo de nuevo en unos minutos.',
+        response.status,
+      )
+    }
+
     throw new ApiError(message ?? 'No se pudo conectar con el servidor.', response.status)
   }
 
@@ -269,7 +279,7 @@ export function restartModule(module: string): Promise<Progress> {
   return request<Progress>(`/runs/progreso/${module}/reiniciar`, { method: 'POST' })
 }
 
-// --- Supervisión (solo rol SUPERVISOR) ---
+// --- Administración (solo rol ADMIN) ---
 
 export interface AdminParticipant {
   id: string
@@ -322,6 +332,30 @@ export function deleteParticipant(id: string): Promise<null> {
 
 export function fetchResults(): Promise<RunResult[]> {
   return request<RunResult[]>('/runs/resultados')
+}
+
+export interface CreateTrainerInput {
+  nombre: string
+  apellido: string
+  email: string
+}
+
+export function fetchTrainers(): Promise<AdminParticipant[]> {
+  return request<AdminParticipant[]>('/admin/trainers')
+}
+
+export function createTrainer(input: CreateTrainerInput): Promise<{ password: string }> {
+  return request<{ password: string }>('/admin/trainers', { method: 'POST', body: input })
+}
+
+export function changeTrainerStatus(
+  id: string,
+  active: boolean,
+): Promise<AdminParticipant> {
+  return request<AdminParticipant>(`/admin/trainers/${id}/estado`, {
+    method: 'PATCH',
+    body: { activo: active },
+  })
 }
 
 // --- Certificado (spec 2026-09-03-gamificacion-y-certificado-design.md) ---
