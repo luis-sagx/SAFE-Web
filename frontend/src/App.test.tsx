@@ -40,6 +40,18 @@ describe('App', () => {
     fetchProgressMock.mockReset()
   })
 
+  it('muestra la portada pública en la raíz sin requerir sesión', () => {
+    render(
+      <MemoryRouter initialEntries={['/']}>
+        <AuthProvider>
+          <App />
+        </AuthProvider>
+      </MemoryRouter>,
+    )
+
+    expect(screen.getByRole('heading', { name: 'Aprende a usar SAFE-Web' })).toBeDefined()
+  })
+
   it('redirige a la sección cuando se entra por URL a un escenario bloqueado', async () => {
     setToken('t0ken')
     fetchMeMock.mockResolvedValue(participant())

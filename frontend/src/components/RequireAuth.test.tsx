@@ -33,7 +33,7 @@ function renderRoute(initial: string) {
     <MemoryRouter initialEntries={[initial]}>
       <AuthProvider>
         <Routes>
-          <Route path="/" element={<p>Pantalla de acceso</p>} />
+          <Route path="/login" element={<p>Pantalla de acceso</p>} />
           <Route element={<RequireAuth />}>
             <Route path="/dashboard" element={<p>Zona del participante</p>} />
             <Route path="/bienvenida" element={<p>Pantalla de bienvenida</p>} />
@@ -67,7 +67,7 @@ function renderWelcomeWithContinue() {
     <MemoryRouter initialEntries={['/bienvenida']}>
       <AuthProvider>
         <Routes>
-          <Route path="/" element={<p>Pantalla de acceso</p>} />
+          <Route path="/login" element={<p>Pantalla de acceso</p>} />
           <Route element={<RequireAuth />}>
             <Route path="/dashboard" element={<p>Zona del participante</p>} />
             <Route path="/bienvenida" element={<ContinueWithUncheckedCheckbox />} />

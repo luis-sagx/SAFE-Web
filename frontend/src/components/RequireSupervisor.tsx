@@ -5,17 +5,17 @@ import LoadingScreen from './PantallaCarga'
 /// Puerta de la zona de supervisión. Un participante autenticado no entra: se
 /// le manda a su panel. Sin sesión, al login.
 function RequireSupervisor() {
-  const { isAuthenticated, loading, isSupervisor } = useAuth()
+  const { isAuthenticated, loading, isAdmin } = useAuth()
 
   if (loading) {
     return <LoadingScreen />
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/" replace />
+    return <Navigate to="/login" replace />
   }
 
-  if (!isSupervisor) {
+  if (!isAdmin) {
     return <Navigate to="/dashboard" replace />
   }
 

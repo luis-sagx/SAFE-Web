@@ -51,7 +51,7 @@ describe('Gestión de cuentas por el supervisor (e2e)', () => {
     const res = await server().post('/api/auth/register').send(sup).expect(201);
     await prisma.participant.update({
       where: { id: responseBody<SessionBody>(res).participant.id },
-      data: { role: 'SUPERVISOR' },
+      data: { role: 'ADMIN' },
     });
     supervisorToken = await login(sup.email, sup.password);
   });
@@ -120,7 +120,7 @@ describe('Gestión de cuentas por el supervisor (e2e)', () => {
       await server()
         .patch(`/api/admin/participantes/${id}/estado`)
         .set('Authorization', `Bearer ${supervisorToken}`)
-        .send({ activo: false, role: 'SUPERVISOR' })
+        .send({ activo: false, role: 'ADMIN' })
         .expect(400);
     });
   });
@@ -158,9 +158,9 @@ describe('Gestión de cuentas por el supervisor (e2e)', () => {
         .expect(401);
     });
 
-    it('404 al intentar gestionar a un supervisor (no es participante)', async () => {
+    it('404 al intentar gestionar a un administrador (no es participante)', async () => {
       const sup = await prisma.participant.findFirst({
-        where: { role: 'SUPERVISOR' },
+        where: { role: 'ADMIN' },
         select: { id: true },
       });
 

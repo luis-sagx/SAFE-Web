@@ -26,7 +26,7 @@ function AppHeader({
    *  eso se relee bajo demanda en "Ver contexto y mis datos". */
   children?: ReactNode
 }) {
-  const { isSupervisor } = useAuth()
+  const { isAuthenticated, isAdmin } = useAuth()
 
   return (
     <header className="shrink-0 border-b border-hairline bg-canvas">
@@ -38,7 +38,7 @@ function AppHeader({
               cualquier sitio: quien se pierde dentro de un módulo pulsa el
               logo. */}
           <Link
-            to={isSupervisor ? '/admin' : '/dashboard'}
+            to="/"
             className="shrink-0 rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-link"
           >
             <Brand variante="logo" className="h-10 w-auto" />
@@ -60,12 +60,12 @@ function AppHeader({
           {children}
         </div>
 
-        <div className="flex shrink-0 items-center gap-1">
+        {isAuthenticated && <div className="flex shrink-0 items-center gap-1">
           {/* La bienvenida explica los tipos de engaño y qué pasa con los
               datos del participante; al supervisor no le dice nada. */}
-          {!isSupervisor && <InfoLink />}
+          {!isAdmin && <InfoLink />}
           <UserMenu />
-        </div>
+        </div>}
       </div>
     </header>
   )

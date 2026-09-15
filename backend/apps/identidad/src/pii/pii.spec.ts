@@ -1,4 +1,10 @@
-import { encrypt, decrypt, decryptOptional, hashEmail } from './pii';
+import {
+  assertPiiEncryptionKey,
+  decrypt,
+  decryptOptional,
+  encrypt,
+  hashEmail,
+} from './pii';
 
 // Clave de 32 bytes real (openssl rand -base64 32), fija para que las pruebas
 // sean deterministas — no es la clave de ningún entorno real.
@@ -41,6 +47,11 @@ describe('pii — encrypt/decrypt', () => {
 
   it('rechaza una clave que no mide 32 bytes', () => {
     expect(() => encrypt('x', 'Y29ydGE=')).toThrow(/32 bytes/);
+  });
+
+  it('valida la clave antes de iniciar el servicio', () => {
+    expect(() => assertPiiEncryptionKey(undefined)).toThrow(TypeError);
+    expect(() => assertPiiEncryptionKey(PASSWORD)).not.toThrow();
   });
 
   it('acepta tildes, ñ y textos largos', () => {

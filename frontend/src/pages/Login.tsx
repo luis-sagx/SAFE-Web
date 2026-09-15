@@ -6,7 +6,7 @@ import Field from '../components/Campo'
 import { useAuth } from '../context/AuthContext'
 
 function Login() {
-  const { isAuthenticated, loading, isSupervisor, login } = useAuth()
+  const { isAuthenticated, loading, isAdmin, login } = useAuth()
   const navigate = useNavigate()
 
   const [email, setEmail] = useState('')
@@ -19,7 +19,7 @@ function Login() {
   }
 
   if (isAuthenticated) {
-    return <Navigate to={isSupervisor ? '/admin' : '/dashboard'} replace />
+    return <Navigate to={isAdmin ? '/admin' : '/dashboard'} replace />
   }
 
   async function handleSubmit(event: FormEvent) {
@@ -29,7 +29,7 @@ function Login() {
 
     try {
       const profile = await login(email, password)
-      navigate(profile.role === 'SUPERVISOR' ? '/admin' : '/dashboard')
+      navigate(profile.role === 'ADMIN' ? '/admin' : '/dashboard')
     } catch (submitError) {
       setError((submitError as Error).message)
     } finally {

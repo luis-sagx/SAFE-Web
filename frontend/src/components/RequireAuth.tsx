@@ -7,7 +7,7 @@ const WELCOME = '/bienvenida'
 // Puerta única de la zona autenticada: si un escenario está montado, ya hay
 // sesión válida y no necesita comprobarla otra vez.
 function RequireAuth() {
-  const { isAuthenticated, loading, isSupervisor, participant, onboardingDismissed } = useAuth()
+  const { isAuthenticated, loading, isAdmin, participant, onboardingDismissed } = useAuth()
   const location = useLocation()
 
   if (loading) {
@@ -15,12 +15,12 @@ function RequireAuth() {
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/" replace />
+    return <Navigate to="/login" replace />
   }
 
   // El supervisor no hace escenarios: su zona es /admin, no el panel del
   // participante ni la bienvenida.
-  if (isSupervisor) {
+  if (isAdmin) {
     return <Navigate to="/admin" replace />
   }
 

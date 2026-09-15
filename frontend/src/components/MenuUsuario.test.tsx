@@ -25,7 +25,7 @@ describe('MenuUsuario', () => {
       displayName: 'María',
       initials: 'MP',
       roleLabel: 'Participante',
-      isSupervisor: false,
+      isAdmin: false,
       logout: logoutMock,
     })
   })
@@ -104,20 +104,20 @@ describe('MenuUsuario', () => {
   // El supervisor no juega escenarios: no tiene recorrido que consultar, y su
   // nombre puede llegar vacío (una cuenta anonimizada), así que el rótulo cae
   // a "Supervisor" en vez de a "Participante".
-  it('para un supervisor sin nombre, no ofrece "Tu recorrido" y usa el rótulo de repuesto', () => {
+  it('para un administrador sin nombre, no ofrece "Tu recorrido" y usa el rótulo de repuesto', () => {
     useAuthMock.mockReturnValue({
       displayName: '',
       initials: '',
       roleLabel: 'Participante',
-      isSupervisor: true,
+      isAdmin: true,
       logout: logoutMock,
     })
 
     renderMenu()
 
-    fireEvent.click(screen.getByRole('button', { name: /Supervisor/ }))
+    fireEvent.click(screen.getByRole('button', { name: /Administrador/ }))
 
     expect(screen.queryByRole('menuitem', { name: 'Tu recorrido' })).toBeNull()
-    expect(screen.getAllByText('Supervisor').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('Administrador').length).toBeGreaterThan(0)
   })
 })

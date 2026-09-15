@@ -20,7 +20,7 @@ export function mockAuth() {
       },
       loading: false,
       isAuthenticated: true,
-      isSupervisor: false,
+      isAdmin: false,
       login: vi.fn(),
       register: vi.fn(),
       logout: vi.fn(),

@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type SyntheticEvent } from "react";
 import {
   KeyRound,
   Loader2,
+  Copy,
   Trash2,
   UserCheck,
   UserX,
@@ -10,15 +11,18 @@ import {
 import AppHeader from "../components/AppHeader";
 import {
   changeParticipantStatus,
+  changeTrainerStatus,
+  createTrainer,
   deleteParticipant,
   fetchParticipants,
   fetchResults,
+  fetchTrainers,
   resetParticipantPassword,
   type AdminParticipant,
   type RunResult,
 } from "../lib/api";
 
-type Tab = "participantes" | "resultados";
+type Tab = "participantes" | "formadores" | "resultados";
 
 interface Confirmation {
   titulo: string;
@@ -53,23 +57,36 @@ function PasswordBanner({
   password: string;
   onClose: () => void;
 }) {
+  const [copied, setCopied] = useState(false);
+
+  async function copyPassword() {
+    try {
+      await navigator.clipboard.writeText(password);
+      setCopied(true);
+    } catch {
+      setCopied(false);
+    }
+  }
+
   return (
     <div
       role="alert"
       className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-md border border-hairline-strong bg-canvas-soft px-4 py-3"
     >
-      <p className="text-sm text-body">
-        Contraseña nueva (cópiala ahora, no vuelve a mostrarse):{" "}
-        <code className="rounded bg-surface-strong px-1.5 py-0.5 font-mono text-ink">
-          {password}
-        </code>
-      </p>
-      <button
-        type="button"
-        onClick={onClose}
-        className="text-sm font-medium text-link underline"
-      >
-        Entendido
+      <div className="flex flex-wrap items-center gap-2 text-sm text-body">
+        <span>Contraseña nueva (cópiala ahora, no vuelve a mostrarse):</span>
+        <code className="rounded bg-surface-strong px-1.5 py-0.5 font-mono text-ink">{password}</code>
+        <button
+          type="button"
+          onClick={() => void copyPassword()}
+          className="inline-flex items-center gap-1 rounded-md border border-hairline-strong bg-surface px-2 py-1 text-xs font-medium text-ink transition hover:bg-surface-strong"
+        >
+          <Copy aria-hidden className="size-3.5" strokeWidth={1.75} />
+          {copied ? "Copiada" : "Copiar contraseña"}
+        </button>
+      </div>
+      <button type="button" onClick={onClose} className="text-sm font-medium text-link underline">
+        Ya la copié, ocultar contraseña
       </button>
     </div>
   );
@@ -350,6 +367,95 @@ const OUTCOME_LABEL: Record<string, string> = {
   INCORRECTO: "Incorrecto",
 };
 
+function Trainers() {
+  const [list, setList] = useState<AdminParticipant[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [password, setPassword] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [form, setForm] = useState({ nombre: "", apellido: "", email: "" });
+
+  const load = useCallback(() => {
+    setLoading(true);
+    fetchTrainers()
+      .then(setList)
+      .catch((e: Error) => setError(e.message))
+      .finally(() => setLoading(false));
+  }, []);
+
+  useEffect(load, [load]);
+
+  async function submit(event: SyntheticEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setError("");
+    setPassword("");
+    setSubmitting(true);
+    try {
+      const created = await createTrainer(form);
+      setPassword(created.password);
+      setForm({ nombre: "", apellido: "", email: "" });
+      load();
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  async function toggle(trainer: AdminParticipant) {
+    setError("");
+    try {
+      const updated = await changeTrainerStatus(trainer.id, !trainer.activo);
+      setList((current) => current.map((item) => item.id === updated.id ? updated : item));
+    } catch (e) {
+      setError((e as Error).message);
+    }
+  }
+
+  return (
+    <div className="max-w-4xl">
+      <div className="rounded-lg border border-hairline-strong bg-surface p-5">
+        <h2 className="text-xl font-semibold text-ink">Crear capacitador</h2>
+        <p className="mt-1 text-sm text-body">
+          La contraseña inicial se muestra una sola vez para entregarla por un canal seguro.
+        </p>
+        <form className="mt-5 grid gap-4 sm:grid-cols-2" onSubmit={submit}>
+          <label className="text-sm font-medium text-ink">
+            <span>Nombre</span>
+            <input required value={form.nombre} onChange={(e) => setForm({ ...form, nombre: e.target.value })} className="mt-1 block h-10 w-full rounded-md border border-hairline-strong bg-canvas px-3 text-ink" />
+          </label>
+          <label className="text-sm font-medium text-ink">
+            <span>Apellido</span>
+            <input required value={form.apellido} onChange={(e) => setForm({ ...form, apellido: e.target.value })} className="mt-1 block h-10 w-full rounded-md border border-hairline-strong bg-canvas px-3 text-ink" />
+          </label>
+          <label className="text-sm font-medium text-ink sm:col-span-2">
+            <span>Correo</span>
+            <input required type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="mt-1 block h-10 w-full rounded-md border border-hairline-strong bg-canvas px-3 text-ink" />
+          </label>
+          <button type="submit" disabled={submitting} className="h-10 rounded-md bg-primary px-4 text-sm font-medium text-on-primary disabled:opacity-60 sm:w-fit">
+            {submitting ? "Creando…" : "Crear capacitador"}
+          </button>
+        </form>
+      </div>
+
+      {password && <div className="mt-4"><PasswordBanner password={password} onClose={() => setPassword("")} /></div>}
+      {error && <p role="alert" className="mt-4 text-sm text-danger">{error}</p>}
+
+      <h2 className="mt-8 text-xl font-semibold text-ink">Capacitadores</h2>
+      {loading && <output className="mt-3 block text-base text-muted">Cargando capacitadores…</output>}
+      {!loading && list.length === 0 && <p className="mt-3 text-base text-muted">Todavía no hay capacitadores creados.</p>}
+      {!loading && list.length > 0 && (
+        <div className="mt-4 overflow-x-auto rounded-lg border border-hairline-strong">
+          <table className="w-full min-w-[580px] text-left text-sm">
+            <thead><tr className="border-b border-hairline bg-canvas-soft text-muted"><th className="px-4 py-3">Nombre</th><th className="px-4 py-3">Correo</th><th className="px-4 py-3">Estado</th><th className="px-4 py-3 text-right">Acción</th></tr></thead>
+            <tbody>{list.map((trainer) => <tr key={trainer.id} className="border-b border-hairline last:border-0"><td className="px-4 py-3 text-ink">{fullName(trainer)}</td><td className="px-4 py-3 text-body">{trainer.email ?? "—"}</td><td className="px-4 py-3">{trainer.activo ? "Activo" : "Desactivado"}</td><td className="px-4 py-3 text-right"><button type="button" onClick={() => void toggle(trainer)} className="h-8 rounded-md border border-hairline-strong px-2.5 text-xs font-medium text-ink">{trainer.activo ? "Desactivar" : "Activar"}</button></td></tr>)}</tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function Results() {
   const [rows, setRows] = useState<RunResult[]>([]);
   const [loading, setLoading] = useState(true);
@@ -436,6 +542,12 @@ function Results() {
 
 function Admin() {
   const [tab, setTab] = useState<Tab>("participantes");
+  let content = <Results />;
+  if (tab === "participantes") {
+    content = <Participants />;
+  } else if (tab === "formadores") {
+    content = <Trainers />;
+  }
 
   const tabClassName = (active: boolean) =>
     `h-9 rounded-md px-3 text-sm font-medium transition ${
@@ -444,11 +556,11 @@ function Admin() {
 
   return (
     <div className="min-h-screen bg-canvas">
-      <AppHeader etiqueta="Supervisión" />
+      <AppHeader etiqueta="Administración" />
 
       <main className="mx-auto max-w-6xl px-6 py-12">
         <p className="text-xs font-semibold uppercase tracking-[0.88px] text-muted">
-          Panel del supervisor
+          Panel de administración
         </p>
         <h1 className="mt-2 text-4xl font-semibold tracking-tight text-ink">
           Gestión del estudio
@@ -458,6 +570,15 @@ function Admin() {
           className="mt-8 flex gap-1 border-b border-hairline pb-3"
           role="tablist"
         >
+          <button
+            type="button"
+            role="tab"
+            aria-selected={tab === "formadores"}
+            onClick={() => setTab("formadores")}
+            className={tabClassName(tab === "formadores")}
+          >
+            Capacitadores
+          </button>
           <button
             type="button"
             role="tab"
@@ -479,7 +600,7 @@ function Admin() {
         </div>
 
         <section className="mt-8">
-          {tab === "participantes" ? <Participants /> : <Results />}
+          {content}
         </section>
       </main>
     </div>

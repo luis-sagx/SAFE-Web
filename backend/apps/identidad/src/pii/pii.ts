@@ -21,11 +21,23 @@ const PREFIX = 'v1:';
 function password(passwordBase64: string): Buffer {
   const buffer = Buffer.from(passwordBase64, 'base64');
   if (buffer.length !== 32) {
-    throw new Error(
+    throw new TypeError(
       'PII_ENCRYPTION_KEY debe ser una clave de 32 bytes en base64 (openssl rand -base64 32).',
     );
   }
   return buffer;
+}
+
+/** Valida la clave al arrancar, antes de que una petición llegue a cifrar PII. */
+export function assertPiiEncryptionKey(
+  passwordBase64: unknown,
+): asserts passwordBase64 is string {
+  if (typeof passwordBase64 !== 'string') {
+    throw new TypeError(
+      'PII_ENCRYPTION_KEY debe ser una clave de 32 bytes en base64 (openssl rand -base64 32).',
+    );
+  }
+  password(passwordBase64);
 }
 
 export function encrypt(text: string, passwordBase64: string): string {

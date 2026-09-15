@@ -3,6 +3,7 @@ import { AuthJwtModule } from '@comun';
 import { AdminController } from './admin.controller';
 import { AdminCertificatesController } from './admin-certificados.controller';
 import { AdminService } from './admin.service';
+import { TrainersController } from './trainers.controller';
 import { CertificatesModule } from '../certificados/certificados.module';
 
 /// AuthJwtModule por el JwtAuthGuard, que verifica el token. PrismaService es
@@ -10,7 +11,11 @@ import { CertificatesModule } from '../certificados/certificados.module';
 /// —reutiliza el mismo servicio que emite, no una copia de la lógica.
 @Module({
   imports: [AuthJwtModule, CertificatesModule],
-  controllers: [AdminController, AdminCertificatesController],
+  controllers: [
+    AdminController,
+    AdminCertificatesController,
+    TrainersController,
+  ],
   providers: [AdminService],
 })
 export class AdminModule {}

@@ -1,9 +1,13 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { randomBytes } from 'node:crypto';
 import { hash } from 'bcryptjs';
 import { pseudonym } from '@comun';
-import { decryptOptional } from '../pii/pii';
+import { decryptOptional, encrypt, hashEmail } from '../pii/pii';
 import { PrismaService } from '../prisma/prisma.service';
 
 /// Mismo factor que el registro (OWASP Password Storage >= 10).
@@ -74,12 +78,71 @@ function generatePassword(): string {
 @Injectable()
 export class AdminService {
   private readonly piiKey: string;
+  private readonly emailPepper: string;
 
   constructor(
     private readonly prisma: PrismaService,
     config: ConfigService,
   ) {
     this.piiKey = config.getOrThrow<string>('PII_ENCRYPTION_KEY');
+    this.emailPepper = config.getOrThrow<string>('EMAIL_PEPPER');
+  }
+
+  async createTrainer(dto: {
+    nombre: string;
+    apellido: string;
+    email: string;
+  }): Promise<{ password: string }> {
+    const email = dto.email.toLowerCase();
+    const emailHash = hashEmail(email, this.emailPepper);
+    const existing = await this.prisma.participant.findFirst({
+      where: { OR: [{ emailHash }, { email }] },
+      select: { id: true },
+    });
+    if (existing) {
+      throw new ConflictException('Ya existe una cuenta con ese correo.');
+    }
+
+    const password = generatePassword();
+    await this.prisma.participant.create({
+      data: {
+        nombre: encrypt(dto.nombre, this.piiKey),
+        apellido: encrypt(dto.apellido, this.piiKey),
+        email: encrypt(email, this.piiKey),
+        emailHash,
+        passwordHash: await hash(password, BCRYPT_ROUNDS),
+        role: 'TRAINER',
+      },
+    });
+    return { password };
+  }
+
+  async listTrainers(): Promise<AdminParticipant[]> {
+    const rows = await this.prisma.participant.findMany({
+      where: { role: 'TRAINER' },
+      orderBy: { createdAt: 'asc' },
+      select: ADMIN_FIELDS,
+    });
+    return rows.map((trainer) => toView(trainer, this.piiKey));
+  }
+
+  async changeTrainerStatus(
+    id: string,
+    active: boolean,
+  ): Promise<AdminParticipant> {
+    const trainer = await this.prisma.participant.findFirst({
+      where: { id, role: 'TRAINER' },
+      select: ADMIN_FIELDS,
+    });
+    if (!trainer) {
+      throw new NotFoundException('No existe ese capacitador.');
+    }
+    const updated = await this.prisma.participant.update({
+      where: { id },
+      data: { disabledAt: active ? null : new Date() },
+      select: ADMIN_FIELDS,
+    });
+    return toView(updated, this.piiKey);
   }
 
   /// Solo participantes. Un supervisor no aparece en la lista ni puede ser

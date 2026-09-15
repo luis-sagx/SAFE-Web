@@ -153,7 +153,21 @@ describe('api', () => {
       json: () => Promise.reject(new Error('no es json')),
     })
 
-    await expect(fetchMe()).rejects.toThrow('No se pudo conectar con el servidor.')
+    await expect(fetchMe()).rejects.toThrow(
+      'No pudimos completar la solicitud. Inténtalo de nuevo en unos minutos.',
+    )
+  })
+
+  it('no expone al usuario el error interno que devuelve el servidor', async () => {
+    mockFetch({
+      ok: false,
+      status: 500,
+      json: () => Promise.resolve({ message: 'Internal server error' }),
+    })
+
+    await expect(login('ana@correo.com', 'secreta12')).rejects.toThrow(
+      'No pudimos completar la solicitud. Inténtalo de nuevo en unos minutos.',
+    )
   })
 })
 
