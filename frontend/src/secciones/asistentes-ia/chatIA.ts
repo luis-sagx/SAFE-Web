@@ -97,6 +97,164 @@ export function withAIFollowUp(
   }
 }
 
+/// Nivel de fuga de UN dato sensible dentro de lo que escribió el
+/// participante. 'parcial' es a propósito un tercer estado, no un punto
+/// intermedio en una escala binaria: es "quedó algo identificable, pero no
+/// la combinación completa que de verdad delata a la persona o la cuenta".
+export type LeakLevel = 'fuga' | 'parcial' | 'seguro'
+
+/// Qué comparar y cómo. La comparación es siempre contra el valor REAL de
+/// este escenario, nunca contra un patrón genérico (un regex de "10 dígitos"
+/// marcaría como fuga una cédula inventada, y uno que solo busca "el nombre"
+/// se queda mudo ante un apodo) — así se evitan los dos falsos que pide
+/// resolver el issue: no marca lo inventado, y no deja pasar lo real aunque
+/// venga con espacios o guiones distintos.
+export type SensitiveDatum =
+  | { id: string; tipo: 'numero'; etiqueta: string; valor: string }
+  | { id: string; tipo: 'nombre'; etiqueta: string; nombre: string; apellido: string }
+  | { id: string; tipo: 'texto'; etiqueta: string; valor: string }
+
+export interface DatumResult {
+  id: string
+  etiqueta: string
+  nivel: LeakLevel
+}
+
+function onlyDigits(texto: string): string {
+  return texto.replace(/\D/g, '')
+}
+
+// NFD + quitar los diacríticos: "á" se descompone en "a" + acento y el acento
+// se cae, así "Andrango" y "andrángo" cuentan como el mismo texto. Deja el
+// mismo número de caracteres que el original, letra por letra — no como la
+// forma compuesta, que por eso no sirve para comparar longitudes.
+function normalizeText(texto: string): string {
+  return texto
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+}
+
+function containsWord(texto: string, palabra: string): boolean {
+  if (!palabra) return false
+  const escaped = palabra.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  return new RegExp(`\\b${escaped}\\b`, 'i').test(texto)
+}
+
+/// Evalúa un solo dato. La cédula/cuenta/teléfono cuenta como fuga completa
+/// solo si aparecen TODOS sus dígitos reales seguidos (sin importar espacios
+/// o guiones en medio); si solo aparecen los últimos 4 —como cuando alguien
+/// cree que "ocultar" es mostrar la cola— queda en parcial. El nombre cuenta
+/// como fuga completa solo con nombre Y apellido juntos; uno solo de los dos
+/// (o un apodo real que igual sea su nombre de pila) queda en parcial.
+export function evaluateDatum(texto: string, dato: SensitiveDatum): DatumResult {
+  const base = { id: dato.id, etiqueta: dato.etiqueta }
+
+  if (dato.tipo === 'numero') {
+    const real = onlyDigits(dato.valor)
+    const escrito = onlyDigits(texto)
+    if (real.length >= 4 && escrito.includes(real)) {
+      return { ...base, nivel: 'fuga' }
+    }
+    const ultimos4 = real.slice(-4)
+    if (real.length > 4 && escrito.includes(ultimos4)) {
+      return { ...base, nivel: 'parcial' }
+    }
+    return { ...base, nivel: 'seguro' }
+  }
+
+  if (dato.tipo === 'nombre') {
+    const normalizado = normalizeText(texto)
+    const tieneNombre = containsWord(normalizado, normalizeText(dato.nombre))
+    const tieneApellido = containsWord(normalizado, normalizeText(dato.apellido))
+    if (tieneNombre && tieneApellido) return { ...base, nivel: 'fuga' }
+    if (tieneNombre || tieneApellido) return { ...base, nivel: 'parcial' }
+    return { ...base, nivel: 'seguro' }
+  }
+
+  // 'texto': cifras institucionales, direcciones, fechas — no tienen un
+  // "parcial" natural (a diferencia de un nombre, la mitad de una fecha o de
+  // una dirección no delata nada por sí sola), así que es binario.
+  const normalizado = normalizeText(texto)
+  if (normalizado.includes(normalizeText(dato.valor))) {
+    return { ...base, nivel: 'fuga' }
+  }
+  return { ...base, nivel: 'seguro' }
+}
+
+export function evaluateData(texto: string, datos: SensitiveDatum[]): DatumResult[] {
+  return datos.map((dato) => evaluateDatum(texto, dato))
+}
+
+/// El peor de los niveles manda: un solo dato filtrado por completo pesa más
+/// que diez datos bien sustituidos.
+export function worstLevel(resultados: DatumResult[]): LeakLevel {
+  if (resultados.some((r) => r.nivel === 'fuga')) return 'fuga'
+  if (resultados.some((r) => r.nivel === 'parcial')) return 'parcial'
+  return 'seguro'
+}
+
+/// Un tramo del borrador: texto fijo, o —si `sensible` está presente— una
+/// palabra o frase real (el nombre, la cédula…) que se puede tocar para
+/// reemplazarla. `buildDraftSegments` arma esta lista sola a partir del
+/// mensaje completo y de la misma lista de `SensitiveDatum` que evalúa el
+/// envío — un solo lugar donde vive el dato real, no dos copias que puedan
+/// desalinearse.
+export interface DraftSegment {
+  texto: string
+  sensible?: { id: string; etiqueta: string }
+}
+
+function realValueOf(dato: SensitiveDatum): string {
+  return dato.tipo === 'nombre' ? `${dato.nombre} ${dato.apellido}` : dato.valor
+}
+
+/// Encuentra cada dato real dentro del mensaje y lo separa en su propio
+/// tramo `sensible`. Revienta si un dato no aparece —igual que `mark()`—
+/// porque es un error de quien escribió el guion, no algo que deba fallar en
+/// silencio delante de un participante.
+export function buildDraftSegments(texto: string, datos: SensitiveDatum[]): DraftSegment[] {
+  const encontrados = datos
+    .map((dato) => {
+      const valor = realValueOf(dato)
+      const indice = texto.indexOf(valor)
+      if (indice === -1) {
+        throw new Error(`buildDraftSegments(): "${valor}" no está en el mensaje.`)
+      }
+      return { id: dato.id, etiqueta: dato.etiqueta, valor, indice }
+    })
+    .sort((a, b) => a.indice - b.indice)
+
+  const segmentos: DraftSegment[] = []
+  let cursor = 0
+  for (const { id, etiqueta, valor, indice } of encontrados) {
+    if (indice > cursor) segmentos.push({ texto: texto.slice(cursor, indice) })
+    segmentos.push({ texto: valor, sensible: { id, etiqueta } })
+    cursor = indice + valor.length
+  }
+  if (cursor < texto.length) segmentos.push({ texto: texto.slice(cursor) })
+  return segmentos
+}
+
+/// El borrador que ya viene escrito, con sus datos sensibles marcados para
+/// tocar y reemplazar (issue #185, segunda vuelta: no es un campo en blanco
+/// donde se redacta desde cero, es el mensaje real con cada dato editable en
+/// su sitio). `onEnviar` recibe el texto reconstruido —con los reemplazos
+/// que haya hecho el participante— tal como quedó al tocar "Enviar".
+export interface EditableDraft {
+  segmentos: DraftSegment[]
+  hora: string
+  respuestaIA: string
+  onEnviar: (texto: string) => { goto: string; label?: string }
+}
+
+/// Reemplaza las burbujas de `respuestas` (si las hubiera) por el borrador
+/// editable. Separado de `createAIChat` por lo mismo que `withEditableDraft`:
+/// solo la apertura cambia entre un escenario y otro.
+export function withEditableDraft(chat: AIChat, draft: EditableDraft): AIChat {
+  return { ...chat, respuestas: undefined, borradorEditable: draft }
+}
+
 /// Envuelve fragmentos sueltos del mensaje en `<b data-signal="…">` para que el
 /// repaso resalte **la palabra exacta** —la cédula, el número de cuenta, la
 /// contraseña— y no la burbuja entera. Señalar el mensaje completo obligaba a

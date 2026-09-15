@@ -584,6 +584,7 @@ function ScenarioStory({
               acciones={emailActions}
               carpetas={folders}
               destinatario={recipient}
+              terminada={engine.isEnding}
             />
           </div>
         ) : (
@@ -601,6 +602,7 @@ function ScenarioStory({
               carpetas={folders}
               destinatario={recipient}
               carpetaForzada={reviewScreen ? 'Recibidos' : undefined}
+              terminada={engine.isEnding}
             />
           </Browser>
         )

@@ -1,5 +1,5 @@
 import { Bot, Landmark, Paperclip, Search, SendHorizontal, UserRound } from 'lucide-react'
-import { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import { ACCOUNT_FAKE, IDENTITY_FAKE } from '../../lib/identidadFicticia'
 import { SiteNotice, SiteHeader, SiteFooter } from './armazonSitio'
@@ -124,6 +124,10 @@ export type ScreenView =
           // lección del módulo de estafa (el comprobante no es el dinero).
           datos?: { etiqueta: string; valor: string }[]
         }
+        // Solo en el mensaje que se arma a partir de `borradorEditable` al
+        // enviarlo: los tramos se pintan como JSX de verdad, no como el HTML
+        // fijo de `text` — ver por qué en el `.map` que los consume.
+        segmentosEnviados?: { texto: string; sensible?: { id: string; etiqueta: string } }[]
       }[]
       senalRemitente?: string
       // Abre la ficha del contacto: número real y antigüedad de la cuenta.
@@ -142,6 +146,17 @@ export type ScreenView =
       senalBorrador?: string
       enviarGoto?: string
       enviarLabel?: string
+      // Un borrador ya escrito (con datos reales dentro) donde las palabras
+      // sensibles se pueden tocar para reemplazarlas, en vez de elegir entre
+      // burbujas ya redactadas (ver chatIA.ts, EditableDraft, issue #185).
+      // Manda sobre `respuestas`/`borrador`/`composerGoto`: son formas
+      // alternativas de decidir, un nodo usa una sola a la vez.
+      borradorEditable?: {
+        segmentos: { texto: string; sensible?: { id: string; etiqueta: string } }[]
+        hora: string
+        respuestaIA: string
+        onEnviar: (texto: string) => { goto: string; label?: string }
+      }
     }
   | {
       kind: 'call'
@@ -233,6 +248,45 @@ function DeviceScreen({
   // Sin nombre queda "tu nombre" en minúscula, que sigue leyéndose en la frase.
   const view = useMemo(() => withName(toView, displayName || 'tu nombre'), [toView, displayName])
   const threadRef = useRef<HTMLDivElement>(null)
+
+  // Reemplazos que el participante fue tocando en `borradorEditable` (id del
+  // dato → lo que escribió en su lugar) y, una vez tocado "Enviar", el marcador
+  // de que ya se mandó. Vive aquí (no en el motor del guion) porque el nodo al
+  // que se salta tras enviar es siempre uno de los finales fijos
+  // (fuga/parcial/seguro) — reutilizan esta misma vista, y lo que cambia entre
+  // "editando" y "ya enviado" es únicamente este estado. `replacements` no se
+  // congela al enviar: ya no hay composer que la edite (se oculta en cuanto
+  // `sent` es true), así que seguir leyéndola en vivo para pintar el mensaje
+  // enviado es tan correcto como congelarla, y no exige una copia aparte.
+  const [replacements, setReplacements] = useState<Record<string, string>>({})
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [draftValue, setDraftValue] = useState('')
+  const [sent, setSent] = useState(false)
+  const wasFinished = useRef(finished)
+  useEffect(() => {
+    // Se reinicia solo en la transición terminada→en curso (un "Intentar de
+    // nuevo"): entre renders normales de la misma corrida no debe perderse
+    // lo que el participante ya tocó.
+    if (wasFinished.current && !finished) {
+      setReplacements({})
+      setEditingId(null)
+      setDraftValue('')
+      setSent(false)
+    }
+    wasFinished.current = finished
+  }, [finished])
+
+  function commitEdit() {
+    if (editingId === null) return
+    setReplacements((prev) => {
+      if (draftValue.trim() === '') {
+        const { [editingId]: _omit, ...resto } = prev
+        return resto
+      }
+      return { ...prev, [editingId]: draftValue }
+    })
+    setEditingId(null)
+  }
 
   // Sin autoscroll parece que no hubiera llegado respuesta (queda bajo el pliegue).
   useEffect(() => {
@@ -384,9 +438,45 @@ function DeviceScreen({
     return <CallScreen view={view} terminada={finished} />
   }
 
+  // Texto final que se mandaría si se tocara "Enviar" ahora mismo: cada
+  // tramo sensible usa lo que el participante escribió en su lugar, o el
+  // dato real si no lo tocó.
+  const finalDraftText = view.borradorEditable
+    ? view.borradorEditable.segmentos
+        .map((seg) => (seg.sensible ? (replacements[seg.sensible.id] ?? seg.texto) : seg.texto))
+        .join('')
+    : ''
+
+  // Con borradorEditable, lo que de verdad se mandó (y la respuesta de la
+  // IA) no vive en `view.msgs` —ese es fijo por nodo, y lo que se escribió es
+  // dinámico— sino en el estado local `sent`. Se combinan acá, una sola vez,
+  // para que el resto del render (la lista de mensajes y el cálculo de "cuál
+  // es nuevo") no tenga que saber que existen los dos orígenes. El mensaje
+  // enviado lleva además `segmentosEnviados`: a diferencia del resto —HTML
+  // fijo pintado con `dangerouslySetInnerHTML`—, este viene de datos que el
+  // participante decidió en vivo, y el repaso de señales necesita resaltar el
+  // tramo exacto (el nombre, la cédula…) dentro de él. React reconstruye el
+  // contenido de un `dangerouslySetInnerHTML` en cada repintado —incluida
+  // cualquier marca que el repaso le haya agregado a mano—, así que esos
+  // tramos van como JSX de verdad (ver el `.map` de abajo), no como texto.
+  const messages =
+    view.borradorEditable && sent
+      ? [
+          ...view.msgs,
+          {
+            text: finalDraftText,
+            time: view.borradorEditable.hora,
+            mine: true,
+            senal: 'borrador-enviado',
+            segmentosEnviados: view.borradorEditable.segmentos,
+          },
+          { text: view.borradorEditable.respuestaIA, time: view.borradorEditable.hora },
+        ]
+      : view.msgs
+
   // Los mensajes nuevos entran uno detrás de otro, no todos a la vez, para
   // que se lean como un chat y no como un bloque de texto.
-  const latestMine = view.msgs.map((msg) => Boolean(msg.mine)).lastIndexOf(true)
+  const latestMine = messages.map((msg) => Boolean(msg.mine)).lastIndexOf(true)
 
   return (
     <section
@@ -437,7 +527,7 @@ function DeviceScreen({
       )}
 
       <div ref={threadRef} className={styles.smsThread}>
-        {view.msgs.map((msg, i) => (
+        {messages.map((msg, i) => (
           <div
             key={msg.text}
             className={`${styles.smsRow} ${msg.mine ? styles.mine : styles.theirs} ${
@@ -455,6 +545,21 @@ function DeviceScreen({
             <div className={styles.smsBubble}>
               {msg.voz ? (
                 <VoiceNote texto={msg.text} duracion={msg.voz} senal={msg.senal} />
+              ) : msg.segmentosEnviados ? (
+                <span data-signal={msg.senal}>
+                  {(() => {
+                    const segmentos = msg.segmentosEnviados
+                    return segmentos.map((seg, i) =>
+                      seg.sensible ? (
+                        <b key={seg.sensible.id} data-signal={seg.sensible.id}>
+                          {replacements[seg.sensible.id] ?? seg.texto}
+                        </b>
+                      ) : (
+                        <span key={`t-${i}`}>{seg.texto}</span>
+                      ),
+                    )
+                  })()}
+                </span>
               ) : (
                 <span
                   data-signal={msg.captura ? undefined : msg.senal}
@@ -513,57 +618,109 @@ function DeviceScreen({
         ))}
       </div>
 
-      {view.respuestas && view.respuestas.length > 0 && (
-        <div className={styles.smsRespuestas}>
-          <span className={styles.smsRespuestasTag}>Tú escribes</span>
-          {view.respuestas.map((response) => (
-            <button
-              key={response.texto}
-              type="button"
-              className={styles.smsRespuesta}
-              data-hotspot-goto={response.goto}
-              data-hotspot-label={response.label}
-            >
-              {response.texto}
-            </button>
-          ))}
-        </div>
-      )}
-
-      <div className={styles.smsComposer}>
-        {view.borrador ? (
-          <>
-            <span
-              className={`${styles.smsField} ${styles.smsFieldEscrito}`}
-              data-signal={view.senalBorrador}
-            >
-              {view.borrador}
-            </span>
+      {view.borradorEditable ? (
+        !sent && (
+          <div className={styles.smsComposerEditable}>
+            <div className={styles.smsBorrador}>
+              {view.borradorEditable.segmentos.map((seg, i) =>
+                !seg.sensible ? (
+                  <span key={`t-${i}`}>{seg.texto}</span>
+                ) : editingId === seg.sensible.id ? (
+                  <input
+                    key={seg.sensible.id}
+                    className={styles.smsSensibleInput}
+                    value={draftValue}
+                    autoFocus
+                    aria-label={`Reemplazar ${seg.sensible.etiqueta}`}
+                    onChange={(event) => setDraftValue(event.target.value)}
+                    onBlur={commitEdit}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter') event.currentTarget.blur()
+                    }}
+                  />
+                ) : (
+                  <button
+                    key={seg.sensible.id}
+                    type="button"
+                    className={`${styles.hotspot} ${styles.smsSensible}`}
+                    aria-label={`Cambiar ${seg.sensible.etiqueta}`}
+                    onClick={() => {
+                      setEditingId(seg.sensible!.id)
+                      setDraftValue(replacements[seg.sensible!.id] ?? '')
+                    }}
+                  >
+                    {replacements[seg.sensible.id] ?? seg.texto}
+                  </button>
+                ),
+              )}
+            </div>
             <button
               type="button"
               className={`${styles.hotspot} ${styles.smsEnviar}`}
               aria-label="Enviar el mensaje"
-              data-hotspot-goto={view.enviarGoto}
-              data-hotspot-label={view.enviarLabel}
+              data-hotspot-goto={view.borradorEditable.onEnviar(finalDraftText).goto}
+              data-hotspot-label={view.borradorEditable.onEnviar(finalDraftText).label}
+              onClick={() => setSent(true)}
             >
               <SendHorizontal aria-hidden className={styles.smsEnviarIcono} strokeWidth={2} />
             </button>
-          </>
-        ) : view.composerGoto ? (
-          <button
-            type="button"
-            className={`${styles.hotspot} ${styles.smsField} ${styles.smsFieldBoton}`}
-            data-hotspot-goto={view.composerGoto}
-            data-hotspot-label={view.composerLabel}
-          >
-            Mensaje de texto
-          </button>
-        ) : (
-          <div className={styles.smsField}>
-            {view.sitio ? 'Escríbele al asistente' : 'Mensaje de texto'}
           </div>
-        )}
-      </div>
+        )
+      ) : (
+        <>
+          {view.respuestas && view.respuestas.length > 0 && (
+            <div className={styles.smsRespuestas}>
+              <span className={styles.smsRespuestasTag}>Tú escribes</span>
+              {view.respuestas.map((response) => (
+                <button
+                  key={response.texto}
+                  type="button"
+                  className={styles.smsRespuesta}
+                  data-hotspot-goto={response.goto}
+                  data-hotspot-label={response.label}
+                >
+                  {response.texto}
+                </button>
+              ))}
+            </div>
+          )}
+
+          <div className={styles.smsComposer}>
+            {view.borrador ? (
+              <>
+                <span
+                  className={`${styles.smsField} ${styles.smsFieldEscrito}`}
+                  data-signal={view.senalBorrador}
+                >
+                  {view.borrador}
+                </span>
+                <button
+                  type="button"
+                  className={`${styles.hotspot} ${styles.smsEnviar}`}
+                  aria-label="Enviar el mensaje"
+                  data-hotspot-goto={view.enviarGoto}
+                  data-hotspot-label={view.enviarLabel}
+                >
+                  <SendHorizontal aria-hidden className={styles.smsEnviarIcono} strokeWidth={2} />
+                </button>
+              </>
+            ) : view.composerGoto ? (
+              <button
+                type="button"
+                className={`${styles.hotspot} ${styles.smsField} ${styles.smsFieldBoton}`}
+                data-hotspot-goto={view.composerGoto}
+                data-hotspot-label={view.composerLabel}
+              >
+                Mensaje de texto
+              </button>
+            ) : (
+              <div className={styles.smsField}>
+                {view.sitio ? 'Escríbele al asistente' : 'Mensaje de texto'}
+              </div>
+            )}
+          </div>
+        </>
+      )}
     </section>
   )
 }

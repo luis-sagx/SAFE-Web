@@ -1,4 +1,4 @@
-import { fireEvent, screen, within } from '@testing-library/react'
+import { fireEvent, screen, waitFor, within } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import { start } from '../../test/escenario'
 import Resume from './HojaDeVida'
@@ -6,13 +6,28 @@ import Resume from './HojaDeVida'
 vi.mock('../../context/AuthContext', async () => (await import('../../test/escenario')).mockAuth())
 vi.mock('../../lib/api', async () => (await import('../../test/escenario')).offlineApi())
 
+function replace(container: HTMLElement, etiqueta: string, nuevo: string) {
+  fireEvent.click(within(container).getByRole('button', { name: `Cambiar ${etiqueta}` }))
+  const campo = within(container).getByLabelText(`Reemplazar ${etiqueta}`)
+  fireEvent.change(campo, { target: { value: nuevo } })
+  fireEvent.blur(campo)
+}
+
+function send(container: HTMLElement) {
+  fireEvent.click(within(container).getByRole('button', { name: 'Enviar el mensaje' }))
+}
+
+const CEDULA = 'la cédula real de tu prima'
+const NACIMIENTO = 'la fecha de nacimiento real de tu prima'
+const DOMICILIO = 'el domicilio real de tu prima'
+const TELEFONO = 'el teléfono real de tu prima'
+
 describe('HojaDeVida', () => {
-  it('el chat alterna: escribes tú, contesta la IA, y recién entonces eliges', () => {
+  it('el chat alterna: contesta la IA, y recién entonces se ve el borrador con los datos marcados', () => {
     const container = start(<Resume />)
-    expect(
-      within(container).getByText('Hola, ayúdame a mejorar la hoja de vida de mi prima.'),
-    ).toBeDefined()
+    expect(within(container).getByText('Hola, ayúdame a mejorar la hoja de vida de mi prima.')).toBeDefined()
     expect(within(container).getByText(/Pégame el contenido que quieres mejorar/)).toBeDefined()
+    expect(within(container).getByRole('button', { name: `Cambiar ${CEDULA}` })).toBeDefined()
   })
 
   it('se abre en el computador, con la dirección del servicio a la vista', () => {
@@ -20,35 +35,57 @@ describe('HojaDeVida', () => {
     expect(within(container).getAllByText(/chat\.asistente-ia\.com/).length).toBeGreaterThan(0)
   })
 
-  it('la hoja es la de otra persona, con su propia identidad ficticia', () => {
+  it('enviar el borrador sin tocar nada es el fallo: trae la cédula, la fecha y el domicilio reales', async () => {
     const container = start(<Resume />)
-    expect(within(container).getByText(/^Aquí va: Paola Guamán, cédula 1799999980/)).toBeDefined()
-    expect(within(container).getAllByText(/correo paola\.guaman@safeweb\.com/).length).toBe(2)
-  })
-
-  it('pegar la hoja completa es el fallo, y cada dato se señala solo', () => {
-    const container = start(<Resume />)
-    fireEvent.click(within(container).getByRole('button', { name: /fecha de nacimiento 12\/03\/1999/ }))
+    send(container)
     expect(
-      screen.getByText('La hoja de vida entera de tu prima quedó en un servicio externo'),
+      await screen.findByText('La hoja de vida entera de tu prima quedó en un servicio externo'),
     ).toBeDefined()
-    expect(container.querySelector('[data-signal="dato-cedula"]')?.textContent).toBe('1799999980')
-    expect(container.querySelector('[data-signal="dato-nacimiento"]')?.textContent).toBe('12/03/1999')
-    expect(container.querySelector('[data-signal="dato-direccion"]')?.textContent).toBe(
-      'Av. Napo y Quimiag, casa 214',
-    )
-    expect(container.querySelector('[data-signal="dato-telefono"]')?.textContent).toBe('099 000 0011')
   })
 
-  it('dejar solo el contacto deja la respuesta a medias', () => {
+  it('el mensaje que se envió queda visible en el hilo', async () => {
     const container = start(<Resume />)
-    fireEvent.click(within(container).getByRole('button', { name: /^Aquí va: Paola Guamán, teléfono/ }))
-    expect(screen.getByText('Quitaste lo peor, pero dejaste cómo encontrarla')).toBeDefined()
+    send(container)
+    expect(await within(container).findByText(/1799999980/)).toBeDefined()
   })
 
-  it('pegar solo la experiencia y los estudios es el acierto', () => {
+  it('dejar solo el teléfono real (cambiando cédula, fecha y domicilio) deja la respuesta a medias', async () => {
     const container = start(<Resume />)
-    fireEvent.click(within(container).getByRole('button', { name: /solo la parte que hay que mejorar/ }))
-    expect(screen.getByText('Hoja de vida mejorada sin entregar los datos de nadie')).toBeDefined()
+    replace(container, CEDULA, 'su cédula')
+    replace(container, NACIMIENTO, 'su fecha de nacimiento')
+    replace(container, DOMICILIO, 'su domicilio')
+    send(container)
+    expect(await screen.findByText('Quitaste lo peor, pero dejaste cómo encontrarla')).toBeDefined()
+
+    // El repaso de señales resalta el teléfono real dentro del mensaje enviado.
+    fireEvent.click(screen.getByRole('button', { name: 'Ver las señales' }))
+    await waitFor(() => {
+      expect(
+        within(container)
+          .getByText(/099 000 0011/)
+          .closest('[data-signal="dato-telefono"]')
+          ?.classList.contains('senal-resaltada'),
+      ).toBe(true)
+    })
+  })
+
+  it('reemplazar la cédula por una inventada con la misma forma, junto con el resto, no cuenta como fuga ni parcial', async () => {
+    const container = start(<Resume />)
+    replace(container, CEDULA, '1234567890')
+    replace(container, NACIMIENTO, 'su fecha de nacimiento')
+    replace(container, DOMICILIO, 'su domicilio')
+    replace(container, TELEFONO, 'su teléfono')
+    send(container)
+    expect(await screen.findByText('Hoja de vida mejorada sin entregar los datos de nadie')).toBeDefined()
+  })
+
+  it('reemplazar los cuatro datos reales por marcadores es el acierto', async () => {
+    const container = start(<Resume />)
+    replace(container, CEDULA, 'su cédula')
+    replace(container, NACIMIENTO, 'su fecha de nacimiento')
+    replace(container, DOMICILIO, 'su domicilio')
+    replace(container, TELEFONO, 'su teléfono')
+    send(container)
+    expect(await screen.findByText('Hoja de vida mejorada sin entregar los datos de nadie')).toBeDefined()
   })
 })
