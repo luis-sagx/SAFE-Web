@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import type { Response } from 'express';
-import { CurrentParticipant, JwtAuthGuard, type JwtPayload } from '@comun';
+import { CurrentParticipant, JwtAuthGuard, ParticipantGuard, type JwtPayload } from '@comun';
 import { RedeemAttestationDto } from './dto/canjear-atestacion.dto';
 import { CertificatesService } from './certificados.service';
 
@@ -18,6 +18,7 @@ export class CertificatesController {
   constructor(private readonly certificates: CertificatesService) {}
 
   @UseGuards(JwtAuthGuard)
+  @UseGuards(ParticipantGuard)
   @Post()
   issue(
     @CurrentParticipant() participant: JwtPayload,
@@ -29,6 +30,7 @@ export class CertificatesController {
   /// `POST` y no `GET`: la atestación es un JWT, y en la query string acabaría
   /// en los logs de nginx y en el historial del navegador.
   @UseGuards(JwtAuthGuard)
+  @UseGuards(ParticipantGuard)
   @Post('pdf')
   async pdf(
     @CurrentParticipant() participant: JwtPayload,

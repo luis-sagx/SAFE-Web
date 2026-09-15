@@ -44,15 +44,29 @@ export class JwtAuthGuard implements CanActivate {
   }
 }
 
-/// Solo un supervisor gestiona cuentas y ve los resultados del estudio. Un
-/// participante nunca alcanza estas rutas.
+/// Solo un administrador gestiona cuentas y ve los resultados del estudio.
 @Injectable()
-export class SupervisorGuard implements CanActivate {
+export class AdminGuard implements CanActivate {
   canActivate(context: ExecutionContext): boolean {
     const request = context.switchToHttp().getRequest<AuthedRequest>();
 
-    if (request.participant?.role !== 'SUPERVISOR') {
-      throw new ForbiddenException('Requiere rol de supervisor.');
+    if (request.participant?.role !== 'ADMIN') {
+      throw new ForbiddenException('Requiere rol ADMIN.');
+    }
+
+    return true;
+  }
+}
+
+/// Las corridas, el progreso y certificados representan solo el recorrido de
+/// una persona participante. La práctica de TRAINER nunca llega a esas rutas.
+@Injectable()
+export class ParticipantGuard implements CanActivate {
+  canActivate(context: ExecutionContext): boolean {
+    const request = context.switchToHttp().getRequest<AuthedRequest>();
+
+    if (request.participant?.role !== 'PARTICIPANT') {
+      throw new ForbiddenException('Requiere rol PARTICIPANT.');
     }
 
     return true;

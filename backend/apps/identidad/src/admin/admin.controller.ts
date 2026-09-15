@@ -9,13 +9,13 @@ import {
   Post,
   UseGuards,
 } from '@nestjs/common';
-import { JwtAuthGuard, SupervisorGuard } from '@comun';
+import { AdminGuard, JwtAuthGuard } from '@comun';
 import { AdminService } from './admin.service';
 import { ChangeStatusDto } from './dto/cambiar-estado.dto';
 
 /// Gestión de cuentas de participante. Toda la ruta exige token válido (JwtAuthGuard)
 /// y rol de supervisor (SupervisorGuard): un participante nunca la alcanza.
-@UseGuards(JwtAuthGuard, SupervisorGuard)
+@UseGuards(JwtAuthGuard, AdminGuard)
 @Controller('admin/participantes')
 export class AdminController {
   constructor(private readonly admin: AdminService) {}

@@ -86,7 +86,7 @@ Para generar una nueva:  pnpm seed -- --email ${email} --reset
         apellido: encrypt('del estudio', piiKey),
         // Sin cédula: no es participante, gestiona el estudio.
         passwordHash,
-        role: 'SUPERVISOR',
+        role: 'ADMIN',
       },
     });
   }

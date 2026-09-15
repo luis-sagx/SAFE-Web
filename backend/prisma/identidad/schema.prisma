@@ -23,7 +23,8 @@ enum Role {
   // Gestiona cuentas y ve los resultados seudonimizados dentro de la app. No
   // se llama ADMIN/ADMINISTRATOR a propósito: es el nombre que un atacante
   // busca primero.
-  SUPERVISOR
+  ADMIN
+  TRAINER
 }
 
 model Participant {

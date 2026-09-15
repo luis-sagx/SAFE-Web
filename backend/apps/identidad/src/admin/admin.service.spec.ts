@@ -1,4 +1,4 @@
-import { NotFoundException } from '@nestjs/common';
+import { ConflictException, NotFoundException } from '@nestjs/common';
 import type { ConfigService } from '@nestjs/config';
 import { compare } from 'bcryptjs';
 import { AdminService } from './admin.service';
@@ -24,7 +24,12 @@ function row(overrides: Record<string, unknown> = {}) {
 function service(prisma: Partial<Record<string, unknown>>) {
   return new AdminService(
     { participant: prisma } as unknown as PrismaService,
-    { getOrThrow: () => 'clave-de-prueba' } as unknown as ConfigService,
+    {
+      getOrThrow: (name: string) =>
+        name === 'PII_ENCRYPTION_KEY'
+          ? Buffer.alloc(32, 1).toString('base64')
+          : 'pepper-de-prueba',
+    } as unknown as ConfigService,
   );
 }
 
@@ -134,5 +139,70 @@ describe('AdminService.eliminar', () => {
   it('404 si el id no es de un participante (p.ej. un supervisor)', async () => {
     const admin = service({ findFirst: () => Promise.resolve(null) });
     await expect(admin.delete('sup')).rejects.toBeInstanceOf(NotFoundException);
+  });
+});
+
+describe('AdminService.formadores', () => {
+  it('crea un TRAINER con datos protegidos y devuelve una contraseña inicial una sola vez', async () => {
+    let created: Record<string, unknown> | undefined;
+    const admin = service({
+      findFirst: () => Promise.resolve(null),
+      create: ({ data }: { data: Record<string, unknown> }) => {
+        created = data;
+        return Promise.resolve(row({ ...data, role: 'TRAINER' }));
+      },
+    });
+
+    const result = await admin.createTrainer({
+      nombre: 'Lucía',
+      apellido: 'Mena',
+      email: 'lucia@espe.edu.ec',
+    });
+
+    expect(result.password).toHaveLength(12);
+    expect(created).toMatchObject({ role: 'TRAINER' });
+    expect(created?.nombre).toMatch(/^v1:/);
+    expect(created?.apellido).toMatch(/^v1:/);
+    expect(created?.email).toMatch(/^v1:/);
+    expect(created?.emailHash).toBeDefined();
+    expect(created?.passwordHash).not.toBe(result.password);
+  });
+
+  it('rechaza crear un TRAINER con un correo que ya pertenece a una cuenta', async () => {
+    const admin = service({ findFirst: () => Promise.resolve({ id: 'exists' }) });
+
+    await expect(
+      admin.createTrainer({ nombre: 'Lucía', apellido: 'Mena', email: 'lucia@espe.edu.ec' }),
+    ).rejects.toBeInstanceOf(ConflictException);
+  });
+
+  it('lista exclusivamente las cuentas TRAINER', async () => {
+    let whereReceived: unknown;
+    const admin = service({
+      findMany: (args: { where: unknown }) => {
+        whereReceived = args.where;
+        return Promise.resolve([row()]);
+      },
+    });
+
+    const trainers = await admin.listTrainers();
+
+    expect(whereReceived).toEqual({ role: 'TRAINER' });
+    expect(trainers[0]).toMatchObject({ id: 'p1', activo: true });
+  });
+
+  it('solo cambia el estado de una cuenta TRAINER', async () => {
+    let whereReceived: unknown;
+    const admin = service({
+      findFirst: (args: { where: unknown }) => {
+        whereReceived = args.where;
+        return Promise.resolve(row());
+      },
+      update: () => Promise.resolve(row({ disabledAt: new Date() })),
+    });
+
+    await admin.changeTrainerStatus('t1', false);
+
+    expect(whereReceived).toEqual({ id: 't1', role: 'TRAINER' });
   });
 });
