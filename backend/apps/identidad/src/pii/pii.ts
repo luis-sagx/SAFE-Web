@@ -29,7 +29,14 @@ function password(passwordBase64: string): Buffer {
 }
 
 /** Valida la clave al arrancar, antes de que una petición llegue a cifrar PII. */
-export function assertPiiEncryptionKey(passwordBase64: string): void {
+export function assertPiiEncryptionKey(
+  passwordBase64: unknown,
+): asserts passwordBase64 is string {
+  if (typeof passwordBase64 !== 'string') {
+    throw new Error(
+      'PII_ENCRYPTION_KEY debe ser una clave de 32 bytes en base64 (openssl rand -base64 32).',
+    );
+  }
   password(passwordBase64);
 }
 

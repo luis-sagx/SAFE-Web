@@ -1,4 +1,10 @@
-import { IsEmail, IsString, Matches, MaxLength, MinLength } from 'class-validator';
+import {
+  IsEmail,
+  IsString,
+  Matches,
+  MaxLength,
+  MinLength,
+} from 'class-validator';
 import { NormalizeEmail, TransformText } from '@comun';
 import { IsAllowedDomain } from '../../auth/dominios-correo';
 import { NAME_PATTERN } from '../../auth/dto/register.dto';

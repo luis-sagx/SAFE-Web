@@ -1,4 +1,13 @@
-import { Body, Controller, Get, HttpCode, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  Param,
+  Patch,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { AdminGuard, JwtAuthGuard } from '@comun';
 import { AdminService } from './admin.service';
 import { ChangeStatusDto } from './dto/cambiar-estado.dto';

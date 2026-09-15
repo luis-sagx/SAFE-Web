@@ -11,7 +11,11 @@ import { CertificatesModule } from '../certificados/certificados.module';
 /// —reutiliza el mismo servicio que emite, no una copia de la lógica.
 @Module({
   imports: [AuthJwtModule, CertificatesModule],
-  controllers: [AdminController, AdminCertificatesController, TrainersController],
+  controllers: [
+    AdminController,
+    AdminCertificatesController,
+    TrainersController,
+  ],
   providers: [AdminService],
 })
 export class AdminModule {}

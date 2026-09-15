@@ -1,4 +1,8 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { randomBytes } from 'node:crypto';
 import { hash } from 'bcryptjs';
@@ -84,7 +88,11 @@ export class AdminService {
     this.emailPepper = config.getOrThrow<string>('EMAIL_PEPPER');
   }
 
-  async createTrainer(dto: { nombre: string; apellido: string; email: string }): Promise<{ password: string }> {
+  async createTrainer(dto: {
+    nombre: string;
+    apellido: string;
+    email: string;
+  }): Promise<{ password: string }> {
     const email = dto.email.toLowerCase();
     const emailHash = hashEmail(email, this.emailPepper);
     const existing = await this.prisma.participant.findFirst({
@@ -118,7 +126,10 @@ export class AdminService {
     return rows.map((trainer) => toView(trainer, this.piiKey));
   }
 
-  async changeTrainerStatus(id: string, active: boolean): Promise<AdminParticipant> {
+  async changeTrainerStatus(
+    id: string,
+    active: boolean,
+  ): Promise<AdminParticipant> {
     const trainer = await this.prisma.participant.findFirst({
       where: { id, role: 'TRAINER' },
       select: ADMIN_FIELDS,

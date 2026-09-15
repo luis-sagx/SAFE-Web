@@ -9,7 +9,12 @@ import {
 } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import type { Response } from 'express';
-import { CurrentParticipant, JwtAuthGuard, ParticipantGuard, type JwtPayload } from '@comun';
+import {
+  CurrentParticipant,
+  JwtAuthGuard,
+  ParticipantGuard,
+  type JwtPayload,
+} from '@comun';
 import { RedeemAttestationDto } from './dto/canjear-atestacion.dto';
 import { CertificatesService } from './certificados.service';
 

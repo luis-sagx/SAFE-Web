@@ -3,12 +3,14 @@ import { validateSync } from 'class-validator';
 import { CreateTrainerDto } from './create-trainer.dto';
 
 function validate(overrides: Record<string, unknown>) {
-  return validateSync(plainToInstance(CreateTrainerDto, {
-    nombre: 'Lucía',
-    apellido: 'Mena',
-    email: 'lucia@espe.edu.ec',
-    ...overrides,
-  })).map((error) => error.property);
+  return validateSync(
+    plainToInstance(CreateTrainerDto, {
+      nombre: 'Lucía',
+      apellido: 'Mena',
+      email: 'lucia@espe.edu.ec',
+      ...overrides,
+    }),
+  ).map((error) => error.property);
 }
 
 describe('CreateTrainerDto', () => {

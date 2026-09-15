@@ -169,10 +169,16 @@ describe('AdminService.formadores', () => {
   });
 
   it('rechaza crear un TRAINER con un correo que ya pertenece a una cuenta', async () => {
-    const admin = service({ findFirst: () => Promise.resolve({ id: 'exists' }) });
+    const admin = service({
+      findFirst: () => Promise.resolve({ id: 'exists' }),
+    });
 
     await expect(
-      admin.createTrainer({ nombre: 'Lucía', apellido: 'Mena', email: 'lucia@espe.edu.ec' }),
+      admin.createTrainer({
+        nombre: 'Lucía',
+        apellido: 'Mena',
+        email: 'lucia@espe.edu.ec',
+      }),
     ).rejects.toBeInstanceOf(ConflictException);
   });
 
