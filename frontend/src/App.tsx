@@ -11,6 +11,7 @@ import Welcome from './pages/Bienvenida'
 import Dashboard from './pages/Dashboard'
 import Login from './pages/Login'
 import DataPolicy from './pages/PoliticaDatos'
+import Portada from './pages/Portada'
 import TrainingHistory from './pages/Recorrido'
 import Registration from './pages/Registro'
 import Section from './pages/Seccion'
@@ -25,7 +26,8 @@ function App() {
       <RunNotifications enabled={isAuthenticated} />
       <Suspense fallback={<LoadingScreen />}>
         <Routes>
-          <Route path="/" element={<Login />} />
+          <Route path="/" element={<Portada />} />
+          <Route path="/login" element={<Login />} />
           <Route path="/registro" element={<Registration />} />
           <Route path="/politica-de-datos" element={<DataPolicy />} />
           <Route path="/verificar/:codigo" element={<VerifyCertificate />} />

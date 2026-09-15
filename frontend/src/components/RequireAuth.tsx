@@ -15,7 +15,7 @@ function RequireAuth() {
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/" replace />
+    return <Navigate to="/login" replace />
   }
 
   // El supervisor no hace escenarios: su zona es /admin, no el panel del

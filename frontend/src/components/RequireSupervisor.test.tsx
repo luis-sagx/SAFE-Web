@@ -11,7 +11,7 @@ function renderRoute() {
   return render(
     <MemoryRouter initialEntries={['/admin']}>
       <Routes>
-        <Route path="/" element={<p>Pantalla de acceso</p>} />
+        <Route path="/login" element={<p>Pantalla de acceso</p>} />
         <Route path="/dashboard" element={<p>Zona del participante</p>} />
         <Route element={<RequireSupervisor />}>
           <Route path="/admin" element={<p>Panel de supervisión</p>} />
