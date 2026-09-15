@@ -33,7 +33,7 @@ export function assertPiiEncryptionKey(
   passwordBase64: unknown,
 ): asserts passwordBase64 is string {
   if (typeof passwordBase64 !== 'string') {
-    throw new Error(
+    throw new TypeError(
       'PII_ENCRYPTION_KEY debe ser una clave de 32 bytes en base64 (openssl rand -base64 32).',
     );
   }
