@@ -265,6 +265,10 @@ export function fetchProgress(module: string): Promise<Progress> {
   return request<Progress>(`/runs/progreso/${module}`)
 }
 
+export function restartModule(module: string): Promise<Progress> {
+  return request<Progress>(`/runs/progreso/${module}/reiniciar`, { method: 'POST' })
+}
+
 // --- Supervisión (solo rol SUPERVISOR) ---
 
 export interface AdminParticipant {

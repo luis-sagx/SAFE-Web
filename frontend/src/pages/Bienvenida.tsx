@@ -172,8 +172,7 @@ function Welcome() {
                   </strong>.
                 </li>
                 <li>
-                  Puedes fallar y repetir el módulo completo. Cuenta tu última ronda completa.
-                  escenario.
+                  Puedes fallar y reiniciar el módulo completo en cualquier momento. El avance vuelve a cero.
                 </li>
               </ul>
 

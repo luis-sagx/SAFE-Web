@@ -1,6 +1,6 @@
 import { ArrowRight, CheckCircle2, LockKeyhole, Star } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { Link, Navigate, useNavigate, useParams } from 'react-router'
+import { Link, Navigate, useParams } from 'react-router'
 import AppHeader, { BACK_CLASS } from '../components/AppHeader'
 import ProgressBar from '../components/BarraProgreso'
 import ModuleCompletionModal from '../components/CierreModuloModal'
@@ -11,7 +11,7 @@ import {
   SECTIONS,
   type Section,
 } from '../data/catalogo'
-import { fetchProgress, type Progress } from '../lib/api'
+import { fetchProgress, restartModule, type Progress } from '../lib/api'
 import { isScenarioAvailable } from '../lib/bloqueoEscenarios'
 import ConfirmReplayModal from '../components/ConfirmarRepeticionModal'
 
@@ -125,21 +125,21 @@ function NextModule({
 function Section() {
   const { seccionId: sectionId } = useParams()
   const section = getSection(sectionId)
+  const selectedSectionId = section?.id
   const [progress, setProgress] = useState<Progress | null>(null)
   const [showCompletion, setShowCompletion] = useState(false)
   const [showReplay, setShowReplay] = useState(false)
-  const navigate = useNavigate()
+  const [restarting, setRestarting] = useState(false)
+  const [restartError, setRestartError] = useState<string | null>(null)
 
-  // getSeccion() devuelve un objeto nuevo en cada render: la dependencia es
-  // seccion?.id, no seccion, para no pedir el progreso de nuevo en cada uno.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // getSection() devuelve un objeto nuevo en cada render; usamos su id estable.
   useEffect(() => {
     // Una sección sin escenarios no tiene gating configurado en el backend:
     // pedirlo solo daría un 404 esperado.
-    if (!section || getSectionScenarios(section.id).length === 0) return
+    if (!selectedSectionId || getSectionScenarios(selectedSectionId).length === 0) return
     let cancelled = false
 
-    fetchProgress(section.id)
+    fetchProgress(selectedSectionId)
       .then((p) => {
         if (!cancelled) setProgress(p)
       })
@@ -150,7 +150,7 @@ function Section() {
     return () => {
       cancelled = true
     }
-  }, [section?.id])
+  }, [selectedSectionId])
 
   if (!section) {
     return <Navigate to="/dashboard" replace />
@@ -158,6 +158,22 @@ function Section() {
 
   const scenarios = getSectionScenarios(section.id)
   const missing = progress ? Math.max(progress.requeridos - progress.aprobados, 0) : 0
+
+  async function confirmRestart() {
+    if (restarting || !selectedSectionId) return
+    setRestarting(true)
+    setRestartError(null)
+    try {
+      const restarted = await restartModule(selectedSectionId)
+      setProgress(restarted)
+      setShowReplay(false)
+      setShowCompletion(false)
+    } catch {
+      setRestartError('No se pudo reiniciar el módulo. Inténtalo de nuevo.')
+    } finally {
+      setRestarting(false)
+    }
+  }
 
 
   return (
@@ -237,15 +253,15 @@ function Section() {
           </section>
         )}
 
-        {progress && progress.rondaEnCurso === null && progress.escenarios.length >= scenarios.length && (
+        {progress && (progress.escenarios.length > 0 || progress.rondaEnCurso != null) && (
           <div className="mt-8 flex items-center justify-between rounded-lg border border-hairline-strong bg-canvas-soft p-5">
-            <p className="text-base text-body">Ya recorriste todos los escenarios del módulo.</p>
-            <button type="button" onClick={() => setShowReplay(true)} className="rounded-md bg-primary px-4 py-2 font-medium text-on-primary">Repetir el módulo</button>
+            <p className="text-base text-body">Puedes volver a empezar este módulo desde el escenario 01.</p>
+            <button type="button" onClick={() => { setRestartError(null); setShowReplay(true) }} className="rounded-md bg-primary px-4 py-2 font-medium text-on-primary">Repetir el módulo</button>
           </div>
         )}
 
         {showReplay && progress && (
-          <ConfirmReplayModal seccionId={section.id} titulo={section.titulo} aprobados={progress.aprobados} aprobado={progress.aprobado} onClose={() => setShowReplay(false)} onConfirm={() => scenarios[0] && navigate(getScenarioPath(scenarios[0]), { state: { iniciarRepeticion: true } })} />
+          <ConfirmReplayModal titulo={section.titulo} aprobados={progress.aprobados} total={scenarios.length} busy={restarting} error={restartError} onClose={() => setShowReplay(false)} onConfirm={confirmRestart} />
         )}
 
         {showCompletion && progress?.aprobado && (
@@ -330,7 +346,7 @@ function Section() {
                         available ? 'text-link group-hover:translate-x-0.5' : 'text-muted'
                       }`}
                     >
-                      {available ? (latest !== undefined ? 'Repetir →' : 'Empezar →') : ''}
+                      {available ? (progress?.rondaEnCurso ? 'Continuar →' : 'Empezar →') : ''}
                     </span>
                   </div>
                 </>

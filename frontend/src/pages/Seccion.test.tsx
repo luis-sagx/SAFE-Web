@@ -1,16 +1,18 @@
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import Section from './Seccion'
+import { getScenarioPath, getSectionScenarios } from '../data/catalogo'
 
-const { fetchProgressMock, fetchMyRunsMock } = vi.hoisted(() => ({
+const { fetchProgressMock, fetchMyRunsMock, restartModuleMock } = vi.hoisted(() => ({
   fetchProgressMock: vi.fn(),
   fetchMyRunsMock: vi.fn(),
+  restartModuleMock: vi.fn(),
 }))
 
 vi.mock('../lib/api', async () => {
   const current = await vi.importActual<typeof import('../lib/api')>('../lib/api')
-  return { ...current, fetchProgress: fetchProgressMock, fetchMyRuns: fetchMyRunsMock }
+  return { ...current, fetchProgress: fetchProgressMock, fetchMyRuns: fetchMyRunsMock, restartModule: restartModuleMock }
 })
 
 vi.mock('../context/AuthContext', async () => (await import('../test/escenario')).mockAuth())
@@ -29,7 +31,38 @@ describe('Seccion', () => {
   beforeEach(() => {
     fetchProgressMock.mockReset()
     fetchMyRunsMock.mockReset()
+    restartModuleMock.mockReset()
     fetchMyRunsMock.mockResolvedValue([])
+  })
+
+  it('permite reiniciar un módulo incompleto y muestra la ronda nueva en cero', async () => {
+    fetchProgressMock.mockResolvedValue({
+      modulo: 'phishing',
+      escenarios: [{ id: 'phishing/loteria-premiada', ultimoOutcome: 'CORRECTO' }],
+      aprobados: 1,
+      requeridos: 6,
+      aprobado: false,
+      ronda: 1,
+      rondaEnCurso: null,
+    })
+    restartModuleMock.mockResolvedValue({
+      modulo: 'phishing',
+      escenarios: [],
+      aprobados: 0,
+      requeridos: 6,
+      aprobado: false,
+      ronda: 1,
+      rondaEnCurso: null,
+    })
+
+    const { container } = renderSection()
+    fireEvent.click(await screen.findByRole('button', { name: 'Repetir el módulo' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Reiniciar módulo' }))
+
+    await waitFor(() => expect(screen.getByText('0', { selector: 'span.tabular-nums' })).toBeDefined())
+    expect(screen.queryByRole('dialog')).toBeNull()
+    expect(container.querySelector('a[href="/seccion/phishing/loteria-premiada"]')).not.toBeNull()
+    expect(screen.queryByText('Aprobado')).toBeNull()
   })
 
   it('solo deja como link activo el próximo escenario pendiente y bloquea los posteriores', async () => {
@@ -48,10 +81,37 @@ describe('Seccion', () => {
       container.querySelector('a[href="/seccion/phishing/factura-sri"]'),
     ).not.toBeNull()
     expect(container.querySelector('a[href="/seccion/phishing/clave-caducada"]')).toBeNull()
+    expect(container.querySelector('a[href="/seccion/phishing/loteria-premiada"]')).toBeNull()
+    expect(screen.queryByText('Repetir →')).toBeNull()
     // Cada candado nombra el escenario justo anterior en la lista, no un
     // número compartido: el 08 depende del 07, no del 02.
     expect(await screen.findByText('Se abre al terminar el 02')).toBeDefined()
     expect(await screen.findByText('Se abre al terminar el 07')).toBeDefined()
+  })
+
+  it('en una repetición completa ofrece continuar con el próximo escenario, sin repetir uno suelto', async () => {
+    const scenarios = getSectionScenarios('phishing')
+    const [first, next] = scenarios
+    if (!first || !next) throw new Error('El módulo necesita al menos dos escenarios')
+    fetchProgressMock.mockResolvedValue({
+      modulo: 'phishing',
+      escenarios: scenarios.map(({ id }) => ({ id, ultimoOutcome: 'CORRECTO' })),
+      aprobados: scenarios.length,
+      requeridos: 6,
+      aprobado: true,
+      ronda: 2,
+      rondaEnCurso: {
+        jugados: 1,
+        escenarios: [{ id: first.id, ultimoOutcome: 'CORRECTO' }],
+      },
+    })
+
+    const { container } = renderSection()
+
+    expect(await screen.findByText('Continuar →')).toBeDefined()
+    expect(screen.queryByText('Repetir →')).toBeNull()
+    expect(container.querySelector(`a[href="${getScenarioPath(first)}"]`)).toBeNull()
+    expect(container.querySelector(`a[href="${getScenarioPath(next)}"]`)).not.toBeNull()
   })
 
   it('con el módulo aprobado, abre el resumen en un modal al pedirlo', async () => {

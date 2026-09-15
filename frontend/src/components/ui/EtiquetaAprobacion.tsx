@@ -20,8 +20,8 @@ function ApprovalLabel({ node }: { node: StoryNode }) {
 
       {!approved && (
         <p className="mt-2 text-base leading-relaxed text-body">
-          Este no suma para los que necesitas aprobar en el módulo. Podrás repetirlo cuando hayas
-          pasado por todos.
+          Este no suma para los que necesitas aprobar en el módulo. Si quieres volver a intentarlo,
+          reinicia el módulo completo desde el escenario 01.
         </p>
       )}
     </div>

@@ -29,3 +29,18 @@ describe('RunsController.atestacion', () => {
     expect(result).toEqual({ atestacion: 'un.jwt.firmado' });
   });
 });
+
+describe('RunsController.restart', () => {
+  it('usa el participante autenticado y el módulo de la ruta', async () => {
+    const restart = jest
+      .fn()
+      .mockResolvedValue({ escenarios: [], aprobados: 0 });
+    const controller = new RunsController({
+      restart,
+    } as unknown as RunsService);
+
+    await controller.restart(PARTICIPANT, 'phishing');
+
+    expect(restart).toHaveBeenCalledWith(PARTICIPANT.sub, 'phishing');
+  });
+});

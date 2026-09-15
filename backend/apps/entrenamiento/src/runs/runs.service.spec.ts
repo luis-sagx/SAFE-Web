@@ -27,18 +27,34 @@ interface MockRun {
 /// `progreso()`: sin esto, dos módulos distintos en la misma lista de corridas
 /// se contarían entre sí y el test no distinguiría "aprobado" de "no
 /// aprobado" por módulo.
-function serviceWith(runs: MockRun[], jwt?: JwtService) {
+function serviceWith(runs: MockRun[], jwt?: JwtService, latestReset?: Date) {
   const prisma = {
     scenarioRun: {
       findMany: ({
         where,
-      }: { where?: { scenarioId?: { startsWith?: string } } } = {}) => {
+      }: {
+        where?: {
+          scenarioId?: { startsWith?: string };
+          startedAt?: { gt?: Date };
+        };
+      } = {}) => {
         const prefix = where?.scenarioId?.startsWith;
         const filtered = prefix
           ? runs.filter((r) => r.scenarioId.startsWith(prefix))
           : runs;
-        return Promise.resolve(filtered);
+        return Promise.resolve(
+          where?.startedAt?.gt
+            ? filtered.filter(
+                (r) => (r.startedAt as Date) > where.startedAt!.gt!,
+              )
+            : filtered,
+        );
       },
+    },
+    moduleReset: {
+      findFirst: () =>
+        Promise.resolve(latestReset ? { createdAt: latestReset } : null),
+      create: () => Promise.resolve({ createdAt: new Date() }),
     },
   } as unknown as PrismaService;
 
@@ -140,6 +156,58 @@ describe('RunsService.progreso', () => {
       modulo: 'phishing',
       aprobados: 1,
       requeridos: 6,
+    });
+  });
+
+  it('ignora las corridas anteriores al último reinicio del módulo', async () => {
+    const before = new Date('2026-08-01T10:00:00.000Z');
+    const reset = new Date('2026-08-02T10:00:00.000Z');
+    const after = new Date('2026-08-03T10:00:00.000Z');
+    const progress = await serviceWith(
+      [
+        {
+          scenarioId: 'phishing/a',
+          outcome: 'CORRECTO',
+          startedAt: before,
+          finishedAt: after,
+        },
+        {
+          scenarioId: 'phishing/b',
+          outcome: 'INCORRECTO',
+          startedAt: after,
+          finishedAt: after,
+        },
+      ],
+      undefined,
+      reset,
+    ).progress('p1', 'phishing');
+
+    expect(progress.escenarios).toEqual([
+      { id: 'phishing/b', ultimoOutcome: 'INCORRECTO' },
+    ]);
+    expect(progress.aprobados).toBe(0);
+  });
+
+  it('reinicia en cero aun si había escenarios jugados', async () => {
+    const result = await serviceWith([
+      { scenarioId: 'phishing/a', outcome: 'CORRECTO', finishedAt: new Date() },
+    ]).restart('p1', 'phishing');
+
+    expect(result.escenarios).toEqual([]);
+    expect(result.aprobados).toBe(0);
+  });
+
+  it('registra el reinicio para el participante y módulo correctos', async () => {
+    const create = jest.fn().mockResolvedValue({ createdAt: new Date() });
+    const service = new RunsService(
+      { moduleReset: { create } } as unknown as PrismaService,
+      jwtFake().jwt,
+    );
+
+    await service.restart('p1', 'phishing');
+
+    expect(create).toHaveBeenCalledWith({
+      data: { participantId: 'p1', module: 'phishing' },
     });
   });
 });

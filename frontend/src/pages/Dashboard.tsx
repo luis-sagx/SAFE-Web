@@ -80,7 +80,7 @@ function Dashboard() {
         {/* Regla del curso, no promesa: antes decía que ninguna respuesta te deja mal y el resultado decía lo contrario. */}
         <p className="mt-3 max-w-xl text-base leading-relaxed text-body">
           Elige un tipo de engaño y enfréntate a una situación como las de todos los días. Puedes
-          fallar y repetir el módulo completo: lo que cuenta es tu última ronda completa.
+          fallar y reiniciar el módulo completo en cualquier momento. Al reiniciarlo, el avance vuelve a cero.
         </p>
 
         {global.total > 0 && (

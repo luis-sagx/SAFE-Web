@@ -9,10 +9,8 @@ function renderModal(props: Partial<React.ComponentProps<typeof ConfirmReplayMod
   render(
     <MemoryRouter>
       <ConfirmReplayModal
-        seccionId="fisico"
         titulo="Seguridad física"
         aprobados={6}
-        aprobado
         onClose={onClose}
         onConfirm={onConfirm}
         {...props}
@@ -23,20 +21,16 @@ function renderModal(props: Partial<React.ComponentProps<typeof ConfirmReplayMod
 }
 
 describe('ConfirmarRepeticionModal', () => {
-  it('avisa de que cuenta la última ronda solo si ya está aprobado', () => {
-    renderModal({ aprobado: false })
-    expect(screen.queryByText(/última/)).toBeNull()
-  })
-
-  it('muestra el aviso de la última ronda cuando está aprobado', () => {
-    renderModal({ aprobado: true })
-    expect(screen.getByText(/última/)).toBeDefined()
+  it('avisa que la nota actual se reinicia en cero y los intentos dejan de contar', () => {
+    renderModal()
+    expect(screen.getByText('0/8')).toBeDefined()
+    expect(screen.getByText(/ya no cuentan para la nota/)).toBeDefined()
   })
 
   it('confirma y cierra con los callbacks recibidos', () => {
     const { onClose, onConfirm } = renderModal()
 
-    fireEvent.click(screen.getByRole('button', { name: 'Empezar la repetición' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Reiniciar módulo' }))
     expect(onConfirm).toHaveBeenCalledOnce()
 
     fireEvent.click(screen.getByRole('button', { name: 'Ahora no' }))
