@@ -142,8 +142,8 @@ describe('Corridas (e2e)', () => {
       await server().get('/api/runs/resultados').expect(401);
     });
 
-    it('entrega las corridas seudonimizadas al supervisor', async () => {
-      const supervisor = await token({ role: 'SUPERVISOR' });
+    it('entrega las corridas seudonimizadas al administrador', async () => {
+      const supervisor = await token({ role: 'ADMIN' });
 
       const res = await server()
         .get('/api/runs/resultados')
