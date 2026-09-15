@@ -20,7 +20,7 @@ describe('Login', () => {
     useAuthMock.mockReturnValue({
       isAuthenticated: false,
       loading: true,
-      isSupervisor: false,
+      isAdmin: false,
       login: vi.fn(),
     })
 
@@ -37,7 +37,7 @@ describe('Login', () => {
     useAuthMock.mockReturnValue({
       isAuthenticated: false,
       loading: false,
-      isSupervisor: false,
+      isAdmin: false,
       login: vi.fn(),
     })
 
@@ -55,7 +55,7 @@ describe('Login', () => {
     useAuthMock.mockReturnValue({
       isAuthenticated: false,
       loading: false,
-      isSupervisor: false,
+      isAdmin: false,
       login: vi.fn(),
     })
 
@@ -72,7 +72,7 @@ describe('Login', () => {
     useAuthMock.mockReturnValue({
       isAuthenticated: false,
       loading: false,
-      isSupervisor: false,
+      isAdmin: false,
       login: vi.fn(),
     })
 

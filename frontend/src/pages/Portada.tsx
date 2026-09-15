@@ -5,12 +5,12 @@ import { useAuth } from '../context/AuthContext'
 import { TRAINING_VIDEOS } from '../data/videosCapacitacion'
 
 function Portada() {
-  const { isAuthenticated, isSupervisor } = useAuth()
+  const { isAuthenticated, isAdmin } = useAuth()
   const general = TRAINING_VIDEOS[0]
   const modules = TRAINING_VIDEOS.slice(1)
   const destination = !isAuthenticated
     ? { to: '/login', label: 'Iniciar sesión' }
-    : isSupervisor
+    : isAdmin
       ? { to: '/admin', label: 'Ir a administración' }
       : { to: '/dashboard', label: 'Ir a mi entrenamiento' }
 

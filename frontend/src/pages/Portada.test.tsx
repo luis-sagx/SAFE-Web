@@ -18,7 +18,7 @@ function renderPage() {
 
 describe('Portada', () => {
   beforeEach(() => {
-    useAuthMock.mockReturnValue({ isAuthenticated: false, isSupervisor: false })
+    useAuthMock.mockReturnValue({ isAuthenticated: false, isAdmin: false })
   })
 
   it('presenta la introducción, los ocho videos y el acceso a una persona visitante', () => {
@@ -31,14 +31,14 @@ describe('Portada', () => {
   })
 
   it('lleva a un participante autenticado a su entrenamiento', () => {
-    useAuthMock.mockReturnValue({ isAuthenticated: true, isSupervisor: false })
+    useAuthMock.mockReturnValue({ isAuthenticated: true, isAdmin: false })
     renderPage()
 
     expect(screen.getByRole('link', { name: 'Ir a mi entrenamiento' }).getAttribute('href')).toBe('/dashboard')
   })
 
   it('lleva a un supervisor autenticado a administración', () => {
-    useAuthMock.mockReturnValue({ isAuthenticated: true, isSupervisor: true })
+    useAuthMock.mockReturnValue({ isAuthenticated: true, isAdmin: true })
     renderPage()
 
     expect(screen.getByRole('link', { name: 'Ir a administración' }).getAttribute('href')).toBe('/admin')

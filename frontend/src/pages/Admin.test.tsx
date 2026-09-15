@@ -3,9 +3,11 @@ import { MemoryRouter } from 'react-router'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import Admin from './Admin'
 
-const { fetchParticipantsMock, fetchResultsMock } = vi.hoisted(() => ({
+const { createTrainerMock, fetchParticipantsMock, fetchResultsMock, fetchTrainersMock } = vi.hoisted(() => ({
+  createTrainerMock: vi.fn(),
   fetchParticipantsMock: vi.fn(),
   fetchResultsMock: vi.fn(),
+  fetchTrainersMock: vi.fn(),
 }))
 
 vi.mock('../lib/api', async () => {
@@ -14,6 +16,8 @@ vi.mock('../lib/api', async () => {
     ...current,
     fetchParticipants: fetchParticipantsMock,
     fetchResults: fetchResultsMock,
+    fetchTrainers: fetchTrainersMock,
+    createTrainer: createTrainerMock,
   }
 })
 
@@ -31,6 +35,8 @@ describe('Admin', () => {
   beforeEach(() => {
     fetchParticipantsMock.mockReset()
     fetchResultsMock.mockReset()
+    fetchTrainersMock.mockReset()
+    createTrainerMock.mockReset()
   })
 
   it('muestra el estado de carga mientras llega la lista de participantes', () => {
@@ -60,5 +66,34 @@ describe('Admin', () => {
     fireEvent.click(screen.getByRole('tab', { name: 'Resultados' }))
 
     expect(await screen.findByText('Cargando resultados…')).toBeDefined()
+  })
+
+  it('permite abrir la gestión de capacitadores y muestra su formulario de alta', async () => {
+    fetchParticipantsMock.mockResolvedValue([])
+    fetchTrainersMock.mockResolvedValue([])
+
+    renderAdmin()
+
+    fireEvent.click(screen.getByRole('tab', { name: 'Capacitadores' }))
+
+    expect(await screen.findByRole('heading', { name: 'Crear capacitador' })).toBeDefined()
+    expect(screen.getByLabelText('Correo')).toBeDefined()
+  })
+
+  it('muestra acciones claras para copiar y ocultar la contraseña inicial', async () => {
+    fetchParticipantsMock.mockResolvedValue([])
+    fetchTrainersMock.mockResolvedValue([])
+    createTrainerMock.mockResolvedValue({ password: 'clave-inicial' })
+
+    renderAdmin()
+    fireEvent.click(screen.getByRole('tab', { name: 'Capacitadores' }))
+    await screen.findByRole('heading', { name: 'Crear capacitador' })
+    fireEvent.change(screen.getByLabelText('Nombre'), { target: { value: 'Ana' } })
+    fireEvent.change(screen.getByLabelText('Apellido'), { target: { value: 'López' } })
+    fireEvent.change(screen.getByLabelText('Correo'), { target: { value: 'ana@ejemplo.com' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Crear capacitador' }))
+
+    expect(await screen.findByRole('button', { name: 'Copiar contraseña' })).toBeDefined()
+    expect(screen.getByRole('button', { name: 'Ya la copié, ocultar contraseña' })).toBeDefined()
   })
 })
