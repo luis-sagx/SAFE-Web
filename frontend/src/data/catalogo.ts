@@ -789,14 +789,15 @@ const BASE: BaseScenario[] = [
     2,
     lazy(() => import('../secciones/asistentes-ia/CorreoDatosTerceros')),
   ),
-  // El id sigue siendo `correo-credenciales`, el que tuvo este hueco antes: es
-  // la clave con la que están guardadas las corridas y no puede cambiar.
+  // El id sigue siendo `correo-credenciales`, el que tuvo este hueco antes (la
+  // hoja de vida que reemplazó, issue #186): es la clave con la que están
+  // guardadas las corridas y no puede cambiar.
   createAIAssistantScenario(
     'correo-credenciales',
-    'Hoja de vida pegada en una IA',
-    'Le pides a una IA que mejore la hoja de vida de tu prima, y el documento trae su cédula, su fecha de nacimiento y su domicilio.',
+    'Informe escolar pegado en una IA',
+    'Le pides a una IA que mejore un informe escolar de un estudiante, y el documento trae su cédula, su fecha de nacimiento y su domicilio.',
     2,
-    lazy(() => import('../secciones/asistentes-ia/HojaDeVida')),
+    lazy(() => import('../secciones/asistentes-ia/InformeEscolar')),
   ),
   createAIAssistantScenario(
     'resumen-documento-interno',
