@@ -26,7 +26,7 @@ function AppHeader({
    *  eso se relee bajo demanda en "Ver contexto y mis datos". */
   children?: ReactNode
 }) {
-  const { isAuthenticated, isSupervisor } = useAuth()
+  const { isAuthenticated, isAdmin } = useAuth()
 
   return (
     <header className="shrink-0 border-b border-hairline bg-canvas">
@@ -63,7 +63,7 @@ function AppHeader({
         {isAuthenticated && <div className="flex shrink-0 items-center gap-1">
           {/* La bienvenida explica los tipos de engaño y qué pasa con los
               datos del participante; al supervisor no le dice nada. */}
-          {!isSupervisor && <InfoLink />}
+          {!isAdmin && <InfoLink />}
           <UserMenu />
         </div>}
       </div>

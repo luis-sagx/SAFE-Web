@@ -7,11 +7,11 @@ import ThemeSelector from './SelectorTema'
 // Agrupa cuenta/sesión detrás del avatar; antes "Salir" solo existía en
 // panel y admin, sin forma de cerrar sesión a mitad de un escenario.
 function UserMenu() {
-  const { displayName, initials: accountInitials, roleLabel, isSupervisor, logout } = useAuth()
+  const { displayName, initials: accountInitials, roleLabel, isAdmin, logout } = useAuth()
   const [open, setOpen] = useState(false)
   const buttonRef = useRef<HTMLButtonElement>(null)
 
-  const name = displayName || (isSupervisor ? 'Supervisor' : 'Participante')
+  const name = displayName || (isAdmin ? 'Administrador' : 'Participante')
   const initials = accountInitials || name.slice(0, 1).toUpperCase()
 
   const itemClassName =
@@ -57,7 +57,7 @@ function UserMenu() {
         >
           <div className="border-b border-hairline px-3 py-2.5">
             <p className="truncate text-sm font-semibold text-ink">{name}</p>
-            <p className="text-xs text-muted">{isSupervisor ? 'Supervisor' : roleLabel}</p>
+            <p className="text-xs text-muted">{isAdmin ? 'Administrador' : roleLabel}</p>
           </div>
 
           <div className="border-b border-hairline py-1.5">
@@ -65,7 +65,7 @@ function UserMenu() {
             <ThemeSelector variante="lista" />
           </div>
 
-          {!isSupervisor && (
+          {!isAdmin && (
             <Link
               role="menuitem"
               to="/recorrido"

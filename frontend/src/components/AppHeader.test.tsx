@@ -17,7 +17,7 @@ function renderHeader() {
 
 describe('AppHeader', () => {
   it('para un participante, la marca lleva a la portada y muestra la ayuda', () => {
-    useAuthMock.mockReturnValue({ isAuthenticated: true, isSupervisor: false })
+    useAuthMock.mockReturnValue({ isAuthenticated: true, isAdmin: false })
 
     renderHeader()
 
@@ -26,7 +26,7 @@ describe('AppHeader', () => {
   })
 
   it('para un supervisor, la marca lleva a la portada y oculta la ayuda', () => {
-    useAuthMock.mockReturnValue({ isAuthenticated: true, isSupervisor: true })
+    useAuthMock.mockReturnValue({ isAuthenticated: true, isAdmin: true })
 
     renderHeader()
 
@@ -35,7 +35,7 @@ describe('AppHeader', () => {
   })
 
   it('para una persona visitante, no muestra la ayuda ni el menú de cuenta', () => {
-    useAuthMock.mockReturnValue({ isAuthenticated: false, isSupervisor: false })
+    useAuthMock.mockReturnValue({ isAuthenticated: false, isAdmin: false })
 
     renderHeader()
 
