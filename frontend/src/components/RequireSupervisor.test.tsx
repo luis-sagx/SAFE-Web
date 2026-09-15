@@ -23,7 +23,7 @@ function renderRoute() {
 
 describe('RequireSupervisor', () => {
   it('muestra la pantalla de carga mientras resuelve la sesión', () => {
-    useAuthMock.mockReturnValue({ isAuthenticated: false, loading: true, isSupervisor: false })
+    useAuthMock.mockReturnValue({ isAuthenticated: false, loading: true, isAdmin: false })
 
     renderRoute()
 
@@ -31,7 +31,7 @@ describe('RequireSupervisor', () => {
   })
 
   it('manda al acceso sin sesión', () => {
-    useAuthMock.mockReturnValue({ isAuthenticated: false, loading: false, isSupervisor: false })
+    useAuthMock.mockReturnValue({ isAuthenticated: false, loading: false, isAdmin: false })
 
     renderRoute()
 
@@ -39,7 +39,7 @@ describe('RequireSupervisor', () => {
   })
 
   it('manda al panel del participante si la sesión no es de supervisor', () => {
-    useAuthMock.mockReturnValue({ isAuthenticated: true, loading: false, isSupervisor: false })
+    useAuthMock.mockReturnValue({ isAuthenticated: true, loading: false, isAdmin: false })
 
     renderRoute()
 
@@ -47,7 +47,7 @@ describe('RequireSupervisor', () => {
   })
 
   it('deja pasar a un supervisor autenticado', () => {
-    useAuthMock.mockReturnValue({ isAuthenticated: true, loading: false, isSupervisor: true })
+    useAuthMock.mockReturnValue({ isAuthenticated: true, loading: false, isAdmin: true })
 
     renderRoute()
 

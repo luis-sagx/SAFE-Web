@@ -14,8 +14,8 @@ interface AuthValue {
   participant: Participant | null
   loading: boolean
   isAuthenticated: boolean
-  /** El supervisor gestiona cuentas y ve resultados; no hace escenarios. */
-  isSupervisor: boolean
+  /** ADMIN gestiona cuentas y ve resultados; no hace escenarios. */
+  isAdmin: boolean
   login: (email: string, password: string) => Promise<Participant>
   register: (credentials: Credentials) => Promise<Participant>
   logout: () => void
@@ -138,7 +138,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       participant,
       loading,
       isAuthenticated: Boolean(participant),
-      isSupervisor: participant?.role === 'SUPERVISOR',
+      isAdmin: participant?.role === 'ADMIN',
       login,
       register,
       logout,
