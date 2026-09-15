@@ -28,6 +28,11 @@ function password(passwordBase64: string): Buffer {
   return buffer;
 }
 
+/** Valida la clave al arrancar, antes de que una petición llegue a cifrar PII. */
+export function assertPiiEncryptionKey(passwordBase64: string): void {
+  password(passwordBase64);
+}
+
 export function encrypt(text: string, passwordBase64: string): string {
   const iv = randomBytes(IV_LENGTH);
   const cipher = createCipheriv(ALGORITHM, password(passwordBase64), iv);

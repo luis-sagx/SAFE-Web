@@ -7,10 +7,17 @@ import { AdminModule } from './admin/admin.module';
 import { AuthModule } from './auth/auth.module';
 import { CertificatesModule } from './certificados/certificados.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { assertPiiEncryptionKey } from './pii/pii';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      validate: (config) => {
+        assertPiiEncryptionKey(config.PII_ENCRYPTION_KEY);
+        return config;
+      },
+    }),
     // El límite estricto del login se declara aparte, en su controlador.
     ThrottlerModule.forRoot({
       throttlers: [{ ttl: 60_000, limit: 120 }],

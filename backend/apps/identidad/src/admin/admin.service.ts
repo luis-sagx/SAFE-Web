@@ -124,7 +124,7 @@ export class AdminService {
       select: ADMIN_FIELDS,
     });
     if (!trainer) {
-      throw new NotFoundException('No existe ese formador.');
+      throw new NotFoundException('No existe ese capacitador.');
     }
     const updated = await this.prisma.participant.update({
       where: { id },
