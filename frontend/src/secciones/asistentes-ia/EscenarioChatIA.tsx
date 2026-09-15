@@ -39,11 +39,12 @@ function AIChatScenario({
       senales={signals}
       rule={rule}
       accionesEnPantalla
-      cuandoTermina="Cuando toques una de las respuestas del chat."
+      cuandoTermina="Cuando envíes tu mensaje, o toques una de las respuestas del chat."
       instruccion={
         instruction ?? (
           <p className="text-lg leading-relaxed text-body">
-            Toca una de las respuestas para contestarle a la IA.
+            Toca las palabras marcadas para cambiarlas y toca "Enviar", o toca una de las respuestas del
+            chat.
           </p>
         )
       }

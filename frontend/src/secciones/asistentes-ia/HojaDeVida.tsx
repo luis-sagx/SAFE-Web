@@ -2,11 +2,25 @@ import type { ScreenNode } from '../../components/StoryEscenario'
 import type { Context } from '../../components/ui/ContextoEscenario'
 import type { Story } from '../../hooks/useStoryEngine'
 import AIChatScenario from './EscenarioChatIA'
-import { createAIChat, withAIResponse, mark, signal } from './chatIA'
+import {
+  createAIChat,
+  withEditableDraft,
+  buildDraftSegments,
+  evaluateDatum,
+  evaluateData,
+  worstLevel,
+  signal,
+  type SensitiveDatum,
+} from './chatIA'
 
 /** Hoja de vida = documento de identidad disfrazado de currículum, pegado entero (copiar/pegar sin leer), no un
  *  dato suelto colado en un texto. escenarioId sigue siendo `correo-credenciales` porque ahí están guardadas
- *  las corridas anteriores. */
+ *  las corridas anteriores.
+ *
+ *  Issue #185: no todos los datos pesan igual. La cédula, la fecha de nacimiento y el domicilio son el
+ *  paquete que prueba identidad — cualquiera de los tres, solo, ya es fuga completa. El teléfono es menos
+ *  grave —sirve para contactar, no para suplantar— así que solo baja a "parcial", nunca a "seguro" del
+ *  todo si aparece. El nombre no se evalúa: una hoja de vida sin nombre no sirve para nada. */
 
 const TIME = '19:40'
 
@@ -22,134 +36,94 @@ const EMAIL = 'paola.guaman@safeweb.com'
 const PATH =
   'Experiencia: asistencia administrativa 2023–2026 en Comercial Andes. Estudios: Tecnología en Administración.'
 
-const PROMPT_CV_COMPLETE = `Aquí va: ${NAME}, cédula ${ECUADORIAN_ID}, fecha de nacimiento ${BIRTH}, domicilio ${ADDRESS}, teléfono ${PHONE}, correo ${EMAIL}. ${PATH}`
-const PROMPT_ONLY_CONTACT = `Aquí va: ${NAME}, teléfono ${PHONE}, correo ${EMAIL}. ${PATH}`
-const PROMPT_WITHOUT_DATA = `Aquí va solo la parte que hay que mejorar. ${PATH} Los datos de contacto los pongo yo al final.`
+// El paquete que prueba identidad: cualquiera de los tres, solo, ya es fuga completa.
+const IDENTITY_POINTS: SensitiveDatum[] = [
+  { id: 'dato-cedula', tipo: 'numero', etiqueta: 'la cédula real de tu prima', valor: ECUADORIAN_ID },
+  { id: 'dato-nacimiento', tipo: 'texto', etiqueta: 'la fecha de nacimiento real de tu prima', valor: BIRTH },
+  { id: 'dato-direccion', tipo: 'texto', etiqueta: 'el domicilio real de tu prima', valor: ADDRESS },
+]
+// Menos grave: sirve para contactarla, no para suplantarla ante un trámite.
+const PHONE_POINT: SensitiveDatum = { id: 'dato-telefono', tipo: 'numero', etiqueta: 'el teléfono real de tu prima', valor: PHONE }
+
+function onEnviar(texto: string): { goto: string; label?: string } {
+  const identityLevel = worstLevel(evaluateData(texto, IDENTITY_POINTS))
+  const phoneLevel = evaluateDatum(texto, PHONE_POINT).nivel
+  const goto =
+    identityLevel === 'fuga'
+      ? 'e_fuga'
+      : identityLevel === 'parcial' || phoneLevel !== 'seguro'
+        ? 'e_parcial'
+        : 'e_seguro'
+  return { goto, label: 'Tocó "Enviar" con lo que decidió dejar del borrador' }
+}
+
+// El nombre y el correo no se evalúan (ver nota arriba), así que no van en la lista que le pasamos a
+// buildDraftSegments: quedan como texto fijo del borrador, sin poder tocarse.
+const MARKED_POINTS: SensitiveDatum[] = [...IDENTITY_POINTS, PHONE_POINT]
+const DRAFT = `Aquí va: ${NAME}, cédula ${ECUADORIAN_ID}, nacida el ${BIRTH}, domicilio ${ADDRESS}, teléfono ${PHONE}, correo ${EMAIL}. ${PATH}`
 
 // Va en el computador: una hoja de vida se arma con el archivo abierto al lado, de un copiar y pegar.
-const CHAT = createAIChat(
-  'Asistente de escritura · servicio externo',
-  [
-    { texto: 'Hola, ayúdame a mejorar la hoja de vida de mi prima.', mio: true },
-    {
-      texto:
-        'Con gusto. Pégame el contenido que quieres mejorar y te lo devuelvo ordenado, con mejor redacción y un perfil profesional al inicio.',
-    },
-  ],
-  TIME,
-  [
-    { texto: PROMPT_CV_COMPLETE, goto: 'e_cv_completo' },
-    { texto: PROMPT_ONLY_CONTACT, goto: 'e_solo_contacto' },
-    { texto: PROMPT_WITHOUT_DATA, goto: 'e_sin_datos' },
-  ],
-  { titulo: 'Asistente IA', url: 'https://chat.asistente-ia.com/nuevo' },
-)
-
-// Maquetada por secciones (no un párrafo): eso es lo que vale la pena pegar, y también lo que copia el documento entero en el chat.
-const improvedResume = (contact: string[], completion: string) =>
-  [
-    'Aquí tienes la hoja de vida mejorada:',
-    '',
-    '<b>Perfil profesional</b>',
-    'Profesional con tres años de experiencia en gestión documental y atención al cliente, con orientación al orden y al cumplimiento de plazos.',
-    ...(contact.length > 0 ? ['', ...contact] : []),
-    '',
-    '<b>Experiencia</b>',
-    'Comercial Andes — Asistencia administrativa (2023–2026)',
-    '',
-    '<b>Formación</b>',
-    'Tecnología en Administración',
-    '',
-    completion,
-  ].join('<br>')
-
-const SUBMISSION_CV_COMPLETE = withAIResponse(
-  CHAT,
-  TIME,
-  mark(PROMPT_CV_COMPLETE, {
-    'dato-cedula': ECUADORIAN_ID,
-    'dato-nacimiento': BIRTH,
-    'dato-direccion': ADDRESS,
-    'dato-telefono': PHONE,
-  }),
-  improvedResume(
+const CHAT = withEditableDraft(
+  createAIChat(
+    'Asistente de escritura · servicio externo',
     [
-      '<b>Datos personales</b>',
-      `${NAME} · C.I. ${ECUADORIAN_ID} · ${BIRTH}`,
-      `${ADDRESS} · ${PHONE} · ${EMAIL}`,
+      { texto: 'Hola, ayúdame a mejorar la hoja de vida de mi prima.', mio: true },
+      {
+        texto:
+          'Con gusto. Pégame el contenido que quieres mejorar y te lo devuelvo ordenado, con mejor redacción y un perfil profesional al inicio.',
+      },
     ],
-    '¿Quieres que le dé un tono más formal o que la ajuste a una vacante en concreto?',
+    TIME,
+    [],
+    { titulo: 'Asistente IA', url: 'https://chat.asistente-ia.com/nuevo' },
   ),
-)
-const SUBMISSION_ONLY_CONTACT = withAIResponse(
-  CHAT,
-  TIME,
-  mark(PROMPT_ONLY_CONTACT, { 'dato-telefono': PHONE }),
-  improvedResume(
-    ['<b>Contacto</b>', `${NAME} · ${PHONE} · ${EMAIL}`],
-    '¿Quieres que la ajuste a una vacante en concreto?',
-  ),
-)
-const SUBMISSION_WITHOUT_DATA = withAIResponse(
-  CHAT,
-  TIME,
-  PROMPT_WITHOUT_DATA,
-  improvedResume([], 'Agrega los datos de contacto al inicio antes de enviarla.'),
+  {
+    segmentos: buildDraftSegments(DRAFT, MARKED_POINTS),
+    hora: TIME,
+    respuestaIA:
+      'Aquí tienes la hoja de vida mejorada, con un perfil profesional al inicio y mejor redacción en la experiencia y la formación.',
+    onEnviar,
+  },
 )
 
 const STORY: Story<ScreenNode> = {
   n1: { kind: 'scene', view: CHAT },
-  e_cv_completo: {
+  e_fuga: {
     kind: 'bad',
-    view: SUBMISSION_CV_COMPLETE,
-    senales: [
+    view: CHAT,
+    senales: IDENTITY_POINTS.map((dato) =>
       signal(
-        'dato-cedula',
-        'e_cv_completo',
-        'La <b>cédula</b> de tu prima. Es el número con el que se abre una cuenta, se firma un contrato o se pide un crédito a su nombre — y no mejora en nada la redacción de su hoja de vida.',
+        dato.id,
+        'e_fuga',
+        `Si tu mensaje incluyó <b>${dato.etiqueta}</b>: junto con el resto del paquete, es lo que piden casi todos los formularios para comprobar que alguien es quien dice ser — y no mejora en nada la redacción de su hoja de vida.`,
       ),
-      signal(
-        'dato-nacimiento',
-        'e_cv_completo',
-        'Su <b>fecha de nacimiento</b>. Junto a la cédula es la pareja que piden casi todos los formularios para comprobar que alguien es quien dice ser.',
-      ),
-      signal(
-        'dato-direccion',
-        'e_cv_completo',
-        'Su <b>domicilio</b>, con casa y número. Es el único dato de la lista que dice dónde duerme.',
-      ),
-      signal(
-        'dato-telefono',
-        'e_cv_completo',
-        'Su <b>teléfono</b>. Cierra el paquete: quién es, cuándo nació, dónde vive y por dónde contactarla, todo en un solo mensaje.',
-      ),
-    ],
+    ),
     verdict: 'La hoja de vida entera de tu prima quedó en un servicio externo',
     outcome:
-      'Una hoja de vida es un documento de identidad disfrazado de currículum. Para mejorar la redacción, la IA no necesitaba la cédula, la fecha de nacimiento, el domicilio ni el teléfono de tu prima — y te los devolvió maquetados, así que ahora están dos veces en esa conversación. Ella nunca decidió compartirlos.',
+      'Una hoja de vida es un documento de identidad disfrazado de currículum. Para mejorar la redacción, la IA no necesitaba la cédula, la fecha de nacimiento ni el domicilio de tu prima. Ella nunca decidió compartirlos.',
   },
-  e_solo_contacto: {
+  e_parcial: {
     kind: 'partial',
-    view: SUBMISSION_ONLY_CONTACT,
+    view: CHAT,
     senales: [
       signal(
         'dato-telefono',
-        'e_solo_contacto',
-        'Quitaste la cédula, la fecha y el domicilio, pero dejaste el <b>teléfono</b> y el correo: no dicen quién es ante un trámite, pero sí por dónde llegar hasta ella.',
+        'e_parcial',
+        'El <b>teléfono</b> no prueba quién es ante un trámite, pero sí es por dónde llegar hasta ella — y con eso empieza cualquier intento de estafa dirigida.',
       ),
     ],
     verdict: 'Quitaste lo peor, pero dejaste cómo encontrarla',
     outcome:
-      'Lo grave —cédula, fecha de nacimiento y domicilio— se quedó fuera. El teléfono y el correo tampoco hacían falta para mejorar la redacción, y son con los que empieza cualquier intento de estafa dirigida.',
+      'Lo grave —cédula, fecha de nacimiento y domicilio— se quedó fuera. Pero el teléfono real de tu prima tampoco hacía falta para mejorar la redacción.',
   },
-  e_sin_datos: {
+  e_seguro: {
     kind: 'good',
-    view: SUBMISSION_WITHOUT_DATA,
+    view: CHAT,
     senales: [
       signal(
         'borrador-enviado',
-        'e_sin_datos',
-        'Le pegaste a la IA solo lo que había que mejorar: la experiencia y los estudios. Ninguna de las dos cosas identifica a nadie.',
+        'e_seguro',
+        'Le pegaste a la IA solo lo que había que mejorar: la experiencia y los estudios. Ninguna de las dos cosas identifica a nadie ni sirve para contactarla.',
       ),
     ],
     verdict: 'Hoja de vida mejorada sin entregar los datos de nadie',
@@ -176,7 +150,7 @@ const CONTEXT: Context = {
   ahora: (
     <>
       <strong>Abres el asistente de IA</strong> en el computador, con el archivo que ella te pasó abierto
-      al lado, listo para copiar y pegar.
+      al lado, listo para copiar y pegar. Escribe (o pega) tú mismo lo que le pedirías.
     </>
   ),
 }
@@ -192,7 +166,8 @@ function Resume() {
       rule={RULE}
       instruccion={
         <p className="text-lg leading-relaxed text-body">
-          Toca una de las respuestas para elegir qué le pegas a la IA.
+          Toca las palabras marcadas para cambiarlas, y toca "Enviar" cuando el mensaje quede como
+          quieres.
         </p>
       }
       pista={

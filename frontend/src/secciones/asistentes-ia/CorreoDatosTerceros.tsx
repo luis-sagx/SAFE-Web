@@ -2,150 +2,118 @@ import type { ScreenNode } from '../../components/StoryEscenario'
 import type { Context } from '../../components/ui/ContextoEscenario'
 import type { Story } from '../../hooks/useStoryEngine'
 import AIChatScenario from './EscenarioChatIA'
-import { createAIChat, withAIResponse, mark, signal } from './chatIA'
+import {
+  createAIChat,
+  withEditableDraft,
+  buildDraftSegments,
+  evaluateData,
+  worstLevel,
+  signal,
+  type SensitiveDatum,
+} from './chatIA'
 
-/** La IA es legítima; el riesgo está en lo que el participante le escribe antes de pedir ayuda —aquí, el
- *  docente y los datos de una compañera que no hacían falta para redactar el texto. */
+/** La IA es legítima; el riesgo está en lo que el participante le escribe antes de pedir ayuda —aquí, los
+ *  datos de una compañera que no hacían falta para redactar el texto.
+ *
+ *  Issue #185: el borrador ya viene escrito, con los datos reales de la compañera puestos — el nombre, la
+ *  cédula y el correo quedan marcados para tocar y reemplazar. Lo que se evalúa es si esos datos REALES
+ *  siguen en el mensaje al tocar "Enviar" — nunca por parecerse a un dato de ese tipo, sino por ser el
+ *  dato de verdad (ver evaluateDatum). */
 
 const TIME = '10:14'
 
 // Imposible por construcción, como la del participante: tercer dígito 9, que el Registro Civil no asigna (ver identidadFicticia).
 const ECUADORIAN_ID = '1799999990'
-const NAME = 'Andrea Cedeño'
+const FIRST_NAME = 'Andrea'
+const LAST_NAME = 'Cedeño'
 // Dominio de entrenamiento, no uno real: un gmail aquí podría existir y llegarle a alguien.
 const EMAIL = 'andrea.cedeno02@safeweb.com'
 const TEACHER = 'Ing. Marcelo Tapia'
 
-const PROMPT_WITH_DATA = `Es para el ${TEACHER}, para pedirle un cambio de horario a nombre de mi compañera ${NAME}, cédula ${ECUADORIAN_ID}, correo ${EMAIL}. Es de la materia de Redes.`
-const PROMPT_WITHOUT_DATA =
-  'Es para un docente, para pedirle un cambio de horario a nombre de una compañera, en la materia de Redes. Deja en blanco los datos de ella y del profe, que yo los lleno después.'
-const PROMPT_WITHOUT_AI = 'Mejor lo escribo yo, gracias.'
+const DATA_POINTS: SensitiveDatum[] = [
+  { id: 'dato-nombre', tipo: 'nombre', etiqueta: 'el nombre completo de tu compañera', nombre: FIRST_NAME, apellido: LAST_NAME },
+  { id: 'dato-cedula', tipo: 'numero', etiqueta: 'la cédula de tu compañera', valor: ECUADORIAN_ID },
+  { id: 'dato-correo', tipo: 'texto', etiqueta: 'el correo de tu compañera', valor: EMAIL },
+]
 
-// El chat abre con saludo + pregunta de la IA; lo que se elige es la respuesta a esa pregunta, no un segundo mensaje encima.
-const CHAT = createAIChat(
-  'Redactor de mensajes · servicio externo',
-  [
-    { texto: 'Hola, ayúdame a redactar un correo.', mio: true },
-    {
-      texto:
-        'Claro que sí. ¿Sobre qué asunto es el correo, a quién va dirigido y qué debe incluir? Con esos datos te lo entrego formal y listo para enviar.',
-    },
-  ],
-  TIME,
-  [
-    { texto: PROMPT_WITH_DATA, goto: 'e_datos_completos' },
-    { texto: PROMPT_WITHOUT_DATA, goto: 'e_sin_datos' },
-    { texto: PROMPT_WITHOUT_AI, goto: 'e_no_usa_ia' },
-  ],
-)
+function onEnviar(texto: string): { goto: string; label?: string } {
+  const nivel = worstLevel(evaluateData(texto, DATA_POINTS))
+  return {
+    goto: nivel === 'fuga' ? 'e_fuga' : nivel === 'parcial' ? 'e_parcial' : 'e_seguro',
+    label: 'Tocó "Enviar" con lo que decidió dejar del borrador',
+  }
+}
 
-// La IA responde con el correo armado (asunto, saludo, despedida), no una línea suelta: así se reconoce como una respuesta real.
-const EMAIL_WITH_DATA = [
-  'Aquí tienes el correo:',
-  '',
-  `<b>Asunto:</b> Solicitud de cambio de horario – Redes de Computadores / ${NAME}`,
-  '',
-  `Estimado ${TEACHER}:`,
-  '',
-  'Reciba un cordial saludo.',
-  '',
-  `Por medio del presente me dirijo a usted de manera respetuosa con el fin de solicitar formalmente un cambio de horario en la asignatura de Redes, a nombre de mi compañera ${NAME}, identificada con número de cédula ${ECUADORIAN_ID} y correo ${EMAIL}.`,
-  '',
-  'Quedo atento a su respuesta.',
-  '',
-  'Atentamente,',
-  '',
-  '¿Quieres que agregue el horario que solicita o el motivo del cambio?',
-].join('<br>')
+// El borrador ya trae el nombre, la cédula y el correo reales de la compañera; buildDraftSegments los marca
+// para que se puedan tocar y reemplazar uno por uno antes de enviar.
+const DRAFT = `Es para el ${TEACHER}, para pedirle un cambio de horario a nombre de mi compañera ${FIRST_NAME} ${LAST_NAME}, cédula ${ECUADORIAN_ID}, correo ${EMAIL}. Es de la materia de Redes.`
 
-const EMAIL_WITHOUT_DATA = [
-  'Aquí tienes el correo, con los espacios listos para completar:',
-  '',
-  '<b>Asunto:</b> Solicitud de cambio de horario – Redes de Computadores / [nombre de la estudiante]',
-  '',
-  'Estimado Ing. [apellido del docente]:',
-  '',
-  'Reciba un cordial saludo.',
-  '',
-  'Por medio del presente me dirijo a usted de manera respetuosa con el fin de solicitar formalmente un cambio de horario en la asignatura de Redes, a nombre de mi compañera [nombre completo], identificada con número de cédula [cédula] y correo [correo].',
-  '',
-  'Quedo atento a su respuesta.',
-  '',
-  'Atentamente,',
-  '',
-  'Reemplaza los corchetes antes de enviarlo.',
-].join('<br>')
-
-const SUBMISSION_COMPLETE = withAIResponse(
-  CHAT,
-  TIME,
-  mark(PROMPT_WITH_DATA, {
-    'dato-docente': TEACHER,
-    'dato-nombre': NAME,
-    'dato-cedula': ECUADORIAN_ID,
-    'dato-correo': EMAIL,
-  }),
-  EMAIL_WITH_DATA,
-)
-const SUBMISSION_WITHOUT_DATA = withAIResponse(CHAT, TIME, PROMPT_WITHOUT_DATA, EMAIL_WITHOUT_DATA)
-const WITHOUT_AI = withAIResponse(
-  CHAT,
-  TIME,
-  PROMPT_WITHOUT_AI,
-  'Entendido. Si más adelante quieres que revise la redacción o el tono del correo, aquí estaré.',
+const CHAT = withEditableDraft(
+  createAIChat(
+    'Redactor de mensajes · servicio externo',
+    [
+      { texto: 'Hola, ayúdame a redactar un correo.', mio: true },
+      {
+        texto:
+          'Claro que sí. Cuéntame sobre qué asunto es el correo, a quién va dirigido y qué debe incluir. Con eso te lo entrego formal y listo para enviar.',
+      },
+    ],
+    TIME,
+    [],
+    { titulo: 'Asistente IA', url: 'https://chat.asistente-ia.com/nuevo' },
+  ),
+  {
+    segmentos: buildDraftSegments(DRAFT, DATA_POINTS),
+    hora: TIME,
+    respuestaIA:
+      'Aquí tienes un correo formal con lo que me diste. Si quieres, puedo ajustar el tono o agregar algún detalle más.',
+    onEnviar,
+  },
 )
 
 const STORY: Story<ScreenNode> = {
   n1: { kind: 'scene', view: CHAT },
-  e_datos_completos: {
+  e_fuga: {
     kind: 'bad',
-    view: SUBMISSION_COMPLETE,
-    senales: [
+    view: CHAT,
+    senales: DATA_POINTS.map((dato) =>
       signal(
-        'dato-docente',
-        'e_datos_completos',
-        'El <b>nombre del docente</b>. Por sí solo no es un secreto, pero es el que convierte el mensaje en un caso real: quién pide qué, y a quién.',
+        dato.id,
+        'e_fuga',
+        `Si tu mensaje incluyó <b>${dato.etiqueta}</b>: para redactar el correo la IA no lo necesitaba, y ese dato real quedó en un servicio externo.`,
       ),
-      signal(
-        'dato-nombre',
-        'e_datos_completos',
-        'El <b>nombre completo</b> de tu compañera. Para redactar el correo bastaba con "una compañera": quién es no cambia ni una palabra del texto.',
-      ),
-      signal(
-        'dato-cedula',
-        'e_datos_completos',
-        'Su <b>cédula</b>. Es el dato que la identifica ante cualquier trámite del país, y salió hacia un servicio externo sin que nadie se lo pidiera.',
-      ),
-      signal(
-        'dato-correo',
-        'e_datos_completos',
-        'Su <b>correo</b>. La IA no lo necesitaba para escribir la solicitud: es a ella a quien le llegará el spam si esa conversación se filtra.',
-      ),
-    ],
-    verdict: 'Datos de una compañera compartidos con la IA',
+    ),
+    verdict: 'Datos de tu compañera compartidos con la IA',
     outcome:
-      'Para redactar un texto, la IA no necesita el nombre completo, la cédula ni el correo de la persona involucrada, ni saber a qué docente va dirigido. Todo eso quedó en un servicio externo, fuera de tu control y sin que ninguno de los dos se enterara.',
+      'Tu mensaje incluyó el nombre completo, la cédula o el correo real de tu compañera. Ninguno de los tres cambia cómo se redacta la solicitud — bastaba con "una compañera" y la materia.',
   },
-  e_sin_datos: {
-    kind: 'good',
-    view: SUBMISSION_WITHOUT_DATA,
+  e_parcial: {
+    kind: 'partial',
+    view: CHAT,
     senales: [
       signal(
         'borrador-enviado',
-        'e_sin_datos',
-        'Le contaste a la IA lo que necesitaba saber —el asunto, que va a un docente, la materia— y nada más. Ni un nombre, ni una cédula, ni un correo.',
+        'e_parcial',
+        'Quedó algún fragmento identificable —solo un nombre de pila, solo un apellido, o los últimos dígitos de la cédula— sin llegar a la combinación completa. No es un dato inventado: sigue siendo real, solo que a medias.',
       ),
     ],
-    verdict: 'Correo redactado sin compartir datos de nadie',
+    verdict: 'Quedó algo identificable, aunque no el dato completo',
     outcome:
-      'La IA armó el correo con espacios en blanco donde van los nombres y los datos de tu compañera, y esos los completas tú al final. Conseguiste la misma ayuda sin entregar nada de ella.',
+      'Tu mensaje no llegó a incluir un dato completo de tu compañera, pero sí un fragmento real —su nombre de pila, su apellido, o parte de su cédula—, no uno inventado. Lo más seguro es no dejar ningún rastro del dato real: usa un marcador como "mi compañera" en vez de una parte de su nombre.',
   },
-  e_no_usa_ia: {
-    kind: 'partial',
-    view: WITHOUT_AI,
-    verdict: 'Evitaste el riesgo, pero no hacía falta',
+  e_seguro: {
+    kind: 'good',
+    view: CHAT,
+    senales: [
+      signal(
+        'borrador-enviado',
+        'e_seguro',
+        'Le diste a la IA lo que necesitaba —el asunto, a quién va, la materia— sin el nombre, la cédula ni el correo reales de tu compañera.',
+      ),
+    ],
+    verdict: 'Correo redactado sin compartir datos reales de nadie',
     outcome:
-      'No compartiste ningún dato, pero tampoco hacía falta renunciar a la ayuda: bastaba con no escribir el nombre, la cédula y el correo de tu compañera.',
+      'Tu mensaje le dio a la IA lo que necesitaba para redactar el texto, sin el nombre, la cédula ni el correo reales de tu compañera. Esos datos los completas tú mismo al final, fuera de la conversación.',
   },
 }
 
@@ -158,7 +126,7 @@ const SIGNALS = [
 ]
 
 const RULE =
-  'Regla de oro: antes de escribirle a una IA, revisa si tu mensaje trae <b>nombres, cédulas, correos o teléfonos de otras personas</b>. Si no hacen falta para lo que le pides, quítalos primero.'
+  'Regla de oro: antes de escribirle a una IA, revisa si tu mensaje trae <b>nombres, cédulas, correos o teléfonos de otras personas</b>. Si no hacen falta para lo que le pides, no los escribas — ni siquiera a medias.'
 
 const SUMMARY = 'Le pides a una IA que redacte un correo a nombre de una compañera, con los datos de ella a la mano.'
 
@@ -166,8 +134,8 @@ const CONTEXT: Context = {
   antes: 'Coordinas trámites de tus compañeros de clase y sueles usar una IA para que tus correos suenen más formales.',
   ahora: (
     <>
-      <strong>Abres el chat de la IA</strong> para que te ayude con el correo del cambio de horario que
-      pidió tu compañera.
+      <strong>Abres el asistente de IA</strong> en el computador para que te ayude con el correo del
+      cambio de horario que pidió tu compañera.
     </>
   ),
 }
@@ -181,10 +149,16 @@ function ThirdPartyDataEmail() {
       story={STORY}
       senales={SIGNALS}
       rule={RULE}
+      instruccion={
+        <p className="text-lg leading-relaxed text-body">
+          Toca las palabras marcadas para cambiarlas, y toca "Enviar" cuando el mensaje quede como
+          quieres.
+        </p>
+      }
       pista={
         <p>
           La IA puede redactar el correo sin saber de quién habla. Lo que decides es si se lo dices de
-          todos modos.
+          todos modos, y cómo lo escribes.
         </p>
       }
     />
