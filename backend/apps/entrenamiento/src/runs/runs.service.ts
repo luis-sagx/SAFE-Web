@@ -80,12 +80,34 @@ export class RunsService {
       throw new NotFoundException(`No existe el módulo "${module}".`);
     }
 
+    const reset = await this.prisma.moduleReset.findFirst({
+      where: { participantId, module },
+      orderBy: { createdAt: 'desc' },
+      select: { createdAt: true },
+    });
     const runs = await this.prisma.scenarioRun.findMany({
-      where: { participantId, scenarioId: { startsWith: `${module}/` } },
+      where: {
+        participantId,
+        scenarioId: { startsWith: `${module}/` },
+        // Una corrida encolada antes del reinicio puede guardarse después;
+        // su inicio sigue perteneciendo a la ronda anterior.
+        ...(reset ? { startedAt: { gt: reset.createdAt } } : {}),
+      },
       select: { scenarioId: true, outcome: true, finishedAt: true },
     });
 
     return calculateProgress(module, required, total, runs);
+  }
+
+  async restart(participantId: string, module: string) {
+    const required = THRESHOLDS[module];
+    const total = TOTALS[module];
+    if (required === undefined || total === undefined) {
+      throw new NotFoundException(`No existe el módulo "${module}".`);
+    }
+
+    await this.prisma.moduleReset.create({ data: { participantId, module } });
+    return calculateProgress(module, required, total, []);
   }
 
   /// Atestación para el certificado: comprueba TODOS los módulos que declara

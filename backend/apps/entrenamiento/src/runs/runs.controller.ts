@@ -36,6 +36,14 @@ export class RunsController {
     return this.runs.progress(participant.sub, module);
   }
 
+  @Post('progreso/:modulo/reiniciar')
+  restart(
+    @CurrentParticipant() participant: JwtPayload,
+    @Param('modulo') module: string,
+  ) {
+    return this.runs.restart(participant.sub, module);
+  }
+
   /// Pase para el certificado: 409 con los módulos que faltan si no están
   /// todos aprobados, o `{ atestacion }` firmada si lo están. `identidad` la
   /// verifica y le pega el nombre; este servicio nunca lo conoce.

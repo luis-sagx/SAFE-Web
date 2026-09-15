@@ -1,16 +1,17 @@
-import { render, screen } from '@testing-library/react'
-import { BrowserRouter, MemoryRouter } from 'react-router'
+import { fireEvent, render, screen } from '@testing-library/react'
+import { BrowserRouter, MemoryRouter, Route, Routes } from 'react-router'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import FinalActions from './AccionesFinal'
 import { getSectionScenarios } from '../../data/catalogo'
 
-const { fetchProgressMock } = vi.hoisted(() => ({
+const { fetchProgressMock, restartModuleMock } = vi.hoisted(() => ({
   fetchProgressMock: vi.fn(),
+  restartModuleMock: vi.fn(),
 }))
 
 vi.mock('../../lib/api', async () => {
   const current = await vi.importActual<typeof import('../../lib/api')>('../../lib/api')
-  return { ...current, fetchProgress: fetchProgressMock }
+  return { ...current, fetchProgress: fetchProgressMock, restartModule: restartModuleMock }
 })
 
 describe('AccionesFinal', () => {
@@ -19,6 +20,32 @@ describe('AccionesFinal', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     fetchProgressMock.mockReset()
+    restartModuleMock.mockReset()
+  })
+
+  it('desde el veredicto reinicia un módulo incompleto y vuelve a la sección', async () => {
+    fetchProgressMock.mockResolvedValue({
+      escenarios: [{ id: 'fisico/salida-segura', ultimoOutcome: 'CORRECTO' }],
+      aprobados: 1,
+      requeridos: 6,
+      aprobado: false,
+      ronda: 1,
+      rondaEnCurso: null,
+    })
+    restartModuleMock.mockResolvedValue({ escenarios: [], aprobados: 0 })
+
+    render(
+      <MemoryRouter initialEntries={['/seccion/fisico/salida-segura']}>
+        <Routes>
+          <Route path="/seccion/fisico/salida-segura" element={<FinalActions escenarioId="fisico/salida-segura" outcome="CORRECTO" />} />
+          <Route path="/seccion/fisico" element={<p>Sección reiniciada</p>} />
+        </Routes>
+      </MemoryRouter>,
+    )
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Repetir el módulo' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Reiniciar módulo' }))
+    expect(await screen.findByText('Sección reiniciada')).toBeDefined()
   })
 
   it('renderiza sin errores cuando hay progreso', async () => {
@@ -57,7 +84,7 @@ describe('AccionesFinal', () => {
     )
   })
 
-  it('al aprobar el módulo lleva al siguiente módulo y no ofrece repetir', async () => {
+  it('al aprobar el módulo permite avanzar o reiniciarlo', async () => {
     fetchProgressMock.mockResolvedValue({
       escenarios: getSectionScenarios('phishing').map(({ id }) => ({ id, ultimoOutcome: 'CORRECTO' })),
       aprobados: 6,
@@ -70,7 +97,7 @@ describe('AccionesFinal', () => {
     render(<BrowserRouter><FinalActions escenarioId="phishing/sesion-bogota" outcome="CORRECTO" /></BrowserRouter>)
 
     expect((await screen.findByRole('link', { name: 'Ir al siguiente módulo →' })).getAttribute('href')).toBe('/seccion/smishing')
-    expect(screen.queryByRole('button', { name: 'Repetir el módulo' })).toBeNull()
+    expect(screen.getByRole('button', { name: 'Repetir el módulo' })).toBeDefined()
   })
 
   it('al no aprobar mantiene la opción de repetir además de avanzar', async () => {
@@ -106,7 +133,7 @@ describe('AccionesFinal', () => {
     render(<BrowserRouter><FinalActions escenarioId="phishing/sesion-bogota" outcome="CORRECTO" /></BrowserRouter>)
 
     expect(await screen.findByRole('link', { name: 'Ir al siguiente módulo →' })).toBeDefined()
-    expect(screen.queryByRole('button', { name: 'Repetir el módulo' })).toBeNull()
+    expect(screen.getByRole('button', { name: 'Repetir el módulo' })).toBeDefined()
   })
 
   it('continúa la repetición cuando el primer resultado todavía no llegó al servidor', async () => {

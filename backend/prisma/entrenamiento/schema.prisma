@@ -62,3 +62,13 @@ model ScenarioRun {
   @@index([participantId, scenarioId, finishedAt(sort: Desc)])
   @@index([scenarioId])
 }
+
+/// Un reinicio explícito inicia una ronda nueva sin borrar las corridas del estudio.
+model ModuleReset {
+  id String @id @default(uuid())
+  participantId String
+  module String
+  createdAt DateTime @default(now())
+
+  @@index([participantId, module, createdAt(sort: Desc)])
+}

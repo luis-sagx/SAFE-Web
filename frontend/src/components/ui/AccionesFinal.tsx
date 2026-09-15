@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router'
 import { getSectionScenarios, getSection, getScenarioPath, SECTIONS } from '../../data/catalogo'
-import { fetchProgress } from '../../lib/api'
+import { fetchProgress, restartModule } from '../../lib/api'
 import type { RunOutcome } from '../../lib/api'
 import { withAttemptedScenario, nextInRound } from '../../lib/bloqueoEscenarios'
 import ConfirmReplayModal from '../ConfirmarRepeticionModal'
@@ -15,9 +15,8 @@ interface FinalActionsProps {
   autoFocus?: boolean
 }
 
-// Mientras queden escenarios sin intentar, la acción principal es "siguiente",
-// no repetir: repetir de entrada infla el resultado con reintentos en vez de
-// medir lo que la persona sabía (el gating cuenta el último intento).
+// Mientras queden escenarios sin intentar, la acción principal es "siguiente".
+// Reiniciar siempre crea una ronda nueva desde cero; no permite reintentos sueltos.
 function FinalActions({ escenarioId: scenarioId, outcome, autoFocus }: FinalActionsProps) {
   const navigate = useNavigate()
   const location = useLocation()
@@ -32,6 +31,8 @@ function FinalActions({ escenarioId: scenarioId, outcome, autoFocus }: FinalActi
   // escenario suelto en avance de un curso, y el momento de decirlo es
   // justo después del veredicto.
   const [showReplay, setShowReplay] = useState(false)
+  const [restarting, setRestarting] = useState(false)
+  const [restartError, setRestartError] = useState<string | null>(null)
   const [progress, setProgress] = useState<import('../../lib/api').Progress | null>(null)
   const mainRef = useRef<HTMLAnchorElement | HTMLButtonElement>(null)
 
@@ -79,9 +80,6 @@ function FinalActions({ escenarioId: scenarioId, outcome, autoFocus }: FinalActi
     : null
   const pendingResults = effectiveProgress?.rondaEnCurso?.escenarios ?? effectiveProgress?.escenarios ?? []
   const effectiveApprovedCount = pendingResults.filter((result) => result.ultimoOutcome === 'CORRECTO').length
-  const effectiveApproved = effectiveProgress
-    ? effectiveApprovedCount >= effectiveProgress.requeridos && pendingResults.length >= scenarios.length
-    : false
   const next = effectiveProgress
     ? nextInRound(scenarios, effectiveProgress)
     : attempted
@@ -95,6 +93,43 @@ function FinalActions({ escenarioId: scenarioId, outcome, autoFocus }: FinalActi
     >
       Volver a la sección
     </Link>
+  )
+
+  async function confirmRestart() {
+    if (restarting) return
+    setRestarting(true)
+    setRestartError(null)
+    try {
+      await restartModule(sectionId)
+      navigate(`/seccion/${sectionId}`)
+    } catch {
+      setRestartError('No se pudo reiniciar el módulo. Inténtalo de nuevo.')
+    } finally {
+      setRestarting(false)
+    }
+  }
+
+  const restartAction = progress && scenarios.length > 0 && (
+    <>
+      <button
+        type="button"
+        className="mt-3 min-h-11 w-full rounded-md border border-hairline-strong px-4 py-3 text-lg font-medium text-body transition hover:bg-surface-strong"
+        onClick={() => { setRestartError(null); setShowReplay(true) }}
+      >
+        Repetir el módulo
+      </button>
+      {showReplay && (
+        <ConfirmReplayModal
+          titulo={getSection(sectionId)?.titulo ?? sectionId}
+          aprobados={effectiveApprovedCount}
+          total={scenarios.length}
+          busy={restarting}
+          error={restartError}
+          onClose={() => setShowReplay(false)}
+          onConfirm={confirmRestart}
+        />
+      )}
+    </>
   )
 
   // Aparece solo cuando el progreso ya llegó (un instante después del veredicto).
@@ -146,6 +181,7 @@ function FinalActions({ escenarioId: scenarioId, outcome, autoFocus }: FinalActi
             módulo.
           </p>
         )}
+        {restartAction}
         {back}
       </>
     )
@@ -166,30 +202,7 @@ function FinalActions({ escenarioId: scenarioId, outcome, autoFocus }: FinalActi
       >
         {nextModule ? 'Ir al siguiente módulo →' : 'Volver al panel →'}
       </Link>
-      {progress && !effectiveApproved && (
-        <>
-          <p className="mt-4 text-center text-base text-body">
-            Aún no alcanzas la nota mínima. Puedes repetir el módulo completo para intentarlo de nuevo.
-          </p>
-          <button
-            type="button"
-            className="mt-3 min-h-11 w-full rounded-md border border-hairline-strong px-4 py-3 text-lg font-medium text-body transition hover:bg-surface-strong focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link"
-            onClick={() => setShowReplay(true)}
-          >
-            Repetir el módulo
-          </button>
-        </>
-      )}
-      {showReplay && progress && !effectiveApproved && (
-        <ConfirmReplayModal
-          seccionId={sectionId}
-          titulo={getSection(sectionId)?.titulo ?? sectionId}
-          aprobados={effectiveApprovedCount}
-          aprobado={effectiveApproved}
-          onClose={() => setShowReplay(false)}
-          onConfirm={() => scenarios[0] && navigate(getScenarioPath(scenarios[0]), { state: { iniciarRepeticion: true } })}
-        />
-      )}
+      {restartAction}
       {back}
     </>
   )
