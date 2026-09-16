@@ -24,12 +24,27 @@ function context(canvas: HTMLCanvasElement | null) {
   return canvas?.getContext('2d', { willReadFrequently: true }) ?? null
 }
 
+// Ruido reproducible para el grano de la lámina (congruencial lineal). No es
+// aleatoriedad para nada que lo necesite: solo decide dónde cae cada mota.
+function grain(seed: number) {
+  let state = seed
+  return () => {
+    state = (state * 1664525 + 1013904223) % 4294967296
+    return state / 4294967296
+  }
+}
+
 function readColor(name: string, fallback: string) {
   const value = getComputedStyle(document.documentElement).getPropertyValue(name).trim()
   return value || fallback
 }
 
-function ScratchTicket({ children, pista: hint, accion: action, onRevelar: onReveal }: ScratchTicketProps) {
+function ScratchTicket({
+  children,
+  pista: hint,
+  accion: action,
+  onRevelar: onReveal,
+}: Readonly<ScratchTicketProps>) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const boxRef = useRef<HTMLDivElement>(null)
   const scratching = useRef(false)
@@ -62,13 +77,16 @@ function ScratchTicket({ children, pista: hint, accion: action, onRevelar: onRev
     ctx.fillRect(0, 0, width, height)
 
     // Grano del troquelado: sin él el foil parece un degradado de software.
+    // El ruido es determinista a propósito — no hay nada que sortear aquí, y
+    // así la lámina se repinta idéntica tras un resize o un cambio de tema.
+    const speck = grain(0x5afeb0)
     ctx.fillStyle = 'rgba(255,255,255,0.35)'
     for (let i = 0; i < (width * height) / 260; i += 1) {
-      ctx.fillRect(Math.random() * width, Math.random() * height, 1.5, 1.5)
+      ctx.fillRect(speck() * width, speck() * height, 1.5, 1.5)
     }
     ctx.fillStyle = 'rgba(0,0,0,0.12)'
     for (let i = 0; i < (width * height) / 420; i += 1) {
-      ctx.fillRect(Math.random() * width, Math.random() * height, 1.5, 1.5)
+      ctx.fillRect(speck() * width, speck() * height, 1.5, 1.5)
     }
   }, [])
 
@@ -142,10 +160,12 @@ function ScratchTicket({ children, pista: hint, accion: action, onRevelar: onRev
         {children}
 
         {!revealed && (
-          <>
+          // aria-hidden va aquí y no en el <canvas>: el canvas recibe el
+          // puntero, y un elemento interactivo no debe llevar el atributo.
+          // Lo que tapa nunca se oculta del lector: sigue en el DOM debajo.
+          <div aria-hidden>
             <canvas
               ref={canvasRef}
-              aria-hidden
               // pan-y: el dedo que arrastra en horizontal raspa, el que
               // arrastra en vertical sigue desplazando la página. Sin esto la
               // portada se queda atrapada bajo el pulgar en un celular.
@@ -180,7 +200,7 @@ function ScratchTicket({ children, pista: hint, accion: action, onRevelar: onRev
             >
               {hint}
             </div>
-          </>
+          </div>
         )}
       </div>
 

@@ -4,7 +4,7 @@ import type { ReactNode } from 'react'
 // porque son agujeros en el boleto. Se exportan aparte para las líneas de
 // perforación que no dibuja este componente (la cabecera del boleto del
 // héroe, por ejemplo).
-export function Notches({ className = '' }: { className?: string }) {
+export function Notches({ className = '' }: Readonly<{ className?: string }>) {
   return (
     <>
       <span
@@ -31,7 +31,7 @@ interface TicketProps {
   className?: string
 }
 
-function Ticket({ children, talon: stub, className = '' }: TicketProps) {
+function Ticket({ children, talon: stub, className = '' }: Readonly<TicketProps>) {
   return (
     <div
       className={`relative rounded-lg border border-ticket-edge bg-ticket shadow-card ${className}`}

@@ -64,4 +64,54 @@ describe('Portada', () => {
 
     expect(destinations('Ir a administración')).toEqual(['/admin', '/admin'])
   })
+  it('el contador dice la verdad cuando todavía no hay ningún video grabado', async () => {
+    vi.resetModules()
+    vi.doMock('../data/videosCapacitacion', async () => {
+      const real = await vi.importActual<typeof import('../data/videosCapacitacion')>(
+        '../data/videosCapacitacion',
+      )
+      return {
+        ...real,
+        TRAINING_VIDEOS: real.TRAINING_VIDEOS.map((video) => ({ ...video, youtubeUrl: null })),
+      }
+    })
+    const { default: PortadaSinVideos } = await import('./Portada')
+
+    render(
+      <MemoryRouter>
+        <PortadaSinVideos />
+      </MemoryRouter>,
+    )
+
+    expect(screen.getByText(/videos en preparación/i)).toBeDefined()
+    vi.doUnmock('../data/videosCapacitacion')
+    vi.resetModules()
+  })
+
+  it('el contador distingue cuántos videos existen ya de cuántos faltan', async () => {
+    vi.resetModules()
+    vi.doMock('../data/videosCapacitacion', async () => {
+      const real = await vi.importActual<typeof import('../data/videosCapacitacion')>(
+        '../data/videosCapacitacion',
+      )
+      return {
+        ...real,
+        TRAINING_VIDEOS: real.TRAINING_VIDEOS.map((video, index) => ({
+          ...video,
+          youtubeUrl: index < 3 ? 'https://youtu.be/abcdefghijk' : null,
+        })),
+      }
+    })
+    const { default: PortadaParcial } = await import('./Portada')
+
+    render(
+      <MemoryRouter>
+        <PortadaParcial />
+      </MemoryRouter>,
+    )
+
+    expect(screen.getByText('3 de 8 videos')).toBeDefined()
+    vi.doUnmock('../data/videosCapacitacion')
+    vi.resetModules()
+  })
 })

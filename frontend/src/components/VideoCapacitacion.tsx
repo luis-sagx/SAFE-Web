@@ -26,7 +26,7 @@ function PendingStamp() {
   )
 }
 
-function YouTubeLink({ id }: { id: string }) {
+function YouTubeLink({ id }: Readonly<{ id: string }>) {
   return (
     <a
       href={`https://www.youtube.com/watch?v=${id}`}
@@ -46,7 +46,7 @@ function VideoTicket({
   etiqueta: label,
   conMuescas: notched = false,
   variante: variant = 'boleto',
-}: VideoTicketProps) {
+}: Readonly<VideoTicketProps>) {
   const [playing, setPlaying] = useState(false)
   const id = video.youtubeUrl ? getYouTubeId(video.youtubeUrl) : null
 
