@@ -1,4 +1,4 @@
-import { Camera, Compass, MessageSquareText, Phone, Wallet } from "lucide-react";
+import { Compass, MessageSquareText, Phone, Wallet } from "lucide-react";
 import ScenarioStory, {
   type PhoneApp,
   type ScreenNode,
@@ -203,18 +203,7 @@ const APPS: PhoneApp[] = [
     goto: "n4",
     label: "Abrió el navegador para comprobar por su cuenta",
   },
-  {
-    Icono: Wallet,
-    texto: "Banco",
-    color: "#155e75",
-    vacia: "Banca móvil · Saldo disponible $312,45. Sin notificaciones nuevas.",
-  },
-  {
-    Icono: Camera,
-    texto: "Cámara",
-    color: "#495057",
-    vacia: "La cámara está lista. No hay nada que fotografiar en este momento.",
-  },
+  { Icono: Wallet, texto: "Banco", color: "#155e75", relleno: "banco" },
 ];
 
 const NOTIFICATION_CODE = {

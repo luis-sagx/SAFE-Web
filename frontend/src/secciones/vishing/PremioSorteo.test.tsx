@@ -115,8 +115,8 @@ describe('PremioSorteo', () => {
     const phone = start()
 
     fireEvent.click(within(phone).getByRole('button', { name: 'Contestar la llamada' }))
-    fireEvent.click(within(phone).getByRole('button', { name: /Cámara/ }))
-    expect(within(phone).getByText(/La cámara está lista/)).toBeDefined()
+    fireEvent.click(within(phone).getByRole('button', { name: /Galería/ }))
+    expect(within(phone).getByText('248 elementos')).toBeDefined()
 
     // Volver deja la conversación donde estaba, sin haber decidido nada.
     fireEvent.click(within(phone).getByRole('button', { name: 'Volver a la llamada' }))
