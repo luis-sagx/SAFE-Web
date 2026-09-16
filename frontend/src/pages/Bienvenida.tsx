@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { useLocation, useNavigate } from "react-router";
+import Ticket from "../components/Boleto";
 import Brand from "../components/Marca";
 import { useAuth } from "../context/AuthContext";
 
@@ -118,17 +119,20 @@ function Welcome() {
 
   return (
     <div className="flex min-h-dvh items-center justify-center bg-scrim px-6 py-10">
-      <div className="w-full max-w-2xl rounded-xl border border-hairline-strong bg-surface p-8 shadow-card">
+      <Ticket className="w-full max-w-2xl p-8">
         <Brand variante="logo" className="h-9 w-auto" />
 
         {/* Alto fijo al paso más largo (portada): si no, la fila de botones sube y baja entre pasos. */}
         <div className="mt-3 min-h-[21rem]">
           {threat ? (
             <>
-              <p className="text-sm font-medium text-muted">
-                {step} de {THREATS.length}
+              <p className="font-mono text-sm uppercase tracking-[0.14em] text-muted">
+                <span className="text-ink">
+                  {String(step).padStart(2, "0")}
+                </span>
+                /{String(THREATS.length).padStart(2, "0")} Amenazas
               </p>
-              <h1 className="mt-1 text-2xl font-semibold tracking-tight text-ink">
+              <h1 className="mt-2 font-display text-3xl uppercase tracking-[0.01em] text-ink sm:text-4xl">
                 {threat.titulo}
               </h1>
 
@@ -137,7 +141,7 @@ function Welcome() {
                 {threat.finalidad}
               </p>
 
-              <p className="mt-4 rounded-md border-l-[3px] border-hairline-strong bg-canvas-soft px-4 py-3 text-lg italic leading-relaxed text-body">
+              <p className="mt-4 rounded-md border border-dashed border-ticket-edge bg-ticket-edge/25 px-4 py-3 text-lg italic leading-relaxed text-body">
                 {threat.ejemplo}
               </p>
 
@@ -148,11 +152,11 @@ function Welcome() {
             </>
           ) : (
             <>
-              <h1 className="text-2xl font-semibold tracking-tight text-ink">
+              <h1 className="font-display text-3xl uppercase tracking-[0.01em] text-ink sm:text-4xl">
                 Hola, {displayName}
               </h1>
 
-              <p className="mt-3 text-lg leading-relaxed text-body">
+              <p className="mt-4 text-lg leading-relaxed text-body">
                 Vas a practicar a reconocer seis formas de fraude, una situación
                 simulada a la vez. Al final de cada una te mostramos qué señales
                 había, las hayas visto o no: la idea es que entrenes el
@@ -160,7 +164,7 @@ function Welcome() {
               </p>
 
               {/* Reglas del curso en la portada: antes no decía cómo se aprueba ni por qué los módulos aparecen cerrados. */}
-              <ul className="mt-4 grid gap-2 rounded-md bg-canvas-soft px-4 py-3 text-base leading-relaxed text-body">
+              <ul className="mt-4 grid gap-2 rounded-md border border-dashed border-ticket-edge bg-ticket-edge/25 px-4 py-3 text-base leading-relaxed text-body">
                 <li>
                   <strong className="text-ink">Seis módulos</strong>, uno por
                   amenaza. Se abren en orden: cada uno necesita el anterior.
@@ -186,7 +190,7 @@ function Welcome() {
             <span
               key={other.titulo}
               className={`h-1.5 flex-1 rounded-full ${
-                index < step ? "bg-primary" : "bg-hairline-strong"
+                index < step ? "bg-primary" : "bg-ticket-edge"
               }`}
             />
           ))}
@@ -211,7 +215,7 @@ function Welcome() {
               type="button"
               disabled={step === 0}
               onClick={() => setStep((current) => current - 1)}
-              className="h-12 rounded-md border border-hairline-strong bg-surface px-5 text-base font-medium text-ink transition hover:bg-canvas-soft disabled:cursor-default disabled:border-hairline disabled:text-muted-soft disabled:hover:bg-surface"
+              className="h-12 rounded-md border border-ticket-edge px-5 text-base font-medium text-ink transition hover:bg-ticket-edge/40 disabled:cursor-default disabled:text-muted-soft disabled:hover:bg-transparent"
             >
               ← Anterior
             </button>
@@ -238,7 +242,7 @@ function Welcome() {
             </button>
           )}
         </form>
-      </div>
+      </Ticket>
     </div>
   );
 }
