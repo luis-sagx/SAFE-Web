@@ -48,6 +48,21 @@
   --color-mint-light: #d9ede2;
   --color-mint-mid: #a9d1ba;
 
+  /* Mundo de la portada: el boleto premiado. Papel hueso cálido, troquel y
+     foil plateado raspable. Solo lo usa la portada pública — ver
+     .impeccable/surfaces/frontend-src-pages-portada-tsx.md. El papel es una
+     superficie de texto y entra en la verificación de contraste como las
+     otras seis. */
+  --color-ticket: #f3efe4;
+  --color-ticket-edge: #d6d0be;
+  /* Las dos tintas del foil plateado y la tinta de su rótulo. El canvas del
+     raspado las lee de aquí. No tienen variante oscura a propósito: un foil
+     es plateado en cualquier luz, y oscurecerlo dejaba "Raspa aquí" por
+     debajo de 4.5:1 sobre la parte baja del degradado. */
+  --color-foil-hi: #d3d6da;
+  --color-foil-lo: #9aa0a7;
+  --color-foil-ink: #1c2024;
+
   /* success es dos tokens: el relleno vivo (el círculo del ✓, cumple 1.4.11
      como objeto gráfico) y success-ink, la variante oscurecida a 4.5:1 para
      cuando el verde es texto. Ver DESIGN.md y el spec de tema oscuro §5.4:
@@ -68,6 +83,10 @@
      y ese velo se aclararía en vez de oscurecer. */
   --color-scrim: rgb(0 0 0 / 0.45);
 
+  /* Oswald condensado: la rotulación de un boleto de sorteo. Solo titulares de
+     la portada; el cuerpo nunca va condensado (el público incluye adultos
+     mayores). Ya venía en el bundle, self-host desde main.tsx. */
+  --font-display: "Oswald", "Arial Narrow", system-ui, sans-serif;
   --font-sans: "Inter", -apple-system, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", "Fira Code", monospace;
 
@@ -131,6 +150,11 @@
   --color-mint-light: #13301f;
   --color-mint-mid: #2a5c3f;
 
+  /* El boleto en oscuro no es papel blanco apagado: es papel entintado, un
+     punto más claro que el lienzo, con el troquel visible como su borde. */
+  --color-ticket: #171e1b;
+  --color-ticket-edge: #33413a;
+
   --color-success: #3ddc84;
   --color-success-ink: #3ddc84;
   --color-on-success: #06170d;
@@ -149,6 +173,13 @@
 
 * {
   box-sizing: border-box;
+}
+
+/* La selección también es parte del diseño: el azul del navegador no viene de
+   ningún sistema. Menta de marca con la tinta del tema encima, en los dos. */
+::selection {
+  background-color: var(--color-mint-mid);
+  color: var(--color-ink);
 }
 
 /* Reserva el ancho de la barra de desplazamiento siempre: sin esto la barra de

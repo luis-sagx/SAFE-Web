@@ -79,7 +79,15 @@ function contrast(fg: string, bg: string): number {
 
 // --- Qué se verifica --------------------------------------------------------
 
-const SURFACES = ['canvas', 'canvas-soft', 'surface', 'surface-strong', 'mint-light', 'signal']
+const SURFACES = [
+  'canvas',
+  'canvas-soft',
+  'surface',
+  'surface-strong',
+  'mint-light',
+  'signal',
+  'ticket',
+]
 
 // Tokens que aparecen como texto legible en el cromo (DESIGN.md §7: el color
 // nunca es la única señal, pero cuando SÍ lleva texto, ese texto debe leerse).
@@ -93,6 +101,10 @@ const FILLERS: [string, string][] = [
   ['on-danger', 'danger'],
   ['on-warning', 'warning'],
   ['primary', 'mint-light'],
+  // El rótulo "Raspa aquí" va encima del foil, y el degradado lo lleva de
+  // foil-hi a foil-lo: los dos extremos tienen que leerse.
+  ['foil-ink', 'foil-hi'],
+  ['foil-ink', 'foil-lo'],
 ]
 
 // No-texto (SC 1.4.11): el borde de un control real, y el relleno semántico

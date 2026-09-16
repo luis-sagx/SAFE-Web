@@ -3,6 +3,7 @@ import { Link } from 'react-router'
 import { useAuth } from '../context/AuthContext'
 import InfoLink from './InfoLink'
 import Brand from './Marca'
+import ThemeSelector from './SelectorTema'
 import UserMenu from './MenuUsuario'
 
 // Barra de navegación única: fija la altura/margen del retorno y el tamaño de letra
@@ -59,6 +60,15 @@ function AppHeader({
         <div className="flex min-w-0 flex-1 flex-wrap items-center justify-end gap-x-5 gap-y-1">
           {children}
         </div>
+
+        {/* Sin sesión no hay menú de cuenta, y el tema vivía dentro de ese
+            menú: un visitante de la portada se quedaba sin forma de cambiarlo.
+            Con sesión sigue en el menú, para no tener dos selectores. */}
+        {!isAuthenticated && (
+          <div className="flex shrink-0 items-center">
+            <ThemeSelector />
+          </div>
+        )}
 
         {isAuthenticated && <div className="flex shrink-0 items-center gap-1">
           {/* La bienvenida explica los tipos de engaño y qué pasa con los

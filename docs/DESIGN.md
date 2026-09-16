@@ -1,7 +1,7 @@
 ---
 version: 2.0
 name: safe-web-design
-description: Sistema de diseño de la plataforma de entrenamiento anti-fraude. Lienzo blanco puro (o casi negro en oscuro) con tinta casi negra (o casi blanca); el único voltaje de marca es verde profundo (#006837 en claro, #2fbf71 en oscuro) para las acciones primarias, discreto y editorial. Tipografía Inter en pesos moderados (display 600, cuerpo 400). Cromo con tema claro y oscuro, elegible por la persona; los escenarios simulados quedan siempre fuera del tema. Implementado con Tailwind CSS v4 mediante variables de tema en `@theme`, redefinidas bajo `:root[data-tema="oscuro"]`. Adaptado de un análisis del sitio de Expo, despojado de todo lo propio de una web de marketing.
+description: Sistema de diseño de la plataforma de entrenamiento anti-fraude. Lienzo blanco puro (o casi negro en oscuro) con tinta casi negra (o casi blanca); el único voltaje de marca es verde profundo (#006837 en claro, #2fbf71 en oscuro) para las acciones primarias, discreto y editorial. Tipografía Inter en pesos moderados (display 600, cuerpo 400). Cromo con tema claro y oscuro, elegible por la persona; los escenarios simulados quedan siempre fuera del tema. Implementado con Tailwind CSS v4 mediante variables de tema en `@theme`, redefinidas bajo `:root[data-tema="oscuro"]`. Adaptado de un análisis del sitio de Expo, despojado de todo lo propio de una web de marketing. La portada pública `/` extiende el sistema con un mundo propio —el boleto premiado: papel `ticket`, troquel `ticket-edge`, foil plateado raspable y titulares en Oswald condensado (`font-display`)— sin sustituir nada de lo anterior (§11).
 mode: light-and-dark
 framework: tailwind-v4
 ---
@@ -91,6 +91,15 @@ vive en el bloque `@theme` de `frontend/src/index.css`:
   --color-mint-light: #d9ede2;
   --color-mint-mid: #a9d1ba;
 
+  /* Mundo de la portada (§11): papel del boleto, troquel y foil plateado.
+     `ticket` es superficie de texto y entra en la verificación de contraste
+     junto a las otras. El foil no tiene variante oscura a propósito. */
+  --color-ticket: #f3efe4;
+  --color-ticket-edge: #d6d0be;
+  --color-foil-hi: #d3d6da;
+  --color-foil-lo: #9aa0a7;
+  --color-foil-ink: #1c2024;
+
   /* Semántico */
   --color-success: #16a34a;
   --color-success-ink: #0d7038;
@@ -104,6 +113,7 @@ vive en el bloque `@theme` de `frontend/src/index.css`:
   --color-scrim: rgb(0 0 0 / 0.45);
 
   /* Tipografía */
+  --font-display: 'Oswald', 'Arial Narrow', system-ui, sans-serif;
   --font-sans: 'Inter', -apple-system, system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
 
@@ -139,6 +149,10 @@ vive en el bloque `@theme` de `frontend/src/index.css`:
   --color-border-control: #697687;
   --color-mint-light: #13301f;
   --color-mint-mid: #2a5c3f;
+  /* El boleto en oscuro es papel entintado, un punto más claro que el lienzo.
+     `foil-*` no se redefine: un foil es plateado en cualquier luz. */
+  --color-ticket: #171e1b;
+  --color-ticket-edge: #33413a;
   --color-success: #3ddc84;
   --color-success-ink: #3ddc84;
   --color-on-success: #06170d;
@@ -275,12 +289,36 @@ hero de la portada, y **solo ahí**. No es un color de marca.
 <div class="bg-gradient-to-b from-mint-light to-canvas">
 ```
 
+**`mint-mid` es además el fondo de `::selection`,** con `ink` de tinta, en los
+dos temas (`frontend/src/index.css`). El azul del navegador no viene de ningún
+sistema; la selección también es diseño. Es el único uso de menta fuera del
+hero.
+
+### Papel y foil (portada)
+
+| Token | Claro | Oscuro | Uso |
+|---|---|---|---|
+| `ticket` | `#f3efe4` | `#171e1b` | El papel del boleto. Superficie de texto: `ink`, `body` y `muted` se verifican contra ella como contra las otras seis. |
+| `ticket-edge` | `#d6d0be` | `#33413a` | Troquel, perforación punteada, filete impreso interior y filete que separa los contadores. Decorativo, exento de 3:1. |
+| `foil-hi` / `foil-lo` | `#d3d6da` / `#9aa0a7` | (sin variante) | Las dos tintas del degradado plateado que se raspa. |
+| `foil-ink` | `#1c2024` | (sin variante) | La tinta impresa encima del foil. 4.5:1 contra **los dos** extremos del degradado. |
+
+**El foil no tiene tema.** Un foil plateado es plateado con cualquier luz, y
+oscurecerlo dejaba el rótulo "Raspa aquí" por debajo de 4.5:1 sobre la parte
+baja del degradado. Es la única excepción a «todo token de color lleva valor en
+claro y en oscuro», y está cubierta por el test: `foil-ink/foil-hi` y
+`foil-ink/foil-lo` viven en `FILLERS` de `frontend/src/index.test.ts`, y
+`ticket` entró en `SURFACES`.
+
 ---
 
 ## 3. Tipografía
 
-**Inter** para todo; **JetBrains Mono** solo en superficies de código.
-Ambas se cargan desde `frontend/index.html`.
+**Inter** para todo; **JetBrains Mono** en superficies de código y en los
+folios y rótulos del boleto; **Oswald** (`font-display`), condensado, solo en
+los titulares del mundo de la portada (§11). Inter y JetBrains Mono se cargan
+desde `frontend/index.html`; Oswald va self-hosted desde `main.tsx`
+(`@fontsource/oswald` 500/600/700).
 
 | Rol | Clases Tailwind | Uso |
 |---|---|---|
@@ -295,12 +333,24 @@ Ambas se cargan desde `frontend/index.html`.
 | caption | `text-[13px] text-muted` | Pies de foto |
 | overline | `text-[11px] font-semibold uppercase tracking-[0.88px]` | Etiquetas de sección |
 | code | `font-mono text-[13px]` | Código |
+| poster-xl | `font-display text-5xl uppercase leading-[0.95] tracking-[0.01em]` (→ `sm:text-6xl lg:text-7xl`) | Titular de la portada |
+| poster-lg | `font-display text-3xl uppercase tracking-[0.01em]` (→ `sm:text-4xl`) | Encabezado de sección de la portada |
+| poster-md | `font-display text-2xl uppercase tracking-[0.01em]` | Título de paso o de boleto de video |
+| folio | `font-mono text-sm uppercase tracking-[0.14em] text-muted` | Folio y etiqueta impresos del boleto |
+| folio-contenido | `font-mono text-base uppercase tracking-[0.12em]` | Rótulo mono que **es** contenido (contadores, "Raspa el boleto") |
 | button | `text-sm font-medium` | Etiquetas de botón |
 
 ### Principios
 
 - **El display se queda en peso 600.** Inter a 600 lee mejor que a 700.
 - **Tracking negativo solo en display** (`tracking-tight`). El cuerpo va a 0.
+- **El condensado es solo titular.** `font-display` se usa en `<h1>`/`<h2>`/
+  `<h3>` de la portada y en las ráfagas dentro del mensaje cebo. El cuerpo
+  nunca va condensado: el público incluye adultos mayores.
+- **Dos tamaños de mono, y ninguno a 13px.** Un rótulo mono que es contenido
+  (un contador, una instrucción) va a 16px; uno que solo etiqueta (folio,
+  número de remitente, pie institucional) va a 14px. `text-[13px]` queda
+  reservado a `caption` y `code` fuera de este mundo.
 - **En escenarios, el texto nunca baja de 16px.** El público incluye adultos
   mayores; `text-sm` se reserva para etiquetas y ayudas, jamás para el
   contenido de un escenario o una opción de decisión.
@@ -499,6 +549,12 @@ tarjetas, y un solo nivel de sombra.
   mismo cambio, y corre `npx vitest run src/index.test.ts` — ese archivo
   recalcula el contraste de los dos temas y falla si algo queda por debajo de
   AA.
+- En la portada, construir sobre `Boleto.tsx`: papel, troquel y perforación
+  salen de ahí (§11).
+- Dar folio a todo boleto nuevo de la portada, en la serie que le toque y en
+  orden de lectura.
+- Reservar `font-display` (Oswald) para titulares de la portada y para las
+  ráfagas del mensaje cebo.
 
 ### No hacer
 
@@ -521,3 +577,117 @@ tarjetas, y un solo nivel de sombra.
   que son otro verde a propósito.
 - No usar `bg-ink/40` como velo de modal: en oscuro `ink` es casi blanco. Usa
   `scrim`.
+- No poner una tarjeta (`bg-surface`) en la portada, ni una rejilla de boletos
+  sueltos donde el contenido es una serie: eso es una tira perforada (§11).
+- No usar `ticket`, `ticket-edge` ni `font-display` fuera de la portada: son el
+  mundo de esa superficie, no tokens generales. Una pantalla interna nueva se
+  hace con `surface` e Inter.
+- No poner cuerpo de texto en condensado, ni un rótulo mono a 13px en la
+  portada: contenido a 16px, etiqueta a 14px.
+- No añadir un rótulo descriptivo encima de un titular. El folio es un
+  identificador —no describe nada— y por eso puede ir arriba; una frase de
+  ambientación en ese sitio es un kicker y no entra.
+- No depender del raspado para revelar contenido: lo raspado vive siempre en el
+  DOM y su botón equivalente está visible.
+
+---
+
+## 11. El mundo de la portada: el boleto premiado
+
+Alcance: la portada pública `/` (`Portada.tsx`) y los componentes que solo ella
+monta (`Boleto.tsx`, `BoletoRaspable.tsx`, `VideoCapacitacion.tsx`). Todo lo
+demás de la aplicación sigue con el sistema de las secciones 1–10 sin cambio.
+Este mundo **extiende** el sistema: usa los mismos tokens de tinta, de marca y
+de foco, y solo añade papel, troquel, foil y una voz de titular.
+
+La tesis: el fraude promete un premio; la persona raspa ese premio con el dedo
+y debajo aparecen las señales que lo delataban. De ahí sale la materia —papel
+de sorteo— y de ahí sale que el cebo del estafador esté compuesto con más
+fuerza (condensado, versalitas, $1.200 a cuerpo de cartel) que la voz calmada
+de SAFE-Web, que se queda en Inter y en `body`.
+
+### El átomo
+
+**La Regla del Boleto.** En la portada no hay tarjetas. Toda superficie de
+contenido es un `Ticket`: papel (`bg-ticket`), troquel de 1px
+(`border-ticket-edge`), esquinas a 12px (`rounded-lg`) y `shadow-card` — la
+misma y única sombra del sistema, sin un segundo nivel. Nunca
+`rounded-lg border-hairline-strong bg-surface` en esta página.
+
+Tres planos, y el del medio es lo que hace que sea papel y no un rectángulo:
+
+1. el papel con su sombra sobre el lienzo,
+2. el **filete impreso** interior — `absolute inset-[5px] rounded-[7px] border
+   border-ticket-edge opacity-60`, el marco que trae impreso un boleto de
+   verdad,
+3. el contenido.
+
+**La Regla de la Perforación.** Lo que separa dos zonas dentro de un boleto es
+una línea punteada (`border-dashed border-ticket-edge`), nunca un `hairline`.
+Cuando esa línea es un troquel por el que el boleto se rompería, lleva sus dos
+medias lunas: `Notches`, dos círculos de 20px rellenos de **`bg-canvas`** —del
+lienzo, no del papel, porque son agujeros— montados a `-top-2.5` / `-bottom-2.5`
+sobre la línea. El boleto que lleva muescas va `overflow-hidden`.
+
+**La Regla de la Tira.** Un conjunto de hermanos es una tira perforada, no una
+rejilla de boletos sueltos. Los siete módulos son siete `<li>` dentro de **un**
+`Ticket`, separados por perforación con muescas (la primera fila sin muescas,
+porque no hay nada arriba de lo que arrancarla); los tres pasos de "Así es un
+módulo" son un boleto con `divide-dashed divide-ticket-edge`. Siete boletos
+sueltos del mismo alto vuelven a ser el muro de tarjetas que esta portada
+rechaza.
+
+### El folio
+
+**La Regla del Folio.** Cada boleto imprime su identificador en mono, versalitas,
+`tracking-[0.14em]`, con la tinta en `text-ink` y el resto en `muted`:
+`SMS-01` para el cebo, `GEN-00` para el video general, `MOD-01`…`MOD-07` para
+los módulos. El folio **es el índice de la página**: se numera en orden de
+lectura, es estable, y no describe ni adelanta nada. Un folio nunca es una
+frase; si necesita adjetivos, no es un folio.
+
+### El foil
+
+El raspado es la única pieza con estado de todo el mundo. Reglas que la
+sostienen:
+
+- **Lo de debajo está siempre en el DOM.** El canvas es `aria-hidden` y solo
+  tapa: un lector de pantalla lee las señales sin raspar. Sin canvas (jsdom,
+  navegador sin 2d) el contenido se muestra revelado.
+- **Todo gesto tiene su equivalente de teclado, visible y a la vista.** El
+  botón "Revelar las señales" vive en el talón junto a la instrucción "Raspa el
+  boleto"; no es un recurso escondido para lectores de pantalla. Altura mínima
+  44px. Al revelarse, el talón entero desaparece: ya no queda nada que raspar.
+- **El foil se pinta con los tokens**, leídos con `getComputedStyle` desde
+  `--color-foil-*`, más grano de ruido (blanco 0.35 / negro 0.12): sin grano
+  parece un degradado de software y no una lámina.
+- **El dedo que arrastra en vertical sigue desplazando la página**
+  (`touch-pan-y`). Un efecto de la portada no puede atrapar el scroll de un
+  celular.
+
+### La voz del cebo
+
+Dentro del mensaje cebo, las ráfagas del estafador van en `font-display`
+versalitas a `text-xl`/`text-2xl` sobre cuerpo Inter de 16px: la urgencia se
+compone, no se colorea. Las tres señales marcadas usan `<mark>` con fondo
+transparente y subrayado ondulado en `warning`
+(`underline decoration-warning decoration-wavy decoration-2`) con su número
+volado en mono — nunca un resaltado de fondo, que en oscuro se vuelve una
+mancha. `warning` marca además lo pendiente: el sello "Sin grabar" es un
+recuadro de 2px en `warning`, rotado `-4deg`, con su texto en `warning`; es el
+único elemento del mundo que se sale de la vertical.
+
+### Lo que este mundo no cambia
+
+- El verde de marca sigue siendo el único relleno de acción (una por pantalla,
+  y la portada repite la **misma** acción arriba y en el cierre) y la tinta de
+  las anotaciones: los círculos numerados de las señales son `bg-primary` con
+  `text-on-primary`.
+- Enlaces de texto en `link` y **subrayados**, incluido el botón "Revelar".
+- Ni un `dark:` en el JSX: el papel cambia porque cambia el token.
+- Contraste AA en los dos temas, comprobado por `src/index.test.ts`.
+- Radios, espaciado (`px-6`, `p-6`, `py-12`/`lg:py-20`) y sombra son los del
+  sistema. El contenedor de la portada es `max-w-6xl`, un escalón por encima
+  del `max-w-5xl` de las pantallas internas, porque el hero es de dos columnas
+  (`lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)]`, una sola columna por debajo
+  de `lg`).
