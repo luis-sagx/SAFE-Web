@@ -205,10 +205,10 @@ function Section() {
           <span>{section.canal}</span>
         </p>
 
-        <h1 className="mt-3 font-display text-5xl uppercase leading-[0.95] tracking-[0.01em] text-ink sm:text-6xl">
+        <h1 className="mt-2 font-display text-4xl uppercase tracking-[0.01em] text-ink sm:text-5xl">
           {section.titulo}
         </h1>
-        <p className="mt-5 max-w-prose text-lg leading-relaxed text-body">{section.descripcion}</p>
+        <p className="mt-3 max-w-prose text-lg leading-relaxed text-body">{section.descripcion}</p>
 
         {scenarios.length === 0 ? (
           <Ticket className="mt-10">
@@ -220,7 +220,7 @@ function Section() {
           // La tira del módulo: cabecera con el avance, un escenario por fila en
           // el orden en que se abren, y el talón para volver a empezar.
           <Ticket
-            className="mt-10 overflow-hidden"
+            className="mt-8 overflow-hidden"
             talon={
               replayable ? (
                 <div className="flex flex-col gap-4 px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
@@ -319,10 +319,10 @@ function Section() {
                         </span>
                         <Difficulty nivel={scenario.dificultad} />
                       </p>
-                      <h3 className="mt-2 font-display text-2xl uppercase tracking-[0.02em] text-ink underline-offset-4 group-hover:underline sm:text-3xl">
+                      <h3 className="mt-1.5 font-display text-2xl uppercase tracking-[0.02em] text-ink underline-offset-4 group-hover:underline">
                         {scenario.titulo}
                       </h3>
-                      <p className="mt-2 max-w-prose text-base leading-relaxed text-body">
+                      <p className="mt-1.5 max-w-prose text-base leading-relaxed text-body">
                         {scenario.descripcion}
                       </p>
                     </div>
@@ -330,9 +330,7 @@ function Section() {
                     <div className="shrink-0 sm:w-52">
                       {approved && <Sello tono="border-success-ink text-success-ink">Aprobado</Sello>}
                       {!approved && latest !== undefined && (
-                        <span className="font-mono text-sm uppercase tracking-[0.14em] text-muted">
-                          Sin aprobar
-                        </span>
+                        <Sello tono="border-danger text-danger">Sin aprobar</Sello>
                       )}
                       {!approved && latest === undefined && available && (
                         <span className="font-mono text-sm uppercase tracking-[0.14em] text-muted">
@@ -351,7 +349,7 @@ function Section() {
                       {available && (
                         <span
                           aria-hidden
-                          className="mt-3 block font-mono text-sm uppercase tracking-[0.14em] text-link transition group-hover:translate-x-0.5"
+                          className="mt-2 block font-mono text-sm uppercase tracking-[0.14em] text-link transition group-hover:translate-x-0.5"
                         >
                           {progress?.rondaEnCurso ? 'Continuar →' : 'Empezar →'}
                         </span>
@@ -360,7 +358,8 @@ function Section() {
                   </>
                 )
 
-                const rowClassName = 'flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:gap-8'
+                const rowClassName =
+                  'flex flex-col gap-4 px-6 py-4 sm:flex-row sm:items-center sm:gap-8'
 
                 return (
                   <li
