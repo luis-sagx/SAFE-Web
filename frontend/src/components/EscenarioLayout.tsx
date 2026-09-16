@@ -9,6 +9,7 @@ import { useAuth } from "../context/AuthContext";
 import { getSectionScenarios, getScenario, getSection } from "../data/catalogo";
 import IdentityCard, { type IdentityData } from "./ui/TarjetaIdentidad";
 import { ViewedReviewContext } from "./ui/repasoVisto";
+import TramaFondo from "./TramaFondo";
 
 interface ScenarioLayoutProps {
   /** Misma clave que recibe useScenarioRun, p. ej. 'estafa/saldo-contable'. */
@@ -160,7 +161,8 @@ function ScenarioLayout({
 
   if (phase === "briefing") {
     return (
-      <div className="min-h-dvh bg-canvas">
+      <div className="relative min-h-dvh overflow-hidden bg-canvas">
+        <TramaFondo />
         <AppHeader atras={back} />
 
         {/* Mismo ancho que dashboard/secciones; se parte en dos desde lg (izquierda lo que
@@ -245,7 +247,8 @@ function ScenarioLayout({
     // Desde 640px la página no se desplaza, solo el interior del dispositivo. Por debajo
     // sí, a propósito: en celular, 844px repartidos entre barra/dispositivo/decisión
     // dejaban al correo unas tres líneas visibles dentro de una caja a desplazar por dentro.
-    <div className="flex min-h-dvh flex-col bg-canvas-soft sm:h-dvh sm:overflow-hidden">
+    <div className="relative flex min-h-dvh flex-col bg-canvas-soft sm:h-dvh sm:overflow-hidden">
+      <TramaFondo />
       {/* El resumen dejó de vivir en el header: ya hay suficiente que leer ahí. Sigue
           disponible en el diálogo "Ver contexto y mis datos". */}
       <AppHeader atras={exit}>{location}</AppHeader>
