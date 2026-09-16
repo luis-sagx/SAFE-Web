@@ -175,6 +175,18 @@
   box-sizing: border-box;
 }
 
+/* Trama de seguridad del boleto: las rayas finas de un papel numerado. Es la
+   portada de un video todavía sin reproducir — ver DESIGN.md §11. No se usa
+   la miniatura de YouTube a propósito: pedirla al abrir la página haría que
+   Google viera a cada visitante aunque nunca pulse reproducir. */
+.trama-boleto {
+  background-image: repeating-linear-gradient(
+    135deg,
+    var(--color-ticket-edge) 0 1px,
+    transparent 1px 9px
+  );
+}
+
 /* La selección también es parte del diseño: el azul del navegador no viene de
    ningún sistema. Menta de marca con la tinta del tema encima, en los dos. */
 ::selection {

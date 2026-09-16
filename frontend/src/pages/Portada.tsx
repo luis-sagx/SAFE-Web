@@ -50,6 +50,16 @@ const STEPS = [
   },
 ]
 
+/** Cuántos de los ocho videos existen ya. Sale del catálogo, no de una
+ *  promesa: mientras falten, el contador lo dice en el primer viewport. */
+function videoCount() {
+  const total = TRAINING_VIDEOS.length
+  const published = TRAINING_VIDEOS.filter((video) => video.youtubeUrl).length
+  if (published === 0) return `${total} videos en preparación`
+  if (published < total) return `${published} de ${total} videos`
+  return `${total} videos`
+}
+
 /** Resalta dentro del SMS el fragmento de cada señal y le pone su número. */
 function BaitMessage() {
   return (
@@ -133,7 +143,7 @@ function Portada() {
               {[
                 `${SECTIONS.length} módulos`,
                 `${SCENARIOS.length} escenarios`,
-                `${TRAINING_VIDEOS.length} videos en preparación`,
+                videoCount(),
               ].map((count) => (
                 <span
                   key={count}

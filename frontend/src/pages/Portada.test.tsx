@@ -33,9 +33,9 @@ describe('Portada', () => {
     expect(screen.getByRole('heading', { level: 1 })).toBeDefined()
     expect(screen.getByText(/engaños simulados/i)).toBeDefined()
     expect(screen.getByText('Ningún premio necesita tu clave')).toBeDefined()
-    // El general es un boleto entero; los siete módulos son filas de la tira.
-    expect(screen.getAllByText('Sin grabar')).toHaveLength(8)
-    expect(screen.getByText('Este video se publica pronto.')).toBeDefined()
+    // Ocho espacios de video: el general es un boleto entero y los siete
+    // módulos son filas de la tira. Cada uno monta su reproductor al pedirlo.
+    expect(screen.getAllByRole('button', { name: /^Reproducir / })).toHaveLength(8)
   })
 
   it('las señales están en el documento aunque nadie raspe el boleto', () => {
