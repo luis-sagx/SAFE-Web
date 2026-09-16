@@ -40,3 +40,5 @@ shots/
 
 # Reportes generados por k6
 k6-*-summary.json
+
+.impeccable

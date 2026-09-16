@@ -49,7 +49,7 @@ describe('App', () => {
       </MemoryRouter>,
     )
 
-    expect(screen.getByRole('heading', { name: 'Aprende a usar SAFE-Web' })).toBeDefined()
+    expect(screen.getByRole('heading', { level: 1 }).textContent).toContain('Todo fraude')
   })
 
   it('redirige a la sección cuando se entra por URL a un escenario bloqueado', async () => {
