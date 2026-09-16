@@ -1,4 +1,4 @@
-import { Camera, MessageCircle, Users, Wallet } from 'lucide-react'
+import { MessageCircle, Users, Wallet } from 'lucide-react'
 import ScenarioStory, { type PhoneApp, type ScreenNode } from '../../components/StoryEscenario'
 import type { Context } from '../../components/ui/ContextoEscenario'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
@@ -259,18 +259,7 @@ const APPS: PhoneApp[] = [
     goto: 'n3',
     label: 'Abrió la red social',
   },
-  {
-    Icono: Wallet,
-    texto: 'Banco del Litoral',
-    color: '#155e75',
-    vacia: 'Banca móvil · Saldo disponible $980,20. Sin movimientos nuevos.',
-  },
-  {
-    Icono: Camera,
-    texto: 'Cámara',
-    color: '#495057',
-    vacia: 'La cámara está lista. No hay nada que fotografiar en este momento.',
-  },
+  { Icono: Wallet, texto: 'Banco del Litoral', color: '#155e75', relleno: 'banco' },
 ]
 
 export const STORY: Story<ScreenNode> = {

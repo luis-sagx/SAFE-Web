@@ -1,4 +1,4 @@
-import { Camera, MessageCircle, Phone, Wallet } from 'lucide-react'
+import { Images, MessageCircle, Phone, Wallet } from 'lucide-react'
 import ScenarioStory, { type PhoneApp, type ScreenNode } from '../../components/StoryEscenario'
 import type { Context } from '../../components/ui/ContextoEscenario'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
@@ -233,12 +233,7 @@ const APPS: PhoneApp[] = [
     label: 'Abrió la agenda para llamar por su cuenta',
     hilo: 'call',
   },
-  {
-    Icono: Camera,
-    texto: 'Cámara',
-    color: '#495057',
-    vacia: 'La cámara está lista. No hay nada que fotografiar en este momento.',
-  },
+  { Icono: Images, texto: 'Galería', color: '#c2410c', relleno: 'galeria' },
 ]
 
 export const STORY: Story<ScreenNode> = {
