@@ -6,51 +6,48 @@ import InternalDocumentSummary from './ResumenDocumentoInterno'
 vi.mock('../../context/AuthContext', async () => (await import('../../test/escenario')).mockAuth())
 vi.mock('../../lib/api', async () => (await import('../../test/escenario')).offlineApi())
 
-function replace(container: HTMLElement, etiqueta: string, nuevo: string) {
-  fireEvent.click(within(container).getByRole('button', { name: `Cambiar ${etiqueta}` }))
-  const campo = within(container).getByLabelText(`Reemplazar ${etiqueta}`)
-  fireEvent.change(campo, { target: { value: nuevo } })
-  fireEvent.blur(campo)
-}
-
-function send(container: HTMLElement) {
+function writeAndSend(container: HTMLElement, texto: string) {
+  fireEvent.change(within(container).getByLabelText('Escribe tu mensaje'), { target: { value: texto } })
   fireEvent.click(within(container).getByRole('button', { name: 'Enviar el mensaje' }))
 }
 
-const PERDIDAS = 'la cifra real de pérdidas ($340.000)'
-const RECORTE = 'el porcentaje real del recorte de personal (15%)'
-
 describe('ResumenDocumentoInterno', () => {
-  it('el chat alterna: contesta la IA, y recién entonces se ve el borrador con las cifras marcadas', () => {
+  it('el chat alterna: contesta la IA, y recién entonces se ve el campo para escribir', () => {
     const container = start(<InternalDocumentSummary />)
     expect(within(container).getByText('Hola, necesito resumir un informe del trabajo.')).toBeDefined()
     expect(within(container).getByText(/Cuéntame de qué trata el informe/)).toBeDefined()
-    expect(within(container).getByRole('button', { name: `Cambiar ${PERDIDAS}` })).toBeDefined()
   })
 
-  it('se abre en el computador, con la dirección del servicio a la vista', () => {
-    const container = start(<InternalDocumentSummary />)
-    expect(within(container).getAllByText(/chat\.asistente-ia\.com/).length).toBeGreaterThan(0)
+  it('el bloc de notas con el informe está siempre visible, con las cifras reales', () => {
+    start(<InternalDocumentSummary />)
+    expect(screen.getByText(/\$340\.000/)).toBeDefined()
+    expect(screen.getByText(/15%/)).toBeDefined()
   })
 
-  it('enviar el borrador sin tocar nada es una fuga: trae las dos cifras reales', async () => {
+  it('escribir la cifra real de pérdidas es una fuga', async () => {
     const container = start(<InternalDocumentSummary />)
-    send(container)
+    writeAndSend(container, 'El informe dice que tuvimos pérdidas de $340.000 este trimestre.')
     expect(await screen.findByText('Información confidencial de la empresa compartida con la IA')).toBeDefined()
   })
 
-  it('dejar el porcentaje real del recorte, aunque se cambie la cifra de pérdidas, es una fuga', async () => {
+  it('escribir el porcentaje real del recorte es una fuga', async () => {
     const container = start(<InternalDocumentSummary />)
-    replace(container, PERDIDAS, 'una cifra sin publicar')
-    send(container)
+    writeAndSend(container, 'Vamos a recortar el 15% del personal en enero, resúmelo.')
     expect(await screen.findByText('Información confidencial de la empresa compartida con la IA')).toBeDefined()
   })
 
-  it('reemplazar las dos cifras por una cifra distinta a la real no cuenta como fuga', async () => {
+  it('una cifra distinta a la real no cuenta como fuga', async () => {
     const container = start(<InternalDocumentSummary />)
-    replace(container, PERDIDAS, 'un monto sin publicar')
-    replace(container, RECORTE, 'un porcentaje sin anunciar')
-    send(container)
+    writeAndSend(container, 'Tuvimos un resultado financiero negativo este trimestre, resúmelo en un párrafo.')
+    expect(await screen.findByText('Resumen armado sin exponer datos de la empresa')).toBeDefined()
+  })
+
+  it('pedir solo la estructura, sin ninguna cifra real, es el acierto', async () => {
+    const container = start(<InternalDocumentSummary />)
+    writeAndSend(
+      container,
+      'Dame un párrafo modelo que mencione el resultado financiero y una decisión de personal, con espacios para completar.',
+    )
     expect(await screen.findByText('Resumen armado sin exponer datos de la empresa')).toBeDefined()
   })
 })

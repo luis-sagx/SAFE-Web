@@ -1,11 +1,12 @@
 import type { ScreenNode } from '../../components/StoryEscenario'
 import type { Context } from '../../components/ui/ContextoEscenario'
+import BlocNotas from '../../components/ui/BlocNotas'
 import type { Story } from '../../hooks/useStoryEngine'
 import AIChatScenario from './EscenarioChatIA'
 import {
   createAIChat,
-  withEditableDraft,
-  buildDraftSegments,
+  withFreeTextComposer,
+  splitKnownData,
   evaluateData,
   worstLevel,
   signal,
@@ -15,10 +16,11 @@ import {
 /** La IA es legítima; el riesgo está en lo que el participante le escribe antes de pedir ayuda —aquí, los
  *  datos de una compañera que no hacían falta para redactar el texto.
  *
- *  Issue #185: el borrador ya viene escrito, con los datos reales de la compañera puestos — el nombre, la
- *  cédula y el correo quedan marcados para tocar y reemplazar. Lo que se evalúa es si esos datos REALES
- *  siguen en el mensaje al tocar "Enviar" — nunca por parecerse a un dato de ese tipo, sino por ser el
- *  dato de verdad (ver evaluateDatum). */
+ *  Issue #184: el texto con los datos reales vive aparte, en un bloc de notas fijo junto al celular —el
+ *  participante decide qué copiar y qué dejar afuera al escribir su propio mensaje en el chat, en vez de
+ *  elegir entre burbujas ya redactadas ni tocar palabras de un borrador fijo. Lo que se evalúa sigue siendo
+ *  si esos datos REALES quedaron en el mensaje al tocar "Enviar" — nunca por parecerse a un dato de ese
+ *  tipo, sino por ser el dato de verdad (ver evaluateDatum). */
 
 const TIME = '10:14'
 
@@ -40,15 +42,13 @@ function onEnviar(texto: string): { goto: string; label?: string } {
   const nivel = worstLevel(evaluateData(texto, DATA_POINTS))
   return {
     goto: nivel === 'fuga' ? 'e_fuga' : nivel === 'parcial' ? 'e_parcial' : 'e_seguro',
-    label: 'Tocó "Enviar" con lo que decidió dejar del borrador',
+    label: 'Escribió su propio mensaje para pedirle ayuda a la IA',
   }
 }
 
-// El borrador ya trae el nombre, la cédula y el correo reales de la compañera; buildDraftSegments los marca
-// para que se puedan tocar y reemplazar uno por uno antes de enviar.
-const DRAFT = `Es para el ${TEACHER}, para pedirle un cambio de horario a nombre de mi compañera ${FIRST_NAME} ${LAST_NAME}, cédula ${ECUADORIAN_ID}, correo ${EMAIL}. Es de la materia de Redes.`
-
-const CHAT = withEditableDraft(
+// El texto fuente vive en el bloc de notas (ver SOURCE_DOCUMENT más abajo); el mensaje real lo escribe el
+// participante, copiando de ahí lo que decida.
+const CHAT = withFreeTextComposer(
   createAIChat(
     'Redactor de mensajes · servicio externo',
     [
@@ -63,13 +63,19 @@ const CHAT = withEditableDraft(
     { titulo: 'Asistente IA', url: 'https://chat.asistente-ia.com/nuevo' },
   ),
   {
-    segmentos: buildDraftSegments(DRAFT, DATA_POINTS),
+    placeholder: 'Escribe (o pega) lo que le pedirías a la IA…',
     hora: TIME,
     respuestaIA:
       'Aquí tienes un correo formal con lo que me diste. Si quieres, puedo ajustar el tono o agregar algún detalle más.',
     onEnviar,
+    segmentar: (texto) => splitKnownData(texto, DATA_POINTS),
   },
 )
+
+// El "documento fuente": lo que la compañera le pasó al participante para pedirle el favor, con sus
+// datos reales dentro. Vive en un bloc de notas fijo junto al celular — copiar de ahí es una decisión
+// del participante, no algo que el escenario le sirva ya redactado.
+const SOURCE_DOCUMENT = `Hola, ¿me ayudas a pedirle al ${TEACHER} un cambio de horario? Soy ${FIRST_NAME} ${LAST_NAME}, cédula ${ECUADORIAN_ID}, mi correo es ${EMAIL}. Es de la materia de Redes.`
 
 const STORY: Story<ScreenNode> = {
   n1: { kind: 'scene', view: CHAT },
@@ -134,8 +140,8 @@ const CONTEXT: Context = {
   antes: 'Coordinas trámites de tus compañeros de clase y sueles usar una IA para que tus correos suenen más formales.',
   ahora: (
     <>
-      <strong>Abres el asistente de IA</strong> en el computador para que te ayude con el correo del
-      cambio de horario que pidió tu compañera.
+      <strong>Abres el asistente de IA</strong> en el computador. Al lado tienes el mensaje que te mandó
+      tu compañera pidiéndote el favor.
     </>
   ),
 }
@@ -149,16 +155,17 @@ function ThirdPartyDataEmail() {
       story={STORY}
       senales={SIGNALS}
       rule={RULE}
+      documentoFuente={<BlocNotas titulo="WhatsApp — Andrea" texto={SOURCE_DOCUMENT} />}
       instruccion={
         <p className="text-lg leading-relaxed text-body">
-          Toca las palabras marcadas para cambiarlas, y toca "Enviar" cuando el mensaje quede como
-          quieres.
+          Escribe el mensaje que le mandarías a la IA para pedirle ayuda —puedes copiar del bloc de
+          notas— y toca "Enviar" cuando quede como quieres.
         </p>
       }
       pista={
         <p>
-          La IA puede redactar el correo sin saber de quién habla. Lo que decides es si se lo dices de
-          todos modos, y cómo lo escribes.
+          La IA puede redactar el correo sin saber de quién habla. Lo que decides es qué copias del
+          mensaje de tu compañera y qué dejas afuera.
         </p>
       }
     />

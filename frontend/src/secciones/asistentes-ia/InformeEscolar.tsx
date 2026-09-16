@@ -1,11 +1,12 @@
 import type { ScreenNode } from '../../components/StoryEscenario'
 import type { Context } from '../../components/ui/ContextoEscenario'
+import BlocNotas from '../../components/ui/BlocNotas'
 import type { Story } from '../../hooks/useStoryEngine'
 import AIChatScenario from './EscenarioChatIA'
 import {
   createAIChat,
-  withEditableDraft,
-  buildDraftSegments,
+  withFreeTextComposer,
+  splitKnownData,
   evaluateDatum,
   evaluateData,
   worstLevel,
@@ -21,6 +22,9 @@ import {
  *  Deliberadamente en el plano de datos de texto (cédula, fecha de nacimiento, domicilio): nunca se simula
  *  subir una foto del estudiante ni un dato biométrico. El objetivo es enseñar el riesgo de pegar los datos
  *  de un menor en un servicio externo, no representar de forma gráfica un tema delicado.
+ *
+ *  Issue #184: la ficha del estudiante vive en un bloc de notas fijo junto al celular; el participante
+ *  escribe su propio mensaje a la IA, copiando de la ficha lo que decida.
  *
  *  Mismo criterio de peso que #185: la cédula, la fecha de nacimiento y el domicilio son el paquete que
  *  prueba identidad — cualquiera de los tres, solo, ya es fuga completa. El teléfono de contacto es menos
@@ -62,17 +66,14 @@ function onEnviar(texto: string): { goto: string; label?: string } {
       : identityLevel === 'parcial' || phoneLevel !== 'seguro'
         ? 'e_parcial'
         : 'e_seguro'
-  return { goto, label: 'Tocó "Enviar" con lo que decidió dejar del borrador' }
+  return { goto, label: 'Escribió su propio mensaje para pedirle ayuda a la IA' }
 }
 
-// El nombre no se evalúa (ver nota arriba), así que no va en la lista que le pasamos a
-// buildDraftSegments: queda como texto fijo del borrador, sin poder tocarse.
 const MARKED_POINTS: SensitiveDatum[] = [...IDENTITY_POINTS, PHONE_POINT]
-const DRAFT = `Aquí va: ${STUDENT_NAME}, cédula ${ECUADORIAN_ID}, nacido el ${BIRTH}, domicilio ${ADDRESS}, teléfono de contacto ${CONTACT_PHONE}. ${PROGRESS}`
 
 // Va en el computador: un informe escolar se arma con la ficha del estudiante abierta al lado, de un
 // copiar y pegar.
-const CHAT = withEditableDraft(
+const CHAT = withFreeTextComposer(
   createAIChat(
     'Asistente de escritura · servicio externo',
     [
@@ -87,13 +88,18 @@ const CHAT = withEditableDraft(
     { titulo: 'Asistente IA', url: 'https://chat.asistente-ia.com/nuevo' },
   ),
   {
-    segmentos: buildDraftSegments(DRAFT, MARKED_POINTS),
+    placeholder: 'Escribe (o pega) el contenido que quieres mejorar…',
     hora: TIME,
     respuestaIA:
       'Aquí tienes el informe mejorado, con mejor redacción y un tono más claro para la familia.',
     onEnviar,
+    segmentar: (texto) => splitKnownData(texto, MARKED_POINTS),
   },
 )
+
+// La ficha del estudiante, tal como está en el sistema de la institución — con los datos reales que el
+// informe no necesitaba para mejorar la redacción.
+const SOURCE_DOCUMENT = `Ficha del estudiante — uso interno.\n\nNombre: ${STUDENT_NAME}\nCédula: ${ECUADORIAN_ID}\nFecha de nacimiento: ${BIRTH}\nDomicilio: ${ADDRESS}\nTeléfono de contacto: ${CONTACT_PHONE}\n\n${PROGRESS}`
 
 const STORY: Story<ScreenNode> = {
   n1: { kind: 'scene', view: CHAT },
@@ -158,8 +164,8 @@ const CONTEXT: Context = {
   antes: 'Eres tutor de un curso y te pidieron mejorar la redacción de un informe de seguimiento antes de entregarlo a coordinación.',
   ahora: (
     <>
-      <strong>Abres el asistente de IA</strong> en el computador, con la ficha del estudiante abierta al
-      lado, lista para copiar y pegar.
+      <strong>Abres el asistente de IA</strong> en el computador. Al lado tienes la ficha del estudiante,
+      del sistema de la institución.
     </>
   ),
 }
@@ -173,16 +179,17 @@ function SchoolReport() {
       story={STORY}
       senales={SIGNALS}
       rule={RULE}
+      documentoFuente={<BlocNotas titulo="Ficha.txt — Bloc de notas" texto={SOURCE_DOCUMENT} />}
       instruccion={
         <p className="text-lg leading-relaxed text-body">
-          Toca las palabras marcadas para cambiarlas, y toca "Enviar" cuando el informe quede como
-          quieres.
+          Escribe (o pega) el contenido que le pedirías mejorar a la IA, y toca "Enviar" cuando el
+          informe quede como quieres.
         </p>
       }
       pista={
         <p>
           La IA puede mejorar el seguimiento académico sin saber la cédula del estudiante ni dónde vive.
-          Lo que decides es cuánto del documento le pegas.
+          Lo que decides es cuánto de la ficha le pegas.
         </p>
       }
     />

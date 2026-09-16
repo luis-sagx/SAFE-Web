@@ -50,6 +50,10 @@ interface ScenarioStoryProps {
   identidad?: IdentityData[]
   accionesEnPantalla?: boolean
   apps?: PhoneApp[]
+  // Documento de referencia fijo junto al dispositivo, antes de "¿Qué
+  // haces?" — issue #184. Se lee y se decide qué copiar antes de escribir,
+  // no después.
+  panelReferencia?: ReactNode
 }
 
 // Todas las apps del dock reaccionan al pulsarlas (deliberado: si solo
@@ -135,6 +139,7 @@ function ScenarioStory({
   identidad: identity,
   accionesEnPantalla: screenActions = false,
   apps,
+  panelReferencia: referencePanel,
 }: ScenarioStoryProps) {
   const engine = useStoryEngine(story, initialNode, scenarioId)
   const { usuarioSimulado: simulatedUser } = useAuth()
@@ -397,6 +402,7 @@ function ScenarioStory({
 
       return (
         <div className="grid gap-3">
+          {referencePanel}
           {!beforeFlash && <p className="text-lg font-semibold text-ink">{question}</p>}
           {engine.node.choices && <StoryChoices choices={engine.node.choices} onChoose={engine.choose} />}
           <Instructions

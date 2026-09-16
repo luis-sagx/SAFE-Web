@@ -1,11 +1,12 @@
 import type { ScreenNode } from '../../components/StoryEscenario'
 import type { Context } from '../../components/ui/ContextoEscenario'
+import BlocNotas from '../../components/ui/BlocNotas'
 import type { Story } from '../../hooks/useStoryEngine'
 import AIChatScenario from './EscenarioChatIA'
 import {
   createAIChat,
-  withEditableDraft,
-  buildDraftSegments,
+  withFreeTextComposer,
+  splitKnownData,
   withAIResponse,
   evaluateData,
   worstLevel,
@@ -18,13 +19,14 @@ import {
  *  primer mensaje —la IA ofrece completar un borrador ya usable a cambio del nombre y la cuenta, y resistir
  *  ese favor es lo que mide. Dar solo el nombre para el saludo queda como parcial.
  *
- *  Issue #185: en el primer paso, el borrador ya trae el nombre, la cuenta, el saldo y el teléfono reales
- *  de la clienta, marcados para tocar y reemplazar. El segundo paso (aceptar o no la oferta de "dejártela
- *  lista") se queda como burbujas: no es un ejercicio de decidir qué dato tocar, es resistir o no un favor
- *  — ceder ahí no depende de qué se edita, sino de si se acepta. Lo que se dejó en el primer paso se resume
- *  como "(tu mensaje)" en las pantallas del segundo paso: seguir mostrándolo literal ahí habría exigido que
- *  el motor de guiones recuerde texto dinámico entre dos pantallas distintas, que es más de lo que este
- *  cambio necesita resolver. */
+ *  Issue #184: en el primer paso, el nombre, la cuenta, el saldo y el teléfono reales de la clienta viven
+ *  en un bloc de notas fijo junto al celular —la ficha del sistema de clientes—, y el participante escribe
+ *  su propio mensaje a la IA. El segundo paso (aceptar o no la oferta de "dejártela lista") se queda como
+ *  burbujas: no es un ejercicio de redactar con cuidado, es resistir o no un favor — ceder ahí no depende
+ *  de cómo se escribe, sino de si se acepta. Lo que se escribió en el primer paso se resume como "(tu
+ *  mensaje)" en las pantallas del segundo paso: seguir mostrándolo literal ahí habría exigido que el motor
+ *  de guiones recuerde texto dinámico entre dos pantallas distintas, que es más de lo que este cambio
+ *  necesita resolver. */
 
 const TIME = '11:47'
 
@@ -52,7 +54,7 @@ const DATA_POINTS: SensitiveDatum[] = [
 function onEnviarPaso1(texto: string): { goto: string; label?: string } {
   const nivel = worstLevel(evaluateData(texto, DATA_POINTS))
   const goto = nivel === 'fuga' ? 'e_con_datos' : nivel === 'parcial' ? 'e_parcial_paso1' : 'n2_generico'
-  return { goto, label: 'Tocó "Enviar" con lo que decidió dejar del borrador' }
+  return { goto, label: 'Escribió su propio mensaje para pedirle ayuda a la IA' }
 }
 
 // Va en el computador: los reclamos se contestan con el sistema de clientes abierto al lado, de donde salen los datos que terminan en el chat.
@@ -64,15 +66,16 @@ const OPENING = [
   },
 ]
 
-// El borrador ya trae los cuatro datos reales de la clienta; buildDraftSegments los marca para tocar y reemplazar.
-const DRAFT_PASO1 = `Reclama por qué le cobramos $45 de más este mes. Sus datos: ${NAME}, cuenta ${ACCOUNT}, saldo ${BALANCE}, teléfono ${PHONE}. Respóndele formal y amable.`
-
-const CHAT = withEditableDraft(createAIChat('Redactor de respuestas · servicio externo', OPENING, TIME, [], SITE), {
-  segmentos: buildDraftSegments(DRAFT_PASO1, DATA_POINTS),
+const CHAT = withFreeTextComposer(createAIChat('Redactor de respuestas · servicio externo', OPENING, TIME, [], SITE), {
+  placeholder: 'Escribe lo que le pedirías a la IA…',
   hora: TIME,
   respuestaIA: 'Aquí tienes una respuesta para el reclamo. Avísame si quieres ajustar el tono.',
   onEnviar: onEnviarPaso1,
+  segmentar: (texto) => splitKnownData(texto, DATA_POINTS),
 })
+
+// La ficha de la clienta en el sistema, con los datos reales que la respuesta al reclamo no necesitaba.
+const SOURCE_DOCUMENT = `Sistema de clientes — ficha de cuenta.\n\nClienta: ${NAME}\nCuenta: ${ACCOUNT}\nSaldo: ${BALANCE}\nTeléfono: ${PHONE}\n\nReclamo: cobro adicional de $45,00 este mes.`
 
 // El borrador ya sirve para enviar (saludo neutro, cubre el cobro); lo único que "falta" es el nombre — y esa es la carnada.
 const RESPONSE_GENERIC = [
@@ -248,9 +251,8 @@ const CONTEXT: Context = {
   antes: 'Atiendes reclamos de clientes y sueles usar una IA para darle un tono más claro a tus respuestas.',
   ahora: (
     <>
-      <strong>Abres el asistente de IA</strong> en el computador, con el sistema de clientes al lado: ahí
-      están el número de cuenta, el saldo y el teléfono de quien reclama. Escribe tú mismo lo que le
-      pedirías.
+      <strong>Abres el asistente de IA</strong> en el computador. Al lado tienes el sistema de clientes,
+      con la ficha de quien reclama.
     </>
   ),
 }
@@ -264,10 +266,11 @@ function CustomerHistory() {
       story={STORY}
       senales={SIGNALS}
       rule={RULE}
+      documentoFuente={<BlocNotas titulo="Ficha.txt — Bloc de notas" texto={SOURCE_DOCUMENT} />}
       instruccion={
         <p className="text-lg leading-relaxed text-body">
-          Toca las palabras marcadas para cambiarlas y toca "Enviar", o —en el segundo paso— toca una de
-          las respuestas del chat.
+          Escribe el mensaje que le mandarías a la IA para pedirle ayuda —puedes copiar de la ficha— y
+          toca "Enviar", o —en el segundo paso— toca una de las respuestas del chat.
         </p>
       }
     />

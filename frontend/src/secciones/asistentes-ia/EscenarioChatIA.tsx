@@ -17,6 +17,10 @@ interface AIChatScenarioProps {
   /** Los caminos posibles, para quien se atasca. Opcional: los escenarios más
    *  difíciles de la sección la omiten a propósito. */
   pista?: ReactNode
+  /** El bloc de notas con el texto fuente (datos sensibles incluidos), fijo
+   *  junto al celular — issue #184. El participante decide qué copiar y qué
+   *  dejar afuera al escribir su propio mensaje. */
+  documentoFuente?: ReactNode
 }
 
 // Marco común de los 4 escenarios de asistentes-ia: el mismo <StoryEscenario> se repetía en los cuatro archivos (SonarCloud lo marcaba como duplicación).
@@ -29,6 +33,7 @@ function AIChatScenario({
   rule,
   instruccion: instruction,
   pista: clue,
+  documentoFuente: sourceDocument,
 }: AIChatScenarioProps) {
   return (
     <ScenarioStory
@@ -39,16 +44,16 @@ function AIChatScenario({
       senales={signals}
       rule={rule}
       accionesEnPantalla
-      cuandoTermina="Cuando envíes tu mensaje, o toques una de las respuestas del chat."
+      cuandoTermina="Cuando escribas tu mensaje y lo envíes, o toques una de las respuestas del chat."
       instruccion={
         instruction ?? (
           <p className="text-lg leading-relaxed text-body">
-            Toca las palabras marcadas para cambiarlas y toca "Enviar", o toca una de las respuestas del
-            chat.
+            Escribe tu mensaje y toca "Enviar", o toca una de las respuestas del chat.
           </p>
         )
       }
       pista={clue}
+      panelReferencia={sourceDocument}
     />
   )
 }

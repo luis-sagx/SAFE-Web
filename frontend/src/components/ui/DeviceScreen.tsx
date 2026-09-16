@@ -124,7 +124,7 @@ export type ScreenView =
           // lección del módulo de estafa (el comprobante no es el dinero).
           datos?: { etiqueta: string; valor: string }[]
         }
-        // Solo en el mensaje que se arma a partir de `borradorEditable` al
+        // Solo en el mensaje que se arma a partir de `entradaLibre` al
         // enviarlo: los tramos se pintan como JSX de verdad, no como el HTML
         // fijo de `text` — ver por qué en el `.map` que los consume.
         segmentosEnviados?: { texto: string; sensible?: { id: string; etiqueta: string } }[]
@@ -146,16 +146,20 @@ export type ScreenView =
       senalBorrador?: string
       enviarGoto?: string
       enviarLabel?: string
-      // Un borrador ya escrito (con datos reales dentro) donde las palabras
-      // sensibles se pueden tocar para reemplazarlas, en vez de elegir entre
-      // burbujas ya redactadas (ver chatIA.ts, EditableDraft, issue #185).
-      // Manda sobre `respuestas`/`borrador`/`composerGoto`: son formas
-      // alternativas de decidir, un nodo usa una sola a la vez.
-      borradorEditable?: {
-        segmentos: { texto: string; sensible?: { id: string; etiqueta: string } }[]
+      // Campo de texto real: el participante escribe su propio mensaje —o lo
+      // pega, ver BlocNotas.tsx— en vez de elegir entre burbujas ya
+      // redactadas (issue #184/#185, ver chatIA.ts FreeTextComposer). Manda
+      // sobre `respuestas`/`borrador`/`composerGoto`: son formas alternativas
+      // de decidir, un nodo usa una sola a la vez.
+      entradaLibre?: {
+        placeholder: string
         hora: string
         respuestaIA: string
         onEnviar: (texto: string) => { goto: string; label?: string }
+        // Para resaltar, en el mensaje ya enviado, los datos reales que hayan
+        // quedado tal cual (ver chatIA.ts, splitKnownData). Sin esto el
+        // mensaje se pinta plano, sin nada que el repaso pueda apuntar.
+        segmentar?: (texto: string) => { texto: string; sensible?: { id: string; etiqueta: string } }[]
       }
     }
   | {
@@ -249,44 +253,27 @@ function DeviceScreen({
   const view = useMemo(() => withName(toView, displayName || 'tu nombre'), [toView, displayName])
   const threadRef = useRef<HTMLDivElement>(null)
 
-  // Reemplazos que el participante fue tocando en `borradorEditable` (id del
-  // dato → lo que escribió en su lugar) y, una vez tocado "Enviar", el marcador
-  // de que ya se mandó. Vive aquí (no en el motor del guion) porque el nodo al
-  // que se salta tras enviar es siempre uno de los finales fijos
-  // (fuga/parcial/seguro) — reutilizan esta misma vista, y lo que cambia entre
-  // "editando" y "ya enviado" es únicamente este estado. `replacements` no se
-  // congela al enviar: ya no hay composer que la edite (se oculta en cuanto
-  // `sent` es true), así que seguir leyéndola en vivo para pintar el mensaje
-  // enviado es tan correcto como congelarla, y no exige una copia aparte.
-  const [replacements, setReplacements] = useState<Record<string, string>>({})
-  const [editingId, setEditingId] = useState<string | null>(null)
-  const [draftValue, setDraftValue] = useState('')
+  // Lo que se escribió en `entradaLibre` y, una vez tocado "Enviar", el
+  // marcador de que ya se mandó. Vive aquí (no en el motor del guion) porque
+  // el nodo al que se salta tras enviar es siempre uno de los finales fijos
+  // (fuga/parcial/seguro) — reutilizan esta misma vista, y lo que cambia
+  // entre "escribiendo" y "ya enviado" es únicamente este estado. `freeText`
+  // no se congela al enviar: el campo desaparece en cuanto `sent` es true, así
+  // que seguir leyéndolo en vivo para pintar el mensaje enviado es tan
+  // correcto como congelarlo, y no exige una copia aparte.
+  const [freeText, setFreeText] = useState('')
   const [sent, setSent] = useState(false)
   const wasFinished = useRef(finished)
   useEffect(() => {
     // Se reinicia solo en la transición terminada→en curso (un "Intentar de
     // nuevo"): entre renders normales de la misma corrida no debe perderse
-    // lo que el participante ya tocó.
+    // lo que el participante ya escribió.
     if (wasFinished.current && !finished) {
-      setReplacements({})
-      setEditingId(null)
-      setDraftValue('')
+      setFreeText('')
       setSent(false)
     }
     wasFinished.current = finished
   }, [finished])
-
-  function commitEdit() {
-    if (editingId === null) return
-    setReplacements((prev) => {
-      if (draftValue.trim() === '') {
-        const { [editingId]: _omit, ...resto } = prev
-        return resto
-      }
-      return { ...prev, [editingId]: draftValue }
-    })
-    setEditingId(null)
-  }
 
   // Sin autoscroll parece que no hubiera llegado respuesta (queda bajo el pliegue).
   useEffect(() => {
@@ -438,39 +425,31 @@ function DeviceScreen({
     return <CallScreen view={view} terminada={finished} />
   }
 
-  // Texto final que se mandaría si se tocara "Enviar" ahora mismo: cada
-  // tramo sensible usa lo que el participante escribió en su lugar, o el
-  // dato real si no lo tocó.
-  const finalDraftText = view.borradorEditable
-    ? view.borradorEditable.segmentos
-        .map((seg) => (seg.sensible ? (replacements[seg.sensible.id] ?? seg.texto) : seg.texto))
-        .join('')
-    : ''
-
-  // Con borradorEditable, lo que de verdad se mandó (y la respuesta de la
-  // IA) no vive en `view.msgs` —ese es fijo por nodo, y lo que se escribió es
-  // dinámico— sino en el estado local `sent`. Se combinan acá, una sola vez,
-  // para que el resto del render (la lista de mensajes y el cálculo de "cuál
-  // es nuevo") no tenga que saber que existen los dos orígenes. El mensaje
-  // enviado lleva además `segmentosEnviados`: a diferencia del resto —HTML
-  // fijo pintado con `dangerouslySetInnerHTML`—, este viene de datos que el
-  // participante decidió en vivo, y el repaso de señales necesita resaltar el
-  // tramo exacto (el nombre, la cédula…) dentro de él. React reconstruye el
-  // contenido de un `dangerouslySetInnerHTML` en cada repintado —incluida
-  // cualquier marca que el repaso le haya agregado a mano—, así que esos
-  // tramos van como JSX de verdad (ver el `.map` de abajo), no como texto.
+  // Con entradaLibre, lo que de verdad se mandó (y la respuesta de la IA) no
+  // vive en `view.msgs` —ese es fijo por nodo, y lo que se escribió es
+  // dinámico— sino en el estado local `freeText`/`sent`. Se combinan acá, una
+  // sola vez, para que el resto del render (la lista de mensajes y el
+  // cálculo de "cuál es nuevo") no tenga que saber que existen los dos
+  // orígenes. El mensaje enviado lleva además `segmentosEnviados`: a
+  // diferencia del resto —HTML fijo pintado con `dangerouslySetInnerHTML`—,
+  // este viene de texto que el participante escribió en vivo, y el repaso de
+  // señales necesita resaltar el tramo exacto (el nombre, la cédula…) dentro
+  // de él. React reconstruye el contenido de un `dangerouslySetInnerHTML` en
+  // cada repintado —incluida cualquier marca que el repaso le haya agregado a
+  // mano—, así que esos tramos van como JSX de verdad (ver el `.map` de
+  // abajo), no como texto.
   const messages =
-    view.borradorEditable && sent
+    view.entradaLibre && sent
       ? [
           ...view.msgs,
           {
-            text: finalDraftText,
-            time: view.borradorEditable.hora,
+            text: freeText,
+            time: view.entradaLibre.hora,
             mine: true,
             senal: 'borrador-enviado',
-            segmentosEnviados: view.borradorEditable.segmentos,
+            segmentosEnviados: view.entradaLibre.segmentar?.(freeText) ?? [{ texto: freeText }],
           },
-          { text: view.borradorEditable.respuestaIA, time: view.borradorEditable.hora },
+          { text: view.entradaLibre.respuestaIA, time: view.entradaLibre.hora },
         ]
       : view.msgs
 
@@ -552,7 +531,7 @@ function DeviceScreen({
                     return segmentos.map((seg, i) =>
                       seg.sensible ? (
                         <b key={seg.sensible.id} data-signal={seg.sensible.id}>
-                          {replacements[seg.sensible.id] ?? seg.texto}
+                          {seg.texto}
                         </b>
                       ) : (
                         <span key={`t-${i}`}>{seg.texto}</span>
@@ -618,48 +597,24 @@ function DeviceScreen({
         ))}
       </div>
 
-      {view.borradorEditable ? (
+      {view.entradaLibre ? (
         !sent && (
-          <div className={styles.smsComposerEditable}>
-            <div className={styles.smsBorrador}>
-              {view.borradorEditable.segmentos.map((seg, i) =>
-                !seg.sensible ? (
-                  <span key={`t-${i}`}>{seg.texto}</span>
-                ) : editingId === seg.sensible.id ? (
-                  <input
-                    key={seg.sensible.id}
-                    className={styles.smsSensibleInput}
-                    value={draftValue}
-                    autoFocus
-                    aria-label={`Reemplazar ${seg.sensible.etiqueta}`}
-                    onChange={(event) => setDraftValue(event.target.value)}
-                    onBlur={commitEdit}
-                    onKeyDown={(event) => {
-                      if (event.key === 'Enter') event.currentTarget.blur()
-                    }}
-                  />
-                ) : (
-                  <button
-                    key={seg.sensible.id}
-                    type="button"
-                    className={`${styles.hotspot} ${styles.smsSensible}`}
-                    aria-label={`Cambiar ${seg.sensible.etiqueta}`}
-                    onClick={() => {
-                      setEditingId(seg.sensible!.id)
-                      setDraftValue(replacements[seg.sensible!.id] ?? '')
-                    }}
-                  >
-                    {replacements[seg.sensible.id] ?? seg.texto}
-                  </button>
-                ),
-              )}
-            </div>
+          <div className={styles.smsComposerLibre}>
+            <textarea
+              className={styles.smsTextarea}
+              value={freeText}
+              onChange={(event) => setFreeText(event.target.value)}
+              placeholder={view.entradaLibre.placeholder}
+              aria-label="Escribe tu mensaje"
+              rows={3}
+            />
             <button
               type="button"
               className={`${styles.hotspot} ${styles.smsEnviar}`}
               aria-label="Enviar el mensaje"
-              data-hotspot-goto={view.borradorEditable.onEnviar(finalDraftText).goto}
-              data-hotspot-label={view.borradorEditable.onEnviar(finalDraftText).label}
+              disabled={freeText.trim() === ''}
+              data-hotspot-goto={freeText.trim() ? view.entradaLibre.onEnviar(freeText).goto : undefined}
+              data-hotspot-label={freeText.trim() ? view.entradaLibre.onEnviar(freeText).label : undefined}
               onClick={() => setSent(true)}
             >
               <SendHorizontal aria-hidden className={styles.smsEnviarIcono} strokeWidth={2} />
