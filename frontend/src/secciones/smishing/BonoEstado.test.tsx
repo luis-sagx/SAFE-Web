@@ -118,7 +118,7 @@ describe('BonoEstado', () => {
 
     fireEvent.click(within(phone).getByText('bit.ly/bono-ec-2026'))
     fireEvent.click(app(/Mensajes/))
-    fireEvent.click(app(/Cámara/))
+    fireEvent.click(app(/Banco/))
     fireEvent.click(app(/Mensajes/))
 
     expect(within(phone).getByText(/MIES INFORMA/)).toBeDefined()

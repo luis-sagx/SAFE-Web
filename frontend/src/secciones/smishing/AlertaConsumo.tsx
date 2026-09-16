@@ -1,4 +1,4 @@
-import { Camera, Images, Landmark, MessageSquareText } from 'lucide-react'
+import { Images, Landmark, MessageSquareText } from 'lucide-react'
 import ScenarioStory, { type PhoneApp, type ScreenNode } from '../../components/StoryEscenario'
 import type { Context } from '../../components/ui/ContextoEscenario'
 import type { Story } from '../../hooks/useStoryEngine'
@@ -106,24 +106,13 @@ const APP_BANK: ScreenView = {
 const APPS: PhoneApp[] = [
   { Icono: MessageSquareText, texto: 'Mensajes', color: '#2f9e44' },
   {
-    Icono: Camera,
-    texto: 'Cámara',
-    color: '#495057',
-    vacia: 'La cámara está lista. No hay nada que fotografiar en este momento.',
-  },
-  {
     Icono: Landmark,
     texto: 'Banco del Litoral',
     color: '#0f3d6e',
     goto: 'n2',
     label: 'Abrió la app del banco',
   },
-  {
-    Icono: Images,
-    texto: 'Galería',
-    color: '#c2410c',
-    vacia: 'Tus fotos recientes · 248 elementos.',
-  },
+  { Icono: Images, texto: 'Galería', color: '#c2410c', relleno: 'galeria' },
 ]
 
 const STORY: Story<ScreenNode> = {

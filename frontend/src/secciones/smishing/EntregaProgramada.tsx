@@ -1,4 +1,4 @@
-import { Compass, MessageSquareText, Package, Wallet } from 'lucide-react'
+import { MessageSquareText, Package, Wallet } from 'lucide-react'
 import ScenarioStory, { type PhoneApp, type ScreenNode } from '../../components/StoryEscenario'
 import type { Context } from '../../components/ui/ContextoEscenario'
 import type { Story } from '../../hooks/useStoryEngine'
@@ -105,18 +105,7 @@ const APPS: PhoneApp[] = [
     label: 'Abrió la app del courier',
   },
   { Icono: MessageSquareText, texto: 'Mensajes', color: '#2f9e44' },
-  {
-    Icono: Wallet,
-    texto: 'Banco',
-    color: '#155e75',
-    vacia: 'Banca móvil · Saldo disponible $312,45. Sin notificaciones nuevas.',
-  },
-  {
-    Icono: Compass,
-    texto: 'Navegador',
-    color: '#1971c2',
-    vacia: 'Nueva pestaña. No hay ninguna dirección escrita todavía.',
-  },
+  { Icono: Wallet, texto: 'Banco', color: '#155e75', relleno: 'banco' },
 ]
 
 const STORY: Story<ScreenNode> = {
