@@ -76,7 +76,7 @@ function TrainingHistory() {
         }
       />
 
-      <main className="mx-auto max-w-6xl px-6 py-12">
+      <main className="mx-auto max-w-7xl px-6 py-12">
         <p className="text-xs font-semibold uppercase tracking-[0.88px] text-muted">
           Entrenamiento
         </p>

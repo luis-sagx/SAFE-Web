@@ -85,7 +85,7 @@ function Dashboard() {
     <div className="min-h-screen bg-canvas">
       <AppHeader />
 
-      <main className="mx-auto max-w-6xl px-6 py-12">
+      <main className="mx-auto max-w-7xl px-6 py-12">
         <h1 className="font-display text-xl uppercase tracking-[0.01em] text-ink sm:text-4xl">
           Hola, {displayName}
         </h1>

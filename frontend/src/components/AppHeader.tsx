@@ -6,6 +6,8 @@ import Brand from './Marca'
 import ThemeSelector from './SelectorTema'
 import UserMenu from './MenuUsuario'
 
+// El ancho (max-w-7xl) es el del contenido de todas las páginas: si se cambia aquí,
+// se cambia en pages/ y en EscenarioLayout, o el logo deja de alinear con la tira.
 // Barra de navegación única: fija la altura/margen del retorno y el tamaño de letra
 // (text-sm) para todas las páginas, y monta ella misma ayuda + menú de cuenta porque
 // cerrar sesión debe estar disponible en cualquier punto del recorrido.
@@ -31,7 +33,7 @@ function AppHeader({
 
   return (
     <header className="shrink-0 border-b border-hairline bg-canvas">
-      <div className="mx-auto flex min-h-14 max-w-6xl flex-wrap items-center gap-x-4 gap-y-1 px-6 py-2 text-sm">
+      <div className="mx-auto flex min-h-14 max-w-7xl flex-wrap items-center gap-x-4 gap-y-1 px-6 py-2 text-sm">
         {/* Marca, filete y retorno viajan juntos con poco aire: son un solo bloque
             ("dónde estoy y cómo salgo") que sin el filete de junta parece dos marcas. */}
         <div className="flex shrink-0 items-center gap-3">

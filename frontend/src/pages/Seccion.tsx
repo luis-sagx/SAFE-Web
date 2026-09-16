@@ -196,7 +196,7 @@ function Section() {
       />
 
       {/* Mismo ancho que dashboard y barra superior: las tres pantallas se leen como una sola, sin saltos al entrar. */}
-      <main className="mx-auto max-w-6xl px-6 py-12">
+      <main className="mx-auto max-w-7xl px-6 py-12">
         {/* El folio del módulo, no un rótulo repetido: dice en qué número del
             recorrido estás y dónde ocurre la amenaza, que el título no dice. */}
         <p className="flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-base uppercase tracking-[0.12em] text-muted">

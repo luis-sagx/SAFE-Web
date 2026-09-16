@@ -165,7 +165,7 @@ function ScenarioLayout({
         {/* Mismo ancho que dashboard/secciones; se parte en dos desde lg (izquierda lo que
             se lee entero, derecha lo que se consulta) para que el botón, que cuelga de la
             columna más alta, no quede flotando lejos del texto que acompaña. */}
-        <main className="mx-auto max-w-6xl px-6 py-12">
+        <main className="mx-auto max-w-7xl px-6 py-12">
           <p className="flex flex-wrap items-baseline gap-x-2 text-base font-medium text-muted">
             <span>{section?.canal}</span>
             {position > 0 && (
