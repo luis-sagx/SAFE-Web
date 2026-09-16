@@ -20,11 +20,14 @@ function ScenarioContext({ contexto: context }: { contexto: Context }) {
       <dl className="grid gap-4">
         {ROWS.map(([password, label]) =>
           context[password] ? (
-            <div key={password} className="grid gap-0.5">
-              <dt className="text-xs font-semibold uppercase tracking-[0.88px] text-muted">
+            <div key={password}>
+              <dt className="font-mono text-sm uppercase tracking-[0.14em] text-muted">
                 {label}
               </dt>
-              <dd className="text-lg leading-relaxed text-body">{context[password]}</dd>
+              {/* Tinta de titular, no de cuerpo secundario: la escena es el contenido
+                  principal del briefing y va del mismo color que el saludo que la
+                  presenta. Con dos tintas parecían dos niveles distintos de texto. */}
+              <dd className="mt-1 text-lg leading-relaxed text-ink">{context[password]}</dd>
             </div>
           ) : null,
         )}

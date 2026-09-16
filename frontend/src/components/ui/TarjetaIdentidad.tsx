@@ -1,4 +1,5 @@
 import { AtSign, CreditCard, FileText, IdCard, KeyRound, Mail } from 'lucide-react'
+import Ticket from '../Boleto'
 import { ACCOUNT_FAKE, IDENTITY_FAKE } from '../../lib/identidadFicticia'
 
 // El correo va siempre; los demás datos solo donde el escenario los pide.
@@ -24,30 +25,34 @@ function IdentityCard({ correo: email, datos: data }: { correo: string; datos: I
   ].filter((row) => row.clave === 'correo' || data.includes(row.clave as IdentityData))
 
   return (
-    <section
-      className="rounded-lg border border-hairline-strong bg-canvas-soft p-5"
-      aria-label="Tus datos en este escenario"
-    >
-      <h2 className="text-base font-semibold text-ink">Tus datos en este escenario</h2>
-      <p className="mt-1 text-base leading-relaxed text-body">
-        Son inventados y no existen fuera de este entrenamiento. Te los enseñamos para que
-        reconozcas lo que estarías entregando si un formulario te los pide. Los campos que piden la
-        contraseña la taparán con puntos, como en cualquier sitio: esta es la que esconden.
-      </p>
+    // El boleto no reenvía atributos: la región y su rótulo viven en el <section>.
+    <section aria-label="Tus datos en este escenario">
+      <Ticket className="p-6">
+        <h2 className="font-display text-xl uppercase tracking-[0.02em] text-ink">
+          Tus datos en este escenario
+        </h2>
+        <p className="mt-2 text-base leading-relaxed text-body">
+          Son inventados y no existen fuera de este entrenamiento. Te los enseñamos para que
+          reconozcas lo que estarías entregando si un formulario te los pide. Los campos que piden
+          la contraseña la taparán con puntos, como en cualquier sitio: esta es la que esconden.
+        </p>
 
-      <dl className="mt-4 grid gap-3">
-        {rows.map(({ clave: password, Icono: Icon, etiqueta: label, valor: value }) => (
-          <div key={password} className="flex items-start gap-3">
-            <Icon aria-hidden className="mt-0.5 size-5 shrink-0 text-muted" strokeWidth={1.75} />
-            <div>
-              <dt className="text-sm font-medium text-muted">{label}</dt>
-              {/* Monoespaciada: son números que hay que reconocer luego, dígito
-                  a dígito, dentro de un formulario. */}
-              <dd className="font-mono text-base text-ink">{value}</dd>
+        <dl className="mt-5 grid gap-3">
+          {rows.map(({ clave: password, Icono: Icon, etiqueta: label, valor: value }) => (
+            <div key={password} className="flex items-start gap-3">
+              <Icon aria-hidden className="mt-0.5 size-5 shrink-0 text-muted" strokeWidth={1.75} />
+              <div>
+                <dt className="font-mono text-sm uppercase tracking-[0.14em] text-muted">
+                  {label}
+                </dt>
+                {/* Monoespaciada: son números que hay que reconocer luego, dígito
+                    a dígito, dentro de un formulario. */}
+                <dd className="font-mono text-base text-ink">{value}</dd>
+              </div>
             </div>
-          </div>
-        ))}
-      </dl>
+          ))}
+        </dl>
+      </Ticket>
     </section>
   )
 }
