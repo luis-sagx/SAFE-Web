@@ -1,3 +1,6 @@
+// La pista de la barra va en ticket-edge y no en surface-strong: las dos barras
+// viven sobre el papel del boleto (dashboard y sección), donde surface-strong
+// queda a 1.02:1 del papel y las celdas vacías desaparecen.
 // `segmentada` (hasta 12, por defecto) permite *contar* el avance de un vistazo; `continua`
 // es para el total del entrenamiento, donde las celdas serían demasiado finas. La marca de
 // meta es necesaria porque el gating exige `requeridos` de `total`, no completar todo.
@@ -57,14 +60,14 @@ function ProgressBar({
               <span
                 key={i}
                 className={`h-2 flex-1 rounded-xs transition-colors duration-500 motion-reduce:transition-none ${
-                  i < done ? padding : 'bg-surface-strong'
+                  i < done ? padding : 'bg-ticket-edge'
                 } ${isTarget ? 'ring-1 ring-inset ring-ink/25' : ''}`}
               />
             )
           })}
         </div>
       ) : (
-        <div className="h-2 overflow-hidden rounded-xs bg-surface-strong">
+        <div className="h-2 overflow-hidden rounded-xs bg-ticket-edge">
           <div
             className={`h-full rounded-xs transition-[width] duration-500 motion-reduce:transition-none ${padding}`}
             style={{ width: `${(done / safe) * 100}%` }}

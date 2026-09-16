@@ -115,6 +115,7 @@ function ScenarioLayout({
   }
 
   const section = getSection(scenario.seccionId);
+  const SectionIcon = section?.Icono;
   const fromModule = getSectionScenarios(scenario.seccionId);
   const position = fromModule.findIndex((e) => e.id === scenario.id) + 1;
 
@@ -165,21 +166,24 @@ function ScenarioLayout({
         {/* Mismo ancho que dashboard/secciones; se parte en dos desde lg (izquierda lo que
             se lee entero, derecha lo que se consulta) para que el botón, que cuelga de la
             columna más alta, no quede flotando lejos del texto que acompaña. */}
-        <main className="mx-auto max-w-6xl px-6 py-12">
-          <p className="flex flex-wrap items-baseline gap-x-2 text-base font-medium text-muted">
-            <span>{section?.canal}</span>
-            {position > 0 && (
-              <>
-                <span aria-hidden className="text-muted-soft">
-                  ·
-                </span>
-                <span className="tabular-nums">
-                  Escenario {position} de {fromModule.length}
-                </span>
-              </>
+        <main className="mx-auto max-w-7xl px-6 py-12">
+          {/* Mismo folio que la tira de la sección: el escenario se anuncia por
+              su número dentro del módulo, no por un rótulo repetido. */}
+          <p className="flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-base uppercase tracking-[0.12em] text-muted">
+            {SectionIcon && (
+              <SectionIcon aria-hidden className="size-4 shrink-0 text-link" strokeWidth={2} />
             )}
+            {position > 0 && (
+              <span className="tabular-nums">
+                <span className="text-ink">ESC-{String(position).padStart(2, "0")}</span> de{" "}
+                {String(fromModule.length).padStart(2, "0")}
+              </span>
+            )}
+            {/* Filete impreso entre folio y canal, como los contadores de la portada:
+                dos datos distintos pegados se leían como una sola frase. */}
+            <span className="border-l border-ticket-edge pl-3">{section?.canal}</span>
           </p>
-          <h1 className="mt-2 text-4xl font-semibold tracking-tight text-ink">
+          <h1 className="mt-2 font-display text-4xl uppercase tracking-[0.01em] text-ink sm:text-5xl">
             {scenario.titulo}
           </h1>
 
