@@ -37,6 +37,16 @@ export function Sello({
   )
 }
 
+// Insignia de "aquí vas": relleno verde, no sello. El sello cuenta lo que ya
+// pasó; la insignia dice dónde seguir, y solo una la lleva en cada pantalla.
+export function Insignia({ children }: Readonly<{ children: ReactNode }>) {
+  return (
+    <span className="inline-flex items-center rounded-full bg-primary px-3 py-1 font-mono text-sm font-semibold uppercase tracking-[0.14em] text-on-primary">
+      {children}
+    </span>
+  )
+}
+
 // El átomo del mundo visual de la portada: un boleto de sorteo. Papel
 // (bg-ticket) con su sombra sobre el lienzo, el troquel (border-ticket-edge),
 // el filete impreso por dentro y, cuando lleva talón, la línea de perforación

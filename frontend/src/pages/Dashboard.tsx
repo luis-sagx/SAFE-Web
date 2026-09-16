@@ -2,10 +2,9 @@ import { ArrowRight } from "lucide-react";
 import { useEffect, useState } from "react";
 import AppHeader from "../components/AppHeader";
 import ProgressBar from "../components/BarraProgreso";
-import Ticket, { Notches, Sello } from "../components/Boleto";
+import Ticket, { Insignia, Notches, Sello } from "../components/Boleto";
 import CertificateButton from "../components/CertificadoBoton";
 import { Link } from "react-router";
-import { useAuth } from "../context/AuthContext";
 import { getSectionScenarios, SECTIONS } from "../data/catalogo";
 import { fetchProgress, type Progress } from "../lib/api";
 
@@ -46,7 +45,6 @@ function calculateOverallProgress(progressByModule: Record<string, Progress>) {
 const folio = (index: number) => `MOD-${String(index + 1).padStart(2, "0")}`;
 
 function Dashboard() {
-  const { displayName } = useAuth();
   const [progressByModule, setProgressByModule] = useState<
     Record<string, Progress>
   >({});
@@ -86,11 +84,8 @@ function Dashboard() {
       <AppHeader />
 
       <main className="mx-auto max-w-7xl px-6 py-12">
-        <h1 className="font-display text-xl uppercase tracking-[0.01em] text-ink sm:text-4xl">
-          Hola, {displayName}
-        </h1>
         {/* Regla del curso, no promesa: antes decía que ninguna respuesta te deja mal y el resultado decía lo contrario. */}
-        <p className="mt-3 max-w-prose text-lg leading-relaxed text-body">
+        <p className="max-w-prose text-lg leading-relaxed text-body">
           Elige un tipo de engaño y enfréntate a una situación como las de todos
           los días. Puedes fallar y reiniciar el módulo completo en cualquier
           momento.
@@ -197,7 +192,7 @@ function Dashboard() {
                     <h2 className="mt-1.5 font-display text-2xl uppercase tracking-[0.02em] text-ink underline-offset-4 group-hover:underline">
                       {section.titulo}
                     </h2>
-                    <p className="mt-1.5 max-w-prose text-base leading-relaxed text-body">
+                    <p className="mt-1.5 text-base leading-relaxed text-body">
                       {section.descripcion}
                     </p>
                   </div>
@@ -207,9 +202,9 @@ function Dashboard() {
 
                     {/* Única insignia: marca el primer módulo sin aprobar, el orden de entrada al recorrido. */}
                     {isEntry && (
-                      <span className="inline-flex items-center rounded-full bg-primary px-3 py-1 font-mono text-sm font-semibold uppercase tracking-[0.14em] text-on-primary">
+                      <Insignia>
                         {started ? "Continúa aquí" : "Empieza aquí"}
-                      </span>
+                      </Insignia>
                     )}
                     {progress?.aprobado && (
                       <Sello tono="border-success-ink text-success-ink">
@@ -270,12 +265,12 @@ function Dashboard() {
                   {available ? (
                     <Link
                       to={`/seccion/${section.id}`}
-                      className={`group ${rowClassName} transition hover:bg-ticket-edge/30 focus-visible:outline-2 focus-visible:outline-offset-[-4px] focus-visible:outline-link`}
+                      className={`group ${rowClassName} transition hover:bg-ticket-edge/15 focus-visible:outline-2 focus-visible:outline-offset-[-4px] focus-visible:outline-link`}
                     >
                       {content}
                     </Link>
                   ) : (
-                    <div className={`${rowClassName} bg-ticket-edge/15`}>
+                    <div className={`${rowClassName} bg-ticket-edge/25`}>
                       {content}
                     </div>
                   )}

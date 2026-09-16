@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { Link, Navigate, useParams } from 'react-router'
 import AppHeader, { BACK_CLASS } from '../components/AppHeader'
 import ProgressBar from '../components/BarraProgreso'
-import Ticket, { Notches, Sello } from '../components/Boleto'
+import Ticket, { Insignia, Notches, Sello } from '../components/Boleto'
 import ModuleCompletionModal from '../components/CierreModuloModal'
 import {
   getSectionScenarios,
@@ -91,7 +91,7 @@ function NextModule({
         <h2 className="mt-2 font-display text-2xl uppercase tracking-[0.02em] text-ink underline-offset-4 group-hover:underline sm:text-3xl">
           {next.titulo}
         </h2>
-        <p className="mt-2 max-w-prose text-base leading-relaxed text-body">{status}</p>
+        <p className="mt-2 text-base leading-relaxed text-body">{status}</p>
       </div>
 
       {open && !ready && (
@@ -167,6 +167,11 @@ function Section() {
 
   const scenarios = getSectionScenarios(section.id)
   const missing = progress ? Math.max(progress.requeridos - progress.aprobados, 0) : 0
+  // "Empieza aquí" solo con el módulo intacto; en una repetición cuenta lo jugado
+  // en esa ronda, no lo de la anterior, que ya no es el recorrido en curso.
+  const started = progress?.rondaEnCurso
+    ? progress.rondaEnCurso.jugados > 0
+    : (progress?.escenarios.length ?? 0) > 0
   const replayable = progress && (progress.escenarios.length > 0 || progress.rondaEnCurso != null)
 
   async function confirmRestart() {
@@ -322,22 +327,23 @@ function Section() {
                       <h3 className="mt-1.5 font-display text-2xl uppercase tracking-[0.02em] text-ink underline-offset-4 group-hover:underline">
                         {scenario.titulo}
                       </h3>
-                      <p className="mt-1.5 max-w-prose text-base leading-relaxed text-body">
+                      <p className="mt-1.5 text-base leading-relaxed text-body">
                         {scenario.descripcion}
                       </p>
                     </div>
 
-                    <div className="shrink-0 sm:w-52">
+                    <div className="flex shrink-0 flex-col items-start gap-2 sm:w-52">
+                      {/* La insignia sustituye al rótulo "Sin jugar": marca el único
+                          escenario sobre el que se puede actuar y sigue sin delatar si
+                          es fraude o legítimo, porque no habla del contenido. */}
+                      {available && (
+                        <Insignia>{started ? 'Continúa aquí' : 'Empieza aquí'}</Insignia>
+                      )}
                       {approved && <Sello tono="border-success-ink text-success-ink">Aprobado</Sello>}
                       {!approved && latest !== undefined && (
                         <Sello tono="border-danger text-danger">Sin aprobar</Sello>
                       )}
-                      {!approved && latest === undefined && available && (
-                        <span className="font-mono text-sm uppercase tracking-[0.14em] text-muted">
-                          Sin jugar
-                        </span>
-                      )}
-                      {!approved && latest === undefined && !available && (
+                      {!available && latest === undefined && (
                         /* El candado señala el escenario anterior en la lista, no el próximo pendiente del módulo: cada
                            uno depende del de al lado, no de un número fijo. */
                         <span className="inline-flex items-start gap-2 font-mono text-sm uppercase leading-relaxed tracking-[0.14em] text-muted">
@@ -349,7 +355,7 @@ function Section() {
                       {available && (
                         <span
                           aria-hidden
-                          className="mt-2 block font-mono text-sm uppercase tracking-[0.14em] text-link transition group-hover:translate-x-0.5"
+                          className="font-mono text-sm uppercase tracking-[0.14em] text-link transition group-hover:translate-x-0.5"
                         >
                           {progress?.rondaEnCurso ? 'Continuar →' : 'Empezar →'}
                         </span>
@@ -368,17 +374,20 @@ function Section() {
                   >
                     {index > 0 && <Notches className="-top-2.5" />}
 
-                    {/* Lo bloqueado se distingue por el candado y el papel entintado, nunca por opacidad:
-                        bajarla dejaría el texto por debajo del contraste mínimo. */}
+                    {/* Dos papeles: el que te toca queda limpio y el resto —resuelto o
+                        bloqueado— va entintado con la tinta del propio boleto, sin meter
+                        un color de fuera. Entintar, no bajar opacidad: la opacidad se
+                        lleva el texto consigo. El 25% es el techo con el que `muted`
+                        sigue en 4.54:1 sobre el papel claro. */}
                     {available ? (
                       <Link
                         to={getScenarioPath(scenario)}
-                        className={`group ${rowClassName} transition hover:bg-ticket-edge/30 focus-visible:outline-2 focus-visible:outline-offset-[-4px] focus-visible:outline-link`}
+                        className={`group ${rowClassName} transition hover:bg-ticket-edge/15 focus-visible:outline-2 focus-visible:outline-offset-[-4px] focus-visible:outline-link`}
                       >
                         {content}
                       </Link>
                     ) : (
-                      <div className={`${rowClassName} bg-ticket-edge/15`} aria-disabled="true">
+                      <div className={`${rowClassName} bg-ticket-edge/25`} aria-disabled="true">
                         {content}
                       </div>
                     )}

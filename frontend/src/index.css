@@ -9,7 +9,12 @@
   --color-on-primary: #ffffff;
 
   --color-ink: #171717;
-  --color-body: #60646c;
+  /* Oscurecido de #60646c. Aquel pasaba AA (5.2:1 sobre el papel del boleto),
+     pero se leía lavado: es un gris frío y sobre papel cálido el ojo lo ve más
+     claro de lo que mide. Además quedaba a tres puntos de --muted, así que
+     cuerpo y rótulo eran el mismo gris. Ahora 6.8:1 sobre papel, 7.3:1 sobre
+     canvas, y la escala ink > body > muted se distingue de verdad. */
+  --color-body: #4e525a;
   /* 4.85:1 en el peor caso (sobre mint-light). El #999999 original daba
      2.85:1 y no llegaba al mínimo AA, y no se usa en adornos: lo llevan
      "BLOQUEADO", "Pronto", el canal de cada módulo y todos los rótulos de
