@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { evaluateDatum, evaluateData, worstLevel, type SensitiveDatum } from './chatIA'
+import { evaluateDatum, evaluateData, worstLevel, splitKnownData, type SensitiveDatum } from './chatIA'
 
 const CEDULA: SensitiveDatum = { id: 'cedula', tipo: 'numero', etiqueta: 'Cédula', valor: '1799999980' }
 const NOMBRE: SensitiveDatum = {
@@ -66,6 +66,40 @@ describe('evaluateDatum — texto (correo, cifras institucionales, fechas)', () 
 
   it('un correo distinto no es fuga', () => {
     expect(evaluateDatum('mi correo es paola@ejemplo.com', CORREO).nivel).toBe('seguro')
+  })
+})
+
+describe('splitKnownData', () => {
+  it('sin ningún dato real presente, devuelve el texto entero como un solo tramo plano', () => {
+    const segmentos = splitKnownData('ayúdame a redactar un correo formal', [CEDULA, CORREO])
+    expect(segmentos).toEqual([{ texto: 'ayúdame a redactar un correo formal' }])
+  })
+
+  it('marca el dato real cuando aparece tal cual, y deja el resto como tramos planos', () => {
+    const segmentos = splitKnownData('mi cédula es 1799999980, gracias', [CEDULA])
+    expect(segmentos).toEqual([
+      { texto: 'mi cédula es ' },
+      { texto: '1799999980', sensible: { id: 'cedula', etiqueta: 'Cédula' } },
+      { texto: ', gracias' },
+    ])
+  })
+
+  it('un dato inventado con la misma forma no se marca (no es el valor real)', () => {
+    const segmentos = splitKnownData('mi cédula es 1234567890', [CEDULA])
+    expect(segmentos).toEqual([{ texto: 'mi cédula es 1234567890' }])
+  })
+
+  it('marca varios datos reales presentes, en el orden en que aparecen', () => {
+    const segmentos = splitKnownData('Soy Paola Guamán, mi correo es paola.guaman@safeweb.com', [
+      CORREO,
+      NOMBRE,
+    ])
+    expect(segmentos).toEqual([
+      { texto: 'Soy ' },
+      { texto: 'Paola Guamán', sensible: { id: 'nombre', etiqueta: 'Nombre' } },
+      { texto: ', mi correo es ' },
+      { texto: 'paola.guaman@safeweb.com', sensible: { id: 'correo', etiqueta: 'Correo' } },
+    ])
   })
 })
 

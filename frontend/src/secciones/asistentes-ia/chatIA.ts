@@ -194,12 +194,37 @@ export function worstLevel(resultados: DatumResult[]): LeakLevel {
   return 'seguro'
 }
 
-/// Un tramo del borrador: texto fijo, o —si `sensible` está presente— una
-/// palabra o frase real (el nombre, la cédula…) que se puede tocar para
-/// reemplazarla. `buildDraftSegments` arma esta lista sola a partir del
-/// mensaje completo y de la misma lista de `SensitiveDatum` que evalúa el
-/// envío — un solo lugar donde vive el dato real, no dos copias que puedan
-/// desalinearse.
+/// Un campo de texto real: el participante escribe su propio mensaje —o lo
+/// pega, ver BlocNotas.tsx— en vez de elegir entre burbujas ya redactadas ni
+/// tocar palabras de un borrador fijo. `onEnviar` recibe el texto tal como
+/// quedó al tocar "Enviar" y decide a qué nodo saltar — normalmente
+/// construido con `worstLevel(evaluateData(texto, ...))`.
+export interface FreeTextComposer {
+  placeholder: string
+  hora: string
+  respuestaIA: string
+  onEnviar: (texto: string) => { goto: string; label?: string }
+  // Para resaltar, en el mensaje ya enviado, los datos reales que hayan
+  // quedado tal cual (ver `splitKnownData` más abajo). Sin esto el mensaje
+  // se pinta plano, sin nada que el repaso de señales pueda apuntar.
+  segmentar?: (texto: string) => DraftSegment[]
+}
+
+/// Reemplaza las burbujas de `respuestas` (si las hubiera) por el campo de
+/// texto libre. Separado de `createAIChat` porque solo la apertura del chat
+/// cambia entre un escenario y otro; la parte de "cómo se decide" es del
+/// mismo tipo de dato para los cuatro escenarios de esta sección.
+export function withFreeTextComposer(chat: AIChat, composer: FreeTextComposer): AIChat {
+  return { ...chat, respuestas: undefined, entradaLibre: composer }
+}
+
+/// Un tramo del mensaje ya enviado: texto fijo, o —si `sensible` está
+/// presente— un dato real (el nombre, la cédula…) que apareció tal cual.
+/// `splitKnownData` arma esta lista para que el mensaje se pinte como JSX de
+/// verdad (no como HTML de `dangerouslySetInnerHTML`, que React reconstruye
+/// en cada repintado y se lleva por delante cualquier resaltado que el
+/// repaso de señales le haya agregado a mano) y así el repaso pueda apuntar
+/// al dato exacto dentro del mensaje que el participante escribió.
 export interface DraftSegment {
   texto: string
   sensible?: { id: string; etiqueta: string }
@@ -209,50 +234,37 @@ function realValueOf(dato: SensitiveDatum): string {
   return dato.tipo === 'nombre' ? `${dato.nombre} ${dato.apellido}` : dato.valor
 }
 
-/// Encuentra cada dato real dentro del mensaje y lo separa en su propio
-/// tramo `sensible`. Revienta si un dato no aparece —igual que `mark()`—
-/// porque es un error de quien escribió el guion, no algo que deba fallar en
-/// silencio delante de un participante.
-export function buildDraftSegments(texto: string, datos: SensitiveDatum[]): DraftSegment[] {
+/// A diferencia de un borrador fijo, lo que escribió el participante es
+/// libre: puede no traer ningún dato real, traer solo uno, o traerlos
+/// parafraseados (que entonces no calzan por texto exacto y no se marcan —
+/// esto es una ayuda visual para el repaso, no el criterio de evaluación,
+/// que sigue siendo `evaluateData`). Por eso, a diferencia del extinto
+/// `buildDraftSegments` de un borrador de autor, esta función nunca revienta:
+/// un dato que no aparece simplemente no genera un tramo `sensible`.
+export function splitKnownData(texto: string, datos: SensitiveDatum[]): DraftSegment[] {
   const encontrados = datos
     .map((dato) => {
       const valor = realValueOf(dato)
       const indice = texto.indexOf(valor)
-      if (indice === -1) {
-        throw new Error(`buildDraftSegments(): "${valor}" no está en el mensaje.`)
-      }
-      return { id: dato.id, etiqueta: dato.etiqueta, valor, indice }
+      return indice === -1 ? null : { id: dato.id, etiqueta: dato.etiqueta, valor, indice }
     })
+    .filter((encontrado) => encontrado !== null)
     .sort((a, b) => a.indice - b.indice)
 
   const segmentos: DraftSegment[] = []
   let cursor = 0
   for (const { id, etiqueta, valor, indice } of encontrados) {
+    // Coincidencias superpuestas (un dato contenido dentro de otro ya
+    // marcado): se queda la primera, la segunda no tiene dónde ir.
+    if (indice < cursor) continue
     if (indice > cursor) segmentos.push({ texto: texto.slice(cursor, indice) })
     segmentos.push({ texto: valor, sensible: { id, etiqueta } })
     cursor = indice + valor.length
   }
-  if (cursor < texto.length) segmentos.push({ texto: texto.slice(cursor) })
+  if (cursor < texto.length || segmentos.length === 0) {
+    segmentos.push({ texto: texto.slice(cursor) })
+  }
   return segmentos
-}
-
-/// El borrador que ya viene escrito, con sus datos sensibles marcados para
-/// tocar y reemplazar (issue #185, segunda vuelta: no es un campo en blanco
-/// donde se redacta desde cero, es el mensaje real con cada dato editable en
-/// su sitio). `onEnviar` recibe el texto reconstruido —con los reemplazos
-/// que haya hecho el participante— tal como quedó al tocar "Enviar".
-export interface EditableDraft {
-  segmentos: DraftSegment[]
-  hora: string
-  respuestaIA: string
-  onEnviar: (texto: string) => { goto: string; label?: string }
-}
-
-/// Reemplaza las burbujas de `respuestas` (si las hubiera) por el borrador
-/// editable. Separado de `createAIChat` por lo mismo que `withEditableDraft`:
-/// solo la apertura cambia entre un escenario y otro.
-export function withEditableDraft(chat: AIChat, draft: EditableDraft): AIChat {
-  return { ...chat, respuestas: undefined, borradorEditable: draft }
 }
 
 /// Envuelve fragmentos sueltos del mensaje en `<b data-signal="…">` para que el

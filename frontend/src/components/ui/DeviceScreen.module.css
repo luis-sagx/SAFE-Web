@@ -1861,11 +1861,11 @@
   height: 1.125rem;
 }
 
-/* El borrador editable (issue #185): mismo fondo y borde superior que
-   .smsComposer, pero apilado (el texto arriba, el botón de enviar abajo a la
-   derecha) porque el mensaje ocupa más de una línea, a diferencia del
-   borrador de una sola frase que usan los demás campos. */
-.smsComposerEditable {
+/* El campo de texto libre (issue #184/#185): mismo fondo y borde superior
+   que .smsComposer, pero apilado (el textarea arriba, el botón de enviar
+   abajo a la derecha) porque un mensaje real ocupa más de una línea, a
+   diferencia del borrador de una sola frase que usan los demás campos. */
+.smsComposerLibre {
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
@@ -1875,44 +1875,23 @@
   background: #f7f8fa;
   border-top: 1px solid #dfe3e9;
 }
-.smsBorrador {
+.smsTextarea {
   width: 100%;
+  min-height: 4.5rem;
+  resize: vertical;
   border: 1px solid #dfe3e9;
   background: #fff;
   border-radius: 0.75rem;
   padding: 0.625rem 0.9375rem;
-  font-size: 1.0625rem;
-  line-height: 1.6;
-  color: #16202c;
-}
-/* La palabra sensible se lee exactamente como el resto del texto —sin
-   fondo, sin subrayado— y solo revela que se puede tocar al pasar el mouse o
-   el foco por encima (usa el mismo realce de .hotspot que el resto de la
-   pantalla). Marcarla de entrada sería regalar la respuesta: delataría cuáles
-   son los datos sensibles antes de que el participante los busque él mismo. */
-.smsSensible {
-  appearance: none;
-  border: none;
-  background: none;
-  color: inherit;
-  font: inherit;
-  font-size: inherit;
-  line-height: inherit;
-  padding: 0;
-}
-.smsSensibleInput {
-  width: 8rem;
-  max-width: 100%;
-  border: 1px solid #1a73e8;
-  background: #fff;
-  border-radius: 0.25rem;
-  padding: 0 0.25rem;
   font: inherit;
   font-size: 1.0625rem;
-  line-height: inherit;
+  line-height: 1.4;
   color: #16202c;
 }
-.smsSensibleInput:focus-visible {
+.smsTextarea::placeholder {
+  color: #94a3b8;
+}
+.smsTextarea:focus-visible {
   outline: 2px solid #1a73e8;
   outline-offset: 1px;
 }
@@ -3359,7 +3338,7 @@
 .smsAncho .smsThread,
 .smsAncho .smsRespuestas,
 .smsAncho .smsComposer,
-.smsAncho .smsComposerEditable {
+.smsAncho .smsComposerLibre {
   padding-inline: max(1rem, calc((100% - 54rem) / 2));
 }
 
