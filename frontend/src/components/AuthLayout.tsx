@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { SCENARIOS, SECTIONS } from '../data/catalogo'
 import Brand from './Marca'
 import ThemeSelector from './SelectorTema'
 import Ticket from './Boleto'
@@ -42,6 +43,17 @@ function AuthLayout({ folio, titulo: title, subtitulo: subtitle, children, pie }
               <p className="mt-5 max-w-md text-base leading-relaxed text-body">
                 Situaciones de fraude recreadas en un entorno seguro, sin tocar tu banco ni tus
                 datos reales.
+              </p>
+
+              {/* Mismo contador de la portada, con los mismos datos reales
+                  del catálogo: no es relleno, es lo que ya cuenta afuera —
+                  aquí también respalda que hay contenido de verdad detrás. */}
+              <p className="mt-8 flex flex-wrap gap-y-2 font-mono text-sm uppercase tracking-[0.12em] text-muted">
+                {[`${SECTIONS.length} módulos`, `${SCENARIOS.length} escenarios`].map((count) => (
+                  <span key={count} className="mr-4 border-l border-ticket-edge pl-4 first:border-l-0 first:pl-0">
+                    {count}
+                  </span>
+                ))}
               </p>
             </div>
 
