@@ -1194,6 +1194,30 @@
   .taskbar {
     height: 2.125rem;
   }
+
+  /* Issue #184: las burbujas de opciones (respuestas de SMS/chat, frases de
+     llamada) son `flex-shrink: 0` — nunca ceden espacio — así que en una
+     pantalla baja se comían el hilo del mensaje, que es lo que hay que leer
+     para decidir. Aprietan igual que el correo arriba: menos aire y una
+     tipografía, no un cambio de layout. */
+  .smsRespuestas {
+    gap: 0.25rem;
+    padding: 0.375rem 0.5rem 0;
+  }
+  .smsRespuestasTag {
+    font-size: 0.625rem;
+  }
+  .smsRespuesta {
+    padding: 0.4375rem 0.625rem;
+    font-size: 0.9375rem;
+  }
+  .callDecir {
+    gap: 0.25rem;
+  }
+  .callFrase {
+    padding: 0.5rem 0.6875rem;
+    font-size: 0.90625rem;
+  }
 }
 
 /* En pantalla angosta desaparece la columna de carpetas, igual que en la app de
@@ -1260,6 +1284,23 @@
   .senderAddr,
   .senderTo {
     font-size: 0.875rem;
+  }
+
+  /* Segundo escalón del ajuste de #184: en una pantalla de verdad corta, el
+     primer recorte todavía deja las opciones pesando más que el hilo. */
+  .smsRespuestas {
+    padding: 0.3125rem 0.4375rem 0;
+  }
+  .smsRespuesta {
+    padding: 0.375rem 0.5625rem;
+    font-size: 0.875rem;
+  }
+  .callDecir {
+    gap: 0.1875rem;
+  }
+  .callFrase {
+    padding: 0.4375rem 0.5625rem;
+    font-size: 0.85rem;
   }
 }
 
