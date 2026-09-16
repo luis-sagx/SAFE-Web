@@ -128,7 +128,7 @@ function Portada() {
       <AppHeader />
 
       <main>
-        <section className="mx-auto grid max-w-6xl gap-10 px-6 py-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:items-center lg:gap-14 lg:py-20">
+        <section className="mx-auto grid max-w-7xl gap-10 px-6 py-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:items-center lg:gap-14 lg:py-20">
           <div>
             <h1 className="font-display text-5xl uppercase leading-[0.95] tracking-[0.01em] text-ink sm:text-6xl lg:text-7xl">
               Todo fraude
@@ -229,7 +229,7 @@ function Portada() {
 
         <section
           aria-labelledby="recorrido"
-          className="mx-auto max-w-6xl px-6 py-12 lg:py-16"
+          className="mx-auto max-w-7xl px-6 py-12 lg:py-16"
         >
           <h2
             id="recorrido"
@@ -255,7 +255,7 @@ function Portada() {
         <section
           id="videos"
           aria-labelledby="videos-titulo"
-          className="mx-auto max-w-6xl px-6 py-12 lg:py-16"
+          className="mx-auto max-w-7xl px-6 py-12 lg:py-16"
         >
           <h2
             id="videos-titulo"
@@ -301,7 +301,7 @@ function Portada() {
 
         <section
           aria-labelledby="cierre"
-          className="mx-auto max-w-6xl px-6 py-12 lg:py-20"
+          className="mx-auto max-w-7xl px-6 py-12 lg:py-20"
         >
           <Ticket
             className="overflow-hidden"

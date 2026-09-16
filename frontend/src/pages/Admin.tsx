@@ -558,7 +558,7 @@ function Admin() {
     <div className="min-h-screen bg-canvas">
       <AppHeader etiqueta="Administración" />
 
-      <main className="mx-auto max-w-6xl px-6 py-12">
+      <main className="mx-auto max-w-7xl px-6 py-12">
         <p className="text-xs font-semibold uppercase tracking-[0.88px] text-muted">
           Panel de administración
         </p>
