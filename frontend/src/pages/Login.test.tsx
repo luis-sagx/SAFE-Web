@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import { BrowserRouter } from 'react-router'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import Login from './Login'
@@ -83,5 +83,23 @@ describe('Login', () => {
     )
 
     expect(screen.getByText(/¿No puedes entrar/)).toBeDefined()
+  })
+
+  it('muestra el error de formato del correo debajo del campo al escribir', () => {
+    useAuthMock.mockReturnValue({
+      isAuthenticated: false,
+      loading: false,
+      isAdmin: false,
+      login: vi.fn(),
+    })
+
+    render(
+      <BrowserRouter>
+        <Login />
+      </BrowserRouter>
+    )
+
+    fireEvent.change(screen.getByLabelText(/Correo/), { target: { value: 'correo-invalido' } })
+    expect(screen.getByText('El correo no tiene un formato válido.')).toBeDefined()
   })
 })

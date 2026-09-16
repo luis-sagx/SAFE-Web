@@ -81,7 +81,7 @@ describe('Registro', () => {
     expect(screen.getByText(/Ya tienes cuenta/)).toBeDefined()
   })
 
-  it('avisa que el nombre es muy corto solo al salir del campo, no mientras escribe', () => {
+  it('avisa debajo del nombre inmediatamente cuando no llega al mínimo', () => {
     useAuthMock.mockReturnValue({
       isAuthenticated: false,
       loading: false,
@@ -96,9 +96,6 @@ describe('Registro', () => {
 
     const nameField = screen.getByLabelText(/Nombre/)
     fireEvent.change(nameField, { target: { value: 'A' } })
-    expect(screen.queryByText(/al menos 2 caracteres/)).toBeNull()
-
-    fireEvent.blur(nameField)
     expect(screen.getByText(/al menos 2 caracteres/)).toBeDefined()
   })
 
@@ -117,13 +114,14 @@ describe('Registro', () => {
 
     const nameField = screen.getByLabelText(/Nombre/)
     fireEvent.change(nameField, { target: { value: 'María' } })
-    expect(screen.queryByText(/\/60/)).toBeNull()
+    expect(screen.queryByText(/\/50/)).toBeNull()
 
-    fireEvent.change(nameField, { target: { value: 'M'.repeat(52) } })
-    expect(screen.getByText('52/60')).toBeDefined()
+    fireEvent.change(nameField, { target: { value: 'M'.repeat(42) } })
+    expect(screen.getByText('42/50')).toBeDefined()
+    expect(nameField.getAttribute('maxLength')).toBe('50')
   })
 
-  it('avisa que el apellido es muy corto solo al salir del campo, no mientras escribe', () => {
+  it('avisa debajo del apellido inmediatamente cuando no llega al mínimo', () => {
     useAuthMock.mockReturnValue({
       isAuthenticated: false,
       loading: false,
@@ -138,9 +136,6 @@ describe('Registro', () => {
 
     const lastNameField = screen.getByLabelText(/Apellido/)
     fireEvent.change(lastNameField, { target: { value: 'P' } })
-    expect(screen.queryByText(/al menos 2 caracteres/)).toBeNull()
-
-    fireEvent.blur(lastNameField)
     expect(screen.getByText(/al menos 2 caracteres/)).toBeDefined()
   })
 
@@ -159,10 +154,11 @@ describe('Registro', () => {
 
     const lastNameField = screen.getByLabelText(/Apellido/)
     fireEvent.change(lastNameField, { target: { value: 'Pérez' } })
-    expect(screen.queryByText(/\/60/)).toBeNull()
+    expect(screen.queryByText(/\/50/)).toBeNull()
 
-    fireEvent.change(lastNameField, { target: { value: 'P'.repeat(52) } })
-    expect(screen.getByText('52/60')).toBeDefined()
+    fireEvent.change(lastNameField, { target: { value: 'P'.repeat(42) } })
+    expect(screen.getByText('42/50')).toBeDefined()
+    expect(lastNameField.getAttribute('maxLength')).toBe('50')
   })
 
   it('avisa que el correo no tiene formato válido solo al salir del campo', () => {
@@ -276,6 +272,28 @@ describe('Registro', () => {
     expect(screen.getByText(/Fortaleza de la contraseña: Fuerte/)).toBeDefined()
   })
 
+  it('muestra en vivo qué requisitos de contraseña faltan y cuáles ya cumplen', () => {
+    useAuthMock.mockReturnValue({
+      isAuthenticated: false,
+      loading: false,
+      register: vi.fn(),
+    })
+
+    render(
+      <BrowserRouter>
+        <Registration />
+      </BrowserRouter>
+    )
+
+    const passwordField = screen.getByLabelText(/Contraseña/)
+    fireEvent.change(passwordField, { target: { value: 'ClaveSegura1' } })
+
+    expect(screen.getByText('8 o más caracteres').getAttribute('data-status')).toBe('cumple')
+    expect(screen.getByText('Una letra mayúscula').getAttribute('data-status')).toBe('cumple')
+    expect(screen.getByText('Un número').getAttribute('data-status')).toBe('cumple')
+    expect(screen.getByText('Un carácter especial').getAttribute('data-status')).toBe('pendiente')
+  })
+
   it('bloquea el envío con un correo sin formato válido', () => {
     const registerMock = vi.fn()
     useAuthMock.mockReturnValue({
@@ -294,8 +312,8 @@ describe('Registro', () => {
     fireEvent.change(screen.getByLabelText(/Correo/), { target: { value: 'sinarroba' } })
     fireEvent.click(screen.getByRole('button', { name: 'Crear cuenta' }))
 
-    // Aparece dos veces: el aviso general del formulario y el del propio
-    // campo, que el envío también marca como tocado.
+    // Aparece dos veces: el aviso general del formulario y el inmediato bajo
+    // el propio campo.
     expect(screen.getAllByText('El correo no tiene un formato válido.').length).toBeGreaterThan(0)
     expect(registerMock).not.toHaveBeenCalled()
   })
@@ -345,8 +363,7 @@ describe('Registro', () => {
       screen.getByText('El nombre y el apellido deben tener al menos 2 caracteres.'),
     ).toBeDefined()
     expect(registerMock).not.toHaveBeenCalled()
-    // El blur no llegó a pasar, pero el intento de envío también marca el
-    // campo como tocado: por eso el error en línea aparece igual.
+    // El aviso en línea aparece desde que se escribe el carácter inválido.
     expect(screen.getAllByText(/al menos 2 caracteres/).length).toBeGreaterThan(0)
   })
 
