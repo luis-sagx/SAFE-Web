@@ -1,4 +1,4 @@
-import { Camera, Compass, MessageSquareText, Wallet } from 'lucide-react'
+import { Compass, MessageSquareText, Wallet } from 'lucide-react'
 import ScenarioStory, { type PhoneApp, type ScreenNode } from '../../components/StoryEscenario'
 import type { Context } from '../../components/ui/ContextoEscenario'
 import type { Story } from '../../hooks/useStoryEngine'
@@ -121,18 +121,7 @@ const APPS: PhoneApp[] = [
     label: 'Abrió el navegador para comprobarlo por su cuenta',
   },
   { Icono: MessageSquareText, texto: 'Mensajes', color: '#2f9e44' },
-  {
-    Icono: Wallet,
-    texto: 'Banco',
-    color: '#155e75',
-    vacia: 'Banca móvil · Saldo disponible $312,45. Sin notificaciones nuevas.',
-  },
-  {
-    Icono: Camera,
-    texto: 'Cámara',
-    color: '#495057',
-    vacia: 'La cámara está lista. No hay nada que fotografiar en este momento.',
-  },
+  { Icono: Wallet, texto: 'Banco', color: '#155e75', relleno: 'banco' },
 ]
 
 const STORY: Story<ScreenNode> = {

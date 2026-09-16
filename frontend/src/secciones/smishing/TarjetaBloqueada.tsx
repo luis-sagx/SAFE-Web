@@ -230,12 +230,7 @@ const APPS: PhoneApp[] = [
   { Icono: MessageSquareText, texto: 'Mensajes', color: '#2f9e44', hilo: 'sms' },
   // Sin `hilo`, ambos iconos devolverían a lo último visto en vez de a lo suyo.
   { Icono: Phone, texto: 'Teléfono', color: '#495057', hilo: 'call' },
-  {
-    Icono: Compass,
-    texto: 'Navegador',
-    color: '#1971c2',
-    vacia: 'Nueva pestaña. No hay ninguna dirección escrita todavía.',
-  },
+  { Icono: Compass, texto: 'Navegador', color: '#1971c2', relleno: 'navegador' },
 ]
 
 export const STORY: Story<ScreenNode> = {

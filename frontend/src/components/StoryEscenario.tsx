@@ -5,6 +5,7 @@ import Instructions from './ui/Instrucciones'
 import { createEmailFolders } from './ui/carpetasCorreo'
 import type { Context } from './ui/ContextoEscenario'
 import DeviceScreen, { type ScreenView } from './ui/DeviceScreen'
+import AppRelleno, { esRellenoTipo, type RellenoTipo } from './ui/AppRelleno'
 import { preventNavigation, handleHotspotClick } from './ui/interactivo'
 import type { EmailAction, Clock } from './ui/DesktopChrome'
 import { Browser, type BrowserBookmark, type TabConfig } from './ui/Navegador'
@@ -53,12 +54,21 @@ interface ScenarioStoryProps {
 
 // Todas las apps del dock reaccionan al pulsarlas (deliberado: si solo
 // reaccionara la que decide, el realce del cursor delataría la respuesta).
-// goto = decisión en la traza; vacia = estado vacío, no entra en la traza;
-// ninguno = vuelve al hilo de Mensajes.
+// goto = decisión en la traza; vacia/relleno = app de relleno, no entra en
+// la traza; ninguno = vuelve al hilo de Mensajes.
 export type PhoneApp = BrowserBookmark & {
+  // Estado vacío genérico: ícono del dock agrandado + un párrafo. Sigue
+  // existiendo para las apps de relleno que no tienen (todavía) un layout
+  // propio en AppRelleno.tsx.
   vacia?: string
-  // A qué pantalla vuelve si no lleva goto ni vacia; solo hace falta cuando
-  // el escenario tiene mensajes y llamada a la vez.
+  // Issue #187: variante con la pinta de la app real que dice ser —saldo y
+  // movimientos, barra de direcciones…— en vez del párrafo genérico de
+  // `vacia`. Uno de los dos, nunca ambos; como máximo una app de cada tipo
+  // por escenario, porque el layout es fijo y dos "banco" en el mismo dock
+  // se verían idénticas.
+  relleno?: RellenoTipo
+  // A qué pantalla vuelve si no lleva goto ni vacia/relleno; solo hace falta
+  // cuando el escenario tiene mensajes y llamada a la vez.
   hilo?: 'sms' | 'call'
   color?: string
   // Destino cuando se abre con una llamada real en curso (no el marcador).
@@ -139,7 +149,9 @@ function ScenarioStory({
   // App del dock que no decide nada (cámara, galería); vive fuera del grafo
   // igual que `pestanaMirada`.
   const [appOpen, setAppOpen] = useState<
-    { nombre: string; vacia: string; Icono?: LucideIcon; color?: string } | undefined
+    | { nombre: string; relleno: RellenoTipo; color?: string }
+    | { nombre: string; vacia: string; Icono?: LucideIcon; color?: string }
+    | undefined
   >()
   // Última pantalla de cada app de comunicación (hilo SMS y llamada en curso);
   // su icono vuelve a ella sin tocar el grafo. Son dos porque un escenario
@@ -330,9 +342,11 @@ function ScenarioStory({
       if (!engine.isEnding) {
         const appDef = apps?.find((a) => a.texto === app.app)
         setAppOpen(
-          app.appVacia
-            ? { nombre: app.app ?? '', vacia: app.appVacia, Icono: appDef?.Icono, color: appDef?.color }
-            : undefined,
+          app.appRelleno && esRellenoTipo(app.appRelleno)
+            ? { nombre: app.app ?? '', relleno: app.appRelleno, color: appDef?.color }
+            : app.appVacia
+              ? { nombre: app.app ?? '', vacia: app.appVacia, Icono: appDef?.Icono, color: appDef?.color }
+              : undefined,
         )
       }
       return
@@ -432,18 +446,22 @@ function ScenarioStory({
                 <span className={styles.phoneAppVolver} aria-hidden />
               </div>
               <div className={styles.phoneViewport}>
-                <div className={styles.appVacia}>
-                  {appOpen.Icono && (
-                    <span
-                      className={styles.appVaciaIcono}
-                      style={appOpen.color ? { background: appOpen.color } : undefined}
-                      aria-hidden
-                    >
-                      <appOpen.Icono className={styles.appVaciaGlifo} strokeWidth={1.75} />
-                    </span>
-                  )}
-                  <p className={styles.appVaciaTexto}>{appOpen.vacia}</p>
-                </div>
+                {'relleno' in appOpen ? (
+                  <AppRelleno tipo={appOpen.relleno} color={appOpen.color} />
+                ) : (
+                  <div className={styles.appVacia}>
+                    {appOpen.Icono && (
+                      <span
+                        className={styles.appVaciaIcono}
+                        style={appOpen.color ? { background: appOpen.color } : undefined}
+                        aria-hidden
+                      >
+                        <appOpen.Icono className={styles.appVaciaGlifo} strokeWidth={1.75} />
+                      </span>
+                    )}
+                    <p className={styles.appVaciaTexto}>{appOpen.vacia}</p>
+                  </div>
+                )}
               </div>
             </>
           ) : (
@@ -532,10 +550,11 @@ function ScenarioStory({
           el único camino al acierto. */}
       {apps && apps.length > 0 && (
         <div className={styles.phoneDock} aria-label="Apps del teléfono">
-          {apps.map(({ Icono: Icon, texto: text, goto, gotoEnLlamada: callTarget, label, vacia: empty, color, hilo: thread }) => {
+          {apps.map(({ Icono: Icon, texto: text, goto, gotoEnLlamada: callTarget, label, vacia: empty, relleno, color, hilo: thread }) => {
             // El marcador no cuenta como llamada: tocar un número no es haber llamado.
             const onCall = toView.kind === 'call' && !toView.marcando
             const destination = (onCall && callTarget) || goto
+            const filler = empty || relleno
             return (
             <button
               key={text}
@@ -544,9 +563,10 @@ function ScenarioStory({
               data-hotspot-goto={destination}
               data-hotspot-label={label}
               // Las que no deciden se abren igual (ver AppTelefono).
-              data-app={destination || !empty ? undefined : text}
+              data-app={destination || !filler ? undefined : text}
               data-app-vacia={destination ? undefined : empty}
-              data-app-hilo={destination || empty ? undefined : (thread ?? '')}
+              data-app-relleno={destination ? undefined : relleno}
+              data-app-hilo={destination || filler ? undefined : (thread ?? '')}
             >
               <span
                 className={styles.phoneDockIcono}

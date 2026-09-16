@@ -56,9 +56,9 @@ describe('AlertaConsumo', () => {
   it('las apps que no deciden se abren igual y se vuelve con la flecha', () => {
     const phone = start(<ConsumptionAlert />)
 
-    fireEvent.click(within(phone).getByRole('button', { name: /Cámara/ }))
+    fireEvent.click(within(phone).getByRole('button', { name: /Galería/ }))
 
-    expect(within(phone).getByText(/La cámara está lista/)).toBeDefined()
+    expect(within(phone).getByText('248 elementos')).toBeDefined()
     // Mirar no decide: la corrida sigue en curso y no entró en la traza.
     expect(screen.getByText('¿Qué haces?')).toBeDefined()
     expect(within(phone).queryByText(/SUPERMERCADO LA UNIÓN/)).toBeNull()
