@@ -27,14 +27,14 @@ const MESSAGE_NAME = 'Solo se permiten letras y espacios entre palabras.';
 export class RegisterDto {
   @IsString()
   @MinLength(2)
-  @MaxLength(60)
+  @MaxLength(50)
   @Matches(NAME_PATTERN, { message: MESSAGE_NAME })
   @TransformText((value) => value.trim())
   nombre: string;
 
   @IsString()
   @MinLength(2)
-  @MaxLength(60)
+  @MaxLength(50)
   @Matches(NAME_PATTERN, { message: MESSAGE_NAME })
   @TransformText((value) => value.trim())
   apellido: string;

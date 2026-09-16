@@ -13,6 +13,8 @@ function Login() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const EMAIL_FORMAT = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  const invalidEmail = email.length > 0 && !EMAIL_FORMAT.test(email)
 
   if (loading) {
     return <LoadingScreen />
@@ -25,6 +27,17 @@ function Login() {
   async function handleSubmit(event: FormEvent) {
     event.preventDefault()
     setError('')
+
+    if (!EMAIL_FORMAT.test(email)) {
+      setError('El correo no tiene un formato válido.')
+      return
+    }
+
+    if (!password) {
+      setError('Ingresa tu contraseña para continuar.')
+      return
+    }
+
     setSubmitting(true)
 
     try {
@@ -60,6 +73,7 @@ function Login() {
           autoComplete="email"
           placeholder="tu@correo.com"
           maxLength={120}
+          error={invalidEmail ? 'El correo no tiene un formato válido.' : undefined}
         />
         <Field
           id="password"

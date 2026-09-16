@@ -1,3 +1,4 @@
+import { Check, X } from "lucide-react";
 import { useState, type FormEvent } from "react";
 import { Link, Navigate, useNavigate } from "react-router";
 import AuthLayout from "../components/AuthLayout";
@@ -18,20 +19,14 @@ function Registration() {
   const [acceptedPolicy, setAcceptedPolicy] = useState(false);
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  // "Tocado" y no "no vacío": un campo vacío también está por debajo del
-  // mínimo, pero marcarlo en rojo antes de que el usuario haya escrito una
-  // sola letra es regañar por adelantado. Se activa al salir del campo, no
-  // en cada tecla, igual que ya hace la cédula con su propio criterio.
-  const [nameTouched, setNameTouched] = useState(false);
-  const [lastNameTouched, setLastNameTouched] = useState(false);
   const [emailTouched, setEmailTouched] = useState(false);
   const [passwordTouched, setPasswordTouched] = useState(false);
 
   const NAME_MIN = 2;
-  const NAME_MAX = 60;
+  const NAME_MAX = 50;
   const PASSWORD_MIN = 8;
-  const shortName = nameTouched && name.length > 0 && name.length < NAME_MIN;
-  const shortLastName = lastNameTouched && lastName.length > 0 && lastName.length < NAME_MIN;
+  const shortName = name.length > 0 && name.length < NAME_MIN;
+  const shortLastName = lastName.length > 0 && lastName.length < NAME_MIN;
 
   // Solo letras (con tildes y ñ) y espacios entre palabras, y ningún espacio
   // al principio, al final, ni dos seguidos: lo mismo que "María José" tiene
@@ -78,12 +73,13 @@ function Registration() {
   // mayúscula y número pero le falta el símbolo está más cerca de una buena
   // contraseña que alguien que recién empezó a escribir, y verlo moverse un
   // paso a la vez anima a completarla en vez de rendirse en el primer intento.
-  const criteriaPassword = [
-    password.length >= PASSWORD_MIN,
-    /[A-Z]/.test(password),
-    /\d/.test(password),
-    /[^A-Za-z0-9]/.test(password),
-  ].filter(Boolean).length;
+  const passwordRequirements = [
+    { label: "8 o más caracteres", complete: password.length >= PASSWORD_MIN },
+    { label: "Una letra mayúscula", complete: /[A-Z]/.test(password) },
+    { label: "Un número", complete: /\d/.test(password) },
+    { label: "Un carácter especial", complete: /[^A-Za-z0-9]/.test(password) },
+  ];
+  const criteriaPassword = passwordRequirements.filter(({ complete }) => complete).length;
   const passwordStrength =
     password.length === 0
       ? null
@@ -118,15 +114,11 @@ function Registration() {
     }
 
     if (name.length < NAME_MIN || lastName.length < NAME_MIN) {
-      setNameTouched(true);
-      setLastNameTouched(true);
       setError(`El nombre y el apellido deben tener al menos ${NAME_MIN} caracteres.`);
       return;
     }
 
     if (!NAME_PATTERN.test(name) || !NAME_PATTERN.test(lastName)) {
-      setNameTouched(true);
-      setLastNameTouched(true);
       setError(`El nombre y el apellido solo pueden tener letras y espacios entre palabras.`);
       return;
     }
@@ -188,7 +180,6 @@ function Registration() {
             label="Nombre"
             value={name}
             onChange={setName}
-            onBlur={() => setNameTouched(true)}
             autoComplete="given-name"
             placeholder="María"
             maxLength={NAME_MAX}
@@ -206,7 +197,6 @@ function Registration() {
             label="Apellido"
             value={lastName}
             onChange={setLastName}
-            onBlur={() => setLastNameTouched(true)}
             autoComplete="family-name"
             placeholder="Pérez"
             maxLength={NAME_MAX}
@@ -262,13 +252,37 @@ function Registration() {
                 : undefined
             }
           />
-          {/* En vivo y no al salir del campo: a diferencia del error, que
-              espera a que termine de escribir, la fortaleza se lee mejor como
-              algo que responde tecla a tecla. */}
+          {/* La lista y la barra responden a cada tecla: la persona sabe qué
+              falta sin tener que descifrar un mensaje genérico. */}
           {passwordStrength && (
-            <p className={`mt-1.5 text-sm font-medium ${passwordStrength.clase}`}>
-              Fortaleza de la contraseña: {passwordStrength.texto}
-            </p>
+            <div className="mt-2" aria-live="polite">
+              <p className={`text-sm font-semibold ${passwordStrength.clase}`}>
+                Fortaleza de la contraseña: {passwordStrength.texto}
+              </p>
+              <div
+                className="mt-1.5 grid grid-cols-4 gap-1"
+                aria-label={`Fortaleza de la contraseña: ${passwordStrength.texto}`}
+              >
+                {passwordRequirements.map(({ label, complete }) => (
+                  <span
+                    key={label}
+                    className={`h-1.5 rounded-full ${complete ? "bg-success-ink" : "bg-border-control"}`}
+                  />
+                ))}
+              </div>
+              <ul className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1 text-xs text-body">
+                {passwordRequirements.map(({ label, complete }) => (
+                  <li
+                    key={label}
+                    data-status={complete ? "cumple" : "pendiente"}
+                    className={`flex items-center gap-1.5 ${complete ? "text-success-ink" : "text-muted"}`}
+                  >
+                    {complete ? <Check aria-hidden="true" size={14} /> : <X aria-hidden="true" size={14} />}
+                    {label}
+                  </li>
+                ))}
+              </ul>
+            </div>
           )}
         </div>
 

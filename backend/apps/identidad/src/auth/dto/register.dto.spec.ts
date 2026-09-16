@@ -82,6 +82,11 @@ describe('RegisterDto.password — política de fortaleza', () => {
 });
 
 describe('RegisterDto.nombre / apellido — caracteres permitidos', () => {
+  it('rechaza nombre y apellido de más de 50 caracteres', () => {
+    expect(validate({ nombre: 'A'.repeat(51) })).toContain('nombre');
+    expect(validate({ apellido: 'B'.repeat(51) })).toContain('apellido');
+  });
+
   it('acepta un nombre simple', () => {
     expect(validate({ nombre: 'Ana' })).toEqual([]);
   });

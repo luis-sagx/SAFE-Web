@@ -49,8 +49,10 @@ model Participant {
   // que sigue siendo legible mientras el backfill no ha corrido. Es
   // deliberado, no un descuido: evita una ventana de login roto entre
   // desplegar este cambio de esquema y correr el script.
-  nombre   String
-  apellido String
+  /// El cifrado AES-GCM y su codificación caben holgadamente en 255 bytes
+  /// para los 50 caracteres que acepta `RegisterDto`.
+  nombre   String @db.VarChar(255)
+  apellido String @db.VarChar(255)
   email    String
 
   /// HMAC-SHA256(correo normalizado, EMAIL_PEPPER): el índice único para
