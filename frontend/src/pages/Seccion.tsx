@@ -5,6 +5,7 @@ import AppHeader, { BACK_CLASS } from '../components/AppHeader'
 import ProgressBar from '../components/BarraProgreso'
 import Ticket, { Insignia, Notches, Sello } from '../components/Boleto'
 import ModuleCompletionModal from '../components/CierreModuloModal'
+import TramaFondo from '../components/TramaFondo'
 import {
   getSectionScenarios,
   getSection,
@@ -191,7 +192,8 @@ function Section() {
   }
 
   return (
-    <div className="min-h-screen bg-canvas">
+    <div className="relative min-h-screen overflow-hidden bg-canvas">
+      <TramaFondo />
       <AppHeader
         atras={
           <Link to="/dashboard" className={BACK_CLASS}>

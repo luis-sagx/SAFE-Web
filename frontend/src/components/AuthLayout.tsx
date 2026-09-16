@@ -3,6 +3,7 @@ import { SCENARIOS, SECTIONS } from '../data/catalogo'
 import Brand from './Marca'
 import ThemeSelector from './SelectorTema'
 import Ticket from './Boleto'
+import TramaFondo from './TramaFondo'
 
 interface AuthLayoutProps {
   /// Rótulo del boleto (p. ej. "ACCESO", "REGISTRO"): mismo lenguaje que el
@@ -21,40 +22,45 @@ interface AuthLayoutProps {
 /// perforación es vertical (dos columnas); en celular, horizontal (apilado).
 function AuthLayout({ folio, titulo: title, subtitulo: subtitle, children, pie }: AuthLayoutProps) {
   return (
-    // Flujo normal y no `absolute`: flotando arriba del todo, el selector se
-    // salía de la vista al hacer scroll (o se montaba encima del logo en una
-    // pantalla baja) — acá siempre tiene su propio espacio reservado.
-    <div className="min-h-screen bg-canvas">
-      <div className="mx-auto flex max-w-4xl justify-end px-6 pt-6">
-        <ThemeSelector />
-      </div>
+    // Sin selector aparte arriba de la página: ahora vive dentro del propio
+    // boleto (ver más abajo), así que este contenedor ya no le reserva
+    // espacio a nada.
+    <div className="relative min-h-screen overflow-hidden bg-canvas">
+      <TramaFondo />
+
       <div className="mx-auto flex min-h-screen max-w-4xl items-center px-6 py-12">
         <Ticket className="w-full overflow-hidden">
           <div className="flex flex-col lg:flex-row">
-            {/* Centrado vertical en escritorio: la columna del formulario
-                suele ser más alta (tiene más campos), y sin esto el logo y
-                el título quedaban pegados arriba con todo el resto del aire
-                vacío debajo, como perdidos en la esquina. */}
-            <div className="p-8 lg:flex-1 lg:self-center lg:p-12">
-              <Brand variante="logo" className="h-12 w-auto" />
-              <h1 className="mt-4 font-display text-3xl uppercase leading-[0.95] tracking-[0.01em] text-ink sm:text-4xl">
-                Aprende a reconocer un engaño antes de caer en uno.
-              </h1>
-              <p className="mt-5 max-w-md text-base leading-relaxed text-body">
-                Situaciones de fraude recreadas en un entorno seguro, sin tocar tu banco ni tus
-                datos reales.
-              </p>
+            {/* flex-col + justify-between: el bloque de marca se centra en
+                el espacio que sobra (mismo motivo que antes, la columna del
+                formulario suele ser más alta), pero el selector de tema
+                siempre se queda pegado abajo del todo, no viaja con el resto. */}
+            <div className="flex flex-col p-8 lg:flex-1 lg:p-12">
+              <div className="lg:flex lg:flex-1 lg:flex-col lg:justify-center">
+                <Brand variante="logo" className="h-12 w-auto" />
+                <h1 className="mt-4 font-display text-3xl uppercase leading-[0.95] tracking-[0.01em] text-ink sm:text-4xl">
+                  Aprende a reconocer un engaño antes de caer en uno.
+                </h1>
+                <p className="mt-5 max-w-md text-base leading-relaxed text-body">
+                  Situaciones de fraude recreadas en un entorno seguro, sin tocar tu banco ni tus
+                  datos reales.
+                </p>
 
-              {/* Mismo contador de la portada, con los mismos datos reales
-                  del catálogo: no es relleno, es lo que ya cuenta afuera —
-                  aquí también respalda que hay contenido de verdad detrás. */}
-              <p className="mt-8 flex flex-wrap gap-y-2 font-mono text-sm uppercase tracking-[0.12em] text-muted">
-                {[`${SECTIONS.length} módulos`, `${SCENARIOS.length} escenarios`].map((count) => (
-                  <span key={count} className="mr-4 border-l border-ticket-edge pl-4 first:border-l-0 first:pl-0">
-                    {count}
-                  </span>
-                ))}
-              </p>
+                {/* Mismo contador de la portada, con los mismos datos reales
+                    del catálogo: no es relleno, es lo que ya cuenta afuera —
+                    aquí también respalda que hay contenido de verdad detrás. */}
+                <p className="mt-8 flex flex-wrap gap-y-2 font-mono text-sm uppercase tracking-[0.12em] text-muted">
+                  {[`${SECTIONS.length} módulos`, `${SCENARIOS.length} escenarios`].map((count) => (
+                    <span key={count} className="mr-4 border-l border-ticket-edge pl-4 first:border-l-0 first:pl-0">
+                      {count}
+                    </span>
+                  ))}
+                </p>
+              </div>
+
+              <div className="mt-8 lg:mt-10">
+                <ThemeSelector />
+              </div>
             </div>
 
             {/* La perforación: punteada y horizontal apilado (arriba del
