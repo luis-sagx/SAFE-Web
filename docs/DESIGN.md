@@ -579,6 +579,11 @@ tarjetas, y un solo nivel de sombra.
   `scrim`.
 - No poner una tarjeta (`bg-surface`) en la portada, ni una rejilla de boletos
   sueltos donde el contenido es una serie: eso es una tira perforada (§11).
+- No usar `hover:bg-surface-strong` en un botón que vive **sobre el papel**:
+  `surface-strong` es un gris frío del sistema y sobre el boleto cálido se lee
+  como un parche pegado. El hover de un botón del boleto es un sombreado del
+  propio papel, `hover:bg-ticket-edge/50` (5.2:1 en claro y 7.0:1 en oscuro
+  bajo `link`).
 - No usar `ticket`, `ticket-edge` ni `font-display` fuera de la portada: son el
   mundo de esa superficie, no tokens generales. Una pantalla interna nueva se
   hace con `surface` e Inter.

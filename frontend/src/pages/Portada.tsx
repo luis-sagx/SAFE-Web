@@ -1,11 +1,18 @@
-import { Link } from 'react-router'
-import AppHeader from '../components/AppHeader'
-import Ticket, { Notches } from '../components/Boleto'
-import ScratchTicket from '../components/BoletoRaspable'
-import VideoTicket from '../components/VideoCapacitacion'
-import { useAuth } from '../context/AuthContext'
-import { SCENARIOS, SECTIONS } from '../data/catalogo'
-import { TRAINING_VIDEOS } from '../data/videosCapacitacion'
+import { Link } from "react-router";
+import AppHeader from "../components/AppHeader";
+import Ticket, { Notches } from "../components/Boleto";
+import ScratchTicket from "../components/BoletoRaspable";
+import VideoTicket from "../components/VideoCapacitacion";
+import { useAuth } from "../context/AuthContext";
+import { SCENARIOS, SECTIONS } from "../data/catalogo";
+import { TRAINING_VIDEOS } from "../data/videosCapacitacion";
+
+// Enumera en español con "y" antes del último, desde el catálogo: cualquier
+// módulo que se agregue o se quite aparece solo, sin retocar la portada.
+const listar = (items: string[]) =>
+  new Intl.ListFormat("es", { style: "long", type: "conjunction" }).format(
+    items,
+  );
 
 // El cebo del boleto: un SMS de premio como los que circulan en Ecuador. Es
 // un ejemplo escrito para la portada, no un mensaje capturado a nadie, y por
@@ -14,85 +21,97 @@ import { TRAINING_VIDEOS } from '../data/videosCapacitacion'
 const SIGNALS = [
   {
     id: 1,
-    marca: 'bono-gobierno.ec-pagos.info',
-    titulo: 'La dirección no es del Estado',
-    detalle: 'Las páginas oficiales del Ecuador terminan en .gob.ec. Esta termina en .info.',
+    marca: "bono-gobierno.ec-pagos.info",
+    titulo: "La dirección no es del Estado",
+    detalle:
+      "Las páginas oficiales del Ecuador terminan en .gob.ec. Esta termina en .info.",
   },
   {
     id: 2,
-    marca: 'antes de las 18h00',
-    titulo: 'Te ponen un reloj encima',
-    detalle: 'La prisa es la herramienta: nadie verifica nada cuando cree que se le acaba el tiempo.',
+    marca: "antes de las 18h00",
+    titulo: "Te ponen un reloj encima",
+    detalle:
+      "La prisa es la herramienta: nadie verifica nada cuando cree que se le acaba el tiempo.",
   },
   {
     id: 3,
-    marca: 'tu clave de banca',
-    titulo: 'Ningún premio necesita tu clave',
-    detalle: 'Ni tu banco ni una entidad pública piden la clave por mensaje, ni siquiera para pagarte.',
+    marca: "tu clave de banca",
+    titulo: "Ningún premio necesita tu clave",
+    detalle:
+      "Ni tu banco ni una entidad pública piden la clave por mensaje, ni siquiera para pagarte.",
   },
-]
+];
 
 const STEPS = [
   {
-    titulo: 'Abres un módulo',
-    detalle:
-      'Siete temas: correo, mensajes, llamadas, suplantación, compras, oficina y asistentes de IA.',
+    titulo: "Abres un módulo",
+    detalle: `Un módulo por amenaza: ${listar(SECTIONS.map((section) => section.titulo))}.`,
   },
   {
-    titulo: 'Vives la situación',
+    titulo: "Vives la situación",
     detalle:
-      'Un correo, un chat o una llamada que se comporta como el de verdad. Tú decides qué hacer con él.',
+      "Un correo, un chat o una llamada que se comporta como el de verdad. Tú decides qué hacer con él.",
   },
   {
-    titulo: 'Ves qué lo delataba',
+    titulo: "Ves qué lo delataba",
     detalle:
-      'Al cerrar, SAFE-Web marca las señales que estaban ahí desde el principio y explica por qué importan.',
+      "Al cerrar, SAFE-Web marca las señales que estaban ahí desde el principio y explica por qué importan.",
   },
-]
+];
 
 /** Cuántos de los ocho videos existen ya. Sale del catálogo, no de una
  *  promesa: mientras falten, el contador lo dice en el primer viewport. */
 function videoCount() {
-  const total = TRAINING_VIDEOS.length
-  const published = TRAINING_VIDEOS.filter((video) => video.youtubeUrl).length
-  if (published === 0) return `${total} videos en preparación`
-  if (published < total) return `${published} de ${total} videos`
-  return `${total} videos`
+  const total = TRAINING_VIDEOS.length;
+  const published = TRAINING_VIDEOS.filter((video) => video.youtubeUrl).length;
+  if (published === 0) return `${total} videos en preparación`;
+  if (published < total) return `${published} de ${total} videos`;
+  return `${total} videos`;
 }
 
 /** Resalta dentro del SMS el fragmento de cada señal y le pone su número. */
 function BaitMessage() {
   return (
     <p className="text-base leading-relaxed text-ink">
-      <span className="font-display text-xl uppercase tracking-wide">BANCO GOB:</span>{' '}
-      <span className="font-display text-2xl uppercase tracking-wide">¡Felicidades!</span> Tu número
-      resultó <span className="font-display text-xl uppercase tracking-wide">ganador</span> del bono
-      de <span className="font-display text-xl">$1.200</span>. Reclama{' '}
-      <span className="font-display text-xl uppercase tracking-wide">hoy</span>{' '}
-      <Mark n={2}>antes de las 18h00</Mark> en <Mark n={1}>bono-gobierno.ec-pagos.info</Mark> e
-      ingresa tu cédula y <Mark n={3}>tu clave de banca</Mark>.
+      <span className="font-display text-xl uppercase tracking-wide">
+        BANCO GOB:
+      </span>{" "}
+      <span className="font-display text-2xl uppercase tracking-wide">
+        ¡Felicidades!
+      </span>{" "}
+      Tu número resultó{" "}
+      <span className="font-display text-xl uppercase tracking-wide">
+        ganador
+      </span>{" "}
+      del bono de <span className="font-display text-xl">$1.200</span>. Reclama{" "}
+      <span className="font-display text-xl uppercase tracking-wide">hoy</span>{" "}
+      <Mark n={2}>antes de las 18h00</Mark> en{" "}
+      <Mark n={1}>bono-gobierno.ec-pagos.info</Mark> e ingresa tu cédula y{" "}
+      <Mark n={3}>tu clave de banca</Mark>.
     </p>
-  )
+  );
 }
 
 function Mark({ n, children }: Readonly<{ n: number; children: string }>) {
   return (
     <mark className="bg-transparent font-medium text-ink underline decoration-warning decoration-wavy decoration-2 underline-offset-4">
       {children}
-      <sup className="ml-0.5 font-mono text-[11px] font-semibold text-warning no-underline">{n}</sup>
+      <sup className="ml-0.5 font-mono text-[11px] font-semibold text-warning no-underline">
+        {n}
+      </sup>
     </mark>
-  )
+  );
 }
 
 function Portada() {
-  const { isAuthenticated, isAdmin } = useAuth()
-  const general = TRAINING_VIDEOS[0]
-  const modules = TRAINING_VIDEOS.slice(1)
-  let destination = { to: '/dashboard', label: 'Ir a mi entrenamiento' }
+  const { isAuthenticated, isAdmin } = useAuth();
+  const general = TRAINING_VIDEOS[0];
+  const modules = TRAINING_VIDEOS.slice(1);
+  let destination = { to: "/dashboard", label: "Ir a mi entrenamiento" };
   if (!isAuthenticated) {
-    destination = { to: '/login', label: 'Entrar al entrenamiento' }
+    destination = { to: "/login", label: "Entrar al entrenamiento" };
   } else if (isAdmin) {
-    destination = { to: '/admin', label: 'Ir a administración' }
+    destination = { to: "/admin", label: "Ir a administración" };
   }
 
   const primaryAction = (
@@ -102,7 +121,7 @@ function Portada() {
     >
       {destination.label}
     </Link>
-  )
+  );
 
   return (
     <div className="min-h-screen bg-canvas">
@@ -119,9 +138,10 @@ function Portada() {
               una promesa
             </h1>
             <p className="mt-6 max-w-prose text-lg leading-relaxed text-body">
-              SAFE-Web es un entrenamiento con engaños simulados —correos, mensajes, llamadas,
-              compras y trampas de oficina— como los que circulan en Ecuador. Aquí practicas la
-              decisión sin arriesgar tu dinero ni tus cuentas.
+              SAFE-Web es un entrenamiento con engaños simulados —correos,
+              mensajes, llamadas, compras y trampas de oficina— como los que
+              circulan en Ecuador. Aquí practicas la decisión sin arriesgar tu
+              dinero ni tus cuentas.
             </p>
 
             <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-4">
@@ -172,7 +192,9 @@ function Portada() {
                     <span className="font-mono text-sm uppercase tracking-[0.14em]">
                       Premio acumulado
                     </span>
-                    <span className="font-display text-6xl leading-none sm:text-7xl">$1.200</span>
+                    <span className="font-display text-6xl leading-none sm:text-7xl">
+                      $1.200
+                    </span>
                     <span className="font-mono text-sm uppercase tracking-[0.14em]">
                       Raspa aquí
                     </span>
@@ -205,7 +227,10 @@ function Portada() {
           </div>
         </section>
 
-        <section aria-labelledby="recorrido" className="mx-auto max-w-6xl px-6 py-12 lg:py-16">
+        <section
+          aria-labelledby="recorrido"
+          className="mx-auto max-w-6xl px-6 py-12 lg:py-16"
+        >
           <h2
             id="recorrido"
             className="font-display text-3xl uppercase tracking-[0.01em] text-ink sm:text-4xl"
@@ -219,27 +244,37 @@ function Portada() {
                 <h3 className="font-display text-2xl uppercase tracking-[0.01em] text-ink">
                   {step.titulo}
                 </h3>
-                <p className="mt-2 text-base leading-relaxed text-body">{step.detalle}</p>
+                <p className="mt-2 text-base leading-relaxed text-body">
+                  {step.detalle}
+                </p>
               </div>
             ))}
           </Ticket>
         </section>
 
-        <section id="videos" aria-labelledby="videos-titulo" className="mx-auto max-w-6xl px-6 py-12 lg:py-16">
+        <section
+          id="videos"
+          aria-labelledby="videos-titulo"
+          className="mx-auto max-w-6xl px-6 py-12 lg:py-16"
+        >
           <h2
             id="videos-titulo"
             className="font-display text-3xl uppercase tracking-[0.01em] text-ink sm:text-4xl"
           >
-            Los ocho videos
+            ¿Cómo funciona SAFE-Web?
           </h2>
           <p className="mt-3 max-w-prose text-lg leading-relaxed text-body">
-            Uno explica la plataforma y los otros siete preparan la conversación de cada módulo. Un
-            formador puede usarlos para conducir una sesión; verlos no cambia tu avance.
+            Con esta lista de videos entenderas cómo se ve un engaño, qué
+            señales lo delatan y por qué importa no caer en él.
           </p>
 
           {general && (
             <div className="mt-8">
-              <VideoTicket video={general} folio="GEN-00" etiqueta="La plataforma" />
+              <VideoTicket
+                video={general}
+                folio="GEN-00"
+                etiqueta="La plataforma"
+              />
             </div>
           )}
 
@@ -251,8 +286,11 @@ function Portada() {
                 <VideoTicket
                   key={video.id}
                   video={video}
-                  folio={`MOD-${String(index + 1).padStart(2, '0')}`}
-                  etiqueta={SECTIONS.find((section) => section.id === video.sectionId)?.canal}
+                  folio={`MOD-${String(index + 1).padStart(2, "0")}`}
+                  etiqueta={
+                    SECTIONS.find((section) => section.id === video.sectionId)
+                      ?.canal
+                  }
                   conMuescas={index > 0}
                   variante="fila"
                 />
@@ -261,14 +299,20 @@ function Portada() {
           </Ticket>
         </section>
 
-        <section aria-labelledby="cierre" className="mx-auto max-w-6xl px-6 py-12 lg:py-20">
+        <section
+          aria-labelledby="cierre"
+          className="mx-auto max-w-6xl px-6 py-12 lg:py-20"
+        >
           <Ticket
             className="overflow-hidden"
             talon={
               <div className="flex flex-wrap items-center justify-between gap-4 px-6 py-5 sm:px-8">
                 <p className="text-base text-body">
-                  ¿Dudas sobre tus datos?{' '}
-                  <Link to="/politica-de-datos" className="font-medium text-link underline">
+                  ¿Dudas sobre tus datos?{" "}
+                  <Link
+                    to="/politica-de-datos"
+                    className="font-medium text-link underline"
+                  >
                     Lee la política de datos
                   </Link>
                   .
@@ -287,8 +331,9 @@ function Portada() {
                 Los escenarios son simulados. Las señales, reales.
               </h2>
               <p className="mt-3 max-w-prose text-lg leading-relaxed text-body">
-                Nada de lo que decidas aquí toca tus cuentas ni tu dinero. Lo que sí queda contigo
-                es haber visto la trampa antes de caer en ella.
+                Nada de lo que decidas aquí toca tus cuentas ni tu dinero. Lo
+                que sí queda contigo es haber visto la trampa antes de caer en
+                ella.
               </p>
               <div className="mt-7">{primaryAction}</div>
             </div>
@@ -296,7 +341,7 @@ function Portada() {
         </section>
       </main>
     </div>
-  )
+  );
 }
 
-export default Portada
+export default Portada;

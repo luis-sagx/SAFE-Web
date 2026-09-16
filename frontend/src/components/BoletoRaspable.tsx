@@ -196,7 +196,7 @@ function ScratchTicket({ children, pista: hint, accion: action, onRevelar: onRev
           <button
             type="button"
             onClick={reveal}
-            className="-mr-3 min-h-11 rounded-md px-3 text-base font-medium text-link underline transition hover:bg-surface-strong focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link"
+            className="-mr-3 min-h-11 rounded-md px-3 text-base font-medium text-link underline transition hover:bg-ticket-edge/50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link"
           >
             {action}
           </button>

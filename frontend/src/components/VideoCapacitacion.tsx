@@ -65,7 +65,7 @@ function VideoTicket({
       type="button"
       onClick={() => setPlaying(false)}
       aria-label={`Cerrar ${video.title}`}
-      className="min-h-11 rounded-md px-3 text-base font-medium text-link underline transition hover:bg-surface-strong focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link"
+      className="min-h-11 rounded-md px-3 text-base font-medium text-link underline transition hover:bg-ticket-edge/50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link"
     >
       Cerrar
     </button>
