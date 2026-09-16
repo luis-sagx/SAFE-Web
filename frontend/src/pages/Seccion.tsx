@@ -1,8 +1,9 @@
-import { ArrowRight, CheckCircle2, LockKeyhole, Star } from 'lucide-react'
+import { ArrowRight, LockKeyhole, Star } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link, Navigate, useParams } from 'react-router'
 import AppHeader, { BACK_CLASS } from '../components/AppHeader'
 import ProgressBar from '../components/BarraProgreso'
+import Ticket, { Notches, Sello } from '../components/Boleto'
 import ModuleCompletionModal from '../components/CierreModuloModal'
 import {
   getSectionScenarios,
@@ -20,23 +21,27 @@ import ConfirmReplayModal from '../components/ConfirmarRepeticionModal'
 const DIFFICULTY_NAME = ['Fácil', 'Fácil', 'Media', 'Difícil', 'Difícil'] as const
 const DIFFICULTY_STARS = [1, 1, 2, 3, 3] as const
 
+/** Folio del módulo en el índice de la portada: MOD-01…MOD-07. */
+const moduleFolio = (sectionId: string) =>
+  `MOD-${String(SECTIONS.findIndex((s) => s.id === sectionId) + 1).padStart(2, '0')}`
+
 function Difficulty({ nivel: level }: { nivel: number }) {
   const name = DIFFICULTY_NAME[level - 1] ?? 'Media'
   const full = DIFFICULTY_STARS[level - 1] ?? 2
 
   return (
-    <span className="inline-flex items-center gap-1" title={`Dificultad: ${name}`}>
+    <span className="inline-flex items-center gap-1.5" title={`Dificultad: ${name}`}>
       <span className="inline-flex items-center gap-px">
         {[1, 2, 3].map((i) => (
           <Star
             key={i}
             aria-hidden
-            className={`size-2.5 ${i <= full ? 'fill-current text-warning' : 'text-hairline-strong'}`}
+            className={`size-3 ${i <= full ? 'fill-current text-warning' : 'text-ticket-edge'}`}
             strokeWidth={1.75}
           />
         ))}
       </span>
-      <span className="text-sm text-muted">{name}</span>
+      <span>{name}</span>
     </span>
   )
 }
@@ -69,35 +74,35 @@ function NextModule({
 
   const content = (
     <>
-      <span
-        className={`flex size-10 shrink-0 items-center justify-center rounded-md bg-surface-strong ${
-          open && ready ? 'text-link' : 'text-muted'
-        }`}
-      >
-        {open ? (
-          <Icon aria-hidden className="size-5" strokeWidth={1.75} />
-        ) : (
-          <LockKeyhole aria-hidden className="size-5" strokeWidth={1.75} />
-        )}
-      </span>
-
       <div className="min-w-0 flex-1">
-        <p className="text-xs font-semibold uppercase tracking-[0.88px] text-muted">
-          Siguiente módulo
+        <p className="flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-sm uppercase tracking-[0.14em] text-muted">
+          {open ? (
+            <Icon
+              aria-hidden
+              className={`size-4 shrink-0 ${ready ? 'text-link' : 'text-muted'}`}
+              strokeWidth={1.75}
+            />
+          ) : (
+            <LockKeyhole aria-hidden className="size-4 shrink-0 text-muted" strokeWidth={1.75} />
+          )}
+          <span className="text-ink">{moduleFolio(next.id)}</span>
+          <span>Siguiente módulo</span>
         </p>
-        <h2 className="mt-1 text-lg font-semibold text-ink">{next.titulo}</h2>
-        <p className="mt-1 text-base leading-relaxed text-body">{status}</p>
+        <h2 className="mt-2 font-display text-2xl uppercase tracking-[0.02em] text-ink underline-offset-4 group-hover:underline sm:text-3xl">
+          {next.titulo}
+        </h2>
+        <p className="mt-2 max-w-prose text-base leading-relaxed text-body">{status}</p>
       </div>
 
       {open && !ready && (
-        <span className="shrink-0 text-xs font-semibold uppercase tracking-[0.88px] text-muted">
-          Pronto
-        </span>
+        <div className="shrink-0">
+          <Sello>Pronto</Sello>
+        </div>
       )}
       {open && ready && (
         <span
           aria-hidden
-          className="flex shrink-0 items-center gap-1 text-sm font-medium text-link transition group-hover:translate-x-0.5"
+          className="inline-flex shrink-0 items-center gap-1.5 font-mono text-sm uppercase tracking-[0.14em] text-link transition group-hover:translate-x-0.5"
         >
           Continuar
           <ArrowRight className="size-4" strokeWidth={2} />
@@ -106,19 +111,23 @@ function NextModule({
     </>
   )
 
-  // Franja horizontal y no otra tarjeta: es el paso siguiente del recorrido, no
-  // un escenario más de esta lista.
-  const className = 'mt-8 flex items-center gap-4 rounded-lg border p-5 transition'
+  // Un boleto aparte y no otra fila de la tira: es el paso siguiente del
+  // recorrido, no un escenario más de este módulo.
+  const rowClassName = 'flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:gap-8'
 
-  return open && ready ? (
-    <Link
-      to={`/seccion/${next.id}`}
-      className={`group ${className} border-hairline-strong bg-surface hover:-translate-y-0.5 hover:border-link/40 hover:shadow-card`}
-    >
-      {content}
-    </Link>
-  ) : (
-    <div className={`${className} border-hairline-strong bg-canvas-soft`}>{content}</div>
+  return (
+    <Ticket className="mt-8 overflow-hidden">
+      {open && ready ? (
+        <Link
+          to={`/seccion/${next.id}`}
+          className={`group ${rowClassName} transition hover:bg-ticket-edge/30 focus-visible:outline-2 focus-visible:outline-offset-[-4px] focus-visible:outline-link`}
+        >
+          {content}
+        </Link>
+      ) : (
+        <div className={`${rowClassName} bg-ticket-edge/15`}>{content}</div>
+      )}
+    </Ticket>
   )
 }
 
@@ -158,6 +167,7 @@ function Section() {
 
   const scenarios = getSectionScenarios(section.id)
   const missing = progress ? Math.max(progress.requeridos - progress.aprobados, 0) : 0
+  const replayable = progress && (progress.escenarios.length > 0 || progress.rondaEnCurso != null)
 
   async function confirmRestart() {
     if (restarting || !selectedSectionId) return
@@ -175,7 +185,6 @@ function Section() {
     }
   }
 
-
   return (
     <div className="min-h-screen bg-canvas">
       <AppHeader
@@ -188,80 +197,209 @@ function Section() {
 
       {/* Mismo ancho que dashboard y barra superior: las tres pantallas se leen como una sola, sin saltos al entrar. */}
       <main className="mx-auto max-w-6xl px-6 py-12">
-        <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.88px] text-muted">
-          <section.Icono aria-hidden className="size-4 text-link" strokeWidth={2} />
-          {section.titulo}
-          <span aria-hidden className="text-muted-soft">
-            ·
-          </span>
-          {section.canal}
+        {/* El folio del módulo, no un rótulo repetido: dice en qué número del
+            recorrido estás y dónde ocurre la amenaza, que el título no dice. */}
+        <p className="flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-base uppercase tracking-[0.12em] text-muted">
+          <section.Icono aria-hidden className="size-4 shrink-0 text-link" strokeWidth={2} />
+          <span className="text-ink">{moduleFolio(section.id)}</span>
+          <span>{section.canal}</span>
         </p>
 
-        <h1 className="mt-3 text-4xl font-semibold tracking-tight text-ink">{section.titulo}</h1>
-        <p className="mt-3 max-w-2xl text-base leading-relaxed text-body">{section.descripcion}</p>
+        <h1 className="mt-3 font-display text-5xl uppercase leading-[0.95] tracking-[0.01em] text-ink sm:text-6xl">
+          {section.titulo}
+        </h1>
+        <p className="mt-5 max-w-prose text-lg leading-relaxed text-body">{section.descripcion}</p>
 
-        {/* Avance antes que las tarjetas, ancho completo: es lo primero que se busca al volver a la sección. */}
-        {progress && scenarios.length > 0 && (
-          <section
-            aria-labelledby="titulo-progreso"
-            className="mt-8 rounded-lg border border-hairline-strong bg-canvas-soft p-5"
+        {scenarios.length === 0 ? (
+          <Ticket className="mt-10">
+            <p className="px-6 py-8 text-base leading-relaxed text-body">
+              Estamos preparando los escenarios de esta sección.
+            </p>
+          </Ticket>
+        ) : (
+          // La tira del módulo: cabecera con el avance, un escenario por fila en
+          // el orden en que se abren, y el talón para volver a empezar.
+          <Ticket
+            className="mt-10 overflow-hidden"
+            talon={
+              replayable ? (
+                <div className="flex flex-col gap-4 px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
+                  <p className="text-base leading-relaxed text-body">
+                    Puedes volver a empezar este módulo desde el escenario 01.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setRestartError(null)
+                      setShowReplay(true)
+                    }}
+                    className="min-h-11 shrink-0 rounded-md bg-primary px-4 font-medium text-on-primary transition hover:bg-primary-active focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link"
+                  >
+                    Repetir el módulo
+                  </button>
+                </div>
+              ) : undefined
+            }
           >
-            <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
-              <h2
-                id="titulo-progreso"
-                className="text-xs font-semibold uppercase tracking-[0.88px] text-muted"
+            {/* Avance arriba del todo: es lo primero que se busca al volver a la sección. */}
+            {progress && (
+              <section
+                aria-labelledby="titulo-progreso"
+                className="relative border-b border-dashed border-ticket-edge px-6 py-5"
               >
-                Progreso del módulo
-              </h2>
-              {/* El umbral no se repite en texto: ya lo marca el anillo de la barra (BarraProgreso). */}
-              <p className="text-sm font-medium text-ink">
-                <span className="text-lg font-semibold tabular-nums">{progress.aprobados}</span>
-                <span className="text-muted">/{scenarios.length}</span>
-              </p>
-            </div>
+                <Notches className="-bottom-2.5" />
+                <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
+                  <h2
+                    id="titulo-progreso"
+                    className="font-mono text-base uppercase tracking-[0.12em] text-ink"
+                  >
+                    Progreso del módulo
+                  </h2>
+                  {/* El umbral no se repite en texto: ya lo marca el anillo de la barra (BarraProgreso). */}
+                  <p className="font-mono text-base uppercase tracking-[0.12em] text-muted">
+                    <span className="text-xl text-ink tabular-nums">{progress.aprobados}</span>
+                    <span>/{scenarios.length}</span> escenarios aprobados
+                  </p>
+                </div>
 
-            <ProgressBar
-              className="mt-3"
-              aprobados={progress.aprobados}
-              total={scenarios.length}
-              requeridos={progress.requeridos}
-              aprobado={progress.aprobado}
-              etiqueta={`Avance de ${section.titulo}`}
-            />
+                <ProgressBar
+                  className="mt-4"
+                  aprobados={progress.aprobados}
+                  total={scenarios.length}
+                  requeridos={progress.requeridos}
+                  aprobado={progress.aprobado}
+                  etiqueta={`Avance de ${section.titulo}`}
+                />
 
-            {progress.rondaEnCurso && (
-              <p className="mt-2 text-sm text-muted">Repetición en curso: {progress.rondaEnCurso.jugados}/{scenarios.length}</p>
+                {progress.rondaEnCurso && (
+                  <p className="mt-3 text-base leading-relaxed text-body">
+                    Repetición en curso: {progress.rondaEnCurso.jugados}/{scenarios.length}. Tu nota
+                    se mantiene en {progress.aprobados}/{scenarios.length} hasta que termines los{' '}
+                    {scenarios.length} de esta repetición.
+                  </p>
+                )}
+
+                {progress.aprobado ? (
+                  // Resumen completo vive en el modal, no aquí: siempre visible competía con los escenarios.
+                  <button
+                    type="button"
+                    onClick={() => setShowCompletion(true)}
+                    className="mt-3 min-h-11 text-base font-medium text-link underline"
+                  >
+                    Ver resumen del módulo
+                  </button>
+                ) : (
+                  <p className="mt-3 text-base text-body">
+                    {`Te ${missing === 1 ? 'falta' : 'faltan'} ${missing} para aprobar el módulo.`}
+                  </p>
+                )}
+              </section>
             )}
-            {progress.rondaEnCurso && (
-              <p className="mt-2 text-sm text-body">Tu nota se mantiene en {progress.aprobados}/{scenarios.length} hasta que termines los {scenarios.length} de esta repetición.</p>
-            )}
 
-            {progress.aprobado ? (
-              // Resumen completo vive en el modal, no aquí: siempre visible competía con las tarjetas de escenarios.
-              <button
-                type="button"
-                onClick={() => setShowCompletion(true)}
-                className="mt-3 text-sm font-medium text-link underline"
-              >
-                Ver resumen del módulo
-              </button>
-            ) : (
-              <p className="mt-3 text-sm text-body">
-                {`Te ${missing === 1 ? 'falta' : 'faltan'} ${missing} para aprobar el módulo.`}
-              </p>
-            )}
-          </section>
-        )}
+            <ol>
+              {scenarios.map((scenario, index) => {
+                // "Sin jugar" y no otra insignia antes de jugar: delataría si es fraude o legítimo. La ronda en curso solo
+                // actualiza los escenarios ya rejugados esta vez; los demás mantienen su resultado previo (si no, repetir
+                // uno apagaba la insignia de los otros).
+                const inCurrentRound = progress?.rondaEnCurso?.escenarios.find(
+                  (e) => e.id === scenario.id,
+                )
+                const latest = inCurrentRound
+                  ? inCurrentRound.ultimoOutcome
+                  : progress?.escenarios.find((e) => e.id === scenario.id)?.ultimoOutcome
+                const approved = latest === 'CORRECTO'
+                const available = isScenarioAvailable(scenarios, progress, scenario.id)
 
-        {progress && (progress.escenarios.length > 0 || progress.rondaEnCurso != null) && (
-          <div className="mt-8 flex items-center justify-between rounded-lg border border-hairline-strong bg-canvas-soft p-5">
-            <p className="text-base text-body">Puedes volver a empezar este módulo desde el escenario 01.</p>
-            <button type="button" onClick={() => { setRestartError(null); setShowReplay(true) }} className="rounded-md bg-primary px-4 py-2 font-medium text-on-primary">Repetir el módulo</button>
-          </div>
+                const content = (
+                  <>
+                    <div className="min-w-0 flex-1">
+                      <p className="flex flex-wrap items-center gap-x-4 gap-y-1 font-mono text-sm uppercase tracking-[0.14em] text-muted">
+                        <span className={approved ? 'text-success-ink' : 'text-ink'}>
+                          ESC-{String(index + 1).padStart(2, '0')}
+                        </span>
+                        <Difficulty nivel={scenario.dificultad} />
+                      </p>
+                      <h3 className="mt-2 font-display text-2xl uppercase tracking-[0.02em] text-ink underline-offset-4 group-hover:underline sm:text-3xl">
+                        {scenario.titulo}
+                      </h3>
+                      <p className="mt-2 max-w-prose text-base leading-relaxed text-body">
+                        {scenario.descripcion}
+                      </p>
+                    </div>
+
+                    <div className="shrink-0 sm:w-52">
+                      {approved && <Sello tono="border-success-ink text-success-ink">Aprobado</Sello>}
+                      {!approved && latest !== undefined && (
+                        <span className="font-mono text-sm uppercase tracking-[0.14em] text-muted">
+                          Sin aprobar
+                        </span>
+                      )}
+                      {!approved && latest === undefined && available && (
+                        <span className="font-mono text-sm uppercase tracking-[0.14em] text-muted">
+                          Sin jugar
+                        </span>
+                      )}
+                      {!approved && latest === undefined && !available && (
+                        /* El candado señala el escenario anterior en la lista, no el próximo pendiente del módulo: cada
+                           uno depende del de al lado, no de un número fijo. */
+                        <span className="inline-flex items-start gap-2 font-mono text-sm uppercase leading-relaxed tracking-[0.14em] text-muted">
+                          <LockKeyhole aria-hidden className="mt-0.5 size-4 shrink-0" strokeWidth={2} />
+                          Se abre al terminar el {String(index).padStart(2, '0')}
+                        </span>
+                      )}
+
+                      {available && (
+                        <span
+                          aria-hidden
+                          className="mt-3 block font-mono text-sm uppercase tracking-[0.14em] text-link transition group-hover:translate-x-0.5"
+                        >
+                          {progress?.rondaEnCurso ? 'Continuar →' : 'Empezar →'}
+                        </span>
+                      )}
+                    </div>
+                  </>
+                )
+
+                const rowClassName = 'flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:gap-8'
+
+                return (
+                  <li
+                    key={scenario.id}
+                    className={`relative ${index > 0 ? 'border-t border-dashed border-ticket-edge' : ''}`}
+                  >
+                    {index > 0 && <Notches className="-top-2.5" />}
+
+                    {/* Lo bloqueado se distingue por el candado y el papel entintado, nunca por opacidad:
+                        bajarla dejaría el texto por debajo del contraste mínimo. */}
+                    {available ? (
+                      <Link
+                        to={getScenarioPath(scenario)}
+                        className={`group ${rowClassName} transition hover:bg-ticket-edge/30 focus-visible:outline-2 focus-visible:outline-offset-[-4px] focus-visible:outline-link`}
+                      >
+                        {content}
+                      </Link>
+                    ) : (
+                      <div className={`${rowClassName} bg-ticket-edge/15`} aria-disabled="true">
+                        {content}
+                      </div>
+                    )}
+                  </li>
+                )
+              })}
+            </ol>
+          </Ticket>
         )}
 
         {showReplay && progress && (
-          <ConfirmReplayModal titulo={section.titulo} aprobados={progress.aprobados} total={scenarios.length} busy={restarting} error={restartError} onClose={() => setShowReplay(false)} onConfirm={confirmRestart} />
+          <ConfirmReplayModal
+            titulo={section.titulo}
+            aprobados={progress.aprobados}
+            total={scenarios.length}
+            busy={restarting}
+            error={restartError}
+            onClose={() => setShowReplay(false)}
+            onConfirm={confirmRestart}
+          />
         )}
 
         {showCompletion && progress?.aprobado && (
@@ -271,105 +409,6 @@ function Section() {
             progreso={progress}
             onClose={() => setShowCompletion(false)}
           />
-        )}
-
-        {scenarios.length === 0 ? (
-          <p className="mt-10 rounded-lg border border-hairline-strong bg-surface p-5 text-base text-body">
-            Estamos preparando los escenarios de esta sección.
-          </p>
-        ) : (
-          <ol className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {scenarios.map((scenario, index) => {
-              // "Sin jugar" y no otra insignia antes de jugar: delataría si es fraude o legítimo. La ronda en curso solo
-              // actualiza los escenarios ya rejugados esta vez; los demás mantienen su resultado previo (si no, repetir
-              // uno apagaba la insignia de los otros).
-              const inCurrentRound = progress?.rondaEnCurso?.escenarios.find(
-                (e) => e.id === scenario.id,
-              )
-              const latest = inCurrentRound
-                ? inCurrentRound.ultimoOutcome
-                : progress?.escenarios.find((e) => e.id === scenario.id)?.ultimoOutcome
-              const approved = latest === 'CORRECTO'
-              const available = isScenarioAvailable(scenarios, progress, scenario.id)
-              const cardClassName = `group flex w-full flex-col rounded-lg border bg-surface p-5 transition ${
-                available ? 'hover:-translate-y-0.5 hover:shadow-card' : 'opacity-70'
-              } ${
-                approved
-                  ? 'border-mint-mid hover:border-success/50'
-                  : available
-                    ? 'border-hairline-strong hover:border-link/40'
-                    : 'border-hairline-strong'
-              }`
-              const content = (
-                <>
-                  <div className="flex items-center justify-between gap-3">
-                    <span
-                      className={`font-mono text-xs font-medium tabular-nums ${
-                        approved ? 'text-success-ink' : 'text-muted'
-                      }`}
-                    >
-                      {String(index + 1).padStart(2, '0')}
-                    </span>
-                    <Difficulty nivel={scenario.dificultad} />
-                  </div>
-
-                  <h3 className="mt-3 text-lg font-semibold text-ink">{scenario.titulo}</h3>
-                  <p className="mt-2 flex-1 text-base leading-relaxed text-body">
-                    {scenario.descripcion}
-                  </p>
-
-                  <div className="mt-4 flex items-center justify-between border-t border-hairline pt-3">
-                    {approved ? (
-                      <span className="inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-[0.88px] text-success-ink">
-                        <CheckCircle2 aria-hidden className="size-3.5" strokeWidth={2.5} />
-                        Aprobado
-                      </span>
-                    ) : latest !== undefined ? (
-                      <span className="text-xs font-semibold uppercase tracking-[0.88px] text-muted">
-                        Sin aprobar
-                      </span>
-                    ) : available ? (
-                      <span className="text-xs font-semibold uppercase tracking-[0.88px] text-muted">
-                        Sin jugar
-                      </span>
-                    ) : (
-                      /* El candado señala el escenario anterior en la lista, no el próximo pendiente del módulo: cada
-                         uno depende del de al lado, no de un número fijo. */
-                      <span className="inline-flex items-center gap-1 text-xs font-medium text-muted">
-                        <LockKeyhole aria-hidden className="size-3.5" strokeWidth={2.5} />
-                        Se abre al terminar el {String(index).padStart(2, '0')}
-                      </span>
-                    )}
-                    <span
-                      aria-hidden
-                      className={`text-sm font-medium transition ${
-                        available ? 'text-link group-hover:translate-x-0.5' : 'text-muted'
-                      }`}
-                    >
-                      {available ? (progress?.rondaEnCurso ? 'Continuar →' : 'Empezar →') : ''}
-                    </span>
-                  </div>
-                </>
-              )
-
-              return (
-                <li key={scenario.id} className="flex">
-                  {available ? (
-                    <Link
-                      to={getScenarioPath(scenario)}
-                      className={cardClassName}
-                    >
-                      {content}
-                    </Link>
-                  ) : (
-                    <div className={cardClassName} aria-disabled="true">
-                      {content}
-                    </div>
-                  )}
-                </li>
-              )
-            })}
-          </ol>
         )}
 
         <NextModule seccion={section} progreso={progress} />

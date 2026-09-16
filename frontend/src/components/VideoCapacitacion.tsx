@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { ExternalLink, Play } from 'lucide-react'
-import Ticket, { Notches } from './Boleto'
+import Ticket, { Notches, Sello } from './Boleto'
 import { getYouTubeId, type TrainingVideo } from '../data/videosCapacitacion'
 
 interface VideoTicketProps {
@@ -19,11 +19,7 @@ interface VideoTicketProps {
 
 /** Sello de lo que todavía no se ha grabado. Ningún video existe aún. */
 function PendingStamp() {
-  return (
-    <span className="inline-block -rotate-[4deg] rounded-sm border-2 border-warning px-3 py-1 font-mono text-sm font-semibold uppercase tracking-[0.14em] text-warning">
-      Sin grabar
-    </span>
-  )
+  return <Sello>Sin grabar</Sello>
 }
 
 function YouTubeLink({ id }: Readonly<{ id: string }>) {

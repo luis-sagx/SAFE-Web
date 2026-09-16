@@ -19,6 +19,24 @@ export function Notches({ className = '' }: Readonly<{ className?: string }>) {
   )
 }
 
+// Sello de tinta: lo que se estampa sobre un boleto ya resuelto —aprobado,
+// todavía sin grabar, todavía sin abrir—. Va rotado como un sello de verdad y
+// el color lo pone quien lo usa; el tono por defecto es el ámbar de lo
+// pendiente. Nunca es la única señal: siempre lleva su palabra.
+export function Sello({
+  tono = 'border-warning text-warning',
+  className = '',
+  children,
+}: Readonly<{ tono?: string; className?: string; children: ReactNode }>) {
+  return (
+    <span
+      className={`inline-block -rotate-[3deg] rounded-sm border-2 px-3 py-1 font-mono text-sm font-semibold uppercase tracking-[0.14em] ${tono} ${className}`}
+    >
+      {children}
+    </span>
+  )
+}
+
 // El átomo del mundo visual de la portada: un boleto de sorteo. Papel
 // (bg-ticket) con su sombra sobre el lienzo, el troquel (border-ticket-edge),
 // el filete impreso por dentro y, cuando lleva talón, la línea de perforación
