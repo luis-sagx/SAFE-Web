@@ -102,4 +102,49 @@ describe('Login', () => {
     fireEvent.change(screen.getByLabelText(/Correo/), { target: { value: 'correo-invalido' } })
     expect(screen.getByText('El correo no tiene un formato válido.')).toBeDefined()
   })
+
+  it('no envía el login cuando el correo no tiene formato válido', () => {
+    const login = vi.fn()
+    useAuthMock.mockReturnValue({
+      isAuthenticated: false,
+      loading: false,
+      isAdmin: false,
+      login,
+    })
+
+    render(
+      <BrowserRouter>
+        <Login />
+      </BrowserRouter>
+    )
+
+    fireEvent.change(screen.getByLabelText(/Correo/), { target: { value: 'correo-invalido' } })
+    fireEvent.change(screen.getByLabelText(/Contraseña/), { target: { value: 'ClaveSegura1!' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Entrar' }))
+
+    expect(screen.getAllByText('El correo no tiene un formato válido.')).not.toHaveLength(0)
+    expect(login).not.toHaveBeenCalled()
+  })
+
+  it('no envía el login cuando falta la contraseña', () => {
+    const login = vi.fn()
+    useAuthMock.mockReturnValue({
+      isAuthenticated: false,
+      loading: false,
+      isAdmin: false,
+      login,
+    })
+
+    render(
+      <BrowserRouter>
+        <Login />
+      </BrowserRouter>
+    )
+
+    fireEvent.change(screen.getByLabelText(/Correo/), { target: { value: 'ana@correo.com' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Entrar' }))
+
+    expect(screen.getByText('Ingresa tu contraseña para continuar.')).toBeDefined()
+    expect(login).not.toHaveBeenCalled()
+  })
 })
