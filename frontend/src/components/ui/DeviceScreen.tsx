@@ -263,6 +263,16 @@ function DeviceScreen({
   // correcto como congelarlo, y no exige una copia aparte.
   const [freeText, setFreeText] = useState('')
   const [sent, setSent] = useState(false)
+  const freeTextRef = useRef<HTMLTextAreaElement>(null)
+  // Crece con lo que se escribe o se pega —hasta el tope que marca el CSS,
+  // donde recién entra el scroll— para no obligar a desplazarse dentro de un
+  // campo chico cuando se pega un mensaje largo del bloc de notas.
+  useEffect(() => {
+    const el = freeTextRef.current
+    if (!el) return
+    el.style.height = 'auto'
+    el.style.height = `${el.scrollHeight}px`
+  }, [freeText])
   const wasFinished = useRef(finished)
   useEffect(() => {
     // Se reinicia solo en la transición terminada→en curso (un "Intentar de
@@ -601,6 +611,7 @@ function DeviceScreen({
         !sent && (
           <div className={styles.smsComposerLibre}>
             <textarea
+              ref={freeTextRef}
               className={styles.smsTextarea}
               value={freeText}
               onChange={(event) => setFreeText(event.target.value)}

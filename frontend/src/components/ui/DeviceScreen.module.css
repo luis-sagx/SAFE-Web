@@ -1875,10 +1875,16 @@
   background: #f7f8fa;
   border-top: 1px solid #dfe3e9;
 }
+/* Crece con el contenido (ver el efecto que ajusta `style.height` en
+   DeviceScreen.tsx) hasta este tope; de ahí para arriba entra el scroll —
+   sin eso un mensaje muy largo empujaría el resto de la pantalla fuera de
+   vista. Sin resize manual: el alto ya lo decide el propio texto. */
 .smsTextarea {
   width: 100%;
   min-height: 4.5rem;
-  resize: vertical;
+  max-height: 12rem;
+  overflow-y: auto;
+  resize: none;
   border: 1px solid #dfe3e9;
   background: #fff;
   border-radius: 0.75rem;
