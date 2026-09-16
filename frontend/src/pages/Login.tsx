@@ -52,6 +52,7 @@ function Login() {
 
   return (
     <AuthLayout
+      folio="ACCESO"
       titulo="Entrar"
       subtitulo="Con el correo que usaste al registrarte."
       pie={

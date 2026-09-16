@@ -162,6 +162,7 @@ function Registration() {
 
   return (
     <AuthLayout
+      folio="REGISTRO"
       titulo="Crear cuenta"
       subtitulo="Solo para darte acceso. Tus resultados se analizan de forma anónima."
       pie={
