@@ -1,48 +1,52 @@
 import { render, screen } from '@testing-library/react'
 import { BrowserRouter } from 'react-router'
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import DataPolicy from './PoliticaDatos'
 
+function renderPolicy() {
+  return render(
+    <BrowserRouter>
+      <DataPolicy />
+    </BrowserRouter>
+  )
+}
+
 describe('PoliticaDatos', () => {
-  it('renderiza la página de política de datos', () => {
-    const { container } = render(
-      <BrowserRouter>
-        <DataPolicy />
-      </BrowserRouter>
-    )
-    expect(container).toBeDefined()
-    expect(screen.getByText('Política de Datos')).toBeDefined()
+  afterEach(() => {
+    vi.useRealTimers()
   })
 
-  it('muestra todos los títulos de secciones', () => {
-    render(
-      <BrowserRouter>
-        <DataPolicy />
-      </BrowserRouter>
-    )
-    expect(screen.getByText(/1\. Recopilación de Información/)).toBeDefined()
-    expect(screen.getByText(/2\. Uso de la Información/)).toBeDefined()
-    expect(screen.getByText(/3\. Protección de Datos/)).toBeDefined()
-    expect(screen.getByText(/4\. Anonimización de Resultados/)).toBeDefined()
-    expect(screen.getByText(/5\. Derechos de Acceso y Control/)).toBeDefined()
+  it('renderiza la página de política de datos', () => {
+    renderPolicy()
+    expect(screen.getByRole('heading', { level: 1, name: 'Política de Datos' })).toBeDefined()
+  })
+
+  it('muestra los títulos de secciones numerados', () => {
+    renderPolicy()
+    expect(screen.getByRole('heading', { name: /^1\. Responsables del tratamiento/ })).toBeDefined()
+    expect(screen.getByRole('heading', { name: /Qué datos recogemos/ })).toBeDefined()
+    expect(screen.getByRole('heading', { name: /Seudonimización y uso en la investigación/ })).toBeDefined()
+    expect(screen.getByRole('heading', { name: /\d+\. Tus derechos/ })).toBeDefined()
+    expect(screen.getByRole('heading', { name: /Menores de edad/ })).toBeDefined()
   })
 
   it('muestra el enlace para volver al inicio', () => {
-    render(
-      <BrowserRouter>
-        <DataPolicy />
-      </BrowserRouter>
-    )
-    const backLink = screen.getByText('← Volver')
-    expect(backLink).toBeDefined()
+    renderPolicy()
+    expect(screen.getByText('← Volver')).toBeDefined()
   })
 
-  it('muestra información de contacto', () => {
-    render(
-      <BrowserRouter>
-        <DataPolicy />
-      </BrowserRouter>
+  it('muestra los correos de contacto de los responsables', () => {
+    renderPolicy()
+    expect(screen.getAllByRole('link', { name: 'luis@gmail.com' })[0]?.getAttribute('href')).toBe(
+      'mailto:luis@gmail.com'
     )
-    expect(screen.getByText('soporte@safe-web.com')).toBeDefined()
+    expect(screen.getAllByRole('link', { name: 'sebas@gmail.com' }).length).toBeGreaterThan(0)
+  })
+
+  it('usa una fecha de actualización fija, no la del día', () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2030-01-01T12:00:00Z'))
+    renderPolicy()
+    expect(screen.getByText('Última actualización: 16 de septiembre de 2026')).toBeDefined()
   })
 })
