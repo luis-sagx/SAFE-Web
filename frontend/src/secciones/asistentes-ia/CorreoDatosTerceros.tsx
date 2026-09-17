@@ -9,7 +9,9 @@ import {
   splitKnownData,
   evaluateData,
   worstLevel,
+  mentionsAny,
   signal,
+  type SendResult,
   type SensitiveDatum,
 } from './chatIA'
 
@@ -35,11 +37,19 @@ const TEACHER = 'Ing. Marcelo Tapia'
 const DATA_POINTS: SensitiveDatum[] = [
   { id: 'dato-nombre', tipo: 'nombre', etiqueta: 'el nombre completo de tu compañera', nombre: FIRST_NAME, apellido: LAST_NAME },
   { id: 'dato-cedula', tipo: 'numero', etiqueta: 'la cédula de tu compañera', valor: ECUADORIAN_ID },
-  { id: 'dato-correo', tipo: 'texto', etiqueta: 'el correo de tu compañera', valor: EMAIL },
+  // Sin el dominio también es su correo (el usuario identifica a la persona).
+  { id: 'dato-correo', tipo: 'patron', etiqueta: 'el correo de tu compañera', patron: /andrea\.?cedeno02/ },
 ]
 
-function onEnviar(texto: string): { goto: string; label?: string } {
+// De qué trata el correo: el trámite, la materia o a quién va. Sin nada de esto la IA no tiene qué redactar.
+const TOPIC_ROOTS = ['horario', 'cambi', 'materia', 'redes', 'profe', 'docente', 'ingenier', 'ing\\b', 'tapia', 'clase', 'curso', 'solicit', 'permiso', 'coordinac']
+
+function onEnviar(texto: string): SendResult {
   const nivel = worstLevel(evaluateData(texto, DATA_POINTS))
+  // La fuga manda aunque el pedido esté incompleto: el dato ya salió.
+  if (nivel === 'seguro' && !mentionsAny(texto, TOPIC_ROOTS)) {
+    return { repregunta: 'Me falta información para redactarlo. ¿Sobre qué asunto es el correo y a quién va dirigido?' }
+  }
   return {
     goto: nivel === 'fuga' ? 'e_fuga' : nivel === 'parcial' ? 'e_parcial' : 'e_seguro',
     label: 'Escribió su propio mensaje para pedirle ayuda a la IA',

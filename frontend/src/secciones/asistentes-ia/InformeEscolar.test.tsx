@@ -67,4 +67,24 @@ describe('InformeEscolar', () => {
     )
     expect(await screen.findByText('Informe mejorado sin entregar los datos de nadie')).toBeDefined()
   })
+
+  it('pedir que lo mejore sin pegar el seguimiento no aprueba: la IA repregunta', async () => {
+    const container = start(<SchoolReport />)
+    writeAndSend(container, 'Mejóralo por favor')
+    expect(await within(container).findByText(/No veo el contenido del informe/)).toBeDefined()
+    expect(screen.queryByText('Informe mejorado sin entregar los datos de nadie')).toBeNull()
+  })
+
+  it('la fecha de nacimiento o el domicilio escritos de otra forma siguen siendo fuga', async () => {
+    const container = start(<SchoolReport />)
+    writeAndSend(container, 'Nació el 14 de junio de 2015. Mejoró la participación.')
+    expect(await screen.findByText('El informe entero del estudiante quedó en un servicio externo')).toBeDefined()
+  })
+
+  it('el domicilio sin "Cdla." también es fuga', async () => {
+    const container = start(<SchoolReport />)
+    writeAndSend(container, 'Vive en La Alborada. Le cuesta entregar tareas.')
+    expect(await screen.findByText('El informe entero del estudiante quedó en un servicio externo')).toBeDefined()
+  })
+
 })

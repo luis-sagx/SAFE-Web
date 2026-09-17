@@ -158,7 +158,9 @@ export type ScreenView =
         placeholder: string
         hora: string
         respuestaIA: string
-        onEnviar: (texto: string, adjuntos: string[]) => { goto: string; label?: string }
+        // `repregunta`: el mensaje no traía nada con qué trabajar; la IA lo
+        // dice y el campo sigue abierto, sin decidir nada todavía.
+        onEnviar: (texto: string, adjuntos: string[]) => { goto: string; label?: string } | { repregunta: string }
         // Imágenes que se pueden adjuntar: arrastrándolas desde el panel de
         // al lado (dataTransfer 'text/plain' = id) o con el clip, que las adjunta
         // todas para descartar con la X (la vía para teclado y pantallas
@@ -271,6 +273,8 @@ function DeviceScreen({
   // correcto como congelarlo, y no exige una copia aparte.
   const [freeText, setFreeText] = useState('')
   const [sent, setSent] = useState(false)
+  // Intentos que la IA contestó con una repregunta, en orden: se quedan en el hilo.
+  const [retries, setRetries] = useState<{ text: string; repregunta: string }[]>([])
   const [attached, setAttached] = useState<string[]>([])
   const [dragOver, setDragOver] = useState(false)
   const freeTextRef = useRef<HTMLTextAreaElement>(null)
@@ -291,6 +295,7 @@ function DeviceScreen({
     if (wasFinished.current && !finished) {
       setFreeText('')
       setSent(false)
+      setRetries([])
       setAttached([])
     }
     wasFinished.current = finished
@@ -459,10 +464,15 @@ function DeviceScreen({
   // cada repintado,incluida cualquier marca que el repaso le haya agregado a
   // mano,, así que esos tramos van como JSX de verdad (ver el `.map` de
   // abajo), no como texto.
+  const retryMessages: typeof view.msgs = retries.flatMap((retry) => [
+    { text: retry.text, time: view.entradaLibre?.hora ?? '', mine: true, segmentosEnviados: [{ texto: retry.text }] },
+    { text: retry.repregunta, time: view.entradaLibre?.hora ?? '' },
+  ])
+  const baseMessages = retries.length > 0 ? [...view.msgs, ...retryMessages] : view.msgs
   const messages =
     view.entradaLibre && sent
       ? [
-          ...view.msgs,
+          ...baseMessages,
           {
             text: freeText,
             time: view.entradaLibre.hora,
@@ -473,10 +483,12 @@ function DeviceScreen({
           },
           { text: view.entradaLibre.respuestaIA, time: view.entradaLibre.hora },
         ]
-      : view.msgs
+      : baseMessages
 
   const files = view.entradaLibre?.archivos
   const canSend = freeText.trim() !== '' || attached.length > 0
+  const sendResult = canSend ? view.entradaLibre?.onEnviar(freeText, attached) : undefined
+  const sendGoto = sendResult && 'goto' in sendResult ? sendResult : undefined
   // Solo ids conocidos y sin repetir: el drop puede traer cualquier texto arrastrado desde fuera.
   const attach = (id: string) => {
     if (!files?.some((file) => file.id === id)) return
@@ -555,7 +567,7 @@ function DeviceScreen({
       <div ref={threadRef} className={styles.smsThread}>
         {messages.map((msg, i) => (
           <div
-            key={msg.text}
+            key={`${i}-${msg.text}`}
             className={`${styles.smsRow} ${msg.mine ? styles.mine : styles.theirs} ${
               i > latestMine ? styles.smsNuevo : ''
             }`}
@@ -705,9 +717,18 @@ function DeviceScreen({
               className={`${styles.hotspot} ${styles.smsEnviar}`}
               aria-label="Enviar el mensaje"
               disabled={!canSend}
-              data-hotspot-goto={canSend ? view.entradaLibre.onEnviar(freeText, attached).goto : undefined}
-              data-hotspot-label={canSend ? view.entradaLibre.onEnviar(freeText, attached).label : undefined}
-              onClick={() => setSent(true)}
+              data-hotspot-goto={sendGoto?.goto}
+              data-hotspot-label={sendGoto?.label}
+              // Una repregunta no es una decisión: sin esto el motor lo tomaría por un clic en el vacío.
+              data-control={sendResult && !sendGoto ? '' : undefined}
+              onClick={() => {
+                if (sendResult && 'repregunta' in sendResult) {
+                  setRetries((prev) => [...prev, { text: freeText, repregunta: sendResult.repregunta }])
+                  setFreeText('')
+                } else {
+                  setSent(true)
+                }
+              }}
             >
               <SendHorizontal aria-hidden className={styles.smsEnviarIcono} strokeWidth={2} />
             </button>

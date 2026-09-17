@@ -100,4 +100,13 @@ describe('InvitacionCumpleanos', () => {
     keepOnlyAndSend(container, 'dibujo_sofia.png', 'decoracion_fiesta.jpg')
     expect(await screen.findByText('Armaste la invitación sin subir ninguna cara')).toBeDefined()
   })
+
+  it('un texto sin imágenes ni descripción no aprueba: la IA repregunta', async () => {
+    const container = start(<BirthdayInvitation />)
+    fireEvent.change(within(container).getByLabelText('Escribe tu mensaje'), { target: { value: 'nose' } })
+    send(container)
+    expect(await within(container).findByText(/súbeme una imagen o cuéntame cómo la quieres/)).toBeDefined()
+    expect(screen.queryByText('Armaste la invitación sin subir ninguna cara')).toBeNull()
+  })
+
 })

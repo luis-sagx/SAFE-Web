@@ -9,7 +9,9 @@ import {
   splitKnownData,
   evaluateData,
   worstLevel,
+  mentionsAny,
   signal,
+  type SendResult,
   type SensitiveDatum,
 } from './chatIA'
 
@@ -29,12 +31,30 @@ const MISSED = '$340.000'
 const CLIP_PERCENT = '15%'
 
 const DATA_POINTS: SensitiveDatum[] = [
-  { id: 'dato-perdidas', tipo: 'texto', etiqueta: `la cifra real de pérdidas (${MISSED})`, valor: MISSED },
-  { id: 'dato-recorte', tipo: 'texto', etiqueta: `el porcentaje real del recorte de personal (${CLIP_PERCENT})`, valor: CLIP_PERCENT },
+  // "$340.000", "340000", "340 mil", "340k": la misma cifra.
+  {
+    id: 'dato-perdidas',
+    tipo: 'patron',
+    etiqueta: `la cifra real de pérdidas (${MISSED})`,
+    patron: /\b340(\s*[.,]?\s*000\b|\s*mil\b|\s*k\b)/,
+  },
+  // "15%", "15 %", "15 por ciento", "quince por ciento".
+  {
+    id: 'dato-recorte',
+    tipo: 'patron',
+    etiqueta: `el porcentaje real del recorte de personal (${CLIP_PERCENT})`,
+    patron: /\b(15|quince)\s*(%|por\s*ciento)/,
+  },
 ]
 
-function onEnviar(texto: string): { goto: string; label?: string } {
+// De qué trata el informe. Sin nada de esto la IA no tiene qué resumir.
+const TOPIC_ROOTS = ['perdid', 'resultado', 'trimestr', 'recort', 'despid', 'ajuste', 'personal', 'financ', 'ingreso', 'venta', 'balance', 'empleado', 'cifra', 'economic', 'deficit', 'gasto', 'presupuest', 'utilidad', 'reduc']
+
+function onEnviar(texto: string): SendResult {
   const nivel = worstLevel(evaluateData(texto, DATA_POINTS))
+  if (nivel === 'seguro' && !mentionsAny(texto, TOPIC_ROOTS)) {
+    return { repregunta: 'Necesito saber de qué trata el informe para resumirlo. ¿Qué temas o resultados debe cubrir?' }
+  }
   return {
     // Sin nivel parcial (ver nota arriba): 'fuga' o 'seguro' solamente.
     goto: nivel === 'seguro' ? 'e_seguro' : 'e_fuga',
