@@ -32,7 +32,7 @@ function AppHeader({
   const { isAuthenticated, isAdmin } = useAuth()
 
   return (
-    <header className="relative shrink-0 border-b border-hairline bg-canvas">
+    <header className="shrink-0 border-b border-hairline bg-canvas">
       <div className="mx-auto flex min-h-14 max-w-7xl flex-wrap items-center gap-x-4 gap-y-1 px-6 py-2 text-sm">
         {/* Marca, filete y retorno viajan juntos con poco aire: son un solo bloque
             ("dónde estoy y cómo salgo") que sin el filete de junta parece dos marcas. */}

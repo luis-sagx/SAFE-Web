@@ -179,7 +179,7 @@ function SchoolReport() {
       story={STORY}
       senales={SIGNALS}
       rule={RULE}
-      documentoFuente={<BlocNotas titulo="Ficha.txt, Bloc de notas" texto={SOURCE_DOCUMENT} />}
+      documentoFuente={<BlocNotas titulo="Bloc de notas" texto={SOURCE_DOCUMENT} />}
       instruccion={
         <p className="text-lg leading-relaxed text-body">
           Escribe (o pega) el contenido que le pedirías mejorar a la IA, y toca "Enviar" cuando el

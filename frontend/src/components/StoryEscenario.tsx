@@ -54,6 +54,10 @@ interface ScenarioStoryProps {
   // haces?", issue #184. Se lee y se decide qué copiar antes de escribir,
   // no después.
   panelReferencia?: ReactNode
+  // Issue #210: en el chat de IA cualquier clic en el área libre del chat (no
+  // hay hotspots que "recorrer") prendía el aviso de "ahí no hay nada que
+  // hacer", que no aplica cuando lo que se pide es escribir texto libre.
+  sinAvisoClicVacio?: boolean
 }
 
 // Todas las apps del dock reaccionan al pulsarlas (deliberado: si solo
@@ -140,6 +144,7 @@ function ScenarioStory({
   accionesEnPantalla: screenActions = false,
   apps,
   panelReferencia: referencePanel,
+  sinAvisoClicVacio: hideEmptyClickNotice = false,
 }: ScenarioStoryProps) {
   const engine = useStoryEngine(story, initialNode, scenarioId)
   const { usuarioSimulado: simulatedUser } = useAuth()
@@ -400,18 +405,33 @@ function ScenarioStory({
       // EscenaFoto), así que "¿Qué haces?" y la pista aún no dicen nada.
       const beforeFlash = toView.kind === 'escena' && toView.destello && !engine.node.choices
 
-      return (
+      const questionBlock = (
         <div className="grid gap-3">
-          {referencePanel}
           {!beforeFlash && <p className="text-lg font-semibold text-ink">{question}</p>}
           {engine.node.choices && <StoryChoices choices={engine.node.choices} onChoose={engine.choose} />}
           <Instructions
             pista={beforeFlash ? undefined : clue}
             cuandoTermina={onFinished}
-            fallo={clickedEmptySpace}
+            fallo={!hideEmptyClickNotice && clickedEmptySpace}
           >
             {engine.node.choices ? undefined : instruction}
           </Instructions>
+        </div>
+      )
+
+      return (
+        <div className="grid gap-4">
+          {referencePanel}
+          {/* Tarjeta propia solo cuando hay documento de referencia arriba: separada
+              así, "¿Qué haces?" no se lee como su continuación, issue #210. Sin
+              panelReferencia (la mayoría de escenarios) el grid de siempre alcanza. */}
+          {referencePanel ? (
+            <div className="grid gap-3 rounded-md border border-hairline-strong bg-surface p-4">
+              {questionBlock}
+            </div>
+          ) : (
+            questionBlock
+          )}
         </div>
       )
     })()
