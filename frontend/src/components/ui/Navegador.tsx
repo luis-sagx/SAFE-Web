@@ -144,9 +144,10 @@ export function Browser({
 
         {/* Iconos de trazo y no emoji: 🔒/⚠ varían según el sistema operativo
             y el indicador de seguridad es justo lo que este módulo enseña. */}
-        {current?.local ? (
+        {/* Sin pestaña no hay conexión que calificar: ni candado ni "No seguro". */}
+        {!current ? null : current.local ? (
           <FileText aria-hidden className={styles.urlIcono} strokeWidth={1.75} />
-        ) : current?.segura ? (
+        ) : current.segura ? (
           <Lock aria-hidden className={`${styles.urlIcono} ${styles.lock}`} strokeWidth={2} />
         ) : (
           <span className={styles.warn}>
@@ -154,9 +155,14 @@ export function Browser({
             No seguro
           </span>
         )}
-        <span className={styles.url} data-signal={current?.senalUrl}>
-          {current?.url}
-        </span>
+        {current ? (
+          <span className={styles.url} data-signal={current.senalUrl}>
+            {current.url}
+          </span>
+        ) : (
+          // Con texto, no vacía: una barra vacía pierde el alto de la línea.
+          <span className={`${styles.url} ${styles.urlVacia}`}>Busca o escribe una dirección</span>
+        )}
 
         <span className={styles.navBotones} aria-hidden>
           <Star className={styles.navIcono} strokeWidth={2} />

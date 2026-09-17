@@ -1456,6 +1456,9 @@
   white-space: nowrap;
   color: #3b4553;
 }
+.urlVacia {
+  color: #7c8695;
+}
 
 .page {
   flex: 1;
