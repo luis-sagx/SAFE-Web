@@ -38,6 +38,43 @@ describe('InvitacionCumpleanos', () => {
     expect(within(container).getAllByRole('button', { name: /^Quitar / })).toHaveLength(4)
   })
 
+  it('la tarjeta de la galería lleva su id al arrastrarla', () => {
+    start(<BirthdayInvitation />)
+    const setData = vi.fn()
+    fireEvent.dragStart(screen.getByText('dibujo_sofia.png'), { dataTransfer: { setData } })
+    expect(setData).toHaveBeenCalledWith('text/plain', 'dibujo')
+  })
+
+  it('el chat se marca al arrastrar encima y se desmarca al salir; lo desconocido no se adjunta', () => {
+    const container = start(<BirthdayInvitation />)
+    const chat = within(container).getByRole('region', { name: 'Chat con el asistente' })
+    fireEvent.dragOver(chat)
+    expect(chat.className).toMatch(/smsZonaActiva/)
+    fireEvent.dragLeave(chat, { relatedTarget: document.body })
+    expect(chat.className).not.toMatch(/smsZonaActiva/)
+    fireEvent.drop(chat, { dataTransfer: { getData: () => 'texto cualquiera' } })
+    expect(within(container).queryByRole('button', { name: /^Quitar / })).toBeNull()
+  })
+
+  it('soltar dos veces la misma foto no la duplica, y la X la quita', () => {
+    const container = start(<BirthdayInvitation />)
+    const chat = within(container).getByRole('region', { name: 'Chat con el asistente' })
+    fireEvent.drop(chat, { dataTransfer: { getData: () => 'dibujo' } })
+    fireEvent.drop(chat, { dataTransfer: { getData: () => 'dibujo' } })
+    expect(within(container).getAllByRole('button', { name: /^Quitar / })).toHaveLength(1)
+    fireEvent.click(within(container).getByRole('button', { name: 'Quitar dibujo_sofia.png' }))
+    expect(within(container).queryByRole('button', { name: /^Quitar / })).toBeNull()
+  })
+
+  it('el mensaje enviado muestra las imágenes, y ya no se aceptan más', async () => {
+    const container = start(<BirthdayInvitation />)
+    keepOnlyAndSend(container, 'dibujo_sofia.png')
+    await screen.findByText('Armaste la invitación sin subir ninguna cara')
+    const chat = within(container).getByRole('region', { name: 'Chat con el asistente' })
+    fireEvent.dragOver(chat)
+    expect(chat.className).not.toMatch(/smsZonaActiva/)
+  })
+
   it('subir la foto del aula, con otros niños, es el fallo', async () => {
     const container = start(<BirthdayInvitation />)
     keepOnlyAndSend(container, 'aula_3B_grupo.jpg', 'dibujo_sofia.png')
@@ -49,6 +86,13 @@ describe('InvitacionCumpleanos', () => {
     const container = start(<BirthdayInvitation />)
     keepOnlyAndSend(container, 'sofia_uniforme.jpg', 'decoracion_fiesta.jpg')
     expect(await screen.findByText('Subiste la cara de tu hija a un servicio externo')).toBeDefined()
+  })
+
+  it('escribir sin adjuntar ninguna imagen no sube ninguna cara', async () => {
+    const container = start(<BirthdayInvitation />)
+    fireEvent.change(within(container).getByLabelText('Escribe tu mensaje'), { target: { value: 'Una invitación con dinosaurios' } })
+    send(container)
+    expect(await screen.findByText('Armaste la invitación sin subir ninguna cara')).toBeDefined()
   })
 
   it('solo imágenes sin caras es el acierto', async () => {
