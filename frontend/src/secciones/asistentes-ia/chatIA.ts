@@ -113,6 +113,11 @@ export type SensitiveDatum =
   | { id: string; tipo: 'numero'; etiqueta: string; valor: string }
   | { id: string; tipo: 'nombre'; etiqueta: string; nombre: string; apellido: string }
   | { id: string; tipo: 'texto'; etiqueta: string; valor: string }
+  // Para datos que se escriben de muchas formas ("$340.000", "340 mil",
+  // "14/06/2015", "14 de junio de 2015"): con 'texto' exacto la variante
+  // pasaba como segura. Se prueba sobre el texto normalizado (sin tildes, en
+  // minúsculas), así que el patrón se escribe sin tildes.
+  | { id: string; tipo: 'patron'; etiqueta: string; patron: RegExp }
 
 export interface DatumResult {
   id: string
@@ -120,8 +125,12 @@ export interface DatumResult {
   nivel: LeakLevel
 }
 
-function onlyDigits(texto: string): string {
-  return texto.replace(/\D/g, '')
+/// Cada número escrito, con sus separadores habituales (espacio, guion,
+/// punto) quitados. Por tramo y no todo el texto junto: juntar todos los
+/// dígitos del mensaje armaba números que nadie escribió ("aula 99, grupo 90"
+/// daba "9990").
+function digitRuns(texto: string): string[] {
+  return (texto.match(/\d(?:[\s.-]*\d)*/g) ?? []).map((run) => run.replace(/\D/g, ''))
 }
 
 // NFD + quitar los diacríticos: "á" se descompone en "a" + acento y el acento
@@ -151,13 +160,15 @@ export function evaluateDatum(texto: string, dato: SensitiveDatum): DatumResult 
   const base = { id: dato.id, etiqueta: dato.etiqueta }
 
   if (dato.tipo === 'numero') {
-    const real = onlyDigits(dato.valor)
-    const escrito = onlyDigits(texto)
-    if (real.length >= 4 && escrito.includes(real)) {
+    const real = dato.valor.replace(/\D/g, '')
+    const runs = digitRuns(texto)
+    // Un celular con prefijo de país ("+593 99…") pierde el 0 inicial.
+    const sinCero = real.startsWith('0') ? real.slice(1) : real
+    if (real.length >= 4 && runs.some((run) => run.includes(real) || run.includes(sinCero))) {
       return { ...base, nivel: 'fuga' }
     }
     const ultimos4 = real.slice(-4)
-    if (real.length > 4 && escrito.includes(ultimos4)) {
+    if (real.length > 4 && runs.some((run) => run.includes(ultimos4))) {
       return { ...base, nivel: 'parcial' }
     }
     return { ...base, nivel: 'seguro' }
@@ -170,6 +181,10 @@ export function evaluateDatum(texto: string, dato: SensitiveDatum): DatumResult 
     if (tieneNombre && tieneApellido) return { ...base, nivel: 'fuga' }
     if (tieneNombre || tieneApellido) return { ...base, nivel: 'parcial' }
     return { ...base, nivel: 'seguro' }
+  }
+
+  if (dato.tipo === 'patron') {
+    return { ...base, nivel: dato.patron.test(normalizeText(texto)) ? 'fuga' : 'seguro' }
   }
 
   // 'texto': cifras institucionales, direcciones, fechas, no tienen un
@@ -194,6 +209,20 @@ export function worstLevel(resultados: DatumResult[]): LeakLevel {
   return 'seguro'
 }
 
+/// Si el mensaje trae al menos una de las `raices` como comienzo de palabra
+/// ("particip" calza con "participa" y "participación"). Es el otro lado de la
+/// evaluación: no filtrar datos no basta para aprobar, el mensaje tiene que
+/// pedirle a la IA algo con qué trabajar. Sin esto un "nose" salía aprobado.
+export function mentionsAny(texto: string, raices: string[]): boolean {
+  const normalizado = normalizeText(texto)
+  return raices.some((raiz) => new RegExp(`\\b${raiz}`).test(normalizado))
+}
+
+/// Lo que decide un envío: saltar a un final, o que la IA repregunte y el
+/// chat siga abierto porque el mensaje no traía nada con qué trabajar. Un
+/// mensaje vacío de contenido no es ni acierto ni fallo: no se decidió nada.
+export type SendResult = { goto: string; label?: string } | { repregunta: string }
+
 /// Un campo de texto real: el participante escribe su propio mensaje,o lo
 /// pega, ver BlocNotas.tsx, en vez de elegir entre burbujas ya redactadas ni
 /// tocar palabras de un borrador fijo. `onEnviar` recibe el texto tal como
@@ -203,7 +232,7 @@ export interface FreeTextComposer {
   placeholder: string
   hora: string
   respuestaIA: string
-  onEnviar: (texto: string, adjuntos: string[]) => { goto: string; label?: string }
+  onEnviar: (texto: string, adjuntos: string[]) => SendResult
   // Imágenes que se pueden adjuntar al mensaje (ver InvitacionCumpleanos.tsx).
   archivos?: { id: string; nombre: string }[]
   // Para resaltar, en el mensaje ya enviado, los datos reales que hayan
@@ -232,8 +261,16 @@ export interface DraftSegment {
   sensible?: { id: string; etiqueta: string }
 }
 
-function realValueOf(dato: SensitiveDatum): string {
-  return dato.tipo === 'nombre' ? `${dato.nombre} ${dato.apellido}` : dato.valor
+function findRealValue(texto: string, dato: SensitiveDatum): { valor: string; indice: number } | null {
+  if (dato.tipo === 'patron') {
+    // Normalizar no cambia la cantidad de caracteres (ver normalizeText), así
+    // que el índice sobre el texto normalizado vale para el original.
+    const match = dato.patron.exec(normalizeText(texto))
+    return match ? { valor: texto.slice(match.index, match.index + match[0].length), indice: match.index } : null
+  }
+  const valor = dato.tipo === 'nombre' ? `${dato.nombre} ${dato.apellido}` : dato.valor
+  const indice = texto.indexOf(valor)
+  return indice === -1 ? null : { valor, indice }
 }
 
 /// A diferencia de un borrador fijo, lo que escribió el participante es
@@ -246,9 +283,8 @@ function realValueOf(dato: SensitiveDatum): string {
 export function splitKnownData(texto: string, datos: SensitiveDatum[]): DraftSegment[] {
   const encontrados = datos
     .map((dato) => {
-      const valor = realValueOf(dato)
-      const indice = texto.indexOf(valor)
-      return indice === -1 ? null : { id: dato.id, etiqueta: dato.etiqueta, valor, indice }
+      const encontrado = findRealValue(texto, dato)
+      return encontrado && { id: dato.id, etiqueta: dato.etiqueta, ...encontrado }
     })
     .filter((encontrado) => encontrado !== null)
     .sort((a, b) => a.indice - b.indice)

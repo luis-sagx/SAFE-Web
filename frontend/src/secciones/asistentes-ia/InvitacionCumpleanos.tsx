@@ -4,7 +4,7 @@ import type { Context } from '../../components/ui/ContextoEscenario'
 import type { Story } from '../../hooks/useStoryEngine'
 import AIChatScenario from './EscenarioChatIA'
 import PhotoGallery, { type GalleryPhoto } from './GaleriaFotos'
-import { createAIChat, withFreeTextComposer, signal } from './chatIA'
+import { createAIChat, withFreeTextComposer, mentionsAny, signal, type SendResult } from './chatIA'
 
 /** Reemplaza a "Responder a un cliente con su historial" (issue #213). El escenarioId sigue siendo
  *  `historial-cliente`: es la clave con la que están guardadas las corridas.
@@ -26,7 +26,13 @@ const PHOTOS: GalleryPhoto[] = [
   { id: 'decoracion', nombre: 'decoracion_fiesta.jpg', detalle: 'Globos y la torta de dinosaurios, sin personas', Icono: PartyPopper },
 ]
 
-function onSendStep1(_texto: string, adjuntos: string[]): { goto: string; label?: string } {
+// Sin imágenes, el texto tiene que describir la invitación; si no, la IA no tiene con qué armarla.
+const DESCRIPTION_ROOTS = ['dinosaur', 'invitac', 'fiesta', 'torta', 'pastel', 'globo', 'tema', 'color', 'dibuj', 'decora', 'caricatur', 'fecha', 'hora', 'lugar', 'sabado', 'domingo', 'cumple', 'estilo', 'fondo', 'animal', 'celebr']
+
+function onSendStep1(texto: string, adjuntos: string[]): SendResult {
+  if (adjuntos.length === 0 && !mentionsAny(texto, DESCRIPTION_ROOTS)) {
+    return { repregunta: 'Para armar la invitación necesito algo con qué trabajar: súbeme una imagen o cuéntame cómo la quieres.' }
+  }
   const label = `Adjuntó: ${adjuntos.join(', ') || 'ninguna imagen'}`
   if (adjuntos.includes('foto-grupo')) return { goto: 'e_grupo', label }
   if (adjuntos.includes('foto-hija')) return { goto: 'e_foto_hija', label }

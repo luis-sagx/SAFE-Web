@@ -82,4 +82,21 @@ describe('CorreoDatosTerceros', () => {
     )
     expect(await screen.findByText('Correo redactado sin compartir datos reales de nadie')).toBeDefined()
   })
+
+  it('un mensaje sin asunto no aprueba: la IA repregunta y el chat sigue abierto', async () => {
+    const container = start(<ThirdPartyDataEmail />)
+    writeAndSend(container, 'nose')
+    expect(await within(container).findByText(/Me falta información para redactarlo/)).toBeDefined()
+    expect(screen.queryByText('Correo redactado sin compartir datos reales de nadie')).toBeNull()
+    writeAndSend(container, 'Es para pedirle al profesor un cambio de horario en Redes.')
+    expect(await screen.findByText('Correo redactado sin compartir datos reales de nadie')).toBeDefined()
+  })
+
+  it('tras una repregunta, filtrar el dato real sigue siendo fuga', async () => {
+    const container = start(<ThirdPartyDataEmail />)
+    writeAndSend(container, 'hola')
+    writeAndSend(container, 'Su correo es andrea.cedeno02')
+    expect(await screen.findByText('Datos de tu compañera compartidos con la IA')).toBeDefined()
+  })
+
 })

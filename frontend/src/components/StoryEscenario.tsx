@@ -422,16 +422,8 @@ function ScenarioStory({
       return (
         <div className="grid gap-4">
           {referencePanel}
-          {/* Tarjeta propia solo cuando hay documento de referencia arriba: separada
-              así, "¿Qué haces?" no se lee como su continuación, issue #210. Sin
-              panelReferencia (la mayoría de escenarios) el grid de siempre alcanza. */}
-          {referencePanel ? (
-            <div className="grid gap-3 rounded-md border border-hairline-strong bg-surface p-4">
-              {questionBlock}
-            </div>
-          ) : (
-            questionBlock
-          )}
+          {/* Sin tarjeta propia: "¿Qué haces?" se ve igual que en el resto de módulos. */}
+          {questionBlock}
         </div>
       )
     })()

@@ -10,7 +10,9 @@ import {
   evaluateDatum,
   evaluateData,
   worstLevel,
+  mentionsAny,
   signal,
+  type SendResult,
   type SensitiveDatum,
 } from './chatIA'
 
@@ -46,8 +48,20 @@ const PROGRESS =
 // El paquete que prueba identidad: cualquiera de los tres, solo, ya es fuga completa.
 const IDENTITY_POINTS: SensitiveDatum[] = [
   { id: 'dato-cedula', tipo: 'numero', etiqueta: 'la cédula real del estudiante', valor: ECUADORIAN_ID },
-  { id: 'dato-nacimiento', tipo: 'texto', etiqueta: 'la fecha de nacimiento real del estudiante', valor: BIRTH },
-  { id: 'dato-direccion', tipo: 'texto', etiqueta: 'el domicilio real del estudiante', valor: ADDRESS },
+  // Con cualquier separador, o escrita en palabras ("14 de junio de 2015").
+  {
+    id: 'dato-nacimiento',
+    tipo: 'patron',
+    etiqueta: 'la fecha de nacimiento real del estudiante',
+    patron: /\b14\s*[/.-]\s*0?6\s*[/.-]\s*(20)?15\b|\b14 de junio/,
+  },
+  // Basta la ciudadela o la manzana y villa: cualquiera ubica la casa de un menor.
+  {
+    id: 'dato-direccion',
+    tipo: 'patron',
+    etiqueta: 'el domicilio real del estudiante',
+    patron: /alborada|\b(mz|manzana)\.?\s*14\b|\bvilla\s*7\b/,
+  },
 ]
 // Menos grave: sirve para llegar a la familia, no para suplantar al estudiante ante un trámite.
 const PHONE_POINT: SensitiveDatum = {
@@ -57,9 +71,15 @@ const PHONE_POINT: SensitiveDatum = {
   valor: CONTACT_PHONE,
 }
 
-function onEnviar(texto: string): { goto: string; label?: string } {
+// Lo que había que mejorar: el seguimiento académico. Sin nada de eso la IA no tiene qué redactar.
+const CONTENT_ROOTS = ['particip', 'tarea', 'equipo', 'organiz', 'habito', 'entreg', 'reforz', 'parcial', 'conducta', 'comport', 'rendimiento', 'aprend', 'atencion', 'puntual', 'calificac']
+
+function onEnviar(texto: string): SendResult {
   const identityLevel = worstLevel(evaluateData(texto, IDENTITY_POINTS))
   const phoneLevel = evaluateDatum(texto, PHONE_POINT).nivel
+  if (identityLevel === 'seguro' && phoneLevel === 'seguro' && !mentionsAny(texto, CONTENT_ROOTS)) {
+    return { repregunta: 'No veo el contenido del informe. Pégame el seguimiento del estudiante que quieres mejorar.' }
+  }
   const goto =
     identityLevel === 'fuga'
       ? 'e_fuga'

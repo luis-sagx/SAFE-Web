@@ -50,4 +50,21 @@ describe('ResumenDocumentoInterno', () => {
     )
     expect(await screen.findByText('Resumen armado sin exponer datos de la empresa')).toBeDefined()
   })
+
+  it('un mensaje sin tema no aprueba: la IA repregunta', async () => {
+    const container = start(<InternalDocumentSummary />)
+    writeAndSend(container, 'resúmelo')
+    expect(await within(container).findByText(/Necesito saber de qué trata el informe/)).toBeDefined()
+    expect(screen.queryByText('Resumen armado sin exponer datos de la empresa')).toBeNull()
+  })
+
+  it.each(['pérdidas de 340 mil dólares', 'pérdida de 340000', 'recorte del 15 % del personal', 'recorte del quince por ciento'])(
+    'la cifra real escrita de otra forma sigue siendo fuga: %s',
+    async (texto) => {
+      const container = start(<InternalDocumentSummary />)
+      writeAndSend(container, texto)
+      expect(await screen.findByText('Información confidencial de la empresa compartida con la IA')).toBeDefined()
+    },
+  )
+
 })

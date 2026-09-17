@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { evaluateDatum, evaluateData, worstLevel, splitKnownData, type SensitiveDatum } from './chatIA'
+import { evaluateDatum, evaluateData, worstLevel, splitKnownData, mentionsAny, type SensitiveDatum } from './chatIA'
 
 const CEDULA: SensitiveDatum = { id: 'cedula', tipo: 'numero', etiqueta: 'Cédula', valor: '1799999980' }
 const NOMBRE: SensitiveDatum = {
@@ -117,5 +117,27 @@ describe('worstLevel', () => {
   it('sin fuga ni parcial, el resultado general es seguro', () => {
     const resultados = evaluateData('ayúdame a redactar un correo formal', [NOMBRE, CEDULA, CORREO])
     expect(worstLevel(resultados)).toBe('seguro')
+  })
+})
+
+describe('mentionsAny', () => {
+  it('calza raíces al comienzo de palabra, sin importar tildes ni mayúsculas', () => {
+    expect(mentionsAny('Mejoró la PARTICIPACIÓN', ['particip'])).toBe(true)
+    expect(mentionsAny('nose', ['particip', 'tarea'])).toBe(false)
+  })
+
+  it('no calza la raíz en medio de otra palabra', () => {
+    expect(mentionsAny('anticipación', ['cipac'])).toBe(false)
+  })
+})
+
+describe('evaluateDatum, números por tramo', () => {
+  it('no arma el número juntando cifras sueltas del mensaje', () => {
+    expect(evaluateDatum('aula 99, grupo 80', CEDULA).nivel).toBe('seguro')
+  })
+
+  it('un celular con prefijo de país sigue siendo el número real', () => {
+    const TELEFONO: SensitiveDatum = { id: 't', tipo: 'numero', etiqueta: 'Teléfono', valor: '099 000 0072' }
+    expect(evaluateDatum('+593 99 000 0072', TELEFONO).nivel).toBe('fuga')
   })
 })
