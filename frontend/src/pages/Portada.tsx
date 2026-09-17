@@ -69,36 +69,40 @@ function videoCount() {
   return `${total} videos`;
 }
 
-/** Resalta dentro del SMS el fragmento de cada señal y le pone su número. */
+/** Resalta dentro del SMS el fragmento de cada señal y le pone su número.
+ *  Un solo tamaño de letra, como en un celular de verdad: el remitente va
+ *  aparte, arriba de la burbuja, y el énfasis del estafador son solo las
+ *  mayúsculas que escribiría él. */
 function BaitMessage() {
   return (
-    <p className="text-base leading-relaxed text-ink">
-      <span className="font-display text-xl uppercase tracking-wide">
-        BANCO GOB:
-      </span>{" "}
-      <span className="font-display text-2xl uppercase tracking-wide">
-        ¡Felicidades!
-      </span>{" "}
-      Tu número resultó{" "}
-      <span className="font-display text-xl uppercase tracking-wide">
-        ganador
-      </span>{" "}
-      del bono de <span className="font-display text-xl">$1.200</span>. Reclama{" "}
-      <span className="font-display text-xl uppercase tracking-wide">hoy</span>{" "}
-      <Mark n={2}>antes de las 18h00</Mark> en{" "}
-      <Mark n={1}>bono-gobierno.ec-pagos.info</Mark> e ingresa tu cédula y{" "}
-      <Mark n={3}>tu clave de banca</Mark>.
-    </p>
+    <div>
+      <p className="flex items-baseline justify-between gap-3 font-mono text-sm uppercase tracking-[0.14em] text-muted">
+        <span className="font-semibold text-ink">Banco Gob</span>
+        <span>Hoy · 09:41</span>
+      </p>
+      <p className="mt-3 rounded-2xl rounded-tl-sm border border-ticket-edge bg-surface px-5 py-5 text-lg leading-loose text-ink sm:text-xl sm:leading-loose">
+        <strong className="font-semibold">¡FELICIDADES!</strong> Tu número
+        resultó GANADOR del bono de{" "}
+        <strong className="font-semibold">$1.200</strong>. Reclama SOLO HOY{" "}
+        <Mark n={2}>antes de las 18h00</Mark> en{" "}
+        <Mark n={1}>bono-gobierno.ec-pagos.info</Mark> e ingresa tu cédula y{" "}
+        <Mark n={3}>tu clave de banca</Mark>.
+      </p>
+    </div>
   );
 }
 
 function Mark({ n, children }: Readonly<{ n: number; children: string }>) {
   return (
-    <mark className="bg-transparent font-medium text-ink underline decoration-warning decoration-wavy decoration-2 underline-offset-4">
+    <mark className="bg-transparent text-ink underline decoration-warning decoration-wavy decoration-2 underline-offset-[6px] [overflow-wrap:anywhere]">
       {children}
-      <sup className="ml-0.5 font-mono text-[11px] font-semibold text-warning no-underline">
+      <span className="sr-only"> (señal {n})</span>
+      <span
+        aria-hidden
+        className="ml-1 inline-flex size-5 -translate-y-0.5 items-center justify-center rounded-full bg-warning align-middle font-mono text-xs font-semibold text-on-warning no-underline"
+      >
         {n}
-      </sup>
+      </span>
     </mark>
   );
 }
@@ -181,7 +185,7 @@ function Portada() {
             <Ticket className="overflow-hidden">
               <div className="relative flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-b border-dashed border-ticket-edge px-5 py-3 font-mono text-sm uppercase tracking-[0.14em] text-muted">
                 <span className="text-ink">SMS-01 · Ejemplo</span>
-                <span>+593 98 745 2210</span>
+                <span>+593 98 765 4321</span>
                 <Notches className="-bottom-2.5" />
               </div>
 
@@ -201,23 +205,23 @@ function Portada() {
                   </>
                 }
               >
-                <div className="px-5 py-6 sm:px-6">
+                <div className="px-5 py-5 sm:px-6">
                   <BaitMessage />
 
-                  <ol className="mt-6 space-y-4 border-t border-dashed border-ticket-edge pt-5">
+                  {/* Compacto a propósito: título y detalle en el mismo renglón
+                      corrido, para que el mensaje sea lo que ocupa el boleto. */}
+                  <ol className="mt-5 space-y-2.5 border-t border-dashed border-ticket-edge pt-4">
                     {SIGNALS.map((signal) => (
                       <li key={signal.id} className="flex gap-3">
-                        <span className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-primary font-mono text-sm font-semibold text-on-primary">
+                        <span className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-warning font-mono text-sm font-semibold text-on-warning">
                           {signal.id}
                         </span>
-                        <span>
-                          <span className="block text-base font-semibold text-ink">
+                        <p className="text-base leading-snug text-body">
+                          <span className="font-semibold text-ink">
                             {signal.titulo}
                           </span>
-                          <span className="mt-0.5 block text-base leading-relaxed text-body">
-                            {signal.detalle}
-                          </span>
-                        </span>
+                          . {signal.detalle}
+                        </p>
                       </li>
                     ))}
                   </ol>

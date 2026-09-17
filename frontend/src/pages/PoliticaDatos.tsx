@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Link } from "react-router";
 
 // Fecha fija de la versión vigente: se cambia a mano al editar el texto.
@@ -578,99 +578,167 @@ const SECTIONS: Section[] = [
   },
 ];
 
+/** Sección visible en pantalla, para marcarla en el índice como Wikipedia.
+ *  Sin IntersectionObserver (jsdom, navegadores muy viejos) no marca nada. */
+function useActiveSection(ids: string[]) {
+  const [active, setActive] = useState(ids[0]);
+
+  useEffect(() => {
+    if (typeof IntersectionObserver === "undefined") return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries.find((entry) => entry.isIntersecting);
+        if (visible) setActive(visible.target.id);
+      },
+      // Solo cuenta la franja superior de la pantalla: la sección "actual" es
+      // la que se está empezando a leer, no la que asoma abajo.
+      { rootMargin: "0px 0px -70% 0px" },
+    );
+    ids.forEach((id) => {
+      const element = document.getElementById(id);
+      if (element) observer.observe(element);
+    });
+    return () => observer.disconnect();
+  }, [ids]);
+
+  return active;
+}
+
+const SECTION_IDS = SECTIONS.map((section) => section.id);
+
+function TableOfContents({ active }: { active?: string }) {
+  return (
+    <ol className="space-y-0.5 border-l border-hairline">
+      {SECTIONS.map((section, index) => {
+        const current = section.id === active;
+        return (
+          <li key={section.id}>
+            <a
+              href={`#${section.id}`}
+              aria-current={current ? "location" : undefined}
+              className={`-ml-px flex min-h-11 items-center gap-2 border-l-2 py-1.5 pl-4 pr-2 text-base leading-snug hover:underline ${
+                current
+                  ? "border-primary font-semibold text-ink"
+                  : "border-transparent text-link"
+              }`}
+            >
+              <span className="w-5 shrink-0 font-mono text-sm text-muted">
+                {index + 1}
+              </span>
+              {section.title}
+            </a>
+          </li>
+        );
+      })}
+    </ol>
+  );
+}
+
 export default function DataPolicy() {
+  const active = useActiveSection(SECTION_IDS);
+
   return (
     <div className="min-h-screen bg-canvas">
-      <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
-        <Link
-          to="/"
-          className="mb-6 inline-flex min-h-11 items-center text-base font-medium text-link underline"
-        >
-          ← Volver
-        </Link>
-
-        <h1 className="text-4xl font-bold text-ink">Política de Datos</h1>
-        <p className="mt-3 text-base text-muted">
-          Última actualización: {LAST_UPDATED}
-        </p>
-
-        <div className="mt-8 space-y-10 text-base leading-relaxed text-body">
-          <p>
-            Esta política explica, en lenguaje claro, qué datos personales
-            recoge SAFE-Web, para qué, cómo los protegemos, quién puede verlos y
-            qué derechos tienes sobre ellos. Léela antes de registrarte.
-          </p>
-
-          <aside
-            className="rounded-lg border border-hairline-strong bg-surface p-5"
-            aria-labelledby="resumen"
+      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:grid lg:grid-cols-[17rem_minmax(0,1fr)] lg:gap-12">
+        {/* Índice lateral fijo al hacer scroll, como en la documentación. */}
+        <aside className="hidden lg:block">
+          <nav
+            aria-labelledby="indice"
+            className="sticky top-0 max-h-screen overflow-y-auto py-12"
           >
-            <h2 id="resumen" className="text-xl font-semibold text-ink">
-              En resumen
-            </h2>
-            <Bullets>
-              <li>
-                Pedimos nombre, apellido, correo y cédula solo para darte acceso
-                y emitir tu certificado.
-              </li>
-              <li>
-                Tu cédula no se guarda, y tu nombre y correo se almacenan
-                cifrados.
-              </li>
-              <li>
-                Tus resultados se analizan con un seudónimo, nunca con tu
-                nombre.
-              </li>
-              <li>
-                No vendemos tus datos, no mostramos publicidad y no usamos
-                rastreadores.
-              </li>
-              <li>
-                Puedes pedir acceso, corrección o eliminación de tus datos
-                cuando quieras.
-              </li>
-            </Bullets>
-          </aside>
-
-          <nav aria-labelledby="indice">
-            <h2 id="indice" className="text-xl font-semibold text-ink">
+            <h2
+              id="indice"
+              className="mb-3 font-mono text-sm uppercase tracking-[0.14em] text-muted"
+            >
               Contenido
             </h2>
-            <ol className="mt-3 list-decimal space-y-1 pl-6">
-              {SECTIONS.map((section) => (
-                <li key={section.id}>
-                  <a
-                    href={`#${section.id}`}
-                    className="inline-flex min-h-11 items-center text-link underline"
-                  >
-                    {section.title}
-                  </a>
-                </li>
-              ))}
-            </ol>
+            <TableOfContents active={active} />
           </nav>
+        </aside>
 
-          {SECTIONS.map((section, index) => (
-            <section
-              key={section.id}
-              id={section.id}
-              aria-labelledby={`${section.id}-titulo`}
-              className="scroll-mt-6"
-            >
-              <h2
-                id={`${section.id}-titulo`}
-                className="mb-3 text-xl font-semibold text-ink"
-              >
-                {index + 1}. {section.title}
-              </h2>
-              {section.body}
-            </section>
-          ))}
+        <main className="max-w-3xl py-12">
+          <Link
+            to="/"
+            className="mb-6 inline-flex min-h-11 items-center text-base font-medium text-link underline"
+          >
+            ← Volver
+          </Link>
 
-          <p className="border-t border-hairline pt-6 text-sm text-muted">
-            SAFE-Web · Versión vigente desde el {LAST_UPDATED}
+          <h1 className="text-4xl font-bold text-ink">Política de Datos</h1>
+          <p className="mt-3 text-base text-muted">
+            Última actualización: {LAST_UPDATED}
           </p>
-        </div>
+
+          <div className="mt-8 space-y-10 text-base leading-relaxed text-body">
+            <p>
+              Esta política explica, en lenguaje claro, qué datos personales
+              recoge SAFE-Web, para qué, cómo los protegemos, quién puede verlos y
+              qué derechos tienes sobre ellos. Léela antes de registrarte.
+            </p>
+
+            {/* En celular no hay lateral: el índice se pliega arriba. */}
+            <details className="rounded-lg border border-hairline-strong bg-surface lg:hidden">
+              <summary className="min-h-11 cursor-pointer px-5 py-2.5 font-semibold text-ink">
+                Contenido
+              </summary>
+              <nav aria-label="Contenido" className="px-3 pb-4">
+                <TableOfContents />
+              </nav>
+            </details>
+
+            <aside
+              className="rounded-lg border border-hairline-strong bg-surface p-5"
+              aria-labelledby="resumen"
+            >
+              <h2 id="resumen" className="text-xl font-semibold text-ink">
+                En resumen
+              </h2>
+              <Bullets>
+                <li>
+                  Pedimos nombre, apellido, correo y cédula solo para darte acceso
+                  y emitir tu certificado.
+                </li>
+                <li>
+                  Tu cédula no se guarda, y tu nombre y correo se almacenan
+                  cifrados.
+                </li>
+                <li>
+                  Tus resultados se analizan con un seudónimo, nunca con tu
+                  nombre.
+                </li>
+                <li>
+                  No vendemos tus datos, no mostramos publicidad y no usamos
+                  rastreadores.
+                </li>
+                <li>
+                  Puedes pedir acceso, corrección o eliminación de tus datos
+                  cuando quieras.
+                </li>
+              </Bullets>
+            </aside>
+
+            {SECTIONS.map((section, index) => (
+              <section
+                key={section.id}
+                id={section.id}
+                aria-labelledby={`${section.id}-titulo`}
+                className="scroll-mt-6"
+              >
+                <h2
+                  id={`${section.id}-titulo`}
+                  className="mb-3 text-xl font-semibold text-ink"
+                >
+                  {index + 1}. {section.title}
+                </h2>
+                {section.body}
+              </section>
+            ))}
+
+            <p className="border-t border-hairline pt-6 text-sm text-muted">
+              SAFE-Web · Versión vigente desde el {LAST_UPDATED}
+            </p>
+          </div>
+        </main>
       </div>
     </div>
   );

@@ -4,7 +4,6 @@ import AppHeader from "../components/AppHeader";
 import ProgressBar from "../components/BarraProgreso";
 import Ticket, { Insignia, Notches, Sello } from "../components/Boleto";
 import CertificateButton from "../components/CertificadoBoton";
-import TramaFondo from "../components/TramaFondo";
 import { Link } from "react-router";
 import { getSectionScenarios, SECTIONS } from "../data/catalogo";
 import { fetchProgress, type Progress } from "../lib/api";
@@ -82,7 +81,6 @@ function Dashboard() {
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-canvas">
-      <TramaFondo />
       <AppHeader />
 
       <main className="mx-auto max-w-7xl px-6 py-12">
