@@ -1,9 +1,11 @@
-import { useRef, useState, type CSSProperties } from 'react'
+import { useEffect, useRef, useState, type CSSProperties, type MouseEvent } from 'react'
 import { flushSync } from 'react-dom'
-import { ArrowLeft, Lock, LockOpen, X, ZoomIn } from 'lucide-react'
+import { ArrowLeft, Lock, LockOpen, ZoomIn } from 'lucide-react'
 import officeImg from '../../assets/escenarios/fisico/oficina.webp'
 import ScenarioLayout from '../../components/EscenarioLayout'
+import DeviceScreen, { type ScreenView } from '../../components/ui/DeviceScreen'
 import FlashOverlay from '../../components/ui/FlashOverlay'
+import { Browser, type TabConfig } from '../../components/ui/Navegador'
 import Instructions from '../../components/ui/Instrucciones'
 import Task from '../../components/ui/Tarea'
 import VerdictPanel, { type Signal } from '../../components/ui/PanelVeredicto'
@@ -14,44 +16,103 @@ import type { StoryNode } from '../../hooks/useStoryEngine'
 import styles from './fisico.module.css'
 
 interface Tab {
-  // Corto a propósito: tiene que caber sin recortarse en la barra.
-  corto: string
+  id: string
+  // Corto a propósito: con cuatro pestañas abiertas tiene que caber en la barra.
+  // El título completo va en la página.
   titulo: string
+  tituloPagina: string
   url: string
-  contenido: string[]
-  color: string
+  // Página web como las del módulo de phishing: la misma vista `web`, con datos
+  // en vez de formulario.
+  pagina: Omit<Extract<ScreenView, { kind: 'web' }>, 'kind' | 'url' | 'title' | 'secure' | 'fields' | 'button'>
 }
 
 const TABS: Tab[] = [
   {
-    corto: 'Nóminas',
-    titulo: 'Nóminas 2026',
+    id: 'nominas',
+    titulo: 'Nóminas',
+    tituloPagina: 'Nóminas 2026',
     url: 'intranet.andes.ec/rrhh/nominas',
-    contenido: ['Sueldos del área, enero a marzo', 'Cuentas bancarias de 42 personas'],
-    color: '#4ade80',
+    pagina: {
+      brand: 'Andes · Recursos Humanos',
+      menu: ['Inicio', 'Nómina', 'Vacaciones', 'Documentos'],
+      subtitle: 'Sueldos del área, enero a marzo.',
+      datos: [
+        { etiqueta: 'Personas en nómina', valor: '42' },
+        { etiqueta: 'Total pagado en marzo', valor: '$ 58.340,00' },
+        { etiqueta: 'Cuenta de acreditación · María Pérez', valor: 'Banco Pichincha · 2203447100' },
+      ],
+      footer: 'Uso interno de Recursos Humanos.',
+    },
   },
   {
-    corto: 'Contraseñas',
-    titulo: 'Gestor de contraseñas',
+    id: 'claves',
+    titulo: 'Contraseñas',
+    tituloPagina: 'Gestor de contraseñas',
     url: 'vault.andes.ec/mis-claves',
-    contenido: ['Usuario del portal: mariaperez', 'Clave guardada: visible en pantalla'],
-    color: '#fbbf24',
+    pagina: {
+      brand: 'Andes Vault',
+      menu: ['Mis claves', 'Compartidas', 'Ajustes'],
+      subtitle: 'La clave quedó a la vista tras pulsar "Mostrar".',
+      datos: [
+        { etiqueta: 'Sitio', valor: 'portal.andes.ec' },
+        { etiqueta: 'Usuario', valor: 'mariaperez' },
+        { etiqueta: 'Contraseña', valor: 'Andes#2026*' },
+      ],
+    },
   },
   {
-    corto: 'Clientes',
-    titulo: 'Clientes VIP',
+    id: 'clientes',
+    titulo: 'Clientes',
+    tituloPagina: 'Clientes VIP',
     url: 'crm.andes.ec/clientes-vip',
-    contenido: ['Contactos y montos de 18 cuentas', 'Marcado como confidencial'],
-    color: '#60a5fa',
+    pagina: {
+      brand: 'Andes CRM',
+      menu: ['Clientes', 'Oportunidades', 'Reportes'],
+      subtitle: 'Contactos y montos de 18 cuentas.',
+      datos: [
+        { etiqueta: 'Cliente principal', valor: 'Comercial Pacífico S.A.' },
+        { etiqueta: 'Saldo en cartera', valor: '$ 412.000,00' },
+        { etiqueta: 'Contacto directo', valor: 'gerencia@compacifico.ec · 099 812 3345' },
+      ],
+      aviso: 'Confidencial: no compartir fuera del área comercial.',
+    },
   },
   {
-    corto: 'Reportes',
-    titulo: 'Reportes financieros',
+    id: 'reportes',
+    titulo: 'Reportes',
+    tituloPagina: 'Reportes financieros',
     url: 'intranet.andes.ec/finanzas/cierre',
-    contenido: ['Cierre trimestral sin publicar', 'Borrador para el directorio'],
-    color: '#f87171',
+    pagina: {
+      brand: 'Andes · Finanzas',
+      menu: ['Cierres', 'Presupuesto', 'Auditoría'],
+      subtitle: 'Cierre trimestral sin publicar, borrador para el directorio.',
+      datos: [
+        { etiqueta: 'Ingresos del trimestre', valor: '$ 3.240.000,00' },
+        { etiqueta: 'Utilidad neta', valor: '$ 410.500,00' },
+        { etiqueta: 'Estado', valor: 'Borrador · no publicar' },
+      ],
+    },
   },
 ]
+
+// Vista y pestaña del navegador se arman una vez: DeviceScreen memoriza por
+// identidad de la vista.
+const VIEWS: ScreenView[] = TABS.map((tab) => ({
+  kind: 'web',
+  url: tab.url,
+  title: tab.tituloPagina,
+  secure: true,
+  fields: [],
+  button: '',
+  ...tab.pagina,
+}))
+
+const BROWSER_TABS: Record<string, TabConfig> = Object.fromEntries(
+  // `cierra` solo hace falta para que el navegador dibuje la ✕: aquí cerrar no
+  // lleva a otro nodo, lo resuelve `onBrowserClick`.
+  TABS.map((tab) => [tab.id, { titulo: tab.titulo, url: tab.url, segura: true, cierra: 'cerrar' }]),
+)
 
 interface Document {
   nombre: string
@@ -86,7 +147,7 @@ const SIGNALS: Signal[] = [
     targetId: 'bloqueo',
     pantalla: 'repaso',
     texto:
-      'Bloquear la sesión con <b>Win + L</b> cuesta un segundo. Sin eso, tu sesión abierta es tu correo, tus sistemas y tus permisos en manos de cualquiera.',
+      '<b>Bloquear la sesión</b> cuesta un segundo. Sin eso, tu sesión abierta es tu correo, tus sistemas y tus permisos en manos de cualquiera.',
   },
 ]
 
@@ -113,6 +174,19 @@ function SafeExit() {
   // que acercarse, como quien se sienta frente a la pantalla.
   const [zoomed, setZoomed] = useState(false)
   const monitorRef = useRef<HTMLButtonElement>(null)
+  // El navegador se dibuja a tamaño de escritorio y, sobre la foto, se reduce
+  // entero hasta el ancho del monitor: mismo aspecto, sin rediseñarlo en miniatura.
+  const canvasRef = useRef<HTMLDivElement>(null)
+  const [miniScale, setMiniScale] = useState(0.4)
+
+  useEffect(() => {
+    const canvas = canvasRef.current
+    const monitor = canvas?.parentElement
+    if (!canvas || !monitor || typeof ResizeObserver === 'undefined') return
+    const observer = new ResizeObserver(() => setMiniScale(monitor.clientWidth / canvas.offsetWidth))
+    observer.observe(monitor)
+    return () => observer.disconnect()
+  }, [])
 
   const stampFlash = useFlashTransition()
 
@@ -141,6 +215,16 @@ function SafeExit() {
   function saveDocument(index: number) {
     if (final) return
     setSaved(new Set(saved).add(index))
+  }
+
+  // Los clics del navegador compartido llegan todos aquí, como en los escenarios
+  // de phishing, marcados con data-cierra (la ✕) o data-pestana (la pestaña).
+  function onBrowserClick(event: MouseEvent) {
+    const target = event.target as HTMLElement
+    const closing = target.closest<HTMLElement>('[data-cierra]')?.dataset.cierra
+    const tab = target.closest<HTMLElement>('[data-pestana]')?.dataset.pestana
+    if (closing) closeTab(TABS.findIndex((t) => t.id === closing))
+    else if (tab) setTabActive(TABS.findIndex((t) => t.id === tab))
   }
 
   function closeZoom() {
@@ -225,51 +309,26 @@ function SafeExit() {
     ),
   }
 
-  const activePage = activeView !== null ? TABS[activeView] : undefined
+  const activeId = activeView !== null ? TABS[activeView]?.id : undefined
+  const activeScreen = activeView !== null ? VIEWS[activeView] : undefined
 
   const close = zoomed && !final
 
   const browser = (
-    <div className={styles.navegador}>
-      <div className={styles.pestanas}>
-        {TABS.map((tab, i) => {
-          if (closedView.has(i)) return null
-          return (
-            <div key={tab.corto} className={activeView === i ? styles.pestanaActiva : styles.pestana}>
-              <button type="button" className={styles.pestanaNombre} onClick={() => setTabActive(i)}>
-                <span className={styles.pestanaPunto} style={{ background: tab.color }} aria-hidden />
-                <span className={styles.pestanaTexto}>{tab.corto}</span>
-              </button>
-              <button
-                type="button"
-                className={styles.pestanaCerrar}
-                onClick={() => closeTab(i)}
-                aria-label={`Cerrar la pestaña ${tab.titulo}`}
-              >
-                <X aria-hidden strokeWidth={2.5} />
-              </button>
-            </div>
-          )
-        })}
-      </div>
-
-      <div className={styles.direccion}>
-        <p className={styles.direccionTexto}>{activePage ? `https://${activePage.url}` : '\u00a0'}</p>
-      </div>
-
-      {activePage ? (
-        <div className={styles.pagina}>
-          <p className={styles.paginaTitulo}>{activePage.titulo}</p>
-          {activePage.contenido.map((line) => (
-            <p key={line} className={styles.paginaLinea}>
-              {line}
-            </p>
-          ))}
-        </div>
+    <Browser
+      pestanas={BROWSER_TABS}
+      abiertas={TABS.filter((_, i) => !closedView.has(i)).map((tab) => tab.id)}
+      activa={activeId ?? ''}
+      marcadores={[]}
+      reloj={{ hora: '17:50' }}
+      onHotspot={onBrowserClick}
+    >
+      {activeScreen ? (
+        <DeviceScreen view={activeScreen} />
       ) : (
         <p className={styles.paginaVacia}>No queda ninguna pestaña abierta</p>
       )}
-    </div>
+    </Browser>
   )
 
   const screen = (
@@ -331,7 +390,7 @@ function SafeExit() {
               ) : (
                 <>
                   <Lock className={styles.rotuloIcono} /> Bloquear
-                  <span className={styles.soloAncho}> la sesión · Win + L</span>
+                  <span className={styles.soloAncho}> la sesión</span>
                 </>
               )}
             </span>
@@ -362,14 +421,20 @@ function SafeExit() {
           inert={!close}
           aria-hidden={!close}
         >
-          {blockedView ? (
-            <div className={styles.bloqueo}>
-              <Lock aria-hidden />
-              <p>SESIÓN BLOQUEADA</p>
-            </div>
-          ) : (
-            browser
-          )}
+          <div
+            ref={canvasRef}
+            className={styles.lienzo}
+            style={close ? undefined : { transform: `scale(${miniScale})` }}
+          >
+            {blockedView ? (
+              <div className={styles.bloqueo}>
+                <Lock aria-hidden />
+                <p>SESIÓN BLOQUEADA</p>
+              </div>
+            ) : (
+              browser
+            )}
+          </div>
         </div>
 
         {close && (

@@ -45,7 +45,7 @@ describe('SalidaSegura', () => {
   it('abre en la primera pestaña y muestra su URL', () => {
     const scene = start(<SafeExit />)
 
-    expect(within(scene).getByText('https://intranet.andes.ec/rrhh/nominas')).toBeDefined()
+    expect(within(scene).getByText('intranet.andes.ec/rrhh/nominas')).toBeDefined()
   })
 
   it('en el escritorio el monitor es una miniatura: para tocar pestañas hay que acercarse', () => {
@@ -64,15 +64,15 @@ describe('SalidaSegura', () => {
     const scene = start(<SafeExit />)
 
     zoomIn(scene)
-    fireEvent.click(within(scene).getByRole('button', { name: 'Cerrar la pestaña Clientes VIP' }))
+    fireEvent.click(within(scene).getByRole('button', { name: 'Cerrar la pestaña Clientes' }))
 
     const names = within(scene)
       .getAllByRole('button', { name: /^Cerrar la pestaña/ })
       .map((button) => button.getAttribute('aria-label'))
     expect(names).toEqual([
-      'Cerrar la pestaña Nóminas 2026',
-      'Cerrar la pestaña Gestor de contraseñas',
-      'Cerrar la pestaña Reportes financieros',
+      'Cerrar la pestaña Nóminas',
+      'Cerrar la pestaña Contraseñas',
+      'Cerrar la pestaña Reportes',
     ])
   })
 
@@ -80,9 +80,9 @@ describe('SalidaSegura', () => {
     const scene = start(<SafeExit />)
 
     zoomIn(scene)
-    fireEvent.click(within(scene).getByRole('button', { name: 'Cerrar la pestaña Nóminas 2026' }))
+    fireEvent.click(within(scene).getByRole('button', { name: 'Cerrar la pestaña Nóminas' }))
 
-    expect(within(scene).getByText('https://vault.andes.ec/mis-claves')).toBeDefined()
+    expect(within(scene).getByText('vault.andes.ec/mis-claves')).toBeDefined()
   })
 
   it('con la sesión bloqueada no se puede tocar el navegador', () => {
@@ -115,7 +115,7 @@ describe('SalidaSegura', () => {
     // Y la escena vuelve a mostrar lo que ya se había cerrado: si no, no habría
     // nada que señalar.
     const monitor = scene.querySelector<HTMLElement>('[data-signal="pestanas"]')!
-    expect(within(monitor).getAllByText(/^(Nóminas|Contraseñas|Clientes|Reportes)$/)).toHaveLength(4)
+    expect(monitor.querySelectorAll('[data-pestana]')).toHaveLength(4)
 
     fireEvent.click(screen.getByRole('button', { name: 'Siguiente →' }))
 

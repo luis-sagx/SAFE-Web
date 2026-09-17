@@ -59,6 +59,22 @@
   .cajon {
     right: 0.25rem;
   }
+
+  /* Cuatro pestañas en un navegador de 345px: fuera lo decorativo de la barra
+     ("+", botones de ventana, globo) para que quepan el nombre y la ✕. El
+     navegador es compartido, así que se apunta por rol y no por clase. */
+  .lienzo [role='tablist'] > [aria-hidden] {
+    display: none;
+  }
+
+  .lienzo [role='tab'] {
+    gap: 0.25rem;
+    padding-inline: 0.5rem 0.25rem;
+  }
+
+  .lienzo [role='tab'] > svg:first-child {
+    display: none;
+  }
 }
 
 .rotuloIcono {
@@ -74,13 +90,9 @@
 
 /* ---- Monitor ---- */
 
-/* El navegador se dimensiona con el ancho de su propia caja (cqw) y todo lo de
-   adentro va en em: sobre el monitor es una miniatura, y al acercarse es el
-   mismo navegador a tamaño legible, sin dibujarlo dos veces. */
 .pantalla,
 .pantallaCerca {
   position: absolute;
-  container-type: inline-size;
   overflow: hidden;
   transition:
     left 0.25s ease,
@@ -109,144 +121,30 @@
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
 }
 
-.navegador {
-  display: flex;
-  flex-direction: column;
+/* Lienzo a tamaño de monitor de escritorio (proporción de la pantalla de la
+   foto). Sobre la foto se reduce con `scale`; acercado ocupa su caja. */
+.lienzo {
+  width: 60rem;
+  height: 31.75rem;
+  transform-origin: 0 0;
+}
+
+.pantallaCerca .lienzo {
+  width: 100%;
   height: 100%;
-  background: #f7f7f5;
-  font-size: 2.5cqw;
 }
 
-.pantallaCerca .navegador {
-  font-size: clamp(1rem, 2cqw, 1.25rem);
-}
-
-.pestanas {
-  display: flex;
-  gap: 0.25em;
-  padding: 0.3em 0.3em 0;
-  background: #1a1e23;
-}
-
-.pestana,
-.pestanaActiva {
-  display: flex;
-  flex: 0 1 12em;
-  min-width: 0;
-  align-items: center;
-  border-radius: 0.4em 0.4em 0 0;
-  color: #c2cad3;
-}
-
-.pestanaActiva {
-  background: #f7f7f5;
-  color: #1f242b;
-  font-weight: 600;
-}
-
-.pestanaNombre {
-  display: flex;
-  flex: 1;
-  min-width: 0;
-  align-items: center;
-  gap: 0.5em;
-  height: 2.75em;
-  padding-left: 0.75em;
-  font: inherit;
-  color: inherit;
-  cursor: pointer;
-}
-
-.pestanaPunto {
-  width: 0.6em;
-  height: 0.6em;
-  flex: none;
-  border-radius: 999px;
-}
-
-.pestanaTexto {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.pestanaCerrar {
-  display: flex;
-  flex: none;
-  align-items: center;
-  justify-content: center;
-  width: 2.75em;
-  height: 2.75em;
-  border-radius: 999px;
-  color: inherit;
-  cursor: pointer;
-}
-
-.pestanaCerrar svg {
-  width: 1em;
-  height: 1em;
-}
-
-@container (max-width: 30rem) {
-  .pestanaNombre {
-    padding-left: 0.5em;
-  }
-
-  .pestanaCerrar {
-    width: 1.75em;
-  }
-}
-
-.pestanaCerrar:hover {
-  background: rgba(123, 131, 141, 0.35);
-}
-
-.pestanaNombre:focus-visible,
-.pestanaCerrar:focus-visible {
-  outline: 3px solid #16a34a;
-  outline-offset: -3px;
-}
-
-.direccion {
-  padding: 0.4em 0.75em;
-  background: #23282f;
-}
-
-.direccionTexto {
-  overflow: hidden;
-  padding: 0.3em 1em;
-  border-radius: 999px;
-  background: #31373f;
-  color: #c2cad3;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.pagina {
-  flex: 1;
-  min-height: 0;
-  padding: 1.25em 1.5em;
-  color: #60646c;
-}
-
-.paginaTitulo {
-  padding-bottom: 0.6em;
-  border-bottom: 2px solid #e3e3df;
-  color: #171717;
-  font-size: 1.4em;
-  font-weight: 700;
-}
-
-.paginaLinea {
-  margin-top: 0.8em;
-  font-family: var(--font-mono);
+.lienzo > section {
+  height: 100%;
 }
 
 .paginaVacia {
   display: grid;
   flex: 1;
   place-items: center;
-  color: #6b6f76;
+  background: #ffffff;
+  color: #5f6b7a;
+  font-size: 1.125rem;
 }
 
 .bloqueo {
@@ -258,7 +156,7 @@
   gap: 0.6em;
   background: #12161a;
   color: #16a34a;
-  font-size: 2.5cqw;
+  font-size: 1.5rem;
   font-weight: 700;
   letter-spacing: 0.08em;
 }
