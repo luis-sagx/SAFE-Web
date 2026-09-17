@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { Resend } from 'resend';
 
 /// Única salida de correo del sistema (§11 del diseño MVP la excluía; esta
-/// spec la reintroduce solo para la entrega del certificado — nada de
+/// spec la reintroduce solo para la entrega del certificado, nada de
 /// verificación de cuenta, newsletters ni notificaciones de progreso. La
 /// cédula ya es la garantía de una cuenta por persona; verificar el correo
 /// además de eso no aportaba nada que justifique el paso extra en el

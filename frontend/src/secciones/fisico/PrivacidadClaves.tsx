@@ -38,7 +38,7 @@ interface App {
 const APPS: App[] = [
   {
     id: 'credenciales',
-    titulo: 'Bóveda Andes — Mis credenciales',
+    titulo: 'Bóveda Andes, Mis credenciales',
     Icono: KeyRound,
     nombre: 'Credenciales',
     corto: 'la bóveda de credenciales',
@@ -54,7 +54,7 @@ const APPS: App[] = [
   },
   {
     id: 'correo',
-    titulo: 'Navegador — Correo Andes',
+    titulo: 'Navegador, Correo Andes',
     Icono: Globe,
     nombre: 'Navegador',
     corto: 'el correo en el navegador',
@@ -66,7 +66,7 @@ const EMAILS = [
   {
     de: 'Dirección General',
     direccion: 'direccion@andes.ec',
-    asunto: 'Aumento aprobado — confidencial',
+    asunto: 'Aumento aprobado, confidencial',
     hora: '16:52',
   },
   {
@@ -318,7 +318,7 @@ function PasswordPrivacy() {
     run.recordDecision({ ventanasAbiertas: exposed, bloqueada: blocked })
 
     // Tres desenlaces y no dos: bloquear con las ventanas puestas no es lo
-    // mismo que dejarlo todo a la vista, pero tampoco está resuelto — en
+    // mismo que dejarlo todo a la vista, pero tampoco está resuelto, en
     // cuanto desbloquees delante de él vuelve a estar todo ahí.
     const node: StoryNode =
       exposed === 0 && blocked
@@ -383,7 +383,7 @@ function PasswordPrivacy() {
         type="button"
         onClick={() => !final && setBlocked(false)}
         // bg-[#171717] y no bg-ink: esto es la pantalla de bloqueo del SO
-        // simulado, no cromo — tiene que verse igual en los dos temas, y
+        // simulado, no cromo, tiene que verse igual en los dos temas, y
         // bg-ink se invierte en oscuro (casi blanco), lo que dejaba esta
         // pantalla en blanco sobre blanco.
         className="flex size-full flex-col items-center justify-center gap-3 bg-[#171717] text-center"
@@ -513,7 +513,7 @@ function PasswordPrivacy() {
   return (
     <ScenarioLayout
       escenarioId="fisico/privacidad-claves"
-      resumen="Privacidad — Alguien se acerca a tu escritorio"
+      resumen="Privacidad, Alguien se acerca a tu escritorio"
       contexto={context}
       nota={note}
       identidad={[]}

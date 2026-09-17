@@ -1,7 +1,7 @@
 // El "documento fuente" del que el participante puede copiar y pegar (issue
 // #184): una ventana con pinta de bloc de notas de escritorio, siempre
-// visible junto al celular. El texto es texto real del DOM —nunca
-// `dangerouslySetInnerHTML`— porque el Ctrl+C del participante tiene que
+// visible junto al celular. El texto es texto real del DOM,nunca
+// `dangerouslySetInnerHTML`, porque el Ctrl+C del participante tiene que
 // funcionar de verdad: si fuera una imagen o HTML simulado no habría nada
 // que copiar.
 interface BlocNotasProps {
@@ -9,7 +9,7 @@ interface BlocNotasProps {
   titulo?: string
 }
 
-function BlocNotas({ texto, titulo = 'Notas.txt — Bloc de notas' }: BlocNotasProps) {
+function BlocNotas({ texto, titulo = 'Notas.txt, Bloc de notas' }: BlocNotasProps) {
   return (
     <div className="overflow-hidden rounded-md border border-hairline-strong bg-surface shadow-sm">
       <div className="flex items-center gap-1.5 border-b border-hairline-strong bg-canvas-soft px-3 py-1.5">

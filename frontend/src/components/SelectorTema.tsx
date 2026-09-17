@@ -10,7 +10,7 @@ const OPTIONS: { valor: Preference; etiqueta: string; Icono: typeof Sun }[] = [
 interface ThemeSelectorProps {
   /** 'segmentado': tres botones en fila, para un encabezado con espacio de
    *  sobra (AuthLayout). 'lista': tres filas apiladas de ancho completo, para
-   *  dentro de un menú angosto (MenuUsuario) — ahí "Sistema"/"Claro"/"Oscuro"
+   *  dentro de un menú angosto (MenuUsuario), ahí "Sistema"/"Claro"/"Oscuro"
    *  los tres a la vez en fila no entraban en el ancho del menú y el tercero
    *  quedaba cortado, sin scroll posible dentro de un `role="menu"`. */
   variante?: 'segmentado' | 'lista'

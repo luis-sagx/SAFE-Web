@@ -24,7 +24,7 @@ const TABS: Tab[] = [
     corto: 'Nóminas',
     titulo: 'Nóminas 2026',
     url: 'intranet.andes.ec/rrhh/nominas',
-    contenido: ['Sueldos del área — enero a marzo', 'Cuentas bancarias de 42 personas'],
+    contenido: ['Sueldos del área, enero a marzo', 'Cuentas bancarias de 42 personas'],
     color: '#4ade80',
   },
   {
@@ -87,7 +87,7 @@ const SIGNALS: Signal[] = [
 ]
 
 const RULE =
-  '<b>Escritorio limpio y pantalla bloqueada.</b> Cada vez que dejas tu puesto —aunque sea cinco minutos— no debe quedar nada a la vista ni ninguna sesión abierta.'
+  '<b>Escritorio limpio y pantalla bloqueada.</b> Cada vez que dejas tu puesto,aunque sea cinco minutos, no debe quedar nada a la vista ni ninguna sesión abierta.'
 
 const WIDTH_TAB = 128
 const X_TABS = 244
@@ -198,8 +198,8 @@ function SafeExit() {
   const context: Context = {
     antes: (
       <p>
-        La seguridad física pesa tanto como la digital. Lo que dejas a la vista al irte —una
-        pantalla encendida, una carpeta abierta— no necesita que nadie te robe una contraseña:
+        La seguridad física pesa tanto como la digital. Lo que dejas a la vista al irte,una
+        pantalla encendida, una carpeta abierta, no necesita que nadie te robe una contraseña:
         basta con mirar.
       </p>
     ),
@@ -562,7 +562,7 @@ function SafeExit() {
   return (
     <ScenarioLayout
       escenarioId="fisico/salida-segura"
-      resumen="Fin de jornada — Deja tu puesto asegurado"
+      resumen="Fin de jornada, Deja tu puesto asegurado"
       contexto={context}
       nota={note}
       identidad={[]}

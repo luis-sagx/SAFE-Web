@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 /* Tokens del sistema de diseño. Ver DESIGN.md.
-   Tema claro y oscuro, los dos verificados a AA — ver
+   Tema claro y oscuro, los dos verificados a AA, ver
    docs/superpowers/specs/2026-09-10-tema-oscuro-design.md §5. */
 @theme {
   --color-primary: #006837;
@@ -45,7 +45,7 @@
   --color-hairline-soft: #f5f5f7;
   --color-hairline-strong: #dcdee0;
   /* Borde de control real (input, select, textarea): 3:1 mínimo contra las
-     seis superficies del sistema — SC 1.4.11. hairline-strong es decorativo
+     seis superficies del sistema, SC 1.4.11. hairline-strong es decorativo
      (el contenido ya delimita la tarjeta) y no alcanza 3:1; border-control sí,
      y es el único que debe usarse en el borde en reposo de un campo. */
   --color-border-control: #7d828a;
@@ -54,7 +54,7 @@
   --color-mint-mid: #a9d1ba;
 
   /* Mundo de la portada: el boleto premiado. Papel hueso cálido, troquel y
-     foil plateado raspable. Solo lo usa la portada pública — ver
+     foil plateado raspable. Solo lo usa la portada pública, ver
      .impeccable/surfaces/frontend-src-pages-portada-tsx.md. El papel es una
      superficie de texto y entra en la verificación de contraste como las
      otras seis. */
@@ -124,7 +124,7 @@
   /* El botón primario invierte polaridad en oscuro: ningún verde alcanza a
      la vez 3:1 contra el lienzo oscuro y 4.5:1 bajo texto blanco con margen
      seguro. Relleno claro + tinta oscura encima, como Material 3. Ver
-     spec §5.3 — text-on-primary se usa solo junto a bg-primary, en los 16
+     spec §5.3, text-on-primary se usa solo junto a bg-primary, en los 16
      sitios verificados. */
   --color-on-primary: #06170d;
 
@@ -145,7 +145,7 @@
 
   /* Más oscuro que canvas, no más claro: hairline era más claro que
      surface-strong y una línea decorativa quedaba más visible que una
-     tarjeta. Sigue siendo decorativo — la separación real de un control la
+     tarjeta. Sigue siendo decorativo, la separación real de un control la
      da border-control. */
   --color-hairline: #1e242c;
   --color-hairline-soft: #171c22;
@@ -181,7 +181,7 @@
 }
 
 /* Trama de seguridad del boleto: las rayas finas de un papel numerado. Es la
-   portada de un video todavía sin reproducir — ver DESIGN.md §11. No se usa
+   portada de un video todavía sin reproducir, ver DESIGN.md §11. No se usa
    la miniatura de YouTube a propósito: pedirla al abrir la página haría que
    Google viera a cada visitante aunque nunca pulse reproducir. */
 .trama-boleto {
@@ -222,7 +222,7 @@ body {
 /* Tailwind v4 dejó de poner cursor:pointer en los botones por defecto (antes
    sí lo hacía Preflight), y la mayoría de botones de la app nunca lo pedían
    aparte: por eso unos mostraban la manito y otros la flecha, sin patrón.
-   :where() para que esto cuente como especificidad cero — así un
+   :where() para que esto cuente como especificidad cero, así un
    `disabled:cursor-default` o el `cursor-default` a propósito del fondo del
    modal (CierreModuloModal) siguen ganando siempre, sin tener que tocarlos. */
 button:where(:not(:disabled)),

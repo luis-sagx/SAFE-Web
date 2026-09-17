@@ -4,7 +4,7 @@ import { JwtModule } from '@nestjs/jwt';
 
 /// Configuración del JWT compartida por los dos servicios: `identidad` la usa
 /// para firmar, `entrenamiento` solo para verificar. El secreto es el mismo, y
-/// es lo único que los acopla — no hay llamadas de red entre ellos.
+/// es lo único que los acopla, no hay llamadas de red entre ellos.
 @Module({
   imports: [
     JwtModule.registerAsync({

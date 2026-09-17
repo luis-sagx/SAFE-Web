@@ -369,7 +369,7 @@ describe('CertificadosService.emitir · el canje de la atestación', () => {
 
   // §5.4.1 del diseño: cuando THRESHOLDS crece y la atestación cubre más
   // módulos que la fila guardada, se actualiza `modulos`, pero el `codigo` no
-  // cambia — el papel que la persona ya tiene sigue verificándose.
+  // cambia, el papel que la persona ya tiene sigue verificándose.
   it('actualiza los módulos y conserva el código cuando el recorrido creció', async () => {
     const existing = {
       id: 'c1',

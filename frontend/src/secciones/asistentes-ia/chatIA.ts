@@ -4,7 +4,7 @@ import type { Signal } from '../../components/ui/PanelVeredicto'
 
 /// Casi todas las señales de esta sección resaltan el elemento que lleva su
 /// mismo id (`data-signal`). El helper evita repetir `id` y `targetId` con el
-/// mismo valor en cada objeto, cuatro escenarios seguidos — que es como la
+/// mismo valor en cada objeto, cuatro escenarios seguidos, que es como la
 /// duplicación estructural terminaba fallando el Quality Gate.
 export const signal = (id: string, screen: string, text: string): Signal =>
   createSignal(id, screen, id, text)
@@ -19,18 +19,18 @@ export interface OpeningLine {
   mio?: boolean
 }
 
-/// Los cuatro escenarios de esta sección simulan el mismo tipo de pantalla —un
-/// chat con un "Asistente IA" externo— que arranca con un saludo (para que se
+/// Los cuatro escenarios de esta sección simulan el mismo tipo de pantalla,un
+/// chat con un "Asistente IA" externo, que arranca con un saludo (para que se
 /// sienta como una conversación de verdad y no como un mensaje que ya salió) y
 /// termina en el pedido de ayuda, con las versiones posibles de lo que se le
-/// escribiría a continuación como burbujas para tocar — igual que un hilo de
+/// escribiría a continuación como burbujas para tocar, igual que un hilo de
 /// SMS con `respuestas` (ver smishing/BajaSuscripcion.tsx): la decisión se
 /// toma dentro del chat, no en una lista aparte. Factorizado porque los
 /// cuatro repetían esta forma letra por letra, salvo el remitente, la
 /// apertura, la hora y las respuestas.
 ///
 /// La apertura alterna estrictamente: escribes tú, contesta la IA, y recién
-/// entonces eliges. Con dos burbujas tuyas seguidas —el "hola" y el pedido—
+/// entonces eliges. Con dos burbujas tuyas seguidas,el "hola" y el pedido,
 /// el hilo dejaba de leerse como una conversación y pasaba a leerse como un
 /// mensaje partido en dos; y la respuesta elegida caía sobre otra burbuja
 /// tuya, que ningún chat hace.
@@ -74,7 +74,7 @@ export function withAIResponse(chat: AIChat, time: string, textSent: string, aiR
 
 /// Continúa el hilo dejando el chat abierto: agrega [tu mensaje, respuesta de la
 /// IA] y mantiene nuevas `respuestas` para elegir. Como `conRespuestaIA`, pero
-/// la conversación no ha terminado — la IA contestó y además repreguntó, y lo
+/// la conversación no ha terminado, la IA contestó y además repreguntó, y lo
 /// que se elige a continuación es la respuesta a esa segunda pregunta.
 ///
 /// Las ramas que salen de ese segundo paso se arman con `conRespuestaIA` sobre
@@ -106,7 +106,7 @@ export type LeakLevel = 'fuga' | 'parcial' | 'seguro'
 /// Qué comparar y cómo. La comparación es siempre contra el valor REAL de
 /// este escenario, nunca contra un patrón genérico (un regex de "10 dígitos"
 /// marcaría como fuga una cédula inventada, y uno que solo busca "el nombre"
-/// se queda mudo ante un apodo) — así se evitan los dos falsos que pide
+/// se queda mudo ante un apodo), así se evitan los dos falsos que pide
 /// resolver el issue: no marca lo inventado, y no deja pasar lo real aunque
 /// venga con espacios o guiones distintos.
 export type SensitiveDatum =
@@ -126,7 +126,7 @@ function onlyDigits(texto: string): string {
 
 // NFD + quitar los diacríticos: "á" se descompone en "a" + acento y el acento
 // se cae, así "Andrango" y "andrángo" cuentan como el mismo texto. Deja el
-// mismo número de caracteres que el original, letra por letra — no como la
+// mismo número de caracteres que el original, letra por letra, no como la
 // forma compuesta, que por eso no sirve para comparar longitudes.
 function normalizeText(texto: string): string {
   return texto
@@ -143,8 +143,8 @@ function containsWord(texto: string, palabra: string): boolean {
 
 /// Evalúa un solo dato. La cédula/cuenta/teléfono cuenta como fuga completa
 /// solo si aparecen TODOS sus dígitos reales seguidos (sin importar espacios
-/// o guiones en medio); si solo aparecen los últimos 4 —como cuando alguien
-/// cree que "ocultar" es mostrar la cola— queda en parcial. El nombre cuenta
+/// o guiones en medio); si solo aparecen los últimos 4,como cuando alguien
+/// cree que "ocultar" es mostrar la cola, queda en parcial. El nombre cuenta
 /// como fuga completa solo con nombre Y apellido juntos; uno solo de los dos
 /// (o un apodo real que igual sea su nombre de pila) queda en parcial.
 export function evaluateDatum(texto: string, dato: SensitiveDatum): DatumResult {
@@ -172,7 +172,7 @@ export function evaluateDatum(texto: string, dato: SensitiveDatum): DatumResult 
     return { ...base, nivel: 'seguro' }
   }
 
-  // 'texto': cifras institucionales, direcciones, fechas — no tienen un
+  // 'texto': cifras institucionales, direcciones, fechas, no tienen un
   // "parcial" natural (a diferencia de un nombre, la mitad de una fecha o de
   // una dirección no delata nada por sí sola), así que es binario.
   const normalizado = normalizeText(texto)
@@ -194,10 +194,10 @@ export function worstLevel(resultados: DatumResult[]): LeakLevel {
   return 'seguro'
 }
 
-/// Un campo de texto real: el participante escribe su propio mensaje —o lo
-/// pega, ver BlocNotas.tsx— en vez de elegir entre burbujas ya redactadas ni
+/// Un campo de texto real: el participante escribe su propio mensaje,o lo
+/// pega, ver BlocNotas.tsx, en vez de elegir entre burbujas ya redactadas ni
 /// tocar palabras de un borrador fijo. `onEnviar` recibe el texto tal como
-/// quedó al tocar "Enviar" y decide a qué nodo saltar — normalmente
+/// quedó al tocar "Enviar" y decide a qué nodo saltar, normalmente
 /// construido con `worstLevel(evaluateData(texto, ...))`.
 export interface FreeTextComposer {
   placeholder: string
@@ -218,8 +218,8 @@ export function withFreeTextComposer(chat: AIChat, composer: FreeTextComposer): 
   return { ...chat, respuestas: undefined, entradaLibre: composer }
 }
 
-/// Un tramo del mensaje ya enviado: texto fijo, o —si `sensible` está
-/// presente— un dato real (el nombre, la cédula…) que apareció tal cual.
+/// Un tramo del mensaje ya enviado: texto fijo, o,si `sensible` está
+/// presente, un dato real (el nombre, la cédula…) que apareció tal cual.
 /// `splitKnownData` arma esta lista para que el mensaje se pinte como JSX de
 /// verdad (no como HTML de `dangerouslySetInnerHTML`, que React reconstruye
 /// en cada repintado y se lleva por delante cualquier resaltado que el
@@ -236,7 +236,7 @@ function realValueOf(dato: SensitiveDatum): string {
 
 /// A diferencia de un borrador fijo, lo que escribió el participante es
 /// libre: puede no traer ningún dato real, traer solo uno, o traerlos
-/// parafraseados (que entonces no calzan por texto exacto y no se marcan —
+/// parafraseados (que entonces no calzan por texto exacto y no se marcan,
 /// esto es una ayuda visual para el repaso, no el criterio de evaluación,
 /// que sigue siendo `evaluateData`). Por eso, a diferencia del extinto
 /// `buildDraftSegments` de un borrador de autor, esta función nunca revienta:
@@ -268,8 +268,8 @@ export function splitKnownData(texto: string, datos: SensitiveDatum[]): DraftSeg
 }
 
 /// Envuelve fragmentos sueltos del mensaje en `<b data-signal="…">` para que el
-/// repaso resalte **la palabra exacta** —la cédula, el número de cuenta, la
-/// contraseña— y no la burbuja entera. Señalar el mensaje completo obligaba a
+/// repaso resalte **la palabra exacta**,la cédula, el número de cuenta, la
+/// contraseña, y no la burbuja entera. Señalar el mensaje completo obligaba a
 /// releerlo buscando qué de todo eso sobraba, que es justo lo que el escenario
 /// tiene que enseñar.
 ///
@@ -285,7 +285,7 @@ export function mark(text: string, brands: Record<string, string>): string {
       throw new Error(`marcar(): el fragmento "${fragment}" no está en el mensaje.`)
     }
     // Reemplazo por función y no por plantilla: un fragmento que empieza con
-    // `$` —un saldo, un monto— haría que `replace` leyera `$2` como grupo de
+    // `$`,un saldo, un monto, haría que `replace` leyera `$2` como grupo de
     // captura dentro del texto de reemplazo.
     return acc.replace(fragment, () => `<b data-signal="${signal}">${fragment}</b>`)
   }, text)

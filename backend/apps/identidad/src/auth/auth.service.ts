@@ -46,8 +46,8 @@ interface ParticipantWithOnboarding {
   onboardingVistoAt: Date | null;
 }
 
-/// Lo que la interfaz sabe del participante. No incluye el seudónimo —ese
-/// pertenece al análisis y el participante nunca debe verlo— ni `cedulaHash`,
+/// Lo que la interfaz sabe del participante. No incluye el seudónimo (este
+/// pertenece al análisis y el participante nunca debe verlo) ni `cedulaHash`,
 /// que no tiene por qué salir del servidor.
 const PROFILE_FIELDS = {
   id: true,
@@ -64,7 +64,7 @@ const SESSION_FIELDS = { ...PROFILE_FIELDS, seq: true } as const;
 /// El perfil se construye campo por campo en vez de descartando los que
 /// sobran: así, agregar una columna al modelo nunca la filtra a la respuesta
 /// por olvidarse de excluirla. Descifra antes de devolver: lo que sale de
-/// Prisma es el texto cifrado (o, en una fila sin migrar, texto plano —
+/// Prisma es el texto cifrado (o, en una fila sin migrar, texto plano,
 /// `decryptOptional` reconoce cuál es cuál).
 function publicProfile(
   participant: ParticipantWithOnboarding,
@@ -167,7 +167,7 @@ export class AuthService {
     // creada antes del cifrado, que `backfill-pii.mts` todavía no alcanzó,
     // no tiene huella todavía y solo se encuentra por el `email` en claro
     // que aún conserva. Una vez migrada, esa segunda rama nunca vuelve a
-    // igualar nada —"email" pasa a guardar texto cifrado, no el correo—, así
+    // igualar nada ("email" pasa a guardar texto cifrado, no el correo), así
     // que dejarla no tiene costo ni riesgo.
     const participant = await this.prisma.participant.findFirst({
       where: {

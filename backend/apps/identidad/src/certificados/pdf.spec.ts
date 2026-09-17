@@ -1,6 +1,6 @@
 import { generateCertificatePdf, type CertificateData } from './pdf';
 
-/// No es una prueba de diseño —eso se verificó a ojo, renderizando el PDF—
+/// No es una prueba de diseño (eso se verificó a ojo, renderizando el PDF)
 /// sino de que la función termina, no lanza, y produce un documento válido
 /// para cualquier combinación real de módulos que pueda llegar: los seis
 /// conocidos (que ejercitan cada ícono dibujado a mano, incluido el de

@@ -15,7 +15,7 @@
     "outDir": "./dist",
     "baseUrl": "./",
     // Los dos servicios comparten solo esto: guards del JWT, decoradores y la
-    // configuración del ValidationPipe. Nunca al revés — libs/comun no importa
+    // configuración del ValidationPipe. Nunca al revés, libs/comun no importa
     // de apps/.
     //
     // Sin extensión a propósito: si el destino se escribe ".../index.ts", tsc

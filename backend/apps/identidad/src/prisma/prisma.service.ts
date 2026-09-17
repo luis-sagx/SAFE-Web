@@ -11,7 +11,7 @@ export class PrismaService
     // Prisma 7 exige un driver adapter: la URL ya no se lee del schema.
     //
     // El schema va como segundo argumento y no como `?schema=` en la URL: el
-    // CLI de Prisma sí honra ese parámetro, pero el driver adapter NO — se
+    // CLI de Prisma sí honra ese parámetro, pero el driver adapter NO, se
     // queda en `public` y toda consulta falla con "permission denied for
     // schema public", porque el rol de este servicio no tiene permiso ahí.
     super({

@@ -8,7 +8,7 @@ import { CertificatesModule } from '../certificados/certificados.module';
 
 /// AuthJwtModule por el JwtAuthGuard, que verifica el token. PrismaService es
 /// global, no hace falta importarlo. CertificadosModule por la revocación
-/// —reutiliza el mismo servicio que emite, no una copia de la lógica.
+/// Reutiliza el mismo servicio que emite, no una copia de la lógica.
 @Module({
   imports: [AuthJwtModule, CertificatesModule],
   controllers: [

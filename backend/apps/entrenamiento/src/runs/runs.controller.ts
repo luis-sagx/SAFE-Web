@@ -59,7 +59,7 @@ export class RunsController {
   }
 
   /// Resultados del estudio para el supervisor: se ven dentro de la app, no se
-  /// descargan. Solo sale el seudónimo (P001), nunca un dato personal — este
+  /// descargan. Solo sale el seudónimo (P001), nunca un dato personal, este
   /// servicio no tiene la tabla de participantes ni permiso para alcanzarla.
   @UseGuards(AdminGuard)
   @Get('resultados')

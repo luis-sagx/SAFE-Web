@@ -14,7 +14,7 @@ function validate(overrides: Record<string, unknown>) {
   return validateSync(dto).map((e) => e.property);
 }
 
-describe('RegisterDto.email — dominios permitidos', () => {
+describe('RegisterDto.email: dominios permitidos', () => {
   it('acepta un proveedor libre conocido', () => {
     expect(validate({ email: 'ana@gmail.com' })).toEqual([]);
     expect(validate({ email: 'ana@outlook.com' })).toEqual([]);
@@ -55,7 +55,7 @@ describe('RegisterDto.email — dominios permitidos', () => {
   });
 });
 
-describe('RegisterDto.password — política de fortaleza', () => {
+describe('RegisterDto.password: política de fortaleza', () => {
   it('acepta una contraseña con mayúscula, número y carácter especial', () => {
     expect(validate({ password: 'Contraseña-larga1!' })).toEqual([]);
   });
@@ -81,7 +81,7 @@ describe('RegisterDto.password — política de fortaleza', () => {
   });
 });
 
-describe('RegisterDto.nombre / apellido — caracteres permitidos', () => {
+describe('RegisterDto.nombre / apellido: caracteres permitidos', () => {
   it('rechaza nombre y apellido de más de 50 caracteres', () => {
     expect(validate({ nombre: 'A'.repeat(51) })).toContain('nombre');
     expect(validate({ apellido: 'B'.repeat(51) })).toContain('apellido');

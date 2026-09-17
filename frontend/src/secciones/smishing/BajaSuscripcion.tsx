@@ -6,7 +6,7 @@ import type { ScreenView } from '../../components/ui/DeviceScreen'
 import type { Signal as ScenarioSignal } from '../../components/ui/PanelVeredicto'
 
 // Puerta de entrada del módulo (dificultad 1): único escenario sin enlace ni formulario.
-// Lo único que el mensaje quiere es una respuesta — contestar no es la salida, es la puerta.
+// Lo único que el mensaje quiere es una respuesta, contestar no es la salida, es la puerta.
 
 const TEXT = `SUSCRIPCION ACTIVA: Tonos y Horoscopo Premium. Se renovo por $2,99 semanales con cargo a tu saldo. Si no deseas continuar responde BAJA a este mismo numero.`
 

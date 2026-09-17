@@ -22,7 +22,7 @@ const REFRESH_COOKIE = 'mic-refresh-token';
 
 /// `path` la restringe a esta única ruta: el navegador no la manda en ninguna
 /// otra petición (ni siquiera a /auth/login), así que un XSS en cualquier
-/// otra pantalla no puede leerla vía red — y al ser httpOnly, tampoco vía
+/// otra pantalla no puede leerla vía red, y al ser httpOnly, tampoco vía
 /// `document.cookie`. `sameSite: 'strict'` es lo que reemplaza a un token
 /// CSRF: el navegador nunca la adjunta en una petición que no haya salido de
 /// este mismo sitio, ni siquiera con `<img src>` o una navegación cross-site.
@@ -90,7 +90,7 @@ export class AuthController {
 
   /// No lleva JwtAuthGuard: es la ruta que se usa precisamente cuando el
   /// access token ya venció. El refresh token nunca viaja en el body ni lo
-  /// toca JavaScript: llega solo — httpOnly— en la cookie que puso login o
+  /// toca JavaScript: llega solo (httpOnly) en la cookie que puso login o
   /// register. Límite más alto que login: el frontend lo llama solo
   /// automáticamente cuando un access token expira, no a golpe de teclado de
   /// un usuario, pero varias pestañas abiertas pueden refrescar a la vez.
@@ -127,7 +127,7 @@ export class AuthController {
   /// El access token lo descarta el propio frontend (vive en memoria/
   /// localStorage). Esta ruta existe para lo que el frontend no puede hacer
   /// solo: borrar la cookie httpOnly del refresh token. Sin ella, "cerrar
-  /// sesión" en un equipo compartido no bastaría — la cookie seguiría viva y
+  /// sesión" en un equipo compartido no bastaría, la cookie seguiría viva y
   /// serviría para renovar la sesión de la persona anterior.
   @HttpCode(204)
   @Post('logout')

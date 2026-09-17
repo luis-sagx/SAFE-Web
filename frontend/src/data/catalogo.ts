@@ -130,8 +130,8 @@ function createAIAssistantScenario(
 const BASE: BaseScenario[] = [
   {
     // Sustituye a cobro-dirigido: ambos eran "paga poco para recibir algo".
-    // Dificultad 1: la señal decisiva no está en pantalla —se responde con
-    // "¿yo jugué?"— así que es accesible sin haber mirado nunca un dominio.
+    // Dificultad 1: la señal decisiva no está en pantalla,se responde con
+    // "¿yo jugué?", así que es accesible sin haber mirado nunca un dominio.
     seccionId: "phishing",
     escenarioId: "loteria-premiada",
     titulo: "Premio de lotería",
@@ -221,7 +221,7 @@ const BASE: BaseScenario[] = [
   {
     // El más difícil del módulo: la redacción es impecable y el anzuelo está en
     // el dominio y en pedir el OTP fuera de la app. Espeja con aviso-filtracion,
-    // que es la misma forma —una alerta de seguridad— pero verdadera.
+    // que es la misma forma,una alerta de seguridad, pero verdadera.
     seccionId: "phishing",
     escenarioId: "sesion-bogota",
     titulo: "Inicio de sesión desconocido",
@@ -356,7 +356,7 @@ const BASE: BaseScenario[] = [
   },
   {
     // El único que no empieza con el teléfono sonando: la llamada ya pasó y lo
-    // que queda es el registro. La decisión —marcar o no— la toma el
+    // que queda es el registro. La decisión,marcar o no, la toma el
     // participante sin nadie apurándole, que es lo que lo hace distinto.
     seccionId: "vishing",
     escenarioId: "llamada-perdida",
@@ -371,7 +371,7 @@ const BASE: BaseScenario[] = [
   },
   {
     // El primer legítimo, y el más sencillo: nadie pide nada. Mide dónde está
-    // el límite, no cuánto se desconfía — atender la entrega está bien, dictar
+    // el límite, no cuánto se desconfía, atender la entrega está bien, dictar
     // la tarjeta no, aunque quien llame sea de verdad.
     seccionId: "vishing",
     escenarioId: "entrega-courier",
@@ -542,7 +542,7 @@ const BASE: BaseScenario[] = [
   },
   {
     // La cuenta es auténtica y quien escribe no: todo lo que enseñan los otros
-    // escenarios —número guardado, foto, historial— sale bien aquí.
+    // escenarios,número guardado, foto, historial, sale bien aquí.
     seccionId: "suplantacion",
     escenarioId: "cuenta-hackeada",
     titulo: "Un amigo pide prestado",

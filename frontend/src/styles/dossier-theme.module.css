@@ -1,6 +1,6 @@
 /*
   Paleta y tipografías compartidas por los escenarios "dossier de caso"
-  (Foto para el boletín y Trampa USB) — foto.css y baiting.css originales
+  (Foto para el boletín y Trampa USB), foto.css y baiting.css originales
   definían exactamente los mismos valores en su :root, así que se
   centralizan acá en una clase de scope en vez de duplicarlos.
 */

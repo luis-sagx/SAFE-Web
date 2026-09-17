@@ -105,7 +105,7 @@ const MESSAGE = { nombre: SENDER_NAME, direccion: ADDRESS, asunto: SUBJECT }
 
 // s2 anclada a la URL de n2 (la página falsa), no al remitente: el
 // remitente muestra un dominio limpio (bancodellitoral.com.ec), que es
-// justo lo que dice s4 sobre lo impecable del correo — el truco del dominio
+// justo lo que dice s4 sobre lo impecable del correo, el truco del dominio
 // está en la página, no en el mensaje. s3 anclada al campo de n3 (el OTP),
 // no al de n2 (la contraseña).
 const SIGNALS: Signal[] = [

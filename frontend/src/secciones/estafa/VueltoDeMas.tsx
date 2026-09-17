@@ -6,7 +6,7 @@ import type { Signal } from '../../components/ui/PanelVeredicto'
 import type { Story } from '../../hooks/useStoryEngine'
 import { ACCOUNT_FAKE, IDENTITY_FAKE } from '../../lib/identidadFicticia'
 
-/** El más difícil: el dinero sí entra, de verdad, pero no es del comprador —es de una cuenta robada, y el
+/** El más difícil: el dinero sí entra, de verdad, pero no es del comprador,es de una cuenta robada, y el
  *  banco lo reversa cuando el dueño reclama. No hay nada raro que reconocer en el mensaje: la salida es saber
  *  que un error se devuelve por el banco, nunca de mano a mano. */
 

@@ -17,7 +17,7 @@ interface AuthLayoutProps {
 }
 
 /// Un solo boleto, no dos piezas sueltas: el texto de marca y el formulario
-/// son las dos mitades del MISMO papel, separadas por una perforación —
+/// son las dos mitades del MISMO papel, separadas por una perforación,
 /// nunca "un título flotando al lado de una tarjeta". En escritorio la
 /// perforación es vertical (dos columnas); en celular, horizontal (apilado).
 function AuthLayout({ folio, titulo: title, subtitulo: subtitle, children, pie }: AuthLayoutProps) {
@@ -47,7 +47,7 @@ function AuthLayout({ folio, titulo: title, subtitulo: subtitle, children, pie }
                 </p>
 
                 {/* Mismo contador de la portada, con los mismos datos reales
-                    del catálogo: no es relleno, es lo que ya cuenta afuera —
+                    del catálogo: no es relleno, es lo que ya cuenta afuera,
                     aquí también respalda que hay contenido de verdad detrás. */}
                 <p className="mt-8 flex flex-wrap gap-y-2 font-mono text-sm uppercase tracking-[0.12em] text-muted">
                   {[`${SECTIONS.length} módulos`, `${SCENARIOS.length} escenarios`].map((count) => (
@@ -64,7 +64,7 @@ function AuthLayout({ folio, titulo: title, subtitulo: subtitle, children, pie }
             </div>
 
             {/* La perforación: punteada y horizontal apilado (arriba del
-                formulario), vertical en escritorio (a la izquierda) — el
+                formulario), vertical en escritorio (a la izquierda), el
                 mismo filete que separa cabecera y contenido en el resto del
                 sistema, solo que rotado según cómo se acomodan las columnas. */}
             <div className="border-t border-dashed border-ticket-edge p-8 lg:w-[360px] lg:shrink-0 lg:border-l lg:border-t-0 lg:p-10">

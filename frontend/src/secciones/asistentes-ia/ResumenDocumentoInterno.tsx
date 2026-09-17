@@ -20,7 +20,7 @@ import {
  *  participante escribe su propio pedido a la IA, decidiendo qué copiar del informe y qué dejar afuera.
  *
  *  A diferencia de una cédula o un nombre, una cifra institucional no tiene una forma "a medias" que valga
- *  la pena distinguir con un tercer nivel — o se escribió la cifra real, o no. Por eso los dos datos de
+ *  la pena distinguir con un tercer nivel, o se escribió la cifra real, o no. Por eso los dos datos de
  *  este escenario son binarios (fuga/seguro), sin nivel parcial. */
 
 const TIME = '15:02'
@@ -49,7 +49,7 @@ const CHAT = withFreeTextComposer(
       { texto: 'Hola, necesito resumir un informe del trabajo.', mio: true },
       {
         texto:
-          'Con gusto. Cuéntame de qué trata el informe y qué extensión debe tener el resumen. Si me dices además para quién es —directivos, personal o clientes—, ajusto el tono.',
+          'Con gusto. Cuéntame de qué trata el informe y qué extensión debe tener el resumen. Si me dices además para quién es,directivos, personal o clientes,, ajusto el tono.',
       },
     ],
     TIME,
@@ -68,7 +68,7 @@ const CHAT = withFreeTextComposer(
 
 // El "documento fuente": el informe trimestral con las cifras reales, abierto al lado en un bloc de
 // notas. Copiarlo entero en el chat es la trampa; el resumen no necesitaba las cifras exactas.
-const SOURCE_DOCUMENT = `Informe trimestral — uso interno.\n\nResultado del período: pérdida de ${MISSED}.\nPlan de ajuste: recorte de personal del ${CLIP_PERCENT}, sin anunciar todavía.\n\nPara la reunión de gerencia del viernes.`
+const SOURCE_DOCUMENT = `Informe trimestral, uso interno.\n\nResultado del período: pérdida de ${MISSED}.\nPlan de ajuste: recorte de personal del ${CLIP_PERCENT}, sin anunciar todavía.\n\nPara la reunión de gerencia del viernes.`
 
 const STORY: Story<ScreenNode> = {
   n1: { kind: 'scene', view: CHAT },
@@ -84,7 +84,7 @@ const STORY: Story<ScreenNode> = {
     ),
     verdict: 'Información confidencial de la empresa compartida con la IA',
     outcome:
-      'Tu mensaje incluyó la cifra real de pérdidas, el porcentaje real del recorte de personal, o ambos — datos que ni el propio personal conoce todavía, y que quedaron en manos de un servicio externo.',
+      'Tu mensaje incluyó la cifra real de pérdidas, el porcentaje real del recorte de personal, o ambos, datos que ni el propio personal conoce todavía, y que quedaron en manos de un servicio externo.',
   },
   e_seguro: {
     kind: 'good',
@@ -93,7 +93,7 @@ const STORY: Story<ScreenNode> = {
       signal(
         'borrador-enviado',
         'e_seguro',
-        'Le pediste a la IA la <b>forma</b> del resumen —para qué reunión es, qué debe mencionar— sin las cifras reales.',
+        'Le pediste a la IA la <b>forma</b> del resumen,para qué reunión es, qué debe mencionar, sin las cifras reales.',
       ),
     ],
     verdict: 'Resumen armado sin exponer datos de la empresa',
@@ -106,12 +106,12 @@ const SIGNALS = [
   signal(
     'informe-en-juego',
     'n1',
-    'La IA te pregunta de qué trata el informe. El que tienes delante trae <b>cifras sin publicar</b> y un <b>plan de despidos que nadie ha anunciado</b> — y contar de qué trata no obliga a copiarlo entero.',
+    'La IA te pregunta de qué trata el informe. El que tienes delante trae <b>cifras sin publicar</b> y un <b>plan de despidos que nadie ha anunciado</b>, y contar de qué trata no obliga a copiarlo entero.',
   ),
 ]
 
 const RULE =
-  'Regla de oro: la información <b>confidencial de tu empresa</b> —cifras sin publicar, planes sin anunciar— no se escribe en una IA externa. Pide la forma del texto, y completa tú los datos sensibles aparte.'
+  'Regla de oro: la información <b>confidencial de tu empresa</b>,cifras sin publicar, planes sin anunciar, no se escribe en una IA externa. Pide la forma del texto, y completa tú los datos sensibles aparte.'
 
 const SUMMARY = 'Le pides a una IA que resuma un informe con cifras sin publicar y un plan de despidos sin anunciar.'
 
@@ -134,10 +134,10 @@ function InternalDocumentSummary() {
       story={STORY}
       senales={SIGNALS}
       rule={RULE}
-      documentoFuente={<BlocNotas titulo="Informe.txt — Bloc de notas" texto={SOURCE_DOCUMENT} />}
+      documentoFuente={<BlocNotas titulo="Informe.txt, Bloc de notas" texto={SOURCE_DOCUMENT} />}
       instruccion={
         <p className="text-lg leading-relaxed text-body">
-          Escribe el mensaje que le mandarías a la IA para pedirle ayuda —puedes copiar del informe— y
+          Escribe el mensaje que le mandarías a la IA para pedirle ayuda,puedes copiar del informe, y
           toca "Enviar" cuando quede como quieres.
         </p>
       }

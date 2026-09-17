@@ -11,7 +11,7 @@ const PARTICIPANT: JwtPayload = {
 };
 
 /// Respuesta de Express falsa, con la misma cadena `.status().set().send()`
-/// que usa el controlador — sin levantar Nest ni un servidor HTTP real, igual
+/// que usa el controlador, sin levantar Nest ni un servidor HTTP real, igual
 /// que los demás tests de este proyecto instancian sus servicios a mano.
 function fakeResponse() {
   const calls: {

@@ -7,7 +7,7 @@ import type { Story } from '../../hooks/useStoryEngine'
 import { ACCOUNT_FAKE, IDENTITY_FAKE } from '../../lib/identidadFicticia'
 
 // Espeja a cambio-numero: mismo montaje, pero aquí el mensaje es real. Existe
-// para no enseñar "desconfía de todo número nuevo" — y para mostrar que ni
+// para no enseñar "desconfía de todo número nuevo", y para mostrar que ni
 // siendo ella, la cédula se manda por chat.
 
 const AUNT = 'Rocío'

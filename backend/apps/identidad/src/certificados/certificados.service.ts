@@ -18,7 +18,7 @@ import { generateCertificatePdf, type CertificateData } from './pdf';
 const CERTIFICATE_HOURS = 4;
 
 /// P2002 es el código de Prisma para violación de índice único. Solo puede
-/// chocar aquí por una colisión de `codigo` — astronómicamente rara con este
+/// chocar aquí por una colisión de `codigo`, astronómicamente rara con este
 /// alfabeto, pero se reintenta en vez de fallar la petición del participante.
 function isUniqueConstraintViolation(error: unknown): boolean {
   return (
@@ -67,7 +67,7 @@ export class CertificatesService {
 
   /// Verifica el pase que firmó `entrenamiento` y exige que sea del mismo
   /// participante que lo presenta. Sin esto, la atestación de otra persona
-  /// —copiada de un log, reenviada— serviría para emitirse un certificado con
+  /// Copiada de un log o reenviada, serviría para emitirse un certificado con
   /// el progreso ajeno.
   private async redeem(
     attestation: string,
@@ -154,7 +154,7 @@ export class CertificatesService {
 
   /// Manda el PDF por correo la primera vez que hay algo que mandar (§ mail
   /// design): correo verificado y aún no enviado. Fire-and-forget desde
-  /// `emitir` a propósito — el participante no debe esperar a Resend para
+  /// `emitir` a propósito, el participante no debe esperar a Resend para
   /// obtener su respuesta, y ya puede descargar el PDF en la app sin esto.
   private async trySendingByEmail(certificate: {
     id: string;
@@ -255,7 +255,7 @@ export class CertificatesService {
   /// de quién participó en el estudio (§5.6 del diseño).
   ///
   /// Un código inexistente responde en la misma forma que uno revocado
-  /// —`{ valido: false }`, sin más campos— para no servir de oráculo sobre
+  /// `{ valido: false }`, sin más campos, para no servir de oráculo sobre
   /// cuántos certificados existen.
   async verify(code: string): Promise<CertificateVerification> {
     const certificate = await this.prisma.certificate.findUnique({

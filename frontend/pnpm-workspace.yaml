@@ -7,7 +7,7 @@ overrides:
   # ninguno de los dos ha publicado todavía una versión que traiga la corregida.
   #
   # Se queda en la línea 3.x: nanoid 5 en adelante es solo ESM y cambia de API,
-  # y postcss lo carga con require — sin acotarlo, pnpm resolvía a la 6 y el
+  # y postcss lo carga con require, sin acotarlo, pnpm resolvía a la 6 y el
   # build se habría roto en cuanto alguien tocara la configuración de estilos.
   #
   # A la izquierda va el rango vulnerable, no un pin: cuando postcss suba el
