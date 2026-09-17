@@ -9,7 +9,6 @@ import { useAuth } from "../context/AuthContext";
 import { getSectionScenarios, getScenario, getSection } from "../data/catalogo";
 import IdentityCard, { type IdentityData } from "./ui/TarjetaIdentidad";
 import { ViewedReviewContext } from "./ui/repasoVisto";
-import { TRAMA_FONDO } from "./TramaFondo";
 
 interface ScenarioLayoutProps {
   /** Misma clave que recibe useScenarioRun, p. ej. 'estafa/saldo-contable'. */
@@ -81,7 +80,11 @@ function ScenarioLayout({
   // El nombre y el rol salían en la barra del escenario y ocupaban el sitio
   // donde ahora va la ubicación en el recorrido. Quién eres ya lo sabes; en
   // qué punto del módulo estás, no había forma de saberlo sin salir.
-  const { displayName, correoSimulado: simulatedEmail, usuarioSimulado: simulatedUser } = useAuth();
+  const {
+    displayName,
+    correoSimulado: simulatedEmail,
+    usuarioSimulado: simulatedUser,
+  } = useAuth();
   const scenarioEmail = emailDomain
     ? `${simulatedUser}@${emailDomain}`
     : simulatedEmail;
@@ -135,10 +138,7 @@ function ScenarioLayout({
   );
 
   const back = (
-    <Link
-      to={`/seccion/${scenario.seccionId}`}
-      className={BACK_CLASS}
-    >
+    <Link to={`/seccion/${scenario.seccionId}`} className={BACK_CLASS}>
       ← Volver a la sección
     </Link>
   );
@@ -161,7 +161,7 @@ function ScenarioLayout({
 
   if (phase === "briefing") {
     return (
-      <div className={`relative min-h-dvh overflow-hidden bg-canvas ${TRAMA_FONDO}`}>
+      <div className={"relative min-h-dvh overflow-hidden bg-canvas"}>
         <AppHeader atras={back} />
 
         {/* Mismo ancho que dashboard/secciones; se parte en dos desde lg (izquierda lo que
@@ -172,17 +172,25 @@ function ScenarioLayout({
               su número dentro del módulo, no por un rótulo repetido. */}
           <p className="flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-base uppercase tracking-[0.12em] text-muted">
             {SectionIcon && (
-              <SectionIcon aria-hidden className="size-4 shrink-0 text-link" strokeWidth={2} />
+              <SectionIcon
+                aria-hidden
+                className="size-4 shrink-0 text-link"
+                strokeWidth={2}
+              />
             )}
             {position > 0 && (
               <span className="tabular-nums">
-                <span className="text-ink">ESC-{String(position).padStart(2, "0")}</span> de{" "}
-                {String(fromModule.length).padStart(2, "0")}
+                <span className="text-ink">
+                  ESC-{String(position).padStart(2, "0")}
+                </span>{" "}
+                de {String(fromModule.length).padStart(2, "0")}
               </span>
             )}
             {/* Filete impreso entre folio y canal, como los contadores de la portada:
                 dos datos distintos pegados se leían como una sola frase. */}
-            <span className="border-l border-ticket-edge pl-3">{section?.canal}</span>
+            <span className="border-l border-ticket-edge pl-3">
+              {section?.canal}
+            </span>
           </p>
           <h1 className="mt-2 font-display text-4xl uppercase tracking-[0.01em] text-ink sm:text-5xl">
             {scenario.titulo}
@@ -246,7 +254,11 @@ function ScenarioLayout({
     // Desde 640px la página no se desplaza, solo el interior del dispositivo. Por debajo
     // sí, a propósito: en celular, 844px repartidos entre barra/dispositivo/decisión
     // dejaban al correo unas tres líneas visibles dentro de una caja a desplazar por dentro.
-    <div className={`relative flex min-h-dvh flex-col bg-canvas-soft sm:h-dvh sm:overflow-hidden ${TRAMA_FONDO}`}>
+    <div
+      className={
+        "relative flex min-h-dvh flex-col bg-canvas-soft sm:h-dvh sm:overflow-hidden"
+      }
+    >
       {/* El resumen dejó de vivir en el header: ya hay suficiente que leer ahí. Sigue
           disponible en el diálogo "Ver contexto y mis datos". */}
       <AppHeader atras={exit}>{location}</AppHeader>
@@ -318,7 +330,8 @@ function ScenarioLayout({
           Tu situación
         </h2>
         <p className="mt-2 text-lg leading-relaxed text-ink">
-          Hola, <strong className="font-semibold">{displayName}</strong>. {summary}
+          Hola, <strong className="font-semibold">{displayName}</strong>.{" "}
+          {summary}
         </p>
         <div className="mt-3">
           <ScenarioContext contexto={context} />

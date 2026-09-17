@@ -1893,6 +1893,73 @@
   line-height: 1.4;
   color: #16202c;
 }
+.smsComposerCampo {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+.smsComposerCampo .smsTextarea {
+  flex: none;
+}
+/* Mientras se arrastra una imagen encima, toda la pantalla del chat es la zona de soltar. */
+.sms.smsZonaActiva {
+  background: #e8f0fe;
+  outline: 2px dashed #1a73e8;
+  outline-offset: -4px;
+}
+.smsAdjuntar {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 999px;
+  color: #475569;
+}
+.smsAdjuntar:hover {
+  background: #e2e8f0;
+}
+.smsAdjuntos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+}
+.smsAdjuntos {
+  margin-top: 0.375rem;
+}
+.smsComposerCampo .smsAdjuntos {
+  margin-top: 0;
+}
+.smsAdjunto {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  max-width: 100%;
+  padding: 0.25rem 0.625rem;
+  border: 1px solid #dfe3e9;
+  border-radius: 0.5rem;
+  background: #fff;
+  font-size: 0.9375rem;
+  color: #16202c;
+  overflow-wrap: anywhere;
+}
+.smsAdjuntoIcono {
+  flex-shrink: 0;
+  width: 1rem;
+  height: 1rem;
+}
+.smsAdjuntoQuitar {
+  display: inline-flex;
+  padding: 0.125rem;
+  border-radius: 999px;
+  color: #64748b;
+}
+.smsAdjuntoQuitar:hover {
+  background: #e2e8f0;
+}
 .smsTextarea::placeholder {
   color: #94a3b8;
 }
