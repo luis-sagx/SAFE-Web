@@ -62,7 +62,7 @@ function UserMenu() {
 
           <div className="border-b border-hairline py-1.5">
             <p className="px-3 pb-1 text-xs font-medium text-muted">Tema</p>
-            <ThemeSelector variante="lista" />
+            <ThemeSelector />
           </div>
 
           {!isAdmin && (
