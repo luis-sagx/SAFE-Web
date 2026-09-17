@@ -489,8 +489,25 @@ function DeviceScreen({
 
   return (
     <section
-      className={`${styles.screen} ${styles.sms} ${view.sitio ? styles.smsAncho : ''}`}
+      className={`${styles.screen} ${styles.sms} ${view.sitio ? styles.smsAncho : ''} ${
+        dragOver ? styles.smsZonaActiva : ''
+      }`}
       aria-label={view.sitio ? 'Chat con el asistente' : 'Mensajes de texto'}
+      // Como en un chat de IA real, la imagen se suelta en cualquier parte de la pantalla, no solo en el campo.
+      onDragOver={(event) => {
+        if (!files || sent) return
+        event.preventDefault()
+        setDragOver(true)
+      }}
+      onDragLeave={(event) => {
+        // Pasar sobre un hijo también dispara dragleave: solo cuenta salir de la sección.
+        if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setDragOver(false)
+      }}
+      onDrop={(event) => {
+        event.preventDefault()
+        setDragOver(false)
+        attach(event.dataTransfer.getData('text/plain'))
+      }}
     >
       {/* Un chat web no lleva cabecera: el nombre ya está en la pestaña. */}
       {!view.sitio && (
@@ -641,20 +658,7 @@ function DeviceScreen({
 
       {view.entradaLibre ? (
         !sent && (
-          <div
-            className={`${styles.smsComposerLibre} ${dragOver ? styles.smsZonaActiva : ''}`}
-            onDragOver={(event) => {
-              if (!files) return
-              event.preventDefault()
-              setDragOver(true)
-            }}
-            onDragLeave={() => setDragOver(false)}
-            onDrop={(event) => {
-              event.preventDefault()
-              setDragOver(false)
-              attach(event.dataTransfer.getData('text/plain'))
-            }}
-          >
+          <div className={styles.smsComposerLibre}>
             {files && (
               <button
                 type="button"

@@ -1903,8 +1903,8 @@
 .smsComposerCampo .smsTextarea {
   flex: none;
 }
-/* Mientras se arrastra una imagen encima, el composer entero es la zona de soltar. */
-.smsZonaActiva {
+/* Mientras se arrastra una imagen encima, toda la pantalla del chat es la zona de soltar. */
+.sms.smsZonaActiva {
   background: #e8f0fe;
   outline: 2px dashed #1a73e8;
   outline-offset: -4px;

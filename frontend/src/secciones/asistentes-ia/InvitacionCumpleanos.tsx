@@ -13,8 +13,8 @@ import { createAIChat, withFreeTextComposer, signal } from './chatIA'
  *  son tarjetas que describen cada imagen, y se arrastran al chat (o se adjuntan con el clip).
  *
  *  Dos casos de aprobación: la foto de tu hija la puedes decidir tú, pero ella no puede aceptar y su cara,
- *  su uniforme y su escuela quedan en un servicio externo (parcial). La foto del aula trae a otros niños
- *  cuyos papás nunca dieron permiso (fallo). Adjuntar solo el dibujo o la decoración es el acierto. */
+ *  su uniforme y su escuela quedan en un servicio externo. La foto del aula trae a otros niños cuyos
+ *  papás nunca dieron permiso. Las dos son fallo. Adjuntar solo el dibujo o la decoración es el acierto. */
 
 const TIME = '20:12'
 const DAUGHTER = 'Sofía'
@@ -73,7 +73,7 @@ const STORY: Story<ScreenNode> = {
       'La foto del aula muestra a 12 compañeros de Sofía. Esa decisión no era tuya: cada familia decide sobre la imagen de su hijo. Para una invitación bastaba con el dibujo o la decoración.',
   },
   e_foto_hija: {
-    kind: 'partial',
+    kind: 'bad',
     view: CHAT,
     senales: [signal('foto-hija', 'e_foto_hija', FACE_OF_DAUGHTER)],
     verdict: 'Subiste la cara de tu hija a un servicio externo',

@@ -26,8 +26,9 @@ describe('InvitacionCumpleanos', () => {
 
   it('soltar una foto arrastrada desde la galería la adjunta', () => {
     const container = start(<BirthdayInvitation />)
-    const composer = within(container).getByLabelText('Escribe tu mensaje').closest('div')!.parentElement!
-    fireEvent.drop(composer, { dataTransfer: { getData: () => 'dibujo' } })
+    // Se suelta sobre el hilo del chat, no sobre el campo: toda la pantalla acepta la imagen.
+    const chat = within(container).getByRole('region', { name: 'Chat con el asistente' })
+    fireEvent.drop(chat, { dataTransfer: { getData: () => 'dibujo' } })
     expect(within(container).getByRole('button', { name: 'Quitar dibujo_sofia.png' })).toBeDefined()
   })
 
@@ -44,7 +45,7 @@ describe('InvitacionCumpleanos', () => {
     expect(container.querySelector('[data-signal="foto-grupo"]')?.textContent).toBe('aula_3B_grupo.jpg')
   })
 
-  it('subir la foto de tu hija es parcial', async () => {
+  it('subir la foto de tu hija también es un fallo', async () => {
     const container = start(<BirthdayInvitation />)
     keepOnlyAndSend(container, 'sofia_uniforme.jpg', 'decoracion_fiesta.jpg')
     expect(await screen.findByText('Subiste la cara de tu hija a un servicio externo')).toBeDefined()
