@@ -1337,6 +1337,9 @@
   font-weight: 600;
   color: #16202c;
   max-width: 16.25rem;
+  /* Sin esto no se encogen: con varias pestañas en una ventana angosta las
+     últimas quedaban fuera de la barra, sin forma de llegar a ellas. */
+  min-width: 0;
   white-space: nowrap;
 }
 /* Va después de .tab y no en el bloque de arriba, que es donde estaba: con la
@@ -1452,6 +1455,9 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   color: #3b4553;
+}
+.urlVacia {
+  color: #7c8695;
 }
 
 .page {

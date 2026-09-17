@@ -35,4 +35,15 @@ describe('Navegador', () => {
     expect(screen.getByRole('button', { name: 'Abrir Banco del Litoral' })).toBeDefined()
     expect(screen.getByRole('button', { name: 'Abrir U.E. San Rafael' })).toBeDefined()
   })
+
+  it('sin pestañas abiertas no califica la conexión y la barra conserva su texto', () => {
+    render(
+      <Browser pestanas={{}} abiertas={[]} activa="" marcadores={[]} onHotspot={() => undefined}>
+        <p>Sin pestañas</p>
+      </Browser>,
+    )
+
+    expect(screen.queryByText('No seguro')).toBeNull()
+    expect(screen.getByText('Busca o escribe una dirección')).toBeDefined()
+  })
 })
