@@ -3,6 +3,7 @@ import { SCENARIOS, SECTIONS } from "../data/catalogo";
 import Brand from "./Marca";
 import ThemeMenu from "./MenuTema";
 import Ticket from "./Boleto";
+import { TRAMA_FONDO } from "./TramaFondo";
 
 interface AuthLayoutProps {
   /// Rótulo del boleto (p. ej. "ACCESO", "REGISTRO"): mismo lenguaje que el
@@ -30,7 +31,7 @@ function AuthLayout({
     // Sin selector aparte arriba de la página: ahora vive dentro del propio
     // boleto (ver más abajo), así que este contenedor ya no le reserva
     // espacio a nada.
-    <div className="relative min-h-screen overflow-hidden bg-canvas">
+    <div className={`relative min-h-screen overflow-hidden bg-canvas ${TRAMA_FONDO}`}>
       <div className="mx-auto flex min-h-screen max-w-5xl items-center px-6 py-12">
         <Ticket className="w-full overflow-hidden">
           <div className="flex flex-col lg:flex-row">
