@@ -1,4 +1,4 @@
-import { Bot, Landmark, Paperclip, Search, SendHorizontal, UserRound } from 'lucide-react'
+import { Bot, ImageIcon, Landmark, Paperclip, Search, SendHorizontal, UserRound, X } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import { ACCOUNT_FAKE, IDENTITY_FAKE } from '../../lib/identidadFicticia'
@@ -128,6 +128,9 @@ export type ScreenView =
         // enviarlo: los tramos se pintan como JSX de verdad, no como el HTML
         // fijo de `text`, ver por qué en el `.map` que los consume.
         segmentosEnviados?: { texto: string; sensible?: { id: string; etiqueta: string } }[]
+        // Imágenes que viajaron con el mensaje (ver `entradaLibre.archivos`);
+        // cada una lleva su id como data-signal para que el repaso la señale.
+        adjuntos?: { id: string; nombre: string }[]
       }[]
       senalRemitente?: string
       // Abre la ficha del contacto: número real y antigüedad de la cuenta.
@@ -155,7 +158,12 @@ export type ScreenView =
         placeholder: string
         hora: string
         respuestaIA: string
-        onEnviar: (texto: string) => { goto: string; label?: string }
+        onEnviar: (texto: string, adjuntos: string[]) => { goto: string; label?: string }
+        // Imágenes que se pueden adjuntar: arrastrándolas desde el panel de
+        // al lado (dataTransfer 'text/plain' = id) o con el clip, que las adjunta
+        // todas para descartar con la X (la vía para teclado y pantallas
+        // táctiles, donde el arrastre nativo no existe).
+        archivos?: { id: string; nombre: string }[]
         // Para resaltar, en el mensaje ya enviado, los datos reales que hayan
         // quedado tal cual (ver chatIA.ts, splitKnownData). Sin esto el
         // mensaje se pinta plano, sin nada que el repaso pueda apuntar.
@@ -263,6 +271,8 @@ function DeviceScreen({
   // correcto como congelarlo, y no exige una copia aparte.
   const [freeText, setFreeText] = useState('')
   const [sent, setSent] = useState(false)
+  const [attached, setAttached] = useState<string[]>([])
+  const [dragOver, setDragOver] = useState(false)
   const freeTextRef = useRef<HTMLTextAreaElement>(null)
   // Crece con lo que se escribe o se pega,hasta el tope que marca el CSS,
   // donde recién entra el scroll, para no obligar a desplazarse dentro de un
@@ -281,6 +291,7 @@ function DeviceScreen({
     if (wasFinished.current && !finished) {
       setFreeText('')
       setSent(false)
+      setAttached([])
     }
     wasFinished.current = finished
   }, [finished])
@@ -458,10 +469,19 @@ function DeviceScreen({
             mine: true,
             senal: 'borrador-enviado',
             segmentosEnviados: view.entradaLibre.segmentar?.(freeText) ?? [{ texto: freeText }],
+            adjuntos: view.entradaLibre.archivos?.filter((file) => attached.includes(file.id)),
           },
           { text: view.entradaLibre.respuestaIA, time: view.entradaLibre.hora },
         ]
       : view.msgs
+
+  const files = view.entradaLibre?.archivos
+  const canSend = freeText.trim() !== '' || attached.length > 0
+  // Solo ids conocidos y sin repetir: el drop puede traer cualquier texto arrastrado desde fuera.
+  const attach = (id: string) => {
+    if (!files?.some((file) => file.id === id)) return
+    setAttached((ids) => (ids.includes(id) ? ids : [...ids, id]))
+  }
 
   // Los mensajes nuevos entran uno detrás de otro, no todos a la vez, para
   // que se lean como un chat y no como un bloque de texto.
@@ -538,6 +558,7 @@ function DeviceScreen({
                 <span data-signal={msg.senal}>
                   {(() => {
                     const segmentos = msg.segmentosEnviados
+                    if (segmentos.every((seg) => seg.texto === '')) return null
                     return segmentos.map((seg, i) =>
                       seg.sensible ? (
                         <b key={seg.sensible.id} data-signal={seg.sensible.id}>
@@ -554,6 +575,17 @@ function DeviceScreen({
                   data-signal={msg.captura ? undefined : msg.senal}
                   dangerouslySetInnerHTML={{ __html: msg.text }}
                 />
+              )}
+
+              {msg.adjuntos && msg.adjuntos.length > 0 && (
+                <span className={styles.smsAdjuntos}>
+                  {msg.adjuntos.map((file) => (
+                    <span key={file.id} className={styles.smsAdjunto} data-signal={file.id}>
+                      <ImageIcon aria-hidden className={styles.smsAdjuntoIcono} strokeWidth={1.75} />
+                      {file.nombre}
+                    </span>
+                  ))}
+                </span>
               )}
 
               {msg.captura && (
@@ -609,23 +641,68 @@ function DeviceScreen({
 
       {view.entradaLibre ? (
         !sent && (
-          <div className={styles.smsComposerLibre}>
-            <textarea
-              ref={freeTextRef}
-              className={styles.smsTextarea}
-              value={freeText}
-              onChange={(event) => setFreeText(event.target.value)}
-              placeholder={view.entradaLibre.placeholder}
-              aria-label="Escribe tu mensaje"
-              rows={3}
-            />
+          <div
+            className={`${styles.smsComposerLibre} ${dragOver ? styles.smsZonaActiva : ''}`}
+            onDragOver={(event) => {
+              if (!files) return
+              event.preventDefault()
+              setDragOver(true)
+            }}
+            onDragLeave={() => setDragOver(false)}
+            onDrop={(event) => {
+              event.preventDefault()
+              setDragOver(false)
+              attach(event.dataTransfer.getData('text/plain'))
+            }}
+          >
+            {files && (
+              <button
+                type="button"
+                className={styles.smsAdjuntar}
+                aria-label="Adjuntar imágenes"
+                onClick={() => setAttached(files.map((file) => file.id))}
+              >
+                <Paperclip aria-hidden className={styles.smsEnviarIcono} strokeWidth={2} />
+              </button>
+            )}
+            <div className={styles.smsComposerCampo}>
+              {attached.length > 0 && (
+                <div className={styles.smsAdjuntos} aria-label="Imágenes adjuntas">
+                  {files
+                    ?.filter((file) => attached.includes(file.id))
+                    .map((file) => (
+                      <span key={file.id} className={styles.smsAdjunto}>
+                        <ImageIcon aria-hidden className={styles.smsAdjuntoIcono} strokeWidth={1.75} />
+                        {file.nombre}
+                        <button
+                          type="button"
+                          className={styles.smsAdjuntoQuitar}
+                          aria-label={`Quitar ${file.nombre}`}
+                          onClick={() => setAttached((ids) => ids.filter((id) => id !== file.id))}
+                        >
+                          <X aria-hidden className={styles.smsAdjuntoIcono} strokeWidth={2} />
+                        </button>
+                      </span>
+                    ))}
+                </div>
+              )}
+              <textarea
+                ref={freeTextRef}
+                className={styles.smsTextarea}
+                value={freeText}
+                onChange={(event) => setFreeText(event.target.value)}
+                placeholder={view.entradaLibre.placeholder}
+                aria-label="Escribe tu mensaje"
+                rows={3}
+              />
+            </div>
             <button
               type="button"
               className={`${styles.hotspot} ${styles.smsEnviar}`}
               aria-label="Enviar el mensaje"
-              disabled={freeText.trim() === ''}
-              data-hotspot-goto={freeText.trim() ? view.entradaLibre.onEnviar(freeText).goto : undefined}
-              data-hotspot-label={freeText.trim() ? view.entradaLibre.onEnviar(freeText).label : undefined}
+              disabled={!canSend}
+              data-hotspot-goto={canSend ? view.entradaLibre.onEnviar(freeText, attached).goto : undefined}
+              data-hotspot-label={canSend ? view.entradaLibre.onEnviar(freeText, attached).label : undefined}
               onClick={() => setSent(true)}
             >
               <SendHorizontal aria-hidden className={styles.smsEnviarIcono} strokeWidth={2} />

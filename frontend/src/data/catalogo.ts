@@ -806,12 +806,14 @@ const BASE: BaseScenario[] = [
     3,
     lazy(() => import('../secciones/asistentes-ia/ResumenDocumentoInterno')),
   ),
+  // El id sigue siendo `historial-cliente` (el escenario que reemplazó, issue
+  // #213): es la clave con la que están guardadas las corridas.
   createAIAssistantScenario(
     'historial-cliente',
-    'Responder a un cliente con su historial',
-    'Una clienta reclama un cobro de más y tienes a la mano su número de cuenta, su saldo y su teléfono para redactar la respuesta.',
-    4,
-    lazy(() => import('../secciones/asistentes-ia/HistorialCliente')),
+    'Invitación de cumpleaños con IA',
+    'Le pides a una IA la invitación del cumpleaños de tu hija, y en la galería tienes fotos de ella y de sus compañeros de clase.',
+    3,
+    lazy(() => import('../secciones/asistentes-ia/InvitacionCumpleanos')),
   ),
 ];
 
