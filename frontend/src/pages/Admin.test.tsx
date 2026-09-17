@@ -57,6 +57,41 @@ describe('Admin', () => {
     ).toBeDefined()
   })
 
+  it('muestra etiquetas claras cuando faltan nombre o correo', async () => {
+    fetchParticipantsMock.mockResolvedValue([
+      {
+        id: 'participante-sin-datos',
+        seudonimo: 'P001',
+        nombre: null,
+        apellido: null,
+        email: null,
+        activo: true,
+        createdAt: '2026-09-16T00:00:00.000Z',
+      },
+    ])
+    fetchTrainersMock.mockResolvedValue([
+      {
+        id: 'formador-sin-correo',
+        seudonimo: 'F001',
+        nombre: 'Ana',
+        apellido: 'López',
+        email: null,
+        activo: true,
+        createdAt: '2026-09-16T00:00:00.000Z',
+      },
+    ])
+
+    renderAdmin()
+
+    expect(await screen.findByText('Sin nombre')).toBeDefined()
+    expect(screen.getByText('Sin correo')).toBeDefined()
+
+    fireEvent.click(screen.getByRole('tab', { name: 'Capacitadores' }))
+
+    expect(await screen.findByText('Ana López')).toBeDefined()
+    expect(screen.getByText('Sin correo')).toBeDefined()
+  })
+
   it('muestra el estado de carga de resultados al cambiar de pestaña', async () => {
     fetchParticipantsMock.mockResolvedValue([])
     fetchResultsMock.mockReturnValue(new Promise(() => {}))
