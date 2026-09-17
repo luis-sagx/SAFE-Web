@@ -3,7 +3,7 @@ import { Link } from 'react-router'
 import { useAuth } from '../context/AuthContext'
 import InfoLink from './InfoLink'
 import Brand from './Marca'
-import ThemeSelector from './SelectorTema'
+import ThemeMenu from './MenuTema'
 import UserMenu from './MenuUsuario'
 
 // El ancho (max-w-7xl) es el del contenido de todas las páginas: si se cambia aquí,
@@ -68,7 +68,7 @@ function AppHeader({
             Con sesión sigue en el menú, para no tener dos selectores. */}
         {!isAuthenticated && (
           <div className="flex shrink-0 items-center">
-            <ThemeSelector />
+            <ThemeMenu />
           </div>
         )}
 

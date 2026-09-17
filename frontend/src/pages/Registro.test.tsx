@@ -367,7 +367,7 @@ describe('Registro', () => {
     expect(screen.getAllByText(/al menos 2 caracteres/).length).toBeGreaterThan(0)
   })
 
-  it('bloquea el envío con una cédula inválida, antes de mirar nombre y apellido', () => {
+  it('bloquea el envío con una cédula incompleta y avisa debajo del campo, no junto al botón', () => {
     const registerMock = vi.fn()
     useAuthMock.mockReturnValue({
       isAuthenticated: false,
@@ -382,14 +382,46 @@ describe('Registro', () => {
     )
 
     fillValidFields()
-    // Se pone justo antes del envío, no antes: el componente ya llama a esta
-    // función en cada render para pintar (o no) el error de la cédula, y un
-    // "Once" puesto más temprano se consumiría ahí en vez de en el envío.
     vi.mocked(isEcuadorianId).mockReturnValueOnce(false)
+    fireEvent.change(screen.getByLabelText(/Cédula/), { target: { value: '12312' } })
     fireEvent.click(screen.getByRole('button', { name: 'Crear cuenta' }))
 
-    expect(screen.getByText('Revisa tu número de cédula: son 10 dígitos.')).toBeDefined()
+    const cedula = screen.getByLabelText(/Cédula/)
+    const message = screen.getByText('La cédula tiene 10 dígitos, solo números.')
+    expect(cedula.getAttribute('aria-describedby')).toBe(message.id)
     expect(registerMock).not.toHaveBeenCalled()
+  })
+
+  it('avisa de una cédula incompleta al salir del campo, sin esperar al envío', () => {
+    useAuthMock.mockReturnValue({ isAuthenticated: false, loading: false, register: vi.fn() })
+
+    render(
+      <BrowserRouter>
+        <Registration />
+      </BrowserRouter>
+    )
+
+    const cedula = screen.getByLabelText(/Cédula/)
+    fireEvent.change(cedula, { target: { value: '12312' } })
+    expect(screen.queryByText('La cédula tiene 10 dígitos, solo números.')).toBeNull()
+
+    fireEvent.blur(cedula)
+    expect(screen.getByText('La cédula tiene 10 dígitos, solo números.')).toBeDefined()
+  })
+
+  it('avisa en vivo cuando la cédula completa no pasa la verificación', () => {
+    useAuthMock.mockReturnValue({ isAuthenticated: false, loading: false, register: vi.fn() })
+    vi.mocked(isEcuadorianId).mockReturnValue(false)
+
+    render(
+      <BrowserRouter>
+        <Registration />
+      </BrowserRouter>
+    )
+
+    fireEvent.change(screen.getByLabelText(/Cédula/), { target: { value: '1710034064' } })
+    expect(screen.getByText('Ese número de cédula no es válido.')).toBeDefined()
+    vi.mocked(isEcuadorianId).mockReturnValue(true)
   })
 
   it('bloquea el envío si no aceptó la política de datos', () => {

@@ -21,6 +21,7 @@ function Registration() {
   const [submitting, setSubmitting] = useState(false);
   const [emailTouched, setEmailTouched] = useState(false);
   const [passwordTouched, setPasswordTouched] = useState(false);
+  const [ecuadorianIdTouched, setEcuadorianIdTouched] = useState(false);
 
   const NAME_MIN = 2;
   const NAME_MAX = 50;
@@ -35,8 +36,9 @@ function Registration() {
   // caso que la cédula, no el del dominio del correo, aquí sí hace falta la
   // regla en el cliente para el error antes de enviar.
   const NAME_PATTERN = /^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+(?: [A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+)*$/;
-  const NAME_PATTERN_MESSAGE = "Solo se permiten letras y espacios entre palabras.";
-  // En vivo y no al salir del campo: a diferencia de "muy corto",que se
+  const NAME_PATTERN_MESSAGE =
+    "Solo se permiten letras y espacios entre palabras.";
+  // En vivo y no al salir del campo: a diferencia de "muy corto", que se
   // resuelve solo con seguir escribiendo, y por eso sí espera al blur para no
   // regañar a medio nombre,, un número o símbolo no se arregla solo. Que siga
   // ahí una tecla más tarde no es información nueva; avisar de inmediato sí
@@ -44,13 +46,16 @@ function Registration() {
   // que esto no compite con el aviso de mínimo: nunca se disparan los dos a
   // la vez por el mismo motivo.
   const invalidNamePattern = name.length > 0 && !NAME_PATTERN.test(name);
-  const invalidLastNamePattern = lastName.length > 0 && !NAME_PATTERN.test(lastName);
+  const invalidLastNamePattern =
+    lastName.length > 0 && !NAME_PATTERN.test(lastName);
   // Cerca del límite y no siempre: un contador pegado a un campo que recién
   // empieza a llenarse es ruido que nadie necesita todavía.
   const nameCounter =
     name.length >= NAME_MAX - 10 ? `${name.length}/${NAME_MAX}` : undefined;
   const lastNameCounter =
-    lastName.length >= NAME_MAX - 10 ? `${lastName.length}/${NAME_MAX}` : undefined;
+    lastName.length >= NAME_MAX - 10
+      ? `${lastName.length}/${NAME_MAX}`
+      : undefined;
 
   // Forma, no dominio: qué dominios se aceptan lo decide `EsDominioPermitido`
   // en el backend (spec 2026-08-22) y esa lista solo tiene sentido mantenida
@@ -58,7 +63,8 @@ function Registration() {
   // copias diverjan; esto solo atrapa el "se me olvidó la arroba" antes de
   // pagar el viaje al servidor.
   const EMAIL_FORMAT = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  const invalidEmail = emailTouched && email.length > 0 && !EMAIL_FORMAT.test(email);
+  const invalidEmail =
+    emailTouched && email.length > 0 && !EMAIL_FORMAT.test(email);
 
   // Misma política que `register.dto.ts`: 8 caracteres, una mayúscula, un
   // número y un carácter especial. Repetida aquí a propósito,a diferencia
@@ -79,7 +85,9 @@ function Registration() {
     { label: "Un número", complete: /\d/.test(password) },
     { label: "Un carácter especial", complete: /[^A-Za-z0-9]/.test(password) },
   ];
-  const criteriaPassword = passwordRequirements.filter(({ complete }) => complete).length;
+  const criteriaPassword = passwordRequirements.filter(
+    ({ complete }) => complete,
+  ).length;
   const passwordStrength =
     password.length === 0
       ? null
@@ -89,11 +97,28 @@ function Registration() {
           ? { texto: "Media", clase: "text-warning" }
           : { texto: "Fuerte", clase: "text-success-ink" };
 
-  // Solo se avisa de la cédula cuando ya está completa: marcarla en rojo
-  // mientras la escribe convierte cada tecla en un reproche.
+  // Mismo criterio que el correo: mientras la escribe no se la marca (cada
+  // tecla sería un reproche), pero al salir del campo o al enviar el aviso
+  // aparece debajo de ella. Con 10 dígitos o más ya no hay nada que esperar,
+  // así que ahí se avisa en vivo.
   const normalizedEcuadorianId = normalizeEcuadorianId(ecuadorianId);
-  const invalidEcuadorianId =
-    normalizedEcuadorianId.length === 10 && !isEcuadorianId(normalizedEcuadorianId);
+  const ecuadorianIdError = (() => {
+    const length = normalizedEcuadorianId.length;
+    if (length === 0) {
+      return ecuadorianIdTouched ? "Ingresa tu número de cédula." : undefined;
+    }
+    if (!/^\d+$/.test(normalizedEcuadorianId) || length > 10) {
+      return "La cédula tiene 10 dígitos, solo números.";
+    }
+    if (length < 10) {
+      return ecuadorianIdTouched
+        ? "La cédula tiene 10 dígitos, solo números."
+        : undefined;
+    }
+    return isEcuadorianId(normalizedEcuadorianId)
+      ? undefined
+      : "Ese número de cédula no es válido.";
+  })();
 
   if (loading) {
     return <LoadingScreen />;
@@ -107,19 +132,25 @@ function Registration() {
     event.preventDefault();
     setError("");
 
-    // El backend valida igual; esto solo evita un viaje al servidor.
+    // El backend valida igual; esto solo evita un viaje al servidor. El aviso
+    // sale debajo del campo, no en el mensaje general junto al botón.
     if (!isEcuadorianId(normalizedEcuadorianId)) {
-      setError("Revisa tu número de cédula: son 10 dígitos.");
+      setEcuadorianIdTouched(true);
+      document.getElementById("cedula")?.focus();
       return;
     }
 
     if (name.length < NAME_MIN || lastName.length < NAME_MIN) {
-      setError(`El nombre y el apellido deben tener al menos ${NAME_MIN} caracteres.`);
+      setError(
+        `El nombre y el apellido deben tener al menos ${NAME_MIN} caracteres.`,
+      );
       return;
     }
 
     if (!NAME_PATTERN.test(name) || !NAME_PATTERN.test(lastName)) {
-      setError(`El nombre y el apellido solo pueden tener letras y espacios entre palabras.`);
+      setError(
+        `El nombre y el apellido solo pueden tener letras y espacios entre palabras.`,
+      );
       return;
     }
 
@@ -164,7 +195,7 @@ function Registration() {
     <AuthLayout
       folio="REGISTRO"
       titulo="Crear cuenta"
-      subtitulo="Solo para darte acceso. Tus resultados se analizan de forma anónima."
+      subtitulo="Crea tu cuenta y descubre tus resultados."
       pie={
         <p className="mt-6 text-base text-body">
           ¿Ya tienes cuenta?{" "}
@@ -216,13 +247,12 @@ function Registration() {
           label="Cédula"
           value={ecuadorianId}
           onChange={setEcuadorianId}
+          onBlur={() => setEcuadorianIdTouched(true)}
           inputMode="numeric"
           autoComplete="off"
           placeholder="1710034065"
           maxLength={13}
-          error={
-            invalidEcuadorianId ? "Ese número de cédula no es válido." : undefined
-          }
+          error={ecuadorianIdError}
         />
         <Field
           id="email"
@@ -234,7 +264,9 @@ function Registration() {
           autoComplete="email"
           placeholder="tu@correo.com"
           maxLength={120}
-          error={invalidEmail ? "El correo no tiene un formato válido." : undefined}
+          error={
+            invalidEmail ? "El correo no tiene un formato válido." : undefined
+          }
         />
         <div>
           <Field
@@ -278,7 +310,11 @@ function Registration() {
                     data-status={complete ? "cumple" : "pendiente"}
                     className={`flex items-center gap-1.5 ${complete ? "text-success-ink" : "text-muted"}`}
                   >
-                    {complete ? <Check aria-hidden="true" size={14} /> : <X aria-hidden="true" size={14} />}
+                    {complete ? (
+                      <Check aria-hidden="true" size={14} />
+                    ) : (
+                      <X aria-hidden="true" size={14} />
+                    )}
                     {label}
                   </li>
                 ))}
@@ -287,15 +323,18 @@ function Registration() {
           )}
         </div>
 
-        <div className="flex items-start gap-3">
+        <div className="flex min-h-11 items-center gap-3">
           <input
             id="acceptPolicy"
             type="checkbox"
             checked={acceptedPolicy}
             onChange={(e) => setAcceptedPolicy(e.target.checked)}
-            className="mt-1 h-5 w-5 rounded border-input bg-surface text-primary"
+            className="size-5 shrink-0 rounded border-border-control bg-surface accent-primary"
           />
-          <label htmlFor="acceptPolicy" className="text-sm text-body">
+          <label
+            htmlFor="acceptPolicy"
+            className="text-base leading-5 text-body"
+          >
             Acepto la{" "}
             <a
               href="/politica-de-datos"

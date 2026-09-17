@@ -19,20 +19,8 @@ describe('SelectorTema', () => {
     })
   })
 
-  it('variante segmentado (por defecto): tres opciones, la activa marcada', () => {
+  it('tres opciones apiladas, y solo la activa lleva el check', () => {
     render(<ThemeSelector />)
-
-    const options = screen.getAllByRole('radio')
-    expect(options).toHaveLength(3)
-    expect(screen.getByRole('radio', { name: 'Claro' }).getAttribute('aria-checked')).toBe('true')
-    expect(screen.getByRole('radio', { name: 'Sistema' }).getAttribute('aria-checked')).toBe('false')
-
-    fireEvent.click(screen.getByRole('radio', { name: 'Oscuro' }))
-    expect(setPreferenceMock).toHaveBeenCalledWith('oscuro')
-  })
-
-  it('variante lista: apiladas, y solo la activa lleva el check', () => {
-    render(<ThemeSelector variante="lista" />)
 
     expect(screen.getAllByRole('radio')).toHaveLength(3)
 
