@@ -405,9 +405,8 @@ function ScenarioStory({
       // EscenaFoto), así que "¿Qué haces?" y la pista aún no dicen nada.
       const beforeFlash = toView.kind === 'escena' && toView.destello && !engine.node.choices
 
-      return (
+      const questionBlock = (
         <div className="grid gap-3">
-          {referencePanel}
           {!beforeFlash && <p className="text-lg font-semibold text-ink">{question}</p>}
           {engine.node.choices && <StoryChoices choices={engine.node.choices} onChoose={engine.choose} />}
           <Instructions
@@ -417,6 +416,22 @@ function ScenarioStory({
           >
             {engine.node.choices ? undefined : instruction}
           </Instructions>
+        </div>
+      )
+
+      return (
+        <div className="grid gap-4">
+          {referencePanel}
+          {/* Tarjeta propia solo cuando hay documento de referencia arriba: separada
+              así, "¿Qué haces?" no se lee como su continuación, issue #210. Sin
+              panelReferencia (la mayoría de escenarios) el grid de siempre alcanza. */}
+          {referencePanel ? (
+            <div className="grid gap-3 rounded-md border border-hairline-strong bg-surface p-4">
+              {questionBlock}
+            </div>
+          ) : (
+            questionBlock
+          )}
         </div>
       )
     })()
