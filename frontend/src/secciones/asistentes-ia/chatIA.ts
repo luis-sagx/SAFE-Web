@@ -203,7 +203,9 @@ export interface FreeTextComposer {
   placeholder: string
   hora: string
   respuestaIA: string
-  onEnviar: (texto: string) => { goto: string; label?: string }
+  onEnviar: (texto: string, adjuntos: string[]) => { goto: string; label?: string }
+  // Imágenes que se pueden adjuntar al mensaje (ver InvitacionCumpleanos.tsx).
+  archivos?: { id: string; nombre: string }[]
   // Para resaltar, en el mensaje ya enviado, los datos reales que hayan
   // quedado tal cual (ver `splitKnownData` más abajo). Sin esto el mensaje
   // se pinta plano, sin nada que el repaso de señales pueda apuntar.

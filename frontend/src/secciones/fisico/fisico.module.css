@@ -1,178 +1,299 @@
-/* Escena a sangre: el dibujo ES la pantalla del dispositivo, así que ocupa el
-   marco entero. Encerrarla en una tarjeta blanca con cabecera la convertía en
-   una ilustración pegada dentro de una app, que es lo contrario de lo que se
-   quiere: el participante está mirando su propia oficina. El fondo repite el
-   color de la pared para que las bandas que sobran al ajustar la relación de
-   aspecto no se noten.
-
-   Colores en literal en todo el archivo, no var(--color-*): esto es un
-   escenario simulado y no debe seguir el tema claro/oscuro del cromo. Ver
+/* Escena a sangre sobre la foto de la oficina. Colores en literal en todo el
+   archivo, no var(--color-*): esto es un escenario simulado y no debe seguir
+   el tema claro/oscuro del cromo. Ver
    docs/superpowers/specs/2026-09-10-tema-oscuro-design.md §2.2. */
-.escenaMarco {
+.oficinaMarco {
   position: relative;
   display: flex;
+  flex: 1;
+  align-self: stretch;
   align-items: center;
   justify-content: center;
+  container-type: size;
+  background: #1c1917;
+}
+
+/* La caja mide exactamente lo que la foto: así los porcentajes de los
+   elementos encima caen siempre sobre el mismo objeto de la imagen. */
+.oficina {
+  position: relative;
+  width: min(100cqw, calc(100cqh * 1448 / 1086));
+  aspect-ratio: 1448 / 1086;
+}
+
+.oficinaFoto {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
-  background: #efe4d4;
 }
 
-.escena {
-  display: block;
-  width: 100%;
-  height: 100%;
-}
-
-/* Lo que aparece al pasar por encima. Separado del trazo del contorno a
-   propósito: cuando una sola clase llevaba `stroke` y opacidad a la vez, el
-   grupo de la pastilla le pasaba ese trazo verde de 3px por herencia al texto
-   y la letra blanca quedaba tapada por su propio borde. */
-.revelable {
-  opacity: 0;
-  transition: opacity 0.15s ease;
-}
-
-.hotspot:hover .revelable,
-.hotspot:focus-visible .revelable,
-.cerrar:hover .revelable,
-.cerrar:focus-visible .revelable {
-  opacity: 1;
-}
-
-.contorno {
-  fill: none;
-  stroke: #006837;
-  stroke-width: 3;
-}
-
-.pastilla {
-  fill: #006837;
-  stroke: none;
-}
-
-.pastillaTexto {
-  fill: #ffffff;
-  font-size: 14px;
+/* Pastilla oscura legible sobre cualquier parte de la foto. */
+.rotulo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  background: rgba(17, 17, 17, 0.78);
+  color: #ffffff;
+  font-size: 1rem;
   font-weight: 600;
+  line-height: 1.3;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
 }
 
-/* Las pestañas se colocan con `transform`, así que al cerrar una del medio las
-   de la derecha se deslizan hasta su sitio en vez de dejar el hueco. */
-.pestana {
-  transition: transform 0.18s ease;
+/* En celular la foto mide unos 375px: a 16px fijos los rótulos se tapan
+   entre sí y tapan lo que rotulan. */
+@media (max-width: 639px) {
+  .rotulo {
+    padding: 0.125rem 0.5rem;
+    font-size: clamp(0.75rem, 3cqw, 1rem);
+  }
+
+  .papelRotulo,
+  .soloAncho {
+    display: none;
+  }
+
+  .cajon {
+    right: 0.25rem;
+  }
+
+  /* Cuatro pestañas en un navegador de 345px: fuera lo decorativo de la barra
+     ("+", botones de ventana, globo) para que quepan el nombre y la ✕. El
+     navegador es compartido, así que se apunta por rol y no por clase. */
+  .lienzo [role='tablist'] > [aria-hidden] {
+    display: none;
+  }
+
+  .lienzo [role='tab'] {
+    gap: 0.25rem;
+    padding-inline: 0.5rem 0.25rem;
+  }
+
+  .lienzo [role='tab'] > svg:first-child {
+    display: none;
+  }
 }
 
-.pestanaTexto,
-.pestanaTextoActiva {
-  font-size: 14px;
+.rotuloIcono {
+  width: 1.1em;
+  height: 1.1em;
+  flex: none;
+}
+
+.control:focus-visible {
+  outline: 3px solid #4ade80;
+  outline-offset: 4px;
+}
+
+/* ---- Monitor ---- */
+
+.pantalla,
+.pantallaCerca {
+  position: absolute;
+  overflow: hidden;
+  transition:
+    left 0.25s ease,
+    top 0.25s ease,
+    width 0.25s ease,
+    height 0.25s ease;
+}
+
+.pantalla {
   pointer-events: none;
+  left: 35.7%;
+  top: 28.9%;
+  width: 39.9%;
+  height: 28.2%;
 }
 
-.pestanaTexto {
-  fill: #c2cad3;
+/* Acercada ocupa el marco entero, no solo la foto: en celular la foto es una
+   franja baja y el navegador no cabría. Las unidades cq* son las del marco. */
+.pantallaCerca {
+  z-index: 3;
+  left: calc(50% - 46cqw);
+  top: calc(50% - 50cqh + 1rem);
+  width: 92cqw;
+  height: calc(100cqh - 6rem);
+  border-radius: 0.5rem;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
 }
 
-.pestanaTextoActiva {
-  fill: #1f242b;
-  font-weight: 600;
+/* Lienzo a tamaño de monitor de escritorio (proporción de la pantalla de la
+   foto). Sobre la foto se reduce con `scale`; acercado ocupa su caja. */
+.lienzo {
+  width: 60rem;
+  height: 31.75rem;
+  transform-origin: 0 0;
 }
 
-/* El círculo gris de la ✕ al pasar por encima, como en un navegador. */
-.cerrarHalo {
-  fill: #7b838d;
-  opacity: 0;
-  transition: opacity 0.15s ease;
+.pantallaCerca .lienzo {
+  width: 100%;
+  height: 100%;
 }
 
-.cerrar:hover .cerrarHalo {
-  opacity: 0.45;
-}
-
-.url {
-  fill: #98a1ab;
-  font-size: 14px;
-}
-
-.paginaTitulo {
-  fill: #171717;
-  font-size: 21px;
-  font-weight: 700;
-}
-
-.paginaLinea {
-  fill: #60646c;
-  font-family: var(--font-mono);
-  font-size: 15px;
+.lienzo > section {
+  height: 100%;
 }
 
 .paginaVacia {
-  fill: #6b6f76;
-  font-size: 17px;
+  display: grid;
+  flex: 1;
+  place-items: center;
+  background: #ffffff;
+  color: #5f6b7a;
+  font-size: 1.125rem;
 }
 
-.pantallaBloqueada {
-  fill: #16a34a;
-  font-size: 19px;
+.bloqueo {
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6em;
+  background: #12161a;
+  color: #16a34a;
+  font-size: 1.5rem;
   font-weight: 700;
-  letter-spacing: 1px;
+  letter-spacing: 0.08em;
 }
 
-/* Papel: crema, no blanco puro, y el rótulo sobre una banda para que el texto
-   se lea sin depender del contraste contra la hoja. */
+.bloqueo svg {
+  width: 3em;
+  height: 3em;
+}
+
+/* Toda la pantalla es el botón para acercarse; el aviso queda siempre a la
+   vista porque en táctil no hay hover que lo descubra. */
+.pantallaBoton {
+  position: absolute;
+  left: 35.7%;
+  top: 28.9%;
+  width: 39.9%;
+  height: 28.2%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 1;
+  padding-bottom: 0.5rem;
+  cursor: zoom-in;
+}
+
+.pantallaBoton:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.fondoCerca {
+  position: absolute;
+  left: calc(50% - 50cqw);
+  top: calc(50% - 50cqh);
+  width: 100cqw;
+  height: 100cqh;
+  z-index: 2;
+  background: rgba(10, 10, 10, 0.62);
+  backdrop-filter: blur(3px);
+}
+
+.volver {
+  position: absolute;
+  background: #f7f7f5;
+  color: #171717;
+  z-index: 3;
+  top: calc(50% + 50cqh - 4rem);
+  left: 50%;
+  min-height: 2.75rem;
+  transform: translateX(-50%);
+  cursor: pointer;
+}
+
+/* ---- Escritorio ---- */
+
+.papeles {
+  position: absolute;
+  left: 3%;
+  top: 63%;
+  width: 33%;
+  height: 21%;
+}
+
 .papel {
-  fill: #fbf7ef;
-  stroke: #cdbfa6;
-  stroke-width: 2;
+  position: absolute;
+  top: 0;
+  width: 30%;
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  cursor: pointer;
 }
 
-.papelLinea {
-  stroke: #ddd4c4;
-  stroke-width: 3;
+/* La hoja se inclina hacia atrás para que se lea tumbada sobre la mesa y no
+   pegada contra la foto. El rótulo queda fuera de esa transformación. */
+.papelHoja {
+  position: absolute;
+  inset: 0;
+  border: 1px solid #cdbfa6;
+  border-radius: 3px;
+  background: repeating-linear-gradient(to bottom, transparent 0 10%, #ddd4c4 10% 12%) 50% 20% / 72% 50%
+      no-repeat,
+    #fbf7ef;
+  box-shadow: 0 10px 18px rgba(40, 25, 10, 0.4);
+  transform: perspective(40em) rotateX(58deg) rotate(var(--giro));
+  transform-origin: 50% 100%;
+  transition: transform 0.15s ease;
 }
 
-.papelBanda {
-  fill: #e7dcc6;
+.papel:hover .papelHoja {
+  transform: perspective(40em) rotateX(58deg) rotate(var(--giro)) translateY(-6%);
 }
 
 .papelRotulo {
-  fill: #171717;
-  font-size: 15px;
-  font-weight: 700;
-  pointer-events: none;
+  position: relative;
+  transform: translateY(55%);
+  text-align: center;
 }
 
-.rotuloMueble {
-  fill: #f6e9d6;
-  font-size: 15px;
-  font-weight: 700;
-  letter-spacing: 1px;
+.cajon {
+  position: absolute;
+  right: 0.75rem;
+  top: 51%;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0;
+  border-radius: 0.5rem;
 }
 
-.contadorMueble {
-  fill: #f6e9d6;
-  font-size: 15px;
+.cajonDetalle {
+  font-weight: 400;
 }
 
-.rotuloTeclado {
-  fill: #f3e6d2;
-  font-size: 15px;
-  font-weight: 600;
-  pointer-events: none;
+.teclado {
+  position: absolute;
+  left: 36.9%;
+  top: 66.8%;
+  width: 35.9%;
+  height: 6%;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  cursor: pointer;
 }
 
-.pilotoOff {
-  fill: #9aa0a8;
+.teclado .rotulo {
+  position: absolute;
+  top: 100%;
+  margin-top: 0.5rem;
+  white-space: nowrap;
 }
 
-.pilotoOk {
-  fill: #16a34a;
+.teclado:hover .rotulo {
+  background: rgba(0, 104, 55, 0.92);
 }
 
-/* El repaso de señales marca elementos del SVG, y ahí `background` no pinta
-   nada: el resalte se hace con el contorno ámbar del sistema más un halo que
-   sí funciona sobre vectores. */
-.escenaMarco :global(.senal-resaltada) {
+.oficinaMarco :global(.senal-resaltada) {
   outline: 3px solid #ab6400;
   outline-offset: 6px;
   filter: drop-shadow(0 0 0.6rem rgba(171, 100, 0, 0.9));
