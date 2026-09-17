@@ -96,7 +96,7 @@ const BROWSER_STORAGE: DataItem[] = [
   },
 ];
 
-function DataList({ items }: { items: DataItem[] }) {
+function DataList({ items }: Readonly<{ items: DataItem[] }>) {
   return (
     <ul className="mt-4 space-y-3">
       {items.map((item) => (
@@ -119,7 +119,7 @@ function DataList({ items }: { items: DataItem[] }) {
   );
 }
 
-function Bullets({ children }: { children: ReactNode }) {
+function Bullets({ children }: Readonly<{ children: ReactNode }>) {
   return <ul className="mt-3 list-disc space-y-2 pl-6">{children}</ul>;
 }
 
@@ -514,10 +514,8 @@ const SECTIONS: Section[] = [
           trámite es gratuito.
         </p>
         <p className="mt-3">
-          <strong>
-            Si retiras tu consentimiento o pides eliminar tus datos
-          </strong>
-          , eliminamos tu cuenta y tus datos personales, y revocamos tu
+          <strong>Si retiras tu consentimiento o pides eliminar tus datos</strong>,
+          eliminamos tu cuenta y tus datos personales, y revocamos tu
           certificado si lo tenías. Tus resultados seudonimizados quedan sin
           vínculo con tu identidad; si además pides que se excluyan del estudio,
           los retiraremos del análisis siempre que este no haya concluido.
@@ -606,7 +604,7 @@ function useActiveSection(ids: string[]) {
 
 const SECTION_IDS = SECTIONS.map((section) => section.id);
 
-function TableOfContents({ active }: { active?: string }) {
+function TableOfContents({ active }: Readonly<{ active?: string }>) {
   return (
     <ol className="space-y-0.5 border-l border-hairline">
       {SECTIONS.map((section, index) => {

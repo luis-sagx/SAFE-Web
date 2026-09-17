@@ -48,4 +48,12 @@ describe('MenuTema', () => {
     fireEvent.keyDown(screen.getByRole('radiogroup'), { key: 'Escape' })
     expect(screen.queryAllByRole('radio')).toHaveLength(0)
   })
+
+  it('se cierra al tocar fuera del menú', () => {
+    render(<ThemeMenu />)
+    fireEvent.click(screen.getByRole('button', { name: /Tema/ }))
+
+    fireEvent.pointerDown(document.body)
+    expect(screen.queryAllByRole('radio')).toHaveLength(0)
+  })
 })

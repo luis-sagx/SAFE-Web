@@ -25,7 +25,7 @@ function AuthLayout({
   subtitulo: subtitle,
   children,
   pie,
-}: AuthLayoutProps) {
+}: Readonly<AuthLayoutProps>) {
   return (
     // Sin selector aparte arriba de la página: ahora vive dentro del propio
     // boleto (ver más abajo), así que este contenedor ya no le reserva

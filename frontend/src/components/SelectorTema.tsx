@@ -7,7 +7,12 @@ import { THEME_OPTIONS } from '../data/opcionesTema'
  *  se retiró porque las tres opciones a la vista competían con la marca para
  *  algo que casi nadie cambia más de una vez. */
 // Texto además de ícono por SC 1.4.1: el color no puede ser la única señal.
-function ThemeSelector() {
+interface ThemeSelectorProps {
+  /** Se llama después de elegir, p. ej. para cerrar el menú que la contiene. */
+  onSelect?: () => void
+}
+
+function ThemeSelector({ onSelect }: Readonly<ThemeSelectorProps>) {
   const { preferencia: preference, setPreferencia: setPreference } = useTheme()
 
   return (
@@ -20,7 +25,10 @@ function ThemeSelector() {
             type="button"
             role="radio"
             aria-checked={active}
-            onClick={() => setPreference(value)}
+            onClick={() => {
+              setPreference(value)
+              onSelect?.()
+            }}
             className="flex w-full items-center gap-2.5 px-3 py-2.5 text-left text-sm font-medium text-ink transition hover:bg-canvas-soft focus-visible:bg-canvas-soft focus-visible:outline-none"
           >
             <Icon aria-hidden className="size-4 shrink-0 text-muted" strokeWidth={1.75} />

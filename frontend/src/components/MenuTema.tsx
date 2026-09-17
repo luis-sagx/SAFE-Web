@@ -1,5 +1,5 @@
 import { ChevronDown } from 'lucide-react'
-import { useId, useRef, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import { useTheme } from '../context/ThemeContext'
 import { THEME_OPTIONS } from '../data/opcionesTema'
 import ThemeSelector from './SelectorTema'
@@ -12,10 +12,13 @@ interface ThemeMenuProps {
 
 /// Un solo botón "Tema" que despliega las tres opciones, igual que dentro del
 /// menú de cuenta: con y sin sesión el tema se cambia de la misma forma.
-/// Cierre con Escape y al salir del foco, mismo patrón que MenuUsuario.
-function ThemeMenu({ abre: direction = 'abajo' }: ThemeMenuProps) {
+/// Cierre con Escape, al tocar fuera o al mover el foco fuera. Los listeners
+/// van en document y no en el div contenedor: un div con onKeyDown/onClick
+/// es un elemento interactivo no nativo (Sonar S6848/S1082).
+function ThemeMenu({ abre: direction = 'abajo' }: Readonly<ThemeMenuProps>) {
   const { preferencia: preference } = useTheme()
   const [open, setOpen] = useState(false)
+  const rootRef = useRef<HTMLDivElement>(null)
   const buttonRef = useRef<HTMLButtonElement>(null)
   const panelId = useId()
 
@@ -27,16 +30,31 @@ function ThemeMenu({ abre: direction = 'abajo' }: ThemeMenuProps) {
     buttonRef.current?.focus()
   }
 
+  useEffect(() => {
+    if (!open) return
+
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        setOpen(false)
+        buttonRef.current?.focus()
+      }
+    }
+    function onOutside(event: Event) {
+      if (!rootRef.current?.contains(event.target as Node)) setOpen(false)
+    }
+
+    document.addEventListener('keydown', onKeyDown)
+    document.addEventListener('pointerdown', onOutside)
+    document.addEventListener('focusin', onOutside)
+    return () => {
+      document.removeEventListener('keydown', onKeyDown)
+      document.removeEventListener('pointerdown', onOutside)
+      document.removeEventListener('focusin', onOutside)
+    }
+  }, [open])
+
   return (
-    <div
-      className="relative inline-block"
-      onBlur={(event) => {
-        if (!event.currentTarget.contains(event.relatedTarget)) setOpen(false)
-      }}
-      onKeyDown={(event) => {
-        if (event.key === 'Escape' && open) close()
-      }}
-    >
+    <div ref={rootRef} className="relative inline-block">
       <button
         ref={buttonRef}
         type="button"
@@ -58,15 +76,12 @@ function ThemeMenu({ abre: direction = 'abajo' }: ThemeMenuProps) {
       {open && (
         <div
           id={panelId}
-          // Elegir cierra el panel: el cambio ya se ve en toda la pantalla.
-          onClick={(event) => {
-            if ((event.target as HTMLElement).closest('[role="radio"]')) close()
-          }}
           className={`absolute z-50 w-44 overflow-hidden rounded-lg border border-hairline-strong bg-surface py-1 shadow-card ${
             direction === 'arriba' ? 'bottom-full left-0 mb-2' : 'right-0 top-full mt-2'
           }`}
         >
-          <ThemeSelector />
+          {/* Elegir cierra el panel: el cambio ya se ve en toda la pantalla. */}
+          <ThemeSelector onSelect={close} />
         </div>
       )}
     </div>
