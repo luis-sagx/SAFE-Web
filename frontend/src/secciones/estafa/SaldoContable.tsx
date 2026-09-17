@@ -6,8 +6,8 @@ import type { Signal } from '../../components/ui/PanelVeredicto'
 import type { Story } from '../../hooks/useStoryEngine'
 import { ACCOUNT_FAKE, IDENTITY_FAKE } from '../../lib/identidadFicticia'
 
-/** Puerta de entrada del módulo: sin suplantación, el trato lo inicias tú. Todo se decide en tu banco —saldo
- *  contable vs. disponible— y el pago llega como cheque porque ahí es donde esas dos líneas de verdad se
+/** Puerta de entrada del módulo: sin suplantación, el trato lo inicias tú. Todo se decide en tu banco,saldo
+ *  contable vs. disponible, y el pago llega como cheque porque ahí es donde esas dos líneas de verdad se
  *  separan en un banco ecuatoriano ("salvo buen cobro"). El fraude de venta más común, y evitarlo es solo esperar. */
 
 const BUYER = 'Fernando Zurita'

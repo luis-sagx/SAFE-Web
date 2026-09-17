@@ -1,7 +1,7 @@
 /* Interior de las apps simuladas de correo, navegador y SMS.
 
    TIPOGRAFÍA: los tamaños de este archivo están un 20% por encima de lo que
-   pediría un cliente de correo real. Es deliberado — al curso se apuntan
+   pediría un cliente de correo real. Es deliberado, al curso se apuntan
    adultos mayores, y una simulación fiel pero ilegible no entrena a nadie. Al
    subirla hubo que agrandar también la ventana (ver MARCO_ESCRITORIO): letra
    grande en una ventana que no crece solo consigue que el mensaje no quepa. Todo lo que se ve
@@ -116,8 +116,8 @@
   margin: 0 2px;
 }
 
-/* Acceso directo anclado. Se ve como una app de la barra —icono, nombre y la
-   rayita inferior que marca lo anclado— porque eso es lo que es: la vía para
+/* Acceso directo anclado. Se ve como una app de la barra,icono, nombre y la
+   rayita inferior que marca lo anclado, porque eso es lo que es: la vía para
    salir del correo y entrar al sitio por cuenta propia.
 
    Deliberadamente NO lleva brillo, pulso ni ningún realce que lo destaque en
@@ -168,7 +168,7 @@
 }
 
 /* La app en la que ya estás: mismo relieve que un atajo, pero sin cursor de
-   mano ni realce al pasar — no hay nada que pulsar. */
+   mano ni realce al pasar, no hay nada que pulsar. */
 .taskbarApp {
   cursor: default;
 }
@@ -289,8 +289,8 @@
   text-align: inherit;
   color: inherit;
 }
-/* El realce al pasar por encima tiene que verse: con solo brightness(0.97) —un
-   3%— no había forma de descubrir que el adjunto o el atajo eran accionables, y
+/* El realce al pasar por encima tiene que verse: con solo brightness(0.97),un
+   3%, no había forma de descubrir que el adjunto o el atajo eran accionables, y
    el participante se quedaba sin saber qué tocar.
 
    Aparece únicamente en hover/foco, nunca en reposo: marcar los tres puntos de
@@ -340,7 +340,7 @@
    clases. */
 :global(.senal-resaltada) {
   /* Ámbar, no el verde de --color-success. En toda la aplicación el verde
-     significa "esto está bien" —la barra de progreso, la insignia de aprobado—
+     significa "esto está bien",la barra de progreso, la insignia de aprobado,
      y aquí marcaba justo lo contrario: la pista que debió levantar sospechas.
      Era la única contradicción de código de color del sistema, y caía en la
      pantalla que enseña. */
@@ -768,7 +768,7 @@
 
 /* Barra de marcadores. Los sitios de siempre, y entre ellos el del SRI: entrar
    por aquí es "abrir el portal por mi cuenta". Se parece a los demás a
-   propósito — destacarlo empujaría hacia la respuesta correcta. */
+   propósito, destacarlo empujaría hacia la respuesta correcta. */
 .marcadores {
   flex-shrink: 0;
   display: flex;
@@ -912,7 +912,7 @@
 }
 
 /* Ficha de datos de una página informativa: un directorio, una ficha de
-   contacto. No es un formulario, así que no usa .field ni .input — parecerlo
+   contacto. No es un formulario, así que no usa .field ni .input, parecerlo
    invitaría a escribir donde no hay nada que escribir. */
 .datos {
   margin-top: 1.75rem;
@@ -1108,7 +1108,7 @@
    parta en más líneas, así que el correo crece a lo alto aunque la pantalla no
    sea baja. Es lo que pasaba en una tablet de 820px de ancho. */
 @media (max-height: 940px), (max-width: 900px) {
-  /* El cromo del navegador —pestañas, dirección y marcadores— suma unos 140px
+  /* El cromo del navegador,pestañas, dirección y marcadores, suma unos 140px
      que la ventana de antes no gastaba. En una pantalla baja eso sale entero
      del correo, así que aquí cede él primero: son barras, no contenido que
      haya que leer. */
@@ -1196,7 +1196,7 @@
   }
 
   /* Issue #184: las burbujas de opciones (respuestas de SMS/chat, frases de
-     llamada) son `flex-shrink: 0` — nunca ceden espacio — así que en una
+     llamada) son `flex-shrink: 0`, nunca ceden espacio, así que en una
      pantalla baja se comían el hilo del mensaje, que es lo que hay que leer
      para decidir. Aprietan igual que el correo arriba: menos aire y una
      tipografía, no un cambio de layout. */
@@ -1223,7 +1223,7 @@
 /* En pantalla angosta desaparece la columna de carpetas, igual que en la app de
    correo de cualquier teléfono. Son 132px de un ancho de 375: con ella puesta,
    el mensaje se parte en el doble de líneas y el asunto ocupa tres. No se
-   pierde nada que haya que juzgar — es decorativa. */
+   pierde nada que haya que juzgar, es decorativa. */
 @media (max-width: 640px) {
   .mailNav {
     display: none;
@@ -1242,8 +1242,8 @@
 }
 
 /* Segundo escalón, para pantallas de 600px de alto o menos, donde el primero
-   se queda corto. Aquí ya se sacrifica presencia visual —avatar más pequeño,
-   pie casi en letra menuda— antes que obligar a desplazar el mensaje. */
+   se queda corto. Aquí ya se sacrifica presencia visual,avatar más pequeño,
+   pie casi en letra menuda, antes que obligar a desplazar el mensaje. */
 @media (max-height: 660px) {
   .mailbody {
     padding: 0.5625rem 0.875rem 0.6875rem;
@@ -1413,7 +1413,7 @@
   font-size: 0.90625rem;
 }
 /* Indicador de seguridad de la barra de direcciones. Mismo tamaño para los
-   tres estados —candado, archivo local y advertencia— para que cambiar de
+   tres estados,candado, archivo local y advertencia, para que cambiar de
    pestaña no mueva la dirección de sitio. */
 .urlIcono {
   width: 1rem;
@@ -1470,7 +1470,7 @@
 /* ---------- Armazón del sitio ----------
    Cabecera con menú y pie con enlaces. Decorativos: ninguno responde al clic.
    Van por escenario, y la regla es que la página falsa lleve lo mismo que la
-   real — la diferencia tiene que estar en la dirección, no en el acabado. */
+   real, la diferencia tiene que estar en la dirección, no en el acabado. */
 .sitioCabecera {
   display: flex;
   align-items: baseline;
@@ -1534,7 +1534,7 @@
 /* Los campos se ven RELLENOS, no vacíos: el gris claro de antes los hacía
    pasar por marcador de posición, y entonces la pantalla parecía un formulario
    a medio hacer en vez de uno con los datos ya escritos. Que no sean editables
-   es deliberado —nadie teclea credenciales reales aquí—, pero tienen que
+   es deliberado,nadie teclea credenciales reales aquí,, pero tienen que
    leerse como lo que representan: información ya entregada. */
 .input {
   border: 1px solid #ccd3dc;
@@ -1677,7 +1677,7 @@
   border-bottom-right-radius: 5px;
 }
 /* Azul y subrayado: en un SMS el enlace es texto plano y se pierde dentro del
-   párrafo. Marcarlo no delata nada —el escenario no dice si es bueno o malo—
+   párrafo. Marcarlo no delata nada,el escenario no dice si es bueno o malo,
    pero deja ver que ahí hay algo que se puede tocar, que es la decisión. */
 .smsBubble a {
   color: #1558d6;
@@ -1874,7 +1874,7 @@
   border-top: 1px solid #dfe3e9;
 }
 /* Crece con el contenido (ver el efecto que ajusta `style.height` en
-   DeviceScreen.tsx) hasta este tope; de ahí para arriba entra el scroll —
+   DeviceScreen.tsx) hasta este tope; de ahí para arriba entra el scroll,
    sin eso un mensaje muy largo empujaría el resto de la pantalla fuera de
    vista. Sin resize manual: el alto ya lo decide el propio texto. */
 .smsTextarea {
@@ -2115,7 +2115,7 @@
 
 /* Barra de desplazamiento visible dentro del teléfono. Por defecto es un hilo
    de un píxel del color del fondo, así que una página cuyo botón principal
-   queda debajo del pliegue —el "Acreditar mi bono" del bono del Estado— no da
+   queda debajo del pliegue,el "Acreditar mi bono" del bono del Estado, no da
    ninguna pista de que haya algo más abajo, y el participante se queda mirando
    un formulario sin salida. */
 .phoneViewport *::-webkit-scrollbar {
@@ -2206,7 +2206,7 @@
 }
 
 /* Una app abierta que no tiene nada que ver con el escenario. Existe para que
-   el dock no sea una lista de opciones con un solo elemento vivo — pero tiene
+   el dock no sea una lista de opciones con un solo elemento vivo, pero tiene
    que seguir viéndose como la pantalla de inicio de una app real, no como un
    párrafo suelto: el ícono (el mismo del dock, agrandado) le da ese peso. */
 .appVacia {
@@ -2547,7 +2547,7 @@
 }
 
 /* Cada app con su color, como en cualquier teléfono. En gris uniforme el dock
-   se leía como una barra de herramientas —cuatro botones de la aplicación— y
+   se leía como una barra de herramientas,cuatro botones de la aplicación, y
    no como las apps del participante, que es lo que tiene que reconocer para
    que "entra por tu canal" signifique algo. El tono lo pone cada escenario. */
 .phoneDockIcono {

@@ -53,7 +53,7 @@ const STORY: Story<StoryNode> = {
     outcome: `Entregaste tu cédula ${IDENTITY_FAKE.cedula} y tu clave ${IDENTITY_FAKE.clave} en litoral-actualiza.web.app, un sitio que no es del banco. Con esos datos entraron a tu cuenta esa misma noche.`,
   },
   // Absorbe el antiguo final "vista previa antes de escanear": un QR no tiene
-  // href, así que no existe una vista previa real — escanear ya abre la
+  // href, así que no existe una vista previa real, escanear ya abre la
   // página falsa, y lo que distingue el buen final es cerrarla sin enviar el
   // formulario (ver spec §4.1).
   e_app: {

@@ -4,7 +4,7 @@ import styles from './DeviceScreen.module.css'
 // Las tres apps de relleno que sobrevivieron a la poda del dock (issue #187):
 // cada una tiene su propio layout, con la pinta de la app real que dice ser,
 // en vez del ícono-y-párrafo genérico de antes. El contenido es siempre el
-// mismo —no hay nada que decidir aquí, es puro paisaje— así que vive fijo en
+// mismo,no hay nada que decidir aquí, es puro paisaje, así que vive fijo en
 // este archivo y no en cada escenario.
 export const TIPOS_RELLENO = ['banco', 'navegador', 'galeria'] as const
 export type RellenoTipo = (typeof TIPOS_RELLENO)[number]

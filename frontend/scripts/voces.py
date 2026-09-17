@@ -14,8 +14,8 @@ que algo es falso mucho antes de que el participante escuche lo que dice.
 
 El nombre de cada archivo es el hash de la voz y la frase, y el índice que
 consume el frontend (src/data/voces.ts) va indexado por la frase entera: si
-alguien retoca el guion o cambia la voz, el audio deja de encontrarse —la línea
-se queda muda y el test lo dice— en vez de seguir sonando con el texto viejo.
+alguien retoca el guion o cambia la voz, el audio deja de encontrarse,la línea
+se queda muda y el test lo dice, en vez de seguir sonando con el texto viejo.
 
 Uso, desde frontend/ (con un entorno que tenga edge-tts instalado):
 
@@ -92,7 +92,7 @@ VOZ_POR_ROL = {
 }
 
 CABECERA = '''/**
- * Generado por scripts/voces.py — no editar a mano.
+ * Generado por scripts/voces.py, no editar a mano.
  *
  * De cada frase que dice quien llama en los escenarios de vishing al MP3 con
  * esa frase. Los audios se generan una sola vez y se sirven como archivos
@@ -189,8 +189,8 @@ async def main() -> int:
         print(f"[{i}/{len(lineas)}] {voz[0]} {voz[1]}: {texto[:45]}…")
         await sintetizar(texto, voz, archivo)
 
-    # Los audios de frases que ya no dice nadie —o que se grabaron con otra
-    # voz— se borran: si no, la carpeta se llena de tomas viejas que nadie sabe
+    # Los audios de frases que ya no dice nadie,o que se grabaron con otra
+    # voz, se borran: si no, la carpeta se llena de tomas viejas que nadie sabe
     # si siguen usándose.
     for viejo in AUDIOS.glob("*.mp3"):
         if viejo.name not in vivos:

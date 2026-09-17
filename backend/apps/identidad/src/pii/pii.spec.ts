@@ -7,11 +7,11 @@ import {
 } from './pii';
 
 // Clave de 32 bytes real (openssl rand -base64 32), fija para que las pruebas
-// sean deterministas — no es la clave de ningún entorno real.
+// sean deterministas, no es la clave de ningún entorno real.
 const PASSWORD = 'Zm9vYmFyZm9vYmFyZm9vYmFyZm9vYmFyZm9vYmFyZm8=';
 const OTHER_KEY = 'YmFyZm9vYmFyZm9vYmFyZm9vYmFyZm9vYmFyZm9vYmE=';
 
-describe('pii — encrypt/decrypt', () => {
+describe('pii: encrypt/decrypt', () => {
   it('descifra exactamente lo que cifró', () => {
     const encryptedValue = encrypt('María Pérez', PASSWORD);
     expect(decrypt(encryptedValue, PASSWORD)).toBe('María Pérez');
@@ -60,7 +60,7 @@ describe('pii — encrypt/decrypt', () => {
   });
 });
 
-describe('pii — decryptOptional', () => {
+describe('pii: decryptOptional', () => {
   it('devuelve null sin intentar descifrar', () => {
     expect(decryptOptional(null, PASSWORD)).toBeNull();
   });
@@ -71,7 +71,7 @@ describe('pii — decryptOptional', () => {
   });
 });
 
-describe('pii — huellaEmail', () => {
+describe('pii: huellaEmail', () => {
   it('es determinista: el mismo correo da siempre la misma huella', () => {
     expect(hashEmail('ana@correo.com', 'pepper')).toBe(
       hashEmail('ana@correo.com', 'pepper'),

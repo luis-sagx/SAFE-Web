@@ -90,7 +90,7 @@ describe('Autenticación (e2e)', () => {
     });
 
     // La regla que sostiene el issue #95: quien se lleve solo la base no
-    // debe poder leer nombre, apellido ni correo — aunque la app sí pueda,
+    // debe poder leer nombre, apellido ni correo, aunque la app sí pueda,
     // descifrándolos con la clave que vive solo en el servidor.
     it('nunca guarda nombre, apellido ni correo en claro', async () => {
       const data = registrationData('cifrado');
@@ -127,8 +127,8 @@ describe('Autenticación (e2e)', () => {
         })
         .expect(201);
 
-      // El correo normalizado se ve en la propia respuesta —descifrado de
-      // vuelta por el servidor—, así que no hace falta releer la base para
+      // El correo normalizado se ve en la propia respuesta, descifrado de
+      // vuelta por el servidor, así que no hace falta releer la base para
       // comprobar que se guardó en minúsculas y sin espacios.
       expect(responseBody<SessionBody>(res).participant.email).toBe(
         'maria.normaliza@ejemplo.ec',
@@ -398,7 +398,7 @@ describe('Autenticación (e2e)', () => {
       expect(typeof refreshedSession.accessToken).toBe('string');
       expect(refreshedSession).not.toHaveProperty('refreshToken');
       // Rotación: el refresh también pone una cookie nueva (mismo nombre,
-      // mismo `sub` — puede coincidir byte a byte con la original si cae en
+      // mismo `sub`, puede coincidir byte a byte con la original si cae en
       // el mismo segundo de `iat`, así que no se compara el valor).
       expect(getRefreshCookie(res)).toBeDefined();
 

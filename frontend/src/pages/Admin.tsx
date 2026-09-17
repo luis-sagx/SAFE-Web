@@ -37,7 +37,7 @@ interface Confirmation {
 
 function fullName(p: AdminParticipant): string {
   const parts = [p.nombre, p.apellido].filter(Boolean);
-  return parts.length > 0 ? parts.join(" ") : "—";
+  return parts.length > 0 ? parts.join(" ") : "Sin nombre";
 }
 
 function date(iso: string): string {
@@ -219,7 +219,7 @@ function Participants() {
                     {p.seudonimo}
                   </td>
                   <td className="px-4 py-3 text-ink">{fullName(p)}</td>
-                  <td className="px-4 py-3 text-body">{p.email ?? "—"}</td>
+                  <td className="px-4 py-3 text-body">{p.email ?? "Sin correo"}</td>
                   <td className="px-4 py-3">
                     <span
                       className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium ${
@@ -448,7 +448,7 @@ function Trainers() {
         <div className="mt-4 overflow-x-auto rounded-lg border border-hairline-strong">
           <table className="w-full min-w-[580px] text-left text-sm">
             <thead><tr className="border-b border-hairline bg-canvas-soft text-muted"><th className="px-4 py-3">Nombre</th><th className="px-4 py-3">Correo</th><th className="px-4 py-3">Estado</th><th className="px-4 py-3 text-right">Acción</th></tr></thead>
-            <tbody>{list.map((trainer) => <tr key={trainer.id} className="border-b border-hairline last:border-0"><td className="px-4 py-3 text-ink">{fullName(trainer)}</td><td className="px-4 py-3 text-body">{trainer.email ?? "—"}</td><td className="px-4 py-3">{trainer.activo ? "Activo" : "Desactivado"}</td><td className="px-4 py-3 text-right"><button type="button" onClick={() => void toggle(trainer)} className="h-8 rounded-md border border-hairline-strong px-2.5 text-xs font-medium text-ink">{trainer.activo ? "Desactivar" : "Activar"}</button></td></tr>)}</tbody>
+            <tbody>{list.map((trainer) => <tr key={trainer.id} className="border-b border-hairline last:border-0"><td className="px-4 py-3 text-ink">{fullName(trainer)}</td><td className="px-4 py-3 text-body">{trainer.email ?? "Sin correo"}</td><td className="px-4 py-3">{trainer.activo ? "Activo" : "Desactivado"}</td><td className="px-4 py-3 text-right"><button type="button" onClick={() => void toggle(trainer)} className="h-8 rounded-md border border-hairline-strong px-2.5 text-xs font-medium text-ink">{trainer.activo ? "Desactivar" : "Activar"}</button></td></tr>)}</tbody>
           </table>
         </div>
       )}

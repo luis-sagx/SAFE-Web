@@ -78,7 +78,7 @@ const LEGITIMATE = {
       'El correo era auténtico y lo borraste. Desconfiar de todo sale tan caro como confiar de más: te quedaste sin el aviso y sin lo que había que hacer con él.',
   },
   // Ni acierto ni error (issue #34): el correo era real, no expuso nada, pero
-  // lo que pedía sigue sin hacerse — de ahí 'partial'.
+  // lo que pedía sigue sin hacerse, de ahí 'partial'.
   e_responder: {
     kind: 'partial' as const,
     verdict: 'Sin daño, pero sin resolver',

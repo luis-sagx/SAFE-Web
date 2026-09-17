@@ -12,7 +12,7 @@ interface VideoTicketProps {
   /** La fila lleva muescas en su perforación salvo la primera de la tira. */
   conMuescas?: boolean
   /** 'boleto': un boleto entero con su ventana de reproductor, para el video
-   *  general. 'fila': un talón dentro de la tira de módulos — siete boletos
+   *  general. 'fila': un talón dentro de la tira de módulos, siete boletos
    *  sueltos del mismo alto volvían a ser el muro de tarjetas. */
   variante?: 'boleto' | 'fila'
 }
@@ -135,7 +135,7 @@ function VideoTicket({
       }
     >
       {/* Con video, el cuerpo del boleto es su ventana. La portada del video
-          la dibuja el propio boleto —trama de seguridad y botón— en vez de
+          la dibuja el propio boleto,trama de seguridad y botón, en vez de
           pedirle la miniatura a YouTube: así nadie contacta a Google hasta
           que la persona decide reproducir. */}
       {id && playing && <div className="aspect-video w-full bg-canvas-soft">{player}</div>}

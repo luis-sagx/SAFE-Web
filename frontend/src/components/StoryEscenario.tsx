@@ -51,7 +51,7 @@ interface ScenarioStoryProps {
   accionesEnPantalla?: boolean
   apps?: PhoneApp[]
   // Documento de referencia fijo junto al dispositivo, antes de "¿Qué
-  // haces?" — issue #184. Se lee y se decide qué copiar antes de escribir,
+  // haces?", issue #184. Se lee y se decide qué copiar antes de escribir,
   // no después.
   panelReferencia?: ReactNode
 }
@@ -65,8 +65,8 @@ export type PhoneApp = BrowserBookmark & {
   // existiendo para las apps de relleno que no tienen (todavía) un layout
   // propio en AppRelleno.tsx.
   vacia?: string
-  // Issue #187: variante con la pinta de la app real que dice ser —saldo y
-  // movimientos, barra de direcciones…— en vez del párrafo genérico de
+  // Issue #187: variante con la pinta de la app real que dice ser,saldo y
+  // movimientos, barra de direcciones…, en vez del párrafo genérico de
   // `vacia`. Uno de los dos, nunca ambos; como máximo una app de cada tipo
   // por escenario, porque el layout es fijo y dos "banco" en el mismo dock
   // se verían idénticas.

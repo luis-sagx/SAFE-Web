@@ -1,6 +1,6 @@
 // Pone data-tema antes del primer pintado: si se esperara a que React
 // monte, alguien con el sistema en oscuro vería un destello blanco en
-// cada carga. Bloqueante a propósito — son microsegundos y es lo único
+// cada carga. Bloqueante a propósito, son microsegundos y es lo único
 // que lo garantiza. Ver ThemeContext.tsx y el spec de tema oscuro §4.3.
 //
 // Va en un archivo y no inline en index.html: la CSP de nginx.conf

@@ -374,8 +374,8 @@ function Section() {
                   >
                     {index > 0 && <Notches className="-top-2.5" />}
 
-                    {/* Dos papeles: el que te toca queda limpio y el resto —resuelto o
-                        bloqueado— va entintado con la tinta del propio boleto, sin meter
+                    {/* Dos papeles: el que te toca queda limpio y el resto,resuelto o
+                        bloqueado, va entintado con la tinta del propio boleto, sin meter
                         un color de fuera. Entintar, no bajar opacidad: la opacidad se
                         lleva el texto consigo. El 25% es el techo con el que `muted`
                         sigue en 4.54:1 sobre el papel claro. */}

@@ -1,7 +1,7 @@
 import { registerDecorator, type ValidationOptions } from 'class-validator';
 
 // Filtro de dominio de correo (spec 2026-08-22): rechaza dominios inventados/desechables
-// conocidos, pero no prueba que la casilla existe — eso lo cubre la verificación por
+// conocidos, pero no prueba que la casilla existe, eso lo cubre la verificación por
 // enlace de AuthService.register(). Solo reduce ruido de registros con dominios inusados.
 
 // Sufijo, no lista: `.ec` es el ccTLD de Ecuador, cubre .edu.ec/.com.ec/.gob.ec/etc. sin

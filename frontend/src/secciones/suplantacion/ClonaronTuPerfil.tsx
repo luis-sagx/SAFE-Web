@@ -7,7 +7,7 @@ import type { Story } from '../../hooks/useStoryEngine'
 import { IDENTITY_FAKE } from '../../lib/identidadFicticia'
 
 // El otro lado del módulo: el perfil clonado eres tú. El error que mide no es caer en
-// nada, sino escribirle a la cuenta falsa — eso entrega datos reales a quien ya usa tu nombre.
+// nada, sino escribirle a la cuenta falsa, eso entrega datos reales a quien ya usa tu nombre.
 
 const FRIEND = 'Verónica'
 const NUMBER_FRIEND = '+593 99 618 2274'

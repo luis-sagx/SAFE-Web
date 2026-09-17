@@ -12,7 +12,7 @@ function renderTicket(props: { onRevelar?: () => void } = {}) {
 
 // jsdom no implementa getContext('2d'): sin este doble, el componente sale por
 // su guarda de "navegador sin canvas" y el raspado nunca llega a ejecutarse.
-// `alpha` decide qué lee getImageData — 0 es foil borrado, 255 es foil intacto.
+// `alpha` decide qué lee getImageData, 0 es foil borrado, 255 es foil intacto.
 function stubCanvas(alpha: number) {
   const ctx = {
     setTransform: vi.fn(),

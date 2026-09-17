@@ -16,7 +16,7 @@ describe('BlocNotas', () => {
   })
 
   it('acepta un título propio', () => {
-    render(<BlocNotas texto="contenido" titulo="Mensaje.txt — Bloc de notas" />)
-    expect(screen.getByText('Mensaje.txt — Bloc de notas')).toBeDefined()
+    render(<BlocNotas texto="contenido" titulo="Mensaje.txt, Bloc de notas" />)
+    expect(screen.getByText('Mensaje.txt, Bloc de notas')).toBeDefined()
   })
 })

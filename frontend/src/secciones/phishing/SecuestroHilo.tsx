@@ -111,7 +111,7 @@ const SCHOOL: ScreenView = {
 }
 
 // No es trampa técnica (PDF real, sin macros): un documento con membrete convence,
-// y aquí solo aporta el número de cuenta nuevo — que es justo lo que había que desconfiar.
+// y aquí solo aporta el número de cuenta nuevo, que es justo lo que había que desconfiar.
 const RECEIPT: ScreenView = {
   kind: 'web',
   url: 'C:\\Usuarios\\Descargas\\Comprobante_pension_mes_actual.pdf',

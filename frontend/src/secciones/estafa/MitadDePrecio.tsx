@@ -7,7 +7,7 @@ import type { Story } from '../../hooks/useStoryEngine'
 import { ACCOUNT_FAKE, IDENTITY_FAKE } from '../../lib/identidadFicticia'
 
 /** El lado del comprador: aquí el que arriesga eres tú, así que el precio bajo se siente como suerte, no como
- *  alarma. No hay urgencia inventada —la pone la ganga misma— y todo lo demás está a la vista desde el
+ *  alarma. No hay urgencia inventada,la pone la ganga misma, y todo lo demás está a la vista desde el
  *  principio para quien mire. */
 
 const SELLER = 'Marlon Cedeño'

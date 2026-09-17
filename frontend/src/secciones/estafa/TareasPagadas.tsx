@@ -8,7 +8,7 @@ import { ACCOUNT_FAKE, IDENTITY_FAKE } from '../../lib/identidadFicticia'
 
 /** El engaño no está en ninguna pantalla sino en el orden: los primeros pagos son reales y compran la prueba
  *  vivida de que "esto sí paga"; solo después llega la vuelta de tuerca (poner dinero propio). Entra por un
- *  grupo de empleo, no de finanzas —toca a quien le falta trabajo, no ahorros. */
+ *  grupo de empleo, no de finanzas,toca a quien le falta trabajo, no ahorros. */
 
 const COORDINATOR = 'Katty · Coordinadora'
 const NUMBER_COORDINATOR = '+593 98 613 9042'

@@ -18,7 +18,7 @@ interface AIChatScenarioProps {
    *  difíciles de la sección la omiten a propósito. */
   pista?: ReactNode
   /** El bloc de notas con el texto fuente (datos sensibles incluidos), fijo
-   *  junto al celular — issue #184. El participante decide qué copiar y qué
+   *  junto al celular, issue #184. El participante decide qué copiar y qué
    *  dejar afuera al escribir su propio mensaje. */
   documentoFuente?: ReactNode
 }

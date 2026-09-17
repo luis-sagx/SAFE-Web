@@ -15,7 +15,7 @@ import {
 } from './chatIA'
 
 /** Informe escolar = documento pedagógico que además es, sin querer, un documento de identidad de un
- *  menor de edad, pegado entero (copiar/pegar sin leer) — mismo patrón que la hoja de vida que reemplaza
+ *  menor de edad, pegado entero (copiar/pegar sin leer), mismo patrón que la hoja de vida que reemplaza
  *  (issue #186). escenarioId sigue siendo `correo-credenciales` porque ahí están guardadas las corridas
  *  anteriores.
  *
@@ -27,8 +27,8 @@ import {
  *  escribe su propio mensaje a la IA, copiando de la ficha lo que decida.
  *
  *  Mismo criterio de peso que #185: la cédula, la fecha de nacimiento y el domicilio son el paquete que
- *  prueba identidad — cualquiera de los tres, solo, ya es fuga completa. El teléfono de contacto es menos
- *  grave —sirve para llegar a la familia, no para suplantar al estudiante— así que solo baja a "parcial".
+ *  prueba identidad, cualquiera de los tres, solo, ya es fuga completa. El teléfono de contacto es menos
+ *  grave,sirve para llegar a la familia, no para suplantar al estudiante, así que solo baja a "parcial".
  *  El nombre no se evalúa: un informe sin nombre no sirve para nada. */
 
 const TIME = '08:55'
@@ -97,9 +97,9 @@ const CHAT = withFreeTextComposer(
   },
 )
 
-// La ficha del estudiante, tal como está en el sistema de la institución — con los datos reales que el
+// La ficha del estudiante, tal como está en el sistema de la institución, con los datos reales que el
 // informe no necesitaba para mejorar la redacción.
-const SOURCE_DOCUMENT = `Ficha del estudiante — uso interno.\n\nNombre: ${STUDENT_NAME}\nCédula: ${ECUADORIAN_ID}\nFecha de nacimiento: ${BIRTH}\nDomicilio: ${ADDRESS}\nTeléfono de contacto: ${CONTACT_PHONE}\n\n${PROGRESS}`
+const SOURCE_DOCUMENT = `Ficha del estudiante, uso interno.\n\nNombre: ${STUDENT_NAME}\nCédula: ${ECUADORIAN_ID}\nFecha de nacimiento: ${BIRTH}\nDomicilio: ${ADDRESS}\nTeléfono de contacto: ${CONTACT_PHONE}\n\n${PROGRESS}`
 
 const STORY: Story<ScreenNode> = {
   n1: { kind: 'scene', view: CHAT },
@@ -110,7 +110,7 @@ const STORY: Story<ScreenNode> = {
       signal(
         dato.id,
         'e_fuga',
-        `Si tu mensaje incluyó <b>${dato.etiqueta}</b>: junto con el resto del paquete, es lo que identifica a un estudiante menor de edad fuera de la institución — y no mejora en nada la redacción del informe.`,
+        `Si tu mensaje incluyó <b>${dato.etiqueta}</b>: junto con el resto del paquete, es lo que identifica a un estudiante menor de edad fuera de la institución, y no mejora en nada la redacción del informe.`,
       ),
     ),
     verdict: 'El informe entero del estudiante quedó en un servicio externo',
@@ -124,12 +124,12 @@ const STORY: Story<ScreenNode> = {
       signal(
         'dato-telefono',
         'e_parcial',
-        'El <b>teléfono de contacto</b> no prueba la identidad del estudiante, pero sí es por dónde llegar hasta su familia — y con eso empieza cualquier intento de contacto no autorizado.',
+        'El <b>teléfono de contacto</b> no prueba la identidad del estudiante, pero sí es por dónde llegar hasta su familia, y con eso empieza cualquier intento de contacto no autorizado.',
       ),
     ],
     verdict: 'Quitaste lo peor, pero dejaste cómo llegar hasta él',
     outcome:
-      'Lo grave —cédula, fecha de nacimiento y domicilio— se quedó fuera. Pero el teléfono de contacto tampoco hacía falta para mejorar la redacción.',
+      'Lo grave,cédula, fecha de nacimiento y domicilio, se quedó fuera. Pero el teléfono de contacto tampoco hacía falta para mejorar la redacción.',
   },
   e_seguro: {
     kind: 'good',
@@ -143,7 +143,7 @@ const STORY: Story<ScreenNode> = {
     ],
     verdict: 'Informe mejorado sin entregar los datos de nadie',
     outcome:
-      'La IA devolvió el seguimiento académico mejor redactado y con un tono más claro. El nombre y los datos de contacto del estudiante los agregas tú en el documento que se entrega a la institución — donde sí corresponde.',
+      'La IA devolvió el seguimiento académico mejor redactado y con un tono más claro. El nombre y los datos de contacto del estudiante los agregas tú en el documento que se entrega a la institución, donde sí corresponde.',
   },
 }
 
@@ -151,12 +151,12 @@ const SIGNALS = [
   signal(
     'informe-en-juego',
     'n1',
-    'La IA te pide el <b>contenido que quieres mejorar</b>. El informe trae además la cédula, la fecha de nacimiento, el domicilio y el teléfono de contacto del estudiante — y ninguno de esos cambia cómo se redacta su seguimiento académico.',
+    'La IA te pide el <b>contenido que quieres mejorar</b>. El informe trae además la cédula, la fecha de nacimiento, el domicilio y el teléfono de contacto del estudiante, y ninguno de esos cambia cómo se redacta su seguimiento académico.',
   ),
 ]
 
 const RULE =
-  'Regla de oro: un informe escolar es, además de un documento pedagógico, un documento de identidad de un menor de edad. Antes de pegarlo en una IA —el de un estudiante o el de cualquier persona— quítale la <b>cédula, la fecha de nacimiento, el domicilio y el teléfono de contacto</b>: esos los agregas tú al entregarlo.'
+  'Regla de oro: un informe escolar es, además de un documento pedagógico, un documento de identidad de un menor de edad. Antes de pegarlo en una IA,el de un estudiante o el de cualquier persona, quítale la <b>cédula, la fecha de nacimiento, el domicilio y el teléfono de contacto</b>: esos los agregas tú al entregarlo.'
 
 const SUMMARY = 'Le pides a una IA que mejore un informe escolar de un estudiante, con su cédula y su domicilio dentro.'
 
@@ -179,7 +179,7 @@ function SchoolReport() {
       story={STORY}
       senales={SIGNALS}
       rule={RULE}
-      documentoFuente={<BlocNotas titulo="Ficha.txt — Bloc de notas" texto={SOURCE_DOCUMENT} />}
+      documentoFuente={<BlocNotas titulo="Ficha.txt, Bloc de notas" texto={SOURCE_DOCUMENT} />}
       instruccion={
         <p className="text-lg leading-relaxed text-body">
           Escribe (o pega) el contenido que le pedirías mejorar a la IA, y toca "Enviar" cuando el

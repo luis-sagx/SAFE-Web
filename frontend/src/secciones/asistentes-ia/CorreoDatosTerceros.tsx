@@ -13,13 +13,13 @@ import {
   type SensitiveDatum,
 } from './chatIA'
 
-/** La IA es legítima; el riesgo está en lo que el participante le escribe antes de pedir ayuda —aquí, los
+/** La IA es legítima; el riesgo está en lo que el participante le escribe antes de pedir ayuda,aquí, los
  *  datos de una compañera que no hacían falta para redactar el texto.
  *
- *  Issue #184: el texto con los datos reales vive aparte, en un bloc de notas fijo junto al celular —el
+ *  Issue #184: el texto con los datos reales vive aparte, en un bloc de notas fijo junto al celular,el
  *  participante decide qué copiar y qué dejar afuera al escribir su propio mensaje en el chat, en vez de
  *  elegir entre burbujas ya redactadas ni tocar palabras de un borrador fijo. Lo que se evalúa sigue siendo
- *  si esos datos REALES quedaron en el mensaje al tocar "Enviar" — nunca por parecerse a un dato de ese
+ *  si esos datos REALES quedaron en el mensaje al tocar "Enviar", nunca por parecerse a un dato de ese
  *  tipo, sino por ser el dato de verdad (ver evaluateDatum). */
 
 const TIME = '10:14'
@@ -73,7 +73,7 @@ const CHAT = withFreeTextComposer(
 )
 
 // El "documento fuente": lo que la compañera le pasó al participante para pedirle el favor, con sus
-// datos reales dentro. Vive en un bloc de notas fijo junto al celular — copiar de ahí es una decisión
+// datos reales dentro. Vive en un bloc de notas fijo junto al celular, copiar de ahí es una decisión
 // del participante, no algo que el escenario le sirva ya redactado.
 const SOURCE_DOCUMENT = `Hola, ¿me ayudas a pedirle al ${TEACHER} un cambio de horario? Soy ${FIRST_NAME} ${LAST_NAME}, cédula ${ECUADORIAN_ID}, mi correo es ${EMAIL}. Es de la materia de Redes.`
 
@@ -91,7 +91,7 @@ const STORY: Story<ScreenNode> = {
     ),
     verdict: 'Datos de tu compañera compartidos con la IA',
     outcome:
-      'Tu mensaje incluyó el nombre completo, la cédula o el correo real de tu compañera. Ninguno de los tres cambia cómo se redacta la solicitud — bastaba con "una compañera" y la materia.',
+      'Tu mensaje incluyó el nombre completo, la cédula o el correo real de tu compañera. Ninguno de los tres cambia cómo se redacta la solicitud, bastaba con "una compañera" y la materia.',
   },
   e_parcial: {
     kind: 'partial',
@@ -100,12 +100,12 @@ const STORY: Story<ScreenNode> = {
       signal(
         'borrador-enviado',
         'e_parcial',
-        'Quedó algún fragmento identificable —solo un nombre de pila, solo un apellido, o los últimos dígitos de la cédula— sin llegar a la combinación completa. No es un dato inventado: sigue siendo real, solo que a medias.',
+        'Quedó algún fragmento identificable,solo un nombre de pila, solo un apellido, o los últimos dígitos de la cédula, sin llegar a la combinación completa. No es un dato inventado: sigue siendo real, solo que a medias.',
       ),
     ],
     verdict: 'Quedó algo identificable, aunque no el dato completo',
     outcome:
-      'Tu mensaje no llegó a incluir un dato completo de tu compañera, pero sí un fragmento real —su nombre de pila, su apellido, o parte de su cédula—, no uno inventado. Lo más seguro es no dejar ningún rastro del dato real: usa un marcador como "mi compañera" en vez de una parte de su nombre.',
+      'Tu mensaje no llegó a incluir un dato completo de tu compañera, pero sí un fragmento real,su nombre de pila, su apellido, o parte de su cédula,, no uno inventado. Lo más seguro es no dejar ningún rastro del dato real: usa un marcador como "mi compañera" en vez de una parte de su nombre.',
   },
   e_seguro: {
     kind: 'good',
@@ -114,7 +114,7 @@ const STORY: Story<ScreenNode> = {
       signal(
         'borrador-enviado',
         'e_seguro',
-        'Le diste a la IA lo que necesitaba —el asunto, a quién va, la materia— sin el nombre, la cédula ni el correo reales de tu compañera.',
+        'Le diste a la IA lo que necesitaba,el asunto, a quién va, la materia, sin el nombre, la cédula ni el correo reales de tu compañera.',
       ),
     ],
     verdict: 'Correo redactado sin compartir datos reales de nadie',
@@ -127,12 +127,12 @@ const SIGNALS = [
   signal(
     'datos-en-juego',
     'n1',
-    'La IA te pregunta qué debe incluir el correo. Tienes a la mano el <b>nombre completo</b>, la <b>cédula</b> y el <b>correo</b> de tu compañera — y ninguno de los tres cambia cómo se redacta la solicitud.',
+    'La IA te pregunta qué debe incluir el correo. Tienes a la mano el <b>nombre completo</b>, la <b>cédula</b> y el <b>correo</b> de tu compañera, y ninguno de los tres cambia cómo se redacta la solicitud.',
   ),
 ]
 
 const RULE =
-  'Regla de oro: antes de escribirle a una IA, revisa si tu mensaje trae <b>nombres, cédulas, correos o teléfonos de otras personas</b>. Si no hacen falta para lo que le pides, no los escribas — ni siquiera a medias.'
+  'Regla de oro: antes de escribirle a una IA, revisa si tu mensaje trae <b>nombres, cédulas, correos o teléfonos de otras personas</b>. Si no hacen falta para lo que le pides, no los escribas, ni siquiera a medias.'
 
 const SUMMARY = 'Le pides a una IA que redacte un correo a nombre de una compañera, con los datos de ella a la mano.'
 
@@ -155,11 +155,11 @@ function ThirdPartyDataEmail() {
       story={STORY}
       senales={SIGNALS}
       rule={RULE}
-      documentoFuente={<BlocNotas titulo="WhatsApp — Andrea" texto={SOURCE_DOCUMENT} />}
+      documentoFuente={<BlocNotas titulo="WhatsApp, Andrea" texto={SOURCE_DOCUMENT} />}
       instruccion={
         <p className="text-lg leading-relaxed text-body">
-          Escribe el mensaje que le mandarías a la IA para pedirle ayuda —puedes copiar del bloc de
-          notas— y toca "Enviar" cuando quede como quieres.
+          Escribe el mensaje que le mandarías a la IA para pedirle ayuda,puedes copiar del bloc de
+          notas, y toca "Enviar" cuando quede como quieres.
         </p>
       }
       pista={

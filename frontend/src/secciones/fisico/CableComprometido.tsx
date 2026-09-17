@@ -7,7 +7,7 @@ import publicChargerImg from '../../assets/escenarios/fisico/cargador-publico.we
 
 // El "juice jacking": el mismo cable que carga también puede llevar datos. Un
 // puerto USB público que nadie de confianza controla es indistinguible por
-// fuera de uno seguro — la señal no está en cómo se ve el puerto, sino en si
+// fuera de uno seguro, la señal no está en cómo se ve el puerto, sino en si
 // hay o no un tomacorriente normal para el propio cargador.
 const KIOSK: ScreenView = {
   kind: 'escena',
@@ -84,7 +84,7 @@ const context: Context = {
   ahora: (
     <>
       <strong>A media tarde</strong> el celular te queda en 3%, y justo ahí, en el pasillo del centro
-      comercial, ves un mueble de carga pública con varios puertos USB — pero ningún tomacorriente normal
+      comercial, ves un mueble de carga pública con varios puertos USB, pero ningún tomacorriente normal
       para tu propio cargador.
     </>
   ),
@@ -94,7 +94,7 @@ export default function CompromisedCable() {
   return (
     <ScenarioStory
       escenarioId="fisico/cable-comprometido"
-      resumen="Estación de carga pública — decide cómo cargar tu celular"
+      resumen="Estación de carga pública, decide cómo cargar tu celular"
       contexto={context}
       nota="Un puerto de carga no se distingue por fuera; lo que importa es si hay o no un tomacorriente normal."
       story={STORY}

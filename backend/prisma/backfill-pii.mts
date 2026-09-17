@@ -1,7 +1,7 @@
 /**
  * Cifra en el sitio las cuentas creadas antes del cifrado (issue #95): toda
  * fila con `emailHash` nulo, porque esa es exactamente la marca de "no pasó
- * todavía por `register()` ni por el `seed.mts` ya actualizado" — los dos
+ * todavía por `register()` ni por el `seed.mts` ya actualizado", los dos
  * únicos lugares que escriben una fila nueva, y los dos ponen `emailHash` a
  * la vez que cifran. No hay urgencia en correrlo: mientras no corre, esas
  * cuentas siguen totalmente funcionales (`auth.service.ts` cae a buscar por
@@ -18,7 +18,7 @@
 import 'dotenv/config';
 import { PrismaPg } from '@prisma/adapter-pg';
 // Extensión .js: Node lo ejecuta como ESM y la resolución la exige (es un
-// archivo generado, no fuente TypeScript — a diferencia de pii.ts, más abajo).
+// archivo generado, no fuente TypeScript, a diferencia de pii.ts, más abajo).
 import { PrismaClient } from '../generated/identidad/client.js';
 import { encrypt, hashEmail } from '../apps/identidad/src/pii/pii.ts';
 
