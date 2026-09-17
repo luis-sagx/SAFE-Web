@@ -6,10 +6,16 @@ import SafeExit from './SalidaSegura'
 vi.mock('../../context/AuthContext', async () => (await import('../../test/escenario')).mockAuth())
 vi.mock('../../lib/api', async () => (await import('../../test/escenario')).offlineApi())
 
+function zoomIn(scene: HTMLElement) {
+  fireEvent.click(within(scene).getByRole('button', { name: 'Acercarte a la pantalla' }))
+}
+
 function ensureDesktop(scene: HTMLElement) {
+  zoomIn(scene)
   for (const close of within(scene).getAllByRole('button', { name: /^Cerrar la pestaña/ })) {
     fireEvent.click(close)
   }
+  fireEvent.click(within(scene).getByRole('button', { name: 'Volver al escritorio' }))
   for (const document of within(scene).getAllByRole('button', { name: /^Guardar / })) {
     fireEvent.click(document)
   }
@@ -20,7 +26,9 @@ describe('SalidaSegura', () => {
   it('abre con las cuatro pestañas, los tres documentos y la sesión sin bloquear', () => {
     const scene = start(<SafeExit />)
 
+    zoomIn(scene)
     expect(within(scene).getAllByRole('button', { name: /^Cerrar la pestaña/ })).toHaveLength(4)
+    fireEvent.click(within(scene).getByRole('button', { name: 'Volver al escritorio' }))
     expect(within(scene).getAllByRole('button', { name: /^Guardar / })).toHaveLength(3)
     expect(within(scene).getByText(/0 de 3 guardados/)).toBeDefined()
   })
@@ -40,21 +48,38 @@ describe('SalidaSegura', () => {
     expect(within(scene).getByText('https://intranet.andes.ec/rrhh/nominas')).toBeDefined()
   })
 
-  it('cerrar la pestaña del medio desliza las de la derecha y no deja hueco', () => {
+  it('en el escritorio el monitor es una miniatura: para tocar pestañas hay que acercarse', () => {
     const scene = start(<SafeExit />)
 
+    expect(within(scene).queryAllByRole('button', { name: /^Cerrar la pestaña/ })).toHaveLength(0)
+    zoomIn(scene)
+    expect(within(scene).getAllByRole('button', { name: /^Cerrar la pestaña/ })).toHaveLength(4)
+    // Acercada, lo demás de la escena queda fuera de alcance.
+    // jsdom no aplica `inert` al árbol accesible: se comprueba el atributo.
+    const paper = within(scene).getByRole('button', { name: 'Guardar Contratos en el cajón' })
+    expect(paper.closest('[inert]')).not.toBeNull()
+  })
+
+  it('cerrar la pestaña del medio deja las demás en su orden', () => {
+    const scene = start(<SafeExit />)
+
+    zoomIn(scene)
     fireEvent.click(within(scene).getByRole('button', { name: 'Cerrar la pestaña Clientes VIP' }))
 
-    // Las que quedan ocupan los tres primeros sitios de la barra, en orden.
-    const sites = [...scene.querySelectorAll<SVGGElement>('g[style*="translateX"]')].map(
-      (g) => g.style.transform,
-    )
-    expect(sites).toEqual(['translateX(244px)', 'translateX(372px)', 'translateX(500px)'])
+    const names = within(scene)
+      .getAllByRole('button', { name: /^Cerrar la pestaña/ })
+      .map((button) => button.getAttribute('aria-label'))
+    expect(names).toEqual([
+      'Cerrar la pestaña Nóminas 2026',
+      'Cerrar la pestaña Gestor de contraseñas',
+      'Cerrar la pestaña Reportes financieros',
+    ])
   })
 
   it('cerrar la pestaña activa pasa a la de al lado, no a una ventana en blanco', () => {
     const scene = start(<SafeExit />)
 
+    zoomIn(scene)
     fireEvent.click(within(scene).getByRole('button', { name: 'Cerrar la pestaña Nóminas 2026' }))
 
     expect(within(scene).getByText('https://vault.andes.ec/mis-claves')).toBeDefined()
@@ -71,6 +96,7 @@ describe('SalidaSegura', () => {
     // Desbloquear devuelve el navegador: bloquearse antes de tiempo no deja
     // encerrado a nadie.
     fireEvent.click(within(scene).getByRole('button', { name: 'Desbloquear la sesión' }))
+    zoomIn(scene)
     expect(within(scene).getAllByRole('button', { name: /^Cerrar la pestaña/ })).toHaveLength(4)
   })
 
@@ -88,7 +114,8 @@ describe('SalidaSegura', () => {
     })
     // Y la escena vuelve a mostrar lo que ya se había cerrado: si no, no habría
     // nada que señalar.
-    expect(within(scene).getAllByRole('button', { name: /^Cerrar la pestaña/ })).toHaveLength(4)
+    const monitor = scene.querySelector<HTMLElement>('[data-signal="pestanas"]')!
+    expect(within(monitor).getAllByText(/^(Nóminas|Contraseñas|Clientes|Reportes)$/)).toHaveLength(4)
 
     fireEvent.click(screen.getByRole('button', { name: 'Siguiente →' }))
 

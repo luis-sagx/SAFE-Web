@@ -1,4 +1,7 @@
-import { useState } from 'react'
+import { useRef, useState, type CSSProperties } from 'react'
+import { flushSync } from 'react-dom'
+import { ArrowLeft, Lock, LockOpen, X, ZoomIn } from 'lucide-react'
+import officeImg from '../../assets/escenarios/fisico/oficina.webp'
 import ScenarioLayout from '../../components/EscenarioLayout'
 import FlashOverlay from '../../components/ui/FlashOverlay'
 import Instructions from '../../components/ui/Instrucciones'
@@ -52,14 +55,15 @@ const TABS: Tab[] = [
 
 interface Document {
   nombre: string
+  // Porcentaje dentro de la zona libre del escritorio, a la izquierda del teclado.
   x: number
   rotacion: number
 }
 
 const DOCUMENTS: Document[] = [
-  { nombre: 'Contratos', x: 52, rotacion: -4 },
-  { nombre: 'Nóminas', x: 128, rotacion: 3 },
-  { nombre: 'Datos bancarios', x: 812, rotacion: -3 },
+  { nombre: 'Contratos', x: 0, rotacion: -5 },
+  { nombre: 'Nóminas', x: 35, rotacion: 3 },
+  { nombre: 'Datos bancarios', x: 70, rotacion: -2 },
 ]
 
 const SIGNALS: Signal[] = [
@@ -87,10 +91,7 @@ const SIGNALS: Signal[] = [
 ]
 
 const RULE =
-  '<b>Escritorio limpio y pantalla bloqueada.</b> Cada vez que dejas tu puesto,aunque sea cinco minutos, no debe quedar nada a la vista ni ninguna sesión abierta.'
-
-const WIDTH_TAB = 128
-const X_TABS = 244
+  '<b>Escritorio limpio y pantalla bloqueada.</b> Cada vez que dejas tu puesto, aunque sea cinco minutos, no debe quedar nada a la vista ni ninguna sesión abierta.'
 
 const WITHOUT_CLOSE: ReadonlySet<number> = new Set()
 
@@ -108,6 +109,10 @@ function SafeExit() {
   // Mientras dura, la escena vuelve a como estaba al empezar para que haya algo
   // que señalar.
   const [review, setReview] = useState(false)
+  // Sobre la foto el monitor es una miniatura; para leer y cerrar pestañas hay
+  // que acercarse, como quien se sienta frente a la pantalla.
+  const [zoomed, setZoomed] = useState(false)
+  const monitorRef = useRef<HTMLButtonElement>(null)
 
   const stampFlash = useFlashTransition()
 
@@ -119,7 +124,6 @@ function SafeExit() {
   const savedView = review ? WITHOUT_CLOSE : saved
   const blockedView = review ? false : blocked
   const activeView = review ? 0 : activeTab
-  const open = TABS.map((_, i) => i).filter((i) => !closedView.has(i))
 
   function closeTab(index: number) {
     if (final) return
@@ -139,6 +143,12 @@ function SafeExit() {
     setSaved(new Set(saved).add(index))
   }
 
+  function closeZoom() {
+    // El botón del monitor sigue inerte hasta que se aplica el cambio.
+    flushSync(() => setZoomed(false))
+    monitorRef.current?.focus()
+  }
+
   function toggleBlocking() {
     if (final) return
     setBlocked((was) => !was)
@@ -153,6 +163,7 @@ function SafeExit() {
       bloqueada: blocked,
     })
 
+    setZoomed(false)
     stampFlash.trigger(() => {
       // Lo que quedó a la vista se enumera tal cual: un "no completaste todo"
       // no dice qué se llevó puesto quien entre mañana.
@@ -193,12 +204,13 @@ function SafeExit() {
     setTabActive(0)
     setFinal(null)
     setReview(false)
+    setZoomed(false)
   }
 
   const context: Context = {
     antes: (
       <p>
-        La seguridad física pesa tanto como la digital. Lo que dejas a la vista al irte,una
+        La seguridad física pesa tanto como la digital. Lo que dejas a la vista al irte, una
         pantalla encendida, una carpeta abierta, no necesita que nadie te robe una contraseña:
         basta con mirar.
       </p>
@@ -215,268 +227,162 @@ function SafeExit() {
 
   const activePage = activeView !== null ? TABS[activeView] : undefined
 
-  // Un elemento, no un componente local: `function Escena()` aquí dentro haría que
-  // React remonte el SVG entero en cada clic (de ahí el "doble clic" en los papeles).
-  const scene = (
-    <svg
-      viewBox="0 0 1000 620"
-      className={styles.escena}
-      role="img"
-      aria-label="Tu puesto de trabajo al final del día"
-    >
-      <defs>
-        <linearGradient id="salida-pared" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#f4ebde" />
-          <stop offset="1" stopColor="#e6d8c3" />
-        </linearGradient>
-        <linearGradient id="salida-cielo" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#7f93bd" />
-          <stop offset="0.55" stopColor="#e0a07a" />
-          <stop offset="1" stopColor="#f5c98a" />
-        </linearGradient>
-        <linearGradient id="salida-mesa" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#c39a67" />
-          <stop offset="1" stopColor="#a97b48" />
-        </linearGradient>
-        <filter id="salida-sombra" x="-25%" y="-25%" width="150%" height="160%">
-          <feDropShadow dx="0" dy="6" stdDeviation="7" floodColor="#4a3418" floodOpacity="0.22" />
-        </filter>
-      </defs>
+  const close = zoomed && !final
 
-      <rect width="1000" height="470" fill="url(#salida-pared)" />
-      <rect y="462" width="1000" height="10" fill="#d6c4a9" />
-      <rect y="472" width="1000" height="148" fill="#c39a68" />
-
-      {/* Ventana: es lo que dice que ya anocheció, sin tener que escribirlo */}
-      <g filter="url(#salida-sombra)">
-        <rect x="58" y="92" width="188" height="150" rx="6" fill="#8a6a45" />
-        <rect x="66" y="100" width="172" height="134" fill="url(#salida-cielo)" />
-        <circle cx="152" cy="196" r="19" fill="#fbe3ad" opacity="0.9" />
-        <rect x="148" y="100" width="8" height="134" fill="#8a6a45" />
-        <rect x="66" y="163" width="172" height="8" fill="#8a6a45" />
-        <rect x="50" y="242" width="204" height="12" rx="4" fill="#a5825a" />
-      </g>
-
-      <g filter="url(#salida-sombra)">
-        <circle cx="884" cy="150" r="46" fill="#fbfaf7" stroke="#5c6470" strokeWidth="4" />
-        <line x1="884" y1="150" x2="886" y2="172" stroke="#5c6470" strokeWidth="5" strokeLinecap="round" />
-        <line x1="884" y1="150" x2="855" y2="133" stroke="#5c6470" strokeWidth="4" strokeLinecap="round" />
-        <circle cx="884" cy="150" r="4" fill="#5c6470" />
-      </g>
-
-      <rect x="30" y="410" width="940" height="28" rx="7" fill="url(#salida-mesa)" />
-      <rect x="30" y="410" width="940" height="8" rx="4" fill="#d3ab77" />
-      <rect x="76" y="438" width="848" height="132" fill="#96693b" />
-      <rect x="76" y="438" width="848" height="132" fill="none" stroke="#7c5529" strokeWidth="3" />
-
-      <g>
-        <rect x="640" y="462" width="252" height="86" rx="8" fill="#a97444" stroke="#7c5529" strokeWidth="3" />
-        <rect x="728" y="500" width="76" height="11" rx="5" fill="#5b3f1f" />
-        <circle cx="874" cy="505" r="7" fill="#5b3f1f" />
-        <text x="766" y="487" textAnchor="middle" className={styles.rotuloMueble}>
-          CAJÓN CON LLAVE
-        </text>
-        <text x="766" y="536" textAnchor="middle" className={styles.contadorMueble}>
-          {savedView.size} de {DOCUMENTS.length} guardados
-        </text>
-      </g>
-
-      <g filter="url(#salida-sombra)">
-        <rect x="472" y="374" width="56" height="30" fill="#454b54" />
-        <rect x="430" y="398" width="140" height="14" rx="7" fill="#3a3f47" />
-        <rect x="228" y="52" width="544" height="332" rx="14" fill="#2a2f36" />
-      </g>
-
-      {/* Bloqueada, no se dibuja la ventana: no se puede cerrar una pestaña "a través" de la pantalla de bloqueo. */}
-      <g>
-        <rect x="240" y="64" width="520" height="308" rx="6" fill="#1a1e23" />
-
-        {blockedView ? (
-          <g>
-            <rect x="240" y="64" width="520" height="308" rx="6" fill="#12161a" />
-            <path
-              d="M 487 244 v -14 a 13 13 0 0 1 26 0 v 14"
-              fill="none"
-              stroke="#16a34a"
-              strokeWidth="6"
-            />
-            <rect x="478" y="244" width="44" height="34" rx="6" fill="#16a34a" />
-            <circle cx="500" cy="260" r="4" fill="#12161a" />
-            <text x="500" y="308" textAnchor="middle" className={styles.pantallaBloqueada}>
-              SESIÓN BLOQUEADA
-            </text>
-          </g>
-        ) : (
-          <>
-        {/* Cada pestaña se posiciona por su índice entre las abiertas: al cerrar una del medio, las demás se deslizan. */}
-        <g data-signal="pestanas">
-          {TABS.map((tab, i) => {
-            const position = open.indexOf(i)
-            if (position === -1) return null
-
-            const active = activeView === i
-            const x = X_TABS + position * WIDTH_TAB
-
-            return (
-              <g
-                key={tab.corto}
-                className={styles.pestana}
-                style={{ transform: `translateX(${x}px)` }}
+  const browser = (
+    <div className={styles.navegador}>
+      <div className={styles.pestanas}>
+        {TABS.map((tab, i) => {
+          if (closedView.has(i)) return null
+          return (
+            <div key={tab.corto} className={activeView === i ? styles.pestanaActiva : styles.pestana}>
+              <button type="button" className={styles.pestanaNombre} onClick={() => setTabActive(i)}>
+                <span className={styles.pestanaPunto} style={{ background: tab.color }} aria-hidden />
+                <span className={styles.pestanaTexto}>{tab.corto}</span>
+              </button>
+              <button
+                type="button"
+                className={styles.pestanaCerrar}
+                onClick={() => closeTab(i)}
+                aria-label={`Cerrar la pestaña ${tab.titulo}`}
               >
-                <g className={styles.hotspot} onClick={() => setTabActive(i)}>
-                  <rect
-                    x="0"
-                    y="72"
-                    width="122"
-                    height="34"
-                    rx="6"
-                    fill={active ? '#f7f7f5' : '#272c33'}
-                  />
-                  <circle cx="16" cy="89" r="5" fill={tab.color} />
-                  <text
-                    x="30"
-                    y="94"
-                    className={active ? styles.pestanaTextoActiva : styles.pestanaTexto}
-                  >
-                    {tab.corto}
-                  </text>
-                </g>
+                <X aria-hidden strokeWidth={2.5} />
+              </button>
+            </div>
+          )
+        })}
+      </div>
 
-                {/* La ✕ va en su propio hueco, fuera del texto: antes se dibujaba encima del título. */}
-                <g
-                  className={styles.cerrar}
-                  onClick={() => closeTab(i)}
-                  role="button"
-                  aria-label={`Cerrar la pestaña ${tab.titulo}`}
-                >
-                  <circle cx="104" cy="89" r="13" fill="transparent" />
-                  <circle cx="104" cy="89" r="11" className={styles.cerrarHalo} />
-                  <path
-                    d="M 99 84 L 109 94 M 109 84 L 99 94"
-                    stroke={active ? '#3d434b' : '#c8cfd7'}
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    style={{ pointerEvents: 'none' }}
-                  />
-                </g>
-              </g>
-            )
-          })}
-        </g>
+      <div className={styles.direccion}>
+        <p className={styles.direccionTexto}>{activePage ? `https://${activePage.url}` : '\u00a0'}</p>
+      </div>
 
-        <rect x="240" y="110" width="520" height="34" fill="#23282f" />
-        <rect x="252" y="116" width="496" height="22" rx="11" fill="#31373f" />
-        <text x="500" y="132" textAnchor="middle" className={styles.url}>
-          {activePage ? `https://${activePage.url}` : ''}
-        </text>
-
-        <rect x="240" y="144" width="520" height="228" fill="#f7f7f5" />
-
-        {activePage ? (
-          <g>
-            <text x="268" y="186" className={styles.paginaTitulo}>
-              {activePage.titulo}
-            </text>
-            <line x1="268" y1="200" x2="732" y2="200" stroke="#e3e3df" strokeWidth="2" />
-            {activePage.contenido.map((line, i) => (
-              <text key={line} x="268" y={232 + i * 28} className={styles.paginaLinea}>
-                {line}
-              </text>
-            ))}
-          </g>
-        ) : (
-          <text x="500" y="262" textAnchor="middle" className={styles.paginaVacia}>
-            No queda ninguna pestaña abierta
-          </text>
-        )}
-          </>
-        )}
-      </g>
-
-      <g data-signal="papeles">
-        {DOCUMENTS.map((document, i) =>
-          savedView.has(i) ? null : (
-            <g
-              key={document.nombre}
-              className={styles.hotspot}
-              onClick={() => saveDocument(i)}
-              role="button"
-              aria-label={`Guardar ${document.nombre} en el cajón`}
-              transform={`rotate(${document.rotacion} ${document.x + 54} 350)`}
-            >
-              <g filter="url(#salida-sombra)">
-                <rect x={document.x} y="294" width="108" height="116" rx="5" className={styles.papel} />
-              </g>
-              <line x1={document.x + 14} y1="318" x2={document.x + 94} y2="318" className={styles.papelLinea} />
-              <line x1={document.x + 14} y1="334" x2={document.x + 94} y2="334" className={styles.papelLinea} />
-              <line x1={document.x + 14} y1="350" x2={document.x + 72} y2="350" className={styles.papelLinea} />
-              <rect x={document.x + 1} y="374" width="106" height="35" className={styles.papelBanda} />
-              <text x={document.x + 54} y="397" textAnchor="middle" className={styles.papelRotulo}>
-                {document.nombre}
-              </text>
-              <rect
-                x={document.x - 6}
-                y="288"
-                width="120"
-                height="128"
-                rx="9"
-                className={`${styles.revelable} ${styles.contorno}`}
-              />
-              <g className={styles.revelable} style={{ pointerEvents: 'none' }}>
-                <rect x={document.x - 18} y="252" width="144" height="28" rx="14" className={styles.pastilla} />
-                <text x={document.x + 54} y="271" textAnchor="middle" className={styles.pastillaTexto}>
-                  Guardar en el cajón
-                </text>
-              </g>
-            </g>
-          ),
-        )}
-      </g>
-
-      {/* Teclado: bloquear la sesión es lo que se hace desde él, así que el
-          control es el teclado y no un botón flotante inventado. */}
-      <g
-        data-signal="bloqueo"
-        className={styles.hotspot}
-        onClick={toggleBlocking}
-        role="button"
-        aria-label={blockedView ? 'Desbloquear la sesión' : 'Bloquear la sesión'}
-      >
-        <g filter="url(#salida-sombra)">
-          <rect x="378" y="386" width="244" height="34" rx="7" fill="#e6e7ea" stroke="#b9bcc3" strokeWidth="2" />
-        </g>
-        {[0, 1, 2].map((row) =>
-          Array.from({ length: 13 }, (_, column) => (
-            <rect
-              key={`${row}-${column}`}
-              x={386 + column * 17.6 + (row === 2 ? 6 : 0)}
-              y={391 + row * 9}
-              width="14"
-              height="7"
-              rx="2"
-              fill="#c7cad0"
-            />
-          )),
-        )}
-        <rect x="440" y="418" width="120" height="7" rx="3" fill="#c7cad0" />
-        <circle cx="612" cy="393" r="4" className={blockedView ? styles.pilotoOk : styles.pilotoOff} />
-
-        <rect x="368" y="378" width="264" height="52" rx="10" className={`${styles.revelable} ${styles.contorno}`} />
-
-        {/* Con la sesión bloqueada no se rotula nada: ya lo dice la pantalla, y
-            repetirlo en la madera del escritorio no es algo que exista ahí. */}
-        {!blockedView && (
-          <text x="500" y="452" textAnchor="middle" className={styles.rotuloTeclado}>
-            Bloquear la sesión · Win + L
-          </text>
-        )}
-      </g>
-    </svg>
+      {activePage ? (
+        <div className={styles.pagina}>
+          <p className={styles.paginaTitulo}>{activePage.titulo}</p>
+          {activePage.contenido.map((line) => (
+            <p key={line} className={styles.paginaLinea}>
+              {line}
+            </p>
+          ))}
+        </div>
+      ) : (
+        <p className={styles.paginaVacia}>No queda ninguna pestaña abierta</p>
+      )}
+    </div>
   )
 
   const screen = (
-    <div className={styles.escenaMarco}>
-      {scene}
+    <div className={styles.oficinaMarco}>
+      <div
+        className={styles.oficina}
+        onKeyDown={(event) => {
+          if (event.key === 'Escape' && close) closeZoom()
+        }}
+      >
+        <img
+          src={officeImg}
+          alt="Tu puesto de trabajo al atardecer: monitor, teclado y un archivador con llave junto a la ventana"
+          className={styles.oficinaFoto}
+        />
+
+        {/* Con la pantalla acercada, lo demás queda detrás del fondo oscuro y
+            fuera del alcance del teclado, como en cualquier diálogo. */}
+        <div className="contents" inert={close}>
+          <div data-signal="papeles" className={styles.papeles}>
+            {DOCUMENTS.map((document, i) =>
+              savedView.has(i) ? null : (
+                <button
+                  key={document.nombre}
+                  type="button"
+                  className={`${styles.papel} ${styles.control}`}
+                  style={{ left: `${document.x}%`, '--giro': `${document.rotacion}deg` } as CSSProperties}
+                  onClick={() => saveDocument(i)}
+                  aria-label={`Guardar ${document.nombre} en el cajón`}
+                >
+                  <span className={styles.papelHoja} aria-hidden />
+                  <span className={`${styles.rotulo} ${styles.papelRotulo}`}>{document.nombre}</span>
+                </button>
+              ),
+            )}
+          </div>
+
+          <p className={`${styles.rotulo} ${styles.cajon}`}>
+            Cajón con llave
+            <span className={`${styles.cajonDetalle} tabular-nums`}>
+              {savedView.size} de {DOCUMENTS.length} guardados
+            </span>
+          </p>
+
+          {/* Bloquear la sesión es lo que se hace desde el teclado, así que el
+              control vive sobre el teclado de la foto. */}
+          <button
+            type="button"
+            data-signal="bloqueo"
+            className={`${styles.teclado} ${styles.control}`}
+            onClick={toggleBlocking}
+            aria-label={blockedView ? 'Desbloquear la sesión' : 'Bloquear la sesión'}
+          >
+            <span className={styles.rotulo} aria-hidden>
+              {blockedView ? (
+                <>
+                  <LockOpen className={styles.rotuloIcono} /> Desbloquear
+                </>
+              ) : (
+                <>
+                  <Lock className={styles.rotuloIcono} /> Bloquear
+                  <span className={styles.soloAncho}> la sesión · Win + L</span>
+                </>
+              )}
+            </span>
+          </button>
+
+          {!blockedView && !final && (
+            <button
+              ref={monitorRef}
+              type="button"
+              className={`${styles.pantallaBoton} ${styles.control}`}
+              onClick={() => setZoomed(true)}
+              aria-label="Acercarte a la pantalla"
+            >
+              <span className={styles.rotulo} aria-hidden>
+                <ZoomIn className={styles.rotuloIcono} /> Ver la pantalla
+              </span>
+            </button>
+          )}
+        </div>
+
+        {close && <div className={styles.fondoCerca} onClick={closeZoom} aria-hidden />}
+
+        {/* Un solo navegador: miniatura inerte sobre el monitor, o acercado y
+            usable. Bloqueada, no hay navegador que tocar a través del bloqueo. */}
+        <div
+          data-signal="pestanas"
+          className={close ? styles.pantallaCerca : styles.pantalla}
+          inert={!close}
+          aria-hidden={!close}
+        >
+          {blockedView ? (
+            <div className={styles.bloqueo}>
+              <Lock aria-hidden />
+              <p>SESIÓN BLOQUEADA</p>
+            </div>
+          ) : (
+            browser
+          )}
+        </div>
+
+        {close && (
+          <button
+            type="button"
+            autoFocus
+            className={`${styles.rotulo} ${styles.volver} ${styles.control}`}
+            onClick={closeZoom}
+          >
+            <ArrowLeft className={styles.rotuloIcono} aria-hidden /> Volver al escritorio
+          </button>
+        )}
+      </div>
       <FlashOverlay active={stampFlash.active} />
     </div>
   )
@@ -530,9 +436,10 @@ function SafeExit() {
         }
         pista={
           <p>
-            Cada pestaña se cierra con su <strong>✕</strong>, como en tu navegador. Los documentos
-            se guardan con un clic y se van al cajón. La sesión se bloquea desde el teclado. Puedes
-            irte cuando quieras: lo que dejes a la vista, ahí queda.
+            Toca el monitor para acercarte: cada pestaña se cierra con su <strong>✕</strong>, como
+            en tu navegador. Los documentos se guardan con un clic y se van al cajón. La sesión se
+            bloquea desde el teclado. Puedes irte cuando quieras: lo que dejes a la vista, ahí
+            queda.
           </p>
         }
       />
