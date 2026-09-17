@@ -44,7 +44,7 @@ const CHAT: ScreenView = {
   volverLabel: 'Salió del chat sin contestar',
 }
 
-// La visita: lo que en el espejo era imposible, aquí ocurre sin drama —la puerta se abre y es el departamento de las fotos.
+// La visita: lo que en el espejo era imposible, aquí ocurre sin drama,la puerta se abre y es el departamento de las fotos.
 const VISIT: ScreenView = {
   kind: 'web',
   app: 'Portal Inmobiliario',

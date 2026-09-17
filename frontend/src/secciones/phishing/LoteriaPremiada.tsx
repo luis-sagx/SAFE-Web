@@ -11,7 +11,7 @@ import { ACCOUNT_FAKE, IDENTITY_FAKE } from '../../lib/identidadFicticia'
 import lotteryPrizeImg from '../../assets/escenarios/phishing/premio-loteria.webp'
 
 // Anzuelo no técnico (sin dominio casi idéntico ni clon difícil de distinguir): la señal decisiva
-// no está en la pantalla, se responde con "¿yo jugué?" — de ahí la dificultad 1.
+// no está en la pantalla, se responde con "¿yo jugué?", de ahí la dificultad 1.
 
 const FAKE_URL = 'http://loteria-pacifico-premios.online/reclamo'
 

@@ -22,7 +22,7 @@ describe('calculateProgress', () => {
   });
 
   // La regla central del gating: no importa el orden en que la base devuelva
-  // las filas, ni cuántas veces se repita un escenario — solo cuenta la
+  // las filas, ni cuántas veces se repita un escenario, solo cuenta la
   // corrida con el finishedAt más tardío de cada uno.
   it('usa la última corrida de cada escenario sin importar el orden de llegada', () => {
     const progress = calculateProgress('phishing', 1, 1, [

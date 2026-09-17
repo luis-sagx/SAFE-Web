@@ -77,7 +77,7 @@ function ScratchTicket({
     ctx.fillRect(0, 0, width, height)
 
     // Grano del troquelado: sin él el foil parece un degradado de software.
-    // El ruido es determinista a propósito — no hay nada que sortear aquí, y
+    // El ruido es determinista a propósito, no hay nada que sortear aquí, y
     // así la lámina se repinta idéntica tras un resize o un cambio de tema.
     const speck = grain(0x5afeb0)
     ctx.fillStyle = 'rgba(255,255,255,0.35)'

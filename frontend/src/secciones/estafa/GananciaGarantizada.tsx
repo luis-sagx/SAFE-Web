@@ -6,7 +6,7 @@ import type { Signal } from '../../components/ui/PanelVeredicto'
 import type { Story } from '../../hooks/useStoryEngine'
 import { ACCOUNT_FAKE, IDENTITY_FAKE } from '../../lib/identidadFicticia'
 
-/** El más difícil: el primer retiro sí llega —de verdad— porque esa es toda la inversión del estafador,
+/** El más difícil: el primer retiro sí llega,de verdad, porque esa es toda la inversión del estafador,
  *  compra tu confianza para la entrega grande. Se gana sabiendo una regla, no desconfiando de la pantalla:
  *  ninguna inversión garantiza rentabilidad, y el dinero real no cobra por dejarte sacarlo. */
 

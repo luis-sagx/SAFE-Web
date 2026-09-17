@@ -181,8 +181,8 @@
   }
 }
 
-/* Se conserva el desvanecido —es opacidad, no movimiento, y es lo que hace que
-   el aviso se quite solo— y se van los recorridos. */
+/* Se conserva el desvanecido,es opacidad, no movimiento, y es lo que hace que
+   el aviso se quite solo, y se van los recorridos. */
 @media (prefers-reduced-motion: reduce) {
   .disco,
   .disco::after,

@@ -287,7 +287,7 @@ function EmailContent({ recibido: received, carpetas: folders }: { recibido: str
           </span>
           <span className={styles.attachmentNombre}>
             Factura_004521.pdf.vbs
-            {/* 12 KB: un script pesa unos pocos KB, no lo que pesa un PDF real — señal implícita. */}
+            {/* 12 KB: un script pesa unos pocos KB, no lo que pesa un PDF real, señal implícita. */}
             <span className={styles.attachmentPeso}>12 KB</span>
           </span>
         </HotspotButton>

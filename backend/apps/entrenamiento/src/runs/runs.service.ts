@@ -111,7 +111,7 @@ export class RunsService {
   }
 
   /// Atestación para el certificado: comprueba TODOS los módulos que declara
-  /// `THRESHOLDS` —no un número fijo— y firma un pase de un solo salto que
+  /// `THRESHOLDS` (no un número fijo) y firma un pase de un solo salto que
   /// `identidad` verificará para emitirlo. Nunca lleva nombre ni correo: solo
   /// lo que el análisis ya conoce del participante (ver `JwtPayload`).
   ///
@@ -158,7 +158,7 @@ export class RunsService {
   ///
   /// Sale el código pseudónimo (P001), nunca un dato personal: no hay `join`
   /// con el participante ni forma de hacerlo. Los datos personales viven en
-  /// otro servicio, en otro schema, bajo otro rol de Postgres — este método no
+  /// otro servicio, en otro schema, bajo otro rol de Postgres, este método no
   /// podría filtrarlos aunque se escribiera mal.
   async results(): Promise<RunResult[]> {
     const runs = await this.prisma.scenarioRun.findMany({

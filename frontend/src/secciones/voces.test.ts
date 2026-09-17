@@ -61,8 +61,8 @@ const DASHES: Record<string, Story<ScreenNode>> = {
 }
 
 /// Lo que se oye: lo que dice quien llama y las notas de voz que manda. Las
-/// líneas propias no se sintetizan —en una llamada de verdad tampoco te oyes a
-/// ti mismo por el altavoz— y las notas propias tampoco: nadie se escucha los
+/// líneas propias no se sintetizan,en una llamada de verdad tampoco te oyes a
+/// ti mismo por el altavoz, y las notas propias tampoco: nadie se escucha los
 /// audios que acaba de mandar.
 const spoken = new Set<string>()
 const LINES = Object.entries(DASHES).flatMap(([scenario, story]) =>

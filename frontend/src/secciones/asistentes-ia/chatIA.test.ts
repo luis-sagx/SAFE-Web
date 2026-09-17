@@ -11,7 +11,7 @@ const NOMBRE: SensitiveDatum = {
 }
 const CORREO: SensitiveDatum = { id: 'correo', tipo: 'texto', etiqueta: 'Correo', valor: 'paola.guaman@safeweb.com' }
 
-describe('evaluateDatum — números (cédula, cuenta, teléfono)', () => {
+describe('evaluateDatum, números (cédula, cuenta, teléfono)', () => {
   it('el número real completo es fuga, aunque venga con espacios o guiones', () => {
     expect(evaluateDatum('mi cédula es 1799999980', CEDULA).nivel).toBe('fuga')
     expect(evaluateDatum('mi cédula es 179-999-9980', CEDULA).nivel).toBe('fuga')
@@ -20,7 +20,7 @@ describe('evaluateDatum — números (cédula, cuenta, teléfono)', () => {
 
   // El caso que el issue pide resolver a propósito: un número inventado que
   // solo tiene la FORMA de una cédula (10 dígitos) nunca debe marcarse como
-  // fuga — un detector por regex de "10 dígitos" sí caería en esto.
+  // fuga, un detector por regex de "10 dígitos" sí caería en esto.
   it('un número inventado con la misma forma (10 dígitos) no es fuga', () => {
     expect(evaluateDatum('mi cédula es 1234567890', CEDULA).nivel).toBe('seguro')
     expect(evaluateDatum('uso 0000000000 como ejemplo', CEDULA).nivel).toBe('seguro')
@@ -35,7 +35,7 @@ describe('evaluateDatum — números (cédula, cuenta, teléfono)', () => {
   })
 })
 
-describe('evaluateDatum — nombre completo', () => {
+describe('evaluateDatum, nombre completo', () => {
   it('nombre y apellido reales juntos es fuga', () => {
     expect(evaluateDatum('soy Paola Guamán', NOMBRE).nivel).toBe('fuga')
     expect(evaluateDatum('SOY PAOLA GUAMAN', NOMBRE).nivel).toBe('fuga') // sin tilde y en mayúsculas
@@ -58,7 +58,7 @@ describe('evaluateDatum — nombre completo', () => {
   })
 })
 
-describe('evaluateDatum — texto (correo, cifras institucionales, fechas)', () => {
+describe('evaluateDatum, texto (correo, cifras institucionales, fechas)', () => {
   it('el correo real exacto es fuga', () => {
     expect(evaluateDatum('mi correo es paola.guaman@safeweb.com', CORREO).nivel).toBe('fuga')
     expect(evaluateDatum('Mi Correo Es PAOLA.GUAMAN@SAFEWEB.COM', CORREO).nivel).toBe('fuga')

@@ -27,7 +27,7 @@ function RequireAuth() {
   // Primer ingreso, o pidió que volviera a aparecer (ver ícono ⓘ): manda a la
   // bienvenida antes que a cualquier otra pantalla. onboardingDismissed cubre
   // la sesión actual: si acaba de continuar dejando el checkbox desmarcado,
-  // igual puede salir ahora — el flag desmarcado solo reactiva el aviso en el
+  // igual puede salir ahora, el flag desmarcado solo reactiva el aviso en el
   // próximo ingreso, no debe atraparlo aquí.
   if (
     participant &&

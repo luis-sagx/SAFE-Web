@@ -43,7 +43,7 @@ const context: Context = {
 }
 
 export default function UsbTrap() {
-  return <ScenarioStory escenarioId="fisico/trampa-usb" resumen="USB abandonado — decide qué hacer con él" contexto={context}
+  return <ScenarioStory escenarioId="fisico/trampa-usb" resumen="USB abandonado, decide qué hacer con él" contexto={context}
     nota="Un USB encontrado no es un objeto perdido que debas conectar ni llevarte." story={STORY} senales={SIGNALS}
     rule="<b>No conectes ni recojas dispositivos desconocidos.</b> Déjalos donde están y avisa al área responsable."
     restartLabel="Intentar de nuevo" cuandoTermina="Cuando elijas qué hacer con el USB. La primera decisión cierra el escenario."

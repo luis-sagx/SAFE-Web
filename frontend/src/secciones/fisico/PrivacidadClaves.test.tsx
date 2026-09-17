@@ -21,9 +21,9 @@ describe('PrivacidadClaves', () => {
   it('abre con las tres aplicaciones y la sesión desbloqueada', () => {
     const container = start(<PasswordPrivacy />)
 
-    expect(within(container).getByRole('region', { name: 'Bóveda Andes — Mis credenciales' })).toBeDefined()
+    expect(within(container).getByRole('region', { name: 'Bóveda Andes, Mis credenciales' })).toBeDefined()
     expect(within(container).getByRole('region', { name: 'Explorador de archivos' })).toBeDefined()
-    expect(within(container).getByRole('region', { name: 'Navegador — Correo Andes' })).toBeDefined()
+    expect(within(container).getByRole('region', { name: 'Navegador, Correo Andes' })).toBeDefined()
     expect(within(container).getAllByRole('button', { name: /^Cerrar / })).toHaveLength(3)
   })
 
@@ -44,8 +44,8 @@ describe('PrivacidadClaves', () => {
     expect(within(container).getByRole('button', { name: 'Archivos' })).toBeDefined()
     expect(within(container).getByRole('button', { name: 'Navegador' })).toBeDefined()
 
-    const vault = within(container).getByRole('region', { name: 'Bóveda Andes — Mis credenciales' })
-    const email = within(container).getByRole('region', { name: 'Navegador — Correo Andes' })
+    const vault = within(container).getByRole('region', { name: 'Bóveda Andes, Mis credenciales' })
+    const email = within(container).getByRole('region', { name: 'Navegador, Correo Andes' })
     fireEvent.click(within(container).getByRole('button', { name: 'Credenciales' }))
     expect(Number(vault.style.zIndex)).toBeGreaterThan(Number(email.style.zIndex))
 
@@ -57,8 +57,8 @@ describe('PrivacidadClaves', () => {
   it('pulsar una ventana la trae al frente', () => {
     const container = start(<PasswordPrivacy />)
 
-    const vault = within(container).getByRole('region', { name: 'Bóveda Andes — Mis credenciales' })
-    const email = within(container).getByRole('region', { name: 'Navegador — Correo Andes' })
+    const vault = within(container).getByRole('region', { name: 'Bóveda Andes, Mis credenciales' })
+    const email = within(container).getByRole('region', { name: 'Navegador, Correo Andes' })
     // El correo arranca al frente: es la última de la pila.
     expect(Number(email.style.zIndex)).toBeGreaterThan(Number(vault.style.zIndex))
 

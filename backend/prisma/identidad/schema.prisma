@@ -2,7 +2,7 @@
 //
 // Regla de privacidad: nombre, correo y cédula sirven ÚNICAMENTE para que el
 // participante entre a la plataforma con algo familiar. Nunca salen hacia el
-// análisis — de hecho ya no pueden: las corridas viven en otro schema, con
+// análisis, de hecho ya no pueden: las corridas viven en otro schema, con
 // otro rol de base de datos, en un servicio que no tiene ningún modelo ni
 // ningún permiso para leer esta tabla. Esa separación estructural es la que
 // garantiza el anonimato del dato de análisis, no un borrado posterior.
@@ -41,7 +41,7 @@ model Participant {
   // vive en `nombre`, `apellido` y `email` es AES-256-GCM, no texto plano.
   // La aplicación cifra al escribir y descifra al leer con
   // PII_ENCRYPTION_KEY (.env); alguien que se lleve solo el volumen de
-  // Postgres —un backup, un dump— no puede leerlos.
+  // Postgres (un backup, un dump) no puede leerlos.
   //
   // Una fila creada antes de este cambio, si todavía no pasó por
   // `backfill-pii.mts`, guarda estos tres campos en texto plano: `descifrar()`

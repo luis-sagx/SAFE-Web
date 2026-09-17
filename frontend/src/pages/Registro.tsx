@@ -32,13 +32,13 @@ function Registration() {
   // al principio, al final, ni dos seguidos: lo mismo que "María José" tiene
   // y "nombre " o "nombre  José" no.
   // Duplicado a propósito de `register.dto.ts` (NOMBRE_PATRON): es el mismo
-  // caso que la cédula, no el del dominio del correo — aquí sí hace falta la
+  // caso que la cédula, no el del dominio del correo, aquí sí hace falta la
   // regla en el cliente para el error antes de enviar.
   const NAME_PATTERN = /^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+(?: [A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+)*$/;
   const NAME_PATTERN_MESSAGE = "Solo se permiten letras y espacios entre palabras.";
-  // En vivo y no al salir del campo: a diferencia de "muy corto" —que se
+  // En vivo y no al salir del campo: a diferencia de "muy corto",que se
   // resuelve solo con seguir escribiendo, y por eso sí espera al blur para no
-  // regañar a medio nombre—, un número o símbolo no se arregla solo. Que siga
+  // regañar a medio nombre,, un número o símbolo no se arregla solo. Que siga
   // ahí una tecla más tarde no es información nueva; avisar de inmediato sí
   // lo es. Una sola letra ya cumple el patrón (son "una o más letras"), así
   // que esto no compite con el aviso de mínimo: nunca se disparan los dos a
@@ -61,7 +61,7 @@ function Registration() {
   const invalidEmail = emailTouched && email.length > 0 && !EMAIL_FORMAT.test(email);
 
   // Misma política que `register.dto.ts`: 8 caracteres, una mayúscula, un
-  // número y un carácter especial. Repetida aquí a propósito —a diferencia
+  // número y un carácter especial. Repetida aquí a propósito,a diferencia
   // del dominio del correo, esta regla sí necesita reflejarse en el cliente
   // para el indicador de fortaleza en vivo, que no tiene ningún equivalente
   // en el servidor al que consultarle mientras se escribe.

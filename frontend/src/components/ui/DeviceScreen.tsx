@@ -126,7 +126,7 @@ export type ScreenView =
         }
         // Solo en el mensaje que se arma a partir de `entradaLibre` al
         // enviarlo: los tramos se pintan como JSX de verdad, no como el HTML
-        // fijo de `text` — ver por qué en el `.map` que los consume.
+        // fijo de `text`, ver por qué en el `.map` que los consume.
         segmentosEnviados?: { texto: string; sensible?: { id: string; etiqueta: string } }[]
       }[]
       senalRemitente?: string
@@ -146,8 +146,8 @@ export type ScreenView =
       senalBorrador?: string
       enviarGoto?: string
       enviarLabel?: string
-      // Campo de texto real: el participante escribe su propio mensaje —o lo
-      // pega, ver BlocNotas.tsx— en vez de elegir entre burbujas ya
+      // Campo de texto real: el participante escribe su propio mensaje,o lo
+      // pega, ver BlocNotas.tsx, en vez de elegir entre burbujas ya
       // redactadas (issue #184/#185, ver chatIA.ts FreeTextComposer). Manda
       // sobre `respuestas`/`borrador`/`composerGoto`: son formas alternativas
       // de decidir, un nodo usa una sola a la vez.
@@ -256,7 +256,7 @@ function DeviceScreen({
   // Lo que se escribió en `entradaLibre` y, una vez tocado "Enviar", el
   // marcador de que ya se mandó. Vive aquí (no en el motor del guion) porque
   // el nodo al que se salta tras enviar es siempre uno de los finales fijos
-  // (fuga/parcial/seguro) — reutilizan esta misma vista, y lo que cambia
+  // (fuga/parcial/seguro), reutilizan esta misma vista, y lo que cambia
   // entre "escribiendo" y "ya enviado" es únicamente este estado. `freeText`
   // no se congela al enviar: el campo desaparece en cuanto `sent` es true, así
   // que seguir leyéndolo en vivo para pintar el mensaje enviado es tan
@@ -264,8 +264,8 @@ function DeviceScreen({
   const [freeText, setFreeText] = useState('')
   const [sent, setSent] = useState(false)
   const freeTextRef = useRef<HTMLTextAreaElement>(null)
-  // Crece con lo que se escribe o se pega —hasta el tope que marca el CSS,
-  // donde recién entra el scroll— para no obligar a desplazarse dentro de un
+  // Crece con lo que se escribe o se pega,hasta el tope que marca el CSS,
+  // donde recién entra el scroll, para no obligar a desplazarse dentro de un
   // campo chico cuando se pega un mensaje largo del bloc de notas.
   useEffect(() => {
     const el = freeTextRef.current
@@ -436,17 +436,17 @@ function DeviceScreen({
   }
 
   // Con entradaLibre, lo que de verdad se mandó (y la respuesta de la IA) no
-  // vive en `view.msgs` —ese es fijo por nodo, y lo que se escribió es
-  // dinámico— sino en el estado local `freeText`/`sent`. Se combinan acá, una
+  // vive en `view.msgs`,ese es fijo por nodo, y lo que se escribió es
+  // dinámico, sino en el estado local `freeText`/`sent`. Se combinan acá, una
   // sola vez, para que el resto del render (la lista de mensajes y el
   // cálculo de "cuál es nuevo") no tenga que saber que existen los dos
   // orígenes. El mensaje enviado lleva además `segmentosEnviados`: a
-  // diferencia del resto —HTML fijo pintado con `dangerouslySetInnerHTML`—,
+  // diferencia del resto,HTML fijo pintado con `dangerouslySetInnerHTML`,,
   // este viene de texto que el participante escribió en vivo, y el repaso de
   // señales necesita resaltar el tramo exacto (el nombre, la cédula…) dentro
   // de él. React reconstruye el contenido de un `dangerouslySetInnerHTML` en
-  // cada repintado —incluida cualquier marca que el repaso le haya agregado a
-  // mano—, así que esos tramos van como JSX de verdad (ver el `.map` de
+  // cada repintado,incluida cualquier marca que el repaso le haya agregado a
+  // mano,, así que esos tramos van como JSX de verdad (ver el `.map` de
   // abajo), no como texto.
   const messages =
     view.entradaLibre && sent

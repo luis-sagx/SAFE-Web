@@ -5,7 +5,7 @@ import type { ScreenView } from './DeviceScreen'
 import styles from './DeviceScreen.module.css'
 
 // Pantalla de llamada: se decide con gestos (contestar/rechazar/colgar/silenciar),
-// no con una lista de opciones, y manda el audio — la transcripción es solo apoyo.
+// no con una lista de opciones, y manda el audio, la transcripción es solo apoyo.
 type Call = Extract<ScreenView, { kind: 'call' }>
 
 function clock(seconds: number) {

@@ -7,7 +7,7 @@ import type { Story } from '../../hooks/useStoryEngine'
 import { IDENTITY_FAKE } from '../../lib/identidadFicticia'
 
 // Espeja a antifraude-banco: misma llamada, pero legítima y pide no dar el
-// código ni a ellos. Existe para no enseñar "cuelga siempre" — colgar sin
+// código ni a ellos. Existe para no enseñar "cuelga siempre", colgar sin
 // comprobar nada queda como parcial, no como acierto pleno.
 
 const NUMBER = '+593 4 373 8000'

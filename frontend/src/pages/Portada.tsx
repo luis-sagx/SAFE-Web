@@ -138,8 +138,8 @@ function Portada() {
               una promesa
             </h1>
             <p className="mt-6 max-w-prose text-lg leading-relaxed text-body">
-              SAFE-Web es un entrenamiento con engaños simulados —correos,
-              mensajes, llamadas, compras y trampas de oficina— como los que
+              SAFE-Web es un entrenamiento con engaños simulados,correos,
+              mensajes, llamadas, compras y trampas de oficina, como los que
               circulan en Ecuador. Aquí practicas la decisión sin arriesgar tu
               dinero ni tus cuentas.
             </p>

@@ -9,7 +9,7 @@ import { NormalizeEmail, TransformText } from '@comun';
 import { IsEcuadorianId } from '../../cedula/cedula';
 import { IsAllowedDomain } from '../dominios-correo';
 
-/// Solo letras (con tildes y ñ) y espacios entre palabras — y ningún espacio
+/// Solo letras (con tildes y ñ) y espacios entre palabras, y ningún espacio
 /// como primer o último carácter, ni dos seguidos: eso es lo que distingue un
 /// nombre compuesto real ("María José") de basura como " nombre" o "nombre  ".
 /// Dígitos, guiones, apóstrofes y el resto de la puntuación de código (`;`,
@@ -18,7 +18,7 @@ import { IsAllowedDomain } from '../dominios-correo';
 ///
 /// Duplicado a propósito en `frontend/src/pages/Registro.tsx`: es el mismo
 /// caso que `esCedulaEcuatoriana` (cedula.ts en los dos lados), no el del
-/// dominio de correo — aquí sí hace falta la regla en el cliente para el
+/// dominio de correo, aquí sí hace falta la regla en el cliente para el
 /// error antes de enviar, y no hay ningún endpoint al que consultarla.
 export const NAME_PATTERN =
   /^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+(?: [A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+)*$/;

@@ -11,7 +11,7 @@ import type { PrismaService } from '../prisma/prisma.service';
 import { encrypt } from '../pii/pii';
 
 // Clave de 32 bytes real y pepper cualquiera: los mismos que exige la
-// política de `pii.ts`, fijos para que las pruebas sean deterministas — no
+// política de `pii.ts`, fijos para que las pruebas sean deterministas, no
 // son secretos de ningún entorno real.
 const PII_KEY = 'Zm9vYmFyZm9vYmFyZm9vYmFyZm9vYmFyZm9vYmFyZm8=';
 const EMAIL_PEPPER = 'pepper-de-prueba';

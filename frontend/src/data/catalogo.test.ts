@@ -13,7 +13,7 @@ import {
 const SCENARIO_ID = /^[a-z0-9-]+\/[a-z0-9-]+$/
 
 // Copia deliberada de THRESHOLDS del backend (apps/entrenamiento/src/runs/
-// progreso.ts). El frontend no puede importarlo —son dos paquetes distintos— y
+// progreso.ts). El frontend no puede importarlo,son dos paquetes distintos, y
 // tampoco debe: el servidor no expone el total de escenarios justamente para
 // que un cliente modificado no pueda aprobarse falseando el denominador. Al
 // duplicarlo aquí, si alguien mueve el umbral sin mover el catálogo, este test
@@ -81,7 +81,7 @@ describe('catálogo de escenarios', () => {
   })
 
   // La forma del módulo completo: 8 escenarios, 6 de fraude y 2 legítimos. Los
-  // legítimos no son relleno — sin ellos el módulo enseñaría "desconfía de
+  // legítimos no son relleno, sin ellos el módulo enseñaría "desconfía de
   // todo" en vez de entrenar el criterio para distinguir.
   //
   // El 8 además es el denominador del gating: el backend exige 6 aprobados

@@ -13,7 +13,7 @@ interface ModuleCompletionModalProps {
 
 // Diálogo, no bloque fijo: se abre por elección de quien ya aprobó. Sin biblioteca de
 // modales (un <div role="dialog"> alcanza). El fondo que cierra es un <button> real, no
-// un <div onClick>, porque un <button> no admite el <div> del panel como hijo — va detrás.
+// un <div onClick>, porque un <button> no admite el <div> del panel como hijo, va detrás.
 function ModuleCompletionModal({ seccion: section, escenarios: scenarios, progreso: progress, onClose }: ModuleCompletionModalProps) {
   const closeRef = useRef<HTMLButtonElement>(null)
 

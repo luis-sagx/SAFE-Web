@@ -16,13 +16,13 @@ import {
 } from './chatIA'
 
 /** El más difícil: los datos son de una clienta (no de un compañero), y el camino limpio no termina en el
- *  primer mensaje —la IA ofrece completar un borrador ya usable a cambio del nombre y la cuenta, y resistir
+ *  primer mensaje,la IA ofrece completar un borrador ya usable a cambio del nombre y la cuenta, y resistir
  *  ese favor es lo que mide. Dar solo el nombre para el saludo queda como parcial.
  *
  *  Issue #184: en el primer paso, el nombre, la cuenta, el saldo y el teléfono reales de la clienta viven
- *  en un bloc de notas fijo junto al celular —la ficha del sistema de clientes—, y el participante escribe
+ *  en un bloc de notas fijo junto al celular,la ficha del sistema de clientes,, y el participante escribe
  *  su propio mensaje a la IA. El segundo paso (aceptar o no la oferta de "dejártela lista") se queda como
- *  burbujas: no es un ejercicio de redactar con cuidado, es resistir o no un favor — ceder ahí no depende
+ *  burbujas: no es un ejercicio de redactar con cuidado, es resistir o no un favor, ceder ahí no depende
  *  de cómo se escribe, sino de si se acepta. Lo que se escribió en el primer paso se resume como "(tu
  *  mensaje)" en las pantallas del segundo paso: seguir mostrándolo literal ahí habría exigido que el motor
  *  de guiones recuerde texto dinámico entre dos pantallas distintas, que es más de lo que este cambio
@@ -75,9 +75,9 @@ const CHAT = withFreeTextComposer(createAIChat('Redactor de respuestas · servic
 })
 
 // La ficha de la clienta en el sistema, con los datos reales que la respuesta al reclamo no necesitaba.
-const SOURCE_DOCUMENT = `Sistema de clientes — ficha de cuenta.\n\nClienta: ${NAME}\nCuenta: ${ACCOUNT}\nSaldo: ${BALANCE}\nTeléfono: ${PHONE}\n\nReclamo: cobro adicional de $45,00 este mes.`
+const SOURCE_DOCUMENT = `Sistema de clientes, ficha de cuenta.\n\nClienta: ${NAME}\nCuenta: ${ACCOUNT}\nSaldo: ${BALANCE}\nTeléfono: ${PHONE}\n\nReclamo: cobro adicional de $45,00 este mes.`
 
-// El borrador ya sirve para enviar (saludo neutro, cubre el cobro); lo único que "falta" es el nombre — y esa es la carnada.
+// El borrador ya sirve para enviar (saludo neutro, cubre el cobro); lo único que "falta" es el nombre, y esa es la carnada.
 const RESPONSE_GENERIC = [
   'Aquí tienes un borrador general:',
   '',
@@ -115,7 +115,7 @@ const RESPONSE_ONLY_NAME = mark(
 const RESPONSE_APPROVES_AS_IS =
   'Perfecto. Copia el borrador y completa el saludo con el nombre y los datos de la cuenta al enviarlo.'
 
-// Paso 2: el chat sigue con un resumen neutral del paso 1 (nunca el texto literal —ver nota arriba) y la oferta de la IA.
+// Paso 2: el chat sigue con un resumen neutral del paso 1 (nunca el texto literal,ver nota arriba) y la oferta de la IA.
 const GENERIC_CHAT = {
   ...createAIChat('Redactor de respuestas · servicio externo', OPENING, TIME, [], SITE),
   msgs: [
@@ -154,7 +154,7 @@ const STORY: Story<ScreenNode> = {
       signal(
         dato.id,
         'e_con_datos',
-        `Si tu mensaje incluyó <b>${dato.etiqueta}</b>: para explicar un cobro de $45 de más, la IA no lo necesitaba, y quedó en un servicio externo. (Pedirle a la IA que "no lo guarde" tampoco deshace que ya lo escribiste — el dato salió igual.)`,
+        `Si tu mensaje incluyó <b>${dato.etiqueta}</b>: para explicar un cobro de $45 de más, la IA no lo necesitaba, y quedó en un servicio externo. (Pedirle a la IA que "no lo guarde" tampoco deshace que ya lo escribiste, el dato salió igual.)`,
       ),
     ),
     verdict: 'Datos financieros de una clienta compartidos con la IA',
@@ -168,7 +168,7 @@ const STORY: Story<ScreenNode> = {
       signal(
         'borrador-enviado',
         'e_parcial_paso1',
-        'Quedó algún fragmento identificable —solo el nombre de pila, o los últimos dígitos de la cuenta— sin llegar al dato completo. No es un dato inventado: sigue siendo real, solo que a medias.',
+        'Quedó algún fragmento identificable,solo el nombre de pila, o los últimos dígitos de la cuenta, sin llegar al dato completo. No es un dato inventado: sigue siendo real, solo que a medias.',
       ),
     ],
     verdict: 'Quedó algo identificable, aunque no el dato completo',
@@ -225,7 +225,7 @@ const STORY: Story<ScreenNode> = {
       signal(
         'borrador-enviado',
         'n2_generico',
-        'Le contaste a la IA solo el motivo del reclamo — y cuando te ofreció "dejarla lista" a cambio del nombre y la cuenta, dijiste que así estaba bien. Nada de lo que le diste identifica a la clienta.',
+        'Le contaste a la IA solo el motivo del reclamo, y cuando te ofreció "dejarla lista" a cambio del nombre y la cuenta, dijiste que así estaba bien. Nada de lo que le diste identifica a la clienta.',
       ),
     ],
     verdict: 'Te quedaste con el borrador genérico',
@@ -238,7 +238,7 @@ const SIGNALS = [
   signal(
     'cuenta-en-juego',
     'n1',
-    'La IA te pregunta <b>qué reclama la clienta</b> y en qué tono responder. Tienes el sistema abierto al lado con su cuenta, su saldo y su teléfono — y nada de eso contesta esas dos preguntas.',
+    'La IA te pregunta <b>qué reclama la clienta</b> y en qué tono responder. Tienes el sistema abierto al lado con su cuenta, su saldo y su teléfono, y nada de eso contesta esas dos preguntas.',
   ),
 ]
 
@@ -266,11 +266,11 @@ function CustomerHistory() {
       story={STORY}
       senales={SIGNALS}
       rule={RULE}
-      documentoFuente={<BlocNotas titulo="Ficha.txt — Bloc de notas" texto={SOURCE_DOCUMENT} />}
+      documentoFuente={<BlocNotas titulo="Ficha.txt, Bloc de notas" texto={SOURCE_DOCUMENT} />}
       instruccion={
         <p className="text-lg leading-relaxed text-body">
-          Escribe el mensaje que le mandarías a la IA para pedirle ayuda —puedes copiar de la ficha— y
-          toca "Enviar", o —en el segundo paso— toca una de las respuestas del chat.
+          Escribe el mensaje que le mandarías a la IA para pedirle ayuda,puedes copiar de la ficha, y
+          toca "Enviar", o,en el segundo paso, toca una de las respuestas del chat.
         </p>
       }
     />
