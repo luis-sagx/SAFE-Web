@@ -1862,14 +1862,12 @@
 }
 
 /* El campo de texto libre (issue #184/#185): mismo fondo y borde superior
-   que .smsComposer, pero apilado (el textarea arriba, el botón de enviar
-   abajo a la derecha) porque un mensaje real ocupa más de una línea, a
-   diferencia del borrador de una sola frase que usan los demás campos. */
+   que .smsComposer. El textarea y el botón comparten la misma fila para que
+   enviar quede al alcance del campo mientras se redacta el mensaje. */
 .smsComposerLibre {
   flex-shrink: 0;
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
+  align-items: center;
   gap: 0.5rem;
   padding: 0.625rem 0.875rem;
   background: #f7f8fa;
@@ -1880,7 +1878,8 @@
    sin eso un mensaje muy largo empujaría el resto de la pantalla fuera de
    vista. Sin resize manual: el alto ya lo decide el propio texto. */
 .smsTextarea {
-  width: 100%;
+  flex: 1;
+  min-width: 0;
   min-height: 4.5rem;
   max-height: 12rem;
   overflow-y: auto;
