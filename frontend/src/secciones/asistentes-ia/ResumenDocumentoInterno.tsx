@@ -134,7 +134,7 @@ function InternalDocumentSummary() {
       story={STORY}
       senales={SIGNALS}
       rule={RULE}
-      documentoFuente={<BlocNotas titulo="Informe.txt, Bloc de notas" texto={SOURCE_DOCUMENT} />}
+      documentoFuente={<BlocNotas titulo="Bloc de notas" texto={SOURCE_DOCUMENT} />}
       instruccion={
         <p className="text-lg leading-relaxed text-body">
           Escribe el mensaje que le mandarías a la IA para pedirle ayuda,puedes copiar del informe, y

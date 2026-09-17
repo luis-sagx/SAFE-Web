@@ -192,6 +192,23 @@
   );
 }
 
+/* Misma trama, para el fondo de una pantalla completa (dashboard, secciones,
+   escenarios, login). No es un <span> superpuesto con position: absolute:
+   así probamos primero y cualquier hijo SIN position (la mayoría: el header,
+   una tarjeta de "¿Qué haces?", el bloc de notas) se pintaba ANTES que él
+   sin importar el orden del DOM, dejando la trama encima del contenido. Como
+   background-image del propio contenedor, en cambio, pinta siempre primero,
+   así que ningún hijo necesita `relative` para taparla. El color ya lleva la
+   transparencia adentro (color-mix) porque aquí no hay opacidad de elemento
+   que aplicar. */
+.trama-fondo {
+  background-image: repeating-linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--color-ticket-edge) 20%, transparent) 0 1px,
+    transparent 1px 9px
+  );
+}
+
 /* La selección también es parte del diseño: el azul del navegador no viene de
    ningún sistema. Menta de marca con la tinta del tema encima, en los dos. */
 ::selection {
