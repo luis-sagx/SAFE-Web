@@ -25,6 +25,7 @@ import '@fontsource/ibm-plex-mono/latin-500.css'
 import './index.css'
 import App from './App'
 import { AuthProvider } from './context/AuthContext'
+import { SoundProvider } from './context/SoundContext'
 import { ThemeProvider } from './context/ThemeContext'
 
 // Tras un despliegue, una pestaña abierta sigue con el index viejo y pide
@@ -49,9 +50,11 @@ createRoot(document.getElementById('root')!).render(
       {/* Fuera de AuthProvider: el tema no depende de la sesión y tiene que
           existir también en las rutas públicas (Login, Registro, Verificar). */}
       <ThemeProvider>
-        <AuthProvider>
-          <App />
-        </AuthProvider>
+        <SoundProvider>
+          <AuthProvider>
+            <App />
+          </AuthProvider>
+        </SoundProvider>
       </ThemeProvider>
     </BrowserRouter>
   </StrictMode>,

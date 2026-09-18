@@ -6,6 +6,8 @@ import ApprovalLabel from './EtiquetaAprobacion'
 import type { StoryNode } from '../../hooks/useStoryEngine'
 import type { RunStatus } from '../../hooks/useScenarioRun'
 import { outcomeFromKind } from '../../hooks/useScenarioRun'
+import { useSound } from '../../context/SoundContext'
+import { reproducirResultado, reproducirSenal } from '../../lib/sonidos'
 
 export interface Signal {
   id: string
@@ -52,13 +54,6 @@ function VerdictPanel({
   // arranca ya en cierre para que siempre haya un botón que avance algo.
   const [step, setStep] = useState(hasSignals ? -1 : 0)
 
-  // Para reservar el alto del recorrido; se compara sin <b>, que no ocupa pantalla.
-  const length = (text: string) => text.replace(/<[^>]+>/g, '').length
-  const longest = signals.reduce(
-    (greater, signal) => (length(signal.texto) > length(greater) ? signal.texto : greater),
-    '',
-  )
-
   const showingVerdict = step === -1
   const showingSignal = hasSignals && step >= 0 && step < signals.length
   const completing = !showingVerdict && !showingSignal
@@ -67,6 +62,25 @@ function VerdictPanel({
 
   useEffect(() => {
     firstButtonRef.current?.focus()
+  }, [])
+
+  // Una sola vez al aparecer el veredicto, no en cada paso del repaso de
+  // señales (issue #221): VerdictPanel solo se monta cuando el escenario ya
+  // terminó, así que "montaje" y "resultado nuevo" son lo mismo aquí.
+  // 'scene' no debería llegar nunca hasta acá (solo se llega con un nodo
+  // terminal), pero reproducirResultado no lo conoce: se ignora en vez de
+  // forzar el tipo.
+  // Guarda con ref: en StrictMode (activo en main.tsx) React monta-desmonta-
+  // remonta los efectos una vez de más en desarrollo; sin esta guarda sonaban
+  // dos AudioContext superpuestos por veredicto, audible como un traslape
+  // raro (peor en los tonos graves de "fallar").
+  const { activado: soundEnabled } = useSound()
+  const soundPlayedRef = useRef(false)
+  useEffect(() => {
+    if (soundPlayedRef.current) return
+    soundPlayedRef.current = true
+    if (soundEnabled && node.kind !== 'scene') reproducirResultado(node.kind)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // Avisa al layout cuando no queda repaso pendiente para que "Salir" no advierta nada.
@@ -97,6 +111,15 @@ function VerdictPanel({
   useEffect(() => {
     onScreen?.(showingSignal ? signals[step]?.pantalla : undefined)
   }, [showingSignal, step, signals, onScreen])
+
+  // Un sonido por cada señal que se muestra durante el repaso (issue de
+  // gamificación): a diferencia del sonido del veredicto, este efecto sí
+  // puede repetirse sin guarda de ref porque cada paso es un cambio de
+  // estado real posterior al montaje, no el doble-invoke de StrictMode.
+  useEffect(() => {
+    if (showingSignal && soundEnabled) reproducirSenal()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showingSignal, step])
 
   useEffect(() => {
     if (!showingSignal) {
@@ -183,18 +206,24 @@ function VerdictPanel({
               Saltar
             </button>
           </div>
-          {/* Alto reservado con la señal más larga (invisible, debajo) para que
-              los botones no salten de posición entre pasos. */}
-          <div className="relative mt-3">
-            <p
-              aria-hidden
-              className="invisible text-lg leading-relaxed"
-              dangerouslySetInnerHTML={{ __html: longest }}
-            />
-            <p
-              className="absolute inset-0 text-lg leading-relaxed text-signal-body"
-              dangerouslySetInnerHTML={{ __html: signals[step]?.texto ?? '' }}
-            />
+          {/* Alto reservado con todas las señales superpuestas en la misma celda
+              de grid (invisibles menos la del paso actual) para que los botones
+              no salten de posición entre pasos. Antes se reservaba comparando
+              longitud de texto contra la señal "más larga", pero una señal con
+              una URL larga sin espacios envuelve distinto a una de puro texto
+              con la misma cantidad de caracteres: el alto quedaba corto y el
+              texto se encimaba con los botones de abajo. */}
+          <div className="relative mt-3 grid">
+            {signals.map((signal, index) => (
+              <p
+                key={signal.id}
+                aria-hidden={index !== step}
+                className={`col-start-1 row-start-1 break-words text-lg leading-relaxed ${
+                  index === step ? 'text-signal-body' : 'invisible'
+                }`}
+                dangerouslySetInnerHTML={{ __html: signal.texto }}
+              />
+            ))}
           </div>
           {/* "Anterior" se renderiza siempre (deshabilitado en el primer paso)
               para que "Siguiente" no se desplace entre pasos. */}

@@ -2,6 +2,7 @@ import { ChevronDown, LogOut, Route } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { Link } from 'react-router'
 import { useAuth } from '../context/AuthContext'
+import SoundSelector from './SelectorSonido'
 import ThemeSelector from './SelectorTema'
 
 // Agrupa cuenta/sesión detrás del avatar; antes "Salir" solo existía en
@@ -63,6 +64,10 @@ function UserMenu() {
           <div className="border-b border-hairline py-1.5">
             <p className="px-3 pb-1 text-xs font-medium text-muted">Tema</p>
             <ThemeSelector />
+          </div>
+
+          <div className="border-b border-hairline py-1.5">
+            <SoundSelector />
           </div>
 
           {!isAdmin && (
