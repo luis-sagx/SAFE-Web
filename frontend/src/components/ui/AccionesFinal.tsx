@@ -5,6 +5,7 @@ import { fetchProgress, restartModule } from '../../lib/api'
 import type { RunOutcome } from '../../lib/api'
 import { withAttemptedScenario, nextInRound } from '../../lib/bloqueoEscenarios'
 import ConfirmReplayModal from '../ConfirmarRepeticionModal'
+import ModuleTransition from '../TransicionModulo'
 
 interface FinalActionsProps {
   escenarioId: string
@@ -34,6 +35,7 @@ function FinalActions({ escenarioId: scenarioId, outcome, autoFocus }: FinalActi
   const [restarting, setRestarting] = useState(false)
   const [restartError, setRestartError] = useState<string | null>(null)
   const [progress, setProgress] = useState<import('../../lib/api').Progress | null>(null)
+  const [showTransition, setShowTransition] = useState(true)
   const mainRef = useRef<HTMLAnchorElement | HTMLButtonElement>(null)
 
   useEffect(() => {
@@ -187,8 +189,28 @@ function FinalActions({ escenarioId: scenarioId, outcome, autoFocus }: FinalActi
     )
   }
 
+  // Umbral ya superado con este último intento, no `progress.aprobado`: ese
+  // valor es el que trajo el GET previo y todavía no cuenta el escenario que
+  // se acaba de terminar (issue #229 — sin esto, la pantalla de transición no
+  // aparecía justo en el intento que aprueba el módulo, que es el momento
+  // donde más falta hace).
+  const justApproved = progress != null && effectiveApprovedCount >= progress.requeridos
+  const currentSection = getSection(sectionId)
+
   return (
     <>
+      {/* Pantalla aparte y no un aviso metido en el propio veredicto (issue
+          #229): así se nota el "cambio de escena" al pasar de un tipo de
+          ataque a otro, en vez de que la transición se sienta continua. */}
+      {justApproved && nextModule && currentSection && showTransition && (
+        <ModuleTransition
+          seccion={currentSection}
+          aprobados={effectiveApprovedCount}
+          total={scenarios.length}
+          siguiente={nextModule}
+          onClose={() => setShowTransition(false)}
+        />
+      )}
       {marker}
       {scenarios.length > 0 && (
         <p className="mt-5 text-center text-base text-body">

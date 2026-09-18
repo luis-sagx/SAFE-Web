@@ -245,6 +245,74 @@ describe('AccionesFinal', () => {
     expect(container).toBeDefined()
   })
 
+  it('al aprobar el módulo con uno siguiente disponible, abre la pantalla de transición (issue #229)', async () => {
+    fetchProgressMock.mockResolvedValue({
+      escenarios: getSectionScenarios('phishing').map(({ id }) => ({ id, ultimoOutcome: 'CORRECTO' })),
+      aprobados: 6,
+      requeridos: 6,
+      aprobado: true,
+      ronda: 1,
+      rondaEnCurso: null,
+    })
+
+    render(<BrowserRouter><FinalActions escenarioId="phishing/sesion-bogota" outcome="CORRECTO" /></BrowserRouter>)
+
+    expect(await screen.findByRole('dialog')).toBeDefined()
+    expect(screen.getByText('Aprobaste Phishing')).toBeDefined()
+    expect(screen.getByRole('link', { name: 'Ir a Smishing →' })).toBeDefined()
+  })
+
+  it('la pantalla de transición se puede cerrar y deja ver el botón normal de siguiente módulo', async () => {
+    fetchProgressMock.mockResolvedValue({
+      escenarios: getSectionScenarios('phishing').map(({ id }) => ({ id, ultimoOutcome: 'CORRECTO' })),
+      aprobados: 6,
+      requeridos: 6,
+      aprobado: true,
+      ronda: 1,
+      rondaEnCurso: null,
+    })
+
+    render(<BrowserRouter><FinalActions escenarioId="phishing/sesion-bogota" outcome="CORRECTO" /></BrowserRouter>)
+
+    await screen.findByRole('dialog')
+    fireEvent.click(screen.getByRole('button', { name: 'Seguir aquí' }))
+
+    expect(screen.queryByRole('dialog')).toBeNull()
+    expect(screen.getByRole('link', { name: 'Ir al siguiente módulo →' })).toBeDefined()
+  })
+
+  it('al no aprobar el módulo, no abre la pantalla de transición', async () => {
+    fetchProgressMock.mockResolvedValue({
+      escenarios: getSectionScenarios('phishing').map(({ id }) => ({ id, ultimoOutcome: 'INCORRECTO' })),
+      aprobados: 5,
+      requeridos: 6,
+      aprobado: false,
+      ronda: 1,
+      rondaEnCurso: null,
+    })
+
+    render(<BrowserRouter><FinalActions escenarioId="phishing/sesion-bogota" outcome="INCORRECTO" /></BrowserRouter>)
+
+    await screen.findByRole('link', { name: 'Ir al siguiente módulo →' })
+    expect(screen.queryByRole('dialog')).toBeNull()
+  })
+
+  it('al aprobar el último módulo (sin uno siguiente) no abre la pantalla de transición', async () => {
+    fetchProgressMock.mockResolvedValue({
+      escenarios: getSectionScenarios('asistentes-ia').map(({ id }) => ({ id, ultimoOutcome: 'CORRECTO' })),
+      aprobados: 4,
+      requeridos: 3,
+      aprobado: true,
+      ronda: 1,
+      rondaEnCurso: null,
+    })
+
+    render(<BrowserRouter><FinalActions escenarioId="asistentes-ia/historial-cliente" outcome="CORRECTO" /></BrowserRouter>)
+
+    await screen.findByRole('link', { name: 'Volver al panel →' })
+    expect(screen.queryByRole('dialog')).toBeNull()
+  })
+
   it('renderiza sin errores cuando autoFocus está activado', async () => {
     fetchProgressMock.mockResolvedValue({
       escenarios: [{ id: 'fisico/salida-segura' }],
