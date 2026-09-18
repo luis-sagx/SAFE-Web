@@ -21,7 +21,8 @@ describe('CorreoDatosTerceros', () => {
 
   it('el bloc de notas con el mensaje de la compañera está siempre visible, con sus datos reales', () => {
     start(<ThirdPartyDataEmail />)
-    expect(screen.getByText(/Andrea Cedeño/)).toBeDefined()
+    expect(screen.getByText(/Andrea Carolina Cedeño Mora/)).toBeDefined()
+    expect(screen.getByText(/Marcelo Alejandro Tapia Vera/)).toBeDefined()
     expect(screen.getByText(/1799999990/)).toBeDefined()
   })
 
@@ -31,31 +32,41 @@ describe('CorreoDatosTerceros', () => {
     expect(boton.disabled).toBe(true)
   })
 
-  it('escribir el nombre completo y la cédula reales es una fuga', async () => {
+  it('escribir tres partes reales del nombre de la compañera es una fuga', async () => {
     const container = start(<ThirdPartyDataEmail />)
     writeAndSend(
       container,
-      'Es para pedir un cambio de horario a nombre de Andrea Cedeño, cédula 1799999990.',
+      'Es para pedir un cambio de horario a nombre de Andrea Carolina Cedeño.',
     )
-    expect(await screen.findByText('Datos de tu compañera compartidos con la IA')).toBeDefined()
+    expect(await screen.findByText('Datos personales compartidos con la IA')).toBeDefined()
   })
 
-  it('el mensaje que se envió queda visible en el hilo', async () => {
+  it('dos partes del nombre de la compañera no causan pérdida', async () => {
     const container = start(<ThirdPartyDataEmail />)
     writeAndSend(container, 'Es para pedir un cambio de horario a nombre de Andrea Cedeño.')
-    expect(await within(container).findByText(/Andrea Cedeño/)).toBeDefined()
+    expect(await screen.findByText('Correo redactado sin compartir datos reales de nadie')).toBeDefined()
+  })
+
+  it('dos partes del docente son seguras, pero tres son una fuga', async () => {
+    const seguro = start(<ThirdPartyDataEmail />)
+    writeAndSend(seguro, 'Es para pedirle al Ing. Marcelo Tapia un cambio de horario en Redes.')
+    expect(await screen.findByText('Correo redactado sin compartir datos reales de nadie')).toBeDefined()
+
+    const fuga = start(<ThirdPartyDataEmail />)
+    writeAndSend(fuga, 'Es para pedirle a Marcelo Alejandro Tapia un cambio de horario en Redes.')
+    expect(await screen.findAllByText('Datos personales compartidos con la IA')).toHaveLength(1)
   })
 
   it('el repaso de señales resalta el dato real dentro del mensaje que se envió', async () => {
     const container = start(<ThirdPartyDataEmail />)
-    writeAndSend(container, 'Es a nombre de Andrea Cedeño, cédula 1799999990.')
-    expect(await screen.findByText('Datos de tu compañera compartidos con la IA')).toBeDefined()
+    writeAndSend(container, 'Es a nombre de Andrea Carolina Cedeño Mora, cédula 1799999990.')
+    expect(await screen.findByText('Datos personales compartidos con la IA')).toBeDefined()
 
     fireEvent.click(screen.getByRole('button', { name: 'Ver las señales' }))
     await waitFor(() => {
       expect(
         within(container)
-          .getByText(/Andrea Cedeño/)
+          .getByText(/Andrea Carolina Cedeño Mora/)
           .closest('[data-signal="dato-nombre"]')
           ?.classList.contains('senal-resaltada'),
       ).toBe(true)
@@ -68,10 +79,10 @@ describe('CorreoDatosTerceros', () => {
     expect(await screen.findByText('Correo redactado sin compartir datos reales de nadie')).toBeDefined()
   })
 
-  it('escribir solo el nombre de pila, sin el apellido ni la cédula, es parcial', async () => {
+  it('escribir solo el nombre de pila, sin apellido ni cédula, es seguro', async () => {
     const container = start(<ThirdPartyDataEmail />)
     writeAndSend(container, 'Es a nombre de Andrea, para la materia de Redes.')
-    expect(await screen.findByText('Quedó algo identificable, aunque no el dato completo')).toBeDefined()
+    expect(await screen.findByText('Correo redactado sin compartir datos reales de nadie')).toBeDefined()
   })
 
   it('sin nombre, sin cédula y sin correo reales es el acierto', async () => {
@@ -96,7 +107,7 @@ describe('CorreoDatosTerceros', () => {
     const container = start(<ThirdPartyDataEmail />)
     writeAndSend(container, 'hola')
     writeAndSend(container, 'Su correo es andrea.cedeno02')
-    expect(await screen.findByText('Datos de tu compañera compartidos con la IA')).toBeDefined()
+    expect(await screen.findByText('Datos personales compartidos con la IA')).toBeDefined()
   })
 
 })
