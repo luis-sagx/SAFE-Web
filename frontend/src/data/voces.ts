@@ -1,12 +1,20 @@
-// Generado por scripts/voces.py, no editar a mano. Clave = frase entera (no
-// un id corto) para que un cambio de guion deje de encontrar el audio en vez de seguir sonando con el texto viejo.
+/**
+ * Generado por scripts/voces.py, no editar a mano.
+ *
+ * De cada frase que dice quien llama en los escenarios de vishing al MP3 con
+ * esa frase. Los audios se generan una sola vez y se sirven como archivos
+ * estáticos, en vez de sintetizarlos en el navegador: la voz del sistema
+ * cambia de un equipo a otro (y en muchos ni existe en español), y dos
+ * participantes que oyen voces distintas no hicieron el mismo ejercicio.
+ *
+ * La clave es la frase entera y no un identificador corto a propósito: si el
+ * guion cambia, el audio deja de encontrarse en vez de seguir sonando con el
+ * texto viejo. El test de voces.test.ts avisa cuando eso pasa.
+ */
 export const VOICES: Record<string, string> = {
   "Anotado. Y para registrarle el beneficio necesito dos datos más: los cuatro últimos dígitos de su tarjeta y la agencia donde abrió la cuenta.": "/voz/7decbb8ebf3b.mp3",
   "Banco del Litoral, departamento de seguridad, buenas noches. Le confirmo: hablo con el titular de la tarjeta terminada en 4417, ¿verdad?": "/voz/8e64d6bde001.mp3",
-  // PRUEBA TEMPORAL (Piper, voz es_ES-sharvard-medium hablante M, no Edge TTS)
-  //, revertir a "/voz/4f662bd609b6.mp3" antes de mergear o de volver a
-  // correr scripts/voces.py.
-  "Buenas noches, le habla Andrés Villamar del departamento de seguridad del Banco del Litoral. ¿Hablo con el titular de la tarjeta terminada en 4417?": "/voz/piper-prueba-banco.wav",
+  "Buenas noches, le habla Andrés Villamar del departamento de seguridad del Banco del Litoral. ¿Hablo con el titular de la tarjeta terminada en 4417?": "/voz/4f662bd609b6.mp3",
   "Buenas noches, le llamo del monitoreo antifraude del Banco del Litoral. No le voy a pedir claves, códigos ni datos suyos en toda la llamada.": "/voz/1c812acd6c81.mp3",
   "Buenas tardes, le habla Katherine del área de calidad del Banco del Litoral. Estamos haciendo una encuesta de dos minutos sobre la atención en su agencia, ¿me regala un momentito?": "/voz/fbb2dd463d3f.mp3",
   "Buenas tardes, le habla el sargento Aguirre, de tránsito. Su hija está bien, pero el vehículo con el que chocó es de una persona que no quiere denunciar si se le cubre el daño ahora mismo.": "/voz/f821e1c82965.mp3",
@@ -27,7 +35,7 @@ export const VOICES: Record<string, string> = {
   "Le llamo porque detectamos un consumo de ochocientos noventa dólares en una tienda de electrónica de Guayaquil, hecho hace ocho minutos. ¿Ese consumo lo reconoce usted?": "/voz/65fcebeac3e8.mp3",
   "Le paso el proceso: abra la tienda de aplicaciones de su teléfono e instale AsistenciaMóvil, que es la herramienta oficial de soporte.": "/voz/1e9bb94a3536.mp3",
   "Le tengo una buena noticia: le corresponde una devolución de ciento ochenta y cuatro dólares con sesenta. Para acreditarla necesito confirmar su número de cédula.": "/voz/b349e8fcde92.mp3",
-  "Le timbré y no me contestó nadie. ¿Le dejo con el conserje o baja usted? Son tres cincuenta contra entrega, en efectivo o con tarjeta en el datáfono que traigo.": "/voz/cb2f52ab3830.mp3",
+  "Le timbré y no me contestó nadie. ¿Le dejo con el conserje o baja usted? Son tres cincuenta contra entrega. Si quiere pagar con tarjeta, dícteme el número por teléfono y se lo cobro ahora mismo.": "/voz/de79d0e09e60.mp3",
   "Le va a llegar un mensaje con un código de constancia. Ese código no me lo dé a mí ni a nadie que le llame, ni siquiera diciendo que es del banco: es solo su comprobante.": "/voz/44deffcd2c75.mp3",
   "Lo registro como depósito no reconocido. No devuelva nada usted, por favor: si el origen resulta fraudulento nosotros reversamos el valor completo, y lo que usted envíe por fuera lo pierde. Le queda el caso abierto y le avisamos.": "/voz/37ef5fceec1d.mp3",
   "Lo vemos desde la central, porque su router pasa por nuestra red. Nosotros no entramos a nada suyo, solo miramos el tráfico.": "/voz/025dc2f90719.mp3",
