@@ -3,14 +3,19 @@ import { MemoryRouter } from 'react-router'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import Dashboard from './Dashboard'
 
-const { fetchProgressMock } = vi.hoisted(() => ({
+const { fetchProgressMock, reproducirModuloCompletoMock, useSoundMock } = vi.hoisted(() => ({
   fetchProgressMock: vi.fn(),
+  reproducirModuloCompletoMock: vi.fn(),
+  useSoundMock: vi.fn(),
 }))
 
 vi.mock('../lib/api', async () => {
   const current = await vi.importActual<typeof import('../lib/api')>('../lib/api')
   return { ...current, fetchProgress: fetchProgressMock }
 })
+
+vi.mock('../lib/sonidos', () => ({ reproducirModuloCompleto: reproducirModuloCompletoMock }))
+vi.mock('../context/SoundContext', () => ({ useSound: useSoundMock }))
 
 vi.mock('../context/AuthContext', async () => (await import('../test/escenario')).mockAuth())
 
@@ -25,6 +30,9 @@ function renderDashboard() {
 describe('Dashboard', () => {
   beforeEach(() => {
     fetchProgressMock.mockReset()
+    reproducirModuloCompletoMock.mockReset()
+    useSoundMock.mockReturnValue({ activado: true, setActivado: vi.fn() })
+    localStorage.clear()
   })
 
   // El recorrido propio vive en el menú de cuenta del header, que es el mismo
@@ -85,5 +93,28 @@ describe('Dashboard', () => {
     await screen.findByText('Tu avance')
     expect(await screen.findByRole('button', { name: 'Descargar certificado' })).toBeDefined()
     expect(screen.getByRole('link', { name: 'Cuéntanos tu opinión' })).toBeDefined()
+  })
+
+  it('la primera vez que se aprueban todos los módulos, toca el sonido de logro', async () => {
+    fetchProgressMock.mockImplementation((module: string) =>
+      Promise.resolve({ modulo: module, escenarios: [], aprobados: 6, requeridos: 6, aprobado: true }),
+    )
+
+    renderDashboard()
+
+    await screen.findByRole('button', { name: 'Descargar certificado' })
+    expect(reproducirModuloCompletoMock).toHaveBeenCalledTimes(1)
+  })
+
+  it('en visitas siguientes con todo ya aprobado, no vuelve a tocarlo', async () => {
+    localStorage.setItem('modulo-completo-sonado', '1')
+    fetchProgressMock.mockImplementation((module: string) =>
+      Promise.resolve({ modulo: module, escenarios: [], aprobados: 6, requeridos: 6, aprobado: true }),
+    )
+
+    renderDashboard()
+
+    await screen.findByRole('button', { name: 'Descargar certificado' })
+    expect(reproducirModuloCompletoMock).not.toHaveBeenCalled()
   })
 })
