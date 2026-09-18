@@ -8,6 +8,7 @@ import RequireSupervisor from './components/RequireSupervisor'
 import { SCENARIOS, getScenarioPath } from './data/catalogo'
 import Admin from './pages/Admin'
 import Welcome from './pages/Bienvenida'
+import BadgePreview from './pages/InsigniaPreview'
 import Dashboard from './pages/Dashboard'
 import Login from './pages/Login'
 import DataPolicy from './pages/PoliticaDatos'
@@ -31,6 +32,14 @@ function App() {
           <Route path="/registro" element={<Registration />} />
           <Route path="/politica-de-datos" element={<DataPolicy />} />
           <Route path="/verificar/:codigo" element={<VerifyCertificate />} />
+
+          {/* Solo en desarrollo: import.meta.env.DEV es una constante de
+              build, así que Vite elimina esta ruta entera del bundle de
+              producción (issue #230, para ver la insignia sin aprobar los
+              7 módulos). */}
+          {import.meta.env.DEV && (
+            <Route path="/insignia-preview" element={<BadgePreview />} />
+          )}
 
           <Route element={<RequireSupervisor />}>
             <Route path="/admin" element={<Admin />} />

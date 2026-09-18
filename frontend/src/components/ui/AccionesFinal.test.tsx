@@ -245,7 +245,7 @@ describe('AccionesFinal', () => {
     expect(container).toBeDefined()
   })
 
-  it('al aprobar el módulo con uno siguiente disponible, abre la pantalla de transición (issue #229)', async () => {
+  it('al aprobar el módulo con uno siguiente disponible, primero pide el mini-test (issue #230)', async () => {
     fetchProgressMock.mockResolvedValue({
       escenarios: getSectionScenarios('phishing').map(({ id }) => ({ id, ultimoOutcome: 'CORRECTO' })),
       aprobados: 6,
@@ -258,7 +258,33 @@ describe('AccionesFinal', () => {
     render(<BrowserRouter><FinalActions escenarioId="phishing/sesion-bogota" outcome="CORRECTO" /></BrowserRouter>)
 
     expect(await screen.findByRole('dialog')).toBeDefined()
-    expect(screen.getByText('Aprobaste Phishing')).toBeDefined()
+    expect(screen.getByText('Pregunta 1 de 2')).toBeDefined()
+    expect(screen.queryByText('Aprobaste Phishing')).toBeNull()
+  })
+
+  it('al responder bien las dos preguntas del mini-test, recién ahí aparece la pantalla de transición (issue #229 + #230)', async () => {
+    fetchProgressMock.mockResolvedValue({
+      escenarios: getSectionScenarios('phishing').map(({ id }) => ({ id, ultimoOutcome: 'CORRECTO' })),
+      aprobados: 6,
+      requeridos: 6,
+      aprobado: true,
+      ronda: 1,
+      rondaEnCurso: null,
+    })
+
+    render(<BrowserRouter><FinalActions escenarioId="phishing/sesion-bogota" outcome="CORRECTO" /></BrowserRouter>)
+
+    await screen.findByText('Pregunta 1 de 2')
+    fireEvent.click(screen.getByText(/justo antes de la primera barra/))
+    fireEvent.click(screen.getByRole('button', { name: 'Comprobar' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Siguiente pregunta' }))
+
+    await screen.findByText('Pregunta 2 de 2')
+    fireEvent.click(screen.getByText(/Entro directo por mi app o el sitio oficial/))
+    fireEvent.click(screen.getByRole('button', { name: 'Comprobar' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Continuar' }))
+
+    expect(await screen.findByText('Aprobaste Phishing')).toBeDefined()
     expect(screen.getByRole('link', { name: 'Ir a Smishing →' })).toBeDefined()
   })
 
@@ -273,6 +299,15 @@ describe('AccionesFinal', () => {
     })
 
     render(<BrowserRouter><FinalActions escenarioId="phishing/sesion-bogota" outcome="CORRECTO" /></BrowserRouter>)
+
+    await screen.findByText('Pregunta 1 de 2')
+    fireEvent.click(screen.getByText(/justo antes de la primera barra/))
+    fireEvent.click(screen.getByRole('button', { name: 'Comprobar' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Siguiente pregunta' }))
+    await screen.findByText('Pregunta 2 de 2')
+    fireEvent.click(screen.getByText(/Entro directo por mi app o el sitio oficial/))
+    fireEvent.click(screen.getByRole('button', { name: 'Comprobar' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Continuar' }))
 
     await screen.findByRole('dialog')
     fireEvent.click(screen.getByRole('button', { name: 'Seguir aquí' }))
