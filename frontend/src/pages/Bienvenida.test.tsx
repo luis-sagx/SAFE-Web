@@ -42,10 +42,10 @@ function renderFrom(from?: unknown) {
   )
 }
 
-/// El aviso pasa por seis amenazas antes de cerrarse: se avanza hasta que el
+/// El aviso pasa por siete amenazas antes de cerrarse: se avanza hasta que el
 /// botón deja de decir "Siguiente".
 async function continueAction() {
-  for (let i = 0; i < 6; i++) {
+  for (let i = 0; i < 7; i++) {
     fireEvent.click(await screen.findByRole('button', { name: 'Siguiente →' }))
   }
   fireEvent.click(await screen.findByRole('button', { name: 'Continuar' }))
@@ -107,9 +107,9 @@ describe('Bienvenida', () => {
     expect(await screen.findByText('Panel')).toBeDefined()
   })
 
-  // El recorrido es el motivo del cambio: seis párrafos juntos se saltaban
+  // El recorrido es el motivo del cambio: siete párrafos juntos se saltaban
   // enteros, así que ahora va uno por pantalla y con su forma de evitarlo.
-  it('presenta las seis amenazas de una en una, con qué hacer en cada caso', async () => {
+  it('presenta las siete amenazas de una en una, con qué hacer en cada caso', async () => {
     renderFrom()
 
     expect(await screen.findByText(/Hola, /)).toBeDefined()
@@ -121,6 +121,7 @@ describe('Bienvenida', () => {
       'Suplantación de identidad',
       'Estafa electrónica',
       'Riesgo físico',
+      'Asistentes de IA',
     ]) {
       fireEvent.click(await screen.findByRole('button', { name: 'Siguiente →' }))
       expect(await screen.findByRole('heading', { name: title })).toBeDefined()
@@ -149,7 +150,7 @@ describe('Bienvenida', () => {
 
     expect(screen.queryByRole('checkbox')).toBeNull()
 
-    for (let i = 0; i < 6; i++) {
+    for (let i = 0; i < 7; i++) {
       fireEvent.click(await screen.findByRole('button', { name: 'Siguiente →' }))
     }
 

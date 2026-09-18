@@ -61,6 +61,15 @@ const THREATS = [
     prevencion:
       "Las claves no se anotan a la vista, y una memoria que no es tuya no se conecta a tu computador.",
   },
+  {
+    titulo: "Asistentes de IA",
+    finalidad:
+      "una herramienta útil para redactar o resumir, pero a la que también compartes los datos que pegas en la conversación.",
+    ejemplo:
+      "“Mejora este correo para mi compañera: se llama Ana Pérez, su cédula es 1234567890 y su correo es ana@ejemplo.com.”",
+    prevencion:
+      "Pídele ayuda con lo necesario, pero quita nombres, cédulas, correos, teléfonos y otros datos personales que no hagan falta.",
+  },
 ];
 
 const PANEL = "/dashboard";
@@ -81,7 +90,7 @@ function Welcome() {
   const location = useLocation();
   const destination = getDestination((location.state as { from?: unknown } | null)?.from);
 
-  // Una amenaza a la vez: seis párrafos juntos se saltaban enteros (se pulsaba "Continuar" sin leer).
+  // Una amenaza a la vez: siete párrafos juntos se saltaban enteros (se pulsaba "Continuar" sin leer).
   const [step, setStep] = useState(0);
   const threat = step > 0 ? THREATS[step - 1] : undefined;
   const latest = step === THREATS.length;
@@ -157,7 +166,7 @@ function Welcome() {
               </h1>
 
               <p className="mt-4 text-lg leading-relaxed text-body">
-                Vas a practicar a reconocer seis formas de fraude, una situación
+                Vas a practicar a reconocer siete riesgos de seguridad, una situación
                 simulada a la vez. Al final de cada una te mostramos qué señales
                 había, las hayas visto o no: la idea es que entrenes el
                 criterio, no que memorices una lista.
@@ -166,14 +175,12 @@ function Welcome() {
               {/* Reglas del curso en la portada: antes no decía cómo se aprueba ni por qué los módulos aparecen cerrados. */}
               <ul className="mt-4 grid gap-2 rounded-md border border-dashed border-ticket-edge bg-ticket-edge/25 px-4 py-3 text-base leading-relaxed text-body">
                 <li>
-                  <strong className="text-ink">Seis módulos</strong>, uno por
+                  <strong className="text-ink">Siete módulos</strong>, uno por
                   amenaza. Se abren en orden: cada uno necesita el anterior.
                 </li>
                 <li>
-                  Dentro de cada módulo,{" "}
-                  <strong className="text-ink">
-                    apruebas con 6 de sus 8 escenarios
-                  </strong>.
+                  Dentro de cada módulo, completa los escenarios para poner en
+                  práctica lo aprendido.
                 </li>
                 <li>
                   Puedes fallar y reiniciar el módulo completo en cualquier momento. El avance vuelve a cero.
@@ -184,7 +191,7 @@ function Welcome() {
           )}
         </div>
 
-        {/* Indican cuánto queda sin ser clicables: saltar pasos no tiene sentido en un recorrido de 6 pantallas cortas. */}
+        {/* Indican cuánto queda sin ser clicables: saltar pasos no tiene sentido en un recorrido de 7 pantallas cortas. */}
         <div className="mt-6 flex items-center gap-1.5" aria-hidden>
           {THREATS.map((other, index) => (
             <span
