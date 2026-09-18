@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor, within } from '@testing-library/react'
+import { act, fireEvent, screen, waitFor, within } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import { start } from '../../test/escenario'
 import SafeExit from './SalidaSegura'
@@ -160,5 +160,35 @@ describe('SalidaSegura', () => {
     fireEvent.click(screen.getByText('¿Cuándo termina el escenario?'))
 
     expect(screen.getByText(/el escenario registra si dejaste/)).toBeDefined()
+  })
+
+  it('en celular la miniatura del monitor no se reduce más allá de lo legible', () => {
+    class FakeResizeObserver {
+      constructor(private readonly cb: () => void) {
+        FakeResizeObserver.last = this
+      }
+      static last: FakeResizeObserver | null = null
+      observe = vi.fn()
+      disconnect = vi.fn()
+      trigger() {
+        this.cb()
+      }
+    }
+    vi.stubGlobal('ResizeObserver', FakeResizeObserver)
+
+    const scene = start(<SafeExit />)
+    const canvas = scene.querySelector('[data-signal="pestanas"] > div') as HTMLElement
+    const monitor = canvas.parentElement as HTMLElement
+    // Foto angosta de celular: el monitor mide una fracción diminuta del
+    // lienzo de escritorio (60rem), como pasaba en el bug del issue #225.
+    Object.defineProperty(monitor, 'clientWidth', { value: 60, configurable: true })
+    Object.defineProperty(canvas, 'offsetWidth', { value: 960, configurable: true })
+
+    act(() => {
+      FakeResizeObserver.last?.trigger()
+    })
+
+    expect(canvas.style.transform).toBe('scale(0.32)')
+    vi.unstubAllGlobals()
   })
 })
