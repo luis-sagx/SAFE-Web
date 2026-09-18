@@ -6,70 +6,58 @@ import { useAuth } from "../context/AuthContext";
 
 /** `finalidad` no repite el canal (ya en el título); `prevención` se añadió porque faltaba;
  *  `ejemplo` usa frases reales porque se reconocen antes que una definición. */
+function createThreat(
+  titulo: string,
+  finalidad: string,
+  ejemplo: string,
+  prevencion: string,
+) {
+  return { titulo, finalidad, ejemplo, prevencion };
+}
+
 const THREATS = [
-  {
-    titulo: "Phishing",
-    finalidad:
-      "un correo o una página falsa que buscan robarte la clave o instalar algo dañino.",
-    ejemplo:
-      "\u201cTiene una factura pendiente. Valide sus datos en las próximas 24 horas.\u201d",
-    prevencion:
-      "No entres por el enlace del correo. Escribe tú la dirección del sitio, o entra por donde ya sabes entrar.",
-  },
-  {
-    titulo: "Smishing",
-    finalidad:
-      "lo mismo, pero por SMS o WhatsApp: un mensaje que imita a tu banco o una entidad real.",
-    ejemplo:
-      "\u201cSu cuenta será bloqueada hoy. Confirme su información aquí: bit.ly/…\u201d",
-    prevencion:
-      "Tu banco no te pide datos por mensaje. Llama al número que está en tu tarjeta, nunca al que trae el mensaje.",
-  },
-  {
-    titulo: "Vishing",
-    finalidad:
-      "una llamada de alguien que se hace pasar por soporte o tu banco para sacarte un código.",
-    ejemplo:
-      "\u201cLe llamo de seguridad del banco. Para cancelar un cargo, dígame el código que le acaba de llegar.\u201d",
-    prevencion:
-      "Un código que llega a tu teléfono no se le dicta a nadie, llame quien llame. Cuelga y llama tú al banco.",
-  },
-  {
-    titulo: "Suplantación de identidad",
-    finalidad:
-      "un contacto o perfil clonado que usa tu confianza en él para pedirte dinero o datos.",
-    ejemplo:
-      "\u201cHola, cambié de número. Estoy en un apuro, ¿me puedes hacer una transferencia?\u201d",
-    prevencion:
-      "Llama a esa persona al número que ya tenías guardado. Si de verdad es ella, contesta.",
-  },
-  {
-    titulo: "Estafa electrónica",
-    finalidad:
-      "una compra, venta o inversión falsa donde el dinero nunca llega o se pide antes de tiempo.",
-    ejemplo:
-      "\u201cLe quedan pocas horas para asegurar su cupo. Transfiera el 50 % y le reservamos el producto.\u201d",
-    prevencion:
-      "Desconfía de la prisa y del pago por adelantado. Paga al recibir, y por medios que dejen constancia.",
-  },
-  {
-    titulo: "Riesgo físico",
-    finalidad:
-      "información sensible expuesta en tu entorno (una clave anotada, una memoria USB), sin que nadie toque una pantalla.",
-    ejemplo:
-      "La clave del wifi en un papel pegado al monitor, o una memoria USB que apareció en el parqueadero.",
-    prevencion:
-      "Las claves no se anotan a la vista, y una memoria que no es tuya no se conecta a tu computador.",
-  },
-  {
-    titulo: "Asistentes de IA",
-    finalidad:
-      "una herramienta útil para redactar o resumir, pero a la que también compartes los datos que pegas en la conversación.",
-    ejemplo:
-      "“Mejora este correo para mi compañera: se llama Ana Pérez, su cédula es 1234567890 y su correo es ana@ejemplo.com.”",
-    prevencion:
-      "Pídele ayuda con lo necesario, pero quita nombres, cédulas, correos, teléfonos y otros datos personales que no hagan falta.",
-  },
+  createThreat(
+    "Phishing",
+    "un correo o una página falsa que buscan robarte la clave o instalar algo dañino.",
+    "\u201cTiene una factura pendiente. Valide sus datos en las próximas 24 horas.\u201d",
+    "No entres por el enlace del correo. Escribe tú la dirección del sitio, o entra por donde ya sabes entrar.",
+  ),
+  createThreat(
+    "Smishing",
+    "lo mismo, pero por SMS o WhatsApp: un mensaje que imita a tu banco o una entidad real.",
+    "\u201cSu cuenta será bloqueada hoy. Confirme su información aquí: bit.ly/…\u201d",
+    "Tu banco no te pide datos por mensaje. Llama al número que está en tu tarjeta, nunca al que trae el mensaje.",
+  ),
+  createThreat(
+    "Vishing",
+    "una llamada de alguien que se hace pasar por soporte o tu banco para sacarte un código.",
+    "\u201cLe llamo de seguridad del banco. Para cancelar un cargo, dígame el código que le acaba de llegar.\u201d",
+    "Un código que llega a tu teléfono no se le dicta a nadie, llame quien llame. Cuelga y llama tú al banco.",
+  ),
+  createThreat(
+    "Suplantación de identidad",
+    "un contacto o perfil clonado que usa tu confianza en él para pedirte dinero o datos.",
+    "\u201cHola, cambié de número. Estoy en un apuro, ¿me puedes hacer una transferencia?\u201d",
+    "Llama a esa persona al número que ya tenías guardado. Si de verdad es ella, contesta.",
+  ),
+  createThreat(
+    "Estafa electrónica",
+    "una compra, venta o inversión falsa donde el dinero nunca llega o se pide antes de tiempo.",
+    "\u201cLe quedan pocas horas para asegurar su cupo. Transfiera el 50 % y le reservamos el producto.\u201d",
+    "Desconfía de la prisa y del pago por adelantado. Paga al recibir, y por medios que dejen constancia.",
+  ),
+  createThreat(
+    "Riesgo físico",
+    "información sensible expuesta en tu entorno (una clave anotada, una memoria USB), sin que nadie toque una pantalla.",
+    "La clave del wifi en un papel pegado al monitor, o una memoria USB que apareció en el parqueadero.",
+    "Las claves no se anotan a la vista, y una memoria que no es tuya no se conecta a tu computador.",
+  ),
+  createThreat(
+    "Asistentes de IA",
+    "una herramienta útil para redactar o resumir, pero a la que también compartes los datos que pegas en la conversación.",
+    "“Mejora este correo para mi compañera: se llama Ana Pérez, su cédula es 1234567890 y su correo es ana@ejemplo.com.”",
+    "Pídele ayuda con lo necesario, pero quita nombres, cédulas, correos, teléfonos y otros datos personales que no hagan falta.",
+  ),
 ];
 
 const PANEL = "/dashboard";
