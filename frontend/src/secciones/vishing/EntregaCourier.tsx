@@ -31,7 +31,7 @@ const OPENING = [
   },
   {
     texto:
-      'Le timbré y no me contestó nadie. ¿Le dejo con el conserje o baja usted? Son tres cincuenta contra entrega, en efectivo o con tarjeta en el datáfono que traigo.',
+      'Le timbré y no me contestó nadie. ¿Le dejo con el conserje o baja usted? Son tres cincuenta contra entrega. Si quiere pagar con tarjeta, dícteme el número por teléfono y se lo cobro ahora mismo.',
     senal: 'cobro',
   },
 ]
@@ -50,7 +50,7 @@ const CALL: ScreenView = {
       label: 'Confirmó la entrega y quedó en pagar en efectivo',
     },
     {
-      texto: 'Le dicto el número de mi tarjeta y me lo cobra desde ahí, así no bajo.',
+      texto: 'Está bien, le dicto el número de mi tarjeta y me lo cobra desde ahí, así no bajo.',
       goto: 'e_tarjeta',
       label: 'Ofreció dictar el número de su tarjeta por teléfono',
     },
@@ -138,21 +138,21 @@ export const STORY: Story<ScreenNode> = {
     view: CALL,
     verdict: 'Acertaste · la llamada era legítima',
     outcome:
-      'Era tu repartidor. La guía coincidía con tu compra, el cobro contra entrega estaba anunciado desde que hiciste el pedido y pagaste en efectivo en la puerta. No hacía falta desconfiar, porque no te pidió ni un dato.',
+      'La entrega y el cobro eran reales, pero no compartiste datos de tarjeta: pagaste en efectivo cuando bajaste. Que el repartidor tenga tu guía no vuelve segura una petición de tarjeta por teléfono.',
   },
   e_tarjeta: {
     kind: 'bad',
     view: CALL,
     verdict: 'Llamada legítima, reacción peligrosa',
     outcome:
-      'La llamada era de verdad, pero dictaste tu tarjeta por teléfono, y eso no se hace ni con quien está abajo con tu paquete. Un número completo con caducidad y CVV sirve para comprar en internet las veces que haga falta, y ya no depende de si el repartidor era honrado: lo oyó él, y quien estuviera cerca.',
+      'La entrega era real, pero aceptaste una petición insegura y dictaste tu tarjeta por teléfono. Un número completo con caducidad y CVV sirve para comprar en internet las veces que haga falta, y ya no depende de si el repartidor era honrado: lo oyó él, y quien estuviera cerca.',
   },
   e_app: {
     kind: 'good',
     view: GUIDE,
     verdict: 'Acertaste · lo comprobaste en tu canal',
     outcome:
-      'En la app estaba todo: la guía en reparto, el nombre del repartidor y el cobro de $3,50 contra entrega. Comprobar tarda quince segundos y sirve igual para descubrir un engaño que para confirmar que algo es verdad.',
+      'En la app estaba todo: la guía en reparto, el nombre del repartidor y el cobro de $3,50 contra entrega. También deja claro que una tarjeta se paga en el datáfono, no dictando sus datos por teléfono.',
   },
 }
 
@@ -169,14 +169,14 @@ const SIGNALS: Signal[] = [
     targetId: 'cobro',
     pantalla: 'n2',
     texto:
-      'El cobro es <b>en la puerta y pequeño</b>, el que ya sabías al comprar. Nadie te pide pagar por adelantado ni por un enlace para "liberar" el paquete.',
+      'El valor y la entrega <b>sí coinciden</b> con tu compra, pero eso no autoriza a nadie a cobrarte la tarjeta por teléfono. El pago con tarjeta sigue siendo en el datáfono, con la tarjeta en tu mano.',
   },
   {
     id: 's3',
     targetId: 'cobro',
     pantalla: 'n2',
     texto:
-      'No te pide <b>ningún dato</b>: ni cédula, ni tarjeta, ni códigos. Solo si bajas o se lo deja al conserje.',
+      'Te pide <b>el número de la tarjeta por teléfono</b>. Aunque la entrega exista, ese dato no se dicta: el cobro seguro con tarjeta ocurre en el datáfono, de forma presencial.',
   },
   {
     id: 's4',

@@ -104,7 +104,7 @@ CABECERA = '''/**
  * guion cambia, el audio deja de encontrarse en vez de seguir sonando con el
  * texto viejo. El test de voces.test.ts avisa cuando eso pasa.
  */
-export const VOCES: Record<string, string> = {
+export const VOICES: Record<string, string> = {
 '''
 
 
