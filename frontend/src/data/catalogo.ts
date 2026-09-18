@@ -795,7 +795,7 @@ const BASE: BaseScenario[] = [
   createAIAssistantScenario(
     'correo-credenciales',
     'Informe escolar pegado en una IA',
-    'Le pides a una IA que mejore un informe escolar de un estudiante, y el documento trae su cédula, su fecha de nacimiento y su domicilio.',
+    'Le pides a una IA que mejore un informe escolar de un estudiante, y el documento trae su cédula y su domicilio.',
     2,
     lazy(() => import('../secciones/asistentes-ia/InformeEscolar')),
   ),

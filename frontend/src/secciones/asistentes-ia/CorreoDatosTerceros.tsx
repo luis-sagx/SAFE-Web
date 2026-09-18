@@ -28,14 +28,15 @@ const TIME = '10:14'
 
 // Imposible por construcción, como la del participante: tercer dígito 9, que el Registro Civil no asigna (ver identidadFicticia).
 const ECUADORIAN_ID = '1799999990'
-const FIRST_NAME = 'Andrea'
-const LAST_NAME = 'Cedeño'
+const FIRST_NAME = 'Andrea Carolina'
+const LAST_NAME = 'Cedeño Mora'
 // Dominio de entrenamiento, no uno real: un gmail aquí podría existir y llegarle a alguien.
 const EMAIL = 'andrea.cedeno02@safeweb.com'
-const TEACHER = 'Ing. Marcelo Tapia'
+const TEACHER = 'Ing. Marcelo Alejandro Tapia Vera'
 
 const DATA_POINTS: SensitiveDatum[] = [
   { id: 'dato-nombre', tipo: 'nombre', etiqueta: 'el nombre completo de tu compañera', nombre: FIRST_NAME, apellido: LAST_NAME },
+  { id: 'dato-docente', tipo: 'nombre', etiqueta: 'el nombre completo del docente', nombre: 'Marcelo Alejandro', apellido: 'Tapia Vera' },
   { id: 'dato-cedula', tipo: 'numero', etiqueta: 'la cédula de tu compañera', valor: ECUADORIAN_ID },
   // Sin el dominio también es su correo (el usuario identifica a la persona).
   { id: 'dato-correo', tipo: 'patron', etiqueta: 'el correo de tu compañera', patron: /andrea\.?cedeno02/ },
@@ -99,9 +100,9 @@ const STORY: Story<ScreenNode> = {
         `Si tu mensaje incluyó <b>${dato.etiqueta}</b>: para redactar el correo la IA no lo necesitaba, y ese dato real quedó en un servicio externo.`,
       ),
     ),
-    verdict: 'Datos de tu compañera compartidos con la IA',
+    verdict: 'Datos personales compartidos con la IA',
     outcome:
-      'Tu mensaje incluyó el nombre completo, la cédula o el correo real de tu compañera. Ninguno de los tres cambia cómo se redacta la solicitud, bastaba con "una compañera" y la materia.',
+      'Tu mensaje incluyó tres o más partes del nombre de tu compañera o del docente, la cédula o el correo real de tu compañera. Ninguno de esos datos cambia cómo se redacta la solicitud, bastaba con "una compañera", "el docente" y la materia.',
   },
   e_parcial: {
     kind: 'partial',
@@ -110,12 +111,12 @@ const STORY: Story<ScreenNode> = {
       signal(
         'borrador-enviado',
         'e_parcial',
-        'Quedó algún fragmento identificable,solo un nombre de pila, solo un apellido, o los últimos dígitos de la cédula, sin llegar a la combinación completa. No es un dato inventado: sigue siendo real, solo que a medias.',
+        'Quedaron los últimos dígitos de la cédula. No es un dato inventado: sigue siendo real, solo que a medias.',
       ),
     ],
     verdict: 'Quedó algo identificable, aunque no el dato completo',
     outcome:
-      'Tu mensaje no llegó a incluir un dato completo de tu compañera, pero sí un fragmento real,su nombre de pila, su apellido, o parte de su cédula,, no uno inventado. Lo más seguro es no dejar ningún rastro del dato real: usa un marcador como "mi compañera" en vez de una parte de su nombre.',
+      'Tu mensaje no llegó a incluir un dato completo de tu compañera, pero sí parte de su cédula real, no una inventada. Lo más seguro es no dejar ningún rastro del dato real: usa marcadores en vez de datos del bloc de notas.',
   },
   e_seguro: {
     kind: 'good',
@@ -124,12 +125,12 @@ const STORY: Story<ScreenNode> = {
       signal(
         'borrador-enviado',
         'e_seguro',
-        'Le diste a la IA lo que necesitaba,el asunto, a quién va, la materia, sin el nombre, la cédula ni el correo reales de tu compañera.',
+        'Le diste a la IA lo que necesitaba,el asunto, a quién va, la materia, sin nombres que identifiquen demasiado, la cédula ni el correo reales de tu compañera.',
       ),
     ],
     verdict: 'Correo redactado sin compartir datos reales de nadie',
     outcome:
-      'Tu mensaje le dio a la IA lo que necesitaba para redactar el texto, sin el nombre, la cédula ni el correo reales de tu compañera. Esos datos los completas tú mismo al final, fuera de la conversación.',
+      'Tu mensaje le dio a la IA lo que necesitaba para redactar el texto, sin nombres que identifiquen demasiado, la cédula ni el correo reales de tu compañera. Esos datos los completas tú mismo al final, fuera de la conversación.',
   },
 }
 
@@ -137,12 +138,12 @@ const SIGNALS = [
   signal(
     'datos-en-juego',
     'n1',
-    'La IA te pregunta qué debe incluir el correo. Tienes a la mano el <b>nombre completo</b>, la <b>cédula</b> y el <b>correo</b> de tu compañera, y ninguno de los tres cambia cómo se redacta la solicitud.',
+    'La IA te pregunta qué debe incluir el correo. Tienes a la mano los <b>nombres completos</b> de tu compañera y el docente, la <b>cédula</b> y el <b>correo</b> de tu compañera, y ninguno cambia cómo se redacta la solicitud.',
   ),
 ]
 
 const RULE =
-  'Regla de oro: antes de escribirle a una IA, revisa si tu mensaje trae <b>nombres, cédulas, correos o teléfonos de otras personas</b>. Si no hacen falta para lo que le pides, no los escribas, ni siquiera a medias.'
+  'Regla de oro: antes de escribirle a una IA, revisa si tu mensaje trae <b>tres o más partes de un nombre, cédulas, correos o teléfonos de otras personas</b>. Si no hacen falta para lo que le pides, no los escribas.'
 
 const SUMMARY = 'Le pides a una IA que redacte un correo a nombre de una compañera, con los datos de ella a la mano.'
 
