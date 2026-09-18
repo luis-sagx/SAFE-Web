@@ -1239,6 +1239,18 @@
   .mailToolbarTexto {
     font-size: 0.71875rem;
   }
+
+  /* En celular la barra de direcciones no tiene espacio para atrás/adelante/
+     recargar ni para estrella/perfil/menú además de la propia URL: sin
+     quitarlos, el dominio (la señal que el escenario pide revisar, issue
+     #225) quedaba recortado a "https:/…". El candado/aviso de seguridad y
+     el texto de la URL siguen, son la parte que hay que poder leer. */
+  .urlbar > .navBotones:first-child {
+    display: none;
+  }
+  .urlbar > .navBotones:last-child > .navIcono {
+    display: none;
+  }
 }
 
 /* Segundo escalón, para pantallas de 600px de alto o menos, donde el primero

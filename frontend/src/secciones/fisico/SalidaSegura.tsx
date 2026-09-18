@@ -183,7 +183,13 @@ function SafeExit() {
     const canvas = canvasRef.current
     const monitor = canvas?.parentElement
     if (!canvas || !monitor || typeof ResizeObserver === 'undefined') return
-    const observer = new ResizeObserver(() => setMiniScale(monitor.clientWidth / canvas.offsetWidth))
+    // Piso de 0.32: en celular el monitor mide una fracción de una foto ya
+    // angosta, y sin piso el texto y los botones de la miniatura se
+    // encimaban entre sí (issue #225). El recorte lo sigue dando el propio
+    // marco del monitor (overflow: hidden en .pantalla).
+    const observer = new ResizeObserver(() =>
+      setMiniScale(Math.max(monitor.clientWidth / canvas.offsetWidth, 0.32)),
+    )
     observer.observe(monitor)
     return () => observer.disconnect()
   }, [])

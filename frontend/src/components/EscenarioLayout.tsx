@@ -126,7 +126,7 @@ function ScenarioLayout({
   /** "Phishing · 3 de 8". Dentro del escenario no había forma de saber en qué
    *  punto del recorrido se estaba sin salirse de él. */
   const location = position > 0 && (
-    <p className="shrink-0 text-muted">
+    <p className="min-w-0 truncate text-muted">
       {section?.titulo}
       <span aria-hidden className="mx-1.5 text-muted-soft">
         ·
@@ -285,8 +285,13 @@ function ScenarioLayout({
 
         {!hideDecision && (
           /* En celular va debajo y se desplaza con la página; de 640 a 1024 sigue apilado
-              pero es el bloque el que se desplaza (máx. media pantalla). Al costado, todo el alto. */
-          <div className="w-full shrink-0 border-t border-hairline bg-canvas px-4 py-4 sm:max-h-[45%] sm:w-[28.75rem] sm:overflow-y-auto sm:border-0 sm:bg-transparent sm:px-0 sm:py-0 lg:w-[23.75rem] lg:max-h-full lg:self-center xl:w-[28.75rem]">
+              pero es el bloque el que se desplaza (máx. media pantalla). Al costado, todo el alto.
+              El ancho fijo (28.75rem) recién entra en lg: antes, de 640 a 1024, el marco del
+              dispositivo en los escenarios de escritorio mide casi toda la pantalla, y esta
+              columna angosta se veía descuadrada pegada a la izquierda debajo de algo tan
+              ancho (issue #225). Ancho completo mientras siga apilada, angosta recién cuando
+              pasa a ir al costado. */
+          <div className="w-full shrink-0 border-t border-hairline bg-canvas px-4 py-4 sm:max-h-[45%] sm:overflow-y-auto sm:border-0 sm:bg-transparent sm:px-0 sm:py-0 lg:w-[23.75rem] lg:max-h-full lg:self-center xl:w-[28.75rem]">
             {/* La historia queda a un clic, en un diálogo, porque se consulta poco. Con
                 aspecto de enlace (sigue siendo <button>) para no competir en peso con
                 "¿Qué haces?" y desviar la atención de lo único que hay que hacer aquí. */}
