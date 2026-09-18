@@ -278,6 +278,7 @@ function DeviceScreen({
   const [attached, setAttached] = useState<string[]>([])
   const [dragOver, setDragOver] = useState(false)
   const freeTextRef = useRef<HTMLTextAreaElement>(null)
+  const sendButtonRef = useRef<HTMLButtonElement>(null)
   // Crece con lo que se escribe o se pega,hasta el tope que marca el CSS,
   // donde recién entra el scroll, para no obligar a desplazarse dentro de un
   // campo chico cuando se pega un mensaje largo del bloc de notas.
@@ -489,6 +490,15 @@ function DeviceScreen({
   const canSend = freeText.trim() !== '' || attached.length > 0
   const sendResult = canSend ? view.entradaLibre?.onEnviar(freeText, attached) : undefined
   const sendGoto = sendResult && 'goto' in sendResult ? sendResult : undefined
+  const sendFreeText = () => {
+    if (!sendResult) return
+    if ('repregunta' in sendResult) {
+      setRetries((prev) => [...prev, { text: freeText, repregunta: sendResult.repregunta }])
+      setFreeText('')
+      return
+    }
+    setSent(true)
+  }
   // Solo ids conocidos y sin repetir: el drop puede traer cualquier texto arrastrado desde fuera.
   const attach = (id: string) => {
     if (!files?.some((file) => file.id === id)) return
@@ -709,10 +719,18 @@ function DeviceScreen({
                 onChange={(event) => setFreeText(event.target.value)}
                 placeholder={view.entradaLibre.placeholder}
                 aria-label="Escribe tu mensaje"
-                rows={3}
+                rows={1}
+                onKeyDown={(event) => {
+                  if (event.key !== 'Enter' || event.shiftKey || event.nativeEvent.isComposing) return
+                  event.preventDefault()
+                  // El motor del escenario escucha el clic del botón para avanzar al nodo final.
+                  // Reutilizarlo evita que Enter solo pinte el mensaje sin mostrar el veredicto.
+                  sendButtonRef.current?.click()
+                }}
               />
             </div>
             <button
+              ref={sendButtonRef}
               type="button"
               className={`${styles.hotspot} ${styles.smsEnviar}`}
               aria-label="Enviar el mensaje"
@@ -721,14 +739,7 @@ function DeviceScreen({
               data-hotspot-label={sendGoto?.label}
               // Una repregunta no es una decisión: sin esto el motor lo tomaría por un clic en el vacío.
               data-control={sendResult && !sendGoto ? '' : undefined}
-              onClick={() => {
-                if (sendResult && 'repregunta' in sendResult) {
-                  setRetries((prev) => [...prev, { text: freeText, repregunta: sendResult.repregunta }])
-                  setFreeText('')
-                } else {
-                  setSent(true)
-                }
-              }}
+              onClick={sendFreeText}
             >
               <SendHorizontal aria-hidden className={styles.smsEnviarIcono} strokeWidth={2} />
             </button>
