@@ -6,33 +6,38 @@ vi.mock('../../context/AuthContext', async () => (await import('../../test/escen
 vi.mock('../../lib/api', async () => (await import('../../test/escenario')).offlineApi())
 
 describe('CableComprometido', () => {
-  it('abre la estación de carga con las opciones a la vista', () => {
+  it('abre justo después del robo con las opciones a la vista', () => {
     start(<CompromisedCable />)
-    expect(screen.getByAltText(/carga pública/)).toBeDefined()
-    expect(screen.getByRole('button', { name: /tomacorriente/ })).toBeDefined()
+    expect(screen.getByAltText(/levanta tu celular/)).toBeDefined()
+    expect(screen.getByRole('button', { name: /llamar primero a tu banco/ })).toBeDefined()
   })
 
-  it('conectar el cable directo al puerto público es el riesgo', async () => {
+  it('el contexto deja claro que el celular no tiene clave', () => {
     start(<CompromisedCable />)
-    fireEvent.click(screen.getByRole('button', { name: /Conectar tu cable directo/ }))
-    expect(await screen.findByText('Riesgo detectado')).toBeDefined()
+    expect(screen.getByText(/No le pusiste clave de bloqueo/)).toBeDefined()
   })
 
-  it('buscar un tomacorriente para el propio cargador es seguro', async () => {
+  it('bloquear primero el banco protege las cuentas', async () => {
     start(<CompromisedCable />)
-    fireEvent.click(screen.getByRole('button', { name: /Buscar un tomacorriente/ }))
-    expect(await screen.findByText('Decisión segura')).toBeDefined()
+    fireEvent.click(screen.getByRole('button', { name: /llamar primero a tu banco/ }))
+    expect(await screen.findByText('Cuentas protegidas')).toBeDefined()
   })
 
-  it('cargar primero una batería portátil también es seguro', async () => {
+  it('esperar a llegar a casa es caer', async () => {
     start(<CompromisedCable />)
-    fireEvent.click(screen.getByRole('button', { name: /Conectar primero tu batería portátil/ }))
-    expect(await screen.findByText('Decisión segura')).toBeDefined()
+    fireEvent.click(screen.getByRole('button', { name: /Ir primero a casa/ }))
+    expect(await screen.findByText('Vaciaron tu cuenta')).toBeDefined()
   })
 
-  it('aguantar sin cargar evita el riesgo pero queda como respuesta incompleta', async () => {
+  it('denunciar primero queda como respuesta incompleta', async () => {
     start(<CompromisedCable />)
-    fireEvent.click(screen.getByRole('button', { name: /Aguantar sin cargar/ }))
+    fireEvent.click(screen.getByRole('button', { name: /Fiscalía/ }))
     expect(await screen.findByText('Respuesta incompleta')).toBeDefined()
+  })
+
+  it('bloquear solo el chip no cierra las apps abiertas', async () => {
+    start(<CompromisedCable />)
+    fireEvent.click(screen.getByRole('button', { name: /solo a la operadora/ }))
+    expect(await screen.findByText(/sesión abierta siguieron funcionando/)).toBeDefined()
   })
 })
