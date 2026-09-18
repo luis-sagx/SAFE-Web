@@ -60,6 +60,9 @@ interface BrowserProps {
    *  cuando esa pestaña no trae su propio `cierra` fijo. */
   cierrePortal?: string
   pestanaCierreDinamico?: string
+  /** La ✕ de la ventana cierra el navegador: llega a `onHotspot` como un
+   *  clic sobre `[data-close-window]`. */
+  closableWindow?: boolean
   onHotspot: (event: React.MouseEvent) => void
   children: ReactNode
 }
@@ -72,6 +75,7 @@ export function Browser({
   reloj: clock = 'vivo',
   cierrePortal: portalCompletion,
   pestanaCierreDinamico: dynamicClosingTab,
+  closableWindow = false,
   onHotspot,
   children,
 }: BrowserProps) {
@@ -129,7 +133,7 @@ export function Browser({
         <span className={styles.tabNueva} aria-hidden>
           +
         </span>
-        <WindowButtons />
+        <WindowButtons closable={closableWindow} />
       </div>
 
       <div className={styles.urlbar}>

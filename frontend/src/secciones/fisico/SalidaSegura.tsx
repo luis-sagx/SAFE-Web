@@ -1,6 +1,6 @@
-import { useCallback, useRef, useState, type CSSProperties, type MouseEvent } from 'react'
+import { useCallback, useRef, useState, type CSSProperties, type DragEvent, type MouseEvent } from 'react'
 import { flushSync } from 'react-dom'
-import { ArrowLeft, Lock, LockOpen, ZoomIn } from 'lucide-react'
+import { ArrowLeft, Check, Circle, Lock, LockOpen, ZoomIn } from 'lucide-react'
 import officeImg from '../../assets/escenarios/fisico/oficina.webp'
 import ScenarioLayout from '../../components/EscenarioLayout'
 import DeviceScreen, { type ScreenView } from '../../components/ui/DeviceScreen'
@@ -114,6 +114,8 @@ const BROWSER_TABS: Record<string, TabConfig> = Object.fromEntries(
   TABS.map((tab) => [tab.id, { titulo: tab.titulo, url: tab.url, segura: true, cierra: 'cerrar' }]),
 )
 
+const DOCUMENT_DRAG_TYPE = 'application/x-safe-web-documento'
+
 interface Document {
   nombre: string
   // Porcentaje dentro de la zona libre del escritorio, a la izquierda del teclado.
@@ -162,6 +164,8 @@ function SafeExit() {
   const [closed, setClosed] = useState<ReadonlySet<number>>(WITHOUT_CLOSE)
   const [saved, setSaved] = useState<ReadonlySet<number>>(WITHOUT_CLOSE)
   const [blocked, setBlocked] = useState(false)
+  // Mientras se arrastra una hoja, el cajón se ilumina como destino.
+  const [dragging, setDragging] = useState(false)
   // Arranca en la primera pestaña, como cualquier navegador que se deja
   // abierto: una ventana sin ninguna pestaña activa no existe.
   const [activeTab, setTabActive] = useState<number | null>(0)
@@ -223,9 +227,29 @@ function SafeExit() {
     }
   }
 
+  function closeAllTabs() {
+    if (final) return
+    setClosed(new Set(TABS.map((_, i) => i)))
+    setTabActive(null)
+  }
+
   function saveDocument(index: number) {
     if (final) return
     setSaved(new Set(saved).add(index))
+  }
+
+  // En las pruebas con usuarios la gente arrastraba las hojas al cajón o
+  // pulsaba el cajón para cerrarlo: las tres formas guardan.
+  function saveAllDocuments() {
+    if (final) return
+    setSaved(new Set(DOCUMENTS.map((_, i) => i)))
+  }
+
+  function dropOnDrawer(event: DragEvent) {
+    event.preventDefault()
+    setDragging(false)
+    const index = Number(event.dataTransfer.getData(DOCUMENT_DRAG_TYPE))
+    if (DOCUMENTS[index]) saveDocument(index)
   }
 
   // Los clics del navegador compartido llegan todos aquí, como en los escenarios
@@ -234,7 +258,9 @@ function SafeExit() {
     const target = event.target as HTMLElement
     const closing = target.closest<HTMLElement>('[data-cierra]')?.dataset.cierra
     const tab = target.closest<HTMLElement>('[data-pestana]')?.dataset.pestana
-    if (closing) closeTab(TABS.findIndex((t) => t.id === closing))
+    // La ✕ de la ventana: cerrar el navegador entero también vale.
+    if (target.closest('[data-close-window]')) closeAllTabs()
+    else if (closing) closeTab(TABS.findIndex((t) => t.id === closing))
     else if (tab) setTabActive(TABS.findIndex((t) => t.id === tab))
   }
 
@@ -296,6 +322,7 @@ function SafeExit() {
     setClosed(WITHOUT_CLOSE)
     setSaved(WITHOUT_CLOSE)
     setBlocked(false)
+    setDragging(false)
     setTabActive(0)
     setFinal(null)
     setReview(false)
@@ -332,6 +359,7 @@ function SafeExit() {
       activa={activeId ?? ''}
       marcadores={[]}
       reloj={{ hora: '17:50' }}
+      closableWindow
       onHotspot={onBrowserClick}
     >
       {activeScreen ? (
@@ -368,6 +396,12 @@ function SafeExit() {
                   className={`${styles.papel} ${styles.control}`}
                   style={{ left: `${document.x}%`, '--giro': `${document.rotacion}deg` } as CSSProperties}
                   onClick={() => saveDocument(i)}
+                  draggable
+                  onDragStart={(event) => {
+                    event.dataTransfer.setData(DOCUMENT_DRAG_TYPE, String(i))
+                    setDragging(true)
+                  }}
+                  onDragEnd={() => setDragging(false)}
                   aria-label={`Guardar ${document.nombre} en el cajón`}
                 >
                   <span className={styles.papelHoja} aria-hidden />
@@ -377,12 +411,25 @@ function SafeExit() {
             )}
           </div>
 
-          <p className={`${styles.rotulo} ${styles.cajon}`}>
-            Cajón con llave
-            <span className={`${styles.cajonDetalle} tabular-nums`}>
-              {savedView.size} de {DOCUMENTS.length} guardados
+          <button
+            type="button"
+            className={`${styles.rotulo} ${styles.cajon} ${styles.control} ${dragging ? styles.cajonDestino : ''}`}
+            onClick={saveAllDocuments}
+            onDragOver={(event) => event.preventDefault()}
+            onDragEnter={() => setDragging(true)}
+            onDrop={dropOnDrawer}
+            aria-label="Cajón con llave: guardar ahí todos los documentos"
+          >
+            <span className="inline-flex items-center gap-1.5">
+              <Lock className={styles.rotuloIcono} aria-hidden /> Cajón con llave
             </span>
-          </p>
+            {/* La key reinicia la animación: cada hoja guardada se nota. */}
+            <span key={savedView.size} className={`${styles.cajonDetalle} ${savedView.size ? styles.cajonPulso : ''} tabular-nums`}>
+              {savedView.size === DOCUMENTS.length
+                ? 'Todo guardado y cerrado'
+                : `${savedView.size} de ${DOCUMENTS.length} guardados`}
+            </span>
+          </button>
 
           {/* Bloquear la sesión es lo que se hace desde el teclado, así que el
               control vive sobre el teclado de la foto. */}
@@ -417,10 +464,31 @@ function SafeExit() {
             >
               <span className={styles.rotulo} aria-hidden>
                 <ZoomIn className={styles.rotuloIcono} /> Ver la pantalla
+                {openTabs > 0 && (
+                  <span className={`${styles.soloAncho} font-normal tabular-nums`}>
+                    · {openTabs} {openTabs === 1 ? 'pestaña abierta' : 'pestañas abiertas'}
+                  </span>
+                )}
               </span>
             </button>
           )}
         </div>
+
+        {/* La lista de tareas también va sobre la foto: en las pruebas nadie
+            miraba el panel lateral mientras actuaba sobre la escena. */}
+        {!final && (
+          <ul className={styles.progresoPuesto} aria-hidden>
+            {[
+              { done: openTabs === 0, text: `Pestañas cerradas ${closed.size}/${TABS.length}` },
+              { done: exposedPapers === 0, text: `Documentos en el cajón ${saved.size}/${DOCUMENTS.length}` },
+              { done: blocked, text: blocked ? 'Sesión bloqueada' : 'Sesión sin bloquear' },
+            ].map((item) => (
+              <li key={item.text} className={item.done ? styles.progresoHecho : undefined}>
+                {item.done ? <Check aria-hidden /> : <Circle aria-hidden />} {item.text}
+              </li>
+            ))}
+          </ul>
+        )}
 
         {close && <div className={styles.fondoCerca} onClick={closeZoom} aria-hidden />}
 
@@ -512,10 +580,12 @@ function SafeExit() {
         }
         pista={
           <p>
-            Toca el monitor para acercarte: cada pestaña se cierra con su <strong>✕</strong>, como
-            en tu navegador. Los documentos se guardan con un clic y se van al cajón. La sesión se
-            bloquea desde el teclado. Puedes irte cuando quieras: lo que dejes a la vista, ahí
-            queda.
+            Toca el monitor para acercarte: cierra cada pestaña con su <strong>✕</strong> o el
+            navegador entero con la <strong>✕</strong> de la ventana. Los documentos se guardan
+            con un clic sobre cada hoja, arrastrándolos al cajón o tocando el cajón. Deja{' '}
+            <strong>bloquear la sesión para el final</strong>: bloqueada ya no puedes tocar la
+            pantalla. La lista sobre la foto muestra lo que falta. Puedes irte cuando quieras: lo
+            que dejes a la vista, ahí queda.
           </p>
         }
       />

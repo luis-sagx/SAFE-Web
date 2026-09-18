@@ -191,13 +191,27 @@ export function MailNav({
 }
 
 // Decorativos: son lo que hace que una ventana se lea como ventana sin
-// depender de un estilo de botones concreto (macOS/Windows).
-export function WindowButtons() {
+// depender de un estilo de botones concreto (macOS/Windows). Con `closable`
+// la ✕ es un botón de verdad (marcado con data-close-window) para escenarios
+// donde cerrar la ventana entera es una respuesta válida.
+export function WindowButtons({ closable = false }: { closable?: boolean }) {
   return (
-    <span className={styles.titlebarBotones} aria-hidden>
-      <Minus className={styles.titlebarIcono} strokeWidth={2} />
-      <Square className={styles.titlebarIconoCuadro} strokeWidth={2} />
-      <X className={styles.titlebarIcono} strokeWidth={2} />
+    <span className={styles.titlebarBotones} aria-hidden={closable ? undefined : true} data-window-buttons>
+      <Minus aria-hidden className={styles.titlebarIcono} strokeWidth={2} />
+      <Square aria-hidden className={styles.titlebarIconoCuadro} strokeWidth={2} />
+      {closable ? (
+        <button
+          type="button"
+          className={styles.windowClose}
+          title="Cerrar el navegador"
+          aria-label="Cerrar el navegador"
+          data-close-window
+        >
+          <X aria-hidden className={styles.titlebarIcono} strokeWidth={2} />
+        </button>
+      ) : (
+        <X aria-hidden className={styles.titlebarIcono} strokeWidth={2} />
+      )}
     </span>
   )
 }

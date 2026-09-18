@@ -42,6 +42,40 @@ describe('SalidaSegura', () => {
     expect(within(scene).getAllByRole('button', { name: /^Guardar / })).toHaveLength(2)
   })
 
+  it('la ✕ de la ventana cierra todas las pestañas de una vez', () => {
+    const scene = start(<SafeExit />)
+
+    zoomIn(scene)
+    fireEvent.click(within(scene).getByRole('button', { name: 'Cerrar el navegador' }))
+
+    expect(within(scene).queryAllByRole('button', { name: /^Cerrar la pestaña/ })).toHaveLength(0)
+    expect(screen.getByText('(4 de 4)')).toBeDefined()
+  })
+
+  it('tocar el cajón guarda todos los documentos', () => {
+    const scene = start(<SafeExit />)
+
+    fireEvent.click(within(scene).getByRole('button', { name: /^Cajón con llave/ }))
+
+    expect(within(scene).queryAllByRole('button', { name: /^Guardar / })).toHaveLength(0)
+    expect(within(scene).getByText('Todo guardado y cerrado')).toBeDefined()
+  })
+
+  it('arrastrar una hoja al cajón la guarda', () => {
+    const scene = start(<SafeExit />)
+    const data = new Map<string, string>()
+    const dataTransfer = {
+      setData: (type: string, value: string) => data.set(type, value),
+      getData: (type: string) => data.get(type) ?? '',
+    }
+
+    fireEvent.dragStart(within(scene).getByRole('button', { name: 'Guardar Nóminas en el cajón' }), { dataTransfer })
+    fireEvent.drop(within(scene).getByRole('button', { name: /^Cajón con llave/ }), { dataTransfer })
+
+    expect(screen.getByText('(1 de 3)')).toBeDefined()
+    expect(within(scene).queryByRole('button', { name: 'Guardar Nóminas en el cajón' })).toBeNull()
+  })
+
   it('abre en la primera pestaña y muestra su URL', () => {
     const scene = start(<SafeExit />)
 

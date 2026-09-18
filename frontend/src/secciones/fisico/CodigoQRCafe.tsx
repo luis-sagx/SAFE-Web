@@ -6,10 +6,8 @@ import type { Story } from '../../hooks/useStoryEngine'
 import internetCafeImg from '../../assets/escenarios/fisico/internet-cafe.webp'
 
 const SCENE: ScreenView = { kind: 'escena', src: internetCafeImg, alt: 'Código QR de WiFi en la pared de un café', zonas: [{ id: 'qr-cafe', x: '52%', y: '42%', ancho: '18%', alto: '28%' }] }
-const SCENE_WITH_FLASH: ScreenView = { ...SCENE, destello: { x: '61%', y: '56%', goto: 'n_opciones', label: 'Se acercó al código QR' } }
 const STORY: Story<ScreenNode> = {
-  n1: { kind: 'scene', view: SCENE_WITH_FLASH },
-  n_opciones: { kind: 'scene', view: SCENE, choices: [
+  n1: { kind: 'scene', view: SCENE, choices: [
     { label: 'Escanear el código QR para conectarme al WiFi', goto: 'e_escanea' },
     { label: 'Preguntar al personal del café por la contraseña del WiFi', goto: 'e_pregunta' },
     { label: 'Usar datos móviles aunque sea lento', goto: 'e_datos' },

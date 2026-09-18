@@ -6,10 +6,8 @@ import type { Story } from '../../hooks/useStoryEngine'
 import openServerDoorImg from '../../assets/escenarios/fisico/puerta-abierta-servidores.webp'
 
 const SCENE: ScreenView = { kind: 'escena', src: openServerDoorImg, alt: 'Puerta abierta del pasillo frío de servidores', zonas: [{ id: 'puerta-abierta', x: '41%', y: '10%', ancho: '30%', alto: '80%' }] }
-const SCENE_WITH_FLASH: ScreenView = { ...SCENE, destello: { x: '56%', y: '45%', goto: 'n_opciones', label: 'Se acercó a la puerta' } }
 const STORY: Story<ScreenNode> = {
-  n1: { kind: 'scene', view: SCENE_WITH_FLASH },
-  n_opciones: { kind: 'scene', view: SCENE, choices: [
+  n1: { kind: 'scene', view: SCENE, choices: [
     { label: 'Cerrar la puerta y reportar a infraestructura', goto: 'e_cierra_reporta' },
     { label: 'Cerrar la puerta y seguir adelante', goto: 'e_solo_cierra' },
     { label: 'Seguir de largo, alguien se encargará', goto: 'e_nada' },

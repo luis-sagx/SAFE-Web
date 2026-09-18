@@ -401,16 +401,12 @@ function ScenarioStory({
     />
   ) : (
     (() => {
-      // Antes de tocar el destello la escena ya avisa qué tocar (ver
-      // EscenaFoto), así que "¿Qué haces?" y la pista aún no dicen nada.
-      const beforeFlash = toView.kind === 'escena' && toView.destello && !engine.node.choices
-
       const questionBlock = (
         <div className="grid gap-3">
-          {!beforeFlash && <p className="text-lg font-semibold text-ink">{question}</p>}
+          <p className="text-lg font-semibold text-ink">{question}</p>
           {engine.node.choices && <StoryChoices choices={engine.node.choices} onChoose={engine.choose} />}
           <Instructions
-            pista={beforeFlash ? undefined : clue}
+            pista={clue}
             cuandoTermina={onFinished}
             fallo={!hideEmptyClickNotice && clickedEmptySpace}
           >

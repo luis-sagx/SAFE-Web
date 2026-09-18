@@ -15,10 +15,6 @@ const KIOSK: ScreenView = {
   alt: 'Estación de carga pública con varios puertos USB en un centro comercial',
   zonas: [{ id: 'panel-usb', x: '57%', y: '30%', ancho: '16%', alto: '17%' }],
 }
-const KIOSK_WITH_FLASH: ScreenView = {
-  ...KIOSK,
-  destello: { x: '65%', y: '45%', goto: 'n1', label: 'Inspeccionó la estación de carga' },
-}
 
 const SIGNALS: Signal[] = [
   {
@@ -31,7 +27,6 @@ const SIGNALS: Signal[] = [
 ]
 
 const STORY: Story<ScreenNode> = {
-  n1_ver: { kind: 'scene', view: KIOSK_WITH_FLASH },
   n1: {
     kind: 'scene',
     view: KIOSK,
@@ -98,7 +93,6 @@ export default function CompromisedCable() {
       contexto={context}
       nota="Un puerto de carga no se distingue por fuera; lo que importa es si hay o no un tomacorriente normal."
       story={STORY}
-      initialNode="n1_ver"
       senales={SIGNALS}
       rule="<b>Nunca conectes tu celular directo a un puerto de carga público desconocido.</b> El cable lleva datos, no solo corriente: usa tu propio cargador en un tomacorriente, o carga primero una batería portátil."
       restartLabel="Intentar de nuevo"

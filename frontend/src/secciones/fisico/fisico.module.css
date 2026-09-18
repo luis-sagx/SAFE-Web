@@ -63,7 +63,8 @@
   /* Cuatro pestañas en un navegador de 345px: fuera lo decorativo de la barra
      ("+", botones de ventana, globo) para que quepan el nombre y la ✕. El
      navegador es compartido, así que se apunta por rol y no por clase. */
-  .lienzo [role='tablist'] > [aria-hidden] {
+  .lienzo [role='tablist'] > [aria-hidden],
+  .lienzo [data-window-buttons] {
     display: none;
   }
 
@@ -266,8 +267,89 @@
   border-radius: 0.5rem;
 }
 
+.cajon {
+  cursor: pointer;
+  text-align: left;
+}
+
+.cajon:hover,
+.cajonDestino {
+  background: rgba(0, 104, 55, 0.92);
+}
+
+.cajonDestino {
+  outline: 3px dashed #4ade80;
+  outline-offset: 4px;
+}
+
 .cajonDetalle {
   font-weight: 400;
+}
+
+.cajonPulso {
+  animation: cajon-pulso 0.4s ease-out;
+}
+
+@keyframes cajon-pulso {
+  0% {
+    transform: scale(1.25);
+    color: #4ade80;
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Lo que falta, sobre la foto: arriba a la izquierda, sobre la ventana. */
+.progresoPuesto {
+  position: absolute;
+  left: 0.75rem;
+  top: 0.75rem;
+  display: grid;
+  gap: 0.25rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  background: rgba(17, 17, 17, 0.78);
+  color: #f5f5f4;
+  font-size: 0.9375rem;
+  line-height: 1.3;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+}
+
+.progresoPuesto li {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.progresoPuesto svg {
+  width: 1em;
+  height: 1em;
+  flex: none;
+  color: #a8a29e;
+}
+
+.progresoHecho {
+  color: #a8a29e;
+  text-decoration: line-through;
+}
+
+.progresoHecho svg {
+  color: #4ade80;
+}
+
+/* En celular la lista ya se ve debajo de la escena, y encima de una foto de
+   375px taparía el monitor. Va después de la regla base para ganarle. */
+@media (max-width: 639px) {
+  .progresoPuesto {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cajonPulso {
+    animation: none;
+  }
 }
 
 .teclado {
@@ -308,70 +390,6 @@
   position: absolute;
   border-radius: 0.5rem;
   pointer-events: none;
-}
-
-/* El punto que hay que tocar antes de que aparezcan las opciones: se ve desde
-   lejos (el pulso) y se toca fácil (el círculo es más grande que el ícono). */
-.destello {
-  position: absolute;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.75rem;
-  height: 2.75rem;
-  transform: translate(-50%, -50%);
-  border-radius: 999px;
-}
-
-.destelloPulso {
-  position: absolute;
-  inset: 0;
-  border-radius: 999px;
-  background: #ab6400;
-  opacity: 0.55;
-  animation: destello-pulso 1.6s ease-out infinite;
-}
-
-.destelloPunto {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 1.875rem;
-  height: 1.875rem;
-  border-radius: 999px;
-  background: #ab6400;
-  font-size: 1rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
-}
-
-@keyframes destello-pulso {
-  0% {
-    transform: scale(0.8);
-    opacity: 0.55;
-  }
-  100% {
-    transform: scale(2.2);
-    opacity: 0;
-  }
-}
-
-/* Aviso de que hay algo que tocar: sin esto, el destello puede leerse como un
-   adorno de la foto en vez de un punto que hay que pulsar para continuar. */
-.destelloAviso {
-  position: absolute;
-  inset-inline: 0;
-  bottom: 0;
-  padding: 0.75rem 1rem 0.875rem;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.55), transparent);
-}
-
-.destelloAvisoTexto {
-  color: #fff;
-  font-size: 0.9375rem;
-  font-weight: 600;
-  text-align: center;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
 }
 
 /* Aviso de que la escena avanza sola: sin esto, una foto quieta durante

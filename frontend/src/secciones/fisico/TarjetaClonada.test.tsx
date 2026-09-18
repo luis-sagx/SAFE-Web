@@ -5,10 +5,6 @@ import ClonedCard from './TarjetaClonada'
 vi.mock('../../context/AuthContext', async () => (await import('../../test/escenario')).mockAuth())
 vi.mock('../../lib/api', async () => (await import('../../test/escenario')).offlineApi())
 
-function triggerFlash() {
-  fireEvent.click(screen.getByRole('button', { name: 'Inspeccionar' }))
-}
-
 describe('TarjetaClonada', () => {
   beforeEach(() => {
     vi.useFakeTimers()
@@ -21,7 +17,7 @@ describe('TarjetaClonada', () => {
   it('muestra primero el recuerdo, sin nada que tocar', () => {
     start(<ClonedCard />)
     expect(screen.getByAltText(/Escaneo de una billetera/)).toBeDefined()
-    expect(screen.queryByRole('button', { name: 'Inspeccionar' })).toBeNull()
+    expect(screen.queryByRole('button', { name: /Bloquear la tarjeta inmediatamente/ })).toBeNull()
   })
 
   it('avisa que la escena avanza sola, con contexto de qué está pasando', () => {
@@ -37,13 +33,11 @@ describe('TarjetaClonada', () => {
     expect(screen.getByAltText(/Llamada del banco/)).toBeDefined()
   })
 
-  it('las opciones de la alerta no aparecen hasta tocar el destello', async () => {
+  it('al llegar la alerta las opciones ya están a la vista', async () => {
     start(<ClonedCard />)
     for (let i = 0; i < 45; i += 1) {
       await vi.advanceTimersByTimeAsync(100)
     }
-    expect(screen.queryByRole('button', { name: /Bloquear la tarjeta inmediatamente/ })).toBeNull()
-    triggerFlash()
     expect(screen.getByRole('button', { name: /Bloquear la tarjeta inmediatamente/ })).toBeDefined()
   })
 
@@ -52,7 +46,6 @@ describe('TarjetaClonada', () => {
     for (let i = 0; i < 45; i += 1) {
       await vi.advanceTimersByTimeAsync(100)
     }
-    triggerFlash()
     fireEvent.click(screen.getByRole('button',{name:/Bloquear la tarjeta inmediatamente/}))
     expect(screen.getByText('Tarjeta protegida')).toBeDefined()
   })
@@ -62,7 +55,6 @@ describe('TarjetaClonada', () => {
     for (let i = 0; i < 45; i += 1) {
       await vi.advanceTimersByTimeAsync(100)
     }
-    triggerFlash()
     fireEvent.click(screen.getByRole('button',{name:/Ignorar la notificación/}))
     expect(screen.getByText('Riesgo detectado')).toBeDefined()
   })
