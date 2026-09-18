@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type CSSProperties, type MouseEvent } from 'react'
+import { useCallback, useRef, useState, type CSSProperties, type MouseEvent } from 'react'
 import { flushSync } from 'react-dom'
 import { ArrowLeft, Lock, LockOpen, ZoomIn } from 'lucide-react'
 import officeImg from '../../assets/escenarios/fisico/oficina.webp'
@@ -174,16 +174,27 @@ function SafeExit() {
   // que acercarse, como quien se sienta frente a la pantalla.
   const [zoomed, setZoomed] = useState(false)
   const monitorRef = useRef<HTMLButtonElement>(null)
-  // El navegador se dibuja a tamaño de escritorio y, sobre la foto, se reduce
-  // entero hasta el ancho del monitor: mismo aspecto, sin rediseñarlo en miniatura.
-  const canvasRef = useRef<HTMLDivElement>(null)
   const [miniScale, setMiniScale] = useState(0.4)
 
-  useEffect(() => {
-    const canvas = canvasRef.current
+  // Ref de callback y no useRef + useEffect: el lienzo recién existe en el DOM
+  // al pasar del briefing al escenario, momento en el que SafeExit ya está
+  // montado hace rato. Con useEffect([]) —lo que había antes— la medición
+  // corría una sola vez, con el lienzo todavía sin montar, y no se repetía
+  // nunca: la miniatura se quedaba fija en el 0.4 inicial sin importar el
+  // ancho real de pantalla (issue #225). La ref de callback sí se vuelve a
+  // llamar cada vez que el nodo aparece.
+  // El navegador se dibuja a tamaño de escritorio y, sobre la foto, se reduce
+  // entero hasta el ancho del monitor: mismo aspecto, sin rediseñarlo en miniatura.
+  const canvasRef = useCallback((canvas: HTMLDivElement | null) => {
     const monitor = canvas?.parentElement
     if (!canvas || !monitor || typeof ResizeObserver === 'undefined') return
-    const observer = new ResizeObserver(() => setMiniScale(monitor.clientWidth / canvas.offsetWidth))
+    // Piso de 0.32: en celular el monitor mide una fracción de una foto ya
+    // angosta, y sin piso el texto y los botones de la miniatura se
+    // encimaban entre sí. El recorte lo sigue dando el propio marco del
+    // monitor (overflow: hidden en .pantalla).
+    const observer = new ResizeObserver(() =>
+      setMiniScale(Math.max(monitor.clientWidth / canvas.offsetWidth, 0.32)),
+    )
     observer.observe(monitor)
     return () => observer.disconnect()
   }, [])
