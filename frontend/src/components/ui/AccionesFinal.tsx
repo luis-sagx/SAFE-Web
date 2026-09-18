@@ -5,6 +5,7 @@ import { fetchProgress, restartModule } from '../../lib/api'
 import type { RunOutcome } from '../../lib/api'
 import { withAttemptedScenario, nextInRound } from '../../lib/bloqueoEscenarios'
 import ConfirmReplayModal from '../ConfirmarRepeticionModal'
+import ModuleQuiz from '../MiniTestModulo'
 import ModuleTransition from '../TransicionModulo'
 
 interface FinalActionsProps {
@@ -36,6 +37,7 @@ function FinalActions({ escenarioId: scenarioId, outcome, autoFocus }: FinalActi
   const [restartError, setRestartError] = useState<string | null>(null)
   const [progress, setProgress] = useState<import('../../lib/api').Progress | null>(null)
   const [showTransition, setShowTransition] = useState(true)
+  const [quizPassed, setQuizPassed] = useState(false)
   const mainRef = useRef<HTMLAnchorElement | HTMLButtonElement>(null)
 
   useEffect(() => {
@@ -199,10 +201,17 @@ function FinalActions({ escenarioId: scenarioId, outcome, autoFocus }: FinalActi
 
   return (
     <>
+      {/* Mini-test antes de la transición (issue #230): dos preguntas sobre
+          el tipo de engaño del módulo, hay que acertarlas para pasar a la
+          pantalla de "siguiente módulo" — no es un aviso que se pueda
+          saltar, es la condición para avanzar. */}
+      {justApproved && nextModule && !quizPassed && (
+        <ModuleQuiz seccionId={sectionId} onComplete={() => setQuizPassed(true)} />
+      )}
       {/* Pantalla aparte y no un aviso metido en el propio veredicto (issue
           #229): así se nota el "cambio de escena" al pasar de un tipo de
           ataque a otro, en vez de que la transición se sienta continua. */}
-      {justApproved && nextModule && currentSection && showTransition && (
+      {justApproved && nextModule && currentSection && quizPassed && showTransition && (
         <ModuleTransition
           seccion={currentSection}
           aprobados={effectiveApprovedCount}
