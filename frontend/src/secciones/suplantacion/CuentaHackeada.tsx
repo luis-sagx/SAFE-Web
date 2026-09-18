@@ -7,7 +7,7 @@ import type { Story } from '../../hooks/useStoryEngine'
 import { ACCOUNT_FAKE } from '../../lib/identidadFicticia'
 
 // El más difícil del módulo: la cuenta es de verdad, quien escribe no (le robaron el WhatsApp).
-// Solo queda para dudar lo que no se puede robar: cómo escribe, y su voz.
+// La señal es que quien escribe evita las dos comprobaciones que no puede imitar: llamada y audio.
 
 const FRIEND = 'Byron Mendoza'
 const NUMBER_BYRON = '+593 98 447 1093'
@@ -20,8 +20,9 @@ const HISTORY = [
 ]
 
 const ORDER = {
-  text: 'Estimado amigo, buenas tardes. Necesito solicitarte un favor urgente: estoy en el hospital con mi madre y requiero 180 dólares para poder cancelar unos exámenes. ¿Me podrías ayudar?',
+  text: 'Bro, ayúdame porfa. Estoy con mi mamá en emergencia y necesito $180 para unos exámenes. No puedo hablar ni mandar audios; estoy adentro.',
   time: '17:41',
+  separador: 'HOY',
   senal: 'escritura',
 }
 
@@ -78,7 +79,7 @@ const ACCOUNT: ScreenView = {
     ORDER,
     { text: 'Claro men, ¿a qué cuenta te mando?', time: '17:43', mine: true },
     {
-      text: `Te agradezco muchísimo. La transferencia va a esta cuenta: ${ACCOUNT_SCAM}. Es de mi cuñado, la mía tiene un inconveniente con el banco en este momento.`,
+      text: `Gracias bro. Transfiéreme a esta cuenta, es de mi cuñado porque la mía no está funcionando: ${ACCOUNT_SCAM}. Te devuelvo apenas pueda.`,
       time: '17:44',
       senal: 'cuenta',
     },
@@ -104,7 +105,7 @@ const CANNOT_TALK: ScreenView = {
     ORDER,
     { text: 'Uy, qué pasó. Te llamo ahorita.', time: '17:43', mine: true },
     {
-      text: 'No es posible en este momento, estoy dentro del área de emergencia y no permiten llamadas. Prefiero que coordinemos por este medio.',
+      text: 'Te dije que no puedo hablar ni mandar audios; estoy adentro. Mejor coordinemos por aquí.',
       time: '17:44',
       senal: 'no-llama',
     },
@@ -288,7 +289,7 @@ const SIGNALS: Signal[] = [
     targetId: 'escritura',
     pantalla: 'n1',
     texto:
-      '<b>No escribe como él.</b> Byron te dice "bro" y manda emojis; ese mensaje dice "estimado amigo" y "requiero". La cuenta es suya, la forma de hablar no.',
+      '<b>Te corta las dos formas de comprobarlo.</b> Pide dinero y desde el primer mensaje dice que no puede hablar ni mandar audios. La cuenta puede ser de Byron, pero quien escribe evita que oigas su voz.',
   },
   {
     id: 's2',
