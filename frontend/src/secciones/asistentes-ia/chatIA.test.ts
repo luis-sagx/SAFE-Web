@@ -36,14 +36,33 @@ describe('evaluateDatum, números (cédula, cuenta, teléfono)', () => {
 })
 
 describe('evaluateDatum, nombre completo', () => {
-  it('nombre y apellido reales juntos es fuga', () => {
-    expect(evaluateDatum('soy Paola Guamán', NOMBRE).nivel).toBe('fuga')
-    expect(evaluateDatum('SOY PAOLA GUAMAN', NOMBRE).nivel).toBe('fuga') // sin tilde y en mayúsculas
+  it('un nombre de hasta dos partes es seguro', () => {
+    expect(evaluateDatum('soy Paola Guamán', NOMBRE).nivel).toBe('seguro')
+    expect(evaluateDatum('SOY PAOLA GUAMAN', NOMBRE).nivel).toBe('seguro') // sin tilde y en mayúsculas
   })
 
-  it('solo el nombre de pila, o solo el apellido, es parcial', () => {
-    expect(evaluateDatum('soy Paola', NOMBRE).nivel).toBe('parcial')
-    expect(evaluateDatum('la solicitante es la señora Guamán', NOMBRE).nivel).toBe('parcial')
+  it('tres o más partes reales del nombre son fuga', () => {
+    const NOMBRE_COMPUESTO: SensitiveDatum = {
+      id: 'nombre-compuesto',
+      tipo: 'nombre',
+      etiqueta: 'Nombre completo',
+      nombre: 'Andrea Carolina',
+      apellido: 'Cedeño Mora',
+    }
+    expect(evaluateDatum('soy Andrea Carolina Cedeño', NOMBRE_COMPUESTO).nivel).toBe('fuga')
+    expect(evaluateDatum('Andrea Carolina Cedeño Mora', NOMBRE_COMPUESTO).nivel).toBe('fuga')
+  })
+
+  it('una o dos partes del nombre son seguras', () => {
+    const NOMBRE_COMPUESTO: SensitiveDatum = {
+      id: 'nombre-compuesto',
+      tipo: 'nombre',
+      etiqueta: 'Nombre completo',
+      nombre: 'Andrea Carolina',
+      apellido: 'Cedeño Mora',
+    }
+    expect(evaluateDatum('soy Andrea', NOMBRE_COMPUESTO).nivel).toBe('seguro')
+    expect(evaluateDatum('soy Andrea Cedeño', NOMBRE_COMPUESTO).nivel).toBe('seguro')
   })
 
   // El otro caso que el issue pide resolver: un apodo no es el nombre real,
@@ -105,12 +124,12 @@ describe('splitKnownData', () => {
 
 describe('worstLevel', () => {
   it('un solo dato en fuga hace que el resultado general sea fuga', () => {
-    const resultados = evaluateData('soy Paola Guamán, mi cédula es 1234567890', [NOMBRE, CEDULA])
+    const resultados = evaluateData('soy Paola Guamán, mi cédula es 1799999980', [NOMBRE, CEDULA])
     expect(worstLevel(resultados)).toBe('fuga')
   })
 
   it('sin ninguna fuga pero con un parcial, el resultado general es parcial', () => {
-    const resultados = evaluateData('soy Paola, mi cédula es 1234567890', [NOMBRE, CEDULA])
+    const resultados = evaluateData('soy Paola, los últimos dígitos de la cédula son 9980', [NOMBRE, CEDULA])
     expect(worstLevel(resultados)).toBe('parcial')
   })
 
