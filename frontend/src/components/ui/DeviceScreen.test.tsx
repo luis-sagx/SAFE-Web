@@ -46,3 +46,26 @@ describe('DeviceScreen, adjuntar imágenes en el chat', () => {
     expect(screen.queryByRole('button', { name: 'Quitar a.jpg' })).toBeNull()
   })
 })
+
+describe('DeviceScreen, separadores de fecha', () => {
+  it('separa el primer mensaje de hoy del historial anterior', () => {
+    const view: ScreenView = {
+      kind: 'sms',
+      sender: 'Byron',
+      sub: 'en línea',
+      msgs: [
+        { text: 'Listo 🙌', time: '12 ago' },
+        { text: 'Bro, ayúdame porfa.', time: '17:41', separador: 'HOY' },
+      ],
+    }
+
+    render(<DeviceScreen view={view} />)
+
+    const history = screen.getByText('Listo 🙌')
+    const today = screen.getByText('HOY')
+    const currentMessage = screen.getByText('Bro, ayúdame porfa.')
+
+    expect(history.compareDocumentPosition(today) & Node.DOCUMENT_POSITION_FOLLOWING).toBeGreaterThan(0)
+    expect(today.compareDocumentPosition(currentMessage) & Node.DOCUMENT_POSITION_FOLLOWING).toBeGreaterThan(0)
+  })
+})
