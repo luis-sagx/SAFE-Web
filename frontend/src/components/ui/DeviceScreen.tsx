@@ -107,6 +107,8 @@ export type ScreenView =
       msgs: {
         text: string
         time: string
+        // Rótulo centrado que separa dos días dentro del mismo chat.
+        separador?: string
         mine?: boolean
         senal?: string
         // Duración de la nota de voz; en suplantación la voz es el ataque.
@@ -576,13 +578,14 @@ function DeviceScreen({
 
       <div ref={threadRef} className={styles.smsThread}>
         {messages.map((msg, i) => (
-          <div
-            key={`${i}-${msg.text}`}
-            className={`${styles.smsRow} ${msg.mine ? styles.mine : styles.theirs} ${
-              i > latestMine ? styles.smsNuevo : ''
-            }`}
-            style={i > latestMine ? { animationDelay: `${(i - latestMine - 1) * 0.6}s` } : undefined}
-          >
+          <div key={`${i}-${msg.text}`}>
+            {msg.separador && <div className={styles.smsSeparador}>{msg.separador}</div>}
+            <div
+              className={`${styles.smsRow} ${msg.mine ? styles.mine : styles.theirs} ${
+                i > latestMine ? styles.smsNuevo : ''
+              }`}
+              style={i > latestMine ? { animationDelay: `${(i - latestMine - 1) * 0.6}s` } : undefined}
+            >
             {/* Sin cabecera que diga quién escribe, el avatar es lo que
                 distingue al asistente: cada respuesta suya sale firmada. */}
             {view.sitio && !msg.mine && (
@@ -590,7 +593,7 @@ function DeviceScreen({
                 <Bot className={styles.smsAvatarIcono} strokeWidth={2} />
               </span>
             )}
-            <div className={styles.smsBubble}>
+              <div className={styles.smsBubble}>
               {msg.voz ? (
                 <VoiceNote texto={msg.text} duracion={msg.voz} senal={msg.senal} />
               ) : msg.segmentosEnviados ? (
@@ -673,6 +676,7 @@ function DeviceScreen({
               )}
 
               <span className={styles.smsTime}>{msg.time}</span>
+              </div>
             </div>
           </div>
         ))}

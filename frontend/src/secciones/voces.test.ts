@@ -145,6 +145,13 @@ describe('guiones de las llamadas', () => {
 })
 
 describe('voces de las llamadas', () => {
+  it('AntifraudeBanco usa el audio generado de la voz bancaria en toda la llamada', () => {
+    const opening =
+      'Buenas noches, le habla Andrés Villamar del departamento de seguridad del Banco del Litoral. ¿Hablo con el titular de la tarjeta terminada en 4417?'
+
+    expect(VOICES[opening]).toMatch(/^\/voz\/[a-f0-9]{12}\.mp3$/)
+  })
+
   it('cada frase de quien llama tiene su audio generado', () => {
     const withoutVoice = LINES.filter(({ texto: text }) => !VOICES[text]).map(({ texto: text }) => text)
     expect(withoutVoice, 'faltan audios: vuelve a correr scripts/voces.py').toEqual([])

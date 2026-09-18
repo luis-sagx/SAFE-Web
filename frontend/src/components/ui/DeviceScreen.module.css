@@ -1650,6 +1650,14 @@
   flex-direction: column;
   gap: 0.625rem;
 }
+.smsSeparador {
+  margin: 0.25rem 0 0.625rem;
+  color: #6b7684;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-align: center;
+}
 .smsRow {
   display: flex;
 }
