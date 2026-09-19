@@ -212,7 +212,7 @@ const BASE: BaseScenario[] = [
     titulo: "Aviso de filtración de datos",
     descripcion:
       "Una tienda en línea comunica un incidente de seguridad que afecta a tu cuenta.",
-    version: 10,
+    version: 11,
     naturaleza: "legitimo",
     dificultad: 4,
     espeja: "phishing/sesion-bogota",

@@ -190,7 +190,7 @@ const APPS: PhoneApp[] = [
     Icono: Wallet,
     texto: 'Banco',
     color: '#155e75',
-    goto: 'n4',
+    viewNode: 'n4',
     label: 'Abrió la app del banco para comprobar el intento de acceso',
   },
   { Icono: MessageSquareText, texto: 'Mensajes', color: '#2f9e44' },

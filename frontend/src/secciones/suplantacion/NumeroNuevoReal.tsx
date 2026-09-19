@@ -193,10 +193,10 @@ const APPS: PhoneApp[] = [
   { Icono: MessageCircle, texto: "Mensajes", color: "#2f9e44", hilo: "sms" },
   {
     Icono: Contact,
-    texto: "Teléfono",
-    color: "#1971c2",
-    goto: "n4",
-    label: "Abrió la agenda",
+    texto: 'Teléfono',
+    color: '#1971c2',
+    viewNode: 'n4',
+    label: 'Abrió la agenda',
   },
   { Icono: Images, texto: "Galería", color: "#c2410c", relleno: "galeria" },
 ];

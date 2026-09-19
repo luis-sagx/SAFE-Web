@@ -124,6 +124,18 @@ describe('BonoEstado', () => {
     expect(within(phone).getByText(/MIES INFORMA/)).toBeDefined()
   })
 
+  it('cerrar una app abierta sobre el hilo descubre ese mismo hilo', () => {
+    const container = start()
+    const phone = container.querySelector('#pantalla-escenario') as HTMLElement
+
+    fireEvent.click(within(phone).getByText('bit.ly/bono-ec-2026'))
+    fireEvent.click(within(phone).getByRole('button', { name: /Mensajes/ }))
+    fireEvent.click(within(phone).getByRole('button', { name: /Banco/ }))
+    fireEvent.click(within(phone).getByRole('button', { name: 'Volver al hilo de mensajes' }))
+
+    expect(within(phone).getByText(/MIES INFORMA/)).toBeDefined()
+  })
+
   it('abrir el navegador no comprueba nada, pero entrar al portal oficial sí', () => {
     const container = start()
     const phone = container.querySelector('#pantalla-escenario') as HTMLElement
