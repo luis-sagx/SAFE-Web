@@ -37,7 +37,7 @@ const CHAT: ScreenView = {
   respuestas: [
     {
       texto: 'Tía, ¿usted es? Déjeme llamarla.',
-      goto: 'n2',
+      goto: 'e_verifica',
       label: 'Dijo que iba a llamarla para comprobar',
     },
     {
@@ -76,6 +76,8 @@ const PROFILE: ScreenView = {
   button: '',
 }
 
+// Solo se usa como fondo de e_verifica: comprobar por llamada resuelve la
+// duda ahí mismo, sin un paso más que confirmar.
 const ANSWERS: ScreenView = {
   kind: 'call',
   quien: AUNT,
@@ -89,17 +91,11 @@ const ANSWERS: ScreenView = {
       senal: 'contesta',
     },
   ],
-  decir: [
-    {
-      texto: 'Listo tía, ya la guardo. ¿Necesita algo?',
-      goto: 'n6',
-      label: 'Siguió la conversación tras confirmar que era ella',
-    },
-  ],
-  colgarGoto: 'e_verifica',
-  colgarLabel: 'Colgó tras confirmar que era su tía',
 }
 
+// Aunque conteste bien, queda la última decisión: agregarla o seguir
+// desconfiando. Rechazar aquí ya no es prudencia, es no aceptar la prueba
+// que uno mismo pidió.
 const RESPONDS_WELL: ScreenView = {
   ...CHAT,
   msgs: [
@@ -118,26 +114,16 @@ const RESPONDS_WELL: ScreenView = {
   ],
   respuestas: [
     {
-      texto: 'Jajaja listo tía, ya la guardo. ¿Necesita algo?',
-      goto: 'n6',
-      label: 'Guardó el número tras comprobar quién era',
+      texto: 'Listo tía, ya la guardo.',
+      goto: 'e_verifica_texto',
+      label: 'Agregó el número a sus contactos tras comprobar',
+    },
+    {
+      texto: 'Igual no le creo, esto no me cuadra.',
+      goto: 'e_rechaza_texto',
+      label: 'Desconfió aunque contestó bien',
     },
   ],
-}
-
-const FAREWELL: ScreenView = {
-  kind: 'web',
-  app: 'Mensajes',
-  url: 'chat',
-  secure: true,
-  brand: 'Chat',
-  title: `Tía ${AUNT}`,
-  subtitle: 'Número nuevo, ya guardado.',
-  datos: [{ etiqueta: 'Tía Rocío', valor: 'Gracias mijo, nos vemos el domingo 🙏' }],
-  cerrarGoto: 'e_verifica',
-  cerrarLabel: 'Cerró el chat',
-  fields: [],
-  button: '',
 }
 
 const CONTACTS: ScreenView = {
@@ -199,10 +185,8 @@ const APPS: PhoneApp[] = [
 export const STORY: Story<ScreenNode> = {
   n1: { kind: 'scene', view: CHAT },
   n1b: { kind: 'scene', view: PROFILE },
-  n2: { kind: 'scene', view: ANSWERS },
   n2b: { kind: 'scene', view: RESPONDS_WELL },
   n4: { kind: 'scene', view: CONTACTS },
-  n6: { kind: 'scene', view: FAREWELL },
   n5: { kind: 'scene', view: OFF },
   e_confia: {
     kind: 'partial',
@@ -217,7 +201,21 @@ export const STORY: Story<ScreenNode> = {
     view: ANSWERS,
     verdict: 'Acertaste · comprobaste sin desconfiar de más',
     outcome:
-      'Era ella. Una llamada de treinta segundos, o una pregunta que solo tu tía podía responder, y asunto resuelto: guardaste el número y quedaron de verse el domingo. Comprobar no es ofender a nadie.',
+      'Era ella. Una llamada de treinta segundos resuelve la duda entera: guardaste el número y quedaron de verse el domingo. Comprobar no es ofender a nadie.',
+  },
+  e_verifica_texto: {
+    kind: 'good',
+    view: RESPONDS_WELL,
+    verdict: 'Acertaste · comprobaste sin desconfiar de más',
+    outcome:
+      'Era ella. Una pregunta que solo tu tía podía responder resuelve la duda entera: guardaste el número y quedaron de verse el domingo. Comprobar no es ofender a nadie.',
+  },
+  e_rechaza_texto: {
+    kind: 'bad',
+    view: RESPONDS_WELL,
+    verdict: 'No confiaste ni tras la prueba',
+    outcome:
+      'Le preguntaste algo que solo tu tía podía saber, y contestó bien. Aun así decidiste no creerle. Comprobar sirve si al final aceptas lo que la comprobación te dice; si nada la iba a convencer, la pregunta fue solo un trámite.',
   },
   e_ignora: {
     kind: 'partial',
@@ -261,7 +259,7 @@ const SIGNALS: Signal[] = [
   {
     id: 's5',
     targetId: 'contesta',
-    pantalla: 'n2',
+    pantalla: 'e_verifica',
     texto:
       '<b>Contesta la llamada</b> al primer timbre y sin prisa. Quien suplanta nunca puede hablar.',
   },
