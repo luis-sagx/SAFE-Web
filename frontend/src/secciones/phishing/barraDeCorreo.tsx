@@ -37,30 +37,31 @@ export const ACTIONS_BAR: EmailAction[] = [
   },
 ]
 
+// Redacción compacta (issue de UX): dos frases cortas como mucho, lo esencial
+// primero. Un solo lugar arregla el cierre de los ocho escenarios de phishing.
 const FRAUD = {
   e_spam: {
     kind: 'good' as const,
     verdict: 'No caíste · lo reportaste',
-    outcome:
-      'Es la mejor reacción posible: no caíste y además tu proveedor de correo aprende a filtrar ese remitente, así que el mismo mensaje le llega a menos gente.',
+    outcome: 'Es la mejor reacción posible: no caíste, y tu proveedor aprende a filtrar ese remitente.',
   },
   e_eliminar: {
     kind: 'good' as const,
     verdict: 'No caíste · lo eliminaste',
     outcome:
-      'Lo borraste sin tocar nada, que es suficiente para no caer. Marcarlo como spam habría hecho algo más: avisar al filtro para que no le llegue a otros.',
+      'Borrarlo sin tocar nada ya es no caer. Marcarlo como spam habría hecho algo más: avisar al filtro.',
   },
   e_responder: {
     kind: 'partial' as const,
     verdict: 'No entregaste nada, pero contestaste',
     outcome:
-      'No diste tus datos, pero confirmaste que tu dirección existe y que alguien la lee. Es justo lo que un atacante busca para insistir con algo mejor preparado, y ahora tiene una conversación abierta contigo.',
+      'No diste tus datos, pero confirmaste que tu dirección existe y alguien la lee. Ahora tiene una conversación abierta contigo.',
   },
   e_reenviar: {
     kind: 'partial' as const,
     verdict: 'No caíste tú, pero lo pasaste',
     outcome:
-      'Se lo reenviaste a otra persona para que opine. Tú no caíste, pero pusiste el mensaje (con todo lo que trae) en la bandeja de alguien que quizá no lo mire con la misma desconfianza. Para consultar una duda es mejor una captura.',
+      'No caíste, pero el mensaje llegó a alguien que quizá confíe más. Para pedir opinión, mejor una captura.',
   },
 }
 
@@ -68,28 +69,26 @@ const LEGITIMATE = {
   e_spam: {
     kind: 'bad' as const,
     verdict: 'Descartaste un mensaje real',
-    outcome:
-      'El correo era auténtico. Marcarlo como spam no solo te lo quita de en medio: le enseña al filtro a esconder los siguientes del mismo remitente, y esos sí los vas a necesitar.',
+    outcome: 'El correo era auténtico. Marcarlo como spam le enseña al filtro a esconder los siguientes.',
   },
   e_eliminar: {
     kind: 'bad' as const,
     verdict: 'Descartaste un mensaje real',
     outcome:
-      'El correo era auténtico y lo borraste. Desconfiar de todo sale tan caro como confiar de más: te quedaste sin el aviso y sin lo que había que hacer con él.',
+      'El correo era auténtico y lo borraste. Te quedaste sin el aviso, y sin lo que había que hacer con él.',
   },
   // Ni acierto ni error (issue #34): el correo era real, no expuso nada, pero
   // lo que pedía sigue sin hacerse, de ahí 'partial'.
   e_responder: {
     kind: 'partial' as const,
     verdict: 'Sin daño, pero sin resolver',
-    outcome:
-      'El remitente era quien decía ser, así que tu respuesta no fue a parar a ningún atacante. Probablemente no llegó a nadie: los avisos de este tipo salen casi siempre de una dirección que no lee respuestas. Lo que sigue pendiente es lo que el mensaje te pedía a ti.',
+    outcome: 'El remitente era real: tu respuesta no fue a un atacante. Lo que el mensaje pedía sigue pendiente.',
   },
   e_reenviar: {
     kind: 'partial' as const,
     verdict: 'Lo pasaste, pero sigue pendiente',
     outcome:
-      'El mensaje era auténtico, así que reenviarlo no puso a nadie en riesgo. Pero pedir una opinión no es lo mismo que actuar, y lo que el correo te pedía a ti sigue sin hacerse.',
+      'El mensaje era auténtico, reenviarlo no puso a nadie en riesgo. Pero lo que pedía sigue sin hacerse.',
   },
 }
 

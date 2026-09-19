@@ -79,8 +79,7 @@ const STORY: Story<ScreenNode> = {
     kind: 'good',
     view: SITE_OFFICIAL,
     verdict: 'Correcto · reaccionaste bien',
-    outcome:
-      'Cambiaste la contraseña entrando tú mismo al sitio de TiendaExpress. Actuaste sobre un aviso legítimo sin seguir enlaces del correo.',
+    outcome: 'Cambiaste la contraseña entrando tú mismo al sitio, sin seguir enlaces del correo. Fue un aviso legítimo.',
   },
 }
 
@@ -121,34 +120,30 @@ const SIGNALS: Signal[] = [
     id: 's1',
     pantalla: 'n1',
     targetId: 'sin-enlace',
-    texto:
-      'No pide tu contraseña ni ningún dato, y <b>no trae enlace</b>: te manda a entrar tú mismo al sitio. Un correo de phishing necesita justo lo contrario, que uses su enlace.',
+    texto: '<b>No trae ningún enlace</b>: te manda a entrar tú mismo al sitio. El phishing necesita justo lo contrario.',
   },
   {
     id: 's2',
     pantalla: 'n1',
     targetId: 'alcance',
-    texto:
-      'Explica <b>qué se expuso y qué no</b>, con fecha concreta, en vez de generar pánico genérico. El engaño rara vez se limita a sí mismo.',
+    texto: 'Explica <b>qué se expuso y qué no</b>, con fecha concreta, en vez de generar pánico genérico.',
   },
   {
     id: 's3',
     pantalla: 'n1',
     targetId: 'remitente',
-    texto:
-      'La dirección del remitente es <b>la misma de la tienda donde compras</b>, sin palabras añadidas ni terminaciones raras al final. Ese final es donde se nota una imitación, y aquí coincide.',
+    texto: 'El remitente es <b>la misma dirección de siempre</b>, sin palabras ni terminaciones raras al final.',
   },
   {
     id: 's4',
     pantalla: 'n2',
     targetId: 'dominio-real',
-    texto:
-      'Al entrar por tus marcadores llegas al <b>sitio verdadero</b>, no al que te indique un mensaje. Es el hábito que sirve siempre: el aviso puede ser falso, la dirección que guardaste tú no.',
+    texto: 'Al entrar por tus marcadores llegas al <b>sitio verdadero</b>. El aviso puede ser falso, tu marcador no.',
   },
 ]
 
 const RULE =
-  'Regla de oro: cambia la clave entrando tú al sitio, nunca por el enlace del correo. Y no repitas contraseñas: una filtración en una tienda abre todas las puertas que compartan esa clave. Desconfiar de todo tampoco es criterio: descartar un aviso real cuesta caro.'
+  'Regla de oro: cambia la clave entrando tú al sitio, nunca por el enlace del correo. Desconfiar de todo tampoco es criterio: descartar un aviso real también cuesta caro.'
 
 const SUMMARY = 'TiendaExpress avisa que un incidente de seguridad expuso tus datos.'
 

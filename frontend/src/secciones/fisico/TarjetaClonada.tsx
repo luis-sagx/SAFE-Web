@@ -28,25 +28,25 @@ const SIGNALS: Signal[] = [
     id: 'pretexto',
     targetId: 'pantalla-error',
     texto:
-      'El cajero "falla" y justo hay alguien cerca para ayudar. Es el <b>pretexto</b> de los casos juzgados en Quito y Cuenca.',
+      '<b>El cajero "falla" justo cuando alguien cerca ofrece ayudar</b>. Es el pretexto de los casos juzgados en Quito y Cuenca.',
   },
   {
     id: 'tarjeta',
     targetId: 'tarjeta-ajena',
     texto:
-      'Tu tarjeta está <b>en manos de un desconocido</b>. "Limpiarla en la ropa" es la excusa para cambiarla por otra parecida sin que lo notes.',
+      '<b>Tu tarjeta está en manos de un desconocido</b>. "Limpiarla en la ropa" es la excusa para cambiarla sin que lo notes.',
   },
   {
     id: 'mano',
     targetId: 'mano-oculta',
     texto:
-      'Su otra mano está <b>dentro de la chaqueta</b>: ahí guarda la tarjeta que te va a devolver.',
+      '<b>Su otra mano está dentro de la chaqueta</b>: ahí guarda la tarjeta que te va a devolver.',
   },
   {
     id: 'complice',
     targetId: 'complice',
     texto:
-      'Un hombre junto al cajero, sin hacer fila, con el celular en la mano. Suelen <b>trabajar en grupo</b>: mientras uno ayuda, otro mira la clave.',
+      '<b>Suelen trabajar en grupo</b>: mientras uno ayuda, otro mira la clave. Hay un hombre junto al cajero, sin hacer fila.',
   },
 ]
 
@@ -68,21 +68,21 @@ const STORY: Story<ScreenNode> = {
     view: ATM,
     verdict: 'Te cambiaron la tarjeta',
     outcome:
-      'La tarjeta que te devolvió no era la tuya: por eso el cajero la volvió a rechazar. Tapar el teclado ya no servía, porque su compañero vio tu clave en el primer intento. En menos de media hora sacaron $ 500 y $ 450 con tu tarjeta real en otro cajero.',
+      'La tarjeta que te devolvió no era la tuya, tapar el teclado no sirvió: su compañero vio tu clave en el primer intento. En media hora sacaron $ 500 y $ 450 con tu tarjeta real.',
   },
   e_otro_cajero: {
     kind: 'bad',
     view: ATM,
     verdict: 'Te cambiaron la tarjeta',
     outcome:
-      'Guardaste sin mirar una tarjeta que no era la tuya. Lo notaste el lunes, cuando la app mostró retiros de $ 500 y $ 450 hechos ese mismo viernes. Reclamar va a ser difícil: entregaste la tarjeta y tu clave quedó a la vista.',
+      'Guardaste sin mirar una tarjeta que no era la tuya. El lunes la app mostró retiros de $ 500 y $ 450 hechos ese viernes, con tu clave y tu tarjeta ya entregadas.',
   },
   e_revisa: {
     kind: 'good',
     view: ATM,
     verdict: 'Cambiazo detectado',
     outcome:
-      'La tarjeta que te devolvió tenía otro nombre. Él ya se alejaba, pero bloqueaste tu tarjeta desde la app del banco ahí mismo: cuando intentaron sacar dinero con ella, el cajero la rechazó. Después pusiste la denuncia.',
+      'La tarjeta que te devolvió tenía otro nombre, y la bloqueaste ahí mismo desde la app del banco. Cuando intentaron sacar dinero con ella, el cajero la rechazó.',
   },
 }
 
@@ -108,7 +108,7 @@ export default function ClonedCard() {
       nota="Mira la escena con calma antes de decidir."
       story={STORY}
       senales={SIGNALS}
-      rule="<b>Tu tarjeta no sale de tus manos.</b> No aceptes ayuda de desconocidos en el cajero. Si alguien la tocó, revisa tu nombre y tus últimos dígitos antes de irte y, si no es la tuya, bloquéala de inmediato por la app o la línea oficial del banco."
+      rule="<b>Tu tarjeta no sale de tus manos.</b> Si alguien la tocó, revisa tu nombre y tus últimos dígitos antes de irte, y bloquéala si no es la tuya."
       cuandoTermina="Cuando elijas qué hacer con la tarjeta que te devuelve."
       pista="La tarjeta pasó por las manos de un desconocido. Antes de volver a usarla o de irte, comprueba que de verdad sea la tuya."
     />

@@ -132,21 +132,21 @@ const SIGNALS: Signal[] = [
     targetId: 'pestanas',
     pantalla: 'repaso',
     texto:
-      'Una pestaña abierta con <b>nóminas o contraseñas</b> es información servida: quien pase por tu puesto la lee sin tocar tu teclado y sin dejar rastro.',
+      '<b>Una pestaña abierta con nóminas o contraseñas</b> es información servida: se lee sin tocar tu teclado y sin dejar rastro.',
   },
   {
     id: 'papeles',
     targetId: 'papeles',
     pantalla: 'repaso',
     texto:
-      'Los papeles sobre el escritorio se fotografían en un segundo. Lo confidencial se guarda <b>bajo llave</b>, no boca arriba.',
+      '<b>Los papeles sobre el escritorio se fotografían en un segundo</b>. Lo confidencial va bajo llave, no boca arriba.',
   },
   {
     id: 'bloqueo',
     targetId: 'bloqueo',
     pantalla: 'repaso',
     texto:
-      '<b>Bloquear la sesión</b> cuesta un segundo: <b>Win + L</b> en el teclado o el botón de la barra de tareas. Sin eso, tu sesión abierta es tu correo, tus sistemas y tus permisos en manos de cualquiera.',
+      '<b>Bloquear la sesión</b> cuesta un segundo: <b>Win + L</b> o el botón de la barra de tareas. Sin eso, tu correo y tus permisos quedan expuestos.',
   },
 ]
 
