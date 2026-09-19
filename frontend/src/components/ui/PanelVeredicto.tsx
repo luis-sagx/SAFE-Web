@@ -199,14 +199,10 @@ function VerdictPanel({
         <button
           ref={firstButtonRef}
           type="button"
-          // Primario, no borde-y-superficie: es el único camino para avanzar
-          // (issue de UX), y con estilo secundario se leía como una opción más
-          // entre "salir" y "cerrar", así que la gente seguía tocando la
-          // pantalla o la X en vez de este botón.
-          className="mt-5 min-h-12 w-full animate-pulse rounded-md bg-primary px-4 py-3 text-lg font-medium text-on-primary transition hover:bg-primary-active focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link"
+          className="mt-5 min-h-12 w-full origin-center rounded-md bg-primary px-4 py-3 text-lg font-medium text-on-primary transition-colors hover:bg-primary-active motion-safe:animate-[boton-escala_1.8s_ease-in-out_infinite] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link"
           onClick={() => setStep(0)}
         >
-          Continuar → Ver las señales
+          Ver las señales
         </button>
       )}
 

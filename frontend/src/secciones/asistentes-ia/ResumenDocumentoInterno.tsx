@@ -111,12 +111,12 @@ const STORY: Story<ScreenNode> = {
       signal(
         dato.id,
         'e_fuga',
-        `Si tu mensaje incluyó <b>${dato.etiqueta}</b>: para armar el resumen, a la IA le bastaba con saber que hubo un resultado negativo y un ajuste de personal, no ese dato sensible.`,
+        `<b>${dato.etiqueta}</b> no hacía falta. A la IA le bastaba saber que hubo un resultado negativo y un ajuste de personal.`,
       ),
     ),
     verdict: 'Información confidencial de la empresa compartida con la IA',
     outcome:
-      'Tu mensaje identificó a la empresa mediante su nombre o RUC y además reveló información interna. Para resumir el informe, la IA solo necesitaba el tema general; esos detalles quedaron en manos de un servicio externo.',
+      'Tu mensaje identificó a la empresa (nombre o RUC) y además reveló información interna. La IA solo necesitaba el tema general.',
   },
   e_seguro: {
     kind: 'good',
@@ -125,12 +125,12 @@ const STORY: Story<ScreenNode> = {
       signal(
         'borrador-enviado',
         'e_seguro',
-        'Le pediste a la IA la <b>forma</b> del resumen,para qué reunión es, qué debe mencionar, sin las cifras reales.',
+        '<b>Le pediste a la IA solo la forma del resumen</b>: para qué reunión es y qué debe mencionar, sin cifras reales.',
       ),
     ],
     verdict: 'Resumen armado sin exponer datos de la empresa',
     outcome:
-      'Tu mensaje le pidió a la IA la estructura del resumen, no el contenido confidencial ni los datos que identifican a la empresa. Las cifras y los datos reales los agregas tú mismo, fuera de la conversación.',
+      'Tu mensaje le pidió a la IA solo la estructura del resumen, no el contenido confidencial. Las cifras reales las agregas tú, fuera de la conversación.',
   },
 }
 
@@ -138,12 +138,12 @@ const SIGNALS = [
   signal(
     'informe-en-juego',
     'n1',
-    'La IA te pregunta de qué trata el informe. El que tienes delante identifica a la <b>empresa</b> y su <b>RUC</b>, además de traer cifras sin publicar y un plan de despidos; contar de qué trata no obliga a copiarlo entero.',
+    '<b>El informe identifica a la empresa, su RUC y cifras sin publicar</b>. Contar de qué trata no obliga a copiarlo entero.',
   ),
 ]
 
 const RULE =
-  'Regla de oro: la información <b>confidencial de tu empresa</b>,su nombre, RUC, cifras sin publicar y planes sin anunciar, no se escribe en una IA externa. Pide la forma del texto, y completa tú los datos sensibles aparte.'
+  'Regla de oro: <b>la información confidencial de tu empresa</b> (nombre, RUC, cifras sin publicar) no se escribe en una IA externa. Pide solo la forma, y completa tú los datos sensibles.'
 
 const SUMMARY = 'Le pides a una IA que resuma un informe que identifica a una empresa y contiene cifras sin publicar.'
 
