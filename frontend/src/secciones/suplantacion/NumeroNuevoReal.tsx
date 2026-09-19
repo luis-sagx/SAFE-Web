@@ -4,11 +4,10 @@ import type { Context } from '../../components/ui/ContextoEscenario'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
 import type { Signal } from '../../components/ui/PanelVeredicto'
 import type { Story } from '../../hooks/useStoryEngine'
-import { ACCOUNT_FAKE, IDENTITY_FAKE } from '../../lib/identidadFicticia'
 
 // Espeja a cambio-numero: mismo montaje, pero aquí el mensaje es real. Existe
-// para no enseñar "desconfía de todo número nuevo", y para mostrar que ni
-// siendo ella, la cédula se manda por chat.
+// para no enseñar "desconfía de todo número nuevo": comprobar es la lección,
+// no la sospecha.
 
 const AUNT = 'Rocío'
 const NUMBER_NEW = '+593 98 052 6614'
@@ -48,7 +47,7 @@ const CHAT: ScreenView = {
     },
     {
       texto: 'Listo tía, ya la guardo.',
-      goto: 'n3',
+      goto: 'e_confia',
       label: 'Guardó el número sin comprobar nada',
     },
   ],
@@ -93,7 +92,7 @@ const ANSWERS: ScreenView = {
   decir: [
     {
       texto: 'Listo tía, ya la guardo. ¿Necesita algo?',
-      goto: 'n3',
+      goto: 'n6',
       label: 'Siguió la conversación tras confirmar que era ella',
     },
   ],
@@ -120,37 +119,25 @@ const RESPONDS_WELL: ScreenView = {
   respuestas: [
     {
       texto: 'Jajaja listo tía, ya la guardo. ¿Necesita algo?',
-      goto: 'n3',
+      goto: 'n6',
       label: 'Guardó el número tras comprobar quién era',
     },
   ],
 }
 
-// La foto de la cédula es lo único que no se manda ni a la familia.
-const ASKS_ECUADORIAN_ID: ScreenView = {
-  ...CHAT,
-  msgs: [
-    GREETING,
-    AUDIO,
-    { text: 'Listo tía, ya la guardo.', time: '11:10', mine: true },
-    {
-      text: 'Gracias mijo. Oye, aprovecho: estoy haciendo el trámite del seguro y me piden los datos de los sobrinos. Mándame tu número de cuenta y una foto de tu cédula por los dos lados.',
-      time: '11:12',
-      senal: 'cedula',
-    },
-  ],
-  respuestas: [
-    {
-      texto: `Le paso mi cuenta: ${ACCOUNT_FAKE}. Y la cédula ya se la mando.`,
-      goto: 'e_cedula',
-      label: 'Mandó su cuenta y la foto de su cédula por el chat',
-    },
-    {
-      texto: 'La cuenta sí, la cédula mejor se la llevo el domingo.',
-      goto: 'e_prudente',
-      label: 'Dio la cuenta pero no mandó la cédula por el chat',
-    },
-  ],
+const FAREWELL: ScreenView = {
+  kind: 'web',
+  app: 'Mensajes',
+  url: 'chat',
+  secure: true,
+  brand: 'Chat',
+  title: `Tía ${AUNT}`,
+  subtitle: 'Número nuevo, ya guardado.',
+  datos: [{ etiqueta: 'Tía Rocío', valor: 'Gracias mijo, nos vemos el domingo 🙏' }],
+  cerrarGoto: 'e_verifica',
+  cerrarLabel: 'Cerró el chat',
+  fields: [],
+  button: '',
 }
 
 const CONTACTS: ScreenView = {
@@ -214,22 +201,16 @@ export const STORY: Story<ScreenNode> = {
   n1b: { kind: 'scene', view: PROFILE },
   n2: { kind: 'scene', view: ANSWERS },
   n2b: { kind: 'scene', view: RESPONDS_WELL },
-  n3: { kind: 'scene', view: ASKS_ECUADORIAN_ID },
   n4: { kind: 'scene', view: CONTACTS },
+  n6: { kind: 'scene', view: FAREWELL },
   n5: { kind: 'scene', view: OFF },
-  e_cedula: {
-    kind: 'bad',
-    view: ASKS_ECUADORIAN_ID,
-    verdict: 'Era tu tía, y aun así entregaste de más',
-    outcome: `El mensaje era auténtico: tu tía Rocío sí cambió de número. Pero le mandaste por chat la foto de tu cédula ${IDENTITY_FAKE.cedula} por los dos lados, y eso ya no depende de ella: queda guardado en un teléfono que acaba de perder una vez, y con esa foto se abren cuentas y se piden créditos a tu nombre. El número de cuenta sí se puede dar; la cédula, no por ahí.`,
-    score: 0,
-  },
-  e_prudente: {
-    kind: 'good',
-    view: ASKS_ECUADORIAN_ID,
-    verdict: 'Acertaste · era ella, y aun así no mandaste la cédula',
+  e_confia: {
+    kind: 'partial',
+    view: CHAT,
+    verdict: 'Era ella, pero guardaste sin comprobar nada',
     outcome:
-      'El mensaje era de verdad y tú contestaste como se debe: le diste lo que no cuesta nada dar y dejaste la cédula para entregársela en mano. Que alguien sea de confianza no vuelve seguro al canal por el que le escribes.',
+      'No pasó nada malo porque el mensaje era real: tu tía sí cambió de número. Pero lo aceptaste sin comprobar, y esta vez tuviste suerte. Una llamada o una pregunta que solo ella sepa responder resuelve la duda en medio minuto.',
+    score: 50,
   },
   e_verifica: {
     kind: 'good',
@@ -284,17 +265,10 @@ const SIGNALS: Signal[] = [
     texto:
       '<b>Contesta la llamada</b> al primer timbre y sin prisa. Quien suplanta nunca puede hablar.',
   },
-  {
-    id: 's6',
-    targetId: 'cedula',
-    pantalla: 'n3',
-    texto:
-      'Aunque el mensaje sea real, <b>la cédula no se manda por chat</b>: con esa foto se abren cuentas a tu nombre.',
-  },
 ]
 
 const RULE =
-  'Regla de oro: comprobar no es desconfiar. Una llamada o una pregunta que solo esa persona sepa responder resuelve un cambio de número en medio minuto, sin ofender a nadie. Y aunque sea tu familia, <b>la cédula y las claves no viajan por chat</b>.'
+  'Regla de oro: comprobar no es desconfiar. Una llamada o una pregunta que solo esa persona sepa responder resuelve un cambio de número en medio minuto, sin ofender a nadie.'
 
 const SUMMARY = 'Tu tía escribe desde un número nuevo para avisar que perdió el celular.'
 
@@ -325,7 +299,6 @@ function RealNewNumber() {
       restartLabel="↻ Repetir el escenario"
       accionesEnPantalla
       apps={APPS}
-      identidad={['cedula', 'cuenta']}
       instruccion={
         <p className="text-lg leading-relaxed text-body">
           Actúa sobre el teléfono como lo harías con el tuyo: contesta, escucha la nota de voz, mira
@@ -335,7 +308,7 @@ function RealNewNumber() {
       pista={
         <p>
           Puedes contestarle, comprobar quién es de varias maneras, dejarlo pasar o seguirle la
-          conversación. Aquí no basta con no caer: fíjate también en qué acabas mandando.
+          conversación.
         </p>
       }
     />
