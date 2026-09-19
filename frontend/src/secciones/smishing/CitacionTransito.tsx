@@ -115,7 +115,7 @@ const APPS: PhoneApp[] = [
     Icono: Compass,
     texto: 'Navegador',
     color: '#1971c2',
-    goto: 'n3',
+    viewNode: 'n3',
     label: 'Abrió el navegador para consultar por su cuenta',
   },
 ]

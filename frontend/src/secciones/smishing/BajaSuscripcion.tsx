@@ -104,7 +104,7 @@ const APPS: PhoneApp[] = [
     Icono: Signal,
     texto: 'Mi Operadora',
     color: '#c2255c',
-    goto: 'n4',
+    viewNode: 'n4',
     label: 'Abrió la app de la operadora para comprobar el cobro',
   },
   { Icono: MessageSquareText, texto: 'Mensajes', color: '#2f9e44' },

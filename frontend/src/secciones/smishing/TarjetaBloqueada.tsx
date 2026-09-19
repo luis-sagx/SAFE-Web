@@ -222,9 +222,9 @@ const APPS: PhoneApp[] = [
     Icono: Wallet,
     texto: 'Banco',
     color: '#155e75',
-    goto: 'n5',
+    viewNode: 'n5',
     // Con la llamada en curso, comprobar no puede cerrar el escenario: abre la variante que no termina nada.
-    gotoEnLlamada: 'n5c',
+    viewNodeEnLlamada: 'n5c',
     label: 'Abrió la app del banco para comprobar el bloqueo',
   },
   { Icono: MessageSquareText, texto: 'Mensajes', color: '#2f9e44', hilo: 'sms' },

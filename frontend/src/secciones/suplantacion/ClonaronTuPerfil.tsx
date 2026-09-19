@@ -256,7 +256,7 @@ const APPS: PhoneApp[] = [
     Icono: Users,
     texto: 'Red social',
     color: '#1971c2',
-    goto: 'n3',
+    viewNode: 'n3',
     label: 'Abrió la red social',
   },
   { Icono: Wallet, texto: 'Banco del Litoral', color: '#155e75', relleno: 'banco' },
