@@ -11,6 +11,10 @@ interface VideoTicketProps {
   etiqueta?: string
   /** La fila lleva muescas en su perforación salvo la primera de la tira. */
   conMuescas?: boolean
+  /** Oculta los datos que ya muestra la cabecera de la página del módulo. */
+  mostrarInformacion?: boolean
+  /** Tras cerrar el reproductor, lo reemplaza por un control compacto. */
+  minimizarAlCerrar?: boolean
   /** 'boleto': un boleto entero con su ventana de reproductor, para el video
    *  general. 'fila': un talón dentro de la tira de módulos, siete boletos
    *  sueltos del mismo alto volvían a ser el muro de tarjetas. */
@@ -41,10 +45,23 @@ function VideoTicket({
   folio,
   etiqueta: label,
   conMuescas: notched = false,
+  mostrarInformacion = true,
+  minimizarAlCerrar = false,
   variante: variant = 'boleto',
 }: Readonly<VideoTicketProps>) {
   const [playing, setPlaying] = useState(false)
+  const [minimized, setMinimized] = useState(false)
   const id = video.youtubeUrl ? getYouTubeId(video.youtubeUrl) : null
+
+  function startPlaying() {
+    setMinimized(false)
+    setPlaying(true)
+  }
+
+  function closePlayer() {
+    setPlaying(false)
+    setMinimized(minimizarAlCerrar)
+  }
 
   const player = id && (
     <iframe
@@ -59,7 +76,7 @@ function VideoTicket({
   const close = (
     <button
       type="button"
-      onClick={() => setPlaying(false)}
+      onClick={closePlayer}
       aria-label={`Cerrar ${video.title}`}
       className="min-h-11 rounded-md px-3 text-base font-medium text-link underline transition hover:bg-ticket-edge/50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link"
     >
@@ -70,7 +87,7 @@ function VideoTicket({
   const play = (
     <button
       type="button"
-      onClick={() => setPlaying(true)}
+      onClick={startPlaying}
       // El nombre visible dice solo "Reproducir": en una página con ocho
       // videos, el lector de pantalla necesita saber cuál.
       aria-label={`Reproducir ${video.title}`}
@@ -95,6 +112,20 @@ function VideoTicket({
       <p className="mt-2 max-w-prose text-base leading-relaxed text-body">{video.description}</p>
     </>
   )
+
+  // En la página de un módulo el título y su descripción ya están en la
+  // cabecera. Al cerrar no volvemos a mostrar una miniatura de pantalla
+  // completa: queda un único control para reabrirlo.
+  if (variant === 'boleto' && minimized && id) {
+    return (
+      <Ticket>
+        <div className="flex flex-wrap items-center justify-between gap-4 px-6 py-4 sm:px-8">
+          {play}
+          <YouTubeLink id={id} />
+        </div>
+      </Ticket>
+    )
+  }
 
   if (variant === 'fila') {
     return (
@@ -124,9 +155,9 @@ function VideoTicket({
       className="overflow-hidden"
       talon={
         <div className="p-6 sm:p-8">
-          {heading}
+          {mostrarInformacion && heading}
           {id && (
-            <div className="mt-4 flex flex-wrap items-center gap-x-6 gap-y-2">
+            <div className={`${mostrarInformacion ? 'mt-4' : ''} flex flex-wrap items-center gap-x-6 gap-y-2`}>
               {playing && close}
               <YouTubeLink id={id} />
             </div>
@@ -143,7 +174,7 @@ function VideoTicket({
       {id && !playing && (
         <button
           type="button"
-          onClick={() => setPlaying(true)}
+          onClick={startPlaying}
           aria-label={`Reproducir ${video.title}`}
           className="group relative flex aspect-video w-full items-center justify-center overflow-hidden bg-canvas-soft focus-visible:outline-2 focus-visible:outline-offset-[-4px] focus-visible:outline-link"
         >

@@ -224,7 +224,12 @@ function Section() {
             que volver a / y buscarlo entre los otros siete. */}
         {moduleVideo && (
           <div className="mt-8">
-            <VideoTicket video={moduleVideo} folio={moduleFolio(section.id)} etiqueta="Míralo primero" />
+            <VideoTicket
+              video={moduleVideo}
+              folio={moduleFolio(section.id)}
+              mostrarInformacion={false}
+              minimizarAlCerrar
+            />
           </div>
         )}
 
