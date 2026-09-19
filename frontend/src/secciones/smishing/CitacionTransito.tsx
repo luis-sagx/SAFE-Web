@@ -139,7 +139,7 @@ const STORY: Story<ScreenNode> = {
     view: PAGE,
     verdict: 'Caíste en la trampa',
     outcome:
-      'La citación no existía. Al escribir la tarjeta completa, entregaste los datos necesarios para compras por internet.',
+      '<b>La citación no existía.</b> Al escribir la tarjeta completa, entregaste lo necesario para comprar por internet a tu nombre.',
   },
   e_cierra: {
     kind: 'good',
@@ -153,7 +153,7 @@ const STORY: Story<ScreenNode> = {
     view: PORTAL,
     verdict: 'No caíste · verificaste por tu canal',
     outcome:
-      'Al consultar en el portal oficial no apareció ninguna citación pendiente. El SMS usaba el miedo al recargo para llevarte a una página falsa.',
+      '<b>No apareció ninguna citación pendiente</b> en el portal oficial. El SMS usaba el miedo al recargo para llevarte a una página falsa.',
   },
   e_ignora: {
     kind: 'partial',
@@ -169,38 +169,36 @@ const SIGNALS: Signal[] = [
     id: 's1',
     targetId: 'mensaje',
     pantalla: 'n1',
-    texto: 'El mensaje <b>no trae tu placa</b>; te pide escribirla porque no la sabe.',
+    texto: '<b>No trae tu placa</b>; te pide escribirla porque no la sabe.',
   },
   {
     id: 's2',
     targetId: 'mensaje',
     pantalla: 'n1',
-    texto:
-      'El plazo "antes del viernes" crea presión, pero no explica artículo, fecha ni lugar de la supuesta infracción.',
+    texto: 'El plazo <b>"antes del viernes" crea presión</b>, sin artículo, fecha ni lugar de la infracción.',
   },
   {
     id: 's3',
     targetId: 'url',
     pantalla: 'n2',
-    texto:
-      'El dominio <b>transito-ec-pagos.com</b> suena oficial, pero no es un portal público ecuatoriano.',
+    texto: 'El dominio <b>transito-ec-pagos.com</b> suena oficial, pero no es un portal público ecuatoriano.',
   },
   {
     id: 's4',
     targetId: 'tarjeta',
     pantalla: 'n2',
-    texto: 'La página pide <b>tarjeta completa y CVV</b> antes de demostrar que la deuda existe.',
+    texto: 'Pide <b>tarjeta completa y CVV</b> antes de demostrar que la deuda existe.',
   },
   {
     id: 's5',
     targetId: 'respuesta',
     pantalla: 'n1b',
-    texto: 'Al responder, no dan datos concretos: solo empujan de nuevo al mismo enlace.',
+    texto: 'Al responder, <b>no dan datos concretos</b>: solo empujan de nuevo al mismo enlace.',
   },
 ]
 
 const RULE =
-  'Regla de oro: una multa se consulta entrando tú al portal oficial o en ventanilla. Si el mensaje te pide los datos que la entidad debería conocer, está pescando.'
+  'Regla de oro: una multa se consulta <b>entrando tú al portal oficial</b> o en ventanilla, nunca por un enlace del mensaje.'
 
 const SUMMARY = 'Un SMS avisa una citación de tránsito y amenaza con duplicar el valor.'
 

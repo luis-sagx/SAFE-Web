@@ -285,28 +285,28 @@ export const STORY: Story<ScreenNode> = {
     view: CODES,
     verdict: 'Caíste en la suplantación',
     outcome:
-      'Gastaste $400 de tu propio dinero y mandaste los códigos por el chat. Se consumieron en minutos, en otro país, y no hay forma de anularlos ni de saber quién los usó. Tu gerente nunca escribió ese mensaje: el mismo texto le llegó esa semana a media empresa, con su foto sacada de la web corporativa.',
+      'Gastaste $400 y mandaste los códigos por el chat. Se consumieron en minutos y no hay forma de anularlos: tu gerente nunca escribió ese mensaje.',
   },
   e_verifica: {
     kind: 'good',
     view: CALL_MANAGER,
     verdict: 'No caíste · confirmaste por el canal de siempre',
     outcome:
-      'Llamaste al número corporativo que usas a diario y ella misma lo desmintió. Preguntar no te hizo quedar mal: al contrario, avisaste de una campaña que estaba llegándole a toda la empresa.',
+      'Llamaste al número corporativo de siempre y ella misma lo desmintió. Preguntar no te hizo quedar mal, avisaste de una campaña que llegaba a toda la empresa.',
   },
   e_niega: {
     kind: 'good',
     view: DOES_NOT_CALL,
     verdict: 'No caíste · no compraste nada sin confirmar',
     outcome:
-      'No hiciste el encargo sin poder hablar con quien lo pedía, y aguantaste la presión de que "se lo pido a otra persona". Ningún jefe real despide a nadie por confirmar una compra de $400. Lo que falta es avisar a Sistemas: si te llegó a ti, le está llegando a más gente.',
+      'No hiciste el encargo sin poder hablar con quien lo pedía, y aguantaste la presión. Ningún jefe real despide a nadie por confirmar una compra de $400.',
   },
   e_ignora: {
     kind: 'partial',
     view: CHAT,
     verdict: 'No perdiste nada, pero quedó a medias',
     outcome:
-      'Saliste del chat sin comprar ni contestar, y no perdiste un centavo. Pero no comprobaste nada ni avisaste a nadie: el mismo mensaje siguió su ronda por la empresa, y alguien con menos calle puede estar comprando las tarjetas ahora mismo.',
+      'Saliste del chat sin comprar ni contestar, y no perdiste nada. Pero no avisaste a nadie, y el mismo mensaje sigue su ronda por la empresa.',
     score: 50,
   },
 }
@@ -317,54 +317,54 @@ const SIGNALS: Signal[] = [
     targetId: 'remitente',
     pantalla: 'n1',
     texto:
-      'Escribe desde un <b>número que no tienes guardado</b>, aunque el de tu jefa lo usas todos los días. La jerarquía hace que preguntarlo cueste, y en eso se apoya el engaño.',
+      '<b>Escribe desde un número que no tienes guardado.</b> El de tu jefa lo usas todos los días.',
   },
   {
     id: 's2',
     targetId: 'antiguedad',
     pantalla: 'n1b',
     texto:
-      'La cuenta se creó <b>hace tres días</b> y no está en ningún grupo del área. La de tu gerente lleva años ahí.',
+      '<b>La cuenta se creó hace tres días.</b> No está en ningún grupo del área; la de tu gerente lleva años ahí.',
   },
   {
     id: 's3',
     targetId: 'apertura',
     pantalla: 'n1',
     texto:
-      'La primera frase ya explica <b>por qué no se puede hablar</b>. Toda suplantación necesita cerrar el canal donde se le caería el papel: la voz.',
+      '<b>Ya explica desde el inicio por qué no puede hablar.</b> Toda suplantación necesita cerrar el canal de la voz.',
   },
   {
     id: 's4',
     targetId: 'tarjetas',
     pantalla: 'n2',
     texto:
-      'Pide <b>tarjetas de regalo</b>, no una transferencia. Es dinero que se gasta con solo tener el código, no se puede reversar y no deja rastro de quién lo usó.',
+      '<b>Pide tarjetas de regalo, no una transferencia.</b> Se gastan con solo tener el código y no dejan rastro.',
   },
   {
     id: 's5',
     targetId: 'secreto',
     pantalla: 'n2',
     texto:
-      'Te pide <b>no comentarlo con nadie</b>. Cualquier encargo real de una empresa soporta que preguntes al lado; este necesita que no lo hagas.',
+      '<b>Te pide no comentarlo con nadie.</b> Un encargo real soporta que preguntes al lado.',
   },
   {
     id: 's6',
     targetId: 'presiona',
     pantalla: 'n3b',
     texto:
-      'Si insistes en llamar, aparece la <b>presión</b>: "se lo pido a otra persona". Es el mismo miedo de siempre, esta vez a quedar mal en el trabajo.',
+      '<b>Si insistes en llamar, aparece la presión: "se lo pido a otra persona".</b> Es el miedo de siempre, ahora en el trabajo.',
   },
   {
     id: 's7',
     targetId: 'desmiente',
     pantalla: 'e_verifica',
     texto:
-      'Una llamada de treinta segundos al <b>número de siempre</b> lo desmontó todo. Ese es el canal que hay que usar, no el que eligió quien escribió.',
+      '<b>Una llamada de treinta segundos al número de siempre lo desmontó todo.</b> Ese es el canal que hay que usar.',
   },
 ]
 
 const RULE =
-  'Regla de oro: un encargo que llega por un <b>número nuevo</b>, con prisa y pidiendo silencio, se confirma por el canal de siempre antes de gastar un dólar. Y las <b>tarjetas de regalo</b> nunca son una forma de pagar a un proveedor: son la forma de cobrar de una estafa.'
+  'Regla de oro: <b>un encargo con número nuevo, prisa y silencio se confirma por el canal de siempre.</b> Las tarjetas de regalo nunca pagan a un proveedor, son la forma de cobrar de una estafa.'
 
 const SUMMARY = 'Tu jefa escribe desde otro número y pide comprar tarjetas de regalo con urgencia.'
 

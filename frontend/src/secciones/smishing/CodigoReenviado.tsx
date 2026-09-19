@@ -205,7 +205,7 @@ const STORY: Story<ScreenNode> = {
     view: THREAD_SENT,
     verdict: 'Caíste en la trampa',
     outcome:
-      'No había ningún intento de acceso: quien entraba a tu banca era quien te escribía, y le faltaba ese código. Vaciaron la cuenta en tres transferencias, y como el código lo enviaste tú, quedó autorizada.',
+      '<b>No había ningún intento de acceso</b>: quien entraba a tu banca era quien te escribía, y le faltaba ese código. Vaciaron la cuenta en tres transferencias, ya autorizadas por ti.',
   },
   // Comprobarlo ahí ya es el acierto (issue #234), igual que buscar la fuente
   // oficial en los demás escenarios: antes hacía falta además volver al hilo
@@ -216,28 +216,28 @@ const STORY: Story<ScreenNode> = {
     view: APP_BANK,
     verdict: 'No caíste · lo comprobaste donde consta',
     outcome:
-      'En la app no había ningún acceso desde otro dispositivo. Lo único que constaba era la solicitud del código, hecha hace dos minutos por quien te escribía: la pidieron ellos, esperando que se la reenviaras. Con eso ya bastaba — comprobarlo en la fuente oficial es lo que te dice que el aviso era falso, sin necesidad de contestarle nada a un número desconocido.',
+      '<b>No había ningún acceso desde otro dispositivo.</b> Sí una solicitud de código reciente, sin usar: la pidieron ellos, y te negaste a dársela.',
   },
   e_clave: {
     kind: 'partial',
     view: BANK_HOME,
     verdict: 'Cambiaste la clave, pero el código sigue vivo',
     outcome:
-      'Cambiar la clave no cancela la solicitud de código ya hecha: ese código sirve hasta que venza, sin importar cuántas claves nuevas pongas. Tampoco comprobaste si hubo un acceso de verdad — esos datos estaban en "Seguridad de la cuenta", a un toque de donde ya estabas. No reenviar el código evitó lo peor, pero no resolvió nada.',
+      'No reenviaste el código, que es lo que importaba. Pero cambiar la clave no cancela la solicitud ya hecha: ese código sigue vivo hasta que venza.',
   },
   e_niega: {
     kind: 'partial',
     view: DECLINED_THREAD,
     verdict: 'No lo diste, pero les seguiste contestando',
     outcome:
-      'Contestaste a un número desconocido sin comprobar en ningún lado si el aviso era real: ahora saben que alguien lee esa línea, y la solicitud de ese código sigue viva. No entregar el código evitó el daño más grave, pero decir que no de memoria no es lo mismo que haber verificado.',
+      'No entregaste el código, que es lo que importaba. Pero contestaste a un número desconocido, y la solicitud de ese código sigue viva.',
   },
   e_ignora: {
     kind: 'partial',
     view: LIST,
     verdict: 'No lo reenviaste, pero te quedaste con la duda',
     outcome:
-      'Saliste sin comprobar nada: si el aviso hubiera sido cierto, seguirías sin saberlo y ellos seguirían intentándolo. No dar el código evitó que se concretara el fraude, pero no haber verificado significa que no llegaste a resolver el caso, solo a esquivarlo.',
+      'No diste el código, que es lo único que impedía que entraran. Pero saliste sin comprobar nada.',
   },
 }
 
@@ -246,41 +246,36 @@ const SIGNALS: Signal[] = [
     id: 's1',
     targetId: 'aviso-real',
     pantalla: 'n3',
-    texto:
-      'El mensaje del banco es <b>auténtico</b> y lleva la defensa escrita: <b>"nunca lo comparta, ni con personal del banco"</b>.',
+    texto: 'El mensaje del banco es <b>auténtico</b> y avisa: <b>"nunca lo comparta"</b>.',
   },
   {
     id: 's2',
     targetId: 'piden-codigo',
     pantalla: 'n1',
-    texto:
-      'Dice que el código <b>"no autoriza ninguna operación"</b>. Es al revés: autoriza, y por eso lo quieren.',
+    texto: 'Dice que el código <b>"no autoriza ninguna operación"</b>. Es al revés: por eso lo quieren.',
   },
   {
     id: 's3',
     targetId: 'remitente',
     pantalla: 'n1',
-    texto:
-      'Llega de un <b>número de celular cualquiera</b>, no del remitente por el que te escribe siempre tu banco.',
+    texto: 'Llega de un <b>número de celular cualquiera</b>, no del remitente habitual del banco.',
   },
   {
     id: 's4',
     targetId: 'reenvio',
     pantalla: 'e_reenvia',
-    texto:
-      'Reenviar el código es <b>firmar la operación</b> que hacen al otro lado. No te identifica: autoriza.',
+    texto: 'Reenviar el código es <b>firmar la operación</b> que hacen al otro lado.',
   },
   {
     id: 's5',
     targetId: 'sin-intento',
     pantalla: 'e_app',
-    texto:
-      'En la app <b>no consta ningún intento de acceso</b>. Lo que sí consta es la solicitud del código: la pidieron ellos.',
+    texto: 'En la app <b>no consta ningún intento de acceso</b>, solo la solicitud del código que pidieron ellos.',
   },
 ]
 
 const RULE =
-  'Regla de oro: <b>un código que llega a tu teléfono no se reenvía a nadie</b>, ni aunque quien lo pida diga ser del banco y el código sea de verdad. Ese código autoriza operaciones; el banco no necesita que se lo digas, porque fue él quien lo mandó.'
+  'Regla de oro: <b>un código que llega a tu teléfono no se reenvía a nadie</b>, aunque quien lo pida diga ser del banco. Ese código autoriza; el banco no necesita que se lo digas.'
 
 const SUMMARY = 'Alguien dice ser del banco y pide que le reenvíes el código que acaba de llegarte.'
 

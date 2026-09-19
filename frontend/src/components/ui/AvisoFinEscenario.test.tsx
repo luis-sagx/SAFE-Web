@@ -22,14 +22,14 @@ describe('AvisoFinEscenario', () => {
     rerender(<ScenarioEndNotice resultado="bad" />)
     expect(title()?.textContent).toBe('No salió bien')
 
-    act(() => vi.advanceTimersByTime(1800))
+    act(() => vi.advanceTimersByTime(3200))
     expect(title()).toBeNull()
   })
 
   it('no reaparece durante el repaso, que sigue en estado terminado', () => {
     const { rerender } = render(<ScenarioEndNotice />)
     rerender(<ScenarioEndNotice resultado="good" />)
-    act(() => vi.advanceTimersByTime(1800))
+    act(() => vi.advanceTimersByTime(3200))
 
     // Cada paso del repaso vuelve a renderizar con el resultado puesto.
     rerender(<ScenarioEndNotice resultado="good" />)
@@ -40,7 +40,7 @@ describe('AvisoFinEscenario', () => {
   it('vuelve a aparecer al repetir el escenario', () => {
     const { rerender } = render(<ScenarioEndNotice />)
     rerender(<ScenarioEndNotice resultado="good" />)
-    act(() => vi.advanceTimersByTime(1800))
+    act(() => vi.advanceTimersByTime(3200))
 
     rerender(<ScenarioEndNotice />)
     rerender(<ScenarioEndNotice resultado="partial" />)

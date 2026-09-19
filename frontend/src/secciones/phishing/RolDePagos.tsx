@@ -32,7 +32,7 @@ const STORY: Story<StoryNode> = {
     kind: 'good',
     verdict: 'Acertaste · el correo era legítimo',
     outcome:
-      'Era un aviso real de Talento Humano y entraste por el portal de la empresa. Revisaste tu rol y notaste que faltaban dos horas extra: las reclamaste a tiempo.',
+      'Era un aviso real, y entraste por el portal de la empresa. Revisaste tu rol y reclamaste a tiempo dos horas extra que faltaban.',
   },
 
   // Responder es, en este correo, exactamente "responder con mi usuario y mi
@@ -41,28 +41,28 @@ const STORY: Story<StoryNode> = {
   e_credenciales: {
     kind: 'bad',
     verdict: 'Correo legítimo, reacción peligrosa',
-    outcome: `El remitente era real, pero tu contraseña ${IDENTITY_FAKE.clave} quedó escrita en un correo. Cualquiera que lea ese buzón (o que lo intercepte) la tiene, y el propio mensaje avisaba que Talento Humano nunca la pide.`,
+    outcome: `El remitente era real, pero tu contraseña ${IDENTITY_FAKE.clave} quedó escrita en un correo. El mismo mensaje avisaba que Talento Humano nunca la pide.`,
     score: 0,
   },
   e_borra: {
     kind: 'partial',
     verdict: 'Prudente, pero de más',
     outcome:
-      'El correo era auténtico y lo descartaste sin mirarlo. No pasó nada malo, pero te quedaste sin revisar tu rol y el plazo para reclamar diferencias venció.',
+      'El correo era auténtico y lo descartaste sin mirarlo. No pasó nada malo, pero el plazo para reclamar diferencias venció.',
     score: 50,
   },
   e_reenviar: {
     kind: 'partial',
     verdict: 'Lo pasaste, pero sigue pendiente',
     outcome:
-      'El aviso era auténtico, así que reenviarlo no puso a nadie en riesgo. Pero pedir una opinión no es lo mismo que actuar: tu rol de pagos sigue sin revisar y el plazo para reclamar diferencias corre igual.',
+      'El aviso era auténtico, reenviarlo no puso a nadie en riesgo. Pero tu rol sigue sin revisar y el plazo corre igual.',
     score: 50,
   },
   e_spam: {
     kind: 'bad',
     verdict: 'Descartaste un aviso real',
     outcome:
-      'Talento Humano sí publicó tu rol de pagos. Marcarlo como spam no solo te lo saca de la vista: le enseña al filtro a esconder los próximos avisos del mismo remitente, y esos sí los vas a necesitar.',
+      'Talento Humano sí publicó tu rol de pagos. Marcarlo como spam le enseña al filtro a esconder los próximos avisos del mismo remitente.',
     score: 0,
   },
 }
@@ -131,8 +131,7 @@ const SIGNALS: Signal[] = [
     id: 's1',
     targetId: 'remitente',
     pantalla: 'n1',
-    texto:
-      'La dirección del remitente termina <b>exactamente</b> igual que la de la empresa, <b>andes.com.ec</b>, sin letras ni palabras de más. En una imitación esa parte final nunca coincide del todo.',
+    texto: 'El remitente termina <b>exactamente</b> igual que la empresa, <b>andes.com.ec</b>. En una imitación nunca coincide del todo.',
   },
   {
     id: 's2',
@@ -154,13 +153,12 @@ const SIGNALS: Signal[] = [
     id: 's5',
     targetId: 'portal',
     pantalla: 'n1',
-    texto:
-      'El enlace lleva al portal de la propia empresa, en su misma dirección de siempre y con el candado del navegador a la vista.',
+    texto: 'El enlace lleva al <b>portal de siempre de la empresa</b>, con el candado del navegador a la vista.',
   },
 ]
 
 const RULE =
-  'Regla de oro: no todo correo es una trampa. Lo que distingue a uno legítimo es que <b>no te pide tu clave y su dominio es el real</b>. Aun así, entra al portal escribiendo tú la dirección: es la costumbre que te protege siempre.'
+  'Regla de oro: no todo correo es una trampa. Un mensaje legítimo <b>no pide tu clave y su dominio es el real</b>. Aun así, entra al portal escribiendo tú la dirección.'
 
 const SUMMARY = `Talento Humano avisa que tu rol de pagos de ${PERIOD_ROLE} ya está en el portal.`
 

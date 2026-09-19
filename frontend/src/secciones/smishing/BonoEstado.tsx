@@ -149,21 +149,21 @@ const STORY: Story<ScreenNode> = {
     view: PAGE,
     verdict: 'Caíste en la trampa',
     outcome:
-      'Entregaste tu usuario, tu clave y el código de verificación. Con los tres entraron a tu banca en línea desde otro dispositivo y vaciaron tu cuenta de ahorros.',
+      'Entregaste tu usuario, tu clave y el código de verificación. Con los tres entraron a tu banca en línea y vaciaron tu cuenta de ahorros.',
   },
   e_cierra: {
     kind: 'good',
     view: PAGE,
     verdict: 'No caíste · el formulario te delató',
     outcome:
-      'Ninguna institución pública necesita tu clave de banca en línea para depositarte. Saliste de la página y reportaste el mensaje.',
+      '<b>Ninguna institución pública necesita tu clave</b> de banca en línea para depositarte. Saliste de la página a tiempo.',
   },
   e_verifica: {
     kind: 'good',
     view: MIES_PORTAL,
     verdict: 'No caíste · buscaste la fuente oficial',
     outcome:
-      'En el portal del MIES no constaba ningún bono a tu nombre ni ninguna preselección: no existía el registro exprés que anunciaba el SMS. El mensaje circulaba masivamente ese día.',
+      'En el portal del MIES no constaba ningún bono a tu nombre ni ninguna preselección. El SMS circulaba masivamente ese día.',
   },
   e_ignora: {
     kind: 'partial',
@@ -179,46 +179,45 @@ const SIGNALS: Signal[] = [
     id: 's1',
     targetId: 'mensaje',
     pantalla: 'n1',
-    texto: 'Te da un <b>premio que nunca pediste</b> y un plazo de horas para reclamarlo.',
+    texto: 'Te da un <b>premio que nunca pediste</b>, con horas de plazo para reclamarlo.',
   },
   {
     id: 's2',
     targetId: 'mensaje',
     pantalla: 'n1',
-    texto:
-      'El enlace está <b>acortado</b> (bit.ly): el texto que ves no dice a qué página te lleva, así que no puedes saber a dónde vas hasta que ya estás ahí.',
+    texto: 'El enlace está <b>acortado</b> (bit.ly): no puedes saber a dónde te lleva hasta que ya estás ahí.',
   },
   {
     id: 's3',
     targetId: 'url',
     pantalla: 'n2',
     texto:
-      'La página está en <b>bono-social-ec.online</b>, y las páginas del Estado ecuatoriano terminan en <b>.gob.ec</b>. El nombre suena oficial, pero el final delata que no lo es. Tampoco empieza por https: ni siquiera protege lo que escribes.',
+      'La página está en <b>bono-social-ec.online</b>, no en <b>.gob.ec</b> como el Estado ecuatoriano. Tampoco empieza por https.',
   },
   {
     id: 's4',
     targetId: 'clave',
     pantalla: 'n2',
     texto:
-      'Pide tu <b>clave de banca en línea</b> para "recibir" un depósito. Para que te depositen basta tu número de cuenta: la clave solo sirve para sacar dinero, nunca para meterlo.',
+      'Pide tu <b>clave de banca en línea</b> para "recibir" un depósito. Para que te depositen basta tu número de cuenta.',
   },
   {
     id: 's5',
     targetId: 'codigo',
     pantalla: 'n2',
     texto:
-      'Pide el <b>código que te llega por SMS</b>. Ese código es la última puerta de tu banco: con tu clave y con él ya entran a tu cuenta desde su propio teléfono.',
+      'Pide el <b>código que te llega por SMS</b>. Con tu clave y ese código, entran a tu cuenta desde su propio teléfono.',
   },
   {
     id: 's6',
     targetId: 'aviso-real',
     pantalla: 'n_codigo',
     texto:
-      'Ese código <b>sí es auténtico</b> y lleva la defensa escrita: "nunca lo comparta". Llegó porque acabas de escribir tu usuario y tu clave en la página falsa.',
+      'Ese código <b>sí es auténtico</b> y avisa "nunca lo comparta". Llegó porque acabas de escribir tu clave en la página falsa.',
   },
 ]
 const RULE =
-  'Regla de oro: para <b>recibir</b> dinero nadie necesita tu clave ni tu código de verificación; solo tu número de cuenta. Cualquier bono o subsidio se confirma en el sitio oficial <b>.gob.ec</b>, escrito por ti.'
+  'Regla de oro: para <b>recibir</b> dinero nadie necesita tu clave ni tu código; solo tu número de cuenta. Confirma cualquier bono en el sitio oficial <b>.gob.ec</b>, escrito por ti.'
 
 const SUMMARY = 'Un SMS anuncia que tu cédula quedó preseleccionada para un bono de $180.'
 

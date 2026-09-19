@@ -276,20 +276,20 @@ export const STORY: Story<ScreenNode> = {
     view: CLONE,
     verdict: 'Acertaste · reportaste la copia',
     outcome:
-      'Reportaste el perfil, que es lo único que lo baja: la red lo revisa y lo cierra. Verónica no perdió sus 150 dólares porque preguntó, y ahora conviene rematar avisando a tus contactos, porque a Karina también le escribieron.',
+      'Reportar el perfil es lo único que lo cierra: la red lo revisa y lo baja. Verónica no perdió nada porque preguntó, y avisar a tus contactos corta el resto del daño.',
   },
   e_avisa: {
     kind: 'good',
     view: YOUR_PROFILE,
     verdict: 'Acertaste · avisaste a tu gente',
     outcome:
-      'Publicaste el aviso y tus contactos lo vieron antes de que alguien mandara dinero. Es lo que más rápido corta el daño: la cuenta falsa vive de que la gente crea que eres tú, y un aviso tuyo la deja sin nada. Repórtala también, para que la cierren.',
+      'Publicaste el aviso antes de que alguien mandara dinero. La cuenta falsa vive de que te crean a ti, así que repórtala también para que la cierren.',
   },
   e_escribe: {
     kind: 'bad',
     view: CHAT_CLONE,
     verdict: 'Le entregaste justo lo que le faltaba',
-    outcome: `Le mandaste tu cédula ${IDENTITY_FAKE.cedula} a quien estaba usando tu nombre. No borró nada: ahora, además de tus fotos, tiene un documento tuyo para hacer las estafas más creíbles y para abrir cuentas a tu nombre. A una cuenta falsa no se le demuestra nada: se reporta y se avisa a los demás.`,
+    outcome: `Le mandaste tu cédula ${IDENTITY_FAKE.cedula} a quien usaba tu nombre, y no borró nada. Ahora tiene un documento tuyo para estafas más creíbles y para abrir cuentas a tu nombre.`,
     score: 0,
   },
   e_ignora: {
@@ -297,7 +297,7 @@ export const STORY: Story<ScreenNode> = {
     view: CHAT,
     verdict: 'No hiciste nada, y el daño no era tuyo',
     outcome:
-      'Le creíste a Verónica y ahí quedó. Tú no vas a perder dinero, pero la cuenta sigue abierta escribiéndole a tu gente con tus fotos: a Karina ya le escribió. Reportarla y avisar cuesta dos minutos y es lo único que la para.',
+      'Le creíste a Verónica y ahí quedó. La cuenta sigue escribiéndole a tu gente con tus fotos, y reportarla toma dos minutos.',
     score: 50,
   },
 }
@@ -308,40 +308,40 @@ const SIGNALS: Signal[] = [
     targetId: 'aviso',
     pantalla: 'n1',
     texto:
-      'El aviso llega de <b>tu amiga de siempre</b>, por su chat de siempre, y no te pide nada: es de verdad. Que alguien pregunte "¿eres tú?" antes de mandar plata es exactamente lo que hay que hacer.',
+      '<b>Tu amiga de siempre te avisa, por su chat de siempre.</b> Preguntar antes de prestar es justo lo correcto.',
   },
   {
     id: 's2',
     targetId: 'captura',
     pantalla: 'n2b',
     texto:
-      'En la captura, quien le escribe a Verónica lleva <b>tu nombre y tu foto</b> en la cabecera, y pide una cantidad pequeña con plazo corto. Así te ve tu gente cuando la copia les habla.',
+      '<b>La captura usa tu nombre y tu foto</b> para pedir una cantidad pequeña con plazo corto.',
   },
   {
     id: 's3',
     targetId: 'copia',
     pantalla: 'n5',
     texto:
-      'La cuenta tiene <b>cuatro días y dieciocho amigos</b>, todos conocidos tuyos: fueron sacados de tu lista pública. Tus fotos son las mismas, descargadas de tu perfil.',
+      '<b>La cuenta tiene cuatro días y dieciocho amigos tuyos.</b> Las fotos son copias de tu perfil.',
   },
   {
     id: 's4',
     targetId: 'provoca',
     pantalla: 'n7',
     texto:
-      'Si le escribes, te <b>provoca para que "demuestres" quién eres</b>. No busca discutir: busca que le mandes un documento tuyo.',
+      '<b>Te provoca para que "demuestres" quién eres.</b> Solo busca que le mandes un documento.',
   },
   {
     id: 's5',
     targetId: 'mas-gente',
     pantalla: 'n2',
     texto:
-      'No eres el único aviso: <b>le escribieron a más gente tuya</b>. Por eso avisar a tus contactos corta más daño que cualquier otra cosa.',
+      '<b>Le escribieron a más gente tuya, no solo a ti.</b> Avisar a tus contactos corta ese daño.',
   },
 ]
 
 const RULE =
-  'Regla de oro: si copian tu perfil, <b>repórtalo y avisa a tus contactos</b>, en ese orden y sin escribirle a la cuenta falsa. Lo que la sostiene es que tu gente crea que eres tú, así que un aviso tuyo la desarma; y a quien te suplanta no se le demuestra nada con documentos.'
+  'Regla de oro: <b>repórtalo y avisa a tus contactos, en ese orden.</b> Nunca le escribas ni le mandes documentos a la cuenta falsa.'
 
 const SUMMARY = 'Una amiga te avisa de que alguien usa tu nombre y tus fotos para pedir dinero.'
 

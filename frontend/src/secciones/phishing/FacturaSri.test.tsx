@@ -1,16 +1,16 @@
-import { fireEvent, render, screen } from '@testing-library/react'
-import { MemoryRouter } from 'react-router'
-import { describe, expect, it, vi } from 'vitest'
-import SriInvoice from './FacturaSri'
+import { fireEvent, render, screen } from "@testing-library/react";
+import { MemoryRouter } from "react-router";
+import { describe, expect, it, vi } from "vitest";
+import SriInvoice from "./FacturaSri";
 
-vi.mock('../../context/AuthContext', () => ({
+vi.mock("../../context/AuthContext", () => ({
   useAuth: () => ({
     participant: {
-      id: 'p1',
-      nombre: 'María',
-      apellido: 'Pérez',
-      email: 'maria@ejemplo.com',
-      role: 'PARTICIPANT',
+      id: "p1",
+      nombre: "María",
+      apellido: "Pérez",
+      email: "maria@ejemplo.com",
+      role: "PARTICIPANT",
       onboardingVisto: true,
     },
     loading: false,
@@ -20,127 +20,163 @@ vi.mock('../../context/AuthContext', () => ({
     logout: vi.fn(),
     marcarOnboardingVisto: vi.fn(),
     onboardingDismissed: true,
-    displayName: 'María',
-    roleLabel: 'Participante',
-    initials: 'MP',
-    correoSimulado: 'mariaperez@safeweb.com',
+    displayName: "María",
+    roleLabel: "Participante",
+    initials: "MP",
+    correoSimulado: "mariaperez@safeweb.com",
   }),
-}))
+}));
 
-vi.mock('../../lib/api', async () => {
-  const current = await vi.importActual<typeof import('../../lib/api')>('../../lib/api')
-  return { ...current, createRun: vi.fn().mockResolvedValue(undefined) }
-})
+vi.mock("../../lib/api", async () => {
+  const current =
+    await vi.importActual<typeof import("../../lib/api")>("../../lib/api");
+  return { ...current, createRun: vi.fn().mockResolvedValue(undefined) };
+});
 
 function renderScenario() {
   render(
     <MemoryRouter>
       <SriInvoice />
     </MemoryRouter>,
-  )
+  );
 
-  fireEvent.click(screen.getByRole('button', { name: 'Empezar' }))
+  fireEvent.click(screen.getByRole("button", { name: "Empezar" }));
 }
 
-describe('FacturaSri', () => {
-  it('permite revisar Enviados sin cerrar el escenario', () => {
-    renderScenario()
+describe("FacturaSri", () => {
+  it("permite revisar Enviados sin cerrar el escenario", () => {
+    renderScenario();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Abrir Enviados' }))
+    fireEvent.click(screen.getByRole("button", { name: "Abrir Enviados" }));
 
-    expect(screen.getByRole('heading', { name: 'Enviados' })).toBeDefined()
-    expect(screen.getByText('No hay correos enviados.')).toBeDefined()
-    expect(screen.getByText('¿Qué haces?')).toBeDefined()
-    expect(screen.queryByText('Escenario no aprobado')).toBeNull()
+    expect(screen.getByRole("heading", { name: "Enviados" })).toBeDefined();
+    expect(screen.getByText("No hay correos enviados.")).toBeDefined();
+    expect(screen.getByText("¿Qué haces?")).toBeDefined();
+    expect(screen.queryByText("Escenario no aprobado")).toBeNull();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Abrir Recibidos' }))
-
-    expect(
-      screen.getByRole('heading', { name: 'Factura electrónica pendiente de validación' }),
-    ).toBeDefined()
-  })
-
-  it('permite revisar Papelera sin cerrar el escenario', () => {
-    renderScenario()
-
-    fireEvent.click(screen.getByRole('button', { name: 'Abrir Papelera' }))
-
-    expect(screen.getByRole('heading', { name: 'Papelera' })).toBeDefined()
-    expect(screen.getByText('La papelera está vacía.')).toBeDefined()
-    expect(screen.getByText('¿Qué haces?')).toBeDefined()
-    expect(screen.queryByText('Escenario no aprobado')).toBeNull()
-
-    fireEvent.click(screen.getByRole('button', { name: 'Abrir Recibidos' }))
+    fireEvent.click(screen.getByRole("button", { name: "Abrir Recibidos" }));
 
     expect(
-      screen.getByRole('heading', { name: 'Factura electrónica pendiente de validación' }),
-    ).toBeDefined()
-  })
+      screen.getByRole("heading", {
+        name: "Factura electrónica pendiente de validación",
+      }),
+    ).toBeDefined();
+  });
 
-  it('con el escenario ya terminado, cerrar la pestaña del portal falso vuelve al correo', () => {
-    renderScenario()
+  it("permite revisar Papelera sin cerrar el escenario", () => {
+    renderScenario();
 
-    fireEvent.click(screen.getByRole('link', { name: 'Validar mi factura ahora' }))
-    fireEvent.click(screen.getByRole('button', { name: 'Validar factura' }))
+    fireEvent.click(screen.getByRole("button", { name: "Abrir Papelera" }));
 
-    // El escenario terminó, pero la pestaña del portal falso sigue abierta.
-    expect(screen.getByText('Escenario no aprobado')).toBeDefined()
-    expect(screen.getByRole('tab', { name: /Validación de comprobante/ })).toBeDefined()
+    expect(screen.getByRole("heading", { name: "Papelera" })).toBeDefined();
+    expect(screen.getByText("La papelera está vacía.")).toBeDefined();
+    expect(screen.getByText("¿Qué haces?")).toBeDefined();
+    expect(screen.queryByText("Escenario no aprobado")).toBeNull();
+
+    fireEvent.click(screen.getByRole("button", { name: "Abrir Recibidos" }));
+
+    expect(
+      screen.getByRole("heading", {
+        name: "Factura electrónica pendiente de validación",
+      }),
+    ).toBeDefined();
+  });
+
+  it("con el escenario ya terminado, cerrar la pestaña del portal falso vuelve al correo", () => {
+    renderScenario();
 
     fireEvent.click(
-      screen.getByRole('button', { name: 'Cerrar la pestaña Validación de comprobante' }),
-    )
+      screen.getByRole("link", { name: "Validar mi factura ahora" }),
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Validar factura" }));
+
+    // El escenario terminó, pero la pestaña del portal falso sigue abierta.
+    expect(screen.getByText("Escenario no aprobado")).toBeDefined();
+    expect(
+      screen.getByRole("tab", { name: /Validación de comprobante/ }),
+    ).toBeDefined();
+
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: "Cerrar la pestaña Validación de comprobante",
+      }),
+    );
 
     // Cerrada esa pestaña solo queda el correo, y es lo que el navegador
     // muestra: antes se quedaba enseñando el portal sin pestaña en la barra.
-    expect(screen.queryByRole('tab', { name: /Validación de comprobante/ })).toBeNull()
-    expect(screen.getByText('https://correo.safeweb.com/u/0/#recibidos')).toBeDefined()
     expect(
-      screen.queryByText('Ingresa tus datos del portal para liberar la factura pendiente.'),
-    ).toBeNull()
-    expect(screen.getByText('Factura electrónica pendiente de validación')).toBeDefined()
-  })
+      screen.queryByRole("tab", { name: /Validación de comprobante/ }),
+    ).toBeNull();
+    expect(
+      screen.getByText("https://correo.safeweb.com/u/0/#recibidos"),
+    ).toBeDefined();
+    expect(
+      screen.queryByText(
+        "Ingresa tus datos del portal para liberar la factura pendiente.",
+      ),
+    ).toBeNull();
+    expect(
+      screen.getByText("Factura electrónica pendiente de validación"),
+    ).toBeDefined();
+  });
 
-  it('el repaso de señales enseña cada pantalla en su propia pestaña', () => {
-    renderScenario()
+  it("el repaso de señales enseña cada pantalla en su propia pestaña", () => {
+    renderScenario();
 
-    fireEvent.click(screen.getByRole('link', { name: 'Validar mi factura ahora' }))
-    fireEvent.click(screen.getByRole('button', { name: 'Validar factura' }))
     fireEvent.click(
-      screen.getByRole('button', { name: 'Cerrar la pestaña Validación de comprobante' }),
-    )
-    fireEvent.click(screen.getByRole('button', { name: 'Ver las señales' }))
+      screen.getByRole("link", { name: "Validar mi factura ahora" }),
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Validar factura" }));
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: "Cerrar la pestaña Validación de comprobante",
+      }),
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Ver las señales" }));
 
     // Señal 1: el remitente, que vive en el correo.
-    expect(screen.getByRole('tab', { name: /Correo/ }).getAttribute('aria-selected')).toBe('true')
+    expect(
+      screen.getByRole("tab", { name: /Correo/ }).getAttribute("aria-selected"),
+    ).toBe("true");
 
     // Señal 2: el portal real, una pantalla que este recorrido nunca abrió.
-    fireEvent.click(screen.getByRole('button', { name: 'Siguiente →' }))
-    expect(screen.getByRole('tab', { name: /SRI en Línea/ }).getAttribute('aria-selected')).toBe(
-      'true',
-    )
+    fireEvent.click(screen.getByRole("button", { name: "Siguiente →" }));
+    expect(
+      screen
+        .getByRole("tab", { name: /SRI en Línea/ })
+        .getAttribute("aria-selected"),
+    ).toBe("true");
 
     // Señal 5: la conexión insegura, en la pestaña que se cerró al terminar.
-    for (let i = 0; i < 3; i++) fireEvent.click(screen.getByRole('button', { name: 'Siguiente →' }))
-    expect(screen.getByRole('heading', { name: 'Señal 5 de 7' })).toBeDefined()
+    for (let i = 0; i < 3; i++)
+      fireEvent.click(screen.getByRole("button", { name: "Siguiente →" }));
+    expect(screen.getByRole("heading", { name: "Señal 5 de 7" })).toBeDefined();
     expect(
-      screen.getByRole('tab', { name: /Validación de comprobante/ }).getAttribute('aria-selected'),
-    ).toBe('true')
-  })
+      screen
+        .getByRole("tab", { name: /Validación de comprobante/ })
+        .getAttribute("aria-selected"),
+    ).toBe("true");
+  });
 
-  it('al eliminar el correo, la barra lateral lo refleja: sale de Recibidos y aparece en Papelera', () => {
-    renderScenario()
+  it("al eliminar el correo, la barra lateral lo refleja: sale de Recibidos y aparece en Papelera", () => {
+    renderScenario();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Eliminar' }))
+    fireEvent.click(screen.getByRole("button", { name: "Eliminar" }));
 
     // Recibidos se vacía sin más clics: la propia bandeja activa ya lo muestra.
-    expect(screen.getByText('No hay correos en la bandeja de entrada.')).toBeDefined()
+    expect(
+      screen.getByText("No hay correos en la bandeja de entrada."),
+    ).toBeDefined();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Abrir Papelera' }))
+    fireEvent.click(screen.getByRole("button", { name: "Abrir Papelera" }));
 
-    expect(screen.getByRole('heading', { name: 'Papelera' })).toBeDefined()
-    expect(screen.queryByText('La papelera está vacía.')).toBeNull()
-    expect(screen.getByText('Factura electrónica pendiente de validación')).toBeDefined()
-    expect(screen.getByText('notificaciones@sri-facturacion-ec.com')).toBeDefined()
-  })
-})
+    expect(screen.getByRole("heading", { name: "Papelera" })).toBeDefined();
+    expect(screen.queryByText("La papelera está vacía.")).toBeNull();
+    expect(
+      screen.getByText("Factura electrónica pendiente de validación"),
+    ).toBeDefined();
+    expect(
+      screen.getByText("notificaciones@sri-facturacion-ec.com"),
+    ).toBeDefined();
+  });
+});

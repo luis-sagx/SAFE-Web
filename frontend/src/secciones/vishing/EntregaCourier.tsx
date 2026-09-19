@@ -122,7 +122,7 @@ export const STORY: Story<ScreenNode> = {
     view: INCOMING,
     verdict: 'No perdiste nada, pero tampoco resolviste',
     outcome:
-      'No contestaste. No perdiste ni un centavo (y no contestar a un desconocido nunca está mal), pero era el repartidor con el paquete que sí estabas esperando: se fue, el envío volvió a bodega y ahora te toca ir a retirarlo a la agencia.',
+      'No contestaste, y eso nunca cuesta dinero. Pero era el repartidor real: el envío volvió a bodega y ahora toca retirarlo en la agencia.',
     score: 50,
   },
   e_cuelga: {
@@ -130,7 +130,7 @@ export const STORY: Story<ScreenNode> = {
     view: CALL,
     verdict: 'Colgaste a alguien que decía la verdad',
     outcome:
-      'Colgar nunca te va a costar dinero, así que como reflejo no está mal. Pero el envío era real y no comprobaste nada: bastaba mirar la guía en la app del courier para saber que estaba en reparto y con cobro de $3,50.',
+      'Colgar nunca cuesta dinero, pero el envío era real. Bastaba mirar la guía en la app del courier para confirmarlo.',
     score: 50,
   },
   e_recibe: {
@@ -138,21 +138,21 @@ export const STORY: Story<ScreenNode> = {
     view: CALL,
     verdict: 'Acertaste · la llamada era legítima',
     outcome:
-      'La entrega y el cobro eran reales, pero no compartiste datos de tarjeta: pagaste en efectivo cuando bajaste. Que el repartidor tenga tu guía no vuelve segura una petición de tarjeta por teléfono.',
+      'La entrega era real y pagaste en efectivo, sin dar datos de tarjeta. Que el repartidor tenga tu guía no vuelve segura una petición de tarjeta por teléfono.',
   },
   e_tarjeta: {
     kind: 'bad',
     view: CALL,
     verdict: 'Llamada legítima, reacción peligrosa',
     outcome:
-      'La entrega era real, pero aceptaste una petición insegura y dictaste tu tarjeta por teléfono. Un número completo con caducidad y CVV sirve para comprar en internet las veces que haga falta, y ya no depende de si el repartidor era honrado: lo oyó él, y quien estuviera cerca.',
+      'La entrega era real, pero dictaste tu tarjeta por teléfono. Ese número con caducidad y CVV sirve para comprar en internet, y lo oyó él y quien estuviera cerca.',
   },
   e_app: {
     kind: 'good',
     view: GUIDE,
     verdict: 'Acertaste · lo comprobaste en tu canal',
     outcome:
-      'En la app estaba todo: la guía en reparto, el nombre del repartidor y el cobro de $3,50 contra entrega. También deja claro que una tarjeta se paga en el datáfono, no dictando sus datos por teléfono.',
+      'En la app estaba todo: la guía en reparto, el repartidor y el cobro de $3,50. La tarjeta se paga en el datáfono, no dictando sus datos.',
   },
 }
 
@@ -162,33 +162,33 @@ const SIGNALS: Signal[] = [
     targetId: 'guia',
     pantalla: 'n2',
     texto:
-      'Trae <b>tu número de guía</b> y coincide con la compra que estás esperando. No lo dice para que "confirmes" nada: lo dice porque lo tiene delante.',
+      '<b>Trae tu número de guía</b>, que coincide con tu compra. Lo dice porque lo tiene delante, no para que confirmes nada.',
   },
   {
     id: 's2',
     targetId: 'cobro',
     pantalla: 'n2',
     texto:
-      'El valor y la entrega <b>sí coinciden</b> con tu compra, pero eso no autoriza a nadie a cobrarte la tarjeta por teléfono. El pago con tarjeta sigue siendo en el datáfono, con la tarjeta en tu mano.',
+      '<b>El valor y la entrega sí coinciden</b> con tu compra, pero eso no autoriza a cobrarte la tarjeta por teléfono.',
   },
   {
     id: 's3',
     targetId: 'cobro',
     pantalla: 'n2',
     texto:
-      'Te pide <b>el número de la tarjeta por teléfono</b>. Aunque la entrega exista, ese dato no se dicta: el cobro seguro con tarjeta ocurre en el datáfono, de forma presencial.',
+      '<b>Te pide el número de tu tarjeta por teléfono.</b> Aunque la entrega exista, eso solo se paga en el datáfono, presencial.',
   },
   {
     id: 's4',
     targetId: 'coincide',
     pantalla: 'e_app',
     texto:
-      'En la app del courier <b>consta lo mismo</b> que te cuentan por teléfono. Eso es lo que convierte una sospecha en una certeza, en los dos sentidos.',
+      '<b>En la app consta lo mismo</b> que te cuentan por teléfono. Eso convierte la sospecha en certeza, en los dos sentidos.',
   },
 ]
 
 const RULE =
-  'Regla de oro: que una llamada sea de verdad <b>no significa que valga todo</b>. Puedes confirmar una entrega sin problema, pero el número de tu tarjeta no se dicta por teléfono nunca: se paga en efectivo o en el datáfono, con la tarjeta en tu mano.'
+  'Regla de oro: <b>una llamada real no significa que valga todo</b>. El número de tu tarjeta nunca se dicta: se paga en efectivo o datáfono.'
 
 const SUMMARY = 'Un repartidor llama desde la puerta para entregarte un paquete.'
 

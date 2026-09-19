@@ -59,7 +59,7 @@ const CHAT = withFreeTextComposer(createAIChat(SUB, OPENING, TIME, [], SITE), {
 })
 
 const FACE_OF_DAUGHTER =
-  'La <b>foto de Sofía</b>: su cara de frente, el uniforme y el escudo de la escuela. Tú puedes decidir por ella, pero ella no puede aceptar, y la foto queda en los servidores de otra empresa, que puede guardarla o usarla para entrenar su IA.'
+  '<b>La foto de Sofía muestra su cara, uniforme y escuela</b>. Ella no puede aceptar que quede en servidores de otra empresa.'
 
 const STORY: Story<ScreenNode> = {
   n1: { kind: 'scene', view: CHAT },
@@ -70,13 +70,13 @@ const STORY: Story<ScreenNode> = {
       signal(
         'foto-grupo',
         'e_grupo',
-        'La <b>foto del aula</b>: las caras de 12 niños que no son tus hijos. Sus papás nunca dieron permiso para que sus fotos terminen en una IA externa, y tú no puedes darlo por ellos.',
+        '<b>La foto del aula muestra a 12 niños</b> que no son tus hijos. Sus papás nunca dieron permiso, y tú no puedes darlo por ellos.',
       ),
       signal('foto-hija', 'e_grupo', FACE_OF_DAUGHTER),
     ],
     verdict: 'Subiste caras de niños sin permiso de sus papás',
     outcome:
-      'La foto del aula muestra a 12 compañeros de Sofía. Esa decisión no era tuya: cada familia decide sobre la imagen de su hijo. Para una invitación bastaba con el dibujo o la decoración.',
+      'La foto del aula muestra a 12 compañeros de Sofía; esa decisión no era tuya. Para una invitación bastaba el dibujo o la decoración.',
   },
   e_foto_hija: {
     kind: 'bad',
@@ -84,19 +84,19 @@ const STORY: Story<ScreenNode> = {
     senales: [signal('foto-hija', 'e_foto_hija', FACE_OF_DAUGHTER)],
     verdict: 'Subiste la cara de tu hija a un servicio externo',
     outcome:
-      'Era tu hija y la decisión era tuya, pero la foto muestra su cara, su uniforme y su escuela: suficiente para reconocerla y saber dónde encontrarla. Una invitación no necesitaba nada de eso.',
+      'Era tu hija, pero la foto muestra su cara, uniforme y escuela: suficiente para reconocerla y ubicarla. Una invitación no necesitaba nada de eso.',
   },
   e_sin_caras: {
     kind: 'good',
     view: CHAT,
     // El mensaje enviado puede ir sin texto: la señal apunta a las imágenes, que sí están.
     senales: [
-      signal('dibujo', 'e_sin_caras', 'El <b>dibujo de Sofía</b> no muestra a nadie: la invitación queda personal sin que su cara salga de tu computador.'),
-      signal('decoracion', 'e_sin_caras', 'La <b>decoración</b> tampoco muestra personas. Con eso la IA armó la invitación igual.'),
+      signal('dibujo', 'e_sin_caras', '<b>El dibujo de Sofía no muestra a nadie</b>. La invitación queda personal sin que su cara salga del computador.'),
+      signal('decoracion', 'e_sin_caras', '<b>La decoración tampoco muestra personas</b>. Con eso bastó para armar la invitación.'),
     ],
     verdict: 'Armaste la invitación sin subir ninguna cara',
     outcome:
-      'No subiste las fotos de Sofía ni de su aula. Para una invitación bastaban el dibujo y la decoración: ninguna cara salió de tu computador.',
+      'No subiste las fotos de Sofía ni de su aula. El dibujo y la decoración bastaron, sin que ninguna cara saliera del computador.',
   },
 }
 
@@ -104,12 +104,12 @@ const SIGNALS = [
   signal(
     'imagenes-pedidas',
     'n1',
-    'La IA pide <b>imágenes para la invitación</b>, no caras. En tu galería hay un dibujo y la decoración, que no muestran a nadie.',
+    '<b>La IA pide imágenes, no caras</b>. En tu galería, el dibujo y la decoración no muestran a nadie.',
   ),
 ]
 
 const RULE =
-  'Regla de oro: la cara de un menor no se sube a una IA externa: no puede dar su permiso, y la foto queda en servidores ajenos. Si en la foto salen otros niños, la decisión ni siquiera es tuya. Un dibujo o una descripción casi siempre bastan.'
+  'Regla de oro: <b>la cara de un menor no se sube a una IA externa</b>; no puede dar su permiso. Si salen otros niños, la decisión ni siquiera es tuya.'
 
 const SUMMARY = 'Le pides a una IA la invitación del cumpleaños de tu hija, con fotos de ella y de su aula en la galería.'
 

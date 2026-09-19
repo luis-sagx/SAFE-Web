@@ -28,7 +28,7 @@ const STORY: Story<ScreenNode> = {
 
 const SIGNALS: Signal[] = [
   { id: 'usb', targetId: 'usb-suelo', texto: 'Un <b>USB abandonado</b> puede ser un cebo: no hace falta que parezca sospechoso para comprometer un equipo.' },
-  { id: 'vacio', targetId: 'estacionamiento-vacio', texto: 'No hay a quién preguntar de quién es. En vez de llevártelo, <b>repórtalo a IT</b> para que lo gestione sin conectarlo.' },
+  { id: 'vacio', targetId: 'estacionamiento-vacio', texto: '<b>Repórtalo a IT</b> en vez de llevártelo: no hay a quién preguntar de quién es.' },
 ]
 
 const context: Context = {

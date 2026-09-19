@@ -50,12 +50,12 @@ const STORY: Story<StoryNode> = {
     kind: 'bad',
     verdict: 'Caíste en la trampa',
     outcome:
-      'No se abrió ninguna factura: el archivo era un programa y tu equipo lo ejecutó. En segundo plano descargó un ladrón de contraseñas que recogió las que tenías guardadas en el navegador, incluida la del portal del SRI. No apareció ninguna ventana ni ningún aviso.',
+      'No se abrió ninguna factura: el archivo era un programa, y tu equipo lo ejecutó. En segundo plano robó las claves guardadas en el navegador, incluida la del SRI.',
   },
   e_datos: {
     kind: 'bad',
     verdict: 'Caíste en la trampa',
-    outcome: `Entregaste tu RUC ${IDENTITY_FAKE.ruc} y tu clave ${IDENTITY_FAKE.clave} en un sitio que no es del SRI. Con esos datos pueden emitir comprobantes a tu nombre y ver tu información tributaria.`,
+    outcome: `Entregaste tu RUC ${IDENTITY_FAKE.ruc} y tu clave ${IDENTITY_FAKE.clave} en un sitio que no es del SRI. Con eso pueden emitir comprobantes a tu nombre.`,
   },
 
   // Los cinco finales de la barra de acciones del cliente. Ninguno entrega la
@@ -64,26 +64,25 @@ const STORY: Story<StoryNode> = {
   e_spam: {
     kind: 'good',
     verdict: 'No caíste · lo reportaste',
-    outcome:
-      'Marcarlo como spam es la mejor reacción posible: no caíste y además tu proveedor de correo aprende a filtrar ese remitente, así que el mismo mensaje le llega a menos gente.',
+    outcome: 'Marcarlo como spam es la mejor reacción: no caíste, y tu proveedor aprende a filtrar ese remitente.',
   },
   e_eliminar: {
     kind: 'good',
     verdict: 'No caíste · lo eliminaste',
     outcome:
-      'Lo borraste sin tocar el enlace ni el adjunto, que es suficiente para no caer. Marcarlo como spam habría hecho algo más: avisar al filtro para que no le llegue a otros.',
+      'Borrarlo sin tocar el enlace ni el adjunto ya es no caer. Marcarlo como spam habría hecho algo más: avisar al filtro.',
   },
   e_responder: {
     kind: 'partial',
     verdict: 'No entregaste la clave, pero contestaste',
     outcome:
-      'No diste tus datos, pero confirmaste que tu dirección existe y que alguien la lee. Es justo lo que un atacante busca para insistir con algo mejor preparado, y ahora tiene una conversación abierta contigo.',
+      'No diste tus datos, pero confirmaste que tu dirección existe y alguien la lee. Ahora tiene una conversación abierta contigo.',
   },
   e_reenviar: {
     kind: 'partial',
     verdict: 'No caíste tú, pero lo pasaste',
     outcome:
-      'Se lo reenviaste a otra persona para que opine. Tú no caíste, pero pusiste el enlace y el adjunto en la bandeja de alguien que quizá no los mire con la misma desconfianza. Para consultar una duda es mejor una captura, o preguntar sin reenviar.',
+      'No caíste, pero el enlace y el adjunto llegaron a alguien que quizá confíe más. Mejor una captura, o preguntar sin reenviar.',
   },
 }
 
@@ -125,60 +124,59 @@ const ADDRESS = 'notificaciones@sri-facturacion-ec.com'
 
 // Cada señal apunta a su data-signal en una de las dos pantallas; si esa
 // pantalla no es la que llevó al final, el recorrido igual muestra el texto sin resaltar.
+// Redacción compacta (issue de UX): el hecho clave primero, en negrita, y
+// como mucho una frase corta más.
 const SIGNALS: Signal[] = [
   {
     id: 'dominio',
     pantalla: 'n1',
     targetId: 'remitente',
     texto:
-      'Lo que va después de la arroba es la parte que dice de quién es el correo de verdad. Aquí dice <b>sri-facturacion-ec.com</b>, y la del SRI es <b>sri.gob.ec</b>. Cualquiera puede comprar un nombre que lleve "sri" adentro, y eso no lo vuelve oficial.',
+      'El remitente es <b>sri-facturacion-ec.com</b>, la del SRI es <b>sri.gob.ec</b>. Cualquiera puede comprar un dominio que lleve "sri" adentro.',
   },
   {
     id: 'dominio-real',
     pantalla: 'n3',
     targetId: 'url-real',
     texto:
-      'Así se ve el portal de verdad: su dirección termina en <b>sri.gob.ec</b>, y ese <b>.gob.ec</b> del final solo lo pueden usar entidades del Estado ecuatoriano. La del correo no lo tenía, solo lo imitaba.',
+      'El portal real termina en <b>sri.gob.ec</b>: ese <b>.gob.ec</b> solo lo usan entidades del Estado. La del correo solo lo imitaba.',
   },
   {
     id: 'externo',
     pantalla: 'n1',
     targetId: 'externo',
-    texto:
-      'Tu propio correo lo marcó como <b>externo</b>, o sea que vino de fuera y no de dentro de tu organización. No lo vuelve falso por sí solo, pero un mensaje que dice ser de una institución y llega así merece que lo compruebes aparte.',
+    texto: 'Tu propio correo lo marcó como <b>externo</b>. Una institución que llega así merece comprobarse aparte.',
   },
   {
     id: 'plazo',
     pantalla: 'n1',
     targetId: 'plazo',
-    texto:
-      'Te da <b>24 horas</b> y amenaza con una multa. La prisa es parte del engaño: si no te da tiempo de comprobar nada, decides con miedo.',
+    texto: '<b>24 horas</b> y amenaza de multa. La prisa es parte del engaño: sin tiempo de comprobar, decides con miedo.',
   },
   {
     id: 'conexion',
     pantalla: 'n2',
     targetId: 'url-insegura',
     texto:
-      'La dirección de esa página empieza por <b>http</b> y no por <b>https</b>, y por eso el navegador no muestra el candado. Lo que escribas ahí viaja sin proteger, y ningún portal que pida claves funciona así hoy.',
+      'La página empieza por <b>http</b>, no por <b>https</b> (sin candado). Ningún portal que pida claves funciona así hoy.',
   },
   {
     id: 'adjunto',
     pantalla: 'n1',
     targetId: 'adjunto',
     texto:
-      'El nombre del archivo termina en <b>.vbs</b>, y ese final es lo que dice qué es: no un documento, sino un <b>programa</b> que se ejecuta apenas lo abres. El <b>.pdf</b> de antes está puesto para disfrazarlo, y Windows suele esconder el final del nombre.',
+      'El archivo termina en <b>.vbs</b>: no es un documento, es un <b>programa</b>. El <b>.pdf</b> de antes solo lo disfraza.',
   },
   {
     id: 'clave',
     pantalla: 'n2',
     targetId: 'campo-clave',
-    texto:
-      'Te pide la <b>clave</b> del portal para "validar" una factura. Una clave sirve para entrar a tu cuenta, no para revisar un trámite: quien la reciba entra como si fueras tú.',
+    texto: 'Pide tu <b>clave</b> del portal para "validar" una factura. Con ella, entran como si fueras tú.',
   },
 ]
 
 const RULE =
-  'Regla de oro: ninguna entidad pública te pide tu clave por correo. Si un mensaje dice que tienes algo pendiente, <b>entra al portal oficial escribiendo tú la dirección</b>, nunca por el enlace del correo.'
+  'Regla de oro: ninguna entidad pública pide tu clave por correo. <b>Entra al portal oficial escribiendo tú la dirección</b>, nunca por el enlace del correo.'
 
 const SUMMARY = 'Un correo dice que tienes una factura electrónica pendiente de validar.'
 

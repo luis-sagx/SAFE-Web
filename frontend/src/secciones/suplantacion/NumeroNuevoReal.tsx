@@ -212,7 +212,7 @@ export const STORY: Story<ScreenNode> = {
     view: CHAT,
     verdict: "Era ella, pero guardaste sin comprobar nada",
     outcome:
-      "No pasó nada malo porque el mensaje era real: tu tía sí cambió de número. Pero lo aceptaste sin comprobar, y esta vez tuviste suerte. Una llamada o una pregunta que solo ella sepa responder resuelve la duda en medio minuto.",
+      "No pasó nada malo porque el mensaje era real. Pero lo aceptaste sin comprobar, y esta vez tuviste suerte.",
     score: 50,
   },
   e_verifica: {
@@ -220,28 +220,28 @@ export const STORY: Story<ScreenNode> = {
     view: ANSWERS,
     verdict: "Acertaste · comprobaste sin desconfiar de más",
     outcome:
-      "Era ella. Una llamada de treinta segundos resuelve la duda entera: guardaste el número y quedaron de verse el domingo. Comprobar no es ofender a nadie.",
+      "Era ella: una llamada de treinta segundos resolvió la duda entera. Comprobar no es ofender a nadie.",
   },
   e_verifica_texto: {
     kind: "good",
     view: RESPONDS_WELL,
     verdict: "Acertaste · comprobaste sin desconfiar de más",
     outcome:
-      "Era ella. Una pregunta que solo tu tía podía responder resuelve la duda entera: guardaste el número y quedaron de verse el domingo. Comprobar no es ofender a nadie.",
+      "Era ella: la pregunta que solo tu tía podía responder resolvió la duda. Comprobar no es ofender a nadie.",
   },
   e_rechaza_texto: {
     kind: "bad",
     view: RESPONDS_WELL,
     verdict: "No confiaste ni tras la prueba",
     outcome:
-      "Le preguntaste algo que solo tu tía podía saber, y contestó bien. Aun así decidiste no creerle. Comprobar sirve si al final aceptas lo que la comprobación te dice; si nada la iba a convencer, la pregunta fue solo un trámite.",
+      "Le preguntaste algo que solo tu tía sabía, y contestó bien, pero igual no le creíste. Comprobar solo sirve si aceptas lo que la prueba te dice.",
   },
   e_ignora: {
     kind: "partial",
     view: CHAT,
     verdict: "Prudente, pero era tu tía",
     outcome:
-      "No contestaste, y eso nunca te va a costar dinero. Pero era ella de verdad: se quedó sin poder avisarte y tú sin su número. Comprobar cuesta una llamada; ignorar cuesta la relación.",
+      "No contestaste, y eso nunca te va a costar dinero. Pero era ella de verdad, y se quedó sin poder avisarte.",
     score: 50,
   },
 };
@@ -252,40 +252,40 @@ const SIGNALS: Signal[] = [
     targetId: "saludo",
     pantalla: "n1",
     texto:
-      "<b>No pide nada.</b> Avisa de un cambio y ya; un mensaje falso siempre acaba pidiendo algo.",
+      "<b>No pide nada.</b> Solo avisa de un cambio; un mensaje falso siempre acaba pidiendo algo.",
   },
   {
     id: "s2",
     targetId: "audio",
     pantalla: "n1",
     texto:
-      "La nota de voz <b>no mete prisa</b>. Sola no basta: una voz clonada tampoco sonaría rara.",
+      "<b>La nota de voz no mete prisa.</b> Sola no basta: una voz clonada tampoco sonaría rara.",
   },
   {
     id: "s3",
     targetId: "antiguedad",
     pantalla: "n1b",
     texto:
-      "La cuenta es <b>nueva</b>, igual que en una suplantación. Quien cambia de chip empieza de cero.",
+      "<b>La cuenta es nueva</b>, igual que en una suplantación. Quien cambia de chip empieza de cero.",
   },
   {
     id: "s4",
     targetId: "responde",
     pantalla: "n2b",
     texto:
-      "Contesta <b>lo que solo ella sabría</b>, con detalles. Ninguna suplantación pasa esa prueba.",
+      "<b>Contesta con detalles lo que solo ella sabría.</b> Ninguna suplantación pasa esa prueba.",
   },
   {
     id: "s5",
     targetId: "contesta",
     pantalla: "e_verifica",
     texto:
-      "<b>Contesta la llamada</b> al primer timbre y sin prisa. Quien suplanta nunca puede hablar.",
+      "<b>Contesta la llamada al primer timbre, sin prisa.</b> Quien suplanta nunca puede hablar.",
   },
 ];
 
 const RULE =
-  "Regla de oro: comprobar no es desconfiar. Una llamada o una pregunta que solo esa persona sepa responder resuelve un cambio de número en medio minuto, sin ofender a nadie.";
+  "Regla de oro: <b>comprobar no es desconfiar.</b> Una llamada o una pregunta que solo esa persona sepa responder resuelve la duda en medio minuto.";
 
 const SUMMARY =
   "Tu tía escribe desde un número nuevo para avisar que perdió el celular.";

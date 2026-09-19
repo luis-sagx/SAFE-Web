@@ -108,45 +108,43 @@ const STORY: Story<ScreenNode> = {
     kind: 'bad',
     view: PAGE,
     verdict: 'Caíste en la trampa',
-    outcome: `La página era una copia alojada en andes-ec.net. Con tu contraseña ${IDENTITY_FAKE.clave} entraron a tu buzón y desde ahí escribieron a contabilidad pidiendo una transferencia a tu nombre.`,
+    outcome: `La página era una copia alojada en andes-ec.net. Con tu contraseña ${IDENTITY_FAKE.clave} entraron a tu buzón y pidieron una transferencia a tu nombre.`,
   },
 }
 
+// Redacción compacta (issue de UX): el hecho clave primero, en negrita, y
+// como mucho una frase corta más.
 const SIGNALS: Signal[] = [
   {
     id: 's1',
     targetId: 'remitente',
     pantalla: 'n1',
-    texto:
-      'La dirección del remitente termina en <b>andes-ec.net</b>, y la de tu empresa es <b>andes.com.ec</b>. De lejos se parecen, pero el final es distinto, y esa parte final es la que dice quién es el dueño: son dos direcciones de dos dueños distintos.',
+    texto: 'El remitente termina en <b>andes-ec.net</b>, tu empresa es <b>andes.com.ec</b>. Son dos dueños distintos.',
   },
   {
     id: 's2',
     targetId: 'url',
     pantalla: 'n2',
     texto:
-      'La página tiene <b>candado</b> y su dirección empieza por <b>https</b>. Eso solo significa que nadie puede espiar lo que escribes mientras viaja, no que la página sea de tu empresa. Una página falsa consigue ese candado gratis y en minutos.',
+      'El <b>candado y el https</b> solo cifran la conexión, no dicen que sea tu empresa. Una página falsa lo consigue gratis.',
   },
   {
     id: 's3',
     targetId: 'plazo',
     pantalla: 'n1',
-    texto:
-      'Amenaza con <b>perder el acceso hoy mismo</b> para que actúes sin pensar y no te dé tiempo de preguntar en sistemas.',
+    texto: 'Amenaza con <b>perder el acceso hoy mismo</b>: la prisa evita que preguntes en sistemas.',
   },
   {
     id: 's4',
     targetId: 'campo-clave',
     pantalla: 'n2',
-    texto:
-      'Te pide escribir tu <b>contraseña actual</b> en una página que abriste desde un correo. Tu empresa ya sabe cuál es tu cuenta: nunca necesita que le repitas la clave para renovarla.',
+    texto: 'Pide tu <b>contraseña actual</b> en una página abierta desde un correo. Tu empresa nunca la necesita para renovarla.',
   },
   {
     id: 's5',
     targetId: 'saludo',
     pantalla: 'n1',
-    texto:
-      'No te llama por tu nombre ni menciona ningún dato tuyo: el mismo texto le sirve igual a cualquiera que lo reciba.',
+    texto: 'No te llama por tu nombre: <b>el mismo texto sirve para cualquiera</b> que lo reciba.',
   },
 ]
 /// La intranet es la vía de verificación que no pasa por el correo: abrirla por
@@ -191,12 +189,11 @@ const SIGNAL_REAL: Signal = {
   id: 's6',
   targetId: 'correo-real',
   pantalla: 'n3',
-  texto:
-    'Así se escribe Soporte TI de verdad: <b>soporte.ti@andes.com.ec</b>. El del correo era <b>soporte-ti@andes-ec.net</b>, otro dominio, aunque se parezca.',
+  texto: 'Soporte TI real es <b>soporte.ti@andes.com.ec</b>. El del correo era <b>soporte-ti@andes-ec.net</b>, otro dominio.',
 }
 
 const RULE =
-  'Regla de oro: el candado verde no significa que el sitio sea legítimo, solo que la conexión va cifrada. <b>Lee el dominio completo</b> y cambia tus contraseñas entrando por el sistema de la empresa, nunca desde un enlace.'
+  'Regla de oro: el candado solo cifra la conexión, no confirma quién es el sitio. <b>Lee el dominio completo</b> y renueva claves entrando por el sistema de la empresa.'
 
 const SUMMARY = 'Un correo de "Soporte TI" avisa que tu contraseña caduca hoy a las 18:00.'
 

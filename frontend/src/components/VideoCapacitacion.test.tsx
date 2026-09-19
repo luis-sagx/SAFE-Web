@@ -75,6 +75,31 @@ describe('VideoCapacitacion', () => {
     expect(container.querySelector('iframe')).toBeNull()
   })
 
+  it('en modo de módulo oculta los datos repetidos y se minimiza al cerrar el video', () => {
+    const { container } = render(
+      <VideoCapacitacion
+        video={{ ...BASE_VIDEO, youtubeUrl: 'https://youtu.be/abcdefghijk' }}
+        folio="MOD-01"
+        etiqueta="Míralo primero"
+        mostrarInformacion={false}
+        minimizarAlCerrar
+      />,
+    )
+
+    expect(screen.queryByText('MOD-01')).toBeNull()
+    expect(screen.queryByText('Míralo primero')).toBeNull()
+    expect(screen.queryByRole('heading', { name: 'Introducción a SAFE-Web' })).toBeNull()
+    expect(screen.queryByText('Cómo funciona la plataforma.')).toBeNull()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Reproducir Introducción a SAFE-Web' }))
+    expect(container.querySelector('iframe')).not.toBeNull()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Cerrar Introducción a SAFE-Web' }))
+    expect(container.querySelector('iframe')).toBeNull()
+    expect(container.querySelector('img')).toBeNull()
+    expect(screen.getByRole('button', { name: 'Reproducir Introducción a SAFE-Web' })).toBeDefined()
+  })
+
   it('una fila sin video muestra el sello en vez de un reproductor', () => {
     const { container } = render(
       <ul>
