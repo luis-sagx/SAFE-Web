@@ -28,19 +28,19 @@ const SIGNALS: Signal[] = [
     id: 'sin-clave',
     targetId: 'celular-desbloqueado',
     texto:
-      'Mira la pantalla: <b>se abre sin clave</b>, con todas tus apps a la vista. En el caso de Guayaquil el celular no tenía bloqueo y los datos del banco estaban en las notas. Un PIN, un patrón o tu huella le cuestan al ladrón el tiempo que tú necesitas para bloquear todo.',
+      '<b>El celular se abre sin clave</b>, con todas tus apps a la vista. Un PIN, patrón o huella le habría costado tiempo al ladrón.',
   },
   {
     id: 'tiempo',
     targetId: 'moto',
     texto:
-      'Cada minuto cuenta: en un caso de Guayaquil <b>vaciaron la cuenta en menos de 20 minutos</b>, y en otro transfirieron más de $12.000 en una hora.',
+      '<b>Vaciaron una cuenta en menos de 20 minutos</b> en un caso real de Guayaquil. Cada minuto sin bloquear cuenta.',
   },
   {
     id: 'sesiones',
     targetId: 'mano-vacia',
     texto:
-      'El ladrón no solo se lleva el equipo: se lleva tus <b>apps con la sesión abierta</b> y el chip que <b>recibe los códigos de verificación</b> del banco. El banco bloquea tus canales desde la hora en que avisas.',
+      'El ladrón se lleva <b>apps con sesión abierta</b> y el chip que <b>recibe tus códigos del banco</b>. El bloqueo cuenta desde que avisas.',
   },
 ]
 
@@ -63,28 +63,28 @@ const STORY: Story<ScreenNode> = {
     view: STREET,
     verdict: 'Cuentas protegidas',
     outcome:
-      'A los 15 minutos del robo intentaron dos transferencias y el banco las rechazó: tus canales ya estaban bloqueados. La operadora suspendió la línea y bloqueó el equipo en la misma llamada. Al día siguiente avisaste a TI para cerrar la sesión del correo del trabajo y pusiste la denuncia. Tu celular nuevo ya tiene clave de bloqueo.',
+      'El banco rechazó dos transferencias a los 15 minutos: tus canales ya estaban bloqueados. La operadora suspendió la línea y el equipo en la misma llamada.',
   },
   e_casa: {
     kind: 'bad',
     view: STREET,
     verdict: 'Vaciaron tu cuenta',
     outcome:
-      'Sin clave de bloqueo, abrieron la app del banco como si fueras tú. Durante los 40 minutos de camino salieron tres transferencias, aprobadas con los códigos que seguían llegando a tu chip. Cuando por fin llamaste, el banco bloqueó desde esa hora: lo anterior quedó como un reclamo largo e incierto.',
+      'Sin clave, abrieron la app del banco como si fueras tú. En los 40 minutos de camino salieron tres transferencias, aprobadas con los códigos que seguían llegando a tu chip.',
   },
   e_denuncia_primero: {
     kind: 'partial',
     view: STREET,
     verdict: 'Respuesta incompleta',
     outcome:
-      'La denuncia hace falta, pero mientras esperabas turno la banca móvil seguía abierta y salió una transferencia. Bloquear primero y denunciar después habría evitado ese dinero perdido.',
+      'La denuncia hace falta, pero mientras esperabas turno salió una transferencia con la banca móvil todavía abierta. Bloquear primero habría evitado esa pérdida.',
   },
   e_solo_chip: {
     kind: 'partial',
     view: STREET,
     verdict: 'Respuesta incompleta',
     outcome:
-      'Dejaron de llegar los códigos por SMS, pero el celular no tenía clave y las apps con la sesión abierta siguieron funcionando con cualquier WiFi. Hicieron un pago antes de que llamaras al banco.',
+      'Dejaron de llegar los códigos por SMS, pero sin clave, las apps con la sesión abierta siguieron funcionando con cualquier WiFi. Hicieron un pago antes de que llamaras al banco.',
   },
 }
 
@@ -109,7 +109,7 @@ export default function CompromisedCable() {
       nota="Mira la escena con calma antes de decidir."
       story={STORY}
       senales={SIGNALS}
-      rule="<b>Ponle clave a tu celular y, si te lo roban, primero el banco.</b> Un PIN, patrón o huella frena al ladrón; después bloquea la banca móvil por la línea oficial, luego suspende la línea y el equipo con tu operadora, avisa a TI si tenías cuentas del trabajo y denuncia."
+      rule="<b>Si te roban el celular, primero el banco.</b> Bloquea la banca móvil, luego suspende línea y equipo con tu operadora, y denuncia después."
       restartLabel="Intentar de nuevo"
       cuandoTermina="Cuando elijas qué haces primero después del robo."
       pista="El ladrón no solo tiene el equipo: tiene tus apps abiertas y el chip que recibe los códigos. Piensa qué cierra más rápido el acceso a tu dinero."

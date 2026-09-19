@@ -28,19 +28,19 @@ const SIGNALS: Signal[] = [
     id: 'lector',
     targetId: 'lector-tarjeta',
     texto:
-      'Cada persona pasa con <b>su propia tarjeta</b>: el lector registra quién entró. Si le abres, la entrada queda a tu nombre.',
+      '<b>Cada persona entra con su propia tarjeta</b>: el lector la registra. Si tú le abres, la entrada queda a tu nombre.',
   },
   {
     id: 'credencial',
     targetId: 'credencial',
     texto:
-      'Su credencial está <b>en blanco</b>: ni foto ni nombre. Y aunque tuviera, una credencial colgada no es una autorización: el intruso del IESS en 2022 también llevaba una credencial institucional.',
+      '<b>Su credencial está en blanco</b>, sin foto ni nombre. Y una credencial colgada no autoriza: el intruso del IESS en 2022 también llevaba una.',
   },
   {
     id: 'mochila',
     targetId: 'mochila',
     texto:
-      'Nadie de TI salió a recibirlo y trae una <b>mochila grande y vacía</b>. En el IESS el intruso salió con varias mochilas llenas de laptops.',
+      '<b>Trae una mochila grande y vacía</b>, y nadie de TI salió a recibirlo. En el IESS, el intruso se fue con varias llenas de laptops.',
   },
 ]
 
@@ -63,14 +63,14 @@ const STORY: Story<ScreenNode> = {
     view: DOOR,
     verdict: 'Entró con tu tarjeta',
     outcome:
-      'Esa noche faltaban laptops del área y el equipo que administra la web institucional. Hubo que resetear las claves de todos sus usuarios, y el registro de la puerta muestra que se abrió con tu tarjeta.',
+      'Esa noche faltaban laptops y el equipo que administra la web institucional. El registro de la puerta muestra que se abrió con tu tarjeta.',
   },
   e_revisa_credencial: {
     kind: 'bad',
     view: DOOR,
     verdict: 'Entró con tu tarjeta',
     outcome:
-      'La credencial se veía bien, pero una credencial se puede falsificar o robar, y mirarla no dice si esa persona está autorizada hoy. Esa noche faltaban laptops del área y hubo que resetear las claves de todos sus usuarios.',
+      'La credencial se veía bien, pero mirarla no dice si esa persona está autorizada hoy. Esa noche faltaban laptops y hubo que resetear las claves de todos sus usuarios.',
   },
   e_acompana: {
     kind: 'partial',

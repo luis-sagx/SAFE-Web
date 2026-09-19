@@ -232,21 +232,21 @@ export const STORY: Story<ScreenNode> = {
     view: COURIER,
     verdict: 'Caíste en la estafa',
     outcome:
-      'La laptop salió y al día siguiente el cheque volvió protestado por insuficiencia de fondos. El banco anuló el depósito y te descontó los $1.000 del saldo, tal como avisaba la pantalla. La papeleta era auténtica y no servía de nada: solo probaba que alguien dejó un cheque en la ventanilla, no que ese cheque tuviera fondos detrás. Te quedaste sin equipo y sin los mil dólares.',
+      'La laptop salió, y al día siguiente el cheque volvió protestado por insuficiencia de fondos. El banco te descontó los $1.000: la papeleta nunca fue el dinero.',
   },
   e_espera: {
     kind: 'good',
     view: AFTER_VIEWING,
     verdict: 'No caíste · esperaste el saldo disponible',
     outcome:
-      'No despachaste, y eso bastó. El cheque salió protestado al día siguiente y los mil dólares desaparecieron del saldo contable sin llegar nunca al disponible. Fernando dejó de escribir esa misma tarde. Tú seguías con tu laptop.',
+      'No despachaste, y eso bastó. El cheque salió protestado al día siguiente y el dinero nunca llegó al disponible.',
   },
   e_ignora: {
     kind: 'partial',
     view: CHAT,
     verdict: 'No perdiste nada, pero fue por casualidad',
     outcome:
-      'Saliste del chat y no despachaste, que es lo que importaba. Pero tampoco comprobaste nada: si el comprador hubiera insistido un poco más, o si hubieras tenido el courier a mano, la decisión habría sido la misma sin saber por qué. Mirar el saldo disponible cuesta dos toques.',
+      'No despachaste, pero tampoco comprobaste nada. Con un comprador más insistente, la misma decisión habría fallado.',
     score: 50,
   },
 }
@@ -257,47 +257,47 @@ const SIGNALS: Signal[] = [
     targetId: 'disponible',
     pantalla: 'n3',
     texto:
-      'El <b>saldo disponible</b> es el único número que cuenta: es el dinero que ya es tuyo y puedes usar. Los mil dólares no estaban ahí.',
+      'El <b>saldo disponible</b> es el único número que cuenta: es el dinero que ya puedes usar. Los mil dólares no estaban ahí.',
   },
   {
     id: 's2',
     targetId: 'contable',
     pantalla: 'n3',
     texto:
-      'El <b>saldo contable</b> incluye lo que el banco anotó pero todavía no cobró. Sube en cuanto alguien deposita un cheque, y baja igual de rápido si ese cheque no tiene fondos.',
+      'El <b>saldo contable</b> incluye lo anotado pero no cobrado. Sube con un cheque depositado, y baja igual si no tiene fondos.',
   },
   {
     id: 's3',
     targetId: 'proceso',
     pantalla: 'n4',
     texto:
-      'El movimiento lo dice con todas sus letras: <b>en efectivización, salvo buen cobro</b>. El banco te anota el valor, pero el cheque todavía no está cobrado: si sale protestado, te lo descuenta.',
+      'El movimiento lo dice: <b>en efectivización, salvo buen cobro</b>. Si el cheque sale protestado, te lo descuentan.',
   },
   {
     id: 's4',
     targetId: 'comprobante',
     pantalla: 'n1',
     texto:
-      'El <b>comprobante no es el dinero</b>. Se falsifica en cinco minutos, y aunque sea auténtico solo prueba que alguien dejó un cheque en la ventanilla, no que ese cheque tenga fondos.',
+      'El <b>comprobante no es el dinero</b>. Se falsifica en cinco minutos, y aunque sea real solo prueba que alguien dejó un cheque.',
   },
   {
     id: 's5',
     targetId: 'prisa',
     pantalla: 'n2',
     texto:
-      'La <b>prisa del courier</b> es del guion, no del envío. Quien quiere el equipo antes de que el dinero se confirme necesita justo eso: que despaches dentro de la ventana en la que todavía se puede reversar.',
+      'La <b>prisa del courier</b> es del guion. Quiere que despaches dentro de la ventana en la que aún se puede reversar.',
   },
   {
     id: 's6',
     targetId: 'excusa',
     pantalla: 'n2b',
     texto:
-      '"Es de otro banco, por eso demora" <b>es verdad y no cambia nada</b>. Que demore es justo la razón para esperar: lo que se entrega es contra dinero disponible, no contra una explicación.',
+      '"Es de otro banco, por eso demora" <b>es verdad y no cambia nada</b>: se entrega contra dinero disponible, no contra una explicación.',
   },
 ]
 
 const RULE =
-  'Regla de oro: no entregues nada hasta que el dinero esté en tu <b>saldo disponible</b>. Ni el comprobante, ni la captura, ni el saldo contable son el pago; solo el disponible es tuyo, y esperar un día no le cuesta nada a un comprador de verdad.'
+  'Regla de oro: no entregues nada hasta que el dinero esté en tu <b>saldo disponible</b>. Comprobante, captura y saldo contable no son el pago; solo el disponible es tuyo.'
 
 const SUMMARY =
   'Vendes una laptop y el comprador manda un comprobante de depósito pidiendo que despaches ya.'

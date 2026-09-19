@@ -104,26 +104,26 @@ const SIGNALS: Signal[] = [
     targetId: 'credenciales',
     pantalla: 'credenciales',
     texto:
-      'Un gestor de contraseñas abierto muestra <b>usuario y clave en texto plano</b>. Quien mire dos segundos se lleva el acceso a tu correo, tu banca y tus sistemas.',
+      '<b>Usuario y clave a la vista, en texto plano</b>: dos segundos bastan para llevarse el acceso a tu correo, banca y sistemas.',
   },
   {
     id: 'correo',
     targetId: 'correo',
     pantalla: 'correo',
     texto:
-      'La bandeja de entrada delata sola: los <b>asuntos</b> se leen de un vistazo desde un metro de distancia, aunque no se abra ningún mensaje.',
+      '<b>Los asuntos se leen desde un metro de distancia</b>, sin abrir ningún mensaje.',
   },
   {
     id: 'archivos',
     targetId: 'archivos',
     pantalla: 'archivos',
     texto:
-      'Los <b>nombres de archivo</b> cuentan lo que hay dentro sin necesidad de abrirlos: una carpeta a la vista es un índice de todo lo que guardas.',
+      '<b>Los nombres de archivo</b> ya cuentan lo que hay dentro: una carpeta a la vista es un índice de todo lo que guardas.',
   },
 ]
 
 const RULE =
-  '<b>Escritorio limpio y pantalla bloqueada.</b> Si alguien se acerca a tu puesto, lo primero es bloquear; y lo que no debería ver, cerrado antes de volver a desbloquear delante de él.'
+  '<b>Escritorio limpio y pantalla bloqueada.</b> Si alguien se acerca, bloquea primero; lo que no debería ver, ciérralo antes de desbloquear delante de él.'
 
 // Minimizar/maximizar se ven pero no responden, como en el resto de pantallas:
 // solo el ✕ está vivo, y se pinta rojo al pasar por encima (señal conocida).

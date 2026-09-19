@@ -209,14 +209,14 @@ export const STORY: Story<ScreenNode> = {
     view: DELIVERY,
     verdict: 'Acertaste · la venta era buena y la cerraste',
     outcome:
-      'Comprobaste antes de entregar y todo cuadraba: el dinero estaba en tu saldo disponible, acreditado y a nombre de quien te escribía. Quedaste con ella, entregaste la lavadora y se acabó. Dónde entregarla era cosa de comodidad, no de seguridad: lo que cerró bien esta venta fue haber mirado la cuenta antes. Esto es lo que se ve cuando una venta es de verdad, y reconocerlo importa tanto como reconocer la otra.',
+      'Comprobaste antes de entregar: el dinero estaba acreditado, a nombre de quien te escribía. Quedaste con ella, entregaste la lavadora y se acabó.',
   },
   e_confia: {
     kind: 'partial',
     view: CHAT,
     verdict: 'Salió bien, pero no comprobaste nada',
     outcome:
-      'Confirmaste sin mirar tu cuenta y esta vez no pasó nada, porque Gabriela había pagado de verdad. Pero decidiste igual que si el comprobante fuera el dinero: la misma frase de un estafador te habría encontrado igual. Mirar el saldo disponible cuesta dos toques y es lo único que separa esta venta de la otra.',
+      'Confirmaste sin mirar tu cuenta, y esta vez no pasó nada porque Gabriela sí había pagado. La misma frase de un estafador te habría encontrado igual.',
     score: 60,
   },
   e_deja: {
@@ -224,7 +224,7 @@ export const STORY: Story<ScreenNode> = {
     view: CHAT,
     verdict: 'Dejaste caer una venta que estaba bien',
     outcome:
-      'Dejaste caer el trato con todo a favor: el dinero estaba acreditado en tu cuenta, a nombre de la compradora, y ella no te pidió nada raro ni te metió prisa. Te quedaste con la lavadora que querías vender y ella tuvo que buscar otra. Desconfiar de todo también cuesta: lo que hay que aprender no es a no vender, es a mirar el saldo disponible antes de entregar.',
+      'El dinero ya estaba acreditado y a tu nombre, sin nada raro de por medio. Te quedaste con la lavadora, y ella tuvo que buscar otra.',
     score: 20,
   },
 }
