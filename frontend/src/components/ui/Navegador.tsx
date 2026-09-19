@@ -63,6 +63,8 @@ interface BrowserProps {
   /** La ✕ de la ventana cierra el navegador: llega a `onHotspot` como un
    *  clic sobre `[data-close-window]`. */
   closableWindow?: boolean
+  /** Muestra un botón "Bloquear" a la vista en la barra de tareas. */
+  onLock?: () => void
   onHotspot: (event: React.MouseEvent) => void
   children: ReactNode
 }
@@ -76,6 +78,7 @@ export function Browser({
   cierrePortal: portalCompletion,
   pestanaCierreDinamico: dynamicClosingTab,
   closableWindow = false,
+  onLock,
   onHotspot,
   children,
 }: BrowserProps) {
@@ -204,7 +207,7 @@ export function Browser({
 
       {children}
 
-      <Taskbar apps={[{ Icono: Globe, texto: 'Navegador' }]} reloj={clock} />
+      <Taskbar apps={[{ Icono: Globe, texto: 'Navegador' }]} reloj={clock} onBloquear={onLock} visibleLock />
     </section>
   )
 }

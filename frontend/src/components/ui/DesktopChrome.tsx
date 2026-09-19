@@ -290,12 +290,16 @@ export function Taskbar({
   apps = [],
   atajo: shortcut,
   onBloquear: onBlock,
+  visibleLock = false,
   reloj: clock = { hora: '10:41' },
 }: {
   apps?: AppTaskbar[]
   atajo?: TaskbarShortcut
   // Ver BotonEnergia.
   onBloquear?: () => void
+  // Bloquear como botón con texto a la vista, sin menú: detrás del ⏻ la
+  // gente no lo encontraba (el ícono se lee como "apagar").
+  visibleLock?: boolean
   // 'vivo' toma la hora real del equipo; una fija sirve cuando la historia
   // depende de una hora concreta. La fecha siempre es la de hoy.
   reloj?: Clock
@@ -308,7 +312,22 @@ export function Taskbar({
       <span className={styles.taskbarStart} aria-hidden>
         <LayoutGrid className={styles.taskbarStartIcono} strokeWidth={2} />
       </span>
-      {onBlock && <PowerButton onBloquear={onBlock} />}
+      {onBlock &&
+        (visibleLock ? (
+          <button
+            type="button"
+            className={styles.taskbarBloquear}
+            onClick={(event) => {
+              event.stopPropagation()
+              onBlock()
+            }}
+          >
+            <Lock aria-hidden className={styles.energiaIcono} strokeWidth={2.25} />
+            Bloquear
+          </button>
+        ) : (
+          <PowerButton onBloquear={onBlock} />
+        ))}
       <span className={styles.taskbarDivider} aria-hidden />
 
       {apps.map(({ Icono: Icon, texto: text, activa: active, onClick }) =>
