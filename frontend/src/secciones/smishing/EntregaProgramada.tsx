@@ -116,28 +116,28 @@ const STORY: Story<ScreenNode> = {
     view: APP_DETAIL,
     verdict: 'Acertaste · el aviso era legítimo',
     outcome:
-      'El envío era el que estabas esperando, salía a reparto al día siguiente y no había ningún valor pendiente. Comprobarlo en la app te tomó diez segundos y te dejó con la información que el mensaje anunciaba: a qué hora estar en casa.',
+      '<b>El envío era el que esperabas</b>, salía a reparto al día siguiente y no había ningún valor pendiente. Comprobarlo en la app te tomó diez segundos.',
   },
   e_devuelve: {
     kind: 'bad',
     view: APP_HOME,
     verdict: 'Aviso legítimo, reacción peligrosa',
     outcome:
-      'Devolviste al remitente un paquete que sí habías comprado, sin mirar antes de qué se trataba. El envío se fue de vuelta, el reembolso tarda semanas y el aviso no tenía nada de raro: ni pedía pago, ni traía enlace, ni metía prisa. Desconfiar de todo cuesta tanto como confiar de más.',
+      '<b>Devolviste un paquete que sí habías comprado</b>, sin mirar antes de qué se trataba. El reembolso tarda semanas, y el aviso no tenía nada de raro.',
   },
   e_responde: {
     kind: 'partial',
     view: REPLIED_SMS,
     verdict: 'Contestaste a un número que no lee',
     outcome:
-      'No pasó nada malo: el remitente era el de siempre. Pero los avisos automáticos salen de un número que no recibe respuestas, así que tu pregunta no llegó a ninguna parte. La franja horaria estaba en la app, a un toque de distancia.',
+      'No pasó nada malo: el remitente era el de siempre. Pero los <b>avisos automáticos no reciben respuestas</b>, así que tu pregunta no llegó a ninguna parte.',
   },
   e_ignora: {
     kind: 'partial',
     view: SMS,
     verdict: 'Lo dejaste pasar',
     outcome:
-      'No perdiste nada grave, porque el mensaje era auténtico y el paquete llegó igual. Pero al día siguiente no había nadie en casa a las diez de la mañana, y el envío volvió a bodega: el aviso servía justamente para eso.',
+      'No perdiste nada grave: el mensaje era auténtico. Pero al día siguiente no había nadie en casa, y el envío volvió a bodega.',
   },
 }
 
@@ -146,34 +146,30 @@ const SIGNALS: Signal[] = [
     id: 's1',
     targetId: 'mensaje',
     pantalla: 'n1',
-    texto:
-      '<b>No pide nada.</b> No hay enlace, ni pago, ni plazo, ni un dato que darles. Un aviso de verdad informa y se queda quieto; el engaño necesita que hagas algo.',
+    texto: '<b>No pide nada.</b> Sin enlace, sin pago, sin plazo: un aviso de verdad informa y se queda quieto.',
   },
   {
     id: 's2',
     targetId: 'remitente',
     pantalla: 'n1',
-    texto:
-      'Llega del <b>remitente por el que el courier te escribe siempre</b>, no de un celular. Compáralo con el del paquete retenido y verás la diferencia.',
+    texto: 'Llega del <b>remitente habitual</b> del courier, no de un celular.',
   },
   {
     id: 's3',
     targetId: 'sin-pago',
     pantalla: 'e_app',
-    texto:
-      'En la app <b>no hay ningún valor pendiente</b>. Cuando de verdad hay que pagar algo, se cobra al entregar y con comprobante, nunca por un enlace.',
+    texto: 'En la app <b>no hay ningún valor pendiente</b>. Lo que sí hay que pagar se cobra al entregar, con comprobante.',
   },
   {
     id: 's4',
     targetId: 'coincide',
     pantalla: 'e_app',
-    texto:
-      'El envío <b>coincide con lo que estabas esperando</b>. Ese es el segundo dato: no basta con que el mensaje parezca correcto, tiene que cuadrar con algo tuyo.',
+    texto: 'El envío <b>coincide con lo que estabas esperando</b>: no basta con que el mensaje parezca correcto.',
   },
 ]
 
 const RULE =
-  'Regla de oro: un aviso auténtico <b>informa y no te pide nada</b>. Compruébalo en la app del courier con tu número de guía, que es lo mismo que harías con uno falso; la diferencia es que este resiste la comprobación. Y descartar de un plumazo lo que sí era real también cuesta.'
+  'Regla de oro: un aviso auténtico <b>informa y no te pide nada</b>. Compruébalo en la app del courier con tu número de guía; descartar sin mirar también tiene un costo.'
 
 const SUMMARY = 'Un SMS del courier avisa que tu paquete llega mañana en la mañana.'
 

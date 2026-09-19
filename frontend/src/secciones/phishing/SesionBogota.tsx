@@ -29,37 +29,34 @@ const STORY: Story<StoryNode> = {
     kind: 'bad',
     verdict: 'Caíste en la trampa',
     outcome:
-      'Mientras escribías el código 418 902, el atacante lo usaba en vivo para entrar a tu cuenta real. Un código de un solo uso no es un trámite: es la última puerta, y la abriste tú. Cuando terminaste, tu cuenta ya estaba vacía.',
+      'Mientras escribías el código 418 902, el atacante lo usaba en vivo para entrar a tu cuenta. Cuando terminaste, ya estaba vacía.',
   },
   e_app: {
     kind: 'good',
     verdict: 'No caíste · verificaste por la app',
-    outcome:
-      'Entraste a la app del banco por tu cuenta. No había ningún acceso desde Bogotá: el correo era falso.',
+    outcome: 'Entraste a la app del banco por tu cuenta. No había ningún acceso desde Bogotá: el correo era falso.',
   },
   e_eliminar: {
     kind: 'good',
     verdict: 'No caíste · lo eliminaste',
     outcome:
-      'Lo borraste sin tocar el enlace de la alerta, que es suficiente para no caer. Marcarlo como spam habría hecho algo más: avisar al filtro para que no le llegue a otros.',
+      'Borrarlo sin tocar el enlace ya es no caer. Marcarlo como spam habría hecho algo más: avisar al filtro.',
   },
   e_spam: {
     kind: 'good',
     verdict: 'No caíste · lo reportaste',
-    outcome:
-      'Marcarlo como spam es la mejor reacción posible: no caíste y además tu proveedor de correo aprende a filtrar ese remitente.',
+    outcome: 'Marcarlo como spam es la mejor reacción: no caíste, y tu proveedor aprende a filtrar ese remitente.',
   },
   e_responder: {
     kind: 'partial',
     verdict: 'No entregaste nada, pero contestaste',
     outcome:
-      'No tocaste el enlace, pero confirmaste que tu dirección existe y que alguien la lee. Es justo lo que un atacante busca para insistir con algo mejor preparado.',
+      'No tocaste el enlace, pero confirmaste que tu dirección existe y alguien la lee. Justo lo que un atacante busca.',
   },
   e_reenviar: {
     kind: 'partial',
     verdict: 'No caíste tú, pero la pasaste',
-    outcome:
-      'Se la reenviaste a otra persona para que opine. Tú no caíste, pero pusiste la alerta (con su enlace) en la bandeja de alguien que quizá no la mire con la misma desconfianza.',
+    outcome: 'No caíste, pero la alerta (con su enlace) llegó a alguien que quizá confíe más.',
   },
 }
 
@@ -113,32 +110,29 @@ const SIGNALS: Signal[] = [
     id: 's1',
     targetId: 'cta-trampa',
     pantalla: 'n1',
-    texto:
-      'El botón que parece el seguro ("No fui yo") es justo la trampa: lleva a una página que te pide tu usuario y tu clave. Cuentan con que pulses el que suena a protegerte.',
+    texto: 'El botón que parece seguro ("No fui yo") es la trampa: pide tu usuario y tu clave.',
   },
   {
     id: 's2',
     targetId: 'url-falsa',
     pantalla: 'n2',
     texto:
-      'La dirección era <b>bancodellitoral.com.ec.seguridad-alertas.com</b>. El dueño del sitio es lo que está justo antes de la primera barra, o sea <b>seguridad-alertas.com</b>. El nombre del banco va pegado adelante como adorno.',
+      'El dueño del sitio es lo de justo antes de la primera barra: <b>seguridad-alertas.com</b>. El nombre del banco va pegado como adorno.',
   },
   {
     id: 's3',
     targetId: 'campo-otp',
     pantalla: 'n3',
-    texto:
-      'Pide dentro de una página web el <b>código de un solo uso</b> que llega al celular, cuando el banco solo lo pide dentro de su propia app. Ese código es la última confirmación: quien lo recibe termina de entrar a tu cuenta.',
+    texto: 'Pide en una página web el <b>código de un solo uso</b>, cuando el banco solo lo pide en su propia app.',
   },
   {
     id: 's4',
-    texto:
-      'El correo está impecable, sin errores de redacción. La trampa no estaba ahí, así que buscar faltas de ortografía no te habría salvado.',
+    texto: 'El correo está impecable, sin errores de redacción. Buscar faltas de ortografía no te habría salvado.',
   },
 ]
 
 const RULE =
-  'Regla de oro: en una dirección web manda el nombre que está <b>justo antes de la primera barra</b>. Todo lo que va antes puede escribirlo el atacante, incluido el nombre de tu banco. Y ninguna alerta se atiende desde el enlace de la propia alerta.'
+  'Regla de oro: en una dirección web manda el nombre <b>justo antes de la primera barra</b>. Ninguna alerta se atiende desde el enlace de la propia alerta.'
 
 const SUMMARY = 'Un correo avisa que alguien inició sesión en tu cuenta desde Bogotá.'
 

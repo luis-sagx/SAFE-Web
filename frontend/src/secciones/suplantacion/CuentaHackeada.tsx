@@ -264,21 +264,21 @@ export const STORY: Story<ScreenNode> = {
     view: TRANSFER,
     verdict: 'Caíste en la suplantación',
     outcome:
-      'Los $180 se fueron a la cuenta de un desconocido. A Byron le robaron el WhatsApp la noche anterior y quien escribía era el ladrón: por eso el número, la foto y el historial eran auténticos. Nada de lo que mirabas iba a delatarlo, porque la cuenta sí era suya. Lo que no podía imitar era su voz.',
+      'Los $180 se fueron a un desconocido. A Byron le robaron el WhatsApp esa noche, y todo en el chat era auténtico salvo la voz, que nunca pudiste oír.',
   },
   e_llama: {
     kind: 'good',
     view: CALL_BYRON,
     verdict: 'No caíste · lo llamaste',
     outcome:
-      'Byron contestó al primer timbre desde su casa: le habían robado la cuenta esa madrugada y estaban escribiéndole a toda su agenda. La llamada fue lo único que sirvió, porque el chat, el número y la foto eran de verdad.',
+      'Byron contestó al primer timbre: le habían robado la cuenta esa madrugada. La llamada fue lo único que servía, porque el chat, el número y la foto eran de verdad.',
   },
   e_ignora: {
     kind: 'partial',
     view: CHAT,
     verdict: 'No perdiste nada, pero era tu amigo',
     outcome:
-      'Saliste del chat y no mandaste dinero, así que no perdiste nada. Pero si hubiera sido Byron de verdad, lo dejaste tirado; y como no lo era, tampoco te enteraste de que le robaron la cuenta ni pudiste avisarle. Una llamada resolvía las dos cosas.',
+      'Saliste del chat sin mandar dinero, así que no perdiste nada. Pero tampoco te enteraste de que le robaron la cuenta a Byron ni pudiste avisarle.',
     score: 50,
   },
 }
@@ -289,47 +289,47 @@ const SIGNALS: Signal[] = [
     targetId: 'escritura',
     pantalla: 'n1',
     texto:
-      '<b>Te corta las dos formas de comprobarlo.</b> Pide dinero y desde el primer mensaje dice que no puede hablar ni mandar audios. La cuenta puede ser de Byron, pero quien escribe evita que oigas su voz.',
+      '<b>Te corta las dos formas de comprobarlo.</b> No puede hablar ni mandar audios desde el primer mensaje.',
   },
   {
     id: 's2',
     targetId: 'todo-cuadra',
     pantalla: 'n1b',
     texto:
-      'En la ficha <b>todo cuadra</b>: mismo número, misma foto, mismos grupos, años de historial. Aquí no hay nada que mirar, y eso es justo lo que hace difícil este caso.',
+      '<b>En la ficha todo cuadra: mismo número, misma foto, mismos grupos.</b> Aquí no hay nada que mirar.',
   },
   {
     id: 's3',
     targetId: 'cuenta',
     pantalla: 'n2',
     texto:
-      'La cuenta de destino está <b>a nombre de otra persona</b>. Es la primera cosa del mensaje que no le pertenece a tu amigo.',
+      '<b>La cuenta de destino es de otra persona.</b> Es lo único del mensaje que no es de tu amigo.',
   },
   {
     id: 's4',
     targetId: 'no-llama',
     pantalla: 'n2b',
     texto:
-      'No puede <b>atender una llamada</b>. Quien robó la cuenta tiene el chat, pero no la voz: cerrar ese canal es lo único que puede hacer.',
+      '<b>No puede atender una llamada.</b> Quien robó la cuenta tiene el chat, pero no tu amigo la voz.',
   },
   {
     id: 's5',
     targetId: 'sin-audio',
     pantalla: 'n3',
     texto:
-      'Tampoco puede mandar <b>una nota de voz</b>, ni siquiera de tres segundos. Dos excusas seguidas para no dejarse oír son la señal entera de este escenario.',
+      '<b>Tampoco puede mandar una nota de voz.</b> Dos excusas seguidas para no dejarse oír es la señal completa.',
   },
   {
     id: 's6',
     targetId: 'contesta',
     pantalla: 'e_llama',
     texto:
-      'La <b>llamada</b> lo resolvió en diez segundos, y de paso Byron se enteró de que le habían robado la cuenta.',
+      '<b>La llamada lo resolvió en diez segundos.</b> Byron se enteró así de que le habían robado la cuenta.',
   },
 ]
 
 const RULE =
-  'Regla de oro: que el <b>número y la foto sean los de siempre no prueba nada</b>: las cuentas de mensajería se roban. Si un contacto tuyo pide dinero por chat, llámalo antes de mandar nada, y desconfía de cualquier excusa para no hablar.'
+  'Regla de oro: <b>el número y la foto de siempre no prueban nada, las cuentas se roban.</b> Llama antes de mandar dinero por chat.'
 
 const SUMMARY = 'Un amigo te escribe desde su chat de siempre pidiendo dinero por una urgencia.'
 

@@ -119,35 +119,35 @@ const STORY: Story<ScreenNode> = {
     view: CANCELLATION_SMS,
     verdict: 'Caíste en la trampa',
     outcome:
-      'No había ninguna suscripción que cancelar: el mensaje solo buscaba que contestaras. Tu número pasó a una lista que se revende, y el "BAJA" se cobró como mensaje de tarificación adicional.',
+      'No había ninguna suscripción: el mensaje solo buscaba que contestaras. Tu número pasó a una lista que se revende, y el "BAJA" se cobró como mensaje de tarificación adicional.',
   },
   e_reclama: {
     kind: 'bad',
     view: CLAIM_SMS,
     verdict: 'Caíste en la trampa',
     outcome:
-      'Reclamar también es contestar, y eso era todo lo que buscaban: confirmaste que alguien lee esa línea. Tu número pasó a la lista que se revende, y el cobro que reclamabas nunca existió.',
+      'Reclamar también es contestar, y eso era todo lo que buscaban. Tu número pasó a la lista que se revende, y el cobro que reclamabas nunca existió.',
   },
   e_bloquea: {
     kind: 'partial',
     view: OPERATOR_START,
     verdict: 'Te tapaste el oído, pero no comprobaste nada',
     outcome:
-      'No contestar fue lo que impidió el daño. Pero sigues sin saber si el cargo de $2,99 existía: el bloqueo silencia el mensaje, no el cobro.',
+      '<b>No contestar</b> fue lo que impidió el daño. Pero sigues sin saber si el cargo de $2,99 existía: el bloqueo silencia el mensaje, no el cobro.',
   },
   e_ignora: {
     kind: 'partial',
     view: SMS,
     verdict: 'No contestaste, pero quedaste con la duda',
     outcome:
-      'Saliste sin responder, que es lo que evita el daño. Pero te quedaste sin saber si ese cobro existía, y esa duda es la que hace contestar al tercer mensaje.',
+      'Saliste sin responder, que es lo que evita el daño. Pero te quedaste con la duda de si ese cobro existía.',
   },
   e_verifica: {
     kind: 'good',
     view: OPERATOR,
     verdict: 'No caíste · lo comprobaste con tu operadora',
     outcome:
-      'En tu línea no había ninguna suscripción ni ningún cargo por ese servicio: el mensaje era falso. Lo comprobaste donde consta, sin contestarle a nadie.',
+      'En tu línea no había ninguna suscripción ni ningún cargo: el mensaje era falso. Lo comprobaste donde consta, sin contestarle a nadie.',
   },
 }
 
@@ -156,34 +156,30 @@ const SIGNALS: ScenarioSignal[] = [
     id: 's1',
     targetId: 'mensaje',
     pantalla: 'n1',
-    texto:
-      'Anuncia un cobro por algo que <b>nunca contrataste</b>. Antes de cancelar nada: ¿ese cargo existe? Casi siempre no.',
+    texto: 'Anuncia un cobro por algo que <b>nunca contrataste</b>. Ese cargo casi nunca existe.',
   },
   {
     id: 's2',
     targetId: 'respuesta',
     pantalla: 'e_responde',
-    texto:
-      'Lo único que te ofrece es <b>responder</b>. Ahí está la trampa: no hay enlace ni formulario, solo la respuesta que ellos necesitan.',
+    texto: 'Lo único que pide es <b>que respondas</b>. No hay enlace ni formulario, solo eso.',
   },
   {
     id: 's3',
     targetId: 'remitente',
     pantalla: 'n1',
-    texto:
-      'Llega de un <b>número corto</b> que no tienes guardado. No prueba nada: se contratan por campaña y cambian cada semana.',
+    texto: 'Llega de un <b>número corto</b> que no tienes guardado. Se contratan por campaña y cambian cada semana.',
   },
   {
     id: 's4',
     targetId: 'sin-suscripcion',
     pantalla: 'e_verifica',
-    texto:
-      'En tu operadora <b>no consta ninguna suscripción</b>. Las altas y bajas se gestionan ahí, no por mensaje.',
+    texto: 'En tu operadora <b>no consta ninguna suscripción</b>. Las altas y bajas se gestionan ahí, no por mensaje.',
   },
 ]
 
 const RULE =
-  'Regla de oro: a un mensaje que no esperabas <b>no se le contesta nada</b>, ni siquiera para darse de baja. Responder confirma que tu número existe y que alguien lo lee, que es exactamente lo que se vende. Los cobros se revisan con tu operadora.'
+  'Regla de oro: a un mensaje que no esperabas <b>no se le contesta nada</b>, ni para darse de baja. Los cobros se revisan con tu operadora.'
 
 const SUMMARY = 'Un SMS cobra una suscripción que nunca contrataste y ofrece cancelarla.'
 

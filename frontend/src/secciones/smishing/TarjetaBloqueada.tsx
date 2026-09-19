@@ -258,7 +258,7 @@ export const STORY: Story<ScreenNode> = {
     view: ASK_CODE,
     verdict: 'Caíste en la trampa',
     outcome:
-      'Tu tarjeta nunca estuvo bloqueada. El código que dictaste autorizaba una compra que ellos hacían mientras hablabas: mil doscientos dólares en electrónica. Y la llamada la hiciste tú.',
+      '<b>Tu tarjeta nunca estuvo bloqueada.</b> El código que dictaste autorizaba una compra de mil doscientos dólares que hacían mientras hablabas.',
   },
   // Colgar no vale lo mismo que no haber marcado: marcar ya confirmó la línea más
   // fuerte que un SMS. Mismo reparto que banco-confirma en vishing.
@@ -267,7 +267,7 @@ export const STORY: Story<ScreenNode> = {
     view: ASK_CODE,
     verdict: 'Colgaste bien, pero ya habías marcado',
     outcome:
-      'Colgar es lo único que rompe el engaño, y no diste nada. Pero marcaste el número del mensaje, y eso les confirmó tu línea mejor que cualquier respuesta: espera más intentos. Y sigues sin saber si la tarjeta tenía algún bloqueo.',
+      '<b>Colgar es lo único que rompe el engaño</b>, y no diste nada. Pero marcaste el número del mensaje, y sigues sin saber si la tarjeta tenía algún bloqueo.',
     score: 50,
   },
   e_devuelve: {
@@ -275,35 +275,35 @@ export const STORY: Story<ScreenNode> = {
     view: CALL,
     verdict: 'Acertaste · colgaste y llamaste tú',
     outcome:
-      'Marcaste el número impreso en el reverso de tu tarjeta. Era el banco de verdad y no había ningún bloqueo: nada que levantar. Esta respuesta funciona siempre, sin tener que adivinar quién habla.',
+      '<b>Marcaste el número impreso en tu tarjeta.</b> Era el banco de verdad y no había ningún bloqueo. Esta respuesta funciona siempre.',
   },
   e_bloquea: {
     kind: 'partial',
     view: BANK_HOME,
     verdict: 'Anulaste una tarjeta que estaba sana',
     outcome:
-      'No entregaste nada, pero la tarjeta no tenía ningún bloqueo: la anulaste tú. Te quedas sin ella hasta que llegue la nueva. Su estado estaba a un toque, en "Mis tarjetas".',
+      'No entregaste nada, pero la tarjeta no tenía ningún bloqueo: la anulaste tú. Te quedas sin ella hasta que llegue la nueva.',
   },
   e_responde: {
     kind: 'partial',
     view: REPLIED_SMS,
     verdict: 'No entregaste nada, pero contestaste',
     outcome:
-      'No diste ningún dato, pero confirmaste que alguien lee esa línea. Ahora tienen una conversación abierta contigo para insistir mejor.',
+      'No diste ningún dato, pero confirmaste que alguien lee esa línea, y ahora tienen conversación abierta.',
   },
   e_ignora: {
     kind: 'partial',
     view: SMS,
     verdict: 'No caíste, pero te quedaste con la duda',
     outcome:
-      'Saliste sin llamar ni contestar, que es lo que evita el daño. Pero si el bloqueo hubiera sido real, seguirías sin tarjeta y sin saberlo.',
+      'Saliste sin llamar ni contestar, que es lo que evita el daño. Pero seguirías sin saber si el bloqueo era real.',
   },
   e_app: {
     kind: 'good',
     view: APP_BANK,
     verdict: 'No caíste · lo comprobaste donde consta',
     outcome:
-      'Tu tarjeta estaba activa y sin intentos rechazados: no había bloqueo que levantar. En la misma pantalla estaba el número de atención de verdad.',
+      '<b>Tu tarjeta estaba activa y sin intentos rechazados</b>: no había bloqueo que levantar. La misma pantalla tenía el número de atención real.',
   },
 }
 
@@ -312,48 +312,43 @@ const SIGNALS: Signal[] = [
     id: 's1',
     targetId: 'mensaje',
     pantalla: 'n1',
-    texto:
-      'No hay enlace que mirar: la trampa es <b>un número de teléfono</b>. En un móvil basta tocarlo, y por eso cuesta menos llamar que comprobar.',
+    texto: 'La trampa es <b>un número de teléfono</b>, no un enlace. En un móvil basta tocarlo.',
   },
   {
     id: 's2',
     targetId: 'remitente',
     pantalla: 'n1',
-    texto:
-      'El remitente es un <b>nombre corto sin verificar</b>. Cualquiera manda mensajes con el nombre que quiera escrito arriba.',
+    texto: 'El remitente es un <b>nombre corto sin verificar</b>. Cualquiera manda mensajes con el nombre que quiera.',
   },
   {
     id: 's3',
     targetId: 'piden-codigo',
     pantalla: 'n4',
-    texto:
-      'Te piden el <b>código que te acaba de llegar</b>. Ese código autoriza operaciones: dictarlo es firmar lo que hagan al otro lado.',
+    texto: 'Te piden el <b>código que te acaba de llegar</b>. Dictarlo es firmar lo que hagan al otro lado.',
   },
   {
     id: 's4',
     targetId: 'no-cuelgue',
     pantalla: 'n4',
-    texto:
-      '<b>Insisten en que no cuelgues.</b> Colgar y llamar tú rompe el engaño, y por eso es lo primero que impiden.',
+    texto: '<b>Insisten en que no cuelgues.</b> Colgar y llamar tú es justo lo que impiden.',
   },
   {
     id: 's5',
     targetId: 'sin-bloqueo',
     pantalla: 'e_app',
-    texto:
-      'En la app <b>no había ningún bloqueo</b>. El estado real está ahí y en el reverso de tu tarjeta: dos sitios que no dependen de quien te escribió.',
+    texto: 'En la app <b>no había ningún bloqueo</b>. El estado real está ahí y en el reverso de tu tarjeta.',
   },
   {
     id: 's6',
     targetId: 'remitente-real',
     pantalla: 'n_codigo',
     texto:
-      'Este mensaje sí viene de <b>BANCO LITORAL</b>, el remitente habitual. Compáralo con el <b>BANCO-LIT</b> sin verificar del primer mensaje: el código es de verdad, pero quien lo pide no es el banco.',
+      'Este mensaje sí viene de <b>BANCO LITORAL</b>, el remitente real. El código es auténtico, pero quien lo pide no es el banco.',
   },
 ]
 
 const RULE =
-  'Regla de oro: <b>al número del mensaje no se llama</b>. Si de verdad hubiera un problema con tu tarjeta, lo ves en la app o llamas al número impreso en su reverso. Y ningún banco te pide por teléfono el código que te envía por mensaje: ese código autoriza, no identifica.'
+  'Regla de oro: <b>al número del mensaje no se llama</b>. Verifica en la app o marca tú el número impreso en el reverso de tu tarjeta. Ningún banco pide por teléfono el código que te envía por mensaje.'
 
 const SUMMARY = 'Un SMS avisa que tu tarjeta fue bloqueada y da un número para reactivarla.'
 

@@ -303,28 +303,28 @@ export const STORY: Story<ScreenNode> = {
     view: TRANSFER,
     verdict: 'Caíste en la suplantación',
     outcome:
-      'Los $350 salieron a la cuenta de un desconocido y no se pueden reversar. Andrés estaba en su casa, con su celular de siempre: nunca chocó ningún carro. La foto era suya, sacada de sus redes, y la voz del audio también, hecha con un programa a partir de cualquier video en el que sale hablando.',
+      'Los $350 salieron a un desconocido y no se pueden reversar. Andrés estaba en casa: la foto y la voz eran suyas, pero clonadas con un programa.',
   },
   e_verifica: {
     kind: 'good',
     view: CALL_SON,
     verdict: 'No caíste · llamaste al número de siempre',
     outcome:
-      'Andrés contestó a la primera desde su número de toda la vida: estaba en casa y no había pasado nada. Un toque en la agenda desmonta el engaño entero, y por eso el mensaje insiste tanto en que no llames.',
+      'Andrés contestó de inmediato en su número de siempre: no había pasado nada. Un toque en la agenda desmonta el engaño, por eso el mensaje insistía tanto en que no llames.',
   },
   e_corta: {
     kind: 'good',
     view: TEST,
     verdict: 'No caíste · no mandaste nada',
     outcome:
-      'Te plantaste: sin hablar con tu hijo, no hay transferencia. No hizo falta demostrar que era mentira ni discutir; basta con no mandar dinero a alguien cuya voz oíste pero cuya cara no viste. Ahora llama a Andrés a su número para quedarte tranquilo.',
+      'Te plantaste: sin hablar con tu hijo, no hubo transferencia. No hizo falta demostrar nada, basta con no mandarle dinero a una voz sin rostro.',
   },
   e_ignora: {
     kind: 'partial',
     view: CHAT,
     verdict: 'No perdiste nada, pero te quedaste con la duda',
     outcome:
-      'Saliste del chat sin contestar, y eso evita el daño. Pero tampoco comprobaste nada: si de verdad le hubiera pasado algo a Andrés, te habrías enterado más tarde. La duda se resuelve llamando al número que ya tienes guardado, no dejándola pasar.',
+      'Saliste del chat sin contestar, así que no hubo daño. Pero tampoco comprobaste nada, y esa duda se resuelve llamando al número que ya tenías guardado.',
     score: 50,
   },
 }
@@ -335,54 +335,54 @@ const SIGNALS: Signal[] = [
     targetId: 'remitente',
     pantalla: 'n1',
     texto:
-      'Escribe un <b>número que no tienes guardado</b>. Que diga ser tu hijo es justo lo que hay que comprobar.',
+      '<b>Escribe un número que no tienes guardado.</b> Decir ser tu hijo es justo lo que falta comprobar.',
   },
   {
     id: 's2',
     targetId: 'foto',
     pantalla: 'n1b',
     texto:
-      'La <b>foto de perfil es la de Andrés</b>, y está pública en sus redes: cualquiera la descarga.',
+      '<b>La foto de perfil es de Andrés, bajada de sus redes.</b> Cualquiera puede descargarla.',
   },
   {
     id: 's3',
     targetId: 'antiguedad',
     pantalla: 'n1b',
     texto:
-      'Esa cuenta <b>se creó hace dos días</b> y no comparte contigo ningún grupo.',
+      '<b>La cuenta se creó hace dos días.</b> No comparte ningún grupo contigo.',
   },
   {
     id: 's4',
     targetId: 'audio',
     pantalla: 'n2',
     texto:
-      'La voz suena a la suya, y hoy eso <b>ya no prueba nada</b>: se clona con unos segundos de audio.',
+      '<b>La voz se clona con unos segundos de audio.</b> Sonar igual ya no prueba nada.',
   },
   {
     id: 's5',
     targetId: 'no-llama',
     pantalla: 'n3b',
     texto:
-      'Siempre hay una razón para <b>no poder hablar</b>. Una conversación en vivo se les cae.',
+      '<b>Siempre hay una excusa para no poder hablar.</b> Una llamada en vivo los delata.',
   },
   {
     id: 's6',
     targetId: 'cuenta',
     pantalla: 'n3',
     texto:
-      'La cuenta está <b>a nombre de otra persona</b>, nunca de quien dice necesitar el dinero.',
+      '<b>La cuenta es de otra persona</b>, nunca de quien dice necesitar el dinero.',
   },
   {
     id: 's7',
     targetId: 'esquiva',
     pantalla: 'n4',
     texto:
-      'Ante una pregunta que <b>solo tu hijo sabría</b>, se enfada y vuelve a la prisa. No puede contestarla.',
+      '<b>No puede responder algo que solo tu hijo sabría.</b> Se enoja y evade la pregunta.',
   },
 ]
 
 const RULE =
-  'Regla de oro: si un número nuevo dice ser alguien conocido y pide dinero, <b>llama tú al número de siempre antes de mandar nada</b>. Una foto de perfil y hasta una voz se copian; una llamada a tu propia agenda, no.'
+  'Regla de oro: <b>llama tú al número de siempre antes de mandar nada</b>. Una foto y hasta una voz se copian; una llamada a tu propia agenda, no.'
 
 const SUMMARY = 'Un número desconocido dice ser tu hijo, que perdió el celular, y pide dinero.'
 

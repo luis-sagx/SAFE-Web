@@ -144,14 +144,14 @@ const STORY: Story<ScreenNode> = {
     view: BANKING,
     verdict: 'Caíste en la estafa',
     outcome:
-      'Transferiste a la cuenta nueva. La cuenta de correo de la secretaría estaba comprometida: el atacante escribía desde ahí, con el hilo real y el PDF corregido. El dinero no llegó a la escuela, y la pensión sigue debiéndose.',
+      'Transferiste a la cuenta nueva. La cuenta de correo de la secretaría estaba comprometida: el dinero no llegó a la escuela, y la pensión sigue debiéndose.',
   },
   e_llama: {
     kind: 'good',
     view: SCHOOL,
     verdict: 'No caíste · llamaste al número que ya tenías',
     outcome:
-      'La secretaria no sabía nada de ningún cambio de banco: su cuenta de correo había sido hackeada. Evitaste transferir a la cuenta falsa y, al avisar, evitaste que otros padres transfirieran.',
+      'La secretaria no sabía de ningún cambio de banco: su correo había sido hackeado. Evitaste transferir, y al avisar, evitaste que otros padres también lo hicieran.',
   },
   // Aquí responder no es tibio, es el fallo: la cuenta desde la que llegó el
   // correo es la que está en manos del atacante, así que contesta él.
@@ -160,7 +160,7 @@ const STORY: Story<ScreenNode> = {
     view: EMAIL,
     verdict: 'Preguntaste por el canal equivocado',
     outcome:
-      'Respondiste el mismo hilo preguntando si el cambio era real, y te contestaron que sí: porque quien contesta es el atacante, desde la cuenta que controla. Verificar por el mismo canal que trae el aviso no verifica nada.',
+      'Preguntaste por el mismo hilo, y te contestaron que sí: quien contesta es el atacante, desde la cuenta que controla. Verificar por el mismo canal no verifica nada.',
   },
   // Y marcar como spam tampoco es la buena reacción de siempre: la dirección
   // es la real del colegio, y el filtro se llevaría por delante los avisos
@@ -170,7 +170,7 @@ const STORY: Story<ScreenNode> = {
     view: EMAIL,
     verdict: 'No caíste, pero castigaste la dirección real',
     outcome:
-      'No transferiste, y eso es lo importante. Pero la dirección es la auténtica del colegio: al marcarla como spam le enseñaste al filtro a esconder también las circulares y los recordatorios que sí vas a necesitar. El problema no era el remitente, era su cuenta hackeada, y eso se avisa llamando.',
+      'No transferiste, y eso es lo importante. Pero la dirección es la auténtica del colegio: el filtro va a esconder también las circulares que sí necesitas.',
   },
 }
 
@@ -217,42 +217,42 @@ const SIGNALS: Signal[] = [
     's0',
     'n4',
     'cuenta-pdf',
-    'El comprobante tiene membrete, fecha y monto correctos, y aun así <b>solo repite el número de cuenta nuevo</b>. Un archivo adjunto no confirma nada: lo escribió quien mandó el correo.',
+    'El comprobante tiene todo correcto, y aun así <b>solo repite el número de cuenta nuevo</b>. Un adjunto no confirma nada: lo escribió quien mandó el correo.',
   ),
   createSignal(
     's1',
     'n1',
     'remitente',
-    'No hay una dirección imitada, ni errores de redacción, ni urgencia artificial: el hilo es <b>real</b> y la dirección también. La cuenta de la secretaría estaba hackeada, así que todo lo que sueles mirar salía bien.',
+    'El hilo es <b>real</b> y la dirección también: la cuenta de la secretaría estaba hackeada. Todo lo que sueles mirar salía bien.',
   ),
   createSignal(
     's2',
     'n1',
     'cuenta',
-    'La única anomalía es el hecho en sí: <b>un cambio de número de cuenta</b>. Eso, por sí solo, ya obliga a confirmar por otra vía.',
+    'La anomalía es el hecho en sí: <b>un cambio de número de cuenta</b>. Eso ya obliga a confirmar por otra vía.',
   ),
   createSignal(
     's3',
     'n2',
     'beneficiario-ajeno',
-    'El beneficiario es <b>una persona ajena a la escuela</b>. Aunque el número de cuenta pareciera correcto, ese nombre distinto confirma que no debes transferir.',
+    'El beneficiario es <b>una persona ajena a la escuela</b>. Ese nombre distinto confirma que no debes transferir.',
   ),
   createSignal(
     's4',
     'n2',
     'cuenta-nueva',
-    'La cuenta destino <b>no es la de siempre</b>, y es lo último que ves antes de que el dinero salga. Ese es el momento de parar, no después.',
+    'La cuenta destino <b>no es la de siempre</b>, y es lo último que ves antes de que salga el dinero. Ese es el momento de parar.',
   ),
   createSignal(
     's5',
     'n3',
     'telefono',
-    'El teléfono del colegio <b>ya lo tenías</b>, y está en su sitio oficial: un número que no salió del correo sospechoso es lo que convierte la duda en respuesta.',
+    'El teléfono del colegio <b>ya lo tenías</b>, en su sitio oficial. Un número que no salió del correo sospechoso convierte la duda en respuesta.',
   ),
 ]
 
 const RULE =
-  'Regla de oro: todo cambio de número de cuenta se confirma <b>por llamada al número que ya tenías</b>, jamás por el mismo canal donde llegó el aviso. Responder el correo para verificar es preguntarle al estafador si es estafador.'
+  'Regla de oro: todo cambio de cuenta se confirma <b>por llamada al número que ya tenías</b>, jamás por el mismo canal del aviso.'
 
 const SUMMARY = 'La secretaría del colegio de tu hijo dice que "cambió de banco" para la pensión.'
 
