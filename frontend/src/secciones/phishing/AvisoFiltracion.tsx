@@ -63,35 +63,10 @@ const SITE_OFFICIAL: ScreenView = {
   footer: 'TiendaExpress · Seguridad de la información',
   pie: FOOTER_LINKS,
   button: 'Guardar contraseña',
-  botonGoto: 'n3',
+  botonGoto: 'e_contrasena_cambiada',
   botonLabel: 'Cambió su contraseña en el sitio real de TiendaExpress',
   cerrarGoto: 'n1',
   cerrarLabel: 'Entró al sitio real, no cambió nada y volvió al correo',
-}
-
-/// El segundo paso, que es donde este escenario se separa de "ya cambié la
-/// clave": la misma contraseña estaba repetida en otros sitios, y ahí sigue.
-const REPEATED: ScreenView = {
-  kind: 'web',
-  url: 'https://www.tiendaexpress.com.ec/mi-cuenta/seguridad',
-  secure: true,
-  brand: 'TiendaExpress',
-  menu: ['Inicio', 'Mis pedidos', 'Mi cuenta', 'Ayuda'],
-  title: 'Contraseña actualizada',
-  subtitle:
-    'Tu navegador tiene guardada esa misma contraseña en otros dos sitios: tu correo personal y tu red social.',
-  fields: [],
-  aviso:
-    'Reutilizar la misma contraseña es lo que convierte la filtración de una tienda en un problema en todas tus cuentas.',
-  footer: 'TiendaExpress · Seguridad de la información',
-  pie: FOOTER_LINKS,
-  button: 'Cambiarla también en esos dos sitios',
-  botonGoto: 'e_todos_lados',
-  botonLabel: 'Cambió también la contraseña repetida en los otros sitios',
-  // Excepción a la regla del issue #24: aquí cerrar llega después de ya haber
-  // cambiado la contraseña, y registra haberse quedado en un solo sitio.
-  cerrarGoto: 'e_una_tienda',
-  cerrarLabel: 'Dejó la misma contraseña en los otros sitios',
 }
 
 const STORY: Story<ScreenNode> = {
@@ -100,20 +75,12 @@ const STORY: Story<ScreenNode> = {
   ...createToolbarEndings('legitimo', EMAIL),
   n1: { kind: 'scene', view: EMAIL },
   n2: { kind: 'scene', view: SITE_OFFICIAL },
-  n3: { kind: 'scene', view: REPEATED },
-  e_una_tienda: {
-    kind: 'partial',
-    view: REPEATED,
-    verdict: 'Bien encaminado, pero incompleto',
-    outcome:
-      'Cambiaste la clave en TiendaExpress entrando tú directamente, lo cual estuvo bien. Pero usabas esa misma contraseña en tu correo personal, y ahí quedó expuesta igual: al que tiene la lista filtrada le basta probarla.',
-  },
-  e_todos_lados: {
+  e_contrasena_cambiada: {
     kind: 'good',
-    view: REPEATED,
+    view: SITE_OFFICIAL,
     verdict: 'Correcto · reaccionaste bien',
     outcome:
-      'Cambiaste la contraseña entrando tú mismo al sitio, y además la cambiaste en todos los demás sitios donde la habías repetido. La filtración dejó de ser una puerta abierta.',
+      'Cambiaste la contraseña entrando tú mismo al sitio de TiendaExpress. Actuaste sobre un aviso legítimo sin seguir enlaces del correo.',
   },
 }
 
