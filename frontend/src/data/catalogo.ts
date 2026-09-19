@@ -457,7 +457,7 @@ const BASE: BaseScenario[] = [
   {
     // La puerta de entrada del módulo y el fraude más común del país: el
     // número nuevo que dice ser de alguien de tu familia. Espeja con
-    // numero-nuevo-real, que es exactamente el mismo mensaje siendo verdad.
+    // numero-nuevo-familia, que es exactamente el mismo mensaje siendo verdad.
     seccionId: "suplantacion",
     escenarioId: "cambio-numero",
     titulo: "Cambio de número",
@@ -467,7 +467,7 @@ const BASE: BaseScenario[] = [
     version: 2,
     naturaleza: "fraude",
     dificultad: 1,
-    espeja: "suplantacion/numero-nuevo-real",
+    espeja: "suplantacion/numero-nuevo-familia",
     Component: lazy(() => import("../secciones/suplantacion/CambioNumero")),
   },
   {
@@ -508,7 +508,7 @@ const BASE: BaseScenario[] = [
     version: 1,
     naturaleza: "fraude",
     dificultad: 3,
-    espeja: "suplantacion/numero-nuevo-real",
+    espeja: "suplantacion/numero-nuevo-familia",
     Component: lazy(() => import("../secciones/suplantacion/JefeUrgente")),
   },
   {
@@ -516,7 +516,7 @@ const BASE: BaseScenario[] = [
     // Sin él el módulo enseñaría "desconfía de todo número nuevo", que no es
     // criterio sino miedo. Y aun siendo auténtico, mide qué se acaba mandando.
     seccionId: "suplantacion",
-    escenarioId: "numero-nuevo-real",
+    escenarioId: "numero-nuevo-familia",
     titulo: "Número nuevo de la familia",
     descripcion:
       "Tu tía avisa desde otro número que perdió el celular, con una nota de voz.",
@@ -537,7 +537,7 @@ const BASE: BaseScenario[] = [
     version: 1,
     naturaleza: "fraude",
     dificultad: 4,
-    espeja: "suplantacion/numero-nuevo-real",
+    espeja: "suplantacion/numero-nuevo-familia",
     Component: lazy(() => import("../secciones/suplantacion/CodigoPrestado")),
   },
   {
@@ -565,7 +565,7 @@ const BASE: BaseScenario[] = [
     version: 1,
     naturaleza: "fraude",
     dificultad: 5,
-    espeja: "suplantacion/numero-nuevo-real",
+    espeja: "suplantacion/numero-nuevo-familia",
     Component: lazy(() => import("../secciones/suplantacion/VozClonada")),
   },
   {
