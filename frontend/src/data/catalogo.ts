@@ -99,7 +99,7 @@ export const SECTIONS: Section[] = [
     id: "asistentes-ia",
     titulo: "Asistentes de IA",
     descripcion:
-      "Pegar un correo, un informe o una conversación en una IA para que la mejore también comparte lo que llevan adentro.",
+      "Un asistente de IA que redacta o resume lo que le pegas, pero también se queda con eso: nombres, cédulas o direcciones que no hacían falta para la tarea.",
     canal: "Herramientas de IA",
     Icono: Bot,
   },
