@@ -24,6 +24,10 @@ const SMS: ScreenView = {
   sub: 'Remitente sin verificar · SMS',
   senalRemitente: 'remitente',
   msgs: [{ text: TEXT_BENEFIT, time: '09:41', senal: 'mensaje' }],
+  // Salir del hilo es el gesto real de "lo dejo pasar" (issue #251): sin él,
+  // no actuar no tendría forma de expresarse en la pantalla.
+  volverGoto: 'e_ignora',
+  volverLabel: 'Salió del hilo sin abrir el enlace',
 }
 
 const PAGE: ScreenView = {
@@ -160,6 +164,13 @@ const STORY: Story<ScreenNode> = {
     verdict: 'No caíste · buscaste la fuente oficial',
     outcome:
       'En el portal del MIES no constaba ningún bono a tu nombre ni ninguna preselección: no existía el registro exprés que anunciaba el SMS. El mensaje circulaba masivamente ese día.',
+  },
+  e_ignora: {
+    kind: 'partial',
+    view: SMS,
+    verdict: 'No caíste, pero te quedaste con la duda',
+    outcome:
+      'Saliste del hilo sin tocar el enlace, que es lo que evita el daño. Pero tampoco comprobaste si el bono existía de verdad: esa duda es la que hace volver a abrir el mensaje más tarde, o pasárselo a alguien más.',
   },
 }
 
