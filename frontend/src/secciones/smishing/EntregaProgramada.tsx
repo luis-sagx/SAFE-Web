@@ -101,7 +101,7 @@ const APPS: PhoneApp[] = [
     Icono: Package,
     texto: 'EnvíaExpress',
     color: '#d9480f',
-    goto: 'n3',
+    viewNode: 'n3',
     label: 'Abrió la app del courier',
   },
   { Icono: MessageSquareText, texto: 'Mensajes', color: '#2f9e44' },

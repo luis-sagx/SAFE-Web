@@ -109,7 +109,7 @@ const APPS: PhoneApp[] = [
     Icono: Landmark,
     texto: 'Banco del Litoral',
     color: '#0f3d6e',
-    goto: 'n2',
+    viewNode: 'n2',
     label: 'Abrió la app del banco',
   },
   { Icono: Images, texto: 'Galería', color: '#c2410c', relleno: 'galeria' },

@@ -96,6 +96,15 @@ describe('CodigoReenviado', () => {
     expect(screen.getByText('¿Qué haces?')).toBeDefined()
   })
 
+  it('mirar otra app no descarta la notificación del nodo actual', () => {
+    const phone = start(<ForwardedCode />)
+
+    fireEvent.click(within(phone).getByRole('button', { name: /Banco/ }))
+    fireEvent.click(within(phone).getByRole('button', { name: 'Salir de la aplicación' }))
+
+    expect(within(phone).getByRole('button', { name: 'Abrir la notificación' })).toBeDefined()
+  })
+
   it('descartar la notificación no termina la corrida ni enciende la pista de fallo', () => {
     const phone = start(<ForwardedCode />)
 

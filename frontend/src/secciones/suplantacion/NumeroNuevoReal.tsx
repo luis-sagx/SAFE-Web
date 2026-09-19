@@ -203,7 +203,7 @@ const APPS: PhoneApp[] = [
     Icono: Contact,
     texto: 'Teléfono',
     color: '#1971c2',
-    goto: 'n4',
+    viewNode: 'n4',
     label: 'Abrió la agenda',
   },
   { Icono: Images, texto: 'Galería', color: '#c2410c', relleno: 'galeria' },

@@ -115,6 +115,19 @@ describe('TarjetaBloqueada', () => {
     expect(screen.getByText('Colgaste bien, pero ya habías marcado')).toBeDefined()
   })
 
+  it('conserva la variante de llamada aunque se mire Mensajes antes del banco', () => {
+    const phone = start(<BlockedCard />)
+
+    fireEvent.click(within(phone).getByRole('link', { name: '09 87 654 321' }))
+    fireEvent.click(within(phone).getByRole('button', { name: 'Llamar a este número' }))
+    fireEvent.click(within(phone).getByRole('button', { name: /Mensajes/ }))
+    fireEvent.click(within(phone).getByRole('button', { name: /Banco/ }))
+    fireEvent.click(within(phone).getByRole('button', { name: /Mis tarjetas/ }))
+
+    expect(within(phone).getByText('Activa · sin bloqueos ni intentos rechazados')).toBeDefined()
+    expect(screen.getByText('¿Qué haces?')).toBeDefined()
+  })
+
   it('anular la tarjeta sin mirar su estado no es el acierto', () => {
     const phone = start(<BlockedCard />)
 
