@@ -185,7 +185,7 @@ export const STORY: Story<ScreenNode> = {
     view: RECORD,
     verdict: 'No caíste · no devolviste la llamada',
     outcome:
-      'Bloqueaste el número y seguiste con tu día. Quien de verdad necesita hablar contigo vuelve a llamar, deja un mensaje o te escribe: nadie importante se comunica con un timbrazo a las tres de la mañana.',
+      'Bloqueaste el número y seguiste con tu día. Quien de verdad te necesita vuelve a llamar o te escribe.',
   },
   e_busca: {
     kind: 'good',

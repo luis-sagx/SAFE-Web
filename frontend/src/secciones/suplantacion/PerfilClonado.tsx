@@ -297,28 +297,28 @@ export const STORY: Story<ScreenNode> = {
     view: TRANSFER,
     verdict: 'Caíste en la suplantación',
     outcome:
-      'Los $220 se fueron a la cuenta de un desconocido. Marcela nunca perdió su cuenta: la de siempre seguía publicando fotos esa misma semana. Alguien copió su nombre y sus fotos, abrió una cuenta nueva y escribió a toda la gente que aparecía en sus comentarios.',
+      'Los $220 se fueron a un desconocido. La cuenta de siempre de Marcela seguía activa: alguien copió su nombre y sus fotos para escribirle a su gente.',
   },
   e_verifica: {
     kind: 'good',
     view: REAL_PROFILE,
     verdict: 'No caíste · la buscaste en la red',
     outcome:
-      'La cuenta de siempre de Marcela seguía ahí, activa y con vuestros 214 amigos en común. Le escribiste por ahí y te confirmó lo que ya se veía: no era ella. Cuando alguien "cambia de cuenta", la de antes es la que dice la verdad.',
+      'La cuenta de siempre de Marcela seguía ahí, activa y con vuestros 214 amigos en común. Le escribiste ahí y confirmó que no era ella.',
   },
   e_corta: {
     kind: 'good',
     view: DOES_NOT_CALL,
     verdict: 'No caíste · no mandaste nada',
     outcome:
-      'No mandaste dinero a alguien con quien no pudiste hablar. Es todo lo que hacía falta: nadie que de verdad te conozca se ofende porque quieras oírle la voz antes de prestarle plata.',
+      'No mandaste dinero a alguien con quien no pudiste hablar. Nadie que de verdad te conozca se ofende porque quieras oírle la voz antes.',
   },
   e_ignora: {
     kind: 'partial',
     view: CHAT,
     verdict: 'No perdiste nada, pero quedó a medias',
     outcome:
-      'Saliste de la conversación y no entregaste nada, que es lo importante. Lo que falta es avisar: si a ti te escribieron, a los demás contactos de Marcela también, y ella no sabe que la están copiando.',
+      'Saliste de la conversación sin entregar nada, que es lo importante. Falta avisar: a los demás contactos de Marcela también les están escribiendo.',
     score: 50,
   },
 }
@@ -329,54 +329,54 @@ const SIGNALS: Signal[] = [
     targetId: 'cuenta-nueva',
     pantalla: 'n1',
     texto:
-      'Lo primero que dice es que <b>cambió de cuenta</b>. Es la frase con la que empieza casi toda suplantación: sirve para explicar por qué no hay historial y por qué no la reconoces.',
+      '<b>Lo primero que dice es que cambió de cuenta.</b> Es la frase con la que empieza casi toda suplantación.',
   },
   {
     id: 's2',
     targetId: 'antiguedad',
     pantalla: 'n1b',
     texto:
-      'La cuenta tiene <b>seis días</b> y ningún amigo en común contigo. La de una amiga de años arrastra fotos, comentarios y gente conocida.',
+      '<b>La cuenta tiene seis días y ningún amigo en común contigo.</b> Una amiga de años arrastra historial.',
   },
   {
     id: 's3',
     targetId: 'fotos',
     pantalla: 'n1b',
     texto:
-      'Las fotos son de Marcela, pero <b>subidas todas el mismo día</b>: se descargaron de su perfil real y se volvieron a subir de golpe.',
+      '<b>Las fotos son de Marcela, pero subidas todas el mismo día.</b> Se descargaron de su perfil real de golpe.',
   },
   {
     id: 's4',
     targetId: 'plata',
     pantalla: 'n2',
     texto:
-      'La conversación llega enseguida a <b>pedir dinero</b>, con una cifra concreta y un plazo corto. Ese es el único objetivo de haber copiado el perfil.',
+      '<b>La conversación llega enseguida a pedir dinero</b>, con cifra concreta y plazo corto. Es el único objetivo de copiar el perfil.',
   },
   {
     id: 's5',
     targetId: 'cuenta',
     pantalla: 'n3',
     texto:
-      'La cuenta de destino está <b>a nombre de otra persona</b>, con una excusa lista. El dinero nunca va a la cuenta de quien dice necesitarlo.',
+      '<b>La cuenta de destino es de otra persona</b>, con una excusa lista. El dinero nunca va a quien dice necesitarlo.',
   },
   {
     id: 's6',
     targetId: 'no-llama',
     pantalla: 'n3b',
     texto:
-      'Nunca puede <b>hablar por teléfono</b>. Una llamada rompe el engaño en tres segundos, así que siempre hay un motivo para no atenderla.',
+      '<b>Nunca puede hablar por teléfono.</b> Una llamada rompe el engaño en segundos, así que siempre hay una excusa.',
   },
   {
     id: 's7',
     targetId: 'responde',
     pantalla: 'e_verifica',
     texto:
-      'La <b>cuenta de siempre seguía activa</b>, y su dueña contestó. Cuando alguien dice que perdió su cuenta, esa es la comprobación: mirar si la vieja sigue viva.',
+      '<b>La cuenta de siempre seguía activa, y su dueña contestó.</b> Esa es la comprobación: ver si la vieja sigue viva.',
   },
 ]
 
 const RULE =
-  'Regla de oro: una foto y un nombre <b>no identifican a nadie</b>: se copian en un minuto. Si una cuenta nueva dice ser alguien conocido, búscalo en la red o llámalo por su número de siempre, y no mandes dinero a una cuenta que está a otro nombre.'
+  'Regla de oro: <b>una foto y un nombre no identifican a nadie, se copian en un minuto.</b> Busca a la persona en la red o llámala antes de mandar dinero.'
 
 const SUMMARY = 'Una amiga te escribe desde una cuenta nueva y termina pidiéndote dinero prestado.'
 

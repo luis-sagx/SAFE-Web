@@ -226,7 +226,7 @@ export const STORY: Story<ScreenNode> = {
     view: INCOMING,
     verdict: "No entregaste nada, pero te quedaste con la duda",
     outcome:
-      "No contestaste, y eso evita el daño. Pero el mensaje del banco sí llegó, y no lo miraste: si alguien está intentando operar con tu tarjeta ahora mismo, lo verás cuando ya no sirva de nada. La llamada se ignora; la tarjeta se comprueba.",
+      "No contestar evita el daño de la llamada, pero no viste el mensaje real del banco. Ignorar la llamada no basta: revisa la tarjeta también.",
     score: 50,
   },
   e_cuelga: {
@@ -234,27 +234,27 @@ export const STORY: Story<ScreenNode> = {
     view: DENIES_CONSUMPTION,
     verdict: "No caíste · colgaste",
     outcome:
-      "Colgaste sin dictar nada. Ningún banco pide por teléfono el código que te envía, y la insistencia en que no cortaras era la señal más clara de todas. Lo que sigue es llamar tú al número del reverso de la tarjeta, que es el único que sabes que es del banco.",
+      "Colgaste sin dictar nada: ningún banco pide ese código por teléfono. Ahora llama tú al número del reverso de tu tarjeta, el único confiable.",
   },
   e_dicta: {
     kind: "bad",
     view: DENIES_CONSUMPTION,
     verdict: "Caíste en la trampa",
-    outcome: `El consumo de Guayaquil no existía. El código ${CODE} era el que tu banco acababa de enviarte para autorizar una transferencia que estaban haciendo ellos mientras hablabas. Ese código no identifica a nadie, firma operaciones.`,
+    outcome: `El consumo de Guayaquil nunca existió. El código ${CODE} autorizaba la transferencia que hacían ellos mientras hablaban contigo.`,
   },
   e_app: {
     kind: "good",
     view: TRANSACTIONS,
     verdict: "No caíste · lo comprobaste donde consta",
     outcome:
-      "En la app no había ningún consumo de ochocientos noventa dólares ni nada en revisión: el cargo del que hablaban nunca existió. Dejaste la llamada esperando mientras mirabas, que es exactamente lo que quien llama intenta impedir.",
+      "En la app no había ningún consumo de $890 ni nada en revisión: ese cargo nunca existió. Comprobarlo mientras la llamada esperaba es justo lo que quien llama trata de impedir.",
   },
   e_bloquea: {
     kind: "partial",
     view: BANK,
     verdict: "Reaccionaste sin comprobar",
     outcome:
-      "Bloqueaste la tarjeta por un consumo que nunca existió. No perdiste dinero (y ante la duda es preferible eso a dictar un código), pero te quedaste sin tarjeta hasta que emitan otra, y los movimientos estaban a un toque en esa misma pantalla.",
+      "Bloqueaste la tarjeta por un consumo que nunca existió. No perdiste dinero, pero te quedaste sin tarjeta cuando los movimientos estaban a un toque.",
     score: 50,
   },
 };
@@ -265,47 +265,47 @@ const SIGNALS: Signal[] = [
     targetId: "quien",
     pantalla: "n1",
     texto:
-      "El número <b>no es el de tu banco</b> ni está en tus contactos. Que en la pantalla salga un número de Quito no dice nada: se puede hacer aparecer cualquiera.",
+      "<b>No es el número de tu banco</b>, aunque diga Quito. Cualquier número en pantalla se puede falsificar.",
   },
   {
     id: "s2",
     targetId: "llaman",
     pantalla: "n2",
     texto:
-      "<b>Te llaman ellos.</b> Cuando tú marcas el número del reverso de tu tarjeta sabes con quién hablas; cuando te llaman, no, y eso no lo arregla ninguna pregunta que hagas por teléfono.",
+      "<b>Te llaman ellos, no tú.</b> Solo marcando tú al número del reverso sabes con quién hablas de verdad.",
   },
   {
     id: "s3",
     targetId: "piden-codigo",
     pantalla: "n3",
     texto:
-      "Te piden el <b>código que te acaba de llegar</b>. Ese código autoriza operaciones: dictarlo es firmar lo que estén haciendo al otro lado mientras hablas.",
+      "Te piden el <b>código que acabas de recibir</b>. Dictarlo firma la operación que hacen mientras hablas.",
   },
   {
     id: "s4",
     targetId: "texto-codigo",
     pantalla: "n4",
     texto:
-      "El mensaje del banco <b>es auténtico y lo dice él mismo</b>: nunca te pedirán ese código por teléfono. La advertencia venía escrita en la misma pantalla donde estaba el número.",
+      "El mensaje <b>es auténtico y lo advierte él mismo</b>: nunca piden ese código por teléfono.",
   },
   {
     id: "s5",
     targetId: "no-cuelgue",
     pantalla: "n3",
     texto:
-      "<b>Insisten en que no cuelgues.</b> Colgar y marcar tú es lo único que rompe el engaño, y por eso es lo primero que intentan impedir.",
+      "<b>Insisten en que no cuelgues.</b> Colgar y marcar tú es lo único que rompe el engaño.",
   },
   {
     id: "s6",
     targetId: "sin-cargo",
     pantalla: "e_app",
     texto:
-      "En la app <b>no había ningún cargo en revisión</b>. El estado real de tu tarjeta no depende de lo que te cuente quien llamó.",
+      "En la app <b>no había ningún cargo en revisión</b>. Lo que diga quien llama no cambia el estado real.",
   },
 ];
 
 const RULE =
-  "Regla de oro: el código que te llega por mensaje <b>no se dicta nunca</b>, ni siquiera a alguien que dice ser tu banco. Cuelga y llama tú al número impreso en el reverso de tu tarjeta: es el único que sabes a quién pertenece.";
+  "Regla de oro: el código que llega por mensaje <b>nunca se dicta</b>, ni al banco. Cuelga y llama tú al número del reverso de tu tarjeta.";
 
 const SUMMARY =
   "Una llamada dice ser del banco y avisa de un consumo que no reconoces.";
