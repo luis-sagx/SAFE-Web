@@ -99,7 +99,7 @@ export const SECTIONS: Section[] = [
     id: "asistentes-ia",
     titulo: "Asistentes de IA",
     descripcion:
-      "Pegar un correo, un informe o una conversación en una IA para que la mejore también comparte lo que llevan adentro.",
+      "Un asistente de IA que redacta o resume lo que le pegas, pero también se queda con eso: nombres, cédulas o direcciones que no hacían falta para la tarea.",
     canal: "Herramientas de IA",
     Icono: Bot,
   },
@@ -238,7 +238,9 @@ const BASE: BaseScenario[] = [
     // decisión es si contestar, sin haber mirado nunca una dirección web.
     seccionId: "smishing",
     escenarioId: "baja-suscripcion",
-    titulo: "Suscripción que no contrataste",
+    // Antes decía "Suscripción que no contrataste": daba por hecho que el
+    // cobro era falso antes de empezar, mismo problema que #235.
+    titulo: "Cobro de una suscripción",
     descripcion:
       "Un SMS cobra un servicio que nunca pediste y ofrece cancelarlo respondiendo.",
     version: 3,
@@ -330,7 +332,9 @@ const BASE: BaseScenario[] = [
     // que pide reenviarlo.
     seccionId: "smishing",
     escenarioId: "codigo-reenviado",
-    titulo: "Código que piden reenviar",
+    // Antes decía "Código que piden reenviar": nombraba la propia acción
+    // riesgosa que el escenario mide detectar (issue #235).
+    titulo: "Mensaje sobre tu código de verificación",
     descripcion:
       "Alguien dice ser del banco y pide el código de verificación que acaba de llegarte.",
     version: 3,
@@ -473,7 +477,9 @@ const BASE: BaseScenario[] = [
   {
     seccionId: "suplantacion",
     escenarioId: "perfil-clonado",
-    titulo: "Perfil clonado",
+    // Antes decía "Perfil clonado": adelantaba la respuesta antes de empezar
+    // (issue #235). El id no cambia (las corridas ya guardadas lo usan).
+    titulo: "Cuenta nueva de una amiga",
     descripcion:
       "Una amiga escribe desde una cuenta nueva y termina pidiendo dinero prestado.",
     version: 1,
@@ -488,7 +494,11 @@ const BASE: BaseScenario[] = [
     // hace, no si reconoce algo.
     seccionId: "suplantacion",
     escenarioId: "clonaron-tu-perfil",
-    titulo: "Alguien usa tu nombre",
+    // Antes decía "Alguien usa tu nombre": sonaba a que sí te suplantaron,
+    // pero la respuesta correcta es que el aviso es real (naturaleza
+    // "legitimo") — el título empujaba hacia la conclusión contraria
+    // (issue #235).
+    titulo: "Una amiga te avisa",
     descripcion:
       "Una amiga avisa de que hay una cuenta con tus fotos pidiendo dinero.",
     version: 1,
@@ -739,7 +749,9 @@ const BASE: BaseScenario[] = [
   {
     seccionId: 'fisico',
     escenarioId: 'descarga-programas-piratas',
-    titulo: 'Descarga de software pirata',
+    // Antes decía "Descarga de software pirata": la palabra "pirata" ya
+    // delataba el riesgo (issue #235).
+    titulo: 'Software gratis de un compañero',
     descripcion:
       'Un compañero te ofrece una versión gratis de un software profesional caro. Debes elegir de dónde descargarlo.',
     version: 1,

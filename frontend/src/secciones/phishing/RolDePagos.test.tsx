@@ -65,11 +65,26 @@ describe('RolDePagos', () => {
     expect(screen.getByText('Correo legítimo, reacción peligrosa')).toBeDefined()
   })
 
-  it('entrar al portal desde los marcadores y pulsar Ingresar acredita el escenario', () => {
+  it('entrar al portal y pulsar Ingresar muestra el rol de pagos, no el veredicto directo (issue #253)', () => {
     renderScenario()
 
     fireEvent.click(screen.getByRole('button', { name: 'Abrir Portal Andes' }))
     fireEvent.click(screen.getByRole('button', { name: 'Ingresar' }))
+
+    expect(screen.getByRole('heading', { name: /Rol de pagos/ })).toBeDefined()
+    expect(screen.queryByText('Acertaste · el correo era legítimo')).toBeNull()
+    // La cifra que el veredicto ya prometía ("faltaban dos horas extra") tiene
+    // que verse en el propio rol, no solo contarse después.
+    expect(screen.getByText(/6 horas/)).toBeDefined()
+    expect(screen.getByText(/8 horas/)).toBeDefined()
+  })
+
+  it('reportar la diferencia desde el rol de pagos acredita el escenario', () => {
+    renderScenario()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Abrir Portal Andes' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Ingresar' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Reportar diferencia' }))
 
     expect(screen.getByText('Acertaste · el correo era legítimo')).toBeDefined()
   })

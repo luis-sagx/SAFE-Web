@@ -93,6 +93,8 @@ const BLOCK: ScreenView = {
   colgarLabel: 'Colgó sin confirmar nada',
 }
 
+// Sin `volverGoto`: no hay lista a la que volver, el icono `Teléfono` ya
+// restaura la llamada en curso (issue #251, mismo criterio que TarjetaBloqueada).
 const MESSAGE: ScreenView = {
   kind: 'sms',
   sender: 'BancoLitoral',

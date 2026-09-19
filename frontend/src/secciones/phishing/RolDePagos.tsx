@@ -26,6 +26,7 @@ import { useStoryEngine, type Story, type StoryNode } from '../../hooks/useStory
 const STORY: Story<StoryNode> = {
   n1: { kind: 'scene' },
   n2: { kind: 'scene' },
+  n3: { kind: 'scene' },
 
   e_bien: {
     kind: 'good',
@@ -204,6 +205,14 @@ const TABS: Record<string, TabConfig> = {
     // una decisión sobre el mensaje (issue #24).
     cierra: 'n1',
   },
+  n3: {
+    titulo: 'Rol de pagos',
+    url: 'https://portal.andes.com.ec/rrhh/rol/detalle',
+    segura: true,
+    // Cerrar el detalle vuelve al login del portal, no al correo: seguís
+    // dentro del portal, solo un paso atrás.
+    cierra: 'n2',
+  },
 }
 
 const MARKERS: BrowserBookmark[] = [
@@ -293,7 +302,7 @@ function PortalContent() {
           </span>
         </fieldset>
         <HotspotButton
-          goto="e_bien"
+          goto="n3"
           label="Ingresó a su portal del colaborador"
           className={styles.submit}
         >
@@ -305,6 +314,70 @@ function PortalContent() {
         Tu rol de pagos está disponible los primeros cinco días de cada mes. Los reclamos se
         registran desde el mismo portal.
       </SiteNotice>
+
+      <SiteFooter texto="Corporación Andes · Talento Humano" enlaces={FOOTER_LINKS} />
+    </div>
+  )
+}
+
+// Issue #253: antes "Ingresar" llevaba directo al veredicto ("revisaste tu
+// rol y notaste que faltaban dos horas extra"), sin que el rol se hubiera
+// mostrado nunca. Ahora sí se ve, con la misma diferencia de horas que el
+// veredicto ya contaba.
+function PayrollDetailContent() {
+  return (
+    <div className={styles.page}>
+      <SiteHeader
+        marca="Corporación Andes"
+        menu={['Rol de pagos', 'Vacaciones', 'Certificados', 'Ayuda']}
+      />
+      <h2 className={styles.pageTitle}>Rol de pagos · {PERIOD_ROLE}</h2>
+      <p className={styles.pageSub}>Detalle de ingresos y descuentos del período.</p>
+
+      <div className={styles.datos}>
+        <div className={styles.dato}>
+          <p className={styles.datoEtiqueta}>Sueldo base</p>
+          <p className={styles.datoValor}>$850.00</p>
+        </div>
+        <div className={styles.dato}>
+          <p className={styles.datoEtiqueta}>Horas extra pagadas</p>
+          <p className={styles.datoValor} data-signal="horas-extra">
+            6 horas (50%) · $38.25
+          </p>
+        </div>
+        <div className={styles.dato}>
+          <p className={styles.datoEtiqueta}>Total ingresos</p>
+          <p className={styles.datoValor}>$888.25</p>
+        </div>
+        <div className={styles.dato}>
+          <p className={styles.datoEtiqueta}>Aporte IESS (9.45%)</p>
+          <p className={styles.datoValor}>$83.93</p>
+        </div>
+        <div className={styles.dato}>
+          <p className={styles.datoEtiqueta}>Total descuentos</p>
+          <p className={styles.datoValor}>$83.93</p>
+        </div>
+        <div className={styles.dato}>
+          <p className={styles.datoEtiqueta}>Neto a recibir</p>
+          <p className={styles.datoValor}>$804.32</p>
+        </div>
+      </div>
+
+      <SiteNotice>
+        Tu marcación de asistencia registra <b>8 horas</b> extra este período, pero el rol solo
+        paga 6. Si la diferencia no es tuya, repórtala antes del {DEADLINE} desde este mismo
+        portal.
+      </SiteNotice>
+
+      <div className={styles.form}>
+        <HotspotButton
+          goto="e_bien"
+          label="Reportó la diferencia de horas extra desde el portal"
+          className={styles.submit}
+        >
+          Reportar diferencia
+        </HotspotButton>
+      </div>
 
       <SiteFooter texto="Corporación Andes · Talento Humano" enlaces={FOOTER_LINKS} />
     </div>
@@ -425,6 +498,8 @@ function PayrollStatement() {
               : undefined,
           )}
         />
+      ) : currentScreen === 'n3' ? (
+        <PayrollDetailContent />
       ) : (
         <PortalContent />
       )}
