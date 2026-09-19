@@ -41,7 +41,7 @@ describe('PanelVeredicto', () => {
       </MemoryRouter>,
     )
 
-    fireEvent.click(screen.getByRole('button', { name: 'Ver las señales' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Continuar → Ver las señales' }))
 
     const signals = screen.getByRole('region', { name: 'Repaso de señales' })
     expect(signals.className).toContain('bg-signal')
@@ -121,7 +121,7 @@ describe('PanelVeredicto', () => {
       </MemoryRouter>,
     )
 
-    fireEvent.click(screen.getByRole('button', { name: 'Ver las señales' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Continuar → Ver las señales' }))
 
     expect(reproducirResultadoMock).toHaveBeenCalledTimes(1)
   })
@@ -160,7 +160,7 @@ describe('PanelVeredicto', () => {
       </MemoryRouter>,
     )
 
-    fireEvent.click(screen.getByRole('button', { name: 'Ver las señales' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Continuar → Ver las señales' }))
 
     // Las dos señales están en el DOM (así el contenedor reserva el alto de
     // la más alta de verdad, no el de un cálculo por cantidad de caracteres
@@ -196,7 +196,7 @@ describe('PanelVeredicto', () => {
 
     expect(reproducirSenalMock).not.toHaveBeenCalled()
 
-    fireEvent.click(screen.getByRole('button', { name: 'Ver las señales' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Continuar → Ver las señales' }))
     expect(reproducirSenalMock).toHaveBeenCalledTimes(1)
 
     fireEvent.click(screen.getByRole('button', { name: 'Siguiente →' }))
@@ -218,7 +218,7 @@ describe('PanelVeredicto', () => {
       </MemoryRouter>,
     )
 
-    fireEvent.click(screen.getByRole('button', { name: 'Ver las señales' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Continuar → Ver las señales' }))
     expect(reproducirSenalMock).not.toHaveBeenCalled()
   })
 

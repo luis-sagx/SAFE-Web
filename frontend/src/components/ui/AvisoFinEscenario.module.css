@@ -5,10 +5,12 @@
    decidió. Un aviso en la columna del resultado se pierde por la misma razón
    por la que se pierde el resultado.
 
-   Dura menos de dos segundos y se quita solo, así que todo lo que tenga que
+   Dura poco más de tres segundos y se quita solo, así que todo lo que tenga que
    decir tiene que entrar de un vistazo: un disco de color grande, tres palabras
    y hacia dónde mirar. Cualquier cosa más larga no da tiempo a leerse, y un
-   aviso que hay que cerrar convierte el final de cada escenario en un trámite. */
+   aviso que hay que cerrar convierte el final de cada escenario en un trámite.
+   (Subido de 1.8s a 3.2s: en pruebas de usuario la gente seguía mirando el
+   dispositivo y no llegaba a leer la flecha antes de que se apagara.) */
 
 .capa {
   position: absolute;
@@ -36,9 +38,10 @@
     radial-gradient(circle at 50% 42%, var(--tono-suave), rgba(15, 23, 32, 0.45) 62%),
     rgba(15, 23, 32, 0.25);
   backdrop-filter: blur(4px) saturate(0.65);
+  /* 2.8s + 0.4s = 3.2s, igual a DURATION_MS en el componente. */
   animation:
     capaEntra 0.2s ease,
-    capaSale 0.35s ease 1.45s forwards;
+    capaSale 0.4s ease 2.8s forwards;
 }
 
 .bien {

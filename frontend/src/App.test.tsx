@@ -71,7 +71,9 @@ describe('App', () => {
       </MemoryRouter>,
     )
 
-    expect(await screen.findByRole('heading', { name: 'Phishing' })).toBeDefined()
+    // level: 1 porque la sección ahora también lleva el video del módulo, y su
+    // título ("Phishing") se repite como h3 en el boleto del reproductor.
+    expect(await screen.findByRole('heading', { name: 'Phishing', level: 1 })).toBeDefined()
     await waitFor(() => {
       expect(screen.queryByText('Escenario rol de pagos montado')).toBeNull()
     })

@@ -188,7 +188,7 @@ describe('SalidaSegura', () => {
 
     secureEverything(scene)
     fireEvent.click(screen.getByRole('button', { name: 'Irme de la oficina' }))
-    fireEvent.click(await screen.findByRole('button', { name: 'Ver las señales' }))
+    fireEvent.click(await screen.findByRole('button', { name: 'Continuar → Ver las señales' }))
 
     await waitFor(() => {
       expect(

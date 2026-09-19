@@ -62,7 +62,7 @@ describe('CorreoDatosTerceros', () => {
     writeAndSend(container, 'Es a nombre de Andrea Carolina Cedeño Mora, cédula 1799999990.')
     expect(await screen.findByText('Datos personales compartidos con la IA')).toBeDefined()
 
-    fireEvent.click(screen.getByRole('button', { name: 'Ver las señales' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Continuar → Ver las señales' }))
     await waitFor(() => {
       expect(
         within(container)

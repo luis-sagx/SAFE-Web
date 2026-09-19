@@ -116,7 +116,7 @@ describe('PrivacidadClaves', () => {
     closeAll(container)
     block(container)
     fireEvent.click(screen.getByRole('button', { name: 'Girarme a atenderlo' }))
-    fireEvent.click(await screen.findByRole('button', { name: 'Ver las señales' }))
+    fireEvent.click(await screen.findByRole('button', { name: 'Continuar → Ver las señales' }))
 
     await waitFor(() => {
       expect(

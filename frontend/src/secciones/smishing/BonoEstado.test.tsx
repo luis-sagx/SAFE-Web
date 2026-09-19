@@ -162,7 +162,7 @@ describe('BonoEstado', () => {
 
     fireEvent.click(within(phone).getByText('bit.ly/bono-ec-2026'))
     fireEvent.click(within(phone).getByRole('button', { name: 'Acreditar mi bono' }))
-    fireEvent.click(screen.getByRole('button', { name: 'Ver las señales' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Continuar → Ver las señales' }))
 
     await waitFor(() => {
       expect(

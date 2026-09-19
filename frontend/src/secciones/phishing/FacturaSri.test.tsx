@@ -109,7 +109,7 @@ describe('FacturaSri', () => {
     fireEvent.click(
       screen.getByRole('button', { name: 'Cerrar la pestaña Validación de comprobante' }),
     )
-    fireEvent.click(screen.getByRole('button', { name: 'Ver las señales' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Continuar → Ver las señales' }))
 
     // Señal 1: el remitente, que vive en el correo.
     expect(screen.getByRole('tab', { name: /Correo/ }).getAttribute('aria-selected')).toBe('true')

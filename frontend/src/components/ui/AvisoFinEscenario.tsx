@@ -3,8 +3,11 @@ import { useEffect, useRef, useState } from 'react'
 import type { ScenarioResult } from '../../hooks/useScenarioRun'
 import styles from './AvisoFinEscenario.module.css'
 
-// Debe cuadrar con el retardo de `capaSale` en el CSS.
-const DURATION_MS = 1800
+// Debe cuadrar con el retardo de `capaSale` en el CSS. Subido de 1.8 s a
+// 3.2 s (issue de UX): en las pruebas la gente seguía mirando el dispositivo,
+// no la columna de al lado, y el aviso se apagaba antes de que llegaran a leer
+// "Mira a la derecha".
+const DURATION_MS = 3200
 
 // Titular de tres palabras: el aviso dura menos de dos segundos, lo que no se
 // lea de un vistazo no se lee. `satisfies` para que falte un resultado sea
