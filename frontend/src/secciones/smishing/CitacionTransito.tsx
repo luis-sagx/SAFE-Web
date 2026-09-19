@@ -22,11 +22,20 @@ const SMS: ScreenView = {
   msgs: [FIRST_SMS],
   composerGoto: 'n1b',
   composerLabel: 'Respondió el mensaje preguntando qué placa tiene la multa',
+  // Salir del hilo es el gesto real de "lo dejo pasar" (issue #251): sin él,
+  // no actuar no tendría forma de expresarse en la pantalla.
+  volverGoto: 'e_ignora',
+  volverLabel: 'Salió del hilo sin abrir el enlace ni responder',
 }
 
 const REPLIED_SMS: ScreenView = {
   ...SMS,
   composerGoto: undefined,
+  // Del hilo respondido se vuelve al hilo original, no directo a "ignoré
+  // todo": aquí ya hubo una respuesta, así que salir es volver a mirar el
+  // mensaje, no el mismo gesto de no haber contestado nunca.
+  volverGoto: 'n1',
+  volverLabel: 'Volvió al hilo original después de preguntar',
   msgs: [
     FIRST_SMS,
     { text: '¿Cuál es la placa?', time: '08:31', mine: true },
@@ -145,6 +154,13 @@ const STORY: Story<ScreenNode> = {
     verdict: 'No caíste · verificaste por tu canal',
     outcome:
       '<b>No apareció ninguna citación pendiente</b> en el portal oficial. El SMS usaba el miedo al recargo para llevarte a una página falsa.',
+  },
+  e_ignora: {
+    kind: 'partial',
+    view: SMS,
+    verdict: 'No caíste, pero te quedaste con la duda',
+    outcome:
+      'Saliste del hilo sin tocar el enlace, que es lo que evita el daño. Pero tampoco comprobaste si la citación existía de verdad: esa duda es la que hace pagar por si acaso la próxima vez.',
   },
 }
 

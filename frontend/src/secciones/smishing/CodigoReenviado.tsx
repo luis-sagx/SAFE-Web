@@ -64,22 +64,6 @@ const DECLINED_THREAD: ScreenView = {
 }
 
 // Después de comprobar en la app: negarse ahora sí cierra el escenario, ya no queda nada pendiente.
-const VERIFIED_THREAD: ScreenView = {
-  ...THREAD_FAKE,
-  respuestas: [
-    {
-      texto: 'Te reenvío el código.',
-      goto: 'e_reenvia',
-      label: 'Reenvió el código al número desconocido, después de comprobar que no hacía falta',
-    },
-    {
-      texto: 'Ese código no se lo puedo pasar a nadie.',
-      goto: 'e_app',
-      label: 'Se negó a reenviar el código después de comprobar que no había ningún acceso',
-    },
-  ],
-}
-
 // La vista previa del banco enseña el código, y los dos remitentes quedan uno debajo del otro para comparar.
 const LIST: ScreenView = {
   kind: 'web',
@@ -142,7 +126,7 @@ const BANK_HOME: ScreenView = {
     {
       texto: 'Seguridad de la cuenta',
       detalle: 'Accesos, dispositivos y códigos solicitados',
-      goto: 'n_seguridad',
+      goto: 'e_app',
       label: 'Revisó la actividad y los accesos de su cuenta en la app',
     },
     { texto: 'Movimientos', detalle: 'Débitos y transferencias de los últimos 30 días' },
@@ -155,10 +139,15 @@ const BANK_HOME: ScreenView = {
   ],
   fields: [],
   button: '',
-  cerrarGoto: 'n_sms_verificado',
-  cerrarLabel: 'Cerró la app del banco',
+  // Al hilo del impostor, no a un nodo que no existe: cerrar sin elegir nada
+  // deja todo pendiente, así que se vuelve a donde sigue esperando respuesta.
+  cerrarGoto: 'n1',
+  cerrarLabel: 'Cerró la app del banco sin revisar nada',
 }
 
+// Pantalla terminal (issue #234): llegar aquí ya resuelve el escenario, así
+// que no lleva `cerrarGoto` ni más opciones, igual que las páginas de
+// verificación de los demás escenarios de smishing.
 const APP_BANK: ScreenView = {
   kind: 'web',
   app: 'Banco',
@@ -180,9 +169,6 @@ const APP_BANK: ScreenView = {
     'El código que te enviamos autoriza operaciones en tu cuenta. Nadie del banco te lo pedirá nunca, ni por llamada, ni por mensaje, ni por correo. Si alguien te lo pide, es un intento de fraude.',
   fields: [],
   button: '',
-  // Al hilo del impostor, no a la lista: sigue esperando respuesta, comprobar solo no cierra ese frente.
-  cerrarGoto: 'n1c',
-  cerrarLabel: 'Cerró la app después de ver que no había accesos no autorizados',
 }
 
 const APPS: PhoneApp[] = [
@@ -211,11 +197,9 @@ const STORY: Story<ScreenNode> = {
       label: 'Abrió la notificación del código que envió el banco',
     },
   },
-  n1c: { kind: 'scene', view: VERIFIED_THREAD },
   n2: { kind: 'scene', view: LIST },
   n3: { kind: 'scene', view: THREAD_BANK },
   n4: { kind: 'scene', view: BANK_HOME },
-  n_seguridad: { kind: 'scene', view: APP_BANK },
   e_reenvia: {
     kind: 'bad',
     view: THREAD_SENT,
@@ -223,10 +207,13 @@ const STORY: Story<ScreenNode> = {
     outcome:
       '<b>No había ningún intento de acceso</b>: quien entraba a tu banca era quien te escribía, y le faltaba ese código. Vaciaron la cuenta en tres transferencias, ya autorizadas por ti.',
   },
+  // Comprobarlo ahí ya es el acierto (issue #234), igual que buscar la fuente
+  // oficial en los demás escenarios: antes hacía falta además volver al hilo
+  // del impostor a contestarle que no, un paso de más que no cambiaba nada
+  // del resultado y solo alargaba el camino correcto sin necesidad.
   e_app: {
     kind: 'good',
-    // Misma burbuja que e_niega: el mensaje que sale del teléfono es idéntico, solo cambia que aquí ya habías comprobado.
-    view: DECLINED_THREAD,
+    view: APP_BANK,
     verdict: 'No caíste · lo comprobaste donde consta',
     outcome:
       '<b>No había ningún acceso desde otro dispositivo.</b> Sí una solicitud de código reciente, sin usar: la pidieron ellos, y te negaste a dársela.',

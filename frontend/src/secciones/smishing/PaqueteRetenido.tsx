@@ -40,6 +40,10 @@ const SMS: ScreenView = {
 const REPLIED_SMS: ScreenView = {
   ...SMS,
   respuestas: undefined,
+  // Sin esto el botón "‹" se veía activo pero no hacía nada (issue #251): del
+  // hilo ya respondido se puede volver a mirar el mensaje original.
+  volverGoto: 'n1',
+  volverLabel: 'Volvió al hilo original después de preguntar',
   msgs: [
     FIRST_SMS,
     { text: '¿De qué paquete se trata?', time: '10:14', mine: true },
