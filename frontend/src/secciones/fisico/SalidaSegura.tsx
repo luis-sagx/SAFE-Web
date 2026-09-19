@@ -540,6 +540,10 @@ function SafeExit() {
 
   const ghostDocument = ghost ? DOCUMENTS[ghost.index] : undefined
 
+  let drawerDetail = `${savedView.size} ${savedView.size === 1 ? 'cosa guardada' : 'cosas guardadas'}`
+  if (ghost && !ghost.flying) drawerDetail = 'Suelta aquí'
+  else if (savedView.size === 0) drawerDetail = 'Vacío'
+
   const screen = (
     <div className={styles.oficinaMarco}>
       <div
@@ -559,7 +563,7 @@ function SafeExit() {
             fuera del alcance del teclado, como en cualquier diálogo. */}
         <div className="contents" inert={close}>
           <div data-signal="papeles" className={styles.papeles}>
-            {DOCUMENTS.map(renderDocument)}
+            {DOCUMENTS.map((document, i) => renderDocument(document, i))}
           </div>
 
           {/* El cajón es el archivador entero: un blanco grande para soltar,
@@ -580,11 +584,7 @@ function SafeExit() {
                 key={savedView.size}
                 className={`${styles.cajonDetalle} ${savedView.size ? styles.cajonPulso : ''} tabular-nums`}
               >
-                {ghost && !ghost.flying
-                  ? 'Suelta aquí'
-                  : savedView.size === 0
-                    ? 'Vacío'
-                    : `${savedView.size} ${savedView.size === 1 ? 'cosa guardada' : 'cosas guardadas'}`}
+                {drawerDetail}
               </span>
             </span>
           </button>
@@ -631,7 +631,7 @@ function SafeExit() {
         {/* Cuánto queda, no qué: nombrar las tareas convertía el escenario en
             una lista que se tacha, y ya no medía si uno reconoce lo sensible. */}
         {!final && (
-          <p className={styles.contador} role="status">
+          <output className={styles.contador}>
             {allReady ? (
               'Nada a la vista'
             ) : (
@@ -640,7 +640,7 @@ function SafeExit() {
                 {leftInView === 1 ? 'cosa' : 'cosas'} a la vista
               </>
             )}
-          </p>
+          </output>
         )}
 
         {close && <div className={styles.fondoCerca} onClick={closeZoom} aria-hidden />}

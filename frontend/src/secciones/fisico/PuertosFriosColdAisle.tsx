@@ -110,7 +110,6 @@ export default function ColdAislePorts() {
       story={STORY}
       senales={SIGNALS}
       rule="<b>Una credencial no es una autorización.</b> Cada persona entra con su propia tarjeta; las visitas se registran en recepción, que confirma quién las espera."
-      restartLabel="Intentar de nuevo"
       cuandoTermina="Cuando decidas qué hacer con la persona que te pide pasar."
       pista="Piensa en quién puede confirmar que esta persona tiene que estar hoy en el piso. Tú no puedes saberlo mirando su credencial."
     />

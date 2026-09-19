@@ -218,6 +218,7 @@
 .papel {
   position: absolute;
   top: 0;
+  touch-action: none;
   width: 30%;
   height: 100%;
   display: flex;
@@ -250,10 +251,6 @@
   position: relative;
   transform: translateY(55%);
   text-align: center;
-}
-
-.papel {
-  touch-action: none;
 }
 
 /* El cajón es el archivador entero: un blanco grande para soltar las hojas.

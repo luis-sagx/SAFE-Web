@@ -109,7 +109,6 @@ export default function ClonedCard() {
       story={STORY}
       senales={SIGNALS}
       rule="<b>Tu tarjeta no sale de tus manos.</b> No aceptes ayuda de desconocidos en el cajero. Si alguien la tocó, revisa tu nombre y tus últimos dígitos antes de irte y, si no es la tuya, bloquéala de inmediato por la app o la línea oficial del banco."
-      restartLabel="Intentar de nuevo"
       cuandoTermina="Cuando elijas qué hacer con la tarjeta que te devuelve."
       pista="La tarjeta pasó por las manos de un desconocido. Antes de volver a usarla o de irte, comprueba que de verdad sea la tuya."
     />

@@ -194,7 +194,7 @@ export function MailNav({
 // depender de un estilo de botones concreto (macOS/Windows). Con `closable`
 // la ✕ es un botón de verdad (marcado con data-close-window) para escenarios
 // donde cerrar la ventana entera es una respuesta válida.
-export function WindowButtons({ closable = false }: { closable?: boolean }) {
+export function WindowButtons({ closable = false }: Readonly<{ closable?: boolean }>) {
   return (
     <span className={styles.titlebarBotones} aria-hidden={closable ? undefined : true} data-window-buttons>
       <Minus aria-hidden className={styles.titlebarIcono} strokeWidth={2} />
