@@ -3,29 +3,114 @@ import type { Context } from '../../components/ui/ContextoEscenario'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
 import type { Signal } from '../../components/ui/PanelVeredicto'
 import type { Story } from '../../hooks/useStoryEngine'
-import bankCallImg from '../../assets/escenarios/fisico/llamada-banco.webp'
-import walletScanImg from '../../assets/escenarios/fisico/escaneo-billetera.webp'
+import cardSwapImg from '../../assets/escenarios/fisico/cambiazo.webp'
 
-const CALL: ScreenView = { kind: 'escena', src: bankCallImg, alt: 'Llamada del banco por fraude en la tarjeta', zonas: [{ id: 'alerta-banco', x: '31%', y: '28%', ancho: '38%', alto: '35%' }] }
-const CALL_WITH_FLASH: ScreenView = { ...CALL, destello: { x: '53%', y: '57%', goto: 'n1', label: 'Atendió la llamada' } }
-const MEMORY: ScreenView = { kind: 'escena', src: walletScanImg, alt: 'Escaneo de una billetera en la calle', zonas: [{ id: 'billetera-escaneada', x: '62%', y: '68%', ancho: '18%', alto: '20%' }] }
-const MEMORY_WITH_PROGRESS: ScreenView = { ...MEMORY, progreso: { ms: 4000, texto: 'Recordando cómo pasó…' } }
-const SIGNALS: Signal[] = [{ id: 'alerta', targetId: 'alerta-banco', pantalla: 'n1', texto: 'Una <b>alerta del banco</b> por fraude exige actuar de inmediato: bloquea y reporta.' }, { id: 'escaneo', targetId: 'billetera-escaneada', pantalla: 'n_recuerdo', texto: 'Mientras te distraían, alguien pudo <b>escanear tu billetera</b>. La prevención física evita que el fraude empiece.' }]
-const STORY: Story<ScreenNode> = {
-  // Puro recuerdo: no hay nada que decidir todavía, así que pasa solo, sin
-  // destello que tocar.
-  n_recuerdo: { kind: 'scene', view: MEMORY_WITH_PROGRESS, autoAvanza: { ms: 4000, goto: 'n1_ver' } },
-  n1_ver: { kind: 'scene', view: CALL_WITH_FLASH },
-  n1: { kind: 'scene', view: CALL, choices: [
-    { label: 'Bloquear la tarjeta inmediatamente y denunciar el fraude', goto: 'e_bloquea_denuncia' },
-    { label: 'Ignorar la notificación y esperar…', goto: 'e_ignora' },
-    { label: 'Bloquear la tarjeta pero no reportar nada…', goto: 'e_bloquea_callado' },
-    { label: 'Cambiar de banco y abrir una nueva cuenta', goto: 'e_cambia_banco' },
-  ] },
-  e_bloquea_denuncia: { kind: 'good', view: CALL, senales: SIGNALS, verdict: 'Tarjeta protegida', outcome: 'Bloqueaste la tarjeta de inmediato y denunciaste el fraude. El banco puede detener movimientos y abrir la investigación.' },
-  e_ignora: { kind: 'bad', view: CALL, senales: SIGNALS, verdict: 'Riesgo detectado', outcome: 'Esperar permite que las transacciones fraudulentas continúen y hace más difícil responder a tiempo.' },
-  e_bloquea_callado: { kind: 'partial', view: CALL, senales: SIGNALS, verdict: 'Respuesta incompleta', outcome: 'Bloquear limita el daño, pero sin reportar no activas el seguimiento ni la investigación del fraude.' },
-  e_cambia_banco: { kind: 'partial', view: CALL, senales: SIGNALS, verdict: 'Respuesta incompleta', outcome: 'Abrir otra cuenta no resuelve el fraude actual ni bloquea de inmediato la tarjeta comprometida.' },
+// El "cambiazo" en cajeros, con los detalles de casos juzgados en Ecuador:
+// el pretexto del cajero que falla y la tarjeta cambiada en un descuido
+// (Quito, 2025: retiros de $500 y $450), la tarjeta "limpiada" en la ropa y
+// cómplices mirando la clave (Cuenca, 2021), la ayuda ofrecida a quien usa
+// el cajero (Guayaquil, sentencia de 2025). El título y el contexto no
+// nombran la modalidad: descubrirla es lo que se mide.
+const ATM: ScreenView = {
+  kind: 'escena',
+  src: cardSwapImg,
+  alt: 'Junto a un cajero en una calle del centro histórico, un hombre amable frota tu tarjeta en la manga de su chaqueta mientras tú extiendes la mano para recibirla; la pantalla del cajero muestra un error',
+  zonas: [
+    { id: 'pantalla-error', x: '82%', y: '31%', ancho: '17%', alto: '26%' },
+    { id: 'tarjeta-ajena', x: '45%', y: '46%', ancho: '19%', alto: '17%' },
+    { id: 'mano-oculta', x: '56%', y: '63%', ancho: '8%', alto: '16%' },
+    { id: 'complice', x: '20%', y: '21%', ancho: '11%', alto: '70%' },
+  ],
 }
-const context: Context = { antes: 'La clonación puede ocurrir sin que entregues la tarjeta: basta una distracción y un lector cerca de la billetera.', ahora: <><strong>El banco te llama</strong>: detectó movimientos que no reconoces. Hace cuatro días alguien te distrajo en la calle.</> }
-export default function ClonedCard() { return <ScenarioStory escenarioId="fisico/tarjeta-clonada" resumen="Alerta de fraude, responde a tiempo" contexto={context} nota="Primero observa cómo ocurrió la clonación; luego responde a la alerta del banco." story={STORY} initialNode="n_recuerdo" senales={SIGNALS} rule="<b>Ante fraude, bloquea y reporta inmediatamente.</b> La rapidez limita pérdidas y permite investigar." restartLabel="Intentar de nuevo" cuandoTermina="Cuando elijas una de las cuatro acciones ante la alerta." pista="Ante un fraude ya confirmado, lo primero es bloquear la tarjeta y denunciarlo, no solo protegerte cambiando de banco o quedándote callado." /> }
+
+const SIGNALS: Signal[] = [
+  {
+    id: 'pretexto',
+    targetId: 'pantalla-error',
+    texto:
+      'El cajero "falla" y justo hay alguien cerca para ayudar. Es el <b>pretexto</b> de los casos juzgados en Quito y Cuenca.',
+  },
+  {
+    id: 'tarjeta',
+    targetId: 'tarjeta-ajena',
+    texto:
+      'Tu tarjeta está <b>en manos de un desconocido</b>. "Limpiarla en la ropa" es la excusa para cambiarla por otra parecida sin que lo notes.',
+  },
+  {
+    id: 'mano',
+    targetId: 'mano-oculta',
+    texto:
+      'Su otra mano está <b>dentro de la chaqueta</b>: ahí guarda la tarjeta que te va a devolver.',
+  },
+  {
+    id: 'complice',
+    targetId: 'complice',
+    texto:
+      'Un hombre junto al cajero, sin hacer fila, con el celular en la mano. Suelen <b>trabajar en grupo</b>: mientras uno ayuda, otro mira la clave.',
+  },
+]
+
+const STORY: Story<ScreenNode> = {
+  n1: {
+    kind: 'scene',
+    view: ATM,
+    choices: [
+      { label: 'Recibirla y volver a intentar, esta vez tapando el teclado', goto: 'e_reintenta' },
+      { label: 'Recibirla, agradecerle y buscar otro cajero', goto: 'e_otro_cajero' },
+      {
+        label: 'Recibirla y revisar ahí mismo que tenga tu nombre y tus últimos dígitos',
+        goto: 'e_revisa',
+      },
+    ],
+  },
+  e_reintenta: {
+    kind: 'bad',
+    view: ATM,
+    verdict: 'Te cambiaron la tarjeta',
+    outcome:
+      'La tarjeta que te devolvió no era la tuya: por eso el cajero la volvió a rechazar. Tapar el teclado ya no servía, porque su compañero vio tu clave en el primer intento. En menos de media hora sacaron $ 500 y $ 450 con tu tarjeta real en otro cajero.',
+  },
+  e_otro_cajero: {
+    kind: 'bad',
+    view: ATM,
+    verdict: 'Te cambiaron la tarjeta',
+    outcome:
+      'Guardaste sin mirar una tarjeta que no era la tuya. Lo notaste el lunes, cuando la app mostró retiros de $ 500 y $ 450 hechos ese mismo viernes. Reclamar va a ser difícil: entregaste la tarjeta y tu clave quedó a la vista.',
+  },
+  e_revisa: {
+    kind: 'good',
+    view: ATM,
+    verdict: 'Cambiazo detectado',
+    outcome:
+      'La tarjeta que te devolvió tenía otro nombre. Él ya se alejaba, pero bloqueaste tu tarjeta desde la app del banco ahí mismo: cuando intentaron sacar dinero con ella, el cajero la rechazó. Después pusiste la denuncia.',
+  },
+}
+
+const context: Context = {
+  antes:
+    'Sacar efectivo es parte de la rutina, y los cajeros de la calle suelen tener gente alrededor, sobre todo al final de la semana.',
+  ahora: (
+    <>
+      <strong>Viernes por la tarde, en el centro.</strong> Insertas tu tarjeta, digitas tu clave para
+      sacar $ 60 y el cajero muestra un error. Un señor muy amable se acerca: «Estos cajeros fallan
+      mucho, es la banda. Deme, se la limpio y vuelve a intentar». Le diste la tarjeta y ahora te la
+      está devolviendo.
+    </>
+  ),
+}
+
+export default function ClonedCard() {
+  return (
+    <ScenarioStory
+      escenarioId="fisico/tarjeta-clonada"
+      resumen="Retiro en el cajero, el cajero falla"
+      contexto={context}
+      nota="Mira la escena con calma antes de decidir."
+      story={STORY}
+      senales={SIGNALS}
+      rule="<b>Tu tarjeta no sale de tus manos.</b> No aceptes ayuda de desconocidos en el cajero. Si alguien la tocó, revisa tu nombre y tus últimos dígitos antes de irte y, si no es la tuya, bloquéala de inmediato por la app o la línea oficial del banco."
+      cuandoTermina="Cuando elijas qué hacer con la tarjeta que te devuelve."
+      pista="La tarjeta pasó por las manos de un desconocido. Antes de volver a usarla o de irte, comprueba que de verdad sea la tuya."
+    />
+  )
+}

@@ -1,13 +1,20 @@
-import { useCallback, useRef, useState, type CSSProperties, type MouseEvent } from 'react'
+import {
+  useCallback,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type MouseEvent,
+  type PointerEvent,
+} from 'react'
 import { flushSync } from 'react-dom'
-import { ArrowLeft, Lock, LockOpen, ZoomIn } from 'lucide-react'
+import { ArrowLeft, Lock, LockOpen, MousePointerClick } from 'lucide-react'
 import officeImg from '../../assets/escenarios/fisico/oficina.webp'
 import ScenarioLayout from '../../components/EscenarioLayout'
 import DeviceScreen, { type ScreenView } from '../../components/ui/DeviceScreen'
 import FlashOverlay from '../../components/ui/FlashOverlay'
 import { Browser, type TabConfig } from '../../components/ui/Navegador'
 import Instructions from '../../components/ui/Instrucciones'
-import Task from '../../components/ui/Tarea'
 import VerdictPanel, { type Signal } from '../../components/ui/PanelVeredicto'
 import { useFlashTransition } from '../../hooks/useFlashTransition'
 import type { Context } from '../../components/ui/ContextoEscenario'
@@ -15,9 +22,17 @@ import { useScenarioRun } from '../../hooks/useScenarioRun'
 import type { StoryNode } from '../../hooks/useStoryEngine'
 import styles from './fisico.module.css'
 
+// En las pruebas con usuarios el escenario medía destreza con la interfaz, no
+// criterio: la lista de tareas nombraba las tres respuestas y aun así la gente
+// fallaba por cómo se interactuaba (issue de usabilidad). Ahora hay una sola
+// regla —tocar lo que quieres asegurar— y la lista cambió por un contador que
+// dice cuánto queda pero no qué. Bloquear está a la vista en dos lugares: el
+// botón sobre el teclado y el de la barra de tareas; y como
+// tocar la pantalla bloqueada la desbloquea, bloquear primero ya no es trampa.
+
 interface Tab {
   id: string
-  // Corto a propósito: con cuatro pestañas abiertas tiene que caber en la barra.
+  // Corto a propósito: con varias pestañas abiertas tiene que caber en la barra.
   // El título completo va en la página.
   titulo: string
   tituloPagina: string
@@ -43,22 +58,6 @@ const TABS: Tab[] = [
         { etiqueta: 'Cuenta de acreditación · María Pérez', valor: 'Banco Pichincha · 2203447100' },
       ],
       footer: 'Uso interno de Recursos Humanos.',
-    },
-  },
-  {
-    id: 'claves',
-    titulo: 'Contraseñas',
-    tituloPagina: 'Gestor de contraseñas',
-    url: 'vault.andes.ec/mis-claves',
-    pagina: {
-      brand: 'Andes Vault',
-      menu: ['Mis claves', 'Compartidas', 'Ajustes'],
-      subtitle: 'La clave quedó a la vista tras pulsar "Mostrar".',
-      datos: [
-        { etiqueta: 'Sitio', valor: 'portal.andes.ec' },
-        { etiqueta: 'Usuario', valor: 'mariaperez' },
-        { etiqueta: 'Contraseña', valor: 'Andes#2026*' },
-      ],
     },
   },
   {
@@ -118,13 +117,13 @@ interface Document {
   nombre: string
   // Porcentaje dentro de la zona libre del escritorio, a la izquierda del teclado.
   x: number
-  rotacion: number
+  rotation: number
 }
 
 const DOCUMENTS: Document[] = [
-  { nombre: 'Contratos', x: 0, rotacion: -5 },
-  { nombre: 'Nóminas', x: 35, rotacion: 3 },
-  { nombre: 'Datos bancarios', x: 70, rotacion: -2 },
+  { nombre: 'Contratos', x: 0, rotation: -5 },
+  { nombre: 'Nóminas', x: 35, rotation: 3 },
+  { nombre: 'Datos bancarios', x: 70, rotation: -2 },
 ]
 
 const SIGNALS: Signal[] = [
@@ -147,20 +146,38 @@ const SIGNALS: Signal[] = [
     targetId: 'bloqueo',
     pantalla: 'repaso',
     texto:
-      '<b>Bloquear la sesión</b> cuesta un segundo. Sin eso, tu sesión abierta es tu correo, tus sistemas y tus permisos en manos de cualquiera.',
+      '<b>Bloquear la sesión</b> cuesta un segundo: <b>Win + L</b> en el teclado o el botón de la barra de tareas. Sin eso, tu sesión abierta es tu correo, tus sistemas y tus permisos en manos de cualquiera.',
   },
 ]
 
 const RULE =
   '<b>Escritorio limpio y pantalla bloqueada.</b> Cada vez que dejas tu puesto, aunque sea cinco minutos, no debe quedar nada a la vista ni ninguna sesión abierta.'
 
-const WITHOUT_CLOSE: ReadonlySet<number> = new Set()
+const NONE: ReadonlySet<number> = new Set()
+
+// Distancia mínima para que un toque cuente como arrastre y no como clic.
+const DRAG_THRESHOLD = 6
+
+interface Ghost {
+  index: number
+  // Esquina superior izquierda y tamaño, en px dentro de la foto.
+  x: number
+  y: number
+  width: number
+  height: number
+  flying: boolean
+}
+
+function canAnimate() {
+  if (typeof Element === 'undefined' || typeof Element.prototype.animate !== 'function') return false
+  return !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+}
 
 function SafeExit() {
   const run = useScenarioRun('fisico/salida-segura')
 
-  const [closed, setClosed] = useState<ReadonlySet<number>>(WITHOUT_CLOSE)
-  const [saved, setSaved] = useState<ReadonlySet<number>>(WITHOUT_CLOSE)
+  const [closed, setClosed] = useState<ReadonlySet<number>>(NONE)
+  const [saved, setSaved] = useState<ReadonlySet<number>>(NONE)
   const [blocked, setBlocked] = useState(false)
   // Arranca en la primera pestaña, como cualquier navegador que se deja
   // abierto: una ventana sin ninguna pestaña activa no existe.
@@ -173,7 +190,16 @@ function SafeExit() {
   // Sobre la foto el monitor es una miniatura; para leer y cerrar pestañas hay
   // que acercarse, como quien se sienta frente a la pantalla.
   const [zoomed, setZoomed] = useState(false)
+  // Hasta que se abre la computadora una vez, el monitor late para invitar.
+  const [screenSeen, setScreenSeen] = useState(false)
+  const [ghost, setGhost] = useState<Ghost | null>(null)
   const monitorRef = useRef<HTMLButtonElement>(null)
+  const officeRef = useRef<HTMLDivElement>(null)
+  const drawerRef = useRef<HTMLButtonElement>(null)
+  const ghostRef = useRef<HTMLDivElement>(null)
+  const drag = useRef<{ index: number; startX: number; startY: number; offsetX: number; offsetY: number; moved: boolean } | null>(null)
+  // El clic que el navegador dispara al soltar un arrastre no debe guardar dos veces.
+  const swallowClick = useRef(false)
   const [miniScale, setMiniScale] = useState(0.4)
 
   // Ref de callback y no useRef + useEffect: el lienzo recién existe en el DOM
@@ -202,11 +228,12 @@ function SafeExit() {
   const stampFlash = useFlashTransition()
 
   const openTabs = TABS.length - closed.size
-  const exposedPapers = DOCUMENTS.length - saved.size
-  const allReady = openTabs === 0 && exposedPapers === 0 && blocked
+  const exposedSheets = DOCUMENTS.length - saved.size
+  const leftInView = openTabs + exposedSheets + (blocked ? 0 : 1)
+  const allReady = leftInView === 0
 
-  const closedView = review ? WITHOUT_CLOSE : closed
-  const savedView = review ? WITHOUT_CLOSE : saved
+  const closedView = review ? NONE : closed
+  const savedView = review ? NONE : saved
   const blockedView = review ? false : blocked
   const activeView = review ? 0 : activeTab
 
@@ -223,9 +250,132 @@ function SafeExit() {
     }
   }
 
-  function saveDocument(index: number) {
+  function closeAllTabs() {
     if (final) return
-    setSaved(new Set(saved).add(index))
+    setClosed(new Set(TABS.map((_, i) => i)))
+    setTabActive(null)
+  }
+
+  function saveItem(index: number) {
+    if (final) return
+    setSaved((was) => new Set(was).add(index))
+  }
+
+  // Tocar el cajón guarda lo que queda sobre la mesa.
+  function saveDeskSheets() {
+    if (final) return
+    setSaved(new Set(DOCUMENTS.map((_, i) => i)))
+  }
+
+  function officeBox() {
+    return officeRef.current?.getBoundingClientRect() ?? new DOMRect()
+  }
+
+  function overDrawer(clientX: number, clientY: number) {
+    const box = drawerRef.current?.getBoundingClientRect()
+    if (!box) return false
+    return clientX >= box.left && clientX <= box.right && clientY >= box.top && clientY <= box.bottom
+  }
+
+  // Tocar una hoja la manda volando al cajón: sin ver a dónde va, "desaparecer"
+  // se leía como un error.
+  function flyToDrawer(index: number, element: HTMLElement) {
+    if (final || ghost) return
+    if (!canAnimate()) {
+      saveItem(index)
+      return
+    }
+    const office = officeBox()
+    const box = element.getBoundingClientRect()
+    setGhost({
+      index,
+      x: box.left - office.left,
+      y: box.top - office.top,
+      width: box.width,
+      height: box.height,
+      flying: true,
+    })
+  }
+
+  useLayoutEffect(() => {
+    if (!ghost?.flying) return
+    const element = ghostRef.current
+    const drawer = drawerRef.current?.getBoundingClientRect()
+    if (!element || !drawer) return
+    const office = officeBox()
+    const dx = drawer.left + drawer.width / 2 - office.left - (ghost.x + ghost.width / 2)
+    const dy = drawer.top + drawer.height * 0.75 - office.top - (ghost.y + ghost.height / 2)
+    const animation = element.animate(
+      [
+        { transform: 'translate(0, 0) scale(1)', opacity: 1 },
+        { transform: `translate(${dx}px, ${dy}px) scale(0.35)`, opacity: 0.4 },
+      ],
+      { duration: 450, easing: 'cubic-bezier(0.4, 0, 0.2, 1)' },
+    )
+    const index = ghost.index
+    animation.onfinish = () => {
+      saveItem(index)
+      setGhost(null)
+    }
+    return () => animation.cancel()
+    // saveItem lee `final`, que no cambia mientras dura la animación.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ghost?.flying, ghost?.index])
+
+  // Arrastre propio, con eventos de puntero: el arrastre nativo del navegador
+  // dibujaba como imagen un recorte de la foto con la hoja encima, y además no
+  // existe en pantallas táctiles.
+  function onItemPointerDown(event: PointerEvent<HTMLButtonElement>, index: number) {
+    // Un arrastre anterior puede no haber disparado su clic (la hoja se
+    // guardó y desapareció): sin esto, el próximo toque real se perdía.
+    swallowClick.current = false
+    if (final || ghost || event.button !== 0) return
+    const box = event.currentTarget.getBoundingClientRect()
+    drag.current = {
+      index,
+      startX: event.clientX,
+      startY: event.clientY,
+      offsetX: event.clientX - box.left,
+      offsetY: event.clientY - box.top,
+      moved: false,
+    }
+    event.currentTarget.setPointerCapture?.(event.pointerId)
+  }
+
+  function onItemPointerMove(event: PointerEvent<HTMLButtonElement>) {
+    const current = drag.current
+    if (!current) return
+    if (!current.moved && Math.hypot(event.clientX - current.startX, event.clientY - current.startY) < DRAG_THRESHOLD) {
+      return
+    }
+    current.moved = true
+    const office = officeBox()
+    const box = event.currentTarget.getBoundingClientRect()
+    setGhost({
+      index: current.index,
+      x: event.clientX - office.left - current.offsetX,
+      y: event.clientY - office.top - current.offsetY,
+      width: box.width,
+      height: box.height,
+      flying: false,
+    })
+  }
+
+  function onItemPointerUp(event: PointerEvent<HTMLButtonElement>) {
+    const current = drag.current
+    drag.current = null
+    if (!current?.moved) return
+    swallowClick.current = true
+    if (overDrawer(event.clientX, event.clientY)) saveItem(current.index)
+    setGhost(null)
+  }
+
+  function onItemClick(event: MouseEvent<HTMLButtonElement>, index: number) {
+    if (swallowClick.current) {
+      swallowClick.current = false
+      return
+    }
+    flyToDrawer(index, event.currentTarget)
   }
 
   // Los clics del navegador compartido llegan todos aquí, como en los escenarios
@@ -234,7 +384,9 @@ function SafeExit() {
     const target = event.target as HTMLElement
     const closing = target.closest<HTMLElement>('[data-cierra]')?.dataset.cierra
     const tab = target.closest<HTMLElement>('[data-pestana]')?.dataset.pestana
-    if (closing) closeTab(TABS.findIndex((t) => t.id === closing))
+    // La ✕ de la ventana: cerrar el navegador entero también vale.
+    if (target.closest('[data-close-window]')) closeAllTabs()
+    else if (closing) closeTab(TABS.findIndex((t) => t.id === closing))
     else if (tab) setTabActive(TABS.findIndex((t) => t.id === tab))
   }
 
@@ -244,9 +396,21 @@ function SafeExit() {
     monitorRef.current?.focus()
   }
 
-  function toggleBlocking() {
+  // Se bloquea desde el teclado del escritorio o desde la barra de tareas; al
+  // bloquear, la vista vuelve sola al escritorio.
+  function lockSession() {
     if (final) return
-    setBlocked((was) => !was)
+    setBlocked(true)
+    closeZoom()
+  }
+
+  // Tocar la pantalla bloqueada la desbloquea y la abre, como quien toca el
+  // monitor y pone su PIN: bloquear antes de tiempo se corrige sin buscar nada.
+  function openComputer() {
+    if (final) return
+    setBlocked(false)
+    setScreenSeen(true)
+    setZoomed(true)
   }
 
   function leave() {
@@ -254,7 +418,7 @@ function SafeExit() {
 
     run.recordDecision({
       pestanasAbiertas: openTabs,
-      papelesExpuestos: exposedPapers,
+      papelesExpuestos: exposedSheets,
       bloqueada: blocked,
     })
 
@@ -265,8 +429,8 @@ function SafeExit() {
       const exposed = [
         openTabs > 0 &&
           `${openTabs} ${openTabs === 1 ? 'pestaña abierta' : 'pestañas abiertas'} con datos internos`,
-        exposedPapers > 0 &&
-          `${exposedPapers} ${exposedPapers === 1 ? 'documento' : 'documentos'} sobre el escritorio`,
+        exposedSheets > 0 &&
+          `${exposedSheets} ${exposedSheets === 1 ? 'documento confidencial' : 'documentos confidenciales'} sobre el escritorio`,
         !blocked && 'la sesión sin bloquear',
       ].filter(Boolean) as string[]
 
@@ -275,7 +439,7 @@ function SafeExit() {
             kind: 'good',
             verdict: 'Puesto asegurado',
             outcome:
-              'Cerraste las cuatro pestañas, guardaste los tres documentos en el cajón y bloqueaste la sesión. Quien entre esta noche no encuentra nada tuyo a la vista.',
+              'Cerraste las pestañas con datos internos, guardaste bajo llave los tres documentos confidenciales y bloqueaste la sesión. Quien entre esta noche no encuentra nada tuyo que le sirva.',
           }
         : {
             kind: 'bad',
@@ -293,29 +457,29 @@ function SafeExit() {
 
   function restart() {
     run.restart()
-    setClosed(WITHOUT_CLOSE)
-    setSaved(WITHOUT_CLOSE)
+    setClosed(NONE)
+    setSaved(NONE)
     setBlocked(false)
     setTabActive(0)
     setFinal(null)
     setReview(false)
     setZoomed(false)
+    setScreenSeen(false)
+    setGhost(null)
+    drag.current = null
   }
 
   const context: Context = {
     antes: (
       <p>
-        La seguridad física pesa tanto como la digital. Lo que dejas a la vista al irte, una
-        pantalla encendida, una carpeta abierta, no necesita que nadie te robe una contraseña:
-        basta con mirar.
+        La seguridad física pesa tanto como la digital. Lo que dejas a la vista al irte no necesita
+        que nadie te robe una contraseña: basta con mirar.
       </p>
     ),
     ahora: (
       <>
-        <strong>Son las 5:50 PM y eres el último en salir</strong>. En tu pantalla quedaron
-        pestañas abiertas con nóminas y contraseñas, sobre el escritorio hay carpetas con datos de
-        clientes y tu sesión sigue abierta. Esta noche entra personal de limpieza, y mañana la
-        oficina se llena antes que tú.
+        <strong>Son las 5:50 PM y eres el último en salir</strong>. Esta noche entra personal de
+        limpieza, y mañana la oficina se llena antes que tú. Antes de irte, revisa tu puesto.
       </>
     ),
   }
@@ -332,6 +496,8 @@ function SafeExit() {
       activa={activeId ?? ''}
       marcadores={[]}
       reloj={{ hora: '17:50' }}
+      closableWindow
+      onLock={lockSession}
       onHotspot={onBrowserClick}
     >
       {activeScreen ? (
@@ -342,9 +508,46 @@ function SafeExit() {
     </Browser>
   )
 
+  function renderDocument(document: Document, index: number) {
+    if (savedView.has(index)) return null
+    const style = {
+      left: `${document.x}%`,
+      '--giro': `${document.rotation}deg`,
+      // Mientras se arrastra, la hoja original deja su lugar a la que sigue al dedo.
+      visibility: ghost?.index === index ? 'hidden' : undefined,
+    } as Record<string, string | undefined> as CSSProperties
+    return (
+      <button
+        key={document.nombre}
+        type="button"
+        className={`${styles.papel} ${styles.control}`}
+        style={style}
+        onClick={(event) => onItemClick(event, index)}
+        onPointerDown={(event) => onItemPointerDown(event, index)}
+        onPointerMove={onItemPointerMove}
+        onPointerUp={onItemPointerUp}
+        onPointerCancel={() => {
+          drag.current = null
+          setGhost(null)
+        }}
+        aria-label={`Guardar ${document.nombre} en el cajón`}
+      >
+        <span className={styles.papelHoja} aria-hidden />
+        <span className={`${styles.rotulo} ${styles.papelRotulo}`}>{document.nombre}</span>
+      </button>
+    )
+  }
+
+  const ghostDocument = ghost ? DOCUMENTS[ghost.index] : undefined
+
+  let drawerDetail = `${savedView.size} ${savedView.size === 1 ? 'cosa guardada' : 'cosas guardadas'}`
+  if (ghost && !ghost.flying) drawerDetail = 'Suelta aquí'
+  else if (savedView.size === 0) drawerDetail = 'Vacío'
+
   const screen = (
     <div className={styles.oficinaMarco}>
       <div
+        ref={officeRef}
         className={styles.oficina}
         onKeyDown={(event) => {
           if (event.key === 'Escape' && close) closeZoom()
@@ -360,67 +563,85 @@ function SafeExit() {
             fuera del alcance del teclado, como en cualquier diálogo. */}
         <div className="contents" inert={close}>
           <div data-signal="papeles" className={styles.papeles}>
-            {DOCUMENTS.map((document, i) =>
-              savedView.has(i) ? null : (
-                <button
-                  key={document.nombre}
-                  type="button"
-                  className={`${styles.papel} ${styles.control}`}
-                  style={{ left: `${document.x}%`, '--giro': `${document.rotacion}deg` } as CSSProperties}
-                  onClick={() => saveDocument(i)}
-                  aria-label={`Guardar ${document.nombre} en el cajón`}
-                >
-                  <span className={styles.papelHoja} aria-hidden />
-                  <span className={`${styles.rotulo} ${styles.papelRotulo}`}>{document.nombre}</span>
-                </button>
-              ),
-            )}
+            {DOCUMENTS.map((document, i) => renderDocument(document, i))}
           </div>
 
-          <p className={`${styles.rotulo} ${styles.cajon}`}>
-            Cajón con llave
-            <span className={`${styles.cajonDetalle} tabular-nums`}>
-              {savedView.size} de {DOCUMENTS.length} guardados
-            </span>
-          </p>
-
-          {/* Bloquear la sesión es lo que se hace desde el teclado, así que el
-              control vive sobre el teclado de la foto. */}
+          {/* El cajón es el archivador entero: un blanco grande para soltar,
+              y tocarlo guarda lo que hay sobre la mesa. */}
           <button
+            ref={drawerRef}
             type="button"
-            data-signal="bloqueo"
-            className={`${styles.teclado} ${styles.control}`}
-            onClick={toggleBlocking}
-            aria-label={blockedView ? 'Desbloquear la sesión' : 'Bloquear la sesión'}
+            className={`${styles.cajonZona} ${styles.control} ${ghost && !ghost.flying ? styles.cajonDestino : ''}`}
+            onClick={saveDeskSheets}
+            aria-label="Cajón con llave: guardar los papeles del escritorio"
           >
-            <span className={styles.rotulo} aria-hidden>
-              {blockedView ? (
-                <>
-                  <LockOpen className={styles.rotuloIcono} /> Desbloquear
-                </>
-              ) : (
-                <>
-                  <Lock className={styles.rotuloIcono} /> Bloquear
-                  <span className={styles.soloAncho}> la sesión</span>
-                </>
-              )}
+            <span className={`${styles.rotulo} ${styles.cajon}`}>
+              <span className="inline-flex items-center gap-1.5">
+                <Lock className={styles.rotuloIcono} aria-hidden /> Cajón<span className={styles.soloAncho}> con llave</span>
+              </span>
+              {/* La key reinicia la animación: cada cosa guardada se nota. */}
+              <span
+                key={savedView.size}
+                className={`${styles.cajonDetalle} ${savedView.size ? styles.cajonPulso : ''} tabular-nums`}
+              >
+                {drawerDetail}
+              </span>
             </span>
           </button>
 
-          {!blockedView && !final && (
+          {/* El atajo de siempre, sobre el teclado de la foto: se bloquea sin
+              entrar a la computadora. Sigue ahí en el repaso para señalarlo. */}
+          {(!blockedView || final) && (
+            <button
+              type="button"
+              data-signal="bloqueo"
+              className={`${styles.teclado} ${styles.control}`}
+              onClick={lockSession}
+              aria-label="Bloquear la sesión"
+            >
+              <span className={styles.rotulo} aria-hidden>
+                Bloquear
+              </span>
+            </button>
+          )}
+
+          {!final && (
             <button
               ref={monitorRef}
               type="button"
-              className={`${styles.pantallaBoton} ${styles.control}`}
-              onClick={() => setZoomed(true)}
-              aria-label="Acercarte a la pantalla"
+              className={`${styles.pantallaBoton} ${styles.control} ${screenSeen ? '' : styles.pantallaInvita}`}
+              onClick={openComputer}
+              aria-label={blockedView ? 'Desbloquear la sesión' : 'Acercarte a la pantalla'}
             >
               <span className={styles.rotulo} aria-hidden>
-                <ZoomIn className={styles.rotuloIcono} /> Ver la pantalla
+                {blockedView ? (
+                  <>
+                    <LockOpen className={styles.rotuloIcono} /> Toca para desbloquear
+                  </>
+                ) : (
+                  <>
+                    <MousePointerClick className={styles.rotuloIcono} /> Usar la computadora
+                  </>
+                )}
               </span>
             </button>
           )}
         </div>
+
+        {/* Cuánto queda, no qué: nombrar las tareas convertía el escenario en
+            una lista que se tacha, y ya no medía si uno reconoce lo sensible. */}
+        {!final && (
+          <output className={styles.contador}>
+            {allReady ? (
+              'Nada a la vista'
+            ) : (
+              <>
+                Quedan <span className="tabular-nums">{leftInView}</span>{' '}
+                {leftInView === 1 ? 'cosa' : 'cosas'} a la vista
+              </>
+            )}
+          </output>
+        )}
 
         {close && <div className={styles.fondoCerca} onClick={closeZoom} aria-hidden />}
 
@@ -458,6 +679,27 @@ function SafeExit() {
             <ArrowLeft className={styles.rotuloIcono} aria-hidden /> Volver al escritorio
           </button>
         )}
+
+        {/* La hoja que se arrastra o vuela: solo la hoja, sin el recorte de
+            la foto que dibujaba el arrastre nativo. */}
+        {ghost && ghostDocument && (
+          <div
+            ref={ghostRef}
+            className={styles.fantasma}
+            style={
+              {
+                left: ghost.x,
+                top: ghost.y,
+                width: ghost.width,
+                height: ghost.height,
+                '--giro': `${ghostDocument.rotation}deg`,
+              } as CSSProperties
+            }
+            aria-hidden
+          >
+            <span className={styles.papelHoja} />
+          </div>
+        )}
       </div>
       <FlashOverlay active={stampFlash.active} />
     </div>
@@ -481,40 +723,24 @@ function SafeExit() {
 
       <Instructions
         queHaces={
-          <div className="grid gap-4">
-            <p className="text-lg leading-relaxed text-body">
-              Actúa sobre tu pantalla como lo harías con tu propio escritorio: cierra lo que deja
-              información sensible visible antes de irte.
-            </p>
-
-            <ul className="grid gap-2.5">
-              <Task hecho={openTabs === 0}>
-                Cerrar las pestañas del navegador{' '}
-                <span className="tabular-nums text-muted">
-                  ({closed.size} de {TABS.length})
-                </span>
-              </Task>
-              <Task hecho={exposedPapers === 0}>
-                Guardar los documentos en el cajón{' '}
-                <span className="tabular-nums text-muted">
-                  ({saved.size} de {DOCUMENTS.length})
-                </span>
-              </Task>
-              <Task hecho={blocked}>Bloquear la sesión</Task>
-            </ul>
-          </div>
+          <p className="text-lg leading-relaxed text-body">
+            Revisa tu puesto como lo harías antes de irte: todo lo que alguien pudiera leer o usar
+            esta noche tiene que quedar asegurado. Toca lo que quieras asegurar.
+          </p>
         }
         cuandoTermina={
           <>
             Cuando presiones <strong>"Irme de la oficina"</strong>. Puedes hacerlo en cualquier
-            momento: el escenario registra si dejaste pestañas, documentos o la sesión expuestos.
+            momento: el escenario registra lo que dejaste expuesto.
           </>
         }
         pista={
           <p>
-            Toca el monitor para acercarte: cada pestaña se cierra con su <strong>✕</strong>, como
-            en tu navegador. Los documentos se guardan con un clic y se van al cajón. La sesión se
-            bloquea desde el teclado. Puedes irte cuando quieras: lo que dejes a la vista, ahí
+            Las hojas se guardan en el cajón con llave: tócalas, arrástralas o toca el cajón. En la
+            computadora cierras cada pestaña con su <strong>✕</strong> o la ventana entera. Para
+            bloquear la sesión usa el botón <strong>Bloquear</strong> sobre el teclado o el de la
+            barra de tareas; si bloqueas antes de tiempo, toca la
+            pantalla para desbloquearla. Puedes irte cuando quieras: lo que dejes a la vista, ahí
             queda.
           </p>
         }
@@ -528,7 +754,7 @@ function SafeExit() {
         onClick={leave}
         className="min-h-12 w-full rounded-md bg-primary px-4 py-3 text-lg font-medium text-on-primary transition hover:bg-primary-active focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link"
       >
-        {allReady ? 'Irme: el puesto está listo' : 'Irme de la oficina'}
+        Irme de la oficina
       </button>
     </div>
   )

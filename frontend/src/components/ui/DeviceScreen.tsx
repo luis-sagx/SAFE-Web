@@ -11,7 +11,7 @@ import {
 } from './DesktopChrome'
 import VoiceNote from './NotaDeVoz'
 import CallScreen from './PantallaLlamada'
-import { PhotoScene, type SceneFlash, type SceneProgress, type SceneZone } from '../../secciones/fisico/EscenaFoto'
+import { PhotoScene, type SceneProgress, type SceneZone } from '../../secciones/fisico/EscenaFoto'
 import styles from './DeviceScreen.module.css'
 
 // Solo dibuja lo que la app real mostraría (regla diegética de
@@ -24,7 +24,6 @@ export type ScreenView =
       alt: string
       zonas?: SceneZone[]
       // Punto a tocar para que aparezcan las opciones; sin esto se muestran de entrada.
-      destello?: SceneFlash
       progreso?: SceneProgress
     }
   | {
@@ -318,7 +317,7 @@ function DeviceScreen({
 
   if (view.kind === 'escena') {
     return (
-      <PhotoScene src={view.src} alt={view.alt} zonas={view.zonas} destello={view.destello} progreso={view.progreso} />
+      <PhotoScene src={view.src} alt={view.alt} zonas={view.zonas} progreso={view.progreso} />
     )
   }
 

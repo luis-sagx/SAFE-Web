@@ -709,13 +709,15 @@ const BASE: BaseScenario[] = [
   {
     seccionId: 'fisico',
     escenarioId: 'cable-comprometido',
-    titulo: 'Estación de carga pública',
+    titulo: 'Camino a casa',
     descripcion:
-      'Te quedas con la batería casi en cero y solo encuentras un mueble de carga con puertos USB, sin ningún tomacorriente para tu propio cargador.',
+      'Esperando el bus al final del día, algo pasa con tu celular y tienes que decidir qué haces primero.',
     // v2: cambió la premisa completa (issue reportado por el usuario): de un
     // cable suelto en la oficina a una estación de carga pública ("juice
     // jacking"). El id y el escenarioId no cambian, para no perder el
-    // historial de corridas ya guardadas.
+    // historial de corridas ya guardadas. Después pasó a robo del celular y
+    // toma de la banca móvil (juice jacking no tiene casos reales); la versión
+    // se dejó en 2 a pedido del usuario.
     version: 2,
     naturaleza: 'fraude',
     dificultad: 2,
@@ -725,9 +727,9 @@ const BASE: BaseScenario[] = [
   {
     seccionId: 'fisico',
     escenarioId: 'tarjeta-clonada',
-    titulo: 'Billetera clonada',
+    titulo: 'Retiro en el cajero',
     descripcion:
-      'Tu billetera fue clonada en la calle: alguien la escaneó o accedió sin que lo notaras. Debes decidir cómo guardarla y qué hacer cuando descubres el fraude.',
+      'Vas a sacar efectivo en un cajero de la calle y algo no sale como esperabas.',
     version: 1,
     naturaleza: 'fraude',
     dificultad: 2,
@@ -749,11 +751,11 @@ const BASE: BaseScenario[] = [
   {
     seccionId: 'fisico',
     escenarioId: 'puertos-frios-datacenter',
-    titulo: 'Puerto frío abierto en datacenter',
+    titulo: 'Entrada al área de sistemas',
     descripcion:
-      'La puerta del puerto frío está abierta. Debes actuar rápido para evitar que equipos críticos se vean afectados por el calor.',
+      'Llegas temprano al piso de Tecnología y alguien necesita pasar contigo.',
     version: 1,
-    naturaleza: 'legitimo',
+    naturaleza: 'fraude',
     dificultad: 3,
     espeja: null,
     Component: lazy(() => import('../secciones/fisico/PuertosFriosColdAisle')),

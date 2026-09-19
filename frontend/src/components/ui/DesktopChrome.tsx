@@ -191,13 +191,27 @@ export function MailNav({
 }
 
 // Decorativos: son lo que hace que una ventana se lea como ventana sin
-// depender de un estilo de botones concreto (macOS/Windows).
-export function WindowButtons() {
+// depender de un estilo de botones concreto (macOS/Windows). Con `closable`
+// la ✕ es un botón de verdad (marcado con data-close-window) para escenarios
+// donde cerrar la ventana entera es una respuesta válida.
+export function WindowButtons({ closable = false }: Readonly<{ closable?: boolean }>) {
   return (
-    <span className={styles.titlebarBotones} aria-hidden>
-      <Minus className={styles.titlebarIcono} strokeWidth={2} />
-      <Square className={styles.titlebarIconoCuadro} strokeWidth={2} />
-      <X className={styles.titlebarIcono} strokeWidth={2} />
+    <span className={styles.titlebarBotones} aria-hidden={closable ? undefined : true} data-window-buttons>
+      <Minus aria-hidden className={styles.titlebarIcono} strokeWidth={2} />
+      <Square aria-hidden className={styles.titlebarIconoCuadro} strokeWidth={2} />
+      {closable ? (
+        <button
+          type="button"
+          className={styles.windowClose}
+          title="Cerrar el navegador"
+          aria-label="Cerrar el navegador"
+          data-close-window
+        >
+          <X aria-hidden className={styles.titlebarIcono} strokeWidth={2} />
+        </button>
+      ) : (
+        <X aria-hidden className={styles.titlebarIcono} strokeWidth={2} />
+      )}
     </span>
   )
 }
@@ -276,12 +290,16 @@ export function Taskbar({
   apps = [],
   atajo: shortcut,
   onBloquear: onBlock,
+  visibleLock = false,
   reloj: clock = { hora: '10:41' },
 }: {
   apps?: AppTaskbar[]
   atajo?: TaskbarShortcut
   // Ver BotonEnergia.
   onBloquear?: () => void
+  // Bloquear como botón con texto a la vista, sin menú: detrás del ⏻ la
+  // gente no lo encontraba (el ícono se lee como "apagar").
+  visibleLock?: boolean
   // 'vivo' toma la hora real del equipo; una fija sirve cuando la historia
   // depende de una hora concreta. La fecha siempre es la de hoy.
   reloj?: Clock
@@ -294,7 +312,22 @@ export function Taskbar({
       <span className={styles.taskbarStart} aria-hidden>
         <LayoutGrid className={styles.taskbarStartIcono} strokeWidth={2} />
       </span>
-      {onBlock && <PowerButton onBloquear={onBlock} />}
+      {onBlock &&
+        (visibleLock ? (
+          <button
+            type="button"
+            className={styles.taskbarBloquear}
+            onClick={(event) => {
+              event.stopPropagation()
+              onBlock()
+            }}
+          >
+            <Lock aria-hidden className={styles.energiaIcono} strokeWidth={2.25} />
+            Bloquear
+          </button>
+        ) : (
+          <PowerButton onBloquear={onBlock} />
+        ))}
       <span className={styles.taskbarDivider} aria-hidden />
 
       {apps.map(({ Icono: Icon, texto: text, activa: active, onClick }) =>
