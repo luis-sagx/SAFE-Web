@@ -1,10 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link, useLocation, useNavigate } from 'react-router'
+import { Link, useLocation } from 'react-router'
 import { getSectionScenarios, getSection, getScenarioPath, SECTIONS } from '../../data/catalogo'
-import { fetchProgress, restartModule } from '../../lib/api'
+import { fetchProgress } from '../../lib/api'
 import type { RunOutcome } from '../../lib/api'
 import { withAttemptedScenario, nextInRound } from '../../lib/bloqueoEscenarios'
-import ConfirmReplayModal from '../ConfirmarRepeticionModal'
 import ModuleQuiz from '../MiniTestModulo'
 import ModuleTransition from '../TransicionModulo'
 
@@ -12,6 +11,8 @@ interface FinalActionsProps {
   escenarioId: string
   // outcome puede llegar antes de que el servidor guarde la corrida.
   outcome: RunOutcome
+  // Se conservan temporalmente porque PanelVeredicto los entrega desde cada
+  // escenario, pero ya no se muestran acciones de reinicio en este cierre.
   onRestart?: () => void
   restartLabel?: string
   autoFocus?: boolean
@@ -20,7 +21,6 @@ interface FinalActionsProps {
 // Mientras queden escenarios sin intentar, la acción principal es "siguiente".
 // Reiniciar siempre crea una ronda nueva desde cero; no permite reintentos sueltos.
 function FinalActions({ escenarioId: scenarioId, outcome, autoFocus }: FinalActionsProps) {
-  const navigate = useNavigate()
   const location = useLocation()
   const sectionId = scenarioId.split('/')[0] ?? ''
   const scenarios = getSectionScenarios(sectionId)
@@ -29,12 +29,6 @@ function FinalActions({ escenarioId: scenarioId, outcome, autoFocus }: FinalActi
   // null mientras no se sabe: hasta que llegue el progreso se usa el orden del
   // catálogo, que da un "siguiente" razonable sin dejar la pantalla en blanco.
   const [attempted, setAttempted] = useState<Set<string> | null>(null)
-  // Cuántos van aprobados contra el umbral. Es el dato que convierte un
-  // escenario suelto en avance de un curso, y el momento de decirlo es
-  // justo después del veredicto.
-  const [showReplay, setShowReplay] = useState(false)
-  const [restarting, setRestarting] = useState(false)
-  const [restartError, setRestartError] = useState<string | null>(null)
   const [progress, setProgress] = useState<import('../../lib/api').Progress | null>(null)
   const [showTransition, setShowTransition] = useState(true)
   const [quizPassed, setQuizPassed] = useState(false)
@@ -99,43 +93,6 @@ function FinalActions({ escenarioId: scenarioId, outcome, autoFocus }: FinalActi
     </Link>
   )
 
-  async function confirmRestart() {
-    if (restarting) return
-    setRestarting(true)
-    setRestartError(null)
-    try {
-      await restartModule(sectionId)
-      navigate(`/seccion/${sectionId}`)
-    } catch {
-      setRestartError('No se pudo reiniciar el módulo. Inténtalo de nuevo.')
-    } finally {
-      setRestarting(false)
-    }
-  }
-
-  const restartAction = progress && scenarios.length > 0 && (
-    <>
-      <button
-        type="button"
-        className="mt-3 min-h-11 w-full rounded-md border border-hairline-strong px-4 py-3 text-lg font-medium text-body transition hover:bg-surface-strong"
-        onClick={() => { setRestartError(null); setShowReplay(true) }}
-      >
-        Repetir el módulo
-      </button>
-      {showReplay && (
-        <ConfirmReplayModal
-          titulo={getSection(sectionId)?.titulo ?? sectionId}
-          aprobados={effectiveApprovedCount}
-          total={scenarios.length}
-          busy={restarting}
-          error={restartError}
-          onClose={() => setShowReplay(false)}
-          onConfirm={confirmRestart}
-        />
-      )}
-    </>
-  )
-
   // Aparece solo cuando el progreso ya llegó (un instante después del veredicto).
   const marker = progress && (
     <p className="mt-4 text-center text-base text-body">
@@ -185,7 +142,6 @@ function FinalActions({ escenarioId: scenarioId, outcome, autoFocus }: FinalActi
             módulo.
           </p>
         )}
-        {restartAction}
         {back}
       </>
     )
@@ -233,7 +189,6 @@ function FinalActions({ escenarioId: scenarioId, outcome, autoFocus }: FinalActi
       >
         {nextModule ? 'Ir al siguiente módulo →' : 'Volver al panel →'}
       </Link>
-      {restartAction}
       {back}
     </>
   )
