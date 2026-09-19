@@ -236,6 +236,17 @@ body {
   font-family: var(--font-sans);
 }
 
+@keyframes boton-escala {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.05);
+  }
+}
+
 /* Tailwind v4 dejó de poner cursor:pointer en los botones por defecto (antes
    sí lo hacía Preflight), y la mayoría de botones de la app nunca lo pedían
    aparte: por eso unos mostraban la manito y otros la flecha, sin patrón.
