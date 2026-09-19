@@ -1658,8 +1658,13 @@
   font-size: 1.25rem;
   line-height: 1;
 }
+/* Issue #251: antes solo se aclaraba el color de la flecha, y seguía con el
+   mismo círculo, borde y tamaño del botón activo — casi nadie notaba la
+   diferencia y lo seguía presionando esperando que hiciera algo. Oculta del
+   todo (visibility, no display: el hueco sigue sirviendo de contrapeso para
+   centrar el nombre del remitente, igual que el <span> del otro lado). */
 .smsVolverApagado {
-  color: #b8c0ca;
+  visibility: hidden;
 }
 
 .smsName {
