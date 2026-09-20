@@ -1,6 +1,7 @@
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import type { App } from 'supertest/types';
+import { MailService } from '../apps/identidad/src/mail/mail.service';
 import { PrismaService } from '../apps/identidad/src/prisma/prisma.service';
 import {
   getRefreshCookie,
@@ -20,6 +21,20 @@ describe('Autenticación (e2e)', () => {
   let prisma: PrismaService;
 
   const server = () => request(app.getHttpServer() as App);
+
+  // El token nunca sale por la API (solo se guarda su hash): la única forma
+  // de conseguirlo en un e2e es leer el enlace del `jest.fn` que reemplaza a
+  // Resend (ver identidad.e2e.ts). `MailService.sendPasswordReset` no es un
+  // jest.Mock en su tipo real, solo en este override de pruebas.
+  function sendPasswordReset(): jest.Mock {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+    const mail = app.get(MailService) as { sendPasswordReset: jest.Mock };
+    return mail.sendPasswordReset;
+  }
+
+  function tokenFromLink(link: string): string {
+    return new URL(link).searchParams.get('token')!;
+  }
 
   beforeAll(async () => {
     ({ app, prisma } = await createTestApp());
@@ -483,6 +498,170 @@ describe('Autenticación (e2e)', () => {
       // Borrar una cookie es ponerla vacía con fecha de expiración pasada.
       expect(cookie).toBeDefined();
       expect(cookie).toMatch(/mic-refresh-token=;/);
+    });
+  });
+
+  describe('POST /api/auth/forgot-password', () => {
+    beforeAll(async () => {
+      await server()
+        .post('/api/auth/register')
+        .send(registrationData('olvido'))
+        .expect(201);
+    });
+
+    it('con una cuenta real, responde 204 y manda el correo con un enlace', async () => {
+      sendPasswordReset().mockClear();
+
+      await server()
+        .post('/api/auth/forgot-password')
+        .send({ email: 'maria.olvido@ejemplo.ec' })
+        .expect(204);
+
+      expect(sendPasswordReset()).toHaveBeenCalledWith(
+        'maria.olvido@ejemplo.ec',
+        expect.any(String),
+        expect.stringContaining('/restablecer-password?token='),
+      );
+    });
+
+    // Distinguirlos permitiría averiguar qué correos están registrados.
+    it('responde el mismo 204 aunque el correo no exista, sin mandar nada', async () => {
+      sendPasswordReset().mockClear();
+
+      await server()
+        .post('/api/auth/forgot-password')
+        .send({ email: 'nadie-registrado@ejemplo.ec' })
+        .expect(204);
+
+      expect(sendPasswordReset()).not.toHaveBeenCalled();
+    });
+
+    it('rechaza un correo con formato inválido', async () => {
+      await server()
+        .post('/api/auth/forgot-password')
+        .send({ email: 'no-es-un-correo' })
+        .expect(400);
+    });
+  });
+
+  describe('POST /api/auth/reset-password', () => {
+    it('con un token vigente, cambia la contraseña y deja entrar con la nueva', async () => {
+      await server()
+        .post('/api/auth/register')
+        .send(registrationData('reset'))
+        .expect(201);
+      sendPasswordReset().mockClear();
+      await server()
+        .post('/api/auth/forgot-password')
+        .send({ email: 'maria.reset@ejemplo.ec' })
+        .expect(204);
+      const [, , link] = sendPasswordReset().mock.calls[0] as [
+        string,
+        string,
+        string,
+      ];
+
+      await server()
+        .post('/api/auth/reset-password')
+        .send({ token: tokenFromLink(link), password: PASSWORD_INVALID })
+        .expect(204);
+
+      // La contraseña vieja ya no sirve...
+      await server()
+        .post('/api/auth/login')
+        .send({ email: 'maria.reset@ejemplo.ec', password: PASSWORD_TEST })
+        .expect(401);
+      // ...la nueva sí.
+      await server()
+        .post('/api/auth/login')
+        .send({ email: 'maria.reset@ejemplo.ec', password: PASSWORD_INVALID })
+        .expect(200);
+    });
+
+    it('un token ya usado no sirve una segunda vez', async () => {
+      await server()
+        .post('/api/auth/register')
+        .send(registrationData('reset-reuso'))
+        .expect(201);
+      sendPasswordReset().mockClear();
+      await server()
+        .post('/api/auth/forgot-password')
+        .send({ email: 'maria.reset-reuso@ejemplo.ec' })
+        .expect(204);
+      const [, , link] = sendPasswordReset().mock.calls[0] as [
+        string,
+        string,
+        string,
+      ];
+      const token = tokenFromLink(link);
+
+      await server()
+        .post('/api/auth/reset-password')
+        .send({ token, password: PASSWORD_INVALID })
+        .expect(204);
+
+      await server()
+        .post('/api/auth/reset-password')
+        .send({ token, password: 'Tercera-Clave-000!' })
+        .expect(401);
+    });
+
+    it('rechaza un token inventado', async () => {
+      await server()
+        .post('/api/auth/reset-password')
+        .send({ token: 'no-es-un-token-real', password: PASSWORD_INVALID })
+        .expect(401);
+    });
+
+    it('rechaza una contraseña que no cumple la política', async () => {
+      await server()
+        .post('/api/auth/register')
+        .send(registrationData('reset-debil'))
+        .expect(201);
+      sendPasswordReset().mockClear();
+      await server()
+        .post('/api/auth/forgot-password')
+        .send({ email: 'maria.reset-debil@ejemplo.ec' })
+        .expect(204);
+      const [, , link] = sendPasswordReset().mock.calls[0] as [
+        string,
+        string,
+        string,
+      ];
+
+      await server()
+        .post('/api/auth/reset-password')
+        .send({ token: tokenFromLink(link), password: 'corta' })
+        .expect(400);
+    });
+
+    // Cierra sesiones abiertas en otros dispositivos (issue #256).
+    it('invalida un refresh token emitido antes del restablecimiento', async () => {
+      const registered = await server()
+        .post('/api/auth/register')
+        .send(registrationData('reset-sesiones'))
+        .expect(201);
+      const oldCookie = getRefreshCookie(registered);
+
+      sendPasswordReset().mockClear();
+      await server()
+        .post('/api/auth/forgot-password')
+        .send({ email: 'maria.reset-sesiones@ejemplo.ec' })
+        .expect(204);
+      const [, , link] = sendPasswordReset().mock.calls[0] as [
+        string,
+        string,
+        string,
+      ];
+      await server()
+        .post('/api/auth/reset-password')
+        .send({ token: tokenFromLink(link), password: PASSWORD_INVALID })
+        .expect(204);
+
+      await server()
+        .post('/api/auth/refresh')
+        .set('Cookie', oldCookie)
+        .expect(401);
     });
   });
 });

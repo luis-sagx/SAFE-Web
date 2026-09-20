@@ -23,7 +23,10 @@ describe('Límite de peticiones (e2e)', () => {
       // Sin RESEND_API_KEY en CI, MailService.getOrThrow tumbaría el arranque
       // (ver createTestApp() en identidad.e2e.ts, mismo override).
       .overrideProvider(MailService)
-      .useValue({ enviarCertificado: () => Promise.resolve(true) })
+      .useValue({
+        enviarCertificado: () => Promise.resolve(true),
+        sendPasswordReset: () => Promise.resolve(true),
+      })
       .compile();
 
     app = configureApp(moduleRef.createNestApplication());
@@ -82,5 +85,24 @@ describe('Límite de peticiones (e2e)', () => {
     for (let i = 0; i < 10; i++) {
       await server().get('/api/health').expect(200);
     }
+  });
+
+  // Mismo límite que login (issue #256): sin esto, alguien podría probar
+  // muchos correos por minuto buscando cuáles existen.
+  it('corta el sexto intento de forgot-password del mismo origen', async () => {
+    const attempt = () =>
+      server()
+        .post('/api/auth/forgot-password')
+        .send({ email: 'quien-sea@ejemplo.ec' });
+
+    const responses: Awaited<ReturnType<typeof attempt>>[] = [];
+    for (let i = 0; i < 6; i++) {
+      responses.push(await attempt());
+    }
+
+    expect(responses.slice(0, 5).map((r) => r.status)).toEqual([
+      204, 204, 204, 204, 204,
+    ]);
+    expect(responses[5].status).toBe(429);
   });
 });
