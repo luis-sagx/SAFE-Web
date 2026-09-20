@@ -112,13 +112,12 @@ const WITHOUT_ECUADORIAN_ID: ScreenView = {
         "Es automática, sale del cruce de sus gastos deducibles. No tiene que reclamar nada, solo confirmarme la cédula y la cuenta donde le depositamos.",
       senal: "insisten",
     },
-    ...COMPLETION,
   ],
   decir: [
     {
-      texto: `Bueno, mi cédula es ${IDENTITY_FAKE.cedula} y la cuenta es esa.`,
+      texto: `Bueno, mi cédula es ${IDENTITY_FAKE.cedula} y mi cuenta es ${ACCOUNT_FAKE}.`,
       goto: "e_datos",
-      label: "Terminó dando la cédula y confirmando la cuenta",
+      label: "Terminó dando la cédula y el número de cuenta",
     },
   ],
   colgarGoto: "e_cuelga",
@@ -353,10 +352,11 @@ function SriRefund() {
       identidad={["cedula", "cuenta"]}
       instruccion={
         <p className="text-lg leading-relaxed text-body">
-          Actúa sobre el teléfono como lo harías con el tuyo: contesta o
-          rechaza, cuelga cuando quieras y usa{" "}
-          <strong>cualquier app de abajo</strong>, incluso con la llamada
-          abierta.
+          Es una llamada en vivo: hay alguien hablando al otro lado y espera
+          tu respuesta cuando termine. Actúa sobre el teléfono como lo
+          harías con el tuyo: contesta o rechaza, cuelga cuando quieras y
+          usa <strong>cualquier app de abajo</strong>, incluso con la
+          llamada abierta.
         </p>
       }
       pista={

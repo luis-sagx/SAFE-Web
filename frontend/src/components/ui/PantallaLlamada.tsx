@@ -7,6 +7,15 @@ import styles from './DeviceScreen.module.css'
 // Pantalla de llamada: se decide con gestos (contestar/rechazar/colgar/silenciar),
 // no con una lista de opciones, y manda el audio, la transcripción es solo apoyo.
 type Call = Extract<ScreenView, { kind: 'call' }>
+type Line = NonNullable<Call['dialogo']>[number]
+
+// Cuenta cuántas líneas propias (`mio`) encabezan el arreglo: no tienen
+// audio que esperar, así que se revelan de inmediato, una tras otra.
+function leadingOwnLines(lines: Line[]): number {
+  let i = 0
+  while (i < lines.length && lines[i]!.mio) i++
+  return i
+}
 
 function clock(seconds: number) {
   const m = String(Math.floor(seconds / 60)).padStart(2, '0')
@@ -23,6 +32,19 @@ function CallScreen({ view, terminada: finished }: { view: Call; terminada?: boo
   const audioRef = useRef<HTMLAudioElement>(null)
   // Cada nodo trae la conversación entera; sin esto se repetiría desde el inicio en cada paso.
   const spoken = useRef(0)
+  // Mostrar toda la transcripción de golpe se sentía como un audio ya
+  // grabado, no como una llamada: cada frase del otro lado se revela recién
+  // cuando termina de sonar. Las propias (`mio`) no tienen audio que
+  // esperar, así que se revelan de inmediato.
+  const [revealed, setRevealed] = useState(0)
+  // Líneas del tramo nuevo que aún no se revelan (a la espera de su audio):
+  // una vez revelada la que va sonando, puede haber líneas propias justo
+  // después que tampoco necesitan esperar.
+  const pendingReveal = useRef<Line[]>([])
+  // Texto ya sonado de la frase en curso, para que se vea como un subtítulo
+  // en vivo (issue #250) en vez de aparecer completa recién al terminar.
+  const [partial, setPartial] = useState('')
+  const transcriptRef = useRef<HTMLDivElement>(null)
   // Evita reasignar el mismo `src` al salir del silencio, lo que reiniciaba la frase.
   const loaded = useRef('')
   // Última frase dicha, para el botón "repetir" (como pedir "¿me lo repite?").
@@ -42,13 +64,22 @@ function CallScreen({ view, terminada: finished }: { view: Call; terminada?: boo
   useEffect(() => {
     const lines = view.dialogo ?? []
     // Al reiniciar el escenario la conversación se acorta.
-    if (lines.length < spoken.current) spoken.current = 0
-    const newVoiceUrls = lines
-      .slice(spoken.current)
+    let previouslySpoken = spoken.current
+    if (lines.length < previouslySpoken) {
+      previouslySpoken = 0
+      setRevealed(0)
+    }
+    const newLines = lines.slice(previouslySpoken)
+    const leading = leadingOwnLines(newLines)
+    spoken.current = lines.length
+    setRevealed(previouslySpoken + leading)
+    pendingReveal.current = newLines.slice(leading)
+    setPartial('')
+
+    const newVoiceUrls = newLines
       .filter((line) => !line.mio)
       .map((line) => VOICES[line.texto])
       .filter((url): url is string => Boolean(url))
-    spoken.current = lines.length
 
     if (newVoiceUrls.length === 0) return
     latest.current = newVoiceUrls
@@ -88,9 +119,36 @@ function CallScreen({ view, terminada: finished }: { view: Call; terminada?: boo
     })
   }, [queue, silence, finished])
 
+  // El texto crece hacia abajo sin que el participante lo pida: sin esto
+  // quedaría tapado por el resto de la pantalla en vez de a la vista.
+  useEffect(() => {
+    const el = transcriptRef.current
+    if (!el) return
+    el.scrollTop = el.scrollHeight
+  }, [revealed, partial])
+
   // Silenciar pausa; volver a pulsarlo continúa donde se quedó, no reinicia la frase.
   function toggleMute() {
     setSilence((s) => !s)
+  }
+
+  // La línea que acaba de sonar se revela, y con ella cualquier línea propia
+  // que la siga de inmediato (no tiene audio propio que esperar).
+  function revealNextSpoken() {
+    const remaining = pendingReveal.current.slice(1)
+    const leading = leadingOwnLines(remaining)
+    pendingReveal.current = remaining.slice(leading)
+    setRevealed((r) => Math.min(r + 1 + leading, spoken.current))
+    setPartial('')
+  }
+
+  // Subtítulo en vivo: al ritmo del audio, no de golpe al final (issue #250).
+  function revealAsSpoken() {
+    const audio = audioRef.current
+    const line = pendingReveal.current[0]
+    if (!audio || !line || !Number.isFinite(audio.duration) || audio.duration <= 0) return
+    const fraction = Math.min(audio.currentTime / audio.duration, 1)
+    setPartial(line.texto.slice(0, Math.floor(line.texto.length * fraction)))
   }
 
   const initial = view.quien.trim().charAt(0).toUpperCase()
@@ -217,22 +275,47 @@ function CallScreen({ view, terminada: finished }: { view: Call; terminada?: boo
           está debajo, siempre visible, que es la misma información. */}
       <audio
         ref={audioRef}
-        onEnded={() => setQueue((pending) => pending.slice(1))}
-        onError={() => setQueue((pending) => pending.slice(1))}
+        onTimeUpdate={revealAsSpoken}
+        onEnded={() => {
+          setQueue((pending) => pending.slice(1))
+          revealNextSpoken()
+        }}
+        onError={() => {
+          setQueue((pending) => pending.slice(1))
+          revealNextSpoken()
+        }}
       />
 
-      {/* Secundaria a propósito: apoyo, no el contenido principal del escenario. */}
-      <div className={styles.callTranscripcion}>
+      {/* Secundaria a propósito: apoyo, no el contenido principal del escenario.
+          El orden vuelve a ser transcripción-y-luego-respuestas (como antes de
+          #250): moverlas arriba se veía raro sobre la barra de voz. Lo que sí
+          se mantiene es que el contenedor ya no recorta en silencio
+          (overflow-y: auto) y que las respuestas esperan su turno (ver
+          `disabled` abajo). */}
+      <div className={styles.callTranscripcion} ref={transcriptRef}>
         <span className={styles.callTag}>Transcripción</span>
-        {(view.dialogo ?? []).map((line) => (
-          <p
-            key={line.texto}
-            className={`${styles.callLinea} ${line.mio ? styles.callLineaMia : ''}`}
-            data-signal={line.senal}
-          >
-            {line.texto}
+        {/* Terminada la llamada (colgada, o vuelta a mostrar solo para
+            resaltar una señal en el repaso del veredicto) no hay audio
+            sonando ni turno que esperar: se ve toda de una vez, igual que
+            antes de esperar el audio (issue #250 seguimiento) — si no, las
+            líneas que nunca llegaron a "sonar" quedarían sin señal que
+            resaltar. */}
+        {(finished ? (view.dialogo ?? []) : (view.dialogo ?? []).slice(0, revealed)).map(
+          (line) => (
+            <p
+              key={line.texto}
+              className={`${styles.callLinea} ${line.mio ? styles.callLineaMia : ''}`}
+              data-signal={line.senal}
+            >
+              {line.texto}
+            </p>
+          ),
+        )}
+        {!finished && partial && (
+          <p className={styles.callLinea} data-signal={pendingReveal.current[0]?.senal}>
+            {partial}
           </p>
-        ))}
+        )}
       </div>
 
       {!finished && view.decir && view.decir.length > 0 && (
@@ -243,7 +326,12 @@ function CallScreen({ view, terminada: finished }: { view: Call; terminada?: boo
               key={phrase.texto}
               type="button"
               className={styles.callFrase}
-              data-hotspot-goto={phrase.goto}
+              // Deshabilitadas mientras suena el audio del otro lado (issue
+              // #250): antes se podía contestar de inmediato, sin esperar,
+              // que es lo que hacía que se sintiera como elegir de una lista
+              // en vez de como esperar el turno en una llamada de verdad.
+              disabled={ringing}
+              data-hotspot-goto={ringing ? undefined : phrase.goto}
               data-hotspot-label={phrase.label}
             >
               {phrase.texto}
