@@ -361,6 +361,13 @@ function Section() {
                       {!approved && latest !== undefined && (
                         <Sello tono="border-danger text-danger">Sin aprobar</Sello>
                       )}
+                      {/* Issue #279: sin esto, un "Sin aprobar" en rojo de un
+                          escenario recién rejugado convivía sin aclaración con
+                          insignias verdes de otros que en realidad son del
+                          intento anterior (todavía no se rejuegan esta ronda). */}
+                      {!inCurrentRound && progress?.rondaEnCurso && latest !== undefined && (
+                        <span className="text-sm text-muted">Resultado del intento anterior</span>
+                      )}
                       {!available && latest === undefined && (
                         /* El candado señala el escenario anterior en la lista, no el próximo pendiente del módulo: cada
                            uno depende del de al lado, no de un número fijo. */
