@@ -181,6 +181,11 @@ function ScenarioStory({
   const [threads, setThreads] = useState<{ sms?: string; call?: string }>({})
   // Notificaciones ya vistas; `reiniciar` las limpia junto con engine.restart.
   const [discarded, setDiscarded] = useState<string[]>([])
+  // Frases del otro lado ya oídas en la llamada activa (issue #250
+  // seguimiento): mirar otra app (la tienda, el navegador, el banco...)
+  // desmonta y vuelve a montar la pantalla de llamada, y sin esto perdía el
+  // progreso y repetía la conversación entera desde el principio al volver.
+  const heardLines = useRef<Set<string>>(new Set())
   const previousNarrativeNode = useRef(engine.current)
   const visibleNode = reviewScreen ?? viewedAppNode ?? viewedThread ?? viewedTab ?? engine.current
   const getNodeView = story[visibleNode]?.view ?? engine.node.view
@@ -265,6 +270,7 @@ function ScenarioStory({
     setViewedThread(undefined)
     setViewedTab(undefined)
     setAppOpen(undefined)
+    heardLines.current.clear()
     engine.restart()
   }, [engine.restart])
 
@@ -616,6 +622,7 @@ function ScenarioStory({
                   destinatario={recipient}
                   carpetaForzada={reviewScreen ? 'Recibidos' : undefined}
                   terminada={engine.isEnding}
+                  heardLines={heardLines.current}
                 />
               </div>
             </>
@@ -703,6 +710,7 @@ function ScenarioStory({
               carpetas={folders}
               destinatario={recipient}
               terminada={engine.isEnding}
+              heardLines={heardLines.current}
             />
           </div>
         ) : (
@@ -721,6 +729,7 @@ function ScenarioStory({
               destinatario={recipient}
               carpetaForzada={reviewScreen ? 'Recibidos' : undefined}
               terminada={engine.isEnding}
+              heardLines={heardLines.current}
             />
           </Browser>
         )
