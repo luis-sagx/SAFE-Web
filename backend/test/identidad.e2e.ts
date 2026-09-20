@@ -34,8 +34,16 @@ export async function createTestApp(): Promise<{
     // Sin esto, cada certificado emitido en un e2e intentaría mandar un
     // correo real por Resend: red de por medio en CI, y necesitaría
     // RESEND_API_KEY solo para que el servicio arrancara.
+    //
+    // `sendPasswordReset` es un jest.fn (no una función cualquiera) para que
+    // auth.e2e-spec.ts pueda leer el enlace con el token de sus `.mock.calls`:
+    // es la única forma de conseguir el token en claro, que nunca sale por la
+    // API (solo se guarda su hash).
     .overrideProvider(MailService)
-    .useValue({ enviarCertificado: () => Promise.resolve(true) })
+    .useValue({
+      enviarCertificado: () => Promise.resolve(true),
+      sendPasswordReset: jest.fn().mockResolvedValue(true),
+    })
     .compile();
 
   const app = configureApp(moduleRef.createNestApplication());

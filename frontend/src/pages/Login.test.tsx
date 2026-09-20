@@ -68,7 +68,9 @@ describe('Login', () => {
     expect(screen.getByText('Crear una cuenta')).toBeDefined()
   })
 
-  it('renderiza mensaje de ayuda sobre la contraseña', () => {
+  // Issue #256: ya hay recuperación por correo, así que el enlace lleva a
+  // /olvide-password en vez de decir que solo un supervisor puede ayudar.
+  it('renderiza el enlace para recuperar la contraseña', () => {
     useAuthMock.mockReturnValue({
       isAuthenticated: false,
       loading: false,
@@ -82,7 +84,8 @@ describe('Login', () => {
       </BrowserRouter>
     )
 
-    expect(screen.getByText(/¿No puedes entrar/)).toBeDefined()
+    const link = screen.getByRole('link', { name: /olvidaste tu contraseña/i })
+    expect(link.getAttribute('href')).toBe('/olvide-password')
   })
 
   it('muestra el error de formato del correo debajo del campo al escribir', () => {

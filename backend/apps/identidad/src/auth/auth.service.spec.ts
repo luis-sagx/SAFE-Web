@@ -46,14 +46,23 @@ function verifyPayload(payload: object): JwtService['verifyAsync'] {
   return <T extends object = object>() => Promise.resolve(payload as T);
 }
 
+function fakeMail(overrides: Record<string, unknown> = {}) {
+  return {
+    sendPasswordReset: () => Promise.resolve(true),
+    ...overrides,
+  } as never;
+}
+
 function service(
   prisma: Partial<Record<string, unknown>>,
   jwt: JwtService = jwtFake(),
+  mail: ReturnType<typeof fakeMail> = fakeMail(),
 ) {
   return new AuthService(
     { participant: prisma } as unknown as PrismaService,
     jwt,
     fakeConfig(),
+    mail,
   );
 }
 
@@ -67,6 +76,7 @@ function participantRow(overrides: Record<string, unknown> = {}) {
     role: 'PARTICIPANT',
     onboardingVistoAt: null,
     disabledAt: null,
+    tokenVersion: 0,
     ...overrides,
   };
 }
@@ -314,7 +324,11 @@ describe('AuthService.refrescar', () => {
     const auth = service(
       { findUnique: () => Promise.resolve(null) },
       jwtFake({
-        verifyAsync: verifyPayload({ sub: 'p1', typ: 'refresh' }),
+        verifyAsync: verifyPayload({
+          sub: 'p1',
+          typ: 'refresh',
+          tokenVersion: 0,
+        }),
       }),
     );
     await expect(
@@ -326,12 +340,150 @@ describe('AuthService.refrescar', () => {
     const auth = service(
       { findUnique: () => Promise.resolve(participantRow()) },
       jwtFake({
-        verifyAsync: verifyPayload({ sub: 'p1', typ: 'refresh' }),
+        verifyAsync: verifyPayload({
+          sub: 'p1',
+          typ: 'refresh',
+          tokenVersion: 0,
+        }),
       }),
     );
 
     const session = await auth.refreshSession('token-cualquiera');
 
     expect(session.participant.email).toBe('ana@correo.com');
+  });
+
+  // Issue #256: restablecer la contraseña incrementa tokenVersion. Un refresh
+  // token emitido antes de eso trae la versión vieja y debe dejar de servir,
+  // sin necesidad de una lista de tokens revocados.
+  it('con una versión de token desactualizada (tras restablecer la contraseña), 401', async () => {
+    const auth = service(
+      {
+        findUnique: () => Promise.resolve(participantRow({ tokenVersion: 1 })),
+      },
+      jwtFake({
+        verifyAsync: verifyPayload({
+          sub: 'p1',
+          typ: 'refresh',
+          tokenVersion: 0,
+        }),
+      }),
+    );
+
+    await expect(
+      auth.refreshSession('token-cualquiera'),
+    ).rejects.toBeInstanceOf(UnauthorizedException);
+  });
+});
+
+describe('AuthService.forgotPassword', () => {
+  it('sin ninguna cuenta con ese correo, responde el mensaje genérico sin mandar correo', async () => {
+    const sendPasswordReset = jest.fn();
+    const auth = service(
+      { findFirst: () => Promise.resolve(null) },
+      jwtFake(),
+      fakeMail({ sendPasswordReset }),
+    );
+
+    await expect(
+      auth.forgotPassword('nadie@correo.com'),
+    ).resolves.toBeUndefined();
+    expect(sendPasswordReset).not.toHaveBeenCalled();
+  });
+
+  it('con una cuenta real, guarda el hash del token (nunca en claro) y manda el correo', async () => {
+    const sendPasswordReset = jest.fn().mockResolvedValue(true);
+    let updateData: Record<string, unknown> | undefined;
+    const auth = service(
+      {
+        findFirst: () => Promise.resolve(participantRow()),
+        update: ({ data }: { data: Record<string, unknown> }) => {
+          updateData = data;
+          return Promise.resolve(participantRow());
+        },
+      },
+      jwtFake(),
+      fakeMail({ sendPasswordReset }),
+    );
+
+    await auth.forgotPassword('ana@correo.com');
+
+    expect(updateData?.passwordResetTokenHash).toEqual(expect.any(String));
+    expect(updateData?.passwordResetExpiresAt).toBeInstanceOf(Date);
+    expect(sendPasswordReset).toHaveBeenCalledTimes(1);
+    const [emailArg, , linkArg] = sendPasswordReset.mock.calls[0] as [
+      string,
+      string,
+      string,
+    ];
+    expect(emailArg).toBe('ana@correo.com');
+    // El enlace lleva el token EN CLARO; lo guardado en la base es su hash.
+    expect(linkArg).not.toContain(updateData?.passwordResetTokenHash as string);
+  });
+
+  it('una cuenta desactivada no recibe el correo, aunque exista', async () => {
+    const sendPasswordReset = jest.fn();
+    const auth = service(
+      {
+        findFirst: () =>
+          Promise.resolve(participantRow({ disabledAt: new Date() })),
+      },
+      jwtFake(),
+      fakeMail({ sendPasswordReset }),
+    );
+
+    await auth.forgotPassword('ana@correo.com');
+
+    expect(sendPasswordReset).not.toHaveBeenCalled();
+  });
+});
+
+describe('AuthService.resetPassword', () => {
+  it('con un token que no corresponde a ninguna cuenta, rechaza', async () => {
+    const auth = service({ findFirst: () => Promise.resolve(null) });
+
+    await expect(
+      auth.resetPassword('token-cualquiera', 'ClaveNueva123!'),
+    ).rejects.toBeInstanceOf(UnauthorizedException);
+  });
+
+  it('con el token ya vencido, rechaza', async () => {
+    const auth = service({
+      findFirst: () =>
+        Promise.resolve(
+          participantRow({
+            passwordResetExpiresAt: new Date(Date.now() - 1000),
+          }),
+        ),
+    });
+
+    await expect(
+      auth.resetPassword('token-cualquiera', 'ClaveNueva123!'),
+    ).rejects.toBeInstanceOf(UnauthorizedException);
+  });
+
+  it('con un token vigente, cambia la contraseña, lo borra e incrementa tokenVersion', async () => {
+    let updateData: Record<string, unknown> | undefined;
+    const auth = service({
+      findFirst: () =>
+        Promise.resolve(
+          participantRow({
+            passwordResetExpiresAt: new Date(Date.now() + 60_000),
+            tokenVersion: 3,
+          }),
+        ),
+      update: ({ data }: { data: Record<string, unknown> }) => {
+        updateData = data;
+        return Promise.resolve(participantRow());
+      },
+    });
+
+    await auth.resetPassword('token-cualquiera', 'ClaveNueva123!');
+
+    expect(updateData?.passwordResetTokenHash).toBeNull();
+    expect(updateData?.passwordResetExpiresAt).toBeNull();
+    expect(updateData?.tokenVersion).toEqual({ increment: 1 });
+    expect(updateData?.passwordHash).toEqual(expect.any(String));
+    expect(updateData?.passwordHash).not.toBe('ClaveNueva123!');
   });
 });

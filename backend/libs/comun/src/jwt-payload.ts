@@ -8,11 +8,15 @@ export interface JwtPayload {
   typ: 'access';
 }
 
-// Token de vida larga, solo entre identidad y sí misma (POST /auth/refresh). Lleva solo
-// `sub`: el resto se relee de la base en cada refresco, así una cuenta desactivada se
-// refleja en, como máximo, la vida del access token.
+// Token de vida larga, solo entre identidad y sí misma (POST /auth/refresh). Lleva
+// `sub` y `tokenVersion`: el resto se relee de la base en cada refresco, así una cuenta
+// desactivada se refleja en, como máximo, la vida del access token. `tokenVersion` viaja
+// aparte porque, a diferencia de `disabledAt`, no basta con releerla: hay que compararla
+// contra la del token para saber si YA cambió desde que se emitió (issue #256, restablecer
+// la contraseña la incrementa e invalida los refresh tokens ya emitidos).
 export interface RefreshTokenPayload {
   sub: string;
+  tokenVersion: number;
   typ: 'refresh';
 }
 

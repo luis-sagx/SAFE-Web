@@ -119,6 +119,24 @@ describe('AdminService.resetPassword', () => {
     expect(storedHash).not.toContain(password);
     expect(await compare(password, storedHash as string)).toBe(true);
   });
+
+  // Issue #256: un restablecimiento por correo incrementa tokenVersion para
+  // cerrar sesiones abiertas en otros dispositivos; uno hecho por un
+  // supervisor es el mismo tipo de evento y debe tener el mismo efecto.
+  it('también incrementa tokenVersion, para cerrar sesiones ya abiertas', async () => {
+    let updateData: Record<string, unknown> | undefined;
+    const admin = service({
+      findFirst: () => Promise.resolve(row()),
+      update: ({ data }: { data: Record<string, unknown> }) => {
+        updateData = data;
+        return Promise.resolve(row());
+      },
+    });
+
+    await admin.resetPassword('p1');
+
+    expect(updateData?.tokenVersion).toEqual({ increment: 1 });
+  });
 });
 
 describe('AdminService.eliminar', () => {

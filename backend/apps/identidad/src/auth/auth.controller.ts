@@ -13,9 +13,11 @@ import { Throttle } from '@nestjs/throttler';
 import type { CookieOptions, Request, Response } from 'express';
 import { CurrentParticipant, JwtAuthGuard, type JwtPayload } from '@comun';
 import { AuthService } from './auth.service';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { LoginDto } from './dto/login.dto';
 import { PatchMeDto } from './dto/patch-me.dto';
 import { RegisterDto } from './dto/register.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 
 /// Nombre de la cookie del refresh token.
 const REFRESH_COOKIE = 'mic-refresh-token';
@@ -122,6 +124,25 @@ export class AuthController {
       res.clearCookie(REFRESH_COOKIE, COOKIE_OPTIONS);
       throw error;
     }
+  }
+
+  /// Mismo límite que login: 5 por minuto y por IP. La respuesta es idéntica
+  /// exista o no la cuenta (ver AuthService.forgotPassword), así que 204 no
+  /// filtra nada por sí solo.
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
+  @HttpCode(204)
+  @Post('forgot-password')
+  async forgotPassword(@Body() dto: ForgotPasswordDto): Promise<void> {
+    await this.auth.forgotPassword(dto.email);
+  }
+
+  /// Mismo límite que login: 5 por minuto y por IP, contra quien prueba
+  /// tokens al azar.
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
+  @HttpCode(204)
+  @Post('reset-password')
+  async resetPassword(@Body() dto: ResetPasswordDto): Promise<void> {
+    await this.auth.resetPassword(dto.token, dto.password);
   }
 
   /// El access token lo descarta el propio frontend (vive en memoria/

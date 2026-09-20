@@ -11,10 +11,12 @@ import Welcome from './pages/Bienvenida'
 import BadgePreview from './pages/InsigniaPreview'
 import Dashboard from './pages/Dashboard'
 import Login from './pages/Login'
+import ForgotPassword from './pages/OlvidePassword'
 import DataPolicy from './pages/PoliticaDatos'
 import Portada from './pages/Portada'
 import TrainingHistory from './pages/Recorrido'
 import Registration from './pages/Registro'
+import ResetPassword from './pages/RestablecerPassword'
 import Section from './pages/Seccion'
 import VerifyCertificate from './pages/Verificar'
 import { useAuth } from './context/AuthContext'
@@ -29,6 +31,8 @@ function App() {
         <Routes>
           <Route path="/" element={<Portada />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/olvide-password" element={<ForgotPassword />} />
+          <Route path="/restablecer-password" element={<ResetPassword />} />
           <Route path="/registro" element={<Registration />} />
           <Route path="/politica-de-datos" element={<DataPolicy />} />
           <Route path="/verificar/:codigo" element={<VerifyCertificate />} />
