@@ -247,6 +247,7 @@ function DeviceScreen({
   destinatario: recipient,
   carpetaForzada: forcedFolder,
   terminada: finished,
+  heardLines,
 }: {
   view: ScreenView
   acciones?: EmailAction[]
@@ -255,6 +256,10 @@ function DeviceScreen({
   carpetaForzada?: string
   // Solo lo mira la pantalla de llamada: colgada, deja de contar y de hablar.
   terminada?: boolean
+  // Frases del otro lado ya oídas en esta corrida (issue #250 seguimiento):
+  // sobrevive a que la llamada se desmonte al mirar otra app y vuelva a
+  // montarse al volver, para no repetir el audio de lo que ya sonó.
+  heardLines?: Set<string>
 }) {
   const { correoSimulado: simulatedEmail, displayName } = useAuth()
   const email = recipient ?? simulatedEmail
@@ -450,7 +455,7 @@ function DeviceScreen({
   }
 
   if (view.kind === 'call') {
-    return <CallScreen view={view} terminada={finished} />
+    return <CallScreen view={view} terminada={finished} heardLines={heardLines} />
   }
 
   // Con entradaLibre, lo que de verdad se mandó (y la respuesta de la IA) no

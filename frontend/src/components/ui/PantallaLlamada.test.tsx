@@ -158,4 +158,24 @@ describe('CallScreen', () => {
 
     expect(screen.getByText(SECOND_LINE)).toBeDefined()
   })
+
+  // Bug reportado: mirar otra app (tienda, navegador, banco...) mientras la
+  // llamada sigue activa desmonta y vuelve a montar CallScreen. Sin recordar
+  // qué ya sonó, la conversación se reiniciaba desde el principio al volver.
+  // `heardLines` sobrevive fuera del componente (lo sostiene el padre) y le
+  // dice a un montaje nuevo qué frases no necesitan volver a esperar audio.
+  it('con heardLines, una frase ya oída se ve de inmediato en un montaje nuevo', () => {
+    const heardLines = new Set<string>()
+    const first = render(<CallScreen view={VIEW} heardLines={heardLines} />)
+    fireEvent.ended(first.container.querySelector('audio')!)
+
+    expect(screen.getByText(SPOKEN_LINE)).toBeDefined()
+    expect(heardLines.has(SPOKEN_LINE)).toBe(true)
+    first.unmount()
+
+    render(<CallScreen view={VIEW} heardLines={heardLines} />)
+
+    // Sin ningún `ended`: ya estaba marcada como oída.
+    expect(screen.getByText(SPOKEN_LINE)).toBeDefined()
+  })
 })

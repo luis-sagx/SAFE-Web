@@ -9,11 +9,14 @@ import styles from './DeviceScreen.module.css'
 type Call = Extract<ScreenView, { kind: 'call' }>
 type Line = NonNullable<Call['dialogo']>[number]
 
-// Cuenta cuántas líneas propias (`mio`) encabezan el arreglo: no tienen
-// audio que esperar, así que se revelan de inmediato, una tras otra.
-function leadingOwnLines(lines: Line[]): number {
+// Cuenta cuántas líneas al inicio del arreglo no necesitan esperar audio:
+// las propias (`mio`) porque nunca lo tuvieron, y las ya oídas porque su
+// audio ya sonó antes de que la llamada se desmontara (ver `heardLines`).
+// Como el audio se reproduce en orden, las ya oídas siempre forman un
+// prefijo — nunca aparecen sueltas después de una que falta por sonar.
+function countAlreadyRevealed(lines: Line[], heard: ReadonlySet<string>): number {
   let i = 0
-  while (i < lines.length && lines[i]!.mio) i++
+  while (i < lines.length && (lines[i]!.mio || heard.has(lines[i]!.texto))) i++
   return i
 }
 
@@ -23,7 +26,22 @@ function clock(seconds: number) {
   return `${m}:${s}`
 }
 
-function CallScreen({ view, terminada: finished }: { view: Call; terminada?: boolean }) {
+function CallScreen({
+  view,
+  terminada: finished,
+  heardLines,
+}: {
+  view: Call
+  terminada?: boolean
+  // Frases del otro lado ya oídas en esta corrida, sostenidas por el padre:
+  // sobrevive a que este componente se desmonte al mirar otra app y vuelva a
+  // montarse al volver (issue #250 seguimiento), para no repetir el audio.
+  heardLines?: Set<string>
+}) {
+  // Sin `heardLines` (p.ej. los tests que no lo pasan) cada montaje se
+  // comporta como antes: nada que recordar entre un montaje y el siguiente.
+  const fallbackHeard = useRef<Set<string>>(new Set())
+  const heard = heardLines ?? fallbackHeard.current
   const [seconds, setSeconds] = useState(0)
   const [silence, setSilence] = useState(false)
   // Audios pendientes, en cola: un nodo puede traer varias frases seguidas.
@@ -70,14 +88,14 @@ function CallScreen({ view, terminada: finished }: { view: Call; terminada?: boo
       setRevealed(0)
     }
     const newLines = lines.slice(previouslySpoken)
-    const leading = leadingOwnLines(newLines)
+    const leading = countAlreadyRevealed(newLines, heard)
     spoken.current = lines.length
     setRevealed(previouslySpoken + leading)
     pendingReveal.current = newLines.slice(leading)
     setPartial('')
 
     const newVoiceUrls = newLines
-      .filter((line) => !line.mio)
+      .filter((line) => !line.mio && !heard.has(line.texto))
       .map((line) => VOICES[line.texto])
       .filter((url): url is string => Boolean(url))
 
@@ -85,6 +103,9 @@ function CallScreen({ view, terminada: finished }: { view: Call; terminada?: boo
     latest.current = newVoiceUrls
     // Se encola aunque esté silenciado, para no perderlo al quitar el silencio.
     setQueue(newVoiceUrls)
+    // `heard` es un Set mutable sostenido por el padre: no debe disparar este
+    // efecto de nuevo, solo se lee su contenido en el momento.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [view.dialogo])
 
   useEffect(() => {
@@ -132,11 +153,14 @@ function CallScreen({ view, terminada: finished }: { view: Call; terminada?: boo
     setSilence((s) => !s)
   }
 
-  // La línea que acaba de sonar se revela, y con ella cualquier línea propia
-  // que la siga de inmediato (no tiene audio propio que esperar).
+  // La línea que acaba de sonar se revela y se marca como oída (para que un
+  // futuro montaje no vuelva a esperar su audio), y con ella cualquier línea
+  // propia o ya oída que la siga de inmediato.
   function revealNextSpoken() {
+    const justFinished = pendingReveal.current[0]
+    if (justFinished) heard.add(justFinished.texto)
     const remaining = pendingReveal.current.slice(1)
-    const leading = leadingOwnLines(remaining)
+    const leading = countAlreadyRevealed(remaining, heard)
     pendingReveal.current = remaining.slice(leading)
     setRevealed((r) => Math.min(r + 1 + leading, spoken.current))
     setPartial('')
