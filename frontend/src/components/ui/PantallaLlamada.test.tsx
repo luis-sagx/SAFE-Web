@@ -85,6 +85,19 @@ describe('CallScreen', () => {
     expect(transcript.scrollTop).toBe(500)
   })
 
+  // Bug reportado: el panel de señales vuelve a mostrar una pantalla de
+  // llamada ya cerrada (terminada) para resaltar `data-signal` dentro de
+  // ella, sin reproducir audio ni esperar ningún `ended`. Si el revelado
+  // progresivo también aplicara ahí, esas líneas nunca aparecerían y las
+  // señales se quedarían sin nada que resaltar.
+  it('con la llamada terminada, toda la transcripción se ve de una vez, sin esperar audio', () => {
+    render(<CallScreen view={NEXT_VIEW} terminada />)
+
+    expect(screen.getByText(SPOKEN_LINE)).toBeDefined()
+    expect(screen.getByText(OWN_REPLY)).toBeDefined()
+    expect(screen.getByText(SECOND_LINE)).toBeDefined()
+  })
+
   it('cuando termina de hablar, las respuestas se habilitan', () => {
     const { container } = render(<CallScreen view={VIEW} />)
 

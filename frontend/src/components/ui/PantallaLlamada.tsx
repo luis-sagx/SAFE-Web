@@ -294,16 +294,24 @@ function CallScreen({ view, terminada: finished }: { view: Call; terminada?: boo
           `disabled` abajo). */}
       <div className={styles.callTranscripcion} ref={transcriptRef}>
         <span className={styles.callTag}>Transcripción</span>
-        {(view.dialogo ?? []).slice(0, revealed).map((line) => (
-          <p
-            key={line.texto}
-            className={`${styles.callLinea} ${line.mio ? styles.callLineaMia : ''}`}
-            data-signal={line.senal}
-          >
-            {line.texto}
-          </p>
-        ))}
-        {partial && (
+        {/* Terminada la llamada (colgada, o vuelta a mostrar solo para
+            resaltar una señal en el repaso del veredicto) no hay audio
+            sonando ni turno que esperar: se ve toda de una vez, igual que
+            antes de esperar el audio (issue #250 seguimiento) — si no, las
+            líneas que nunca llegaron a "sonar" quedarían sin señal que
+            resaltar. */}
+        {(finished ? (view.dialogo ?? []) : (view.dialogo ?? []).slice(0, revealed)).map(
+          (line) => (
+            <p
+              key={line.texto}
+              className={`${styles.callLinea} ${line.mio ? styles.callLineaMia : ''}`}
+              data-signal={line.senal}
+            >
+              {line.texto}
+            </p>
+          ),
+        )}
+        {!finished && partial && (
           <p className={styles.callLinea} data-signal={pendingReveal.current[0]?.senal}>
             {partial}
           </p>
