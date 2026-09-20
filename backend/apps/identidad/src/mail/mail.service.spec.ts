@@ -63,7 +63,8 @@ describe('MailService.sendPasswordReset', () => {
 
   it('manda el enlace de restablecimiento sin adjuntos cuando Resend no reporta error', async () => {
     let received:
-      { to: string; html: string; text?: string; attachments?: unknown } | undefined;
+      | { to: string; html: string; text?: string; attachments?: unknown }
+      | undefined;
     sendMock.mockImplementation(
       (payload: {
         to: string;
