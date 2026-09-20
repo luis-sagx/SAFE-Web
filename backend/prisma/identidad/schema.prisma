@@ -85,6 +85,22 @@ model Participant {
   passwordHash String
   role         Role   @default(PARTICIPANT)
 
+  /// Hash SHA-256 del token de un solo uso para "¿olvidaste tu contraseña?"
+  /// (issue #256): nunca se guarda el token en claro, igual que passwordHash
+  /// nunca guarda la contraseña. Se limpia (junto con `passwordResetExpiresAt`)
+  /// al usarse o al pedir uno nuevo, así que como máximo hay uno vigente.
+  passwordResetTokenHash String? @unique
+
+  /// Vence a los 30 minutos de pedirse (ver PASSWORD_RESET_EXPIRES_MS en
+  /// auth.service.ts). Null cuando no hay ningún restablecimiento pendiente.
+  passwordResetExpiresAt DateTime?
+
+  /// Se incrementa al restablecer la contraseña. El refresh token lleva la
+  /// versión con la que se emitió; si no coincide con esta, `refreshSession`
+  /// lo rechaza, así un restablecimiento cierra las sesiones ya abiertas en
+  /// otros dispositivos sin necesitar una lista de tokens revocados.
+  tokenVersion Int @default(0)
+
   /// Si ya vio la pantalla de bienvenida y no quiere que vuelva a aparecer.
   /// Null = nunca la vio, o pidió verla de nuevo; con fecha = la vio y la
   /// cerró marcando "no volver a mostrar".

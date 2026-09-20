@@ -188,7 +188,12 @@ export class AdminService {
     const password = generatePassword();
     await this.prisma.participant.update({
       where: { id },
-      data: { passwordHash: await hash(password, BCRYPT_ROUNDS) },
+      data: {
+        passwordHash: await hash(password, BCRYPT_ROUNDS),
+        // Cierra cualquier sesión ya abierta en otro dispositivo, igual que
+        // el autoservicio por correo (issue #256, ver auth.service.ts).
+        tokenVersion: { increment: 1 },
+      },
     });
     return { password };
   }

@@ -6,8 +6,10 @@ import {
   issueCertificate,
   fetchAttestation,
   fetchMe,
+  forgotPassword,
   getToken,
   login,
+  resetPassword,
   setToken,
   verifyCertificate,
 } from './api'
@@ -61,6 +63,31 @@ describe('api', () => {
 
     const [, init] = fetchMock.mock.calls[0] as [string, RequestInit]
     expect((init.headers as Record<string, string>).Authorization).toBeUndefined()
+  })
+
+  it('forgotPassword manda el correo a /auth/forgot-password sin token', async () => {
+    setToken('t0ken')
+    const fetchMock = mockFetch({ ok: true, status: 204, json: () => Promise.resolve(null) })
+
+    await forgotPassword('a@b.com')
+
+    const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit]
+    expect(url).toContain('/auth/forgot-password')
+    expect((init.headers as Record<string, string>).Authorization).toBeUndefined()
+    expect(JSON.parse(init.body as string)).toEqual({ email: 'a@b.com' })
+  })
+
+  it('resetPassword manda el token y la contraseña nueva a /auth/reset-password', async () => {
+    const fetchMock = mockFetch({ ok: true, status: 204, json: () => Promise.resolve(null) })
+
+    await resetPassword('token-abc', 'ClaveNueva123!')
+
+    const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit]
+    expect(url).toContain('/auth/reset-password')
+    expect(JSON.parse(init.body as string)).toEqual({
+      token: 'token-abc',
+      password: 'ClaveNueva123!',
+    })
   })
 
   // Sin descartarlo, la app queda en un bucle de 401 sin llegar al login.

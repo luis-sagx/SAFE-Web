@@ -247,6 +247,24 @@ export function login(email: string, password: string): Promise<Session> {
   })
 }
 
+// La respuesta es la misma exista o no la cuenta (issue #256, ver el
+// backend): este llamado nunca revela si el correo está registrado.
+export function forgotPassword(email: string): Promise<null> {
+  return request<null>('/auth/forgot-password', {
+    method: 'POST',
+    body: { email },
+    auth: false,
+  })
+}
+
+export function resetPassword(token: string, password: string): Promise<null> {
+  return request<null>('/auth/reset-password', {
+    method: 'POST',
+    body: { token, password },
+    auth: false,
+  })
+}
+
 export function fetchMe(): Promise<Participant> {
   return request<Participant>('/auth/me')
 }

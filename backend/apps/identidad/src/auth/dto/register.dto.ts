@@ -24,6 +24,12 @@ export const NAME_PATTERN =
   /^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+(?: [A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+)*$/;
 const MESSAGE_NAME = 'Solo se permiten letras y espacios entre palabras.';
 
+/// Exportado para que `ResetPasswordDto` (issue #256) exija la misma
+/// política, sin duplicar la regla en dos sitios que podrían desalinearse.
+export const PASSWORD_PATTERN = /^(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).+$/;
+export const PASSWORD_MESSAGE =
+  'La contraseña debe incluir al menos una mayúscula, un número y un carácter especial.';
+
 export class RegisterDto {
   @IsString()
   @MinLength(2)
@@ -57,9 +63,6 @@ export class RegisterDto {
   @IsString()
   @MinLength(8, { message: 'La contraseña debe tener al menos 8 caracteres.' })
   @MaxLength(128)
-  @Matches(/^(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).+$/, {
-    message:
-      'La contraseña debe incluir al menos una mayúscula, un número y un carácter especial.',
-  })
+  @Matches(PASSWORD_PATTERN, { message: PASSWORD_MESSAGE })
   password: string;
 }
