@@ -99,7 +99,7 @@ export const SECTIONS: Section[] = [
     id: "asistentes-ia",
     titulo: "Asistentes de IA",
     descripcion:
-      "Pegar un correo, un informe o una conversación en una IA para que la mejore también comparte lo que llevan adentro.",
+      "Un asistente de IA que redacta o resume lo que le pegas, pero también se queda con eso: nombres, cédulas o direcciones que no hacían falta para la tarea.",
     canal: "Herramientas de IA",
     Icono: Bot,
   },
@@ -212,7 +212,7 @@ const BASE: BaseScenario[] = [
     titulo: "Aviso de filtración de datos",
     descripcion:
       "Una tienda en línea comunica un incidente de seguridad que afecta a tu cuenta.",
-    version: 10,
+    version: 11,
     naturaleza: "legitimo",
     dificultad: 4,
     espeja: "phishing/sesion-bogota",
@@ -238,7 +238,9 @@ const BASE: BaseScenario[] = [
     // decisión es si contestar, sin haber mirado nunca una dirección web.
     seccionId: "smishing",
     escenarioId: "baja-suscripcion",
-    titulo: "Suscripción que no contrataste",
+    // Antes decía "Suscripción que no contrataste": daba por hecho que el
+    // cobro era falso antes de empezar, mismo problema que #235.
+    titulo: "Cobro de una suscripción",
     descripcion:
       "Un SMS cobra un servicio que nunca pediste y ofrece cancelarlo respondiendo.",
     version: 3,
@@ -330,7 +332,9 @@ const BASE: BaseScenario[] = [
     // que pide reenviarlo.
     seccionId: "smishing",
     escenarioId: "codigo-reenviado",
-    titulo: "Código que piden reenviar",
+    // Antes decía "Código que piden reenviar": nombraba la propia acción
+    // riesgosa que el escenario mide detectar (issue #235).
+    titulo: "Mensaje sobre tu código de verificación",
     descripcion:
       "Alguien dice ser del banco y pide el código de verificación que acaba de llegarte.",
     version: 3,
@@ -457,7 +461,7 @@ const BASE: BaseScenario[] = [
   {
     // La puerta de entrada del módulo y el fraude más común del país: el
     // número nuevo que dice ser de alguien de tu familia. Espeja con
-    // numero-nuevo-real, que es exactamente el mismo mensaje siendo verdad.
+    // numero-nuevo-familia, que es exactamente el mismo mensaje siendo verdad.
     seccionId: "suplantacion",
     escenarioId: "cambio-numero",
     titulo: "Cambio de número",
@@ -467,13 +471,15 @@ const BASE: BaseScenario[] = [
     version: 2,
     naturaleza: "fraude",
     dificultad: 1,
-    espeja: "suplantacion/numero-nuevo-real",
+    espeja: "suplantacion/numero-nuevo-familia",
     Component: lazy(() => import("../secciones/suplantacion/CambioNumero")),
   },
   {
     seccionId: "suplantacion",
     escenarioId: "perfil-clonado",
-    titulo: "Perfil clonado",
+    // Antes decía "Perfil clonado": adelantaba la respuesta antes de empezar
+    // (issue #235). El id no cambia (las corridas ya guardadas lo usan).
+    titulo: "Cuenta nueva de una amiga",
     descripcion:
       "Una amiga escribe desde una cuenta nueva y termina pidiendo dinero prestado.",
     version: 1,
@@ -488,7 +494,11 @@ const BASE: BaseScenario[] = [
     // hace, no si reconoce algo.
     seccionId: "suplantacion",
     escenarioId: "clonaron-tu-perfil",
-    titulo: "Alguien usa tu nombre",
+    // Antes decía "Alguien usa tu nombre": sonaba a que sí te suplantaron,
+    // pero la respuesta correcta es que el aviso es real (naturaleza
+    // "legitimo") — el título empujaba hacia la conclusión contraria
+    // (issue #235).
+    titulo: "Una amiga te avisa",
     descripcion:
       "Una amiga avisa de que hay una cuenta con tus fotos pidiendo dinero.",
     version: 1,
@@ -508,7 +518,7 @@ const BASE: BaseScenario[] = [
     version: 1,
     naturaleza: "fraude",
     dificultad: 3,
-    espeja: "suplantacion/numero-nuevo-real",
+    espeja: "suplantacion/numero-nuevo-familia",
     Component: lazy(() => import("../secciones/suplantacion/JefeUrgente")),
   },
   {
@@ -516,7 +526,7 @@ const BASE: BaseScenario[] = [
     // Sin él el módulo enseñaría "desconfía de todo número nuevo", que no es
     // criterio sino miedo. Y aun siendo auténtico, mide qué se acaba mandando.
     seccionId: "suplantacion",
-    escenarioId: "numero-nuevo-real",
+    escenarioId: "numero-nuevo-familia",
     titulo: "Número nuevo de la familia",
     descripcion:
       "Tu tía avisa desde otro número que perdió el celular, con una nota de voz.",
@@ -537,7 +547,7 @@ const BASE: BaseScenario[] = [
     version: 1,
     naturaleza: "fraude",
     dificultad: 4,
-    espeja: "suplantacion/numero-nuevo-real",
+    espeja: "suplantacion/numero-nuevo-familia",
     Component: lazy(() => import("../secciones/suplantacion/CodigoPrestado")),
   },
   {
@@ -565,7 +575,7 @@ const BASE: BaseScenario[] = [
     version: 1,
     naturaleza: "fraude",
     dificultad: 5,
-    espeja: "suplantacion/numero-nuevo-real",
+    espeja: "suplantacion/numero-nuevo-familia",
     Component: lazy(() => import("../secciones/suplantacion/VozClonada")),
   },
   {
@@ -709,13 +719,15 @@ const BASE: BaseScenario[] = [
   {
     seccionId: 'fisico',
     escenarioId: 'cable-comprometido',
-    titulo: 'Estación de carga pública',
+    titulo: 'Camino a casa',
     descripcion:
-      'Te quedas con la batería casi en cero y solo encuentras un mueble de carga con puertos USB, sin ningún tomacorriente para tu propio cargador.',
+      'Esperando el bus al final del día, algo pasa con tu celular y tienes que decidir qué haces primero.',
     // v2: cambió la premisa completa (issue reportado por el usuario): de un
     // cable suelto en la oficina a una estación de carga pública ("juice
     // jacking"). El id y el escenarioId no cambian, para no perder el
-    // historial de corridas ya guardadas.
+    // historial de corridas ya guardadas. Después pasó a robo del celular y
+    // toma de la banca móvil (juice jacking no tiene casos reales); la versión
+    // se dejó en 2 a pedido del usuario.
     version: 2,
     naturaleza: 'fraude',
     dificultad: 2,
@@ -725,9 +737,9 @@ const BASE: BaseScenario[] = [
   {
     seccionId: 'fisico',
     escenarioId: 'tarjeta-clonada',
-    titulo: 'Billetera clonada',
+    titulo: 'Retiro en el cajero',
     descripcion:
-      'Tu billetera fue clonada en la calle: alguien la escaneó o accedió sin que lo notaras. Debes decidir cómo guardarla y qué hacer cuando descubres el fraude.',
+      'Vas a sacar efectivo en un cajero de la calle y algo no sale como esperabas.',
     version: 1,
     naturaleza: 'fraude',
     dificultad: 2,
@@ -737,7 +749,9 @@ const BASE: BaseScenario[] = [
   {
     seccionId: 'fisico',
     escenarioId: 'descarga-programas-piratas',
-    titulo: 'Descarga de software pirata',
+    // Antes decía "Descarga de software pirata": la palabra "pirata" ya
+    // delataba el riesgo (issue #235).
+    titulo: 'Software gratis de un compañero',
     descripcion:
       'Un compañero te ofrece una versión gratis de un software profesional caro. Debes elegir de dónde descargarlo.',
     version: 1,
@@ -749,11 +763,11 @@ const BASE: BaseScenario[] = [
   {
     seccionId: 'fisico',
     escenarioId: 'puertos-frios-datacenter',
-    titulo: 'Puerto frío abierto en datacenter',
+    titulo: 'Entrada al área de sistemas',
     descripcion:
-      'La puerta del puerto frío está abierta. Debes actuar rápido para evitar que equipos críticos se vean afectados por el calor.',
+      'Llegas temprano al piso de Tecnología y alguien necesita pasar contigo.',
     version: 1,
-    naturaleza: 'legitimo',
+    naturaleza: 'fraude',
     dificultad: 3,
     espeja: null,
     Component: lazy(() => import('../secciones/fisico/PuertosFriosColdAisle')),
@@ -795,7 +809,7 @@ const BASE: BaseScenario[] = [
   createAIAssistantScenario(
     'correo-credenciales',
     'Informe escolar pegado en una IA',
-    'Le pides a una IA que mejore un informe escolar de un estudiante, y el documento trae su cédula, su fecha de nacimiento y su domicilio.',
+    'Le pides a una IA que mejore un informe escolar de un estudiante, y el documento trae su cédula y su domicilio.',
     2,
     lazy(() => import('../secciones/asistentes-ia/InformeEscolar')),
   ),

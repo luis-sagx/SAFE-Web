@@ -212,14 +212,14 @@ const APPS: PhoneApp[] = [
     Icono: ShoppingBag,
     texto: 'Mercado Abierto',
     color: '#7048e8',
-    goto: 'n6',
+    viewNode: 'n6',
     label: 'Abrió el anuncio en la página de compraventa',
   },
   {
     Icono: Wallet,
     texto: IDENTITY_FAKE.banco,
     color: '#155e75',
-    goto: 'n5',
+    viewNode: 'n5',
     label: 'Abrió la app del banco para transferir',
   },
   { Icono: Images, texto: 'Galería', color: '#c2410c', relleno: 'galeria' },
@@ -238,21 +238,21 @@ export const STORY: Story<ScreenNode> = {
     view: TRANSFER,
     verdict: 'Caíste en la estafa',
     outcome:
-      'Los $430 salieron a la cuenta de Jessica Bravo, que no es quien te escribía. El celular nunca se despachó: al día siguiente el chat decía "este número ya no existe" y el anuncio había desaparecido de la página. Una transferencia enviada no se reversa, y el nombre al que pagaste no es el de nadie a quien puedas reclamar.',
+      'Los $430 salieron a la cuenta de Jessica Bravo, que no era quien te escribía. Al día siguiente el número ya no existía y el anuncio había desaparecido.',
   },
   e_deja: {
     kind: 'good',
     view: PRESSES,
     verdict: 'No caíste · dejaste pasar la ganga',
     outcome:
-      'Lo dejaste ir, y no perdiste nada más que un anuncio que no existía. Nadie más se lo llevó: la cuenta se cerró tres días después y el mismo texto reapareció con otro nombre y otro número. Un equipo a mitad de precio que solo se paga por adelantado no es una oferta, es el anzuelo.',
+      'No perdiste nada. La cuenta se cerró tres días después y el mismo texto reapareció con otro nombre y otro número.',
   },
   e_ignora: {
     kind: 'partial',
     view: CHAT,
     verdict: 'No perdiste nada, pero no supiste por qué',
     outcome:
-      'Saliste sin pagar, que es lo que importaba. Pero tampoco miraste el anuncio ni comparaste el precio, así que la próxima vez que aparezca lo mismo con un vendedor más convincente no vas a tener con qué decidir. Comparar el precio cuesta un toque y es lo que desarma la oferta.',
+      'Saliste sin pagar, pero no miraste el anuncio ni comparaste el precio. Comparar cuesta un toque y desarma la oferta.',
     score: 50,
   },
 }
@@ -262,48 +262,47 @@ const SIGNALS: Signal[] = [
     id: 's1',
     targetId: 'precio',
     pantalla: 'n6',
-    texto:
-      'El <b>precio es la mitad</b> del de cualquier tienda. Un descuento así no existe porque nadie regala cuatrocientos dólares: el precio bajo es lo que paga tu prisa por no perderlo.',
+    texto: 'El <b>precio es la mitad</b> del de cualquier tienda. Nadie regala cuatrocientos dólares.',
   },
   {
     id: 's2',
     targetId: 'cuenta',
     pantalla: 'n3',
     texto:
-      'La cuenta está a <b>otro nombre</b>. Es lo que hace que no puedas reclamarle a nadie: quien recibe el dinero no es quien te vendió, y muchas veces ni sabe que su cuenta se está usando.',
+      'La cuenta está a <b>otro nombre</b>. Quien recibe el dinero no es quien te vendió, y no hay a quién reclamar.',
   },
   {
     id: 's3',
     targetId: 'no-se-ve',
     pantalla: 'n2',
     texto:
-      'Siempre hay un motivo para <b>no poder verse</b>: otra ciudad, el trabajo, la encomienda. Es la condición que la estafa necesita, porque en persona no hay nada que entregar.',
+      'Siempre hay un motivo para <b>no poder verse</b>. Es la condición que la estafa necesita: en persona no hay nada que entregar.',
   },
   {
     id: 's4',
     targetId: 'perfil',
     pantalla: 'n6',
     texto:
-      'La cuenta del vendedor tiene <b>tres días y ninguna calificación</b>. No prueba que sea falsa por sí sola, pero junto al precio y al pago por adelantado ya son tres cosas a la vez.',
+      'La cuenta del vendedor tiene <b>tres días y ninguna calificación</b>. Junto al precio y al pago por adelantado, ya son tres señales.',
   },
   {
     id: 's5',
     targetId: 'prisa',
     pantalla: 'n4',
     texto:
-      'Los <b>otros dos compradores</b> y la media hora son del guion. La ganga que se va si no pagas ya es la misma herramienta de siempre: quitarte el tiempo de comparar.',
+      'Los <b>otros dos compradores</b> y la media hora son del guion: quitarte el tiempo de comparar.',
   },
   {
     id: 's6',
     targetId: 'comparacion',
     pantalla: 'n7',
     texto:
-      'Comparar en la misma página lo deja a la vista: <b>ningún otro baja de $820</b>, y todos dejan verlo antes de pagar. La comparación es gratis y desarma la oferta en un toque.',
+      'Comparar lo deja a la vista: <b>ningún otro baja de $820</b>, y todos dejan verlo antes de pagar.',
   },
 ]
 
 const RULE =
-  'Regla de oro: <b>no pagues por adelantado lo que no has visto</b>, y desconfía del precio que es demasiado bueno. Compara con otros anuncios del mismo producto, exige verlo o pagar contra entrega, y no transfieras nunca a una cuenta que está a otro nombre.'
+  'Regla de oro: <b>no pagues por adelantado lo que no has visto</b>. Compara precios, exige ver el producto o pagar contra entrega, y nunca transfieras a una cuenta a otro nombre.'
 
 const SUMMARY = 'Un celular a mitad de precio, pero solo se paga por adelantado y sin verlo.'
 

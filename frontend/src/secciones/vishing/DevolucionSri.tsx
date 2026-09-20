@@ -112,13 +112,12 @@ const WITHOUT_ECUADORIAN_ID: ScreenView = {
         "Es automática, sale del cruce de sus gastos deducibles. No tiene que reclamar nada, solo confirmarme la cédula y la cuenta donde le depositamos.",
       senal: "insisten",
     },
-    ...COMPLETION,
   ],
   decir: [
     {
-      texto: `Bueno, mi cédula es ${IDENTITY_FAKE.cedula} y la cuenta es esa.`,
+      texto: `Bueno, mi cédula es ${IDENTITY_FAKE.cedula} y mi cuenta es ${ACCOUNT_FAKE}.`,
       goto: "e_datos",
-      label: "Terminó dando la cédula y confirmando la cuenta",
+      label: "Terminó dando la cédula y el número de cuenta",
     },
   ],
   colgarGoto: "e_cuelga",
@@ -193,14 +192,14 @@ const APPS: PhoneApp[] = [
     Icono: MessageSquareText,
     texto: "Mensajes",
     color: "#2f9e44",
-    goto: "n_codigo",
+    viewNode: "n_codigo",
     label: "Abrió los mensajes para leer el código",
   },
   {
     Icono: Compass,
     texto: "Navegador",
     color: "#1971c2",
-    goto: "n4",
+    viewNode: "n4",
     label: "Abrió el navegador para comprobar por su cuenta",
   },
   { Icono: Wallet, texto: "Banco", color: "#155e75", relleno: "banco" },
@@ -227,41 +226,41 @@ export const STORY: Story<ScreenNode> = {
     view: INCOMING,
     verdict: "No caíste · no contestaste",
     outcome:
-      "Rechazaste una llamada de un número desconocido. Si el SRI tuviera algo que devolverte, estaría en tu portal y llegaría por escrito: ninguna institución resuelve un trámite en una llamada que empezaron ellos.",
+      "Rechazaste la llamada de un número desconocido. Una devolución real estaría en el portal, no en una llamada que empezaron ellos.",
   },
   e_cuelga: {
     kind: "good",
     view: WITHOUT_ECUADORIAN_ID,
     verdict: "No caíste · colgaste sin dar nada",
     outcome:
-      'Colgaste sin confirmar ni un dato. Fíjate en el orden: primero te ofrecen algo bueno, después te piden "solo confirmar" lo que ya deberían saber. Quien de verdad tiene tu declaración no necesita que le dictes tu cédula.',
+      'Colgaste sin confirmar ni un dato. Quien de verdad tiene tu declaración no necesita que le dictes tu cédula.',
   },
   e_cuelga_datos: {
     kind: "partial",
     view: GAVE_ECUADORIAN_ID,
     verdict: "Colgaste a tiempo, pero ya habías dado tu cédula",
-    outcome: `Colgaste antes de dictar el código, que es lo que habría costado dinero. Pero les confirmaste tu cédula ${IDENTITY_FAKE.cedula}: con ella la próxima llamada sonará mucho más creíble, porque empezarán diciéndotela ellos.`,
+    outcome: `Colgaste antes de dictar el código, lo que habría costado dinero. Pero confirmaste tu cédula ${IDENTITY_FAKE.cedula}, y con eso la próxima llamada sonará más creíble.`,
     score: 50,
   },
   e_datos: {
     kind: "partial",
     view: WITHOUT_ECUADORIAN_ID,
     verdict: "Dudaste, pero entregaste igual",
-    outcome: `Preguntaste bien y aun así acabaste dando tu cédula y confirmando tu cuenta ${ACCOUNT_FAKE}. No perdiste dinero hoy, pero ahora tienen los dos datos con los que se abre cualquier gestión a tu nombre.`,
+    outcome: `Preguntaste bien, pero acabaste dando tu cédula y tu cuenta ${ACCOUNT_FAKE}. No perdiste dinero hoy, pero ya tienen lo necesario para cualquier gestión a tu nombre.`,
     score: 50,
   },
   e_codigo: {
     kind: "bad",
     view: GAVE_ECUADORIAN_ID,
     verdict: "Caíste en la trampa",
-    outcome: `No había ninguna devolución. El código ${CODE} no liberaba ningún depósito: era el que tu banco envía para autorizar una transferencia, y con él sacaron el dinero de tu cuenta mientras seguías al teléfono. `,
+    outcome: `No había ninguna devolución. El código ${CODE} autorizaba una transferencia, y con él sacaron el dinero de tu cuenta.`,
   },
   e_portal: {
     kind: "good",
     view: PORTAL,
     verdict: "No caíste · lo comprobaste en el portal",
     outcome:
-      "En el portal del SRI no había ninguna devolución a tu favor ni trámite en curso, y ahí mismo estaba escrito que no llaman a pedir cuentas ni códigos. Entrar tú al sitio oficial cuesta medio minuto y no depende de nadie.",
+      "En el portal del SRI no había ninguna devolución ni trámite en curso. Entrar tú al sitio oficial cuesta medio minuto y no depende de nadie.",
   },
 };
 
@@ -271,54 +270,54 @@ const SIGNALS: Signal[] = [
     targetId: "quien",
     pantalla: "n1",
     texto:
-      "Un <b>número cualquiera</b> que dice ser una institución. Que en la pantalla salga un número de Quito no acredita a nadie.",
+      "<b>Cualquier número puede decir ser una institución.</b> Que salga Quito en pantalla no acredita nada.",
   },
   {
     id: "s2",
     targetId: "piden-cedula",
     pantalla: "n2",
     texto:
-      "Te piden <b>la cédula que ya deberían tener</b>. Si de verdad estuvieran mirando tu declaración, tu cédula estaría delante de ellos: pedirla es la prueba de que no la tienen.",
+      "<b>Te piden la cédula que ya deberían tener.</b> Pedirla es la prueba de que no la tienen.",
   },
   {
     id: "s3",
     targetId: "insisten",
     pantalla: "n3b",
     texto:
-      '<b>"Es automática, no tiene que reclamar nada."</b> La respuesta a tu duda está preparada: preguntar no molesta a quien está estafando, solo le da una frase más.',
+      '<b>"Es automática, no tiene que reclamar nada."</b> La respuesta a tu duda ya estaba preparada.',
   },
   {
     id: "s4",
     targetId: "cuenta",
     pantalla: "n3",
     texto:
-      "Dicen tu cuenta y te piden <b>confirmarla</b>. Confirmar también es entregar: el truco funciona porque parece que ya la sabían.",
+      "<b>Te piden confirmar tu cuenta</b> como si ya la supieran. Confirmar también es entregarla.",
   },
   {
     id: "s5",
     targetId: "piden-codigo",
     pantalla: "n3",
     texto:
-      'El <b>código del banco no sirve para recibir dinero</b>, solo para autorizar salidas. Cualquiera que te lo pida para "liberar un depósito" está sacándote el dinero, no metiéndotelo.',
+      '<b>El código del banco solo autoriza salidas de dinero</b>, nunca las recibe. Pedirlo para "liberar un depósito" es sacártelo, no dártelo.',
   },
   {
     id: "s6",
     targetId: "sin-devolucion",
     pantalla: "e_portal",
     texto:
-      "En el portal <b>no había ninguna devolución</b>. Los trámites con el Estado se ven entrando tú, no en una llamada que empezó el otro.",
+      "<b>En el portal no había ninguna devolución.</b> Los trámites con el Estado se ven entrando tú, no en una llamada ajena.",
   },
   {
     id: "s7",
     targetId: "texto-codigo",
     pantalla: "n_codigo",
     texto:
-      "El mensaje lo dice en su propio texto: ese código <b>autoriza salidas de dinero</b>, nunca libera un depósito. Es el mismo código, pero no para lo que te dijeron.",
+      "El mensaje lo dice él mismo: ese código <b>autoriza salidas de dinero</b>, nunca libera un depósito.",
   },
 ];
 
 const RULE =
-  "Regla de oro: ninguna institución te llama para pedirte tu cédula, tu cuenta o un código. Si te ofrecen dinero por teléfono, <b>cuelga y compruébalo entrando tú al portal oficial</b>; y recuerda que el código del banco solo autoriza salidas de dinero, nunca entradas.";
+  "Regla de oro: <b>ninguna institución te pide cédula, cuenta o código por teléfono</b>. Si te ofrecen dinero, cuelga y compruébalo tú en el portal oficial.";
 
 const SUMMARY =
   "Una llamada dice que el SRI tiene una devolución de impuestos a tu favor.";
@@ -353,10 +352,11 @@ function SriRefund() {
       identidad={["cedula", "cuenta"]}
       instruccion={
         <p className="text-lg leading-relaxed text-body">
-          Actúa sobre el teléfono como lo harías con el tuyo: contesta o
-          rechaza, cuelga cuando quieras y usa{" "}
-          <strong>cualquier app de abajo</strong>, incluso con la llamada
-          abierta.
+          Es una llamada en vivo: hay alguien hablando al otro lado y espera
+          tu respuesta cuando termine. Actúa sobre el teléfono como lo
+          harías con el tuyo: contesta o rechaza, cuelga cuando quieras y
+          usa <strong>cualquier app de abajo</strong>, incluso con la
+          llamada abierta.
         </p>
       }
       pista={

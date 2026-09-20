@@ -50,7 +50,7 @@ const STORY: Story<StoryNode> = {
   e_datos: {
     kind: 'bad',
     verdict: 'Caíste en la trampa',
-    outcome: `Entregaste tu cédula ${IDENTITY_FAKE.cedula} y tu clave ${IDENTITY_FAKE.clave} en litoral-actualiza.web.app, un sitio que no es del banco. Con esos datos entraron a tu cuenta esa misma noche.`,
+    outcome: `Entregaste tu cédula ${IDENTITY_FAKE.cedula} y tu clave ${IDENTITY_FAKE.clave} en litoral-actualiza.web.app, un sitio que no es del banco. Entraron a tu cuenta esa misma noche.`,
   },
   // Absorbe el antiguo final "vista previa antes de escanear": un QR no tiene
   // href, así que no existe una vista previa real, escanear ya abre la
@@ -59,32 +59,29 @@ const STORY: Story<StoryNode> = {
   e_app: {
     kind: 'good',
     verdict: 'No caíste · entraste por tu cuenta',
-    outcome:
-      'Entraste a la app del banco por tu cuenta y comprobaste el centro de seguridad. No había ninguna actualización de datos pendiente: el correo era falso.',
+    outcome: 'Entraste a la app del banco por tu cuenta y revisaste el centro de seguridad. No había nada pendiente: el correo era falso.',
   },
   e_eliminar: {
     kind: 'good',
     verdict: 'No caíste · lo eliminaste',
     outcome:
-      'Lo borraste sin escanear el código, que es suficiente para no caer. Marcarlo como spam habría hecho algo más: avisar al filtro para que no le llegue a otros.',
+      'Borrarlo sin escanear el código ya es no caer. Marcarlo como spam habría hecho algo más: avisar al filtro.',
   },
   e_spam: {
     kind: 'good',
     verdict: 'No caíste · lo reportaste',
-    outcome:
-      'Marcarlo como spam es la mejor reacción posible: no caíste y además tu proveedor de correo aprende a filtrar ese remitente.',
+    outcome: 'Marcarlo como spam es la mejor reacción: no caíste, y tu proveedor aprende a filtrar ese remitente.',
   },
   e_responder: {
     kind: 'partial',
     verdict: 'No entregaste nada, pero contestaste',
     outcome:
-      'No escaneaste el código, pero confirmaste que tu dirección existe y que alguien la lee. Es justo lo que un atacante busca para insistir con algo mejor preparado.',
+      'No escaneaste el código, pero confirmaste que tu dirección existe y alguien la lee. Justo lo que un atacante busca.',
   },
   e_reenviar: {
     kind: 'partial',
     verdict: 'No caíste tú, pero lo pasaste',
-    outcome:
-      'Se lo reenviaste a otra persona para que opine. Tú no caíste, pero pusiste el código QR en la bandeja de alguien que quizá lo escanee sin la misma desconfianza.',
+    outcome: 'No caíste, pero el QR llegó a alguien que quizá lo escanee sin tu misma desconfianza.',
   },
 }
 
@@ -133,30 +130,25 @@ const SIGNALS: Signal[] = [
     's1',
     'n1',
     'qr',
-    'Un <b>código QR es un enlace escondido dentro de un dibujo</b>: no hay texto que leer, así que no puedes ver a dónde te lleva hasta que ya lo abriste.',
+    'Un <b>código QR esconde el enlace dentro de un dibujo</b>: no puedes ver a dónde lleva hasta que ya lo abriste.',
   ),
   createSignal(
     's2',
     'n1',
     'remitente',
-    'El dominio del remitente escribe <b>bancodel1itoral.com</b> con el número <b>1</b> en lugar de la letra <b>l</b>. Es una imitación de la dirección del banco: un cambio mínimo que puede pasar desapercibido.',
+    'El dominio escribe <b>bancodel1itoral.com</b> con el número <b>1</b> en lugar de la letra <b>l</b>. Es una imitación.',
   ),
   createSignal(
     's3',
     'n2',
     'campo-clave',
-    'El formulario pide la <b>clave de acceso</b>. Actualizar unos datos no necesita tu clave: la clave es lo que se usa para entrar a la cuenta, y es justo lo que buscan.',
+    'El formulario pide la <b>clave de acceso</b>. Actualizar datos nunca necesita tu clave.',
   ),
-  createSignal(
-    's4',
-    'n1',
-    'plazo',
-    'Mete <b>prisa</b> con un plazo de 72 horas, para que actúes antes de comprobar nada con el banco.',
-  ),
+  createSignal('s4', 'n1', 'plazo', 'Mete <b>prisa</b> con 72 horas, para que actúes antes de comprobar con el banco.'),
 ]
 
 const RULE =
-  'Regla de oro: al escanear un QR, primero <b>lee la vista previa de la URL</b> y recién ahí decide. Vale igual para los QR de correos, locales, surtidores y parquímetros.'
+  'Regla de oro: al escanear un QR, primero <b>lee la vista previa de la URL</b> (vale para correos, locales, surtidores y parquímetros).'
 
 const SUMMARY = 'Un correo del banco pide escanear un QR para "actualizar tus datos".'
 

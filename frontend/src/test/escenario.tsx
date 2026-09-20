@@ -48,3 +48,16 @@ export function start(scenario: ReactElement): HTMLElement {
   fireEvent.click(screen.getByRole('button', { name: 'Empezar' }))
   return container.querySelector('#pantalla-escenario') as HTMLElement
 }
+
+// Las opciones de "Tú contestas" están deshabilitadas mientras suena el
+// audio del otro lado (issue #250): en jsdom el audio nunca termina solo
+// (no hay reproducción de verdad), así que los tests de vishing que
+// necesitan elegir una respuesta primero simulan que la locución terminó.
+// Un nodo puede encolar varias frases seguidas, cada `ended` solo saca una
+// de la cola, por eso se dispara varias veces: de sobra si la cola ya
+// estaba vacía, no hace nada.
+export function terminarDeHablar(container: HTMLElement): void {
+  const audio = container.querySelector('audio')
+  if (!audio) return
+  for (let i = 0; i < 5; i++) fireEvent.ended(audio)
+}

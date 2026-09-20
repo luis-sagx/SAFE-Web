@@ -229,14 +229,14 @@ const APPS: PhoneApp[] = [
     Icono: Wallet,
     texto: 'Banco del Litoral',
     color: '#155e75',
-    goto: 'n5',
+    viewNode: 'n5',
     label: 'Abrió la app del banco durante la llamada',
   },
   {
     Icono: Compass,
     texto: 'Navegador',
     color: '#1971c2',
-    goto: 'n4',
+    viewNode: 'n4',
     label: 'Abrió el navegador para comprobar por su cuenta',
   },
   { Icono: Images, texto: 'Galería', color: '#c2410c', relleno: 'galeria' },
@@ -375,8 +375,10 @@ function RafflePrize() {
       apps={APPS}
       instruccion={
         <p className="text-lg leading-relaxed text-body">
-          Actúa sobre el teléfono como lo harías con el tuyo: contesta o rechaza, cuelga cuando
-          quieras y usa <strong>cualquier app de abajo</strong>, incluso con la llamada abierta.
+          Es una llamada en vivo: hay alguien hablando al otro lado y espera tu respuesta cuando
+          termine. Actúa sobre el teléfono como lo harías con el tuyo: contesta o rechaza, cuelga
+          cuando quieras y usa <strong>cualquier app de abajo</strong>, incluso con la llamada
+          abierta.
         </p>
       }
       pista={

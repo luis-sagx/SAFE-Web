@@ -5,6 +5,7 @@ import AppHeader, { BACK_CLASS } from '../components/AppHeader'
 import ProgressBar from '../components/BarraProgreso'
 import Ticket, { Insignia, Notches, Sello } from '../components/Boleto'
 import ModuleCompletionModal from '../components/CierreModuloModal'
+import VideoTicket from '../components/VideoCapacitacion'
 import { TRAMA_FONDO } from '../components/TramaFondo'
 import {
   getSectionScenarios,
@@ -13,6 +14,7 @@ import {
   SECTIONS,
   type Section,
 } from '../data/catalogo'
+import { TRAINING_VIDEOS } from '../data/videosCapacitacion'
 import { fetchProgress, restartModule, type Progress } from '../lib/api'
 import { isScenarioAvailable } from '../lib/bloqueoEscenarios'
 import ConfirmReplayModal from '../components/ConfirmarRepeticionModal'
@@ -167,6 +169,7 @@ function Section() {
   }
 
   const scenarios = getSectionScenarios(section.id)
+  const moduleVideo = TRAINING_VIDEOS.find((video) => video.sectionId === section.id)
   const missing = progress ? Math.max(progress.requeridos - progress.aprobados, 0) : 0
   // "Empieza aquí" solo con el módulo intacto; en una repetición cuenta lo jugado
   // en esa ronda, no lo de la anterior, que ya no es el recorrido en curso.
@@ -215,6 +218,20 @@ function Section() {
           {section.titulo}
         </h1>
         <p className="mt-3 max-w-prose text-lg leading-relaxed text-body">{section.descripcion}</p>
+
+        {/* El video del módulo, aquí y no solo en la portada (issue de UX): quien
+            entra a un módulo por primera vez lo tiene a un clic, en vez de tener
+            que volver a / y buscarlo entre los otros siete. */}
+        {moduleVideo && (
+          <div className="mt-8">
+            <VideoTicket
+              video={moduleVideo}
+              folio={moduleFolio(section.id)}
+              mostrarInformacion={false}
+              minimizarAlCerrar
+            />
+          </div>
+        )}
 
         {scenarios.length === 0 ? (
           <Ticket className="mt-10">

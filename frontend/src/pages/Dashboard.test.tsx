@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import Dashboard from './Dashboard'
@@ -103,7 +103,10 @@ describe('Dashboard', () => {
     renderDashboard()
 
     await screen.findByRole('button', { name: 'Descargar certificado' })
-    expect(reproducirModuloCompletoMock).toHaveBeenCalledTimes(1)
+    // El sonido sale de un useEffect, que React corre justo después de pintar:
+    // el botón puede aparecer antes, y en un runner lento la aserción directa
+    // llegaba antes que el efecto (fallaba solo en CI).
+    await waitFor(() => expect(reproducirModuloCompletoMock).toHaveBeenCalledTimes(1))
   })
 
   it('en visitas siguientes con todo ya aprobado, no vuelve a tocarlo', async () => {

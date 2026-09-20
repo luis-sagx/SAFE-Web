@@ -93,6 +93,8 @@ const BLOCK: ScreenView = {
   colgarLabel: 'Colgó sin confirmar nada',
 }
 
+// Sin `volverGoto`: no hay lista a la que volver, el icono `Teléfono` ya
+// restaura la llamada en curso (issue #251, mismo criterio que TarjetaBloqueada).
 const MESSAGE: ScreenView = {
   kind: 'sms',
   sender: 'BancoLitoral',
@@ -158,14 +160,14 @@ const APPS: PhoneApp[] = [
     Icono: MessageSquareText,
     texto: 'Mensajes',
     color: '#1971c2',
-    goto: 'n4',
+    viewNode: 'n4',
     label: 'Abrió los mensajes durante la llamada',
   },
   {
     Icono: Wallet,
     texto: 'Banco del Litoral',
     color: '#0f3d6e',
-    goto: 'n5',
+    viewNode: 'n5',
     label: 'Abrió la app del banco durante la llamada',
   },
   { Icono: Images, texto: 'Galería', color: '#c2410c', relleno: 'galeria' },
@@ -193,7 +195,7 @@ export const STORY: Story<ScreenNode> = {
     view: INCOMING,
     verdict: 'Prudente, pero el problema seguía ahí',
     outcome:
-      'No contestaste, y no contestar nunca te va a costar dinero: hiciste bien en no fiarte de un número desconocido. Pero el consumo de $890 era real y estaba retenido esperando tu respuesta. En la app lo tenías a la vista, y ni lo miraste.',
+      'No contestaste, y eso nunca cuesta dinero. Pero el consumo de $890 estaba retenido en la app esperando tu respuesta, y no lo miraste.',
     score: 50,
   },
   e_cuelga: {
@@ -201,7 +203,7 @@ export const STORY: Story<ScreenNode> = {
     view: CALL,
     verdict: 'Colgaste bien, pero te quedaste a medias',
     outcome:
-      'Colgar ante una llamada que no esperabas es siempre correcto, y no perdiste nada. Lo que falta es la otra mitad: alguien intentó gastar $890 con tu tarjeta esta noche. Colgar y no comprobar deja el problema exactamente donde estaba.',
+      'Colgar ante una llamada inesperada es correcto, y no perdiste nada. Pero alguien intentó gastar $890 con tu tarjeta, y colgar sin comprobar deja eso sin resolver.',
     score: 50,
   },
   e_devuelve: {
@@ -209,20 +211,20 @@ export const STORY: Story<ScreenNode> = {
     view: CALL,
     verdict: 'Acertaste · colgaste y llamaste tú',
     outcome:
-      'Colgaste y marcaste el número del reverso de tu tarjeta. Era el mismo banco y la misma gestión: rechazaron el consumo y bloquearon la tarjeta. Esta es la respuesta que funciona siempre, porque no depende de que adivines si quien llama es de verdad.',
+      'Colgaste y marcaste tú el número del reverso: era el mismo banco y rechazaron el consumo. Esta respuesta funciona siempre, sin depender de si adivinas quién llama.',
   },
   e_confirma: {
     kind: 'good',
     view: BLOCK,
     verdict: 'Acertaste · la llamada era legítima',
     outcome:
-      'Era tu banco. No te pidieron claves ni códigos, te ofrecieron ellos mismos que colgaras y llamaras, y el consumo quedó rechazado. Dijiste lo único que hacía falta: que esa compra no era tuya.',
+      'Era tu banco: no te pidieron claves ni códigos, y el consumo quedó rechazado. Solo hacía falta decir que esa compra no era tuya.',
   },
   e_dicta: {
     kind: 'bad',
     view: BLOCK,
     verdict: 'Llamada legítima, reacción peligrosa',
-    outcome: `La llamada era de verdad, pero dictaste el código igual, y eso es lo que no puede pasar nunca. Te lo habían advertido en la llamada y venía escrito en el propio mensaje. Hoy no perdiste nada porque al otro lado estaba tu banco; la próxima vez que alguien te pida ese código no lo estará.`,
+    outcome: `La llamada era real, pero dictaste el código igual, y eso nunca debe pasar. Hoy no perdiste nada por ser tu banco; la próxima vez que alguien lo pida, no lo será.`,
     score: 0,
   },
   e_app: {
@@ -230,7 +232,7 @@ export const STORY: Story<ScreenNode> = {
     view: HELD,
     verdict: 'Acertaste · lo resolviste en tu canal',
     outcome:
-      'En la app estaba el consumo retenido, igual que te contaban por teléfono: lo rechazaste desde ahí y la tarjeta quedó bloqueada. Comprobar en tu propio canal resuelve las dos cosas a la vez: confirma que la llamada era real y arregla el problema.',
+      'En la app estaba el mismo consumo retenido: lo rechazaste ahí y la tarjeta quedó bloqueada. Comprobar en tu propio canal confirma la llamada y resuelve el problema a la vez.',
   },
 }
 
@@ -247,28 +249,28 @@ const SIGNALS: Signal[] = [
     targetId: 'invita',
     pantalla: 'n2',
     texto:
-      'Te <b>invitan a colgar y llamar tú</b>. Un estafador necesita que sigas en línea; a tu banco le da igual por dónde le llegues.',
+      '<b>Te invitan a colgar y llamar tú.</b> A un estafador eso no le conviene; a tu banco le da igual.',
   },
   {
     id: 's3',
     targetId: 'retenido',
     pantalla: 'n2',
     texto:
-      'El consumo está <b>retenido, no cobrado</b>: te avisan antes de que pase nada. El fraude apura diciendo "ya se hizo"; tu banco detiene y pregunta.',
+      '<b>El consumo está retenido, no cobrado.</b> El fraude apura diciendo que "ya se hizo"; tu banco detiene y pregunta.',
   },
   {
     id: 's4',
     targetId: 'no-lo-de',
     pantalla: 'n3',
     texto:
-      'Te dicen que <b>no dictes el código a nadie</b>, ni al que diga ser del banco. Un estafador jamás lo diría.',
+      '<b>Te piden no dictar el código a nadie</b>, ni a quien diga ser del banco. Un estafador nunca diría eso.',
   },
   {
     id: 's5',
     targetId: 'texto-codigo',
     pantalla: 'n4',
     texto:
-      'El mensaje lo repite: el código es tu <b>constancia</b>, nunca te lo pedirán por teléfono.',
+      '<b>El código es tu constancia</b>, no una clave. El mensaje repite que nunca te lo pedirán por teléfono.',
   },
   {
     id: 's6',
@@ -280,7 +282,7 @@ const SIGNALS: Signal[] = [
 ]
 
 const RULE =
-  'Regla de oro: un banco de verdad <b>informa y pregunta, pero no te pide nada</b>, y no le molesta que cuelgues y le llames tú. Aunque la llamada sea auténtica, el código que te llega por mensaje no se dicta nunca.'
+  'Regla de oro: <b>tu banco informa y pregunta, nunca te pide nada</b>. Ni en una llamada real se dicta el código que llega por mensaje.'
 
 const SUMMARY = 'El banco llama para preguntarte si un consumo de $890 es tuyo.'
 
@@ -314,8 +316,10 @@ function BankConfirmation() {
       identidad={['tarjeta']}
       instruccion={
         <p className="text-lg leading-relaxed text-body">
-          Actúa sobre el teléfono como lo harías con el tuyo: contesta o rechaza, cuelga cuando
-          quieras y usa <strong>cualquier app de abajo</strong>, incluso con la llamada abierta.
+          Es una llamada en vivo: hay alguien hablando al otro lado y espera tu respuesta cuando
+          termine. Actúa sobre el teléfono como lo harías con el tuyo: contesta o rechaza, cuelga
+          cuando quieras y usa <strong>cualquier app de abajo</strong>, incluso con la llamada
+          abierta.
         </p>
       }
       pista={

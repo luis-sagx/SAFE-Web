@@ -212,14 +212,14 @@ const APPS: PhoneApp[] = [
     Icono: LayoutGrid,
     texto: 'Tienda de apps',
     color: '#5f3dc4',
-    goto: 'n4',
+    viewNode: 'n4',
     label: 'Abrió la tienda de aplicaciones',
   },
   {
     Icono: Wifi,
     texto: 'Mi AndinaNet',
     color: '#0b7285',
-    goto: 'n6',
+    viewNode: 'n6',
     label: 'Abrió la app de su proveedor de internet',
   },
   { Icono: Images, texto: 'Galería', color: '#c2410c', relleno: 'galeria' },
@@ -349,8 +349,10 @@ function TechnicalSupport() {
       apps={APPS}
       instruccion={
         <p className="text-lg leading-relaxed text-body">
-          Actúa sobre el teléfono como lo harías con el tuyo: contesta o rechaza, cuelga cuando
-          quieras y usa <strong>cualquier app de abajo</strong>, incluso con la llamada abierta.
+          Es una llamada en vivo: hay alguien hablando al otro lado y espera tu respuesta cuando
+          termine. Actúa sobre el teléfono como lo harías con el tuyo: contesta o rechaza, cuelga
+          cuando quieras y usa <strong>cualquier app de abajo</strong>, incluso con la llamada
+          abierta.
         </p>
       }
       pista={

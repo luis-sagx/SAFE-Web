@@ -46,11 +46,25 @@ function AIChatScenario({
       accionesEnPantalla
       cuandoTermina="Cuando escribas tu mensaje y lo envíes, o toques una de las respuestas del chat."
       instruccion={
-        instruction ?? (
+        <div className="grid gap-3">
+          {/* Encuadre fijo del módulo entero (issue #241): a diferencia de
+              phishing/vishing/smishing, acá no hay un atacante que engañe —
+              el riesgo es la propia decisión de qué se pega. Sin esto, cada
+              escenario explicaba el mecanismo (qué botón tocar) pero nunca el
+              porqué, y la gente entraba sin saber qué se le estaba poniendo
+              a prueba. */}
           <p className="text-lg leading-relaxed text-body">
-            Escribe tu mensaje y toca "Enviar", o toca una de las respuestas del chat.
+            Aquí no hay nadie tratando de engañarte: el asistente de IA hace exactamente lo que le
+            pides. Lo que se pone a prueba es qué le compartes — cada escenario te da un documento o
+            una conversación con datos de otra persona, y tú decides qué copiar y qué dejar fuera
+            antes de pedirle ayuda.
           </p>
-        )
+          {instruction ?? (
+            <p className="text-lg leading-relaxed text-body">
+              Escribe tu mensaje y toca "Enviar", o toca una de las respuestas del chat.
+            </p>
+          )}
+        </div>
       }
       pista={clue}
       panelReferencia={sourceDocument}

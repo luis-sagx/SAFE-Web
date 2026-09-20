@@ -7,7 +7,7 @@ import type { Story } from '../../hooks/useStoryEngine'
 import { ACCOUNT_FAKE } from '../../lib/identidadFicticia'
 
 // El más difícil del módulo: la cuenta es de verdad, quien escribe no (le robaron el WhatsApp).
-// Solo queda para dudar lo que no se puede robar: cómo escribe, y su voz.
+// La señal es que quien escribe evita las dos comprobaciones que no puede imitar: llamada y audio.
 
 const FRIEND = 'Byron Mendoza'
 const NUMBER_BYRON = '+593 98 447 1093'
@@ -20,8 +20,9 @@ const HISTORY = [
 ]
 
 const ORDER = {
-  text: 'Estimado amigo, buenas tardes. Necesito solicitarte un favor urgente: estoy en el hospital con mi madre y requiero 180 dólares para poder cancelar unos exámenes. ¿Me podrías ayudar?',
+  text: 'Bro, ayúdame porfa. Estoy con mi mamá en emergencia y necesito $180 para unos exámenes. No puedo hablar ni mandar audios; estoy adentro.',
   time: '17:41',
+  separador: 'HOY',
   senal: 'escritura',
 }
 
@@ -78,7 +79,7 @@ const ACCOUNT: ScreenView = {
     ORDER,
     { text: 'Claro men, ¿a qué cuenta te mando?', time: '17:43', mine: true },
     {
-      text: `Te agradezco muchísimo. La transferencia va a esta cuenta: ${ACCOUNT_SCAM}. Es de mi cuñado, la mía tiene un inconveniente con el banco en este momento.`,
+      text: `Gracias bro. Transfiéreme a esta cuenta, es de mi cuñado porque la mía no está funcionando: ${ACCOUNT_SCAM}. Te devuelvo apenas pueda.`,
       time: '17:44',
       senal: 'cuenta',
     },
@@ -104,7 +105,7 @@ const CANNOT_TALK: ScreenView = {
     ORDER,
     { text: 'Uy, qué pasó. Te llamo ahorita.', time: '17:43', mine: true },
     {
-      text: 'No es posible en este momento, estoy dentro del área de emergencia y no permiten llamadas. Prefiero que coordinemos por este medio.',
+      text: 'Te dije que no puedo hablar ni mandar audios; estoy adentro. Mejor coordinemos por aquí.',
       time: '17:44',
       senal: 'no-llama',
     },
@@ -236,14 +237,14 @@ const APPS: PhoneApp[] = [
     Icono: Phone,
     texto: 'Teléfono',
     color: '#1971c2',
-    goto: 'n4',
+    viewNode: 'n4',
     label: 'Abrió la agenda para llamar por su cuenta',
   },
   {
     Icono: Wallet,
     texto: 'Banco del Litoral',
     color: '#155e75',
-    goto: 'n5',
+    viewNode: 'n5',
     label: 'Abrió la app del banco',
   },
   { Icono: Images, texto: 'Galería', color: '#c2410c', relleno: 'galeria' },
@@ -263,21 +264,21 @@ export const STORY: Story<ScreenNode> = {
     view: TRANSFER,
     verdict: 'Caíste en la suplantación',
     outcome:
-      'Los $180 se fueron a la cuenta de un desconocido. A Byron le robaron el WhatsApp la noche anterior y quien escribía era el ladrón: por eso el número, la foto y el historial eran auténticos. Nada de lo que mirabas iba a delatarlo, porque la cuenta sí era suya. Lo que no podía imitar era su voz.',
+      'Los $180 se fueron a un desconocido. A Byron le robaron el WhatsApp esa noche, y todo en el chat era auténtico salvo la voz, que nunca pudiste oír.',
   },
   e_llama: {
     kind: 'good',
     view: CALL_BYRON,
     verdict: 'No caíste · lo llamaste',
     outcome:
-      'Byron contestó al primer timbre desde su casa: le habían robado la cuenta esa madrugada y estaban escribiéndole a toda su agenda. La llamada fue lo único que sirvió, porque el chat, el número y la foto eran de verdad.',
+      'Byron contestó al primer timbre: le habían robado la cuenta esa madrugada. La llamada fue lo único que servía, porque el chat, el número y la foto eran de verdad.',
   },
   e_ignora: {
     kind: 'partial',
     view: CHAT,
     verdict: 'No perdiste nada, pero era tu amigo',
     outcome:
-      'Saliste del chat y no mandaste dinero, así que no perdiste nada. Pero si hubiera sido Byron de verdad, lo dejaste tirado; y como no lo era, tampoco te enteraste de que le robaron la cuenta ni pudiste avisarle. Una llamada resolvía las dos cosas.',
+      'Saliste del chat sin mandar dinero, así que no perdiste nada. Pero tampoco te enteraste de que le robaron la cuenta a Byron ni pudiste avisarle.',
     score: 50,
   },
 }
@@ -288,47 +289,47 @@ const SIGNALS: Signal[] = [
     targetId: 'escritura',
     pantalla: 'n1',
     texto:
-      '<b>No escribe como él.</b> Byron te dice "bro" y manda emojis; ese mensaje dice "estimado amigo" y "requiero". La cuenta es suya, la forma de hablar no.',
+      '<b>Te corta las dos formas de comprobarlo.</b> No puede hablar ni mandar audios desde el primer mensaje.',
   },
   {
     id: 's2',
     targetId: 'todo-cuadra',
     pantalla: 'n1b',
     texto:
-      'En la ficha <b>todo cuadra</b>: mismo número, misma foto, mismos grupos, años de historial. Aquí no hay nada que mirar, y eso es justo lo que hace difícil este caso.',
+      '<b>En la ficha todo cuadra: mismo número, misma foto, mismos grupos.</b> Aquí no hay nada que mirar.',
   },
   {
     id: 's3',
     targetId: 'cuenta',
     pantalla: 'n2',
     texto:
-      'La cuenta de destino está <b>a nombre de otra persona</b>. Es la primera cosa del mensaje que no le pertenece a tu amigo.',
+      '<b>La cuenta de destino es de otra persona.</b> Es lo único del mensaje que no es de tu amigo.',
   },
   {
     id: 's4',
     targetId: 'no-llama',
     pantalla: 'n2b',
     texto:
-      'No puede <b>atender una llamada</b>. Quien robó la cuenta tiene el chat, pero no la voz: cerrar ese canal es lo único que puede hacer.',
+      '<b>No puede atender una llamada.</b> Quien robó la cuenta tiene el chat, pero no tu amigo la voz.',
   },
   {
     id: 's5',
     targetId: 'sin-audio',
     pantalla: 'n3',
     texto:
-      'Tampoco puede mandar <b>una nota de voz</b>, ni siquiera de tres segundos. Dos excusas seguidas para no dejarse oír son la señal entera de este escenario.',
+      '<b>Tampoco puede mandar una nota de voz.</b> Dos excusas seguidas para no dejarse oír es la señal completa.',
   },
   {
     id: 's6',
     targetId: 'contesta',
     pantalla: 'e_llama',
     texto:
-      'La <b>llamada</b> lo resolvió en diez segundos, y de paso Byron se enteró de que le habían robado la cuenta.',
+      '<b>La llamada lo resolvió en diez segundos.</b> Byron se enteró así de que le habían robado la cuenta.',
   },
 ]
 
 const RULE =
-  'Regla de oro: que el <b>número y la foto sean los de siempre no prueba nada</b>: las cuentas de mensajería se roban. Si un contacto tuyo pide dinero por chat, llámalo antes de mandar nada, y desconfía de cualquier excusa para no hablar.'
+  'Regla de oro: <b>el número y la foto de siempre no prueban nada, las cuentas se roban.</b> Llama antes de mandar dinero por chat.'
 
 const SUMMARY = 'Un amigo te escribe desde su chat de siempre pidiendo dinero por una urgencia.'
 

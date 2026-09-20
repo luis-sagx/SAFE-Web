@@ -64,6 +64,21 @@
   width: 0.9375rem;
   height: 0.9375rem;
 }
+.windowClose {
+  appearance: none;
+  display: inline-flex;
+  margin: -0.375rem;
+  padding: 0.375rem;
+  border: none;
+  border-radius: 0.3125rem;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+.windowClose:hover {
+  background: #e81123;
+  color: #ffffff;
+}
 .titlebarIconoCuadro {
   width: 0.75rem;
   height: 0.75rem;
@@ -217,6 +232,24 @@
   display: inline-flex;
   padding: 0.3125rem;
   border-radius: 0.375rem;
+}
+.taskbarBloquear {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.625rem;
+  border: 1px solid #4ade80;
+  border-radius: 0.3125rem;
+  background: #166534;
+  color: #ffffff;
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.taskbarBloquear:hover {
+  background: #15803d;
 }
 .energiaBoton:hover {
   background: rgba(255, 255, 255, 0.24);
@@ -1625,8 +1658,13 @@
   font-size: 1.25rem;
   line-height: 1;
 }
+/* Issue #251: antes solo se aclaraba el color de la flecha, y seguía con el
+   mismo círculo, borde y tamaño del botón activo — casi nadie notaba la
+   diferencia y lo seguía presionando esperando que hiciera algo. Oculta del
+   todo (visibility, no display: el hueco sigue sirviendo de contrapeso para
+   centrar el nombre del remitente, igual que el <span> del otro lado). */
 .smsVolverApagado {
-  color: #b8c0ca;
+  visibility: hidden;
 }
 
 .smsName {
@@ -1645,10 +1683,22 @@
   min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
+  /* El carril queda siempre reservado (issue #238): sin esto, en un mensaje
+     nuevo el contenido saltaba de ancho apenas aparecía la barra, y quien
+     usa la barra lateral no tenía una franja fija donde buscarla. */
+  scrollbar-gutter: stable;
   padding: 1rem 0.75rem;
   display: flex;
   flex-direction: column;
   gap: 0.625rem;
+}
+.smsSeparador {
+  margin: 0.25rem 0 0.625rem;
+  color: #6b7684;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-align: center;
 }
 .smsRow {
   display: flex;
@@ -1887,7 +1937,7 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.625rem 0.875rem;
+  padding: 0.5rem 0.75rem;
   background: #f7f8fa;
   border-top: 1px solid #dfe3e9;
 }
@@ -1898,7 +1948,7 @@
 .smsTextarea {
   flex: 1;
   min-width: 0;
-  min-height: 4.5rem;
+  min-height: 2.75rem;
   max-height: 12rem;
   overflow-y: auto;
   resize: none;
@@ -2202,17 +2252,26 @@
    de un píxel del color del fondo, así que una página cuyo botón principal
    queda debajo del pliegue,el "Acreditar mi bono" del bono del Estado, no da
    ninguna pista de que haya algo más abajo, y el participante se queda mirando
-   un formulario sin salida. */
+   un formulario sin salida.
+   Track visible y un poco más ancha (issue #238): antes el carril era
+   transparente y de 6px, casi invisible para quien usa la barra lateral en
+   vez del touchpad — no se notaba que había algo desplazable hasta que ya se
+   estaba arrastrando el pulgar. */
 .phoneViewport *::-webkit-scrollbar {
-  width: 0.375rem;
+  width: 0.75rem;
+}
+.phoneViewport *::-webkit-scrollbar-track {
+  background: rgb(15 23 42 / 8%);
 }
 .phoneViewport *::-webkit-scrollbar-thumb {
-  border-radius: 0.1875rem;
-  background: rgb(15 23 42 / 28%);
+  border-radius: 0.375rem;
+  background: rgb(15 23 42 / 45%);
 }
 .phoneViewport * {
-  scrollbar-width: thin;
-  scrollbar-color: rgb(15 23 42 / 28%) transparent;
+  /* auto, no thin: en Firefox "thin" es más angosta que el resto de las
+     scrollbars del sistema operativo, justo lo que se pedía agrandar. */
+  scrollbar-width: auto;
+  scrollbar-color: rgb(15 23 42 / 45%) rgb(15 23 42 / 8%);
 }
 
 .phoneBrowserBar {
@@ -2767,15 +2826,23 @@
   }
 }
 
+/* Mismo criterio que .phoneViewport de arriba (issue #238): track visible y
+   un poco más ancha, para que se note que hay algo que desplazar incluso
+   antes de tocar la barra. */
 .mailbody::-webkit-scrollbar,
 .page::-webkit-scrollbar,
 .smsThread::-webkit-scrollbar {
-  width: 0.375rem;
+  width: 0.75rem;
+}
+.mailbody::-webkit-scrollbar-track,
+.page::-webkit-scrollbar-track,
+.smsThread::-webkit-scrollbar-track {
+  background: rgb(15 23 42 / 8%);
 }
 .mailbody::-webkit-scrollbar-thumb,
 .page::-webkit-scrollbar-thumb,
 .smsThread::-webkit-scrollbar-thumb {
-  background: #c9d0d9;
+  background: rgb(15 23 42 / 45%);
   border-radius: 0.375rem;
 }
 
@@ -2794,7 +2861,11 @@
   flex-direction: column;
   gap: 0.625rem;
   padding: 0.75rem;
-  overflow: hidden;
+  /* overflow: hidden recortaba en silencio las opciones de respuesta y los
+     controles de Silenciar/Colgar en llamadas largas, sin ninguna barra de
+     scroll que avisara que había más contenido (issue #250). */
+  overflow-y: auto;
+  scrollbar-gutter: stable;
   color: #16202c;
   background: linear-gradient(180deg, #eef2f7 0%, #f6f8fb 40%);
 }
@@ -3100,6 +3171,14 @@
   outline: 2px solid #1a73e8;
   outline-offset: 2px;
   background: #d9e6fd;
+}
+.callFrase:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+.callFrase:disabled:hover {
+  outline: none;
+  background: #e8f0fe;
 }
 
 .callControles {

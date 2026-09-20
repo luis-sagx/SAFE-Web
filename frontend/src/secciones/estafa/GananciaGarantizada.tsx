@@ -268,14 +268,14 @@ const APPS: PhoneApp[] = [
     Icono: TrendingUp,
     texto: 'Ruvel Capital',
     color: '#0ca678',
-    goto: 'n6',
+    viewNode: 'n6',
     label: 'Abrió el panel de la plataforma de inversión',
   },
   {
     Icono: Wallet,
     texto: IDENTITY_FAKE.banco,
     color: '#155e75',
-    goto: 'n5',
+    viewNode: 'n5',
     label: 'Abrió la app del banco para transferir',
   },
   { Icono: Images, texto: 'Galería', color: '#c2410c', relleno: 'galeria' },
@@ -296,21 +296,21 @@ export const STORY: Story<ScreenNode> = {
     view: TRANSFER,
     verdict: 'Caíste en la estafa',
     outcome:
-      'Los $1.000 salieron y el panel los mostró creciendo durante tres semanas, hasta $1.390. Cuando quisiste retirar te pidieron el 8% de comisión de liberación por adelantado; si lo pagas, aparece otra condición, y después otra. Los $50 que te devolvieron al principio eran tuyos desde el primer momento: fue lo que costó comprarte para la segunda entrega. El grupo se cerró y el número dejó de existir.',
+      'Los $1.000 salieron. Al querer retirar te pidieron 8% de comisión por adelantado, y luego otra condición: el grupo se cerró y el número dejó de existir.',
   },
   e_corta: {
     kind: 'good',
     view: GETS_UPSET,
     verdict: 'No caíste · cortaste a tiempo',
     outcome:
-      'Te quedaste con tus $200 recuperados y no pusiste un dólar más. La plataforma cerró siete semanas después con varios cientos de personas dentro, la mayoría con dinero puesto justo por lo mismo que a ti te ofrecieron: el primer retiro había llegado. Lo que te sacó no fue mirar bien la pantalla, fue saber que una ganancia garantizada no existe.',
+      'Te quedaste con tus $200 recuperados. La plataforma cerró siete semanas después: una ganancia garantizada no existe.',
   },
   e_ignora: {
     kind: 'partial',
     view: CHAT,
     verdict: 'No pusiste más, pero quedaste dentro',
     outcome:
-      'Dejaste de contestar y no invertiste los $1.000, que es lo que importaba. Pero tus $200 iniciales siguen en la plataforma y el panel te los sigue mostrando crecer: si en dos meses te tienta retirarlos, la comisión de liberación te va a pedir dinero nuevo para sacar dinero que ya no existe.',
+      'No invertiste los $1.000, pero tus $200 iniciales siguen en la plataforma. La comisión de liberación te va a pedir dinero nuevo para sacar dinero que ya no existe.',
     score: 50,
   },
 }

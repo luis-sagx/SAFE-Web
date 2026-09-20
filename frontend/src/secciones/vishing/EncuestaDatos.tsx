@@ -196,7 +196,7 @@ const APPS: PhoneApp[] = [
     Icono: Landmark,
     texto: "Banco del Litoral",
     color: "#0f3d6e",
-    goto: "n5",
+    viewNode: "n5",
     label: "Abrió la app del banco durante la llamada",
   },
   { Icono: Images, texto: "Galería", color: "#c2410c", relleno: "galeria" },
@@ -214,41 +214,41 @@ export const STORY: Story<ScreenNode> = {
     view: INCOMING,
     verdict: "No caíste · no contestaste",
     outcome:
-      "No contestaste a un número desconocido. Una encuesta no es urgente ni obligatoria, y tu banco no necesita hacerte preguntas por teléfono: lo que tenga que decirte te lo deja en la app.",
+      "No contestaste a un número desconocido. Una encuesta no es urgente, y tu banco no hace preguntas de seguridad por teléfono.",
   },
   e_cuelga: {
     kind: "good",
     view: DOUBTED,
     verdict: "No caíste · colgaste sin dar nada",
     outcome:
-      "Colgaste sin soltar un dato. Aunque la llamada fuera de verdad, no pierdes nada: siempre puedes acercarte a la agencia o llamar tú. Y si era falsa, se quedaron sin lo único que buscaban.",
+      "Colgaste sin soltar un dato. Fuera real o falsa la llamada, no perdiste nada: siempre puedes llamar tú o ir a la agencia.",
   },
   e_niega: {
     kind: "good",
     view: DOUBTED,
     verdict: "No caíste · te negaste con calma",
     outcome:
-      "Dijiste que no y ofreciste ir tú a la agencia, que es la respuesta perfecta: no hace falta ser brusco ni acusar a nadie. Quien de verdad trabaja en un banco lo entiende; quien está estafando cuelga solo.",
+      "Dijiste que no y ofreciste ir tú a la agencia: la respuesta perfecta, sin ser brusco. Quien estafa cuelga solo ante eso.",
   },
   e_cuelga_datos: {
     kind: "partial",
     view: GAVE_DATA,
     verdict: "Colgaste, pero ya habías dado lo importante",
-    outcome: `Cortaste antes de dar lo de la tarjeta. Aun así les dejaste tu fecha de nacimiento y el nombre de tu mamá: son dos de las preguntas con las que el banco comprueba por teléfono que eres tú, y ahora las sabe alguien más.`,
+    outcome: `Cortaste antes de dar los datos de la tarjeta. Pero dejaste tu fecha de nacimiento y el nombre de tu mamá, dos preguntas de seguridad que ahora sabe alguien más.`,
     score: 50,
   },
   e_datos: {
     kind: "bad",
     view: GAVE_DATA,
     verdict: "Caíste en la trampa",
-    outcome: `No hubo encuesta ni exoneración. Con tu fecha de nacimiento, el apellido de tu mamá, tu agencia y los últimos dígitos de tu tarjeta llamaron ellos al banco haciéndose pasar por ti: contestaron todas las preguntas de seguridad, pidieron una clave nueva de banca en línea y entraron a tu cuenta. `,
+    outcome: `No hubo encuesta ni exoneración. Con tu fecha de nacimiento, el apellido de tu mamá, tu agencia y los dígitos de tu tarjeta, llamaron al banco haciéndose pasar por ti y entraron a tu cuenta.`,
   },
   e_verifica: {
     kind: "good",
     view: MAILBOX,
     verdict: "No caíste · lo comprobaste en tu canal",
     outcome:
-      "En la app no había ninguna encuesta ni beneficio a tu nombre, y ahí mismo estaba escrito por qué esas preguntas no son inocentes: son las que usa el banco para identificarte. Dejaste la llamada esperando mientras mirabas.",
+      "En la app no había ninguna encuesta ni beneficio a tu nombre. Esas preguntas son justo las que el banco usa para identificarte.",
   },
 };
 
@@ -258,40 +258,40 @@ const SIGNALS: Signal[] = [
     targetId: "preguntas",
     pantalla: "n2",
     texto:
-      "Fecha de nacimiento y apellido de tu madre <b>no son datos de una encuesta</b>: son las preguntas de seguridad con las que un banco comprueba por teléfono que eres tú.",
+      "<b>Fecha de nacimiento y apellido de tu madre no son datos de encuesta.</b> Son las preguntas de seguridad con que el banco te identifica.",
   },
   {
     id: "s2",
     targetId: "amable",
     pantalla: "n2",
     texto:
-      "<b>No hay urgencia ni amenaza</b>, y eso es justo lo que lo hace difícil. La amabilidad y la calma también son técnica: nadie desconfía de quien no le apura.",
+      "<b>No hay urgencia ni amenaza</b>, y eso lo hace difícil. La amabilidad también es técnica: nadie desconfía de quien no apura.",
   },
   {
     id: "s3",
     targetId: "protocolo",
     pantalla: "n3b",
     texto:
-      '<b>"Es el protocolo."</b> Preguntar no incomoda a quien está estafando: tiene la respuesta preparada, y de paso te recuerda el beneficio que pierdes si dices que no.',
+      '<b>"Es el protocolo."</b> La respuesta ya está preparada, y de paso te recuerda el beneficio que pierdes si dices que no.',
   },
   {
     id: "s4",
     targetId: "ultimos-datos",
     pantalla: "n3",
     texto:
-      "Los datos van llegando <b>de a poco</b>, y cada uno parece pequeño al lado del anterior. Juntos son el juego completo de respuestas de seguridad.",
+      "<b>Los datos llegan de a poco</b>, cada uno pequeño. Juntos son el juego completo de respuestas de seguridad.",
   },
   {
     id: "s5",
     targetId: "sin-campana",
     pantalla: "e_verifica",
     texto:
-      "En la app <b>no había ninguna encuesta ni beneficio</b>. Lo que un banco quiere de ti aparece en tu banca en línea, no en una llamada que empezaron ellos.",
+      "<b>En la app no había ninguna encuesta ni beneficio.</b> Lo que el banco quiere de ti aparece en tu banca en línea, no en su llamada.",
   },
 ];
 
 const RULE =
-  "Regla de oro: los datos que <b>no parecen secretos</b> (tu fecha de nacimiento, el apellido de tu madre, tu agencia, los últimos dígitos de tu tarjeta) son los que usan para hacerse pasar por ti. No hace falta que te pidan una clave para robarte: cuelga y llama tú.";
+  "Regla de oro: <b>los datos que no parecen secretos también identifican</b> (fecha de nacimiento, apellido de tu madre, agencia, dígitos de tarjeta). No hace falta una clave para robarte: cuelga y llama tú.";
 
 const SUMMARY =
   'Una encuesta de satisfacción de tu banco te hace unas preguntas para "validarte".';
@@ -327,10 +327,11 @@ function DataSurvey() {
       identidad={["tarjeta"]}
       instruccion={
         <p className="text-lg leading-relaxed text-body">
-          Actúa sobre el teléfono como lo harías con el tuyo: contesta o
-          rechaza, cuelga cuando quieras y usa{" "}
-          <strong>cualquier app de abajo</strong>, incluso con la llamada
-          abierta.
+          Es una llamada en vivo: hay alguien hablando al otro lado y espera
+          tu respuesta cuando termine. Actúa sobre el teléfono como lo
+          harías con el tuyo: contesta o rechaza, cuelga cuando quieras y
+          usa <strong>cualquier app de abajo</strong>, incluso con la
+          llamada abierta.
         </p>
       }
       pista={

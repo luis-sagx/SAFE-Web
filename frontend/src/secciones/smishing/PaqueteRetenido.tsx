@@ -40,6 +40,10 @@ const SMS: ScreenView = {
 const REPLIED_SMS: ScreenView = {
   ...SMS,
   respuestas: undefined,
+  // Sin esto el botón "‹" se veía activo pero no hacía nada (issue #251): del
+  // hilo ya respondido se puede volver a mirar el mensaje original.
+  volverGoto: 'n1',
+  volverLabel: 'Volvió al hilo original después de preguntar',
   msgs: [
     FIRST_SMS,
     { text: '¿De qué paquete se trata?', time: '10:14', mine: true },
@@ -136,7 +140,7 @@ const APPS: PhoneApp[] = [
     Icono: Package,
     texto: 'EnvíaExpress',
     color: '#d9480f',
-    goto: 'n3',
+    viewNode: 'n3',
     label: 'Abrió la app del courier',
   },
   { Icono: Wallet, texto: 'Banco', color: '#155e75', relleno: 'banco' },
@@ -152,28 +156,28 @@ const STORY: Story<ScreenNode> = {
     view: PAGE,
     verdict: 'Caíste en la trampa',
     outcome:
-      'El cobro de $1,20 nunca existió. Copiaron los datos completos de tu tarjeta y esa misma noche aparecieron tres consumos por internet que no hiciste.',
+      '<b>El cobro de $1,20 nunca existió.</b> Copiaron los datos de tu tarjeta y esa misma noche aparecieron tres consumos que no hiciste.',
   },
   e_cierra: {
     kind: 'good',
     view: PAGE,
     verdict: 'No caíste · el monto no justificaba los datos',
     outcome:
-      'Saliste de la página. Un cobro de un dólar no necesita tu tarjeta completa con CVV, y la dirección ni siquiera era del courier.',
+      'Saliste de la página. Un cobro de un dólar no necesita tu tarjeta completa con CVV.',
   },
   e_responde: {
     kind: 'partial',
     view: DECLINED_SMS,
     verdict: 'No entregaste nada, pero contestaste',
     outcome:
-      'No diste ningún dato ni abriste el enlace, que es lo que evita el daño. Pero contestar confirma que la línea está activa y que alguien la lee, y eso es lo que buscan para insistir con algo mejor preparado. Y si el envío hubiera sido tuyo de verdad, seguirías sin saberlo.',
+      'No diste ningún dato ni abriste el enlace, que es lo que evita el daño. Pero contestar confirma que la línea está activa, y eso es lo que buscan para insistir.',
   },
   e_app: {
     kind: 'good',
     view: APP_COURIER,
     verdict: 'No caíste · verificaste en el canal oficial',
     outcome:
-      'Entraste a la app del courier con tu número de guía: el envío estaba en reparto normal, sin valores pendientes. El SMS era falso.',
+      'Entraste a la app con tu número de guía: <b>el envío estaba en reparto normal</b>, sin valores pendientes. El SMS era falso.',
   },
 }
 
@@ -182,15 +186,13 @@ const SIGNALS: Signal[] = [
     id: 's1',
     targetId: 'remitente',
     pantalla: 'n1',
-    texto:
-      'Llega de un <b>número de celular</b> que no tienes guardado, no del canal habitual del courier.',
+    texto: 'Llega de un <b>número de celular</b> que no tienes guardado, no del canal habitual del courier.',
   },
   {
     id: 's2',
     targetId: 'url',
     pantalla: 'n2',
-    texto:
-      'El enlace lleva a <b>envia-express.info</b>, que lleva el nombre del courier adentro pero no es la dirección de su sitio. Además empieza por http y no por https, así que no muestra el candado y lo que escribas viaja sin proteger.',
+    texto: 'El enlace lleva a <b>envia-express.info</b>, no al sitio real del courier. Tampoco empieza por https.',
   },
   {
     id: 's3',
@@ -212,7 +214,7 @@ const SIGNALS: Signal[] = [
   },
 ]
 const RULE =
-  'Regla de oro: un aviso de paquete se comprueba <b>en la app o la web del courier con tu número de guía</b>, nunca por el enlace del mensaje. Nadie necesita tu CVV para cobrarte un dólar.'
+  'Regla de oro: un aviso de paquete se comprueba <b>en la app del courier con tu número de guía</b>, nunca por el enlace del mensaje.'
 
 const SUMMARY = 'Un SMS dice que tu paquete está retenido por $1,20 de aduana.'
 

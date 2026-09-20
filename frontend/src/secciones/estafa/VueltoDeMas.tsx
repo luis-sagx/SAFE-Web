@@ -222,14 +222,14 @@ const APPS: PhoneApp[] = [
     Icono: Wallet,
     texto: IDENTITY_FAKE.banco,
     color: '#155e75',
-    goto: 'n5',
+    viewNode: 'n5',
     label: 'Abrió la app del banco',
   },
   {
     Icono: Phone,
     texto: 'Teléfono',
     color: '#1971c2',
-    goto: 'n6',
+    viewNode: 'n6',
     label: 'Abrió la agenda para llamar por su cuenta',
     hilo: 'call',
   },
@@ -249,21 +249,21 @@ export const STORY: Story<ScreenNode> = {
     view: TRANSFER,
     verdict: 'Caíste en la estafa',
     outcome:
-      'Los $1.170 salieron de tu cuenta a la de Wilson Pinto y no se pueden reversar. Nueve días después, la dueña de la cuenta desde la que te llegaron los $1.300 denunció que se la habían vaciado, y el banco te retiró ese valor del saldo. La bicicleta la tienes, pero pusiste $1.170 tuyos y te quedaste debiendo la diferencia. Diego no volvió a escribir.',
+      'Los $1.170 salieron a la cuenta de Wilson Pinto y no se pueden reversar. Nueve días después, la dueña real de los $1.300 denunció el robo, y el banco te retiró ese valor también.',
   },
   e_banco: {
     kind: 'good',
     view: CALL_BANK,
     verdict: 'No caíste · lo dejaste en manos del banco',
     outcome:
-      'No devolviste nada por tu cuenta, y eso fue lo que te salvó. El depósito venía de una cuenta robada: el banco lo reversó a las dos semanas y tu saldo volvió a lo que era, sin que perdieras un dólar. Un dinero que llega por error se devuelve por donde llegó.',
+      'No devolviste nada por tu cuenta. El depósito venía de una cuenta robada: el banco lo reversó a las dos semanas sin que perdieras un dólar.',
   },
   e_ignora: {
     kind: 'partial',
     view: CHAT,
     verdict: 'No perdiste nada, pero lo dejaste a medias',
     outcome:
-      'No devolviste el dinero, que era lo importante. Pero tampoco avisaste al banco, y ese depósito seguía ahí, en tu cuenta y a tu nombre, mientras la persona a la que se lo robaron lo denunciaba. Un valor que no esperabas se reporta el mismo día, aunque no pienses tocarlo.',
+      'No devolviste el dinero, pero tampoco avisaste al banco. Un valor que no esperabas se reporta el mismo día, aunque no pienses tocarlo.',
     score: 50,
   },
 }
@@ -274,47 +274,46 @@ const SIGNALS: Signal[] = [
     targetId: 'otra-cuenta',
     pantalla: 'n2',
     texto:
-      'La devolución la pide a <b>otra cuenta y a otro nombre</b>. Un error de verdad se corrige devolviendo a la misma cuenta de donde salió el dinero, no a la de un cuñado.',
+      'La devolución la pide a <b>otra cuenta y a otro nombre</b>. Un error real se corrige devolviendo a la misma cuenta de origen.',
   },
   {
     id: 's2',
     targetId: 'otro-nombre',
     pantalla: 'n5',
     texto:
-      'El depósito <b>no viene de Diego</b>: viene de M. J. Sarango, alguien que no tiene nada que ver con la compra. Es la cuenta que le robaron, y por eso el dinero se puede reversar.',
+      'El depósito <b>no viene de Diego</b>: viene de M. J. Sarango. Es la cuenta que le robaron, y por eso el banco puede reversarla.',
   },
   {
     id: 's3',
     targetId: 'presion',
     pantalla: 'n2b',
     texto:
-      'El <b>arriendo y el desalojo de hoy</b> están ahí para que no te dé tiempo de llamar al banco. Toda la estafa cabe en la ventana entre que el dinero entra y el dueño lo denuncia.',
+      'El <b>desalojo de hoy</b> está ahí para que no llames al banco. Toda la estafa cabe en esa ventana de tiempo.',
   },
   {
     id: 's4',
     targetId: 'culpa',
     pantalla: 'n3',
-    texto:
-      'Cuando dices que no, pasa a <b>hacerte sentir culpable</b>: "yo confié en usted". No es un reproche, es la última herramienta que le queda cuando la prisa no funcionó.',
+    texto: 'Cuando dices que no, pasa a <b>hacerte sentir culpable</b>: "yo confié en usted".',
   },
   {
     id: 's5',
     targetId: 'error',
     pantalla: 'n1',
     texto:
-      'El <b>error del cero de más</b> es el anzuelo entero. Nadie se equivoca en diez veces el precio, y quien lo hace de verdad llama a su banco, no al vendedor.',
+      'El <b>error del cero de más</b> es el anzuelo entero. Quien se equivoca de verdad llama a su banco, no al vendedor.',
   },
   {
     id: 's6',
     targetId: 'contesta',
     pantalla: 'e_banco',
     texto:
-      'El banco lo dijo claro: <b>no devuelvas nada por fuera</b>. Lo que reversan ellos vuelve solo; lo que mandas tú por tu cuenta se pierde.',
+      'El banco lo dijo claro: <b>no devuelvas nada por fuera</b>. Lo que reversan ellos vuelve solo.',
   },
 ]
 
 const RULE =
-  'Regla de oro: un dinero que te llega por error <b>se devuelve por el banco, nunca de mano a mano</b>. Si el depósito venía de una cuenta robada, el banco te lo va a quitar igual, y lo que hayas devuelto tú sale de tu bolsillo. Llama al número de tu tarjeta y repórtalo el mismo día.'
+  'Regla de oro: un dinero que llega por error <b>se devuelve por el banco, nunca de mano a mano</b>. Llama al número de tu tarjeta y repórtalo el mismo día.'
 
 const SUMMARY =
   'Un comprador te transfiere de más "por error" y te pide que le devuelvas la diferencia.'

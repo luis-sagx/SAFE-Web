@@ -51,19 +51,15 @@
     font-size: clamp(0.75rem, 3cqw, 1rem);
   }
 
-  .papelRotulo,
-  .soloAncho {
+  .papelRotulo {
     display: none;
-  }
-
-  .cajon {
-    right: 0.25rem;
   }
 
   /* Cuatro pestañas en un navegador de 345px: fuera lo decorativo de la barra
      ("+", botones de ventana, globo) para que quepan el nombre y la ✕. El
      navegador es compartido, así que se apunta por rol y no por clase. */
-  .lienzo [role='tablist'] > [aria-hidden] {
+  .lienzo [role='tablist'] > [aria-hidden],
+  .lienzo [data-window-buttons] {
     display: none;
   }
 
@@ -222,6 +218,7 @@
 .papel {
   position: absolute;
   top: 0;
+  touch-action: none;
   width: 30%;
   height: 100%;
   display: flex;
@@ -256,20 +253,137 @@
   text-align: center;
 }
 
-.cajon {
+/* El cajón es el archivador entero: un blanco grande para soltar las hojas.
+   El rótulo va abajo, sobre el cajón con llave de la foto. */
+.cajonZona {
   position: absolute;
-  right: 0.75rem;
-  top: 51%;
+  left: 81%;
+  top: 16%;
+  width: 18.5%;
+  height: 47%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 0.5rem;
+  border-radius: 0.75rem;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    outline-color 0.15s ease;
+}
+
+.cajon {
   flex-direction: column;
   align-items: flex-start;
   gap: 0;
   border-radius: 0.5rem;
+  text-align: left;
+}
+
+.cajonZona:hover .cajon {
+  background: rgba(0, 104, 55, 0.92);
+}
+
+.cajonDestino {
+  background: rgba(74, 222, 128, 0.22);
+  outline: 3px dashed #4ade80;
+  outline-offset: -3px;
+}
+
+.cajonDestino .cajon {
+  background: rgba(0, 104, 55, 0.92);
 }
 
 .cajonDetalle {
   font-weight: 400;
 }
 
+.cajonPulso {
+  animation: cajon-pulso 0.4s ease-out;
+}
+
+@keyframes cajon-pulso {
+  0% {
+    transform: scale(1.25);
+    color: #4ade80;
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Solo la hoja que se arrastra o vuela, sin nada de la foto alrededor. */
+.fantasma {
+  position: absolute;
+  z-index: 4;
+  pointer-events: none;
+  filter: drop-shadow(0 12px 16px rgba(0, 0, 0, 0.45));
+}
+
+/* Cuánto queda a la vista: arriba a la izquierda, sobre la ventana. */
+.contador {
+  position: absolute;
+  left: 0.75rem;
+  top: 0.75rem;
+  padding: 0.375rem 0.875rem;
+  border-radius: 999px;
+  background: rgba(17, 17, 17, 0.78);
+  color: #f5f5f4;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+}
+
+/* Hasta que se abre la computadora por primera vez, el monitor late. */
+.pantallaInvita {
+  border-radius: 0.25rem;
+  animation: pantalla-invita 1.8s ease-in-out infinite;
+}
+
+@keyframes pantalla-invita {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(74, 222, 128, 0);
+  }
+  50% {
+    box-shadow: 0 0 0 4px rgba(74, 222, 128, 0.75);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cajonPulso,
+  .pantallaInvita {
+    animation: none;
+  }
+
+  .pantallaInvita {
+    box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.75);
+  }
+}
+
+/* Va después de la regla base para ganarle. En celular el archivador mide
+   unos 70px: el rótulo se reduce a "Cajón", sin partirse en tres líneas ni
+   taparle el monitor. */
+@media (max-width: 639px) {
+  .cajon,
+  .pantallaBoton .rotulo {
+    white-space: nowrap;
+  }
+
+  .soloAncho,
+  .cajonDetalle {
+    display: none;
+  }
+
+  .contador {
+    left: 0.375rem;
+    top: 0.375rem;
+    padding: 0.125rem 0.5rem;
+    font-size: 0.75rem;
+  }
+}
+
+/* El atajo para bloquear, sobre el teclado de la foto. */
 .teclado {
   position: absolute;
   left: 36.9%;
@@ -277,8 +391,8 @@
   width: 35.9%;
   height: 6%;
   display: flex;
-  align-items: flex-start;
   justify-content: center;
+  border-radius: 0.5rem;
   cursor: pointer;
 }
 
@@ -308,70 +422,6 @@
   position: absolute;
   border-radius: 0.5rem;
   pointer-events: none;
-}
-
-/* El punto que hay que tocar antes de que aparezcan las opciones: se ve desde
-   lejos (el pulso) y se toca fácil (el círculo es más grande que el ícono). */
-.destello {
-  position: absolute;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.75rem;
-  height: 2.75rem;
-  transform: translate(-50%, -50%);
-  border-radius: 999px;
-}
-
-.destelloPulso {
-  position: absolute;
-  inset: 0;
-  border-radius: 999px;
-  background: #ab6400;
-  opacity: 0.55;
-  animation: destello-pulso 1.6s ease-out infinite;
-}
-
-.destelloPunto {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 1.875rem;
-  height: 1.875rem;
-  border-radius: 999px;
-  background: #ab6400;
-  font-size: 1rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
-}
-
-@keyframes destello-pulso {
-  0% {
-    transform: scale(0.8);
-    opacity: 0.55;
-  }
-  100% {
-    transform: scale(2.2);
-    opacity: 0;
-  }
-}
-
-/* Aviso de que hay algo que tocar: sin esto, el destello puede leerse como un
-   adorno de la foto en vez de un punto que hay que pulsar para continuar. */
-.destelloAviso {
-  position: absolute;
-  inset-inline: 0;
-  bottom: 0;
-  padding: 0.75rem 1rem 0.875rem;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.55), transparent);
-}
-
-.destelloAvisoTexto {
-  color: #fff;
-  font-size: 0.9375rem;
-  font-weight: 600;
-  text-align: center;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
 }
 
 /* Aviso de que la escena avanza sola: sin esto, una foto quieta durante

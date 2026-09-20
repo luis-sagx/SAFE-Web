@@ -218,6 +218,16 @@ function ScenarioLayout({
                   {note}
                 </div>
               )}
+
+              {/* La misión, en una frase y pegada al botón (issue de UX): en
+                  pruebas de usuario, quien entraba directo a "Empezar" sin leer
+                  arriba llegaba al escenario sin saber qué se esperaba de él.
+                  Esta línea es lo último que se lee antes de pulsar, así que es
+                  la que más chance tiene de quedarse. No delata naturaleza: sirve
+                  igual para un correo de fraude que para uno legítimo. */}
+              <p className="mt-6 text-lg font-semibold text-ink">
+                Tu misión: decide qué haces con esto y por qué.
+              </p>
             </div>
 
             {/* Ocupa las dos filas para que el botón, en la segunda, no espere a esta

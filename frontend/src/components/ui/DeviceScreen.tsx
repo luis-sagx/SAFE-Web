@@ -11,7 +11,7 @@ import {
 } from './DesktopChrome'
 import VoiceNote from './NotaDeVoz'
 import CallScreen from './PantallaLlamada'
-import { PhotoScene, type SceneFlash, type SceneProgress, type SceneZone } from '../../secciones/fisico/EscenaFoto'
+import { PhotoScene, type SceneProgress, type SceneZone } from '../../secciones/fisico/EscenaFoto'
 import styles from './DeviceScreen.module.css'
 
 // Solo dibuja lo que la app real mostraría (regla diegética de
@@ -24,7 +24,6 @@ export type ScreenView =
       alt: string
       zonas?: SceneZone[]
       // Punto a tocar para que aparezcan las opciones; sin esto se muestran de entrada.
-      destello?: SceneFlash
       progreso?: SceneProgress
     }
   | {
@@ -107,6 +106,8 @@ export type ScreenView =
       msgs: {
         text: string
         time: string
+        // Rótulo centrado que separa dos días dentro del mismo chat.
+        separador?: string
         mine?: boolean
         senal?: string
         // Duración de la nota de voz; en suplantación la voz es el ataque.
@@ -246,6 +247,7 @@ function DeviceScreen({
   destinatario: recipient,
   carpetaForzada: forcedFolder,
   terminada: finished,
+  heardLines,
 }: {
   view: ScreenView
   acciones?: EmailAction[]
@@ -254,6 +256,10 @@ function DeviceScreen({
   carpetaForzada?: string
   // Solo lo mira la pantalla de llamada: colgada, deja de contar y de hablar.
   terminada?: boolean
+  // Frases del otro lado ya oídas en esta corrida (issue #250 seguimiento):
+  // sobrevive a que la llamada se desmonte al mirar otra app y vuelva a
+  // montarse al volver, para no repetir el audio de lo que ya sonó.
+  heardLines?: Set<string>
 }) {
   const { correoSimulado: simulatedEmail, displayName } = useAuth()
   const email = recipient ?? simulatedEmail
@@ -278,6 +284,7 @@ function DeviceScreen({
   const [attached, setAttached] = useState<string[]>([])
   const [dragOver, setDragOver] = useState(false)
   const freeTextRef = useRef<HTMLTextAreaElement>(null)
+  const sendButtonRef = useRef<HTMLButtonElement>(null)
   // Crece con lo que se escribe o se pega,hasta el tope que marca el CSS,
   // donde recién entra el scroll, para no obligar a desplazarse dentro de un
   // campo chico cuando se pega un mensaje largo del bloc de notas.
@@ -315,7 +322,7 @@ function DeviceScreen({
 
   if (view.kind === 'escena') {
     return (
-      <PhotoScene src={view.src} alt={view.alt} zonas={view.zonas} destello={view.destello} progreso={view.progreso} />
+      <PhotoScene src={view.src} alt={view.alt} zonas={view.zonas} progreso={view.progreso} />
     )
   }
 
@@ -448,7 +455,7 @@ function DeviceScreen({
   }
 
   if (view.kind === 'call') {
-    return <CallScreen view={view} terminada={finished} />
+    return <CallScreen view={view} terminada={finished} heardLines={heardLines} />
   }
 
   // Con entradaLibre, lo que de verdad se mandó (y la respuesta de la IA) no
@@ -489,6 +496,15 @@ function DeviceScreen({
   const canSend = freeText.trim() !== '' || attached.length > 0
   const sendResult = canSend ? view.entradaLibre?.onEnviar(freeText, attached) : undefined
   const sendGoto = sendResult && 'goto' in sendResult ? sendResult : undefined
+  const sendFreeText = () => {
+    if (!sendResult) return
+    if ('repregunta' in sendResult) {
+      setRetries((prev) => [...prev, { text: freeText, repregunta: sendResult.repregunta }])
+      setFreeText('')
+      return
+    }
+    setSent(true)
+  }
   // Solo ids conocidos y sin repetir: el drop puede traer cualquier texto arrastrado desde fuera.
   const attach = (id: string) => {
     if (!files?.some((file) => file.id === id)) return
@@ -566,13 +582,14 @@ function DeviceScreen({
 
       <div ref={threadRef} className={styles.smsThread}>
         {messages.map((msg, i) => (
-          <div
-            key={`${i}-${msg.text}`}
-            className={`${styles.smsRow} ${msg.mine ? styles.mine : styles.theirs} ${
-              i > latestMine ? styles.smsNuevo : ''
-            }`}
-            style={i > latestMine ? { animationDelay: `${(i - latestMine - 1) * 0.6}s` } : undefined}
-          >
+          <div key={`${i}-${msg.text}`}>
+            {msg.separador && <div className={styles.smsSeparador}>{msg.separador}</div>}
+            <div
+              className={`${styles.smsRow} ${msg.mine ? styles.mine : styles.theirs} ${
+                i > latestMine ? styles.smsNuevo : ''
+              }`}
+              style={i > latestMine ? { animationDelay: `${(i - latestMine - 1) * 0.6}s` } : undefined}
+            >
             {/* Sin cabecera que diga quién escribe, el avatar es lo que
                 distingue al asistente: cada respuesta suya sale firmada. */}
             {view.sitio && !msg.mine && (
@@ -580,7 +597,7 @@ function DeviceScreen({
                 <Bot className={styles.smsAvatarIcono} strokeWidth={2} />
               </span>
             )}
-            <div className={styles.smsBubble}>
+              <div className={styles.smsBubble}>
               {msg.voz ? (
                 <VoiceNote texto={msg.text} duracion={msg.voz} senal={msg.senal} />
               ) : msg.segmentosEnviados ? (
@@ -663,6 +680,7 @@ function DeviceScreen({
               )}
 
               <span className={styles.smsTime}>{msg.time}</span>
+              </div>
             </div>
           </div>
         ))}
@@ -709,10 +727,18 @@ function DeviceScreen({
                 onChange={(event) => setFreeText(event.target.value)}
                 placeholder={view.entradaLibre.placeholder}
                 aria-label="Escribe tu mensaje"
-                rows={3}
+                rows={1}
+                onKeyDown={(event) => {
+                  if (event.key !== 'Enter' || event.shiftKey || event.nativeEvent.isComposing) return
+                  event.preventDefault()
+                  // El motor del escenario escucha el clic del botón para avanzar al nodo final.
+                  // Reutilizarlo evita que Enter solo pinte el mensaje sin mostrar el veredicto.
+                  sendButtonRef.current?.click()
+                }}
               />
             </div>
             <button
+              ref={sendButtonRef}
               type="button"
               className={`${styles.hotspot} ${styles.smsEnviar}`}
               aria-label="Enviar el mensaje"
@@ -721,14 +747,7 @@ function DeviceScreen({
               data-hotspot-label={sendGoto?.label}
               // Una repregunta no es una decisión: sin esto el motor lo tomaría por un clic en el vacío.
               data-control={sendResult && !sendGoto ? '' : undefined}
-              onClick={() => {
-                if (sendResult && 'repregunta' in sendResult) {
-                  setRetries((prev) => [...prev, { text: freeText, repregunta: sendResult.repregunta }])
-                  setFreeText('')
-                } else {
-                  setSent(true)
-                }
-              }}
+              onClick={sendFreeText}
             >
               <SendHorizontal aria-hidden className={styles.smsEnviarIcono} strokeWidth={2} />
             </button>

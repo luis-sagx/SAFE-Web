@@ -244,7 +244,7 @@ const STORY: Story<ScreenNode> = {
     view: RESULT_MALWARE,
     verdict: 'Caíste en la trampa - Resultado pirata',
     outcome:
-      'El sitio pirata ofrecía software gratis pero el archivo contiene malware integrado (ransomware + keylogger). Tu computadora y toda la red corporativa están comprometidas. Se pueden robar credenciales, datos financieros y documentos confidenciales. La empresa corre riesgo legal grave.',
+      'El archivo pirata traía malware integrado (ransomware + keylogger): tu computadora y toda la red corporativa quedaron comprometidas. Pueden robar credenciales, datos financieros y documentos confidenciales.',
   },
 
   e_malware_flash: {
@@ -252,7 +252,7 @@ const STORY: Story<ScreenNode> = {
     view: RESULT_MALWARE,
     verdict: 'Caíste en la trampa - Sitio falso',
     outcome:
-      'El sitio fake de Flash también distribuye malware. La descarga comprometió tu computadora y toda la red corporativa. Se pueden acceder a credenciales, sistemas y datos sensibles. Esto pone en riesgo legal a la empresa.',
+      'El sitio falso de Flash también distribuía malware: la descarga comprometió tu computadora y toda la red corporativa. Quedaron expuestos credenciales, sistemas y datos sensibles.',
   },
 
   e_descarga_oficial: {
@@ -260,7 +260,7 @@ const STORY: Story<ScreenNode> = {
     view: RESULT_OFFICIAL,
     verdict: 'No caíste - Descargaste del sitio oficial',
     outcome:
-      'Descargaste desde adobe.com verificado. El software es auténtico, sin malware, y la licencia cumple con todas las políticas corporativas y legales. Tu empresa está completamente protegida.',
+      'Descargaste desde adobe.com verificado: software auténtico, sin malware y con licencia válida. Tu empresa queda protegida y cumple sus políticas.',
   },
 
   e_descarga_trial: {
@@ -268,7 +268,7 @@ const STORY: Story<ScreenNode> = {
     view: RESULT_TRIAL,
     verdict: 'Decisión segura - Versión de prueba legal',
     outcome:
-      'Activaste la versión legal de prueba desde Adobe oficial. Completamente segura y sin riesgos. Después de 30 días puedes solicitar la licencia permanente a IT o renovar la suscripción. Sin compromisos.',
+      'Activaste la versión legal de prueba desde Adobe oficial: segura y sin riesgos. A los 30 días puedes pedir la licencia permanente a IT o renovar.',
   },
 }
 
@@ -278,26 +278,26 @@ const SIGNALS: Signal[] = [
     targetId: 'malware-detectado',
     pantalla: 'e_malware',
     texto:
-      'El archivo contiene malware integrado. Esto es lo normal en todas las descargas piratas desde sitios falsos.',
+      '<b>El archivo contiene malware integrado</b>: es lo normal en descargas piratas desde sitios falsos.',
   },
   {
     id: 's2',
     targetId: 'descarga-segura',
     pantalla: 'e_descarga_oficial',
     texto:
-      'Descarga verificada desde adobe.com oficial. Archivo auténtico, sin malware, con licencia válida.',
+      '<b>Descarga verificada desde adobe.com oficial</b>: archivo auténtico, sin malware, con licencia válida.',
   },
   {
     id: 's3',
     targetId: 'trial-activado',
     pantalla: 'e_descarga_trial',
     texto:
-      'Versión legal de prueba activada. 30 días de acceso completo desde Adobe oficial, completamente segura.',
+      '<b>Versión legal de prueba activada</b>: 30 días de acceso completo desde Adobe oficial.',
   },
 ]
 
 const RULE =
-  'Regla de oro: En búsquedas, los resultados pirata frecuentemente aparecen primero porque pagan para posicionarse. Siempre verifica que estés en el sitio OFICIAL (adobe.com, microsoft.com, etc.). Si el dominio no es exacto, es falso.'
+  '<b>Verifica siempre que estés en el sitio oficial.</b> Los resultados pirata suelen aparecer primero porque pagan por posicionarse; si el dominio no es exacto, es falso.'
 
 const SUMMARY = 'Búsqueda de software - Identifica sitios oficiales vs. falsos'
 

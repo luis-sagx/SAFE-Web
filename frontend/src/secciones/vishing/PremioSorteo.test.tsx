@@ -2,6 +2,7 @@ import { fireEvent, render, screen, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
 import { describe, expect, it, vi } from 'vitest'
 import RafflePrize from './PremioSorteo'
+import { terminarDeHablar } from '../../test/escenario'
 
 vi.mock('../../context/AuthContext', () => ({
   useAuth: () => ({
@@ -59,6 +60,9 @@ describe('PremioSorteo', () => {
     const phone = start()
 
     fireEvent.click(within(phone).getByRole('button', { name: 'Contestar la llamada' }))
+    // La transcripción se revela recién cuando termina de sonar cada frase
+    // (issue #250: no debe verse como un audio ya escrito de antemano).
+    terminarDeHablar(phone)
     expect(within(phone).getByText(/ganador de una cocina/)).toBeDefined()
     // Contestar no es todavía un veredicto: la corrida sigue en curso.
     expect(screen.getByText('¿Qué haces?')).toBeDefined()
@@ -75,7 +79,12 @@ describe('PremioSorteo', () => {
     const phone = start()
 
     fireEvent.click(within(phone).getByRole('button', { name: 'Contestar la llamada' }))
+    // Las respuestas están deshabilitadas mientras "suena" el audio del otro
+    // lado (issue #250); en jsdom no hay audio de verdad, así que se simula
+    // que terminó de hablar.
+    terminarDeHablar(phone)
     fireEvent.click(within(phone).getByRole('button', { name: /¿Por qué tengo que pagar/ }))
+    terminarDeHablar(phone)
 
     // Contestan a lo que se preguntó, no una frase de guion cualquiera…
     expect(within(phone).getByText(/el premio es gratis/)).toBeDefined()
@@ -88,7 +97,9 @@ describe('PremioSorteo', () => {
     const phone = start()
 
     fireEvent.click(within(phone).getByRole('button', { name: 'Contestar la llamada' }))
+    terminarDeHablar(phone)
     fireEvent.click(within(phone).getByRole('button', { name: /¿A qué cuenta deposito/ }))
+    terminarDeHablar(phone)
 
     expect(within(phone).queryByText(/el premio es gratis/)).toBeNull()
     expect(within(phone).getByText(/Deposite a la cuenta de mi compañera/)).toBeDefined()
@@ -120,6 +131,7 @@ describe('PremioSorteo', () => {
 
     // Volver deja la conversación donde estaba, sin haber decidido nada.
     fireEvent.click(within(phone).getByRole('button', { name: 'Volver a la llamada' }))
+    terminarDeHablar(phone)
     expect(within(phone).getByText(/ganador de una cocina/)).toBeDefined()
     expect(screen.getByText('¿Qué haces?')).toBeDefined()
   })

@@ -15,14 +15,8 @@ const SCENE: ScreenView = {
   ],
 }
 
-const SCENE_WITH_FLASH: ScreenView = {
-  ...SCENE,
-  destello: { x: '55%', y: '64%', goto: 'n_opciones', label: 'Inspeccionó el USB' },
-}
-
 const STORY: Story<ScreenNode> = {
-  n1: { kind: 'scene', view: SCENE_WITH_FLASH },
-  n_opciones: { kind: 'scene', view: SCENE, choices: [
+  n1: { kind: 'scene', view: SCENE, choices: [
     { label: 'Agarrarlo, alguien lo dejó y probablemente lo necesita', goto: 'e_agarra' },
     { label: 'Dejarlo ahí, no es asunto tuyo', goto: 'e_deja' },
     { label: 'Dejarlo donde está y avisar a IT', goto: 'e_reporta' },
@@ -34,7 +28,7 @@ const STORY: Story<ScreenNode> = {
 
 const SIGNALS: Signal[] = [
   { id: 'usb', targetId: 'usb-suelo', texto: 'Un <b>USB abandonado</b> puede ser un cebo: no hace falta que parezca sospechoso para comprometer un equipo.' },
-  { id: 'vacio', targetId: 'estacionamiento-vacio', texto: 'No hay a quién preguntar de quién es. En vez de llevártelo, <b>repórtalo a IT</b> para que lo gestione sin conectarlo.' },
+  { id: 'vacio', targetId: 'estacionamiento-vacio', texto: '<b>Repórtalo a IT</b> en vez de llevártelo: no hay a quién preguntar de quién es.' },
 ]
 
 const context: Context = {

@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react'
+import { createEvent, fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import DeviceScreen, { type ScreenView } from './DeviceScreen'
 
@@ -44,5 +44,50 @@ describe('DeviceScreen, adjuntar imágenes en el chat', () => {
     rerender(<DeviceScreen view={view} terminada />)
     rerender(<DeviceScreen view={view} terminada={false} />)
     expect(screen.queryByRole('button', { name: 'Quitar a.jpg' })).toBeNull()
+  })
+})
+
+describe('DeviceScreen, compositor libre', () => {
+  it('Enter envía el mensaje escrito', () => {
+    render(<DeviceScreen view={chat()} />)
+    const input = screen.getByLabelText('Escribe tu mensaje')
+    fireEvent.change(input, { target: { value: 'Resume este informe.' } })
+    fireEvent.keyDown(input, { key: 'Enter' })
+    expect(screen.getByText('Resume este informe.')).toBeDefined()
+    expect(screen.queryByLabelText('Escribe tu mensaje')).toBeNull()
+  })
+
+  it('Shift+Enter conserva el campo abierto para escribir otra línea', () => {
+    render(<DeviceScreen view={chat()} />)
+    const input = screen.getByLabelText('Escribe tu mensaje') as HTMLTextAreaElement
+    fireEvent.change(input, { target: { value: 'Primera línea' } })
+    const event = createEvent.keyDown(input, { key: 'Enter', shiftKey: true })
+    fireEvent(input, event)
+    expect(screen.getByLabelText('Escribe tu mensaje')).toBeDefined()
+    expect(input.value).toBe('Primera línea')
+    expect(event.defaultPrevented).toBe(false)
+  })
+})
+
+describe('DeviceScreen, separadores de fecha', () => {
+  it('separa el primer mensaje de hoy del historial anterior', () => {
+    const view: ScreenView = {
+      kind: 'sms',
+      sender: 'Byron',
+      sub: 'en línea',
+      msgs: [
+        { text: 'Listo 🙌', time: '12 ago' },
+        { text: 'Bro, ayúdame porfa.', time: '17:41', separador: 'HOY' },
+      ],
+    }
+
+    render(<DeviceScreen view={view} />)
+
+    const history = screen.getByText('Listo 🙌')
+    const today = screen.getByText('HOY')
+    const currentMessage = screen.getByText('Bro, ayúdame porfa.')
+
+    expect(history.compareDocumentPosition(today) & Node.DOCUMENT_POSITION_FOLLOWING).toBeGreaterThan(0)
+    expect(today.compareDocumentPosition(currentMessage) & Node.DOCUMENT_POSITION_FOLLOWING).toBeGreaterThan(0)
   })
 })

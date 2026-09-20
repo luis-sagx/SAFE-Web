@@ -161,14 +161,14 @@ const APPS: PhoneApp[] = [
     Icono: Phone,
     texto: 'Teléfono',
     color: '#2f9e44',
-    goto: 'n1',
+    viewNode: 'n1',
     label: 'Volvió al registro de llamadas',
   },
   {
     Icono: Compass,
     texto: 'Navegador',
     color: '#1971c2',
-    goto: 'n4',
+    viewNode: 'n4',
     label: 'Abrió el navegador para averiguar de quién es el número',
   },
   { Icono: Images, texto: 'Galería', color: '#c2410c', relleno: 'galeria' },
@@ -185,7 +185,7 @@ export const STORY: Story<ScreenNode> = {
     view: RECORD,
     verdict: 'No caíste · no devolviste la llamada',
     outcome:
-      'Bloqueaste el número y seguiste con tu día. Quien de verdad necesita hablar contigo vuelve a llamar, deja un mensaje o te escribe: nadie importante se comunica con un timbrazo a las tres de la mañana.',
+      'Bloqueaste el número y seguiste con tu día. Quien de verdad te necesita vuelve a llamar o te escribe.',
   },
   e_busca: {
     kind: 'good',

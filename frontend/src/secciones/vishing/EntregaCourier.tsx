@@ -31,7 +31,7 @@ const OPENING = [
   },
   {
     texto:
-      'Le timbré y no me contestó nadie. ¿Le dejo con el conserje o baja usted? Son tres cincuenta contra entrega, en efectivo o con tarjeta en el datáfono que traigo.',
+      'Le timbré y no me contestó nadie. ¿Le dejo con el conserje o baja usted? Son tres cincuenta contra entrega. Si quiere pagar con tarjeta, dícteme el número por teléfono y se lo cobro ahora mismo.',
     senal: 'cobro',
   },
 ]
@@ -50,7 +50,7 @@ const CALL: ScreenView = {
       label: 'Confirmó la entrega y quedó en pagar en efectivo',
     },
     {
-      texto: 'Le dicto el número de mi tarjeta y me lo cobra desde ahí, así no bajo.',
+      texto: 'Está bien, le dicto el número de mi tarjeta y me lo cobra desde ahí, así no bajo.',
       goto: 'e_tarjeta',
       label: 'Ofreció dictar el número de su tarjeta por teléfono',
     },
@@ -107,7 +107,7 @@ const APPS: PhoneApp[] = [
     Icono: Package,
     texto: 'EnvíaExpress',
     color: '#d9480f',
-    goto: 'n3',
+    viewNode: 'n3',
     label: 'Abrió la app del courier durante la llamada',
   },
   { Icono: Wallet, texto: 'Banco', color: '#155e75', relleno: 'banco' },
@@ -122,7 +122,7 @@ export const STORY: Story<ScreenNode> = {
     view: INCOMING,
     verdict: 'No perdiste nada, pero tampoco resolviste',
     outcome:
-      'No contestaste. No perdiste ni un centavo (y no contestar a un desconocido nunca está mal), pero era el repartidor con el paquete que sí estabas esperando: se fue, el envío volvió a bodega y ahora te toca ir a retirarlo a la agencia.',
+      'No contestaste, y eso nunca cuesta dinero. Pero era el repartidor real: el envío volvió a bodega y ahora toca retirarlo en la agencia.',
     score: 50,
   },
   e_cuelga: {
@@ -130,7 +130,7 @@ export const STORY: Story<ScreenNode> = {
     view: CALL,
     verdict: 'Colgaste a alguien que decía la verdad',
     outcome:
-      'Colgar nunca te va a costar dinero, así que como reflejo no está mal. Pero el envío era real y no comprobaste nada: bastaba mirar la guía en la app del courier para saber que estaba en reparto y con cobro de $3,50.',
+      'Colgar nunca cuesta dinero, pero el envío era real. Bastaba mirar la guía en la app del courier para confirmarlo.',
     score: 50,
   },
   e_recibe: {
@@ -138,21 +138,21 @@ export const STORY: Story<ScreenNode> = {
     view: CALL,
     verdict: 'Acertaste · la llamada era legítima',
     outcome:
-      'Era tu repartidor. La guía coincidía con tu compra, el cobro contra entrega estaba anunciado desde que hiciste el pedido y pagaste en efectivo en la puerta. No hacía falta desconfiar, porque no te pidió ni un dato.',
+      'La entrega era real y pagaste en efectivo, sin dar datos de tarjeta. Que el repartidor tenga tu guía no vuelve segura una petición de tarjeta por teléfono.',
   },
   e_tarjeta: {
     kind: 'bad',
     view: CALL,
     verdict: 'Llamada legítima, reacción peligrosa',
     outcome:
-      'La llamada era de verdad, pero dictaste tu tarjeta por teléfono, y eso no se hace ni con quien está abajo con tu paquete. Un número completo con caducidad y CVV sirve para comprar en internet las veces que haga falta, y ya no depende de si el repartidor era honrado: lo oyó él, y quien estuviera cerca.',
+      'La entrega era real, pero dictaste tu tarjeta por teléfono. Ese número con caducidad y CVV sirve para comprar en internet, y lo oyó él y quien estuviera cerca.',
   },
   e_app: {
     kind: 'good',
     view: GUIDE,
     verdict: 'Acertaste · lo comprobaste en tu canal',
     outcome:
-      'En la app estaba todo: la guía en reparto, el nombre del repartidor y el cobro de $3,50 contra entrega. Comprobar tarda quince segundos y sirve igual para descubrir un engaño que para confirmar que algo es verdad.',
+      'En la app estaba todo: la guía en reparto, el repartidor y el cobro de $3,50. La tarjeta se paga en el datáfono, no dictando sus datos.',
   },
 }
 
@@ -162,33 +162,33 @@ const SIGNALS: Signal[] = [
     targetId: 'guia',
     pantalla: 'n2',
     texto:
-      'Trae <b>tu número de guía</b> y coincide con la compra que estás esperando. No lo dice para que "confirmes" nada: lo dice porque lo tiene delante.',
+      '<b>Trae tu número de guía</b>, que coincide con tu compra. Lo dice porque lo tiene delante, no para que confirmes nada.',
   },
   {
     id: 's2',
     targetId: 'cobro',
     pantalla: 'n2',
     texto:
-      'El cobro es <b>en la puerta y pequeño</b>, el que ya sabías al comprar. Nadie te pide pagar por adelantado ni por un enlace para "liberar" el paquete.',
+      '<b>El valor y la entrega sí coinciden</b> con tu compra, pero eso no autoriza a cobrarte la tarjeta por teléfono.',
   },
   {
     id: 's3',
     targetId: 'cobro',
     pantalla: 'n2',
     texto:
-      'No te pide <b>ningún dato</b>: ni cédula, ni tarjeta, ni códigos. Solo si bajas o se lo deja al conserje.',
+      '<b>Te pide el número de tu tarjeta por teléfono.</b> Aunque la entrega exista, eso solo se paga en el datáfono, presencial.',
   },
   {
     id: 's4',
     targetId: 'coincide',
     pantalla: 'e_app',
     texto:
-      'En la app del courier <b>consta lo mismo</b> que te cuentan por teléfono. Eso es lo que convierte una sospecha en una certeza, en los dos sentidos.',
+      '<b>En la app consta lo mismo</b> que te cuentan por teléfono. Eso convierte la sospecha en certeza, en los dos sentidos.',
   },
 ]
 
 const RULE =
-  'Regla de oro: que una llamada sea de verdad <b>no significa que valga todo</b>. Puedes confirmar una entrega sin problema, pero el número de tu tarjeta no se dicta por teléfono nunca: se paga en efectivo o en el datáfono, con la tarjeta en tu mano.'
+  'Regla de oro: <b>una llamada real no significa que valga todo</b>. El número de tu tarjeta nunca se dicta: se paga en efectivo o datáfono.'
 
 const SUMMARY = 'Un repartidor llama desde la puerta para entregarte un paquete.'
 
@@ -222,8 +222,10 @@ function CourierDelivery() {
       apps={APPS}
       instruccion={
         <p className="text-lg leading-relaxed text-body">
-          Actúa sobre el teléfono como lo harías con el tuyo: contesta o rechaza, cuelga cuando
-          quieras y usa <strong>cualquier app de abajo</strong>, incluso con la llamada abierta.
+          Es una llamada en vivo: hay alguien hablando al otro lado y espera tu respuesta cuando
+          termine. Actúa sobre el teléfono como lo harías con el tuyo: contesta o rechaza, cuelga
+          cuando quieras y usa <strong>cualquier app de abajo</strong>, incluso con la llamada
+          abierta.
         </p>
       }
       pista={

@@ -8,7 +8,6 @@ import {
   withFreeTextComposer,
   splitKnownData,
   evaluateData,
-  worstLevel,
   mentionsAny,
   signal,
   type SendResult,
@@ -16,7 +15,8 @@ import {
 } from './chatIA'
 
 /** Único de la sección donde lo filtrado es institucional, no personal: cifras sin publicar y un plan que ni los
- *  empleados afectados conocen. Mide si "no compartas datos de otros" también aplica a datos de la empresa.
+ *  empleados afectados conocen. La cifra aislada no identifica a nadie; el riesgo aparece al juntarla
+ *  con el nombre o RUC de la empresa, porque así queda asociado a una organización concreta.
  *
  *  Issue #184: el informe con las cifras reales vive en un bloc de notas fijo junto al celular; el
  *  participante escribe su propio pedido a la IA, decidiendo qué copiar del informe y qué dejar afuera.
@@ -29,6 +29,9 @@ const TIME = '15:02'
 
 const MISSED = '$340.000'
 const CLIP_PERCENT = '15%'
+const COMPANY_NAME = 'Comercial Super Andinas S.A.'
+// RUC ficticio: el tercer dígito 9 no corresponde a una persona ni empresa real.
+const COMPANY_RUC = '1799999999001'
 
 const DATA_POINTS: SensitiveDatum[] = [
   // "$340.000", "340000", "340 mil", "340k": la misma cifra.
@@ -45,18 +48,27 @@ const DATA_POINTS: SensitiveDatum[] = [
     etiqueta: `el porcentaje real del recorte de personal (${CLIP_PERCENT})`,
     patron: /\b(15|quince)\s*(%|por\s*ciento)/,
   },
+  { id: 'dato-empresa', tipo: 'texto', etiqueta: 'el nombre de la empresa', valor: COMPANY_NAME },
+  { id: 'dato-ruc', tipo: 'numero', etiqueta: 'el RUC de la empresa', valor: COMPANY_RUC },
 ]
 
 // De qué trata el informe. Sin nada de esto la IA no tiene qué resumir.
 const TOPIC_ROOTS = ['perdid', 'resultado', 'trimestr', 'recort', 'despid', 'ajuste', 'personal', 'financ', 'ingreso', 'venta', 'balance', 'empleado', 'cifra', 'economic', 'deficit', 'gasto', 'presupuest', 'utilidad', 'reduc']
 
 function onEnviar(texto: string): SendResult {
-  const nivel = worstLevel(evaluateData(texto, DATA_POINTS))
+  const resultados = evaluateData(texto, DATA_POINTS)
+  const identificaEmpresa = resultados.some(
+    (dato) => (dato.id === 'dato-empresa' || dato.id === 'dato-ruc') && dato.nivel === 'fuga',
+  )
+  const revelaInformacionInterna = resultados.some(
+    (dato) => (dato.id === 'dato-perdidas' || dato.id === 'dato-recorte') && dato.nivel === 'fuga',
+  )
+  const nivel = identificaEmpresa && revelaInformacionInterna ? 'fuga' : 'seguro'
   if (nivel === 'seguro' && !mentionsAny(texto, TOPIC_ROOTS)) {
     return { repregunta: 'Necesito saber de qué trata el informe para resumirlo. ¿Qué temas o resultados debe cubrir?' }
   }
   return {
-    // Sin nivel parcial (ver nota arriba): 'fuga' o 'seguro' solamente.
+    // Solo la combinación identifica una pérdida o ajuste interno: fuga o seguro.
     goto: nivel === 'seguro' ? 'e_seguro' : 'e_fuga',
     label: 'Escribió su propio mensaje para pedirle ayuda a la IA',
   }
@@ -88,7 +100,7 @@ const CHAT = withFreeTextComposer(
 
 // El "documento fuente": el informe trimestral con las cifras reales, abierto al lado en un bloc de
 // notas. Copiarlo entero en el chat es la trampa; el resumen no necesitaba las cifras exactas.
-const SOURCE_DOCUMENT = `Informe trimestral, uso interno.\n\nResultado del período: pérdida de ${MISSED}.\nPlan de ajuste: recorte de personal del ${CLIP_PERCENT}, sin anunciar todavía.\n\nPara la reunión de gerencia del viernes.`
+const SOURCE_DOCUMENT = `Informe trimestral, uso interno.\n\nEmpresa: ${COMPANY_NAME}\nRUC: ${COMPANY_RUC}\nResultado del período: pérdida de ${MISSED}.\nPlan de ajuste: recorte de personal del ${CLIP_PERCENT}, sin anunciar todavía.\n\nPara la reunión de gerencia del viernes.`
 
 const STORY: Story<ScreenNode> = {
   n1: { kind: 'scene', view: CHAT },
@@ -99,12 +111,12 @@ const STORY: Story<ScreenNode> = {
       signal(
         dato.id,
         'e_fuga',
-        `Si tu mensaje incluyó <b>${dato.etiqueta}</b>: para armar el resumen, a la IA le bastaba con saber que hubo un resultado negativo y un ajuste de personal, no las cifras exactas todavía sin publicar.`,
+        `<b>${dato.etiqueta}</b> no hacía falta. A la IA le bastaba saber que hubo un resultado negativo y un ajuste de personal.`,
       ),
     ),
     verdict: 'Información confidencial de la empresa compartida con la IA',
     outcome:
-      'Tu mensaje incluyó la cifra real de pérdidas, el porcentaje real del recorte de personal, o ambos, datos que ni el propio personal conoce todavía, y que quedaron en manos de un servicio externo.',
+      'Tu mensaje identificó a la empresa (nombre o RUC) y además reveló información interna. La IA solo necesitaba el tema general.',
   },
   e_seguro: {
     kind: 'good',
@@ -113,12 +125,12 @@ const STORY: Story<ScreenNode> = {
       signal(
         'borrador-enviado',
         'e_seguro',
-        'Le pediste a la IA la <b>forma</b> del resumen,para qué reunión es, qué debe mencionar, sin las cifras reales.',
+        '<b>Le pediste a la IA solo la forma del resumen</b>: para qué reunión es y qué debe mencionar, sin cifras reales.',
       ),
     ],
     verdict: 'Resumen armado sin exponer datos de la empresa',
     outcome:
-      'Tu mensaje le pidió a la IA la estructura del resumen, no el contenido confidencial. Las cifras reales las agregas tú mismo, fuera de la conversación.',
+      'Tu mensaje le pidió a la IA solo la estructura del resumen, no el contenido confidencial. Las cifras reales las agregas tú, fuera de la conversación.',
   },
 }
 
@@ -126,14 +138,14 @@ const SIGNALS = [
   signal(
     'informe-en-juego',
     'n1',
-    'La IA te pregunta de qué trata el informe. El que tienes delante trae <b>cifras sin publicar</b> y un <b>plan de despidos que nadie ha anunciado</b>, y contar de qué trata no obliga a copiarlo entero.',
+    '<b>El informe identifica a la empresa, su RUC y cifras sin publicar</b>. Contar de qué trata no obliga a copiarlo entero.',
   ),
 ]
 
 const RULE =
-  'Regla de oro: la información <b>confidencial de tu empresa</b>,cifras sin publicar, planes sin anunciar, no se escribe en una IA externa. Pide la forma del texto, y completa tú los datos sensibles aparte.'
+  'Regla de oro: <b>la información confidencial de tu empresa</b> (nombre, RUC, cifras sin publicar) no se escribe en una IA externa. Pide solo la forma, y completa tú los datos sensibles.'
 
-const SUMMARY = 'Le pides a una IA que resuma un informe con cifras sin publicar y un plan de despidos sin anunciar.'
+const SUMMARY = 'Le pides a una IA que resuma un informe que identifica a una empresa y contiene cifras sin publicar.'
 
 const CONTEXT: Context = {
   antes: 'Te pidieron preparar un resumen ejecutivo del informe financiero interno para la reunión de gerencia.',

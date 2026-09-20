@@ -193,14 +193,14 @@ const APPS: PhoneApp[] = [
     Icono: Building2,
     texto: 'Portal Inmobiliario',
     color: '#c2255c',
-    goto: 'n2',
+    viewNode: 'n2',
     label: 'Abrió la ficha del departamento que visitó',
   },
   {
     Icono: Wallet,
     texto: IDENTITY_FAKE.banco,
     color: '#155e75',
-    goto: 'n6',
+    viewNode: 'n6',
     label: 'Abrió la app del banco',
   },
   { Icono: Images, texto: 'Galería', color: '#c2410c', relleno: 'galeria' },
@@ -218,14 +218,14 @@ export const STORY: Story<ScreenNode> = {
     view: CONTRACT,
     verdict: 'Acertaste · viste, firmaste y después pagaste',
     outcome:
-      'Firmaste el contrato con el departamento ya visto, la compañía comprobada en el registro y el depósito a la cuenta de la misma inmobiliaria que arrienda, contra recibo. Te mudaste el fin de semana. Esto es lo que se ve cuando un arriendo es de verdad: el mismo trato del otro escenario, pero en el orden correcto.',
+      'Firmaste con el departamento ya visto, la compañía comprobada y el depósito contra recibo. Te mudaste el fin de semana.',
   },
   e_piensa: {
     kind: 'partial',
     view: CONTRACT,
     verdict: 'Estaba todo bien y lo dejaste enfriar',
     outcome:
-      'Pediste un día más y el departamento seguía disponible, así que no perdiste nada. Pero tampoco tenías qué pensar: lo habías visto, la compañía constaba en el registro y el contrato coincidía con todo. Tomarse un día es sano cuando algo no cuadra; aquí lo único que faltaba era decidir.',
+      'Pediste un día más y no perdiste nada, pero tampoco tenías qué pensar: ya estaba todo comprobado.',
     score: 70,
   },
   e_adelanta: {
@@ -233,7 +233,7 @@ export const STORY: Story<ScreenNode> = {
     view: CHAT,
     verdict: 'Esta vez salió bien, pero hiciste justo lo peligroso',
     outcome:
-      'Pagaste antes de ver y antes de firmar. Salió bien porque la inmobiliaria era real, no porque tú hicieras algo bien: adelantar el depósito a alguien que todavía no te ha enseñado nada es exactamente el gesto con el que se pierden los $700 del otro escenario. El orden no es un trámite, es la protección.',
+      'Pagaste antes de ver y de firmar. Salió bien porque la inmobiliaria era real, no porque el gesto fuera seguro.',
     score: 20,
   },
   e_deja: {
@@ -241,7 +241,7 @@ export const STORY: Story<ScreenNode> = {
     view: CHAT,
     verdict: 'Dejaste caer un arriendo que estaba bien',
     outcome:
-      'No contestaste y el departamento se arrendó a otra persona. Nada de lo que te escribieron era una señal de alarma: te dieron la dirección exacta, te ofrecieron tres horarios y dijeron que el conserje también podía abrirte. Desconfiar de todo también cuesta, y en un mercado de arriendos cuesta caro.',
+      'No contestaste y el departamento se arrendó a otra persona. Te dieron dirección exacta y tres horarios: nada de eso era una señal de alarma.',
     score: 20,
   },
 }
@@ -252,40 +252,40 @@ const SIGNALS: Signal[] = [
     targetId: 'direccion',
     pantalla: 'n1',
     texto:
-      'Te dan la <b>dirección exacta</b> desde el primer mensaje y te ofrecen varios horarios para verlo. Quien no tiene nada que enseñar nunca llega hasta aquí.',
+      'Te dan la <b>dirección exacta</b> desde el primer mensaje y varios horarios para verlo. Quien no tiene nada que enseñar nunca llega hasta aquí.',
   },
   {
     id: 's2',
     targetId: 'orden',
     pantalla: 'n3',
     texto:
-      'El orden es el correcto: <b>ver, firmar y pagar al firmar</b>, con recibo y copia del contrato. El escenario espejo lo pide al revés, y esa inversión es toda la estafa.',
+      'El orden es el correcto: <b>ver, firmar y pagar al firmar</b>, con recibo y copia del contrato.',
   },
   {
     id: 's3',
     targetId: 'misma-cuenta',
     pantalla: 'n5',
     texto:
-      'La cuenta del depósito está a nombre de <b>la misma compañía que arrienda</b>, la que firma el contrato. No hay hermanas, cuñados ni cuentas personales de por medio.',
+      'La cuenta del depósito está a nombre de <b>la misma compañía que arrienda</b>. No hay cuentas personales de por medio.',
   },
   {
     id: 's4',
     targetId: 'registro',
     pantalla: 'n4',
     texto:
-      'La inmobiliaria <b>consta en el registro desde 2011</b>, con su actividad y su representante legal, y coincide con quien firma. Comprobarlo es gratis y sirve igual para confirmar que para descartar.',
+      'La inmobiliaria <b>consta en el registro desde 2011</b>, y su representante coincide con quien firma.',
   },
   {
     id: 's5',
     targetId: 'en-persona',
     pantalla: 'n2',
     texto:
-      'Te <b>abrieron la puerta</b> con llaves y credencial, y el conserje confirmó quién lleva el edificio. Tres personas distintas cuentan lo mismo.',
+      'Te <b>abrieron la puerta</b> con llaves y credencial, y el conserje confirmó quién lleva el edificio.',
   },
 ]
 
 const RULE =
-  'Regla de oro: la misma regla vale para los dos. En un arriendo el orden es <b>ver, firmar y después pagar</b>, a la cuenta de quien firma el contrato. Si el orden se cumple, arrendar es seguro y hay que hacerlo; si alguien te lo invierte, ahí está la trampa. La prudencia es el orden, no la desconfianza.'
+  'Regla de oro: en un arriendo el orden es <b>ver, firmar y después pagar</b>, a la cuenta de quien firma el contrato. Si el orden se cumple, arrendar es seguro.'
 
 const SUMMARY =
   'Una agente inmobiliaria te da la dirección y tres horarios para ver un departamento.'

@@ -153,9 +153,9 @@ function containsWord(texto: string, palabra: string): boolean {
 /// Evalúa un solo dato. La cédula/cuenta/teléfono cuenta como fuga completa
 /// solo si aparecen TODOS sus dígitos reales seguidos (sin importar espacios
 /// o guiones en medio); si solo aparecen los últimos 4,como cuando alguien
-/// cree que "ocultar" es mostrar la cola, queda en parcial. El nombre cuenta
-/// como fuga completa solo con nombre Y apellido juntos; uno solo de los dos
-/// (o un apodo real que igual sea su nombre de pila) queda en parcial.
+/// cree que "ocultar" es mostrar la cola, queda en parcial. Un nombre es
+/// seguro hasta con dos partes; desde tres partes reales identifica demasiado
+/// a la persona y cuenta como fuga.
 export function evaluateDatum(texto: string, dato: SensitiveDatum): DatumResult {
   const base = { id: dato.id, etiqueta: dato.etiqueta }
 
@@ -176,10 +176,12 @@ export function evaluateDatum(texto: string, dato: SensitiveDatum): DatumResult 
 
   if (dato.tipo === 'nombre') {
     const normalizado = normalizeText(texto)
-    const tieneNombre = containsWord(normalizado, normalizeText(dato.nombre))
-    const tieneApellido = containsWord(normalizado, normalizeText(dato.apellido))
-    if (tieneNombre && tieneApellido) return { ...base, nivel: 'fuga' }
-    if (tieneNombre || tieneApellido) return { ...base, nivel: 'parcial' }
+    const partes = `${dato.nombre} ${dato.apellido}`
+      .split(/\s+/)
+      .map(normalizeText)
+      .filter(Boolean)
+    const partesEncontradas = partes.filter((parte) => containsWord(normalizado, parte)).length
+    if (partesEncontradas >= 3) return { ...base, nivel: 'fuga' }
     return { ...base, nivel: 'seguro' }
   }
 

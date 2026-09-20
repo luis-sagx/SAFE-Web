@@ -101,6 +101,17 @@ describe('InvitacionCumpleanos', () => {
     expect(await screen.findByText('Armaste la invitación sin subir ninguna cara')).toBeDefined()
   })
 
+  it('Enter con texto y fotos seguras muestra el veredicto', async () => {
+    const container = start(<BirthdayInvitation />)
+    fireEvent.click(within(container).getByRole('button', { name: 'Adjuntar imágenes' }))
+    fireEvent.click(within(container).getByRole('button', { name: 'Quitar sofia_uniforme.jpg' }))
+    fireEvent.click(within(container).getByRole('button', { name: 'Quitar aula_3B_grupo.jpg' }))
+    const input = within(container).getByLabelText('Escribe tu mensaje')
+    fireEvent.change(input, { target: { value: 'Una invitación con dinosaurios' } })
+    fireEvent.keyDown(input, { key: 'Enter' })
+    expect(await screen.findByText('Armaste la invitación sin subir ninguna cara')).toBeDefined()
+  })
+
   it('un texto sin imágenes ni descripción no aprueba: la IA repregunta', async () => {
     const container = start(<BirthdayInvitation />)
     fireEvent.change(within(container).getByLabelText('Escribe tu mensaje'), { target: { value: 'nose' } })

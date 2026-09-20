@@ -44,24 +44,13 @@ function renderScenario() {
 }
 
 describe('AvisoFiltracion', () => {
-  it('cerrar la pestaña que dispara el final devuelve el navegador al correo', () => {
+  it('termina al cambiar la contraseña en el sitio oficial', () => {
     renderScenario()
 
     fireEvent.click(screen.getByRole('button', { name: 'Abrir TiendaExpress' }))
     fireEvent.click(screen.getByRole('button', { name: 'Guardar contraseña' }))
 
-    expect(screen.getByRole('tab', { name: /Contraseña actualizada/ })).toBeDefined()
-
-    fireEvent.click(
-      screen.getByRole('button', { name: 'Cerrar la pestaña Contraseña actualizada' }),
-    )
-
-    // El final llega, y lo que queda detrás es la única pestaña abierta: el
-    // correo. Antes seguía viéndose la página de TiendaExpress, cuya pestaña
-    // acababa de desaparecer de la barra.
-    expect(screen.getByText('Bien encaminado, pero incompleto')).toBeDefined()
+    expect(screen.getByText('Correcto · reaccionaste bien')).toBeDefined()
     expect(screen.queryByRole('tab', { name: /Contraseña actualizada/ })).toBeNull()
-    expect(screen.getByText('https://correo.safeweb.com/recibidos')).toBeDefined()
-    expect(screen.getByText('Aviso importante de seguridad')).toBeDefined()
   })
 })

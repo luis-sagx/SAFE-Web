@@ -213,14 +213,14 @@ const APPS: PhoneApp[] = [
     Icono: Building2,
     texto: 'Portal Inmobiliario',
     color: '#c2255c',
-    goto: 'n6',
+    viewNode: 'n6',
     label: 'Abrió el anuncio del departamento',
   },
   {
     Icono: Wallet,
     texto: IDENTITY_FAKE.banco,
     color: '#155e75',
-    goto: 'n5',
+    viewNode: 'n5',
     label: 'Abrió la app del banco para transferir',
   },
   { Icono: Images, texto: 'Galería', color: '#c2410c', relleno: 'galeria' },
@@ -239,21 +239,21 @@ export const STORY: Story<ScreenNode> = {
     view: TRANSFER,
     verdict: 'Caíste en la estafa',
     outcome:
-      'Los $700 salieron a la cuenta de Rosa Tumbaco. El contrato llegó por correo esa misma noche, muy bien hecho y sin valor ninguno. El 12 no contestó, el 13 tampoco, y el 14 el número ya no existía. El departamento de las fotos se vendió hace dos años y nunca estuvo en arriendo: quien te escribía no tenía nada que entregar.',
+      'Los $700 salieron a la cuenta de Rosa Tumbaco, y el 14 el número ya no existía. El departamento de las fotos se vendió hace dos años: nunca estuvo en arriendo.',
   },
   e_deja: {
     kind: 'good',
     view: PRESSES,
     verdict: 'No caíste · no pagaste sin ver',
     outcome:
-      'Lo dejaste ir sin poner un dólar. El anuncio siguió activo dos semanas más y después desapareció, junto con otro idéntico que el mismo número tenía puesto en Cuenca. Un arriendo se ve, se firma y se paga, en ese orden, y ningún dueño de verdad pide la garantía de alguien a quien no le puede abrir la puerta.',
+      'Lo dejaste ir sin poner un dólar. El anuncio desapareció dos semanas después, junto con otro idéntico en Cuenca.',
   },
   e_ignora: {
     kind: 'partial',
     view: CHAT,
     verdict: 'No perdiste nada, pero no comprobaste nada',
     outcome:
-      'Dejaste de contestar y no pagaste, que es lo que importaba. Pero no miraste el anuncio ni de dónde salían las fotos, así que sigue pareciéndote que el problema era el dueño y no el trato. El próximo que te escriba va a ser más simpático, y el orden va a ser el mismo: pagar antes de ver.',
+      'No pagaste, pero nunca revisaste el anuncio ni las fotos. El próximo va a ser más simpático, con el mismo orden invertido.',
     score: 50,
   },
 }
@@ -263,48 +263,46 @@ const SIGNALS: Signal[] = [
     id: 's1',
     targetId: 'paga-primero',
     pantalla: 'n1',
-    texto:
-      'Te piden <b>pagar antes de ver</b>. Ese es el orden invertido, y es toda la estafa: un arriendo de verdad se ve primero, se firma después y se paga al firmar.',
+    texto: 'Te piden <b>pagar antes de ver</b>. Un arriendo real se ve primero y se paga al firmar.',
   },
   {
     id: 's2',
     targetId: 'no-se-ve',
     pantalla: 'n2',
     texto:
-      'El dueño <b>está fuera de la ciudad</b> y nadie más puede abrir. Es la excusa que sostiene el orden invertido: si el lugar no existe o no es suyo, no hay nada que enseñar.',
+      '<b>El dueño está fuera</b> y nadie más puede abrir. Es la excusa para no enseñar un lugar que quizá no es suyo.',
   },
   {
     id: 's3',
     targetId: 'fotos',
     pantalla: 'n7',
     texto:
-      'Las <b>fotos ya estaban en internet</b>: son de un anuncio de venta de hace dos años, y el mismo juego está publicado en otra ciudad. Buscar por imagen cuesta un toque y desarma el anuncio entero.',
+      'Las <b>fotos ya estaban en internet</b>, de un anuncio de venta de hace dos años. Un toque de búsqueda desarma el anuncio.',
   },
   {
     id: 's4',
     targetId: 'cuenta',
     pantalla: 'n3',
-    texto:
-      'La cuenta está a <b>otro nombre</b>, con la explicación de la hermana. Es lo que hace que después no haya nadie a quien reclamarle.',
+    texto: 'La cuenta está <b>a otro nombre</b>, la hermana. Así después no hay a quién reclamarle.',
   },
   {
     id: 's5',
     targetId: 'precio',
     pantalla: 'n6',
     texto:
-      'El precio está <b>bastante por debajo del sector</b>. En arriendos, el descuento grande no es una oportunidad: es lo que compra que aceptes las condiciones raras.',
+      'El precio está <b>muy por debajo del sector</b>. El descuento grande compra que aceptes condiciones raras.',
   },
   {
     id: 's6',
     targetId: 'prisa',
     pantalla: 'n4',
     texto:
-      'Las <b>otras tres personas interesadas</b> aparecen justo cuando dudas, y con mucha educación: "si no está seguro, no hay problema". La cortesía también sirve para apurar.',
+      'Aparecen <b>otras tres personas interesadas</b> justo cuando dudas, con mucha cortesía. Sirve para apurarte.',
   },
 ]
 
 const RULE =
-  'Regla de oro: en un arriendo el orden es <b>ver, firmar y después pagar</b>. Nunca deposites una garantía por un lugar que no has pisado, ni a una cuenta que está a otro nombre. Si el dueño no puede enseñártelo, no es tu problema resolverlo: es la señal de que no hay nada que enseñar.'
+  'Regla de oro: en un arriendo el orden es <b>ver, firmar y después pagar</b>. Si el dueño no puede enseñártelo, no hay nada que enseñar.'
 
 const SUMMARY = 'Un departamento barato cuya garantía hay que depositar antes de poder verlo.'
 

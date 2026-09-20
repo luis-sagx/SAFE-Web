@@ -152,14 +152,14 @@ const APPS: PhoneApp[] = [
     Icono: MessageSquareText,
     texto: 'SMS',
     color: '#7048e8',
-    goto: 'n2',
+    viewNode: 'n2',
     label: 'Abrió SMS para ver el código',
   },
   {
     Icono: Phone,
     texto: 'Teléfono',
     color: '#1971c2',
-    goto: 'n4',
+    viewNode: 'n4',
     label: 'Abrió la agenda para llamar por su cuenta',
   },
   { Icono: Images, texto: 'Galería', color: '#c2410c', relleno: 'galeria' },
@@ -189,28 +189,28 @@ export const STORY: Story<ScreenNode> = {
     view: WITH_CODE,
     verdict: 'Caíste en la suplantación',
     outcome:
-      'Ese código no era de tu prima: era el de tu propia cuenta. Con él entraron a tu mensajería desde otro teléfono, te sacaron de la sesión y empezaron a escribirle a toda tu agenda pidiendo plata con tu nombre y tu foto. A Gaby le habían hecho exactamente lo mismo la noche anterior, y por eso el mensaje llegó desde su chat.',
+      'Ese código era de tu propia cuenta, no de tu prima. Con él entraron a tu mensajería y empezaron a escribirle a tu agenda pidiendo plata con tu nombre.',
   },
   e_niega: {
     kind: 'good',
     view: WITH_CODE,
     verdict: 'No caíste · el código no se pasa',
     outcome:
-      'No lo mandaste, y con eso bastó: sin ese número nadie puede abrir tu cuenta en otro teléfono. El mensaje lo decía en su propio texto, y la regla no tiene excepciones ni siquiera para la familia.',
+      'No lo mandaste, y con eso bastó: sin ese código nadie abre tu cuenta en otro teléfono. La regla no tiene excepciones, ni siquiera para la familia.',
   },
   e_llama: {
     kind: 'good',
     view: CALL_COUSIN,
     verdict: 'No caíste · la llamaste',
     outcome:
-      'Gaby contestó y te contó que le habían robado el WhatsApp la noche anterior: quien te escribía era el ladrón, desde su cuenta. Una llamada resolvió las dos cosas, no perder tu cuenta y avisarle a ella.',
+      'Gaby contestó: le habían robado el WhatsApp la noche anterior, y quien te escribía era el ladrón. Una llamada resolvió las dos cosas, no perder tu cuenta y avisarle a ella.',
   },
   e_ignora: {
     kind: 'partial',
     view: CHAT,
     verdict: 'No perdiste nada, pero quedó a medias',
     outcome:
-      'Saliste del chat sin mandar el código, que es lo importante. Pero no avisaste a tu prima de que están usando su cuenta, y a los demás de la familia les está llegando el mismo mensaje ahora mismo.',
+      'Saliste del chat sin mandar el código, que es lo importante. Pero no avisaste a tu prima, y el mismo mensaje le está llegando al resto de la familia.',
     score: 50,
   },
 }
@@ -221,47 +221,47 @@ const SIGNALS: Signal[] = [
     targetId: 'pide-codigo',
     pantalla: 'n1',
     texto:
-      'Te pide un <b>código de verificación</b>. Si llegó a tu teléfono, es tuyo: nadie más lo necesita.',
+      '<b>Te pide el código de verificación que te llegó.</b> Si llegó a tu teléfono, es tuyo.',
   },
   {
     id: 's2',
     targetId: 'texto-codigo',
     pantalla: 'n2',
     texto:
-      'El mensaje lo advierte: <b>no lo compartas</b>. Si no lo pediste, alguien quiere entrar a tu cuenta.',
+      '<b>El mensaje mismo advierte no compartirlo.</b> Si no lo pediste, alguien quiere entrar a tu cuenta.',
   },
   {
     id: 's3',
     targetId: 'excusa',
     pantalla: 'n2b',
     texto:
-      '"Me equivoqué en un dígito" <b>no es posible</b>: el código llega al número que se escribió.',
+      '<b>"Me equivoqué en un dígito" no es posible.</b> El código llega al número que se escribió.',
   },
   {
     id: 's4',
     targetId: 'prisa',
     pantalla: 'n3',
     texto:
-      'Mete <b>prisa con el vencimiento</b> para que no te dé tiempo de leer el mensaje ni de llamar.',
+      '<b>Mete prisa con que el código se vence.</b> Así no te da tiempo de leer ni de llamar.',
   },
   {
     id: 's5',
     targetId: 'remitente',
     pantalla: 'n1',
     texto:
-      'Escribe desde el <b>chat de siempre de tu prima</b>: le robaron la cuenta. El remitente auténtico no dice quién escribe.',
+      '<b>Escribe desde el chat de siempre de tu prima.</b> Le robaron la cuenta, el remitente no prueba quién escribe.',
   },
   {
     id: 's6',
     targetId: 'contesta',
     pantalla: 'e_llama',
     texto:
-      'Una <b>llamada</b> lo aclaró en diez segundos, y Gaby se enteró del robo de su cuenta.',
+      '<b>Una llamada lo aclaró en diez segundos.</b> Gaby se enteró así del robo de su cuenta.',
   },
 ]
 
 const RULE =
-  'Regla de oro: un código de verificación <b>no se comparte con nadie, nunca</b>, ni con tu familia. Si te llegó a ti, es tuyo, y quien lo pide está intentando entrar a tu cuenta desde otro teléfono.'
+  'Regla de oro: <b>un código de verificación no se comparte con nadie, nunca.</b> Si te llegó a ti, es tuyo, y quien lo pide quiere entrar a tu cuenta.'
 
 const SUMMARY = 'Tu prima pide que le pases un código de seis dígitos que te llegó por error.'
 

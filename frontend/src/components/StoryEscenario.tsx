@@ -1,5 +1,5 @@
 import { Lock, TriangleAlert, type LucideIcon } from 'lucide-react'
-import { useCallback, useEffect, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import ScenarioLayout from './EscenarioLayout'
 import Instructions from './ui/Instrucciones'
 import { createEmailFolders } from './ui/carpetasCorreo'
@@ -62,9 +62,12 @@ interface ScenarioStoryProps {
 
 // Todas las apps del dock reaccionan al pulsarlas (deliberado: si solo
 // reaccionara la que decide, el realce del cursor delataría la respuesta).
-// goto = decisión en la traza; vacia/relleno = app de relleno, no entra en
-// la traza; ninguno = vuelve al hilo de Mensajes.
+// viewNode = navegación visual, sin tocar la traza; goto = decisión narrativa
+// explícita; vacia/relleno = app de relleno; ninguno = vuelve a un hilo.
 export type PhoneApp = BrowserBookmark & {
+  // Nodo cuya pantalla muestra la app sin reemplazar el punto actual de la
+  // historia. Las acciones dentro de esa pantalla sí pueden avanzar el grafo.
+  viewNode?: string
   // Estado vacío genérico: ícono del dock agrandado + un párrafo. Sigue
   // existiendo para las apps de relleno que no tienen (todavía) un layout
   // propio en AppRelleno.tsx.
@@ -79,7 +82,10 @@ export type PhoneApp = BrowserBookmark & {
   // cuando el escenario tiene mensajes y llamada a la vez.
   hilo?: 'sms' | 'call'
   color?: string
-  // Destino cuando se abre con una llamada real en curso (no el marcador).
+  // Pantalla visual alternativa durante una llamada real (no el marcador).
+  viewNodeEnLlamada?: string
+  // Decisión alternativa durante una llamada real. Se conserva separada de
+  // viewNodeEnLlamada para los pocos casos donde abrir sí deba avanzar.
   gotoEnLlamada?: string
 }
 
@@ -154,6 +160,12 @@ function ScenarioStory({
   const [reviewScreen, setReviewScreen] = useState<string | undefined>()
   // Cambiar de pestaña es mirar, no decidir: no entra en la traza.
   const [viewedTab, setViewedTab] = useState<string | undefined>()
+  // Abrir una app desde el dock también es mirar. Se mantiene separado de las
+  // pestañas para que volver cierre la app sin alterar el motor de historia.
+  const [viewedAppNode, setViewedAppNode] = useState<string | undefined>()
+  // Hilo abierto desde el dock. Puede coincidir con engine.current y aun así
+  // debe ocultar la acción de "salir del hilo", porque aquí solo se está releyendo.
+  const [viewedThread, setViewedThread] = useState<string | undefined>()
   // Se enciende con el primer clic en el vacío y ya no se apaga.
   const [clickedEmptySpace, setClickedEmptySpace] = useState(false)
   // App del dock que no decide nada (cámara, galería); vive fuera del grafo
@@ -169,12 +181,18 @@ function ScenarioStory({
   const [threads, setThreads] = useState<{ sms?: string; call?: string }>({})
   // Notificaciones ya vistas; `reiniciar` las limpia junto con engine.restart.
   const [discarded, setDiscarded] = useState<string[]>([])
-  const visibleNode = reviewScreen ?? viewedTab ?? engine.current
+  // Frases del otro lado ya oídas en la llamada activa (issue #250
+  // seguimiento): mirar otra app (la tienda, el navegador, el banco...)
+  // desmonta y vuelve a montar la pantalla de llamada, y sin esto perdía el
+  // progreso y repetía la conversación entera desde el principio al volver.
+  const heardLines = useRef<Set<string>>(new Set())
+  const previousNarrativeNode = useRef(engine.current)
+  const visibleNode = reviewScreen ?? viewedAppNode ?? viewedThread ?? viewedTab ?? engine.current
   const getNodeView = story[visibleNode]?.view ?? engine.node.view
   // Releer el hilo desde otra pantalla no puede terminar la corrida: la flecha
   // de la cabecera solo cierra el hilo.
   const toView =
-    getNodeView.kind === 'sms' && !reviewScreen && visibleNode !== engine.current
+    getNodeView.kind === 'sms' && !reviewScreen && viewedThread
       ? { ...getNodeView, volverGoto: undefined, volverLabel: undefined }
       : getNodeView
 
@@ -227,17 +245,32 @@ function ScenarioStory({
   // sobre el veredicto ni durante el repaso.
   const nodeNotification = story[engine.current]?.notificacion
   const showNotification = Boolean(
-    nodeNotification && !engine.isEnding && !reviewScreen && !discarded.includes(engine.current),
+    nodeNotification &&
+      !engine.isEnding &&
+      !reviewScreen &&
+      !viewedAppNode &&
+      !discarded.includes(engine.current),
   )
 
   useEffect(() => {
-    if (!showNotification) return
-    // Se marca al salir del nodo, no al entrar: el momento ya pasó y no vuelve.
-    return () => setDiscarded((ids) => [...ids, engine.current])
-  }, [showNotification, engine.current])
+    const previous = previousNarrativeNode.current
+    if (previous !== engine.current) {
+      // Solo abandonar el nodo narrativo consume su notificación. Taparla con
+      // otra app no equivale a descartarla.
+      if (story[previous]?.notificacion) {
+        setDiscarded((ids) => (ids.includes(previous) ? ids : [...ids, previous]))
+      }
+      previousNarrativeNode.current = engine.current
+    }
+  }, [engine.current, story])
 
   const restart = useCallback(() => {
     setDiscarded([])
+    setViewedAppNode(undefined)
+    setViewedThread(undefined)
+    setViewedTab(undefined)
+    setAppOpen(undefined)
+    heardLines.current.clear()
     engine.restart()
   }, [engine.restart])
 
@@ -315,32 +348,47 @@ function ScenarioStory({
       return
     }
 
+    const closeApp = (event.target as HTMLElement).closest('[data-close-app]')
+    if (closeApp) {
+      setViewedAppNode(undefined)
+      return
+    }
+
+    // Una app abierta desde el dock cambia solo la pantalla visible. El nodo
+    // narrativo se conserva hasta que se pulse una acción dentro de la app.
+    const appView = (event.target as HTMLElement).closest<HTMLElement>('[data-app-view]')?.dataset
+      .appView
+    if (appView) {
+      if (!engine.isEnding) {
+        setAppOpen(undefined)
+        setViewedAppNode(appView)
+      }
+      return
+    }
+
     // App de Mensajes: cierra lo que hubiera encima y muestra el hilo sin
     // avanzar el grafo.
     const thread = (event.target as HTMLElement).closest<HTMLElement>('[data-app-hilo]')?.dataset
       .appHilo
     if (thread !== undefined) {
       if (!engine.isEnding) {
+        const cameFromAnotherScreen = Boolean(
+          appOpen || viewedAppNode || (!viewedThread && engine.node.view.kind !== thread),
+        )
+        setViewedAppNode(undefined)
         const closeGoto = engine.node.view.kind === 'web' ? engine.node.view.cerrarGoto : undefined
-        const closeLabel = engine.node.view.kind === 'web' ? engine.node.view.cerrarLabel : undefined
         const closeDestination =
           closeGoto && story[closeGoto]?.view.kind === thread ? closeGoto : undefined
-
-        // Desde una app intermedia, Mensajes cierra esa app para continuar el chat.
-        if (closeDestination) {
-          setAppOpen(undefined)
-          setViewedTab(undefined)
-          engine.choose(closeDestination, closeLabel)
-          return
-        }
-
         const destination =
+          closeDestination ??
           (thread === 'sms' || thread === 'call' ? threads[thread] : undefined) ??
           threads.call ??
           threads.sms ??
           'n1'
-        // Con una app encima el botón no alterna: solo la cierra y deja el hilo.
-        setViewedTab((viewing) => (appOpen ? destination : viewing ? undefined : destination))
+        // Con otra pantalla encima el botón no alterna: la cierra y deja el hilo.
+        setViewedThread((viewing) =>
+          cameFromAnotherScreen ? destination : viewing ? undefined : destination,
+        )
         setAppOpen(undefined)
       }
       return
@@ -350,6 +398,7 @@ function ScenarioStory({
     const app = (event.target as HTMLElement).closest<HTMLElement>('[data-app]')?.dataset
     if (app) {
       if (!engine.isEnding) {
+        setViewedAppNode(undefined)
         const appDef = apps?.find((a) => a.texto === app.app)
         setAppOpen(
           app.appRelleno && esRellenoTipo(app.appRelleno)
@@ -376,6 +425,8 @@ function ScenarioStory({
     // No puede dejarse al efecto que limpia pestanaMirada al cambiar de nodo:
     // si el destino es el nodo actual, el nodo no cambia y ese efecto no corre.
     setAppOpen(undefined)
+    setViewedAppNode(undefined)
+    setViewedThread(undefined)
     setViewedTab(undefined)
 
     // Volver a la pantalla en la que ya estás no es una decisión (evita n3→n3).
@@ -401,16 +452,12 @@ function ScenarioStory({
     />
   ) : (
     (() => {
-      // Antes de tocar el destello la escena ya avisa qué tocar (ver
-      // EscenaFoto), así que "¿Qué haces?" y la pista aún no dicen nada.
-      const beforeFlash = toView.kind === 'escena' && toView.destello && !engine.node.choices
-
       const questionBlock = (
         <div className="grid gap-3">
-          {!beforeFlash && <p className="text-lg font-semibold text-ink">{question}</p>}
+          <p className="text-lg font-semibold text-ink">{question}</p>
           {engine.node.choices && <StoryChoices choices={engine.node.choices} onChoose={engine.choose} />}
           <Instructions
-            pista={beforeFlash ? undefined : clue}
+            pista={clue}
             cuandoTermina={onFinished}
             fallo={!hideEmptyClickNotice && clickedEmptySpace}
           >
@@ -490,7 +537,16 @@ function ScenarioStory({
                   // comprobar porque no se llegó por un enlace.
                   <div className={styles.phoneAppBar}>
                     {/* Salir es a veces la decisión (colgar una llamada). */}
-                    {toView.cerrarGoto ? (
+                    {viewedAppNode ? (
+                      <button
+                        type="button"
+                        className={`${styles.hotspot} ${styles.phoneBrowserControl}`}
+                        aria-label="Salir de la aplicación"
+                        data-close-app
+                      >
+                        ‹
+                      </button>
+                    ) : toView.cerrarGoto ? (
                       <button
                         type="button"
                         className={`${styles.hotspot} ${styles.phoneBrowserControl}`}
@@ -510,7 +566,16 @@ function ScenarioStory({
                 ) : (
                   <div className={styles.phoneBrowserBar} data-signal={toView.senalUrl}>
                     {/* Sin pestaña que cerrar, salir es la flecha de atrás. */}
-                    {toView.cerrarGoto ? (
+                    {viewedAppNode ? (
+                      <button
+                        type="button"
+                        className={`${styles.hotspot} ${styles.phoneBrowserControl}`}
+                        aria-label="Volver atrás"
+                        data-close-app
+                      >
+                        ‹
+                      </button>
+                    ) : toView.cerrarGoto ? (
                       <button
                         type="button"
                         className={`${styles.hotspot} ${styles.phoneBrowserControl}`}
@@ -557,6 +622,7 @@ function ScenarioStory({
                   destinatario={recipient}
                   carpetaForzada={reviewScreen ? 'Recibidos' : undefined}
                   terminada={engine.isEnding}
+                  heardLines={heardLines.current}
                 />
               </div>
             </>
@@ -568,34 +634,55 @@ function ScenarioStory({
           el único camino al acierto. */}
       {apps && apps.length > 0 && (
         <div className={styles.phoneDock} aria-label="Apps del teléfono">
-          {apps.map(({ Icono: Icon, texto: text, goto, gotoEnLlamada: callTarget, label, vacia: empty, relleno, color, hilo: thread }) => {
-            // El marcador no cuenta como llamada: tocar un número no es haber llamado.
-            const onCall = toView.kind === 'call' && !toView.marcando
-            const destination = (onCall && callTarget) || goto
-            const filler = empty || relleno
-            return (
-            <button
-              key={text}
-              type="button"
-              className={styles.phoneDockApp}
-              data-hotspot-goto={destination}
-              data-hotspot-label={label}
-              // Las que no deciden se abren igual (ver AppTelefono).
-              data-app={destination || !filler ? undefined : text}
-              data-app-vacia={destination ? undefined : empty}
-              data-app-relleno={destination ? undefined : relleno}
-              data-app-hilo={destination || filler ? undefined : (thread ?? '')}
-            >
-              <span
-                className={styles.phoneDockIcono}
-                style={color ? { background: color } : undefined}
-              >
-                <Icon aria-hidden className={styles.phoneDockGlifo} strokeWidth={2} />
-              </span>
-              <span className={styles.phoneDockNombre}>{text}</span>
-            </button>
-            )
-          })}
+          {apps.map(
+            ({
+              Icono: Icon,
+              texto: text,
+              viewNode,
+              viewNodeEnLlamada,
+              goto,
+              gotoEnLlamada,
+              label,
+              vacia: empty,
+              relleno,
+              color,
+              hilo: thread,
+            }) => {
+              // El marcador no cuenta como llamada: tocar un número no es haber llamado.
+              // Las capas visuales pueden mostrar SMS u otra app mientras la
+              // historia sigue en una llamada. La variante depende del nodo
+              // narrativo, no de la pantalla que momentáneamente lo tapa.
+              const onCall = engine.node.view.kind === 'call' && !engine.node.view.marcando
+              const visualDestination = (onCall && viewNodeEnLlamada) || viewNode
+              const decisionDestination = (onCall && gotoEnLlamada) || goto
+              const filler = empty || relleno
+              return (
+                <button
+                  key={text}
+                  type="button"
+                  className={styles.phoneDockApp}
+                  data-app-view={visualDestination}
+                  data-hotspot-goto={decisionDestination}
+                  data-hotspot-label={label}
+                  // Las que no deciden se abren igual (ver AppTelefono).
+                  data-app={visualDestination || decisionDestination || !filler ? undefined : text}
+                  data-app-vacia={visualDestination || decisionDestination ? undefined : empty}
+                  data-app-relleno={visualDestination || decisionDestination ? undefined : relleno}
+                  data-app-hilo={
+                    visualDestination || decisionDestination || filler ? undefined : (thread ?? '')
+                  }
+                >
+                  <span
+                    className={styles.phoneDockIcono}
+                    style={color ? { background: color } : undefined}
+                  >
+                    <Icon aria-hidden className={styles.phoneDockGlifo} strokeWidth={2} />
+                  </span>
+                  <span className={styles.phoneDockNombre}>{text}</span>
+                </button>
+              )
+            },
+          )}
         </div>
       )}
 
@@ -623,6 +710,7 @@ function ScenarioStory({
               carpetas={folders}
               destinatario={recipient}
               terminada={engine.isEnding}
+              heardLines={heardLines.current}
             />
           </div>
         ) : (
@@ -641,6 +729,7 @@ function ScenarioStory({
               destinatario={recipient}
               carpetaForzada={reviewScreen ? 'Recibidos' : undefined}
               terminada={engine.isEnding}
+              heardLines={heardLines.current}
             />
           </Browser>
         )

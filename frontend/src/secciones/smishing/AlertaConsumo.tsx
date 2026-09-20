@@ -109,7 +109,7 @@ const APPS: PhoneApp[] = [
     Icono: Landmark,
     texto: 'Banco del Litoral',
     color: '#0f3d6e',
-    goto: 'n2',
+    viewNode: 'n2',
     label: 'Abrió la app del banco',
   },
   { Icono: Images, texto: 'Galería', color: '#c2410c', relleno: 'galeria' },
@@ -123,7 +123,7 @@ const STORY: Story<ScreenNode> = {
     view: APP_HOME,
     verdict: 'Reaccionaste sin comprobar',
     outcome:
-      'Bloqueaste la tarjeta por una compra que habías hecho tú. No perdiste nada, pero te quedaste sin tarjeta hasta que el banco emita otra, y los movimientos estaban a un toque de distancia en esta misma app.',
+      'Bloqueaste la tarjeta por una compra que sí era tuya. Te quedaste sin ella hasta que el banco emita otra, y los movimientos estaban a un toque en esta misma app.',
     score: 50,
   },
   e_app: {
@@ -131,14 +131,14 @@ const STORY: Story<ScreenNode> = {
     view: APP_BANK,
     verdict: 'Acertaste · el aviso era legítimo',
     outcome:
-      'En la app apareció el mismo consumo de $42,90: era tu compra del supermercado. El SMS venía del hilo de siempre del banco, no pedía nada y solo te avisaba.',
+      'En la app apareció el mismo consumo de $42,90: era tu compra del supermercado. El SMS solo avisaba, no pedía nada.',
   },
   e_responde: {
     kind: 'bad',
     view: REPLIED_SMS,
     verdict: 'Aviso legítimo, reacción peligrosa',
     outcome:
-      'El aviso era real, pero enviaste el número completo de tu tarjeta por SMS. Ese canal no lo lee tu banco: quien controle ese número (o tu teléfono) ya tiene tus datos.',
+      'El aviso era real, pero enviaste el número completo de tu tarjeta por SMS. Ese canal no lo lee tu banco: quien lo controle ya tiene tus datos.',
     score: 0,
   },
   e_ignora: {
@@ -146,7 +146,7 @@ const STORY: Story<ScreenNode> = {
     view: SMS,
     verdict: 'Prudente, pero incompleto',
     outcome:
-      'No entregaste nada, y eso está bien. Pero tampoco verificaste: si el consumo hubiera sido de otra persona, tendrías horas para bloquear la tarjeta y las dejaste pasar.',
+      'No entregaste nada, y eso está bien. Pero tampoco verificaste, y dejaste pasar horas para bloquear la tarjeta si el consumo no hubiera sido tuyo.',
     score: 50,
   },
 }
@@ -156,8 +156,7 @@ const SIGNALS: Signal[] = [
     id: 's1',
     targetId: 'aviso',
     pantalla: 'n1',
-    texto:
-      'Llega en el <b>mismo hilo</b> de los mensajes anteriores del banco, no de un número nuevo.',
+    texto: '<b>Llega en el mismo hilo</b> de siempre del banco, no de un número nuevo.',
   },
   {
     id: 's2',
@@ -169,23 +168,23 @@ const SIGNALS: Signal[] = [
     id: 's3',
     targetId: 'aviso',
     pantalla: 'n1',
-    texto: 'Muestra <b>solo los últimos dígitos</b> de la tarjeta, nunca el número completo.',
+    texto: '<b>Solo muestra los últimos dígitos</b> de la tarjeta, nunca el número completo.',
   },
   {
     id: 's4',
     targetId: 'aviso',
     pantalla: 'n1',
-    texto: 'Te manda a <b>tus canales</b>: la app o el número impreso en la tarjeta.',
+    texto: '<b>Te remite a tus canales</b>: la app o el número impreso en la tarjeta.',
   },
   {
     id: 's5',
     targetId: 'aviso',
     pantalla: 'n1',
-    texto: 'Informa un hecho concreto y verificable, sin urgencia ni amenaza.',
+    texto: '<b>Informa un hecho concreto y verificable</b>, sin urgencia ni amenaza.',
   },
 ]
 const RULE =
-  'Regla de oro: un aviso real del banco <b>informa, no pide</b>. Verifica siempre en la app o llamando al número impreso en tu tarjeta, y nunca escribas datos de tarjeta en un SMS, aunque el mensaje sea auténtico.'
+  'Regla de oro: un aviso real del banco <b>informa, no pide</b>. Verifica en la app o llamando al número impreso en tu tarjeta.'
 
 const SUMMARY = 'Llega un SMS del banco avisando un consumo de $42,90 con tu tarjeta.'
 

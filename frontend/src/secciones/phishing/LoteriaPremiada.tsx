@@ -125,7 +125,7 @@ const STORY: Story<ScreenNode> = {
     kind: 'bad',
     view: CLAIM,
     verdict: 'Caíste en la estafa',
-    outcome: `Pagaste los $85 y, de paso, entregaste tu cédula ${IDENTITY_FAKE.cedula} y tu cuenta ${ACCOUNT_FAKE}. El premio no llegó: llegó otro correo pidiendo un "seguro de transferencia" de $190. Así funciona: cada pago abre la puerta al siguiente, y quien ya pagó cuesta más que se detenga. Los datos, además, ya no se pueden recuperar.`,
+    outcome: `Pagaste $85 y entregaste tu cédula ${IDENTITY_FAKE.cedula} y tu cuenta ${ACCOUNT_FAKE}. El premio no llegó: llegó otro cobro, de $190. Cada pago abre la puerta al siguiente.`,
   },
 }
 
@@ -163,41 +163,42 @@ const CLUE = (
   </p>
 )
 
+// Redacción compacta (issue de UX): la señal decisiva va primero y en
+// negrita, seguida como mucho de una frase corta. En pruebas de usuario, a
+// partir del segundo o tercer escenario la gente dejaba de leer bloques
+// largos; esto entra de un vistazo aunque se lea solo la primera línea.
 const SIGNALS: Signal[] = [
   {
     id: 'sin-jugar',
     pantalla: 'n1',
     targetId: 'saludo',
-    texto:
-      'No hay ningún boleto: <b>nadie gana un sorteo en el que no participó</b>. Y no te llama por tu nombre, porque el mismo correo salió para miles de direcciones.',
+    texto: '<b>Nadie gana un sorteo en el que no participó</b>. Por eso tampoco te llama por tu nombre.',
   },
   {
     id: 'pago-adelantado',
     pantalla: 'n1',
     targetId: 'pago',
     texto:
-      'Piden <b>pagar por adelantado para cobrar</b>. Un premio real se descuenta del monto; ninguno se libera con una transferencia tuya.',
+      '<b>Pagar para poder cobrar no existe</b>. Un premio real se descuenta del monto, nunca se libera con tu transferencia.',
   },
   {
     id: 'plazo',
     pantalla: 'n1',
     targetId: 'plazo',
-    texto:
-      'El plazo de <b>solo unas horas</b> está para que no te dé tiempo de preguntarle a nadie. La prisa es parte del método.',
+    texto: '<b>Solo unas horas de plazo</b>: la prisa es para que no le preguntes a nadie.',
   },
   {
     id: 'dominio',
     pantalla: 'n1',
     targetId: 'remitente',
     texto:
-      'La dirección del remitente es <b>loteria-pacifico-premios.online</b>, un nombre comprado para esta campaña y que además describe el premio. Una lotería de verdad escribe desde la dirección de su sitio de siempre.',
+      '<b>loteria-pacifico-premios.online</b> es un dominio comprado para esta campaña. Una lotería real siempre escribe desde el mismo sitio.',
   },
   {
     id: 'cuenta',
     pantalla: 'n2',
     targetId: 'campo-cuenta',
-    texto:
-      'El formulario ya venía con <b>tu cédula y tu cuenta</b>, las que viste antes de empezar. Para <i>recibir</i> dinero nunca hacen falta las dos juntas, y con ellas se puede intentar mucho más que un depósito.',
+    texto: '<b>Tu cédula y tu cuenta juntas</b> en el formulario. Para recibir dinero nunca hacen falta las dos.',
   },
 ]
 
@@ -205,12 +206,11 @@ const SIGNAL_SEARCH: Signal = {
   id: 'sin-registro',
   pantalla: 'n3',
   targetId: 'sin-registro',
-  texto:
-    'Buscarla por tu cuenta lo resuelve en un minuto: <b>esa lotería no existe</b>. Un premio de verdad se puede confirmar fuera del correo que lo anuncia.',
+  texto: '<b>Esa lotería no existe</b>: no consta en ningún listado oficial de sorteos.',
 }
 
 const RULE =
-  'Regla de oro: <b>nunca se paga para cobrar un premio</b>. Y antes de mirar cualquier otra señal, pregúntate si llegaste a jugar: si no compraste el boleto, no hay premio que reclamar.'
+  'Regla de oro: <b>nunca se paga para cobrar un premio</b>. Si no jugaste, no hay nada que reclamar.'
 
 const SUMMARY =
   'Un correo anuncia que ganaste un premio de una lotería y pide un pago para cobrarlo.'

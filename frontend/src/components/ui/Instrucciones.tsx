@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import type { ReactNode } from "react";
 
 // Vive aquí y no en cada escenario porque el aviso de "ahí no hay nada" y la
 // pista desplegable son idénticos en todos; copiarlos ya divergió una vez
@@ -10,11 +10,11 @@ function Instructions({
   pista: clue,
   fallo: failure,
 }: {
-  children?: ReactNode // ignorado si se pasa queHaces
-  queHaces?: ReactNode
-  cuandoTermina?: ReactNode
-  pista?: ReactNode
-  fallo?: boolean
+  children?: ReactNode; // ignorado si se pasa queHaces
+  queHaces?: ReactNode;
+  cuandoTermina?: ReactNode;
+  pista?: ReactNode;
+  fallo?: boolean;
 }) {
   return (
     <>
@@ -38,8 +38,8 @@ function Instructions({
 
       {failure && (
         <output className="rounded-md bg-surface-strong px-3 py-2 text-base text-body">
-          Ahí no hay nada que hacer. Solo algunos elementos responden: recórrelos con el cursor (o
-          con la tecla Tab) y se marcarán al pasar.
+          Aquí no hay nada que hacer. Solo algunos elementos se pueden usar:
+          pasa el cursor o usa Tab y se resaltarán.
         </output>
       )}
 
@@ -52,7 +52,7 @@ function Instructions({
         </details>
       )}
     </>
-  )
+  );
 }
 
-export default Instructions
+export default Instructions;

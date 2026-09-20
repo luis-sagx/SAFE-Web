@@ -238,14 +238,14 @@ const APPS: PhoneApp[] = [
     Icono: ListChecks,
     texto: 'TaskPro',
     color: '#f08c00',
-    goto: 'n6',
+    viewNode: 'n6',
     label: 'Abrió el panel de la plataforma de tareas',
   },
   {
     Icono: Wallet,
     texto: IDENTITY_FAKE.banco,
     color: '#155e75',
-    goto: 'n5',
+    viewNode: 'n5',
     label: 'Abrió la app del banco para transferir',
   },
   { Icono: Images, texto: 'Galería', color: '#c2410c', relleno: 'galeria' },
@@ -265,21 +265,21 @@ export const STORY: Story<ScreenNode> = {
     view: TRANSFER,
     verdict: 'Caíste en la estafa',
     outcome:
-      'Los $180 salieron y el nivel Plata se activó. Hiciste las 60 tareas de la primera semana y, al pedir el retiro, el cupo mensual había subido a 200: las condiciones decían que se podía cambiar sin avisar. Después vino el nivel Oro, con otro depósito, "para desbloquear el retiro acumulado". Los $12 del principio fueron lo que costó comprarte, y salieron del bolsillo de alguien que había recargado antes que tú.',
+      'Los $180 salieron y el nivel Plata se activó. Al pedir el retiro, el cupo mensual había subido: después vino el nivel Oro, con otro depósito. Los $12 del principio fueron lo que costó comprarte.',
   },
   e_corta: {
     kind: 'good',
     view: INSISTS,
     verdict: 'No caíste · no pagaste por trabajar',
     outcome:
-      'Te quedaste con tus $12 y no pusiste un dólar. El grupo cerró siete semanas después, cuando dejaron de aparecer personas nuevas que recargaran: ahí es donde estaba el dinero, y no en ninguna marca. Un trabajo de verdad te paga a ti; el que te cobra por dejarte trabajar no es un trabajo.',
+      'Te quedaste con tus $12 y no pusiste un dólar. El grupo cerró siete semanas después: un trabajo de verdad te paga a ti.',
   },
   e_ignora: {
     kind: 'partial',
     view: CHAT,
     verdict: 'No pusiste nada, pero quedaste dentro',
     outcome:
-      'Dejaste de contestar y no depositaste, que es lo que importaba. Pero sigues en el grupo, y a la semana siguiente la coordinadora volvió con una promoción de activación más barata. Sin saber por qué el trato estaba mal, la segunda oferta te va a encontrar igual de desprevenido.',
+      'No depositaste, pero sigues en el grupo. La coordinadora volvió con una promoción más barata la semana siguiente.',
     score: 50,
   },
 }

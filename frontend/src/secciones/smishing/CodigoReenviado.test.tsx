@@ -39,7 +39,7 @@ describe('CodigoReenviado', () => {
     expect(screen.getByText('Caíste en la trampa')).toBeDefined()
   })
 
-  it('abrir la app del banco no termina la corrida, ni tampoco mirar la seguridad de la cuenta', () => {
+  it('abrir la app del banco no termina la corrida, pero mirar la seguridad de la cuenta sí (issue #234)', () => {
     const phone = start(<ForwardedCode />)
 
     fireEvent.click(within(phone).getByRole('button', { name: /Banco/ }))
@@ -49,15 +49,10 @@ describe('CodigoReenviado', () => {
 
     fireEvent.click(within(phone).getByRole('button', { name: /Seguridad de la cuenta/ }))
 
-    // Mirar la seguridad de la cuenta no termina la corrida: el impostor sigue
-    // esperando respuesta, así que comprobar solo no basta.
+    // Comprobarlo ahí ya es el acierto, igual que en los demás escenarios
+    // (buscar la fuente oficial resuelve el caso por sí solo): no hace falta
+    // volver al hilo del impostor a contestarle nada.
     expect(within(phone).getByText('Ninguno desde otro dispositivo')).toBeDefined()
-    expect(screen.getByText('¿Qué haces?')).toBeDefined()
-
-    // Salir de la app devuelve al hilo del impostor, ya comprobado: negarse
-    // ahora sí cierra el escenario, porque no queda nada pendiente.
-    fireEvent.click(within(phone).getByRole('button', { name: 'Salir de la aplicación' }))
-    fireEvent.click(within(phone).getByRole('button', { name: /Ese código no se lo puedo pasar/ }))
     expect(screen.getByText('No caíste · lo comprobaste donde consta')).toBeDefined()
   })
 
@@ -94,6 +89,15 @@ describe('CodigoReenviado', () => {
 
     expect(within(phone).getByText(/Su codigo de verificacion es 731 640/)).toBeDefined()
     expect(screen.getByText('¿Qué haces?')).toBeDefined()
+  })
+
+  it('mirar otra app no descarta la notificación del nodo actual', () => {
+    const phone = start(<ForwardedCode />)
+
+    fireEvent.click(within(phone).getByRole('button', { name: /Banco/ }))
+    fireEvent.click(within(phone).getByRole('button', { name: 'Salir de la aplicación' }))
+
+    expect(within(phone).getByRole('button', { name: 'Abrir la notificación' })).toBeDefined()
   })
 
   it('descartar la notificación no termina la corrida ni enciende la pista de fallo', () => {

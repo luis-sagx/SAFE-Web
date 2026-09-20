@@ -28,8 +28,8 @@ import {
  *  Issue #184: la ficha del estudiante vive en un bloc de notas fijo junto al celular; el participante
  *  escribe su propio mensaje a la IA, copiando de la ficha lo que decida.
  *
- *  Mismo criterio de peso que #185: la cédula, la fecha de nacimiento y el domicilio son el paquete que
- *  prueba identidad, cualquiera de los tres, solo, ya es fuga completa. El teléfono de contacto es menos
+ *  Mismo criterio de peso que #185: la cédula y el domicilio son el paquete que
+ *  prueba identidad, cualquiera de los dos, solo, ya es fuga completa. El teléfono de contacto es menos
  *  grave,sirve para llegar a la familia, no para suplantar al estudiante, así que solo baja a "parcial".
  *  El nombre no se evalúa: un informe sin nombre no sirve para nada. */
 
@@ -45,16 +45,9 @@ const CONTACT_PHONE = '099 000 0072'
 const PROGRESS =
   'Seguimiento del segundo parcial: mejoró la participación en clase y el trabajo en equipo; todavía le cuesta entregar las tareas a tiempo. Se recomienda reforzar hábitos de organización en casa.'
 
-// El paquete que prueba identidad: cualquiera de los tres, solo, ya es fuga completa.
+// El paquete que prueba identidad: cualquiera de los dos, solo, ya es fuga completa.
 const IDENTITY_POINTS: SensitiveDatum[] = [
   { id: 'dato-cedula', tipo: 'numero', etiqueta: 'la cédula real del estudiante', valor: ECUADORIAN_ID },
-  // Con cualquier separador, o escrita en palabras ("14 de junio de 2015").
-  {
-    id: 'dato-nacimiento',
-    tipo: 'patron',
-    etiqueta: 'la fecha de nacimiento real del estudiante',
-    patron: /\b14\s*[/.-]\s*0?6\s*[/.-]\s*(20)?15\b|\b14 de junio/,
-  },
   // Basta la ciudadela o la manzana y villa: cualquiera ubica la casa de un menor.
   {
     id: 'dato-direccion',
@@ -130,12 +123,12 @@ const STORY: Story<ScreenNode> = {
       signal(
         dato.id,
         'e_fuga',
-        `Si tu mensaje incluyó <b>${dato.etiqueta}</b>: junto con el resto del paquete, es lo que identifica a un estudiante menor de edad fuera de la institución, y no mejora en nada la redacción del informe.`,
+        `<b>${dato.etiqueta}</b> identifica al estudiante fuera de la institución. No mejora en nada la redacción.`,
       ),
     ),
     verdict: 'El informe entero del estudiante quedó en un servicio externo',
     outcome:
-      'Un informe escolar es, además de un documento pedagógico, un documento de identidad de un menor de edad. Para mejorar la redacción, la IA no necesitaba la cédula, la fecha de nacimiento ni el domicilio del estudiante. Nadie más que la institución y su familia debía decidir compartirlos.',
+      'Un informe escolar también es un documento de identidad de un menor de edad. La IA no necesitaba la cédula ni el domicilio para mejorar la redacción.',
   },
   e_parcial: {
     kind: 'partial',
@@ -144,12 +137,12 @@ const STORY: Story<ScreenNode> = {
       signal(
         'dato-telefono',
         'e_parcial',
-        'El <b>teléfono de contacto</b> no prueba la identidad del estudiante, pero sí es por dónde llegar hasta su familia, y con eso empieza cualquier intento de contacto no autorizado.',
+        '<b>El teléfono de contacto</b> no prueba identidad, pero sí permite llegar hasta la familia. Ahí empieza un contacto no autorizado.',
       ),
     ],
     verdict: 'Quitaste lo peor, pero dejaste cómo llegar hasta él',
     outcome:
-      'Lo grave,cédula, fecha de nacimiento y domicilio, se quedó fuera. Pero el teléfono de contacto tampoco hacía falta para mejorar la redacción.',
+      'Lo grave (cédula y domicilio) se quedó fuera. Pero el teléfono tampoco hacía falta para mejorar la redacción.',
   },
   e_seguro: {
     kind: 'good',
@@ -158,12 +151,12 @@ const STORY: Story<ScreenNode> = {
       signal(
         'borrador-enviado',
         'e_seguro',
-        'Le pegaste a la IA solo lo que había que mejorar: el seguimiento académico. Eso no identifica a nadie ni sirve para contactar a la familia.',
+        '<b>Solo pegaste el seguimiento académico</b>, lo que había que mejorar. No identifica a nadie ni sirve para contactar a la familia.',
       ),
     ],
     verdict: 'Informe mejorado sin entregar los datos de nadie',
     outcome:
-      'La IA devolvió el seguimiento académico mejor redactado y con un tono más claro. El nombre y los datos de contacto del estudiante los agregas tú en el documento que se entrega a la institución, donde sí corresponde.',
+      'La IA devolvió el seguimiento mejor redactado y con tono más claro. El nombre y los datos de contacto los agregas tú al entregarlo a la institución.',
   },
 }
 
@@ -171,12 +164,12 @@ const SIGNALS = [
   signal(
     'informe-en-juego',
     'n1',
-    'La IA te pide el <b>contenido que quieres mejorar</b>. El informe trae además la cédula, la fecha de nacimiento, el domicilio y el teléfono de contacto del estudiante, y ninguno de esos cambia cómo se redacta su seguimiento académico.',
+    '<b>El informe trae la cédula, el domicilio y el teléfono</b> del estudiante. Nada de eso cambia cómo se redacta su seguimiento.',
   ),
 ]
 
 const RULE =
-  'Regla de oro: un informe escolar es, además de un documento pedagógico, un documento de identidad de un menor de edad. Antes de pegarlo en una IA,el de un estudiante o el de cualquier persona, quítale la <b>cédula, la fecha de nacimiento, el domicilio y el teléfono de contacto</b>: esos los agregas tú al entregarlo.'
+  'Regla de oro: <b>un informe escolar también es un documento de identidad de un menor</b>. Antes de pegarlo en una IA, quítale la cédula, el domicilio y el teléfono.'
 
 const SUMMARY = 'Le pides a una IA que mejore un informe escolar de un estudiante, con su cédula y su domicilio dentro.'
 

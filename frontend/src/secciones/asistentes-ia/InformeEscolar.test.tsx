@@ -28,6 +28,7 @@ describe('InformeEscolar', () => {
   it('la ficha del estudiante está siempre visible, con sus datos reales', () => {
     start(<SchoolReport />)
     expect(screen.getByText(/1799999965/)).toBeDefined()
+    expect(screen.getByText(/Fecha de nacimiento: 14\/06\/2015/)).toBeDefined()
   })
 
   it('pegar la ficha completa (cédula, fecha y domicilio reales) es el fallo', async () => {
@@ -75,10 +76,10 @@ describe('InformeEscolar', () => {
     expect(screen.queryByText('Informe mejorado sin entregar los datos de nadie')).toBeNull()
   })
 
-  it('la fecha de nacimiento o el domicilio escritos de otra forma siguen siendo fuga', async () => {
+  it('la fecha de nacimiento no se evalúa como fuga', async () => {
     const container = start(<SchoolReport />)
     writeAndSend(container, 'Nació el 14 de junio de 2015. Mejoró la participación.')
-    expect(await screen.findByText('El informe entero del estudiante quedó en un servicio externo')).toBeDefined()
+    expect(await screen.findByText('Informe mejorado sin entregar los datos de nadie')).toBeDefined()
   })
 
   it('el domicilio sin "Cdla." también es fuga', async () => {
