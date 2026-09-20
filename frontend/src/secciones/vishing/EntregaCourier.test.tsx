@@ -2,6 +2,7 @@ import { fireEvent, render, screen, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
 import { describe, expect, it, vi } from 'vitest'
 import CourierDelivery from './EntregaCourier'
+import { terminarDeHablar } from '../../test/escenario'
 
 vi.mock('../../context/AuthContext', () => ({
   useAuth: () => ({
@@ -45,10 +46,14 @@ describe('EntregaCourier', () => {
     const phone = container.querySelector('#pantalla-escenario') as HTMLElement
     fireEvent.click(within(phone).getByRole('button', { name: 'Contestar la llamada' }))
 
+    // La transcripción se revela recién cuando termina de sonar cada frase
+    // (issue #250: no debe verse como un audio ya escrito de antemano); en
+    // jsdom no hay audio de verdad, así que se simula que terminó de hablar.
+    terminarDeHablar(phone)
+
     expect(
       within(phone).getByText(/pagar con tarjeta, dícteme el número por teléfono/i),
     ).toBeDefined()
-
     fireEvent.click(within(phone).getByRole('button', { name: /dicto el número de mi tarjeta/ }))
     expect(screen.getByText('Llamada legítima, reacción peligrosa')).toBeDefined()
   })

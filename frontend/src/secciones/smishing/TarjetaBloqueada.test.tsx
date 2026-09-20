@@ -1,6 +1,6 @@
 import { fireEvent, screen, within } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
-import { start } from '../../test/escenario'
+import { start, terminarDeHablar } from '../../test/escenario'
 import BlockedCard from './TarjetaBloqueada'
 
 // Las fábricas se importan dentro y no arriba: vitest eleva los `vi.mock` por
@@ -70,7 +70,12 @@ describe('TarjetaBloqueada', () => {
 
     fireEvent.click(within(phone).getByRole('link', { name: '09 87 654 321' }))
     fireEvent.click(within(phone).getByRole('button', { name: 'Llamar a este número' }))
+    // Las respuestas están deshabilitadas mientras "suena" el audio del otro
+    // lado (issue #250); en jsdom no hay audio de verdad, así que se simula
+    // que terminó de hablar.
+    terminarDeHablar(phone)
     fireEvent.click(within(phone).getByRole('button', { name: /¿Qué consumo fue\?/ }))
+    terminarDeHablar(phone)
     fireEvent.click(within(phone).getByRole('button', { name: 'Se lo dicto.' }))
 
     expect(screen.getByText('Caíste en la trampa')).toBeDefined()
@@ -144,6 +149,7 @@ describe('TarjetaBloqueada', () => {
 
     fireEvent.click(within(phone).getByRole('link', { name: '09 87 654 321' }))
     fireEvent.click(within(phone).getByRole('button', { name: 'Llamar a este número' }))
+    terminarDeHablar(phone)
     fireEvent.click(within(phone).getByRole('button', { name: /¿Qué consumo fue\?/ }))
 
     expect(within(phone).getByText('BANCO LITORAL')).toBeDefined()
@@ -155,6 +161,7 @@ describe('TarjetaBloqueada', () => {
     fireEvent.click(within(phone).getByRole('button', { name: /Teléfono/ }))
     expect(within(phone).getByLabelText('Llamada en curso')).toBeDefined()
 
+    terminarDeHablar(phone)
     fireEvent.click(within(phone).getByRole('button', { name: 'Se lo dicto.' }))
     expect(screen.getByText('Caíste en la trampa')).toBeDefined()
   })

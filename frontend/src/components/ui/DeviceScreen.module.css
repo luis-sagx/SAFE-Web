@@ -2861,7 +2861,11 @@
   flex-direction: column;
   gap: 0.625rem;
   padding: 0.75rem;
-  overflow: hidden;
+  /* overflow: hidden recortaba en silencio las opciones de respuesta y los
+     controles de Silenciar/Colgar en llamadas largas, sin ninguna barra de
+     scroll que avisara que había más contenido (issue #250). */
+  overflow-y: auto;
+  scrollbar-gutter: stable;
   color: #16202c;
   background: linear-gradient(180deg, #eef2f7 0%, #f6f8fb 40%);
 }
@@ -3167,6 +3171,14 @@
   outline: 2px solid #1a73e8;
   outline-offset: 2px;
   background: #d9e6fd;
+}
+.callFrase:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+.callFrase:disabled:hover {
+  outline: none;
+  background: #e8f0fe;
 }
 
 .callControles {

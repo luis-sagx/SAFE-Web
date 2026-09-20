@@ -327,10 +327,11 @@ function DataSurvey() {
       identidad={["tarjeta"]}
       instruccion={
         <p className="text-lg leading-relaxed text-body">
-          Actúa sobre el teléfono como lo harías con el tuyo: contesta o
-          rechaza, cuelga cuando quieras y usa{" "}
-          <strong>cualquier app de abajo</strong>, incluso con la llamada
-          abierta.
+          Es una llamada en vivo: hay alguien hablando al otro lado y espera
+          tu respuesta cuando termine. Actúa sobre el teléfono como lo
+          harías con el tuyo: contesta o rechaza, cuelga cuando quieras y
+          usa <strong>cualquier app de abajo</strong>, incluso con la
+          llamada abierta.
         </p>
       }
       pista={

@@ -2,6 +2,7 @@ import { fireEvent, render, screen, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
 import { describe, expect, it, vi } from 'vitest'
 import BankFraudPrevention from './AntifraudeBanco'
+import { terminarDeHablar } from '../../test/escenario'
 
 vi.mock('../../context/AuthContext', () => ({
   useAuth: () => ({
@@ -43,6 +44,10 @@ function onCall() {
   fireEvent.click(screen.getByRole('button', { name: 'Empezar' }))
   const phone = container.querySelector('#pantalla-escenario') as HTMLElement
   fireEvent.click(within(phone).getByRole('button', { name: 'Contestar la llamada' }))
+  // Las respuestas están deshabilitadas mientras "suena" el audio del otro
+  // lado (issue #250); en jsdom no hay audio de verdad, así que se simula
+  // que terminó de hablar.
+  terminarDeHablar(phone)
   fireEvent.click(within(phone).getByRole('button', { name: /No, yo no hice esa compra/ }))
   return phone
 }
@@ -57,6 +62,9 @@ describe('AntifraudeBanco', () => {
     expect(within(phone).getByText(/nunca le pedirá este código/)).toBeDefined()
 
     fireEvent.click(within(phone).getByRole('button', { name: /Teléfono/ }))
+    // La transcripción se revela recién cuando termina de sonar cada frase
+    // (issue #250: no debe verse como un audio ya escrito de antemano).
+    terminarDeHablar(phone)
     expect(within(phone).getByText(/Y no cuelgue: si corta la llamada/i)).toBeDefined()
     // Ir y volver es mirar, no decidir: la corrida sigue en curso.
     expect(screen.getByText('¿Qué haces?')).toBeDefined()
@@ -65,6 +73,7 @@ describe('AntifraudeBanco', () => {
   it('dictar el código termina la corrida en fallo', () => {
     const phone = onCall()
 
+    terminarDeHablar(phone)
     fireEvent.click(within(phone).getByRole('button', { name: /Ya me llegó/ }))
     expect(screen.getByText('Caíste en la trampa')).toBeDefined()
   })
