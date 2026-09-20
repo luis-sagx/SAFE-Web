@@ -159,6 +159,39 @@ describe('Seccion', () => {
     expect(await screen.findAllByText('Aprobado')).toHaveLength(8)
   })
 
+  // Issue #279: durante una repetición, los escenarios que todavía no se
+  // rejugaron esta vez muestran el resultado del intento anterior (a
+  // propósito, ver el test de arriba), pero sin aclararlo se leía como si
+  // "4/4 aprobados" y un "Sin aprobar" en rojo fueran del mismo momento.
+  it('marca como "del intento anterior" el resultado de un escenario no rejugado esta repetición', async () => {
+    const scenarios = getSectionScenarios('phishing')
+    const [first, second] = scenarios
+    if (!first || !second) throw new Error('El módulo necesita al menos dos escenarios')
+
+    fetchProgressMock.mockResolvedValue({
+      modulo: 'phishing',
+      escenarios: scenarios.map(({ id }) => ({ id, ultimoOutcome: 'CORRECTO' })),
+      aprobados: scenarios.length,
+      requeridos: 6,
+      aprobado: true,
+      ronda: 2,
+      rondaEnCurso: {
+        jugados: 1,
+        // Se rejugó y esta vez falló: su insignia es del intento ACTUAL, no
+        // debe llevar la aclaración.
+        escenarios: [{ id: first.id, ultimoOutcome: 'INCORRECTO' }],
+      },
+    })
+
+    renderSection()
+
+    await screen.findByText('Sin aprobar')
+    const notices = await screen.findAllByText('Resultado del intento anterior')
+
+    // Uno por cada escenario salvo el que sí se rejugó esta ronda.
+    expect(notices).toHaveLength(scenarios.length - 1)
+  });
+
   it('considera desbloqueado el módulo siguiente al terminar todos los escenarios aunque la nota sea menor a 6', async () => {
     fetchProgressMock.mockResolvedValue({
       modulo: 'phishing',
