@@ -403,6 +403,65 @@ describe('CertificadosService.emitir · el canje de la atestación', () => {
     );
     expect((updatedData as { calificacion: number }).calificacion).toBe(30);
   });
+
+  // Issue #214 (seguimiento): sin limpiar `certificadoEnviadoAt` al
+  // actualizar, `intentarEnviarPorCorreo` seguía viendo la fecha del primer
+  // envío y se saltaba el correo con el PDF actualizado para siempre.
+  it('vuelve a mandar el correo cuando el recorrido crece después de ya haberse enviado', async () => {
+    const existing = {
+      id: 'c1',
+      participantId: PARTICIPANT.sub,
+      codigo: 'SW-AAAA-BBBB',
+      modulos: ['phishing', 'smishing'],
+      horas: 4,
+      calificacion: 12,
+      emitidoAt: new Date('2026-09-01T00:00:00.000Z'),
+      certificadoEnviadoAt: new Date('2026-09-01T00:05:00.000Z'),
+    };
+    const jwt = jwtReturning(validAttestation());
+    const { mail, sendCertificate } = fakeMail();
+    // Dos `update` distintos ocurren aquí: el de crecer el recorrido (el que
+    // importa probar) y, después, el de marcar el correo como enviado —
+    // capturar solo el último escondería justo lo que se quiere comprobar.
+    const updateCalls: unknown[] = [];
+    const svc = service(
+      {
+        certificate: {
+          findUnique: () => Promise.resolve(existing),
+          update: ({ data }: { data: unknown }) => {
+            updateCalls.push({ ...(data as object) });
+            return Promise.resolve({
+              ...existing,
+              ...(data as object),
+            });
+          },
+        },
+        participant: {
+          findUnique: () =>
+            Promise.resolve({
+              nombre: 'Ana',
+              apellido: 'Pérez',
+              email: 'ana@gmail.com',
+            }),
+        },
+      },
+      jwt,
+      mail,
+    );
+
+    await svc.issue(PARTICIPANT, 'token');
+    await waitForCall(sendCertificate);
+
+    expect(
+      (updateCalls[0] as { certificadoEnviadoAt: unknown })
+        .certificadoEnviadoAt,
+    ).toBeNull();
+    expect(sendCertificate).toHaveBeenCalledWith(
+      'ana@gmail.com',
+      'Ana Pérez',
+      expect.any(Buffer),
+    );
+  });
 });
 
 describe('CertificadosService.verificar', () => {

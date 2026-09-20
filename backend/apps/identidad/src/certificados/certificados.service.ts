@@ -124,6 +124,9 @@ export class CertificatesService {
           modulos: payload.modulos,
           calificacion: payload.calificacion,
           emitidoAt: new Date(),
+          // Issue #214: sin esto, `trySendingByEmail` seguía viendo la fecha
+          // del primer envío y nunca mandaba el PDF con el recorrido nuevo.
+          certificadoEnviadoAt: null,
         },
       });
       void this.trySendingByEmail(updated);
