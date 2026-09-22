@@ -47,9 +47,13 @@ const MODULE_DESCRIPTIONS: Record<string, string> = {
   'asistentes-ia': 'Qué puede inventar un asistente de IA y qué nunca deberías pegarle.',
 }
 
-// PROVISIONAL: un video de prueba en los ocho espacios, para ver la portada
+// Intro oficial de SAFE-Web. El video general ya tiene su URL definitiva;
+// el provisional solo queda en los módulos hasta grabar los suyos.
+const GENERAL_URL = 'https://youtu.be/xN-O2gGRQEU'
+
+// PROVISIONAL: un video de prueba en los siete módulos, para ver la portada
 // con reproductores reales mientras se graban los definitivos. Al tener las
-// ocho URL de verdad, cada registro lleva la suya y esta constante desaparece.
+// siete URL de verdad, cada registro lleva la suya y esta constante desaparece.
 const TEST_URL = 'https://youtu.be/1To_Wz5RWi0'
 
 export const TRAINING_VIDEOS: TrainingVideo[] = [
@@ -58,7 +62,7 @@ export const TRAINING_VIDEOS: TrainingVideo[] = [
     sectionId: null,
     title: 'Introducción a SAFE-Web',
     description: 'Conoce cómo aprovechar los escenarios y conversar sobre las señales de cada situación.',
-    youtubeUrl: TEST_URL,
+    youtubeUrl: GENERAL_URL,
   },
   ...SECTIONS.map((section) => ({
     id: section.id,
