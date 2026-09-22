@@ -8,13 +8,6 @@ import { TRAMA_FONDO } from "../components/TramaFondo";
 import { Link } from "react-router";
 import { getSectionScenarios, SECTIONS } from "../data/catalogo";
 import { fetchProgress, type Progress } from "../lib/api";
-import { reproducirModuloCompleto } from "../lib/sonidos";
-import { useSound } from "../context/SoundContext";
-
-// Se toca una sola vez en la vida del navegador: el dashboard se revisita
-// todo el tiempo después de aprobar, y repetirlo en cada visita sería ruido,
-// no un logro.
-const MODULO_COMPLETO_SONADO_KEY = "modulo-completo-sonado";
 
 // Solo secciones con escenarios tienen gating; las demás muestran "Pronto" sin pedir progreso.
 const SECTIONS_ACTIVE = SECTIONS.filter(
@@ -81,19 +74,6 @@ function Dashboard() {
   const global = calculateOverallProgress(progressByModule);
   const complete =
     global.modulos > 0 && global.modulosAprobados === global.modulos;
-
-  const { activado: soundEnabled } = useSound();
-  useEffect(() => {
-    if (!complete || !soundEnabled) return;
-    try {
-      if (localStorage.getItem(MODULO_COMPLETO_SONADO_KEY)) return;
-      localStorage.setItem(MODULO_COMPLETO_SONADO_KEY, "1");
-    } catch {
-      // Sin localStorage no hay forma de recordar que ya sonó; se deja sonar
-      // esta vez y punto, no vale la pena bloquear el sonido por esto.
-    }
-    reproducirModuloCompleto();
-  }, [complete, soundEnabled]);
 
   // Primer módulo sin aprobar, solo entre los que ya respondieron: evita marcar "empieza aquí" antes de tiempo.
   const entry = SECTIONS_ACTIVE.find(

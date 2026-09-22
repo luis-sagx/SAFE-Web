@@ -5,4 +5,5 @@ export * from './health.controller';
 export * from './jwt-auth.guard';
 export * from './jwt-payload';
 export * from './seudonimo';
+export * from './totales-modulos';
 export * from './transform';

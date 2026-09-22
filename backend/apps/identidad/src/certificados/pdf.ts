@@ -1,5 +1,18 @@
+import { TOTALES_MODULOS } from '@comun';
 import PDFDocument from 'pdfkit';
 import { SAFEWEB_MARK_PNG_BASE64 } from './isotipo-safeweb';
+
+// Denominador real de "aprobados/total", no un número fijo: antes decía
+// literalmente "/48" (6 módulos de 8), correcto solo mientras nadie
+// terminaba también asistentes-ia (4 escenarios, no 8) — con los 7 módulos
+// aprobados el total real es 52. Un id que no está en TOTALES_MODULOS no
+// aporta nada, en vez de romper el PDF.
+export function totalEscenarios(modulos: string[]): number {
+  return modulos.reduce(
+    (total, modulo) => total + (TOTALES_MODULOS[modulo] ?? 0),
+    0,
+  );
+}
 
 const SAFEWEB_MARK = Buffer.from(SAFEWEB_MARK_PNG_BASE64, 'base64');
 
@@ -261,7 +274,11 @@ export function generateCertificatePdf(data: CertificateData): Promise<Buffer> {
       .fillColor(INK)
       .font('Helvetica-Bold')
       .fontSize(13)
-      .text(`${data.calificacion}/48`, xCol2, yColBase + 15);
+      .text(
+        `${data.calificacion}/${totalEscenarios(data.modulos)}`,
+        xCol2,
+        yColBase + 15,
+      );
 
     drawCalendar(doc, xCol3 + 9, yColBase + 9, 9);
     doc

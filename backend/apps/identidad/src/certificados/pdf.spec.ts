@@ -1,4 +1,8 @@
-import { generateCertificatePdf, type CertificateData } from './pdf';
+import {
+  generateCertificatePdf,
+  totalEscenarios,
+  type CertificateData,
+} from './pdf';
 
 /// No es una prueba de diseño (eso se verificó a ojo, renderizando el PDF)
 /// sino de que la función termina, no lanza, y produce un documento válido
@@ -26,6 +30,40 @@ function baseData(overrides: Partial<CertificateData> = {}): CertificateData {
 function isValidPdf(buffer: Buffer): boolean {
   return buffer.subarray(0, 5).toString('latin1') === '%PDF-';
 }
+
+// El PDF mostraba literalmente "/48": correcto por casualidad mientras nadie
+// terminaba asistentes-ia (4 escenarios, no 8) además de los otros 6 módulos
+// de 8. Con los 7 aprobados el total real es 52, no 48.
+describe('totalEscenarios', () => {
+  it('sobre los 7 módulos completos, suma 52 (6×8 + 4 de asistentes-ia), no 48', () => {
+    const modulos = [
+      'phishing',
+      'smishing',
+      'vishing',
+      'suplantacion',
+      'estafa',
+      'fisico',
+      'asistentes-ia',
+    ];
+    expect(totalEscenarios(modulos)).toBe(52);
+  });
+
+  it('con solo los cinco módulos de baseData, suma 40 (5×8)', () => {
+    expect(
+      totalEscenarios([
+        'phishing',
+        'smishing',
+        'vishing',
+        'suplantacion',
+        'estafa',
+      ]),
+    ).toBe(40);
+  });
+
+  it('un id de módulo desconocido no aporta al total, no revienta', () => {
+    expect(totalEscenarios(['phishing', 'un-modulo-inventado'])).toBe(8);
+  });
+});
 
 describe('generarCertificadoPdf', () => {
   it('genera un PDF válido con los cinco módulos activos hoy', async () => {

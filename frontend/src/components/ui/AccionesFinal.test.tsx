@@ -13,6 +13,10 @@ vi.mock('../../lib/api', async () => {
   return { ...current, fetchProgress: fetchProgressMock }
 })
 
+// FinalTransition (pantalla de cierre del entrenamiento completo) renderiza
+// CertificateButton, que necesita el contexto de autenticación.
+vi.mock('../../context/AuthContext', async () => (await import('../../test/escenario')).mockAuth())
+
 describe('AccionesFinal', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -221,6 +225,45 @@ describe('AccionesFinal', () => {
     expect((await screen.findByRole('link', { name: 'Volver al panel →' })).getAttribute('href')).toBe('/dashboard')
   })
 
+  // Issue: no había ningún remate especial al terminar TODO el entrenamiento,
+  // solo este link liso — mismo trato que un módulo cualquiera a medio
+  // terminar. Si los otros 6 módulos también están aprobados, ahora aparece
+  // la pantalla de cierre con trofeo y las acciones de certificado/insignia.
+  it('al terminar el último módulo con los otros 6 ya aprobados, celebra el cierre del entrenamiento', async () => {
+    fetchProgressMock.mockResolvedValue({
+      escenarios: getSectionScenarios('asistentes-ia').map(({ id }) => ({ id, ultimoOutcome: 'CORRECTO' })),
+      aprobados: 4,
+      requeridos: 3,
+      aprobado: true,
+      ronda: 1,
+      rondaEnCurso: null,
+    })
+
+    render(<BrowserRouter><FinalActions escenarioId="asistentes-ia/historial-cliente" outcome="CORRECTO" /></BrowserRouter>)
+
+    expect(await screen.findByText('Completaste todo el entrenamiento')).toBeDefined()
+    expect(screen.getByRole('link', { name: 'Ir al panel →' }).getAttribute('href')).toBe('/dashboard')
+  })
+
+  it('al terminar el último módulo sin que los demás estén aprobados todavía, no celebra el cierre', async () => {
+    fetchProgressMock.mockImplementation((sectionId: string) =>
+      Promise.resolve({
+        modulo: sectionId,
+        escenarios: getSectionScenarios(sectionId).map(({ id }) => ({ id, ultimoOutcome: 'CORRECTO' })),
+        aprobados: sectionId === 'asistentes-ia' ? 4 : 0,
+        requeridos: sectionId === 'asistentes-ia' ? 3 : 6,
+        aprobado: sectionId === 'asistentes-ia',
+        ronda: 1,
+        rondaEnCurso: null,
+      }),
+    )
+
+    render(<BrowserRouter><FinalActions escenarioId="asistentes-ia/historial-cliente" outcome="CORRECTO" /></BrowserRouter>)
+
+    expect((await screen.findByRole('link', { name: 'Volver al panel →' })).getAttribute('href')).toBe('/dashboard')
+    expect(screen.queryByText('Completaste todo el entrenamiento')).toBeNull()
+  })
+
   it('renderiza sin errores cuando no hay progreso', async () => {
     fetchProgressMock.mockRejectedValue(new Error('sin red'))
 
@@ -323,7 +366,7 @@ describe('AccionesFinal', () => {
     expect(screen.queryByRole('dialog')).toBeNull()
   })
 
-  it('al aprobar el último módulo (sin uno siguiente) no abre la pantalla de transición', async () => {
+  it('al aprobar el último módulo (sin uno siguiente) no abre la pantalla de transición de "sigue otro módulo"', async () => {
     fetchProgressMock.mockResolvedValue({
       escenarios: getSectionScenarios('asistentes-ia').map(({ id }) => ({ id, ultimoOutcome: 'CORRECTO' })),
       aprobados: 4,
@@ -336,7 +379,10 @@ describe('AccionesFinal', () => {
     render(<BrowserRouter><FinalActions escenarioId="asistentes-ia/historial-cliente" outcome="CORRECTO" /></BrowserRouter>)
 
     await screen.findByRole('link', { name: 'Volver al panel →' })
-    expect(screen.queryByRole('dialog')).toBeNull()
+    // Sí puede abrir la pantalla de cierre del entrenamiento completo (otro
+    // componente, ver el test de arriba); lo que no debe aparecer es la de
+    // "Aprobaste X, sigue Y", que no tiene sentido sin un módulo siguiente.
+    expect(screen.queryByText(/^Aprobaste /)).toBeNull()
   })
 
   it('renderiza sin errores cuando autoFocus está activado', async () => {
