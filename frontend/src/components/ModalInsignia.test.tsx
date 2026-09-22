@@ -71,6 +71,25 @@ describe('BadgeModal', () => {
     vi.unstubAllGlobals()
   })
 
+  it('ofrece un enlace para agregar el certificado a LinkedIn, con el código y la fecha de emisión', async () => {
+    fetchAttestationMock.mockResolvedValue({ atestacion: 'firma-de-prueba' })
+    issueCertificateMock.mockResolvedValue({
+      codigo: 'SW-AB12-CD34',
+      emitidoAt: '2026-03-15T00:00:00.000Z',
+      modulos: ['phishing'],
+      horas: 4,
+      calificacion: 90,
+    })
+
+    render(<BadgeModal nombre="Sebastián Parra" onClose={vi.fn()} />)
+
+    const link = (await screen.findByRole('link', { name: 'Agregar a LinkedIn' })) as HTMLAnchorElement
+    const url = new URL(link.href)
+    expect(url.origin + url.pathname).toBe('https://www.linkedin.com/profile/add')
+    expect(url.searchParams.get('certId')).toBe('SW-AB12-CD34')
+    expect(link.target).toBe('_blank')
+  })
+
   it('se puede cerrar', async () => {
     fetchAttestationMock.mockResolvedValue({ atestacion: 'firma-de-prueba' })
     issueCertificateMock.mockResolvedValue({

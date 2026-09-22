@@ -1,7 +1,8 @@
-import { Download, X } from 'lucide-react'
+import { Download, ExternalLink, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { fetchAttestation, issueCertificate, type Certificate } from '../lib/api'
 import { svgAPng } from '../lib/insigniaImagen'
+import { buildLinkedInAddToProfileUrl } from '../lib/linkedin'
 import CertificateBadge from './ui/InsigniaCertificado'
 
 type Status = 'cargando' | 'lista' | 'error'
@@ -128,6 +129,16 @@ function BadgeModal({ nombre, onClose }: Readonly<BadgeModalProps>) {
               <Download aria-hidden className="size-5" strokeWidth={2} />
               {downloading ? 'Generando…' : 'Descargar insignia'}
             </button>
+
+            <a
+              href={buildLinkedInAddToProfileUrl(certificate, window.location.origin)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-3 flex min-h-11 w-full items-center justify-center gap-2 rounded-md border border-border-control px-4 py-3 text-lg font-medium text-ink transition hover:bg-surface-strong focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link"
+            >
+              <ExternalLink aria-hidden className="size-5" strokeWidth={2} />
+              Agregar a LinkedIn
+            </a>
           </>
         )}
       </div>
