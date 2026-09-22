@@ -29,8 +29,8 @@ export interface AttestationPayload {
   // Módulos que entrenamiento verificó aprobados (de THRESHOLDS): lo que el certificado
   // imprime y lo que decide si un recorrido mayor debe actualizar uno ya emitido.
   modulos: string[];
-  // CORRECTOS sobre los 48 del entrenamiento; lo calcula y firma entrenamiento porque
-  // identidad no puede consultar las corridas por su cuenta.
+  // CORRECTOS sobre el total de escenarios de `modulos` (TOTALES_MODULOS); lo calcula y
+  // firma entrenamiento porque identidad no puede consultar las corridas por su cuenta.
   calificacion: number;
   typ: 'atestacion';
 }

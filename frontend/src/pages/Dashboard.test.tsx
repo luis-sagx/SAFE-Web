@@ -1,21 +1,16 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import Dashboard from './Dashboard'
 
-const { fetchProgressMock, reproducirModuloCompletoMock, useSoundMock } = vi.hoisted(() => ({
+const { fetchProgressMock } = vi.hoisted(() => ({
   fetchProgressMock: vi.fn(),
-  reproducirModuloCompletoMock: vi.fn(),
-  useSoundMock: vi.fn(),
 }))
 
 vi.mock('../lib/api', async () => {
   const current = await vi.importActual<typeof import('../lib/api')>('../lib/api')
   return { ...current, fetchProgress: fetchProgressMock }
 })
-
-vi.mock('../lib/sonidos', () => ({ reproducirModuloCompleto: reproducirModuloCompletoMock }))
-vi.mock('../context/SoundContext', () => ({ useSound: useSoundMock }))
 
 vi.mock('../context/AuthContext', async () => (await import('../test/escenario')).mockAuth())
 
@@ -30,9 +25,6 @@ function renderDashboard() {
 describe('Dashboard', () => {
   beforeEach(() => {
     fetchProgressMock.mockReset()
-    reproducirModuloCompletoMock.mockReset()
-    useSoundMock.mockReturnValue({ activado: true, setActivado: vi.fn() })
-    localStorage.clear()
   })
 
   // El recorrido propio vive en el menú de cuenta del header, que es el mismo
@@ -95,29 +87,8 @@ describe('Dashboard', () => {
     expect(screen.getByRole('link', { name: 'Cuéntanos tu opinión' })).toBeDefined()
   })
 
-  it('la primera vez que se aprueban todos los módulos, toca el sonido de logro', async () => {
-    fetchProgressMock.mockImplementation((module: string) =>
-      Promise.resolve({ modulo: module, escenarios: [], aprobados: 6, requeridos: 6, aprobado: true }),
-    )
-
-    renderDashboard()
-
-    await screen.findByRole('button', { name: 'Descargar certificado' })
-    // El sonido sale de un useEffect, que React corre justo después de pintar:
-    // el botón puede aparecer antes, y en un runner lento la aserción directa
-    // llegaba antes que el efecto (fallaba solo en CI).
-    await waitFor(() => expect(reproducirModuloCompletoMock).toHaveBeenCalledTimes(1))
-  })
-
-  it('en visitas siguientes con todo ya aprobado, no vuelve a tocarlo', async () => {
-    localStorage.setItem('modulo-completo-sonado', '1')
-    fetchProgressMock.mockImplementation((module: string) =>
-      Promise.resolve({ modulo: module, escenarios: [], aprobados: 6, requeridos: 6, aprobado: true }),
-    )
-
-    renderDashboard()
-
-    await screen.findByRole('button', { name: 'Descargar certificado' })
-    expect(reproducirModuloCompletoMock).not.toHaveBeenCalled()
-  })
+  // El sonido de logro ("modulo-completo-sonado") ya no vive aquí: se movió a
+  // TransicionFinal.tsx, la pantalla de cierre que aparece justo al aprobar
+  // el último módulo — ese es el momento del logro, no cada visita al panel
+  // después. Sus pruebas están en TransicionFinal.test.tsx.
 })

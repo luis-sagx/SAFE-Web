@@ -1,3 +1,4 @@
+import { TOTALES_MODULOS } from '@comun';
 import type { RunOutcomeValue } from './dto/create-run.dto';
 
 // Umbral para aprobar cada módulo. El denominador visible en pantalla (8) vive en el
@@ -15,16 +16,10 @@ export const THRESHOLDS: Record<string, number> = {
 
 // A diferencia de THRESHOLDS, esto sí duplica el total del catálogo del frontend (excepción
 // deliberada): obliga a "aprobado" a exigir haber jugado los 8, no solo alcanzar el umbral.
-// catalogo.test.ts en el frontend cubre el riesgo de divergencia.
-export const TOTALS: Record<string, number> = {
-  phishing: 8,
-  smishing: 8,
-  vishing: 8,
-  suplantacion: 8,
-  estafa: 8,
-  fisico: 8,
-  'asistentes-ia': 4,
-};
+// catalogo.test.ts en el frontend cubre el riesgo de divergencia. Vive en libs/comun
+// (TOTALES_MODULOS) porque identidad también lo necesita para el certificado; se reexporta
+// acá con el nombre que ya usa el resto de este servicio.
+export const TOTALS = TOTALES_MODULOS;
 
 export interface MinimalRun {
   scenarioId: string;

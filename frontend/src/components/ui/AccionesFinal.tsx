@@ -6,6 +6,13 @@ import type { RunOutcome } from '../../lib/api'
 import { withAttemptedScenario, nextInRound } from '../../lib/bloqueoEscenarios'
 import ModuleQuiz from '../MiniTestModulo'
 import ModuleTransition from '../TransicionModulo'
+import FinalTransition from '../TransicionFinal'
+
+// Solo secciones con escenarios cuentan para "¿ya terminó todo?" (mismo
+// criterio que SECTIONS_ACTIVE en Dashboard.tsx): una sección sin escenarios
+// nunca llega a aprobada, y contarla dejaría el cierre del entrenamiento
+// inalcanzable.
+const ACTIVE_SECTIONS = SECTIONS.filter((s) => getSectionScenarios(s.id).length > 0)
 
 interface FinalActionsProps {
   escenarioId: string
@@ -32,6 +39,8 @@ function FinalActions({ escenarioId: scenarioId, outcome, autoFocus }: FinalActi
   const [progress, setProgress] = useState<import('../../lib/api').Progress | null>(null)
   const [showTransition, setShowTransition] = useState(true)
   const [quizPassed, setQuizPassed] = useState(false)
+  const [allModulesApproved, setAllModulesApproved] = useState(false)
+  const [showFinalTransition, setShowFinalTransition] = useState(true)
   const mainRef = useRef<HTMLAnchorElement | HTMLButtonElement>(null)
 
   useEffect(() => {
@@ -83,6 +92,33 @@ function FinalActions({ escenarioId: scenarioId, outcome, autoFocus }: FinalActi
     : attempted
       ? scenarios.find((e) => !attempted.has(e.id))
     : scenarios[currentIndex + 1]
+
+  // Umbral ya superado con este último intento, no `progress.aprobado`: ese
+  // valor es el que trajo el GET previo y todavía no cuenta el escenario que
+  // se acaba de terminar (issue #229 — sin esto, la pantalla de transición no
+  // aparecía justo en el intento que aprueba el módulo, que es el momento
+  // donde más falta hace).
+  const justApproved = progress != null && effectiveApprovedCount >= progress.requeridos
+
+  // Solo se consulta cuando este módulo era el único que faltaba por
+  // recorrer (sin `nextModule`): en cualquier otro caso todavía hay un
+  // módulo pendiente y el entrenamiento no puede estar completo.
+  useEffect(() => {
+    if (!justApproved || nextModule) return
+    const otherSections = ACTIVE_SECTIONS.filter((s) => s.id !== sectionId)
+    if (otherSections.length === 0) {
+      setAllModulesApproved(true)
+      return
+    }
+    let cancelled = false
+    Promise.allSettled(otherSections.map((s) => fetchProgress(s.id))).then((results) => {
+      if (cancelled) return
+      setAllModulesApproved(results.every((r) => r.status === 'fulfilled' && r.value.aprobado))
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [justApproved, nextModule, sectionId])
 
   const back = (
     <Link
@@ -147,12 +183,6 @@ function FinalActions({ escenarioId: scenarioId, outcome, autoFocus }: FinalActi
     )
   }
 
-  // Umbral ya superado con este último intento, no `progress.aprobado`: ese
-  // valor es el que trajo el GET previo y todavía no cuenta el escenario que
-  // se acaba de terminar (issue #229 — sin esto, la pantalla de transición no
-  // aparecía justo en el intento que aprueba el módulo, que es el momento
-  // donde más falta hace).
-  const justApproved = progress != null && effectiveApprovedCount >= progress.requeridos
   const currentSection = getSection(sectionId)
 
   return (
@@ -174,6 +204,15 @@ function FinalActions({ escenarioId: scenarioId, outcome, autoFocus }: FinalActi
           total={scenarios.length}
           siguiente={nextModule}
           onClose={() => setShowTransition(false)}
+        />
+      )}
+      {/* Cierre del entrenamiento completo, no de un módulo más (ver
+          TransicionFinal.tsx): solo cuando este módulo era el último que
+          faltaba Y los otros 6 ya estaban aprobados de antes. */}
+      {justApproved && !nextModule && allModulesApproved && showFinalTransition && (
+        <FinalTransition
+          totalModulos={ACTIVE_SECTIONS.length}
+          onClose={() => setShowFinalTransition(false)}
         />
       )}
       {marker}
