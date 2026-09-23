@@ -386,6 +386,20 @@
     background 0.2s;
 }
 
+/* La guía de ESC-01 se ancla dentro del cliente de correo. No se reutiliza
+   como un aviso global: solo el objetivo del paso actual recibe este realce. */
+.mailPane[data-guia-target='saludo'] :global([data-signal='saludo']),
+.mailPane[data-guia-target='pago'] :global([data-signal='pago']),
+.mailPane[data-guia-target='remitente'] :global([data-signal='remitente']) {
+  outline: 3px solid #ab6400;
+  outline-offset: 3px;
+  border-radius: 0.25rem;
+  background: rgba(171, 100, 0, 0.12);
+  transition:
+    outline-color 0.2s,
+    background 0.2s;
+}
+
 .desktopBody {
   flex: 1;
   min-height: 0;

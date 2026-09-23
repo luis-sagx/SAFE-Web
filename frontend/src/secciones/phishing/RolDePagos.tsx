@@ -1,120 +1,141 @@
-import { Building2, Forward, Landmark, Newspaper, Reply, ShieldAlert, Trash2 } from 'lucide-react'
-import { useState } from 'react'
-import ScenarioLayout from '../../components/EscenarioLayout'
-import type { Context } from '../../components/ui/ContextoEscenario'
-import { createEmailFolders } from '../../components/ui/carpetasCorreo'
+import {
+  Building2,
+  Forward,
+  Landmark,
+  Newspaper,
+  Reply,
+  ShieldAlert,
+  Trash2,
+} from "lucide-react";
+import { useState } from "react";
+import ScenarioLayout from "../../components/EscenarioLayout";
+import type { Context } from "../../components/ui/ContextoEscenario";
+import { createEmailFolders } from "../../components/ui/carpetasCorreo";
 import {
   EmailBody,
   type EmailAction,
   type EmailFolder,
-} from '../../components/ui/DesktopChrome'
-import { SiteNotice, SiteHeader, FOOTER_LINKS, SiteFooter } from '../../components/ui/armazonSitio'
-import styles from '../../components/ui/DeviceScreen.module.css'
-import { useAuth } from '../../context/AuthContext'
-import { IDENTITY_FAKE } from '../../lib/identidadFicticia'
-import Instructions from '../../components/ui/Instrucciones'
-import { HotspotButton, HotspotLink, handleHotspotClick } from '../../components/ui/interactivo'
+} from "../../components/ui/DesktopChrome";
+import {
+  SiteNotice,
+  SiteHeader,
+  FOOTER_LINKS,
+  SiteFooter,
+} from "../../components/ui/armazonSitio";
+import styles from "../../components/ui/DeviceScreen.module.css";
+import { useAuth } from "../../context/AuthContext";
+import { IDENTITY_FAKE } from "../../lib/identidadFicticia";
+import Instructions from "../../components/ui/Instrucciones";
+import {
+  HotspotButton,
+  HotspotLink,
+  handleHotspotClick,
+} from "../../components/ui/interactivo";
 import {
   Browser,
   type BrowserBookmark,
   type TabConfig,
-} from '../../components/ui/Navegador'
-import VerdictPanel, { type Signal } from '../../components/ui/PanelVeredicto'
-import { formatTime } from '../../hooks/useRelojDelSistema'
-import { useStoryEngine, type Story, type StoryNode } from '../../hooks/useStoryEngine'
+} from "../../components/ui/Navegador";
+import VerdictPanel, { type Signal } from "../../components/ui/PanelVeredicto";
+import { formatTime } from "../../hooks/useRelojDelSistema";
+import {
+  useStoryEngine,
+  type Story,
+  type StoryNode,
+} from "../../hooks/useStoryEngine";
 
 const STORY: Story<StoryNode> = {
-  n1: { kind: 'scene' },
-  n2: { kind: 'scene' },
-  n3: { kind: 'scene' },
+  n1: { kind: "scene" },
+  n2: { kind: "scene" },
+  n3: { kind: "scene" },
 
   e_bien: {
-    kind: 'good',
-    verdict: 'Acertaste · el correo era legítimo',
+    kind: "good",
+    verdict: "Acertaste · el correo era legítimo",
     outcome:
-      'Era un aviso real, y entraste por el portal de la empresa. Revisaste tu rol y reclamaste a tiempo dos horas extra que faltaban.',
+      "Era un aviso real, y entraste por el portal de la empresa. Revisaste tu rol y reclamaste a tiempo dos horas extra que faltaban.",
   },
 
   // Responder es, en este correo, exactamente "responder con mi usuario y mi
   // contraseña": el original nunca tuvo una acción de "responder genérico"
   // separada, así que el botón de la barra apunta directo a este final.
   e_credenciales: {
-    kind: 'bad',
-    verdict: 'Correo legítimo, reacción peligrosa',
+    kind: "bad",
+    verdict: "Correo legítimo, reacción peligrosa",
     outcome: `El remitente era real, pero tu contraseña ${IDENTITY_FAKE.clave} quedó escrita en un correo. El mismo mensaje avisaba que Talento Humano nunca la pide.`,
     score: 0,
   },
   e_borra: {
-    kind: 'partial',
-    verdict: 'Prudente, pero de más',
+    kind: "partial",
+    verdict: "Prudente, pero de más",
     outcome:
-      'El correo era auténtico y lo descartaste sin mirarlo. No pasó nada malo, pero el plazo para reclamar diferencias venció.',
+      "El correo era auténtico y lo descartaste sin mirarlo. No pasó nada malo, pero el plazo para reclamar diferencias venció.",
     score: 50,
   },
   e_reenviar: {
-    kind: 'partial',
-    verdict: 'Lo pasaste, pero sigue pendiente',
+    kind: "partial",
+    verdict: "Lo pasaste, pero sigue pendiente",
     outcome:
-      'El aviso era auténtico, reenviarlo no puso a nadie en riesgo. Pero tu rol sigue sin revisar y el plazo corre igual.',
+      "El aviso era auténtico, reenviarlo no puso a nadie en riesgo. Pero tu rol sigue sin revisar y el plazo corre igual.",
     score: 50,
   },
   e_spam: {
-    kind: 'bad',
-    verdict: 'Descartaste un aviso real',
+    kind: "bad",
+    verdict: "Descartaste un aviso real",
     outcome:
-      'Talento Humano sí publicó tu rol de pagos. Marcarlo como spam le enseña al filtro a esconder los próximos avisos del mismo remitente.',
+      "Talento Humano sí publicó tu rol de pagos. Marcarlo como spam le enseña al filtro a esconder los próximos avisos del mismo remitente.",
     score: 0,
   },
-}
+};
 
 const ACTIONS: EmailAction[] = [
   {
     Icono: Reply,
-    etiqueta: 'Responder',
-    titulo: 'Responder',
-    goto: 'e_credenciales',
-    label: 'Respondió el correo con su usuario y su contraseña',
+    etiqueta: "Responder",
+    titulo: "Responder",
+    goto: "e_credenciales",
+    label: "Respondió el correo con su usuario y su contraseña",
   },
   {
     Icono: Forward,
-    etiqueta: 'Reenviar',
-    titulo: 'Reenviar',
-    goto: 'e_reenviar',
-    label: 'Reenvió el correo a otra persona',
+    etiqueta: "Reenviar",
+    titulo: "Reenviar",
+    goto: "e_reenviar",
+    label: "Reenvió el correo a otra persona",
   },
   {
     Icono: Trash2,
-    etiqueta: 'Eliminar',
-    titulo: 'Eliminar',
-    goto: 'e_borra',
-    label: 'Eliminó el correo',
+    etiqueta: "Eliminar",
+    titulo: "Eliminar",
+    goto: "e_borra",
+    label: "Eliminó el correo",
   },
   {
     Icono: ShieldAlert,
-    etiqueta: 'Spam',
-    titulo: 'Marcar como spam',
-    goto: 'e_spam',
-    label: 'Marcó el correo como spam',
+    etiqueta: "Spam",
+    titulo: "Marcar como spam",
+    goto: "e_spam",
+    label: "Marcó el correo como spam",
   },
-]
+];
 
-const TODAY = new Date()
-const PERIOD_ROLE = new Intl.DateTimeFormat('es-EC', {
-  month: 'long',
-  year: 'numeric',
-}).format(TODAY)
-const DEADLINE = new Intl.DateTimeFormat('es-EC', {
-  day: 'numeric',
-  month: 'long',
-}).format(new Date(TODAY.getFullYear(), TODAY.getMonth(), TODAY.getDate() + 5))
-const SUBJECT = `Tu rol de pagos de ${PERIOD_ROLE} ya está disponible`
-const SENDER_NAME = 'Talento Humano · Corporación Andes'
-const ADDRESS = 'nomina@andes.com.ec'
+const TODAY = new Date();
+const PERIOD_ROLE = new Intl.DateTimeFormat("es-EC", {
+  month: "long",
+  year: "numeric",
+}).format(TODAY);
+const DEADLINE = new Intl.DateTimeFormat("es-EC", {
+  day: "numeric",
+  month: "long",
+}).format(new Date(TODAY.getFullYear(), TODAY.getMonth(), TODAY.getDate() + 5));
+const SUBJECT = `Tu rol de pagos de ${PERIOD_ROLE} ya está disponible`;
+const SENDER_NAME = "Talento Humano · Corporación Andes";
+const ADDRESS = "nomina@andes.com.ec";
 
 /// El mensaje tal como lo muestran las carpetas cuando una acción de la barra
 /// lo mueve de bandeja. Lo pinta `carpetasCorreo`, compartido por todos los
 /// escenarios de correo.
-const MESSAGE = { nombre: SENDER_NAME, direccion: ADDRESS, asunto: SUBJECT }
+const MESSAGE = { nombre: SENDER_NAME, direccion: ADDRESS, asunto: SUBJECT };
 
 /// Este escenario nombró dos de sus finales antes de que la barra tuviera
 /// nombres comunes. Se traducen aquí, en la única línea que le importa a las
@@ -122,125 +143,138 @@ const MESSAGE = { nombre: SENDER_NAME, direccion: ADDRESS, asunto: SUBJECT }
 /// backend con cada corrida, y cambiarlo dejaría las corridas ya registradas
 /// hablando de finales que no existen.
 const FINAL_ALIAS: Record<string, string> = {
-  e_borra: 'e_eliminar',
-  e_credenciales: 'e_responder',
-}
+  e_borra: "e_eliminar",
+  e_credenciales: "e_responder",
+};
 
 const SIGNALS: Signal[] = [
   {
-    id: 's1',
-    targetId: 'remitente',
-    pantalla: 'n1',
-    texto: 'El remitente termina <b>exactamente</b> igual que la empresa, <b>andes.com.ec</b>. En una imitación nunca coincide del todo.',
+    id: "s1",
+    targetId: "remitente",
+    pantalla: "n1",
+    texto:
+      "El remitente termina <b>exactamente</b> igual que la empresa, <b>andes.com.ec</b>. En una imitación nunca coincide del todo.",
   },
   {
-    id: 's2',
-    targetId: 'saludo',
-    pantalla: 'n1',
-    texto: 'Te llama <b>por tu nombre</b> y menciona un período y un plazo concretos.',
+    id: "s2",
+    targetId: "saludo",
+    pantalla: "n1",
+    texto:
+      "Te llama <b>por tu nombre</b> y menciona un período y un plazo concretos.",
   },
   {
-    id: 's3',
-    texto: '<b>No pide credenciales</b> ni datos: solo avisa dónde está la información.',
+    id: "s3",
+    texto:
+      "<b>No pide credenciales</b> ni datos: solo avisa dónde está la información.",
   },
   {
-    id: 's4',
-    targetId: 'canal',
-    pantalla: 'n1',
-    texto: 'Ofrece un <b>canal alterno verificable</b> (la extensión 214).',
+    id: "s4",
+    targetId: "canal",
+    pantalla: "n1",
+    texto: "Ofrece un <b>canal alterno verificable</b> (la extensión 214).",
   },
   {
-    id: 's5',
-    targetId: 'portal',
-    pantalla: 'n1',
-    texto: 'El enlace lleva al <b>portal de siempre de la empresa</b>, con el candado del navegador a la vista.',
+    id: "s5",
+    targetId: "portal",
+    pantalla: "n1",
+    texto:
+      "El enlace lleva al <b>portal de siempre de la empresa</b>, con el candado del navegador a la vista.",
   },
-]
+];
 
 const RULE =
-  'Regla de oro: no todo correo es una trampa. Un mensaje legítimo <b>no pide tu clave y su dominio es el real</b>. Aun así, entra al portal escribiendo tú la dirección.'
+  "Regla de oro: no todo correo es una trampa. Un mensaje legítimo <b>no pide tu clave y su dominio es el real</b>. Aun así, entra al portal escribiendo tú la dirección.";
 
-const SUMMARY = `Talento Humano avisa que tu rol de pagos de ${PERIOD_ROLE} ya está en el portal.`
+const SUMMARY = `Talento Humano avisa que tu rol de pagos de ${PERIOD_ROLE} ya está en el portal.`;
 
 const CONTEXT: Context = {
   antes: (
     <>
-      Trabajas en <strong>Corporación Andes</strong>. Todos los meses Talento Humano publica el rol
-      de pagos en el portal del colaborador y avisa por correo.
+      Trabajas en <strong>Corporación Andes</strong>. Todos los meses Talento
+      Humano publica el rol de pagos en el portal del colaborador y avisa por
+      correo.
     </>
   ),
   ahora: (
     <>
-      <strong>Antes de que cierre el plazo de reclamos</strong> llega el correo del rol de este mes.
+      <strong>Antes de que cierre el plazo de reclamos</strong> llega el correo
+      del rol de este mes.
     </>
   ),
-}
-
-const NOTE = (
-  <>
-    <p>
-      Vas a ver tu computador con el correo abierto. Puedes actuar sobre la pantalla como lo harías
-      de verdad.
-    </p>
-    <p className="mt-2">
-      El escenario termina cuando decidas qué hacer con el mensaje, o si caes en lo que pide.
-      Moverte por las pantallas y cerrarlas no decide nada.
-    </p>
-  </>
-)
+};
 
 function getArrivalTime(): string {
-  const now = new Date()
-  const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1, 17, 20)
-  return `ayer ${formatTime(yesterday)}`
+  const now = new Date();
+  const yesterday = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate() - 1,
+    17,
+    20,
+  );
+  return `ayer ${formatTime(yesterday)}`;
 }
 
 const TABS: Record<string, TabConfig> = {
-  n1: { titulo: 'Correo', url: 'https://correo.safeweb.com/u/0/#recibidos', segura: true },
+  n1: {
+    titulo: "Correo",
+    url: "https://correo.safeweb.com/u/0/#recibidos",
+    segura: true,
+  },
   n2: {
-    titulo: 'Portal del colaborador',
-    url: 'https://portal.andes.com.ec/rrhh/rol',
+    titulo: "Portal del colaborador",
+    url: "https://portal.andes.com.ec/rrhh/rol",
     segura: true,
     // Cerrar el portal devuelve al correo: irse de una página no es todavía
     // una decisión sobre el mensaje (issue #24).
-    cierra: 'n1',
+    cierra: "n1",
   },
   n3: {
-    titulo: 'Rol de pagos',
-    url: 'https://portal.andes.com.ec/rrhh/rol/detalle',
+    titulo: "Rol de pagos",
+    url: "https://portal.andes.com.ec/rrhh/rol/detalle",
     segura: true,
     // Cerrar el detalle vuelve al login del portal, no al correo: seguís
     // dentro del portal, solo un paso atrás.
-    cierra: 'n2',
+    cierra: "n2",
   },
-}
+};
 
 const MARKERS: BrowserBookmark[] = [
-  { Icono: Landmark, texto: 'Banco del Litoral' },
+  { Icono: Landmark, texto: "Banco del Litoral" },
   {
     Icono: Building2,
-    texto: 'Portal Andes',
-    goto: 'n2',
-    label: 'Abrió el portal del colaborador desde sus marcadores',
+    texto: "Portal Andes",
+    goto: "n2",
+    label: "Abrió el portal del colaborador desde sus marcadores",
   },
-  { Icono: Newspaper, texto: 'El Comercio' },
-]
+  { Icono: Newspaper, texto: "El Comercio" },
+];
 
-function EmailContent({ recibido: received, carpetas: folders }: { recibido: string; carpetas: EmailFolder[] }) {
-  const { displayName } = useAuth()
+function EmailContent({
+  recibido: received,
+  carpetas: folders,
+}: {
+  recibido: string;
+  carpetas: EmailFolder[];
+}) {
+  const { displayName } = useAuth();
 
   return (
     <EmailBody
       acciones={ACTIONS}
       carpetas={folders}
       asunto={SUBJECT}
-      remitente={{ nombre: SENDER_NAME, direccion: ADDRESS, senalDireccion: 'remitente' }}
+      remitente={{
+        nombre: SENDER_NAME,
+        direccion: ADDRESS,
+        senalDireccion: "remitente",
+      }}
       recibido={received}
       marca={{
-        nombre: 'Corporación Andes',
-        detalle: 'Talento Humano · Portal del colaborador',
-        icono: 'empresa',
-        variante: 'corporativa',
+        nombre: "Corporación Andes",
+        detalle: "Talento Humano · Portal del colaborador",
+        icono: "empresa",
+        variante: "corporativa",
       }}
       pie={
         <>
@@ -249,13 +283,14 @@ function EmailContent({ recibido: received, carpetas: folders }: { recibido: str
         </>
       }
     >
-      <p data-signal="saludo">Hola, {displayName || 'colaborador'}:</p>
+      <p data-signal="saludo">Hola, {displayName || "colaborador"}:</p>
       <p>
-        Tu rol de pagos del período <b>{PERIOD_ROLE}</b> ya está publicado en el portal del
-        colaborador, junto con el detalle de horas extra y descuentos.
+        Tu rol de pagos del período <b>{PERIOD_ROLE}</b> ya está publicado en el
+        portal del colaborador, junto con el detalle de horas extra y
+        descuentos.
       </p>
       <p>
-        Puedes consultarlo en{' '}
+        Puedes consultarlo en{" "}
         <HotspotLink
           goto="n2"
           label="Abrió el portal legítimo desde la dirección visible del correo"
@@ -264,22 +299,23 @@ function EmailContent({ recibido: received, carpetas: folders }: { recibido: str
         >
           portal.andes.com.ec
         </HotspotLink>
-        , con el mismo usuario de tu correo institucional. Si algo no cuadra, responde a este
-        correo o llama a{' '}
+        , con el mismo usuario de tu correo institucional. Si algo no cuadra,
+        responde a este correo o llama a{" "}
         <span data-signal="canal">la extensión 214</span> antes del {DEADLINE}.
       </p>
+      <p className={styles.fine}>También puedes entrar desde el marcador “Portal Andes” que ya usas.</p>
     </EmailBody>
-  )
+  );
 }
 
 function PortalContent() {
-  const { usuarioSimulado: simulatedUser } = useAuth()
+  const { usuarioSimulado: simulatedUser } = useAuth();
 
   return (
     <div className={styles.page}>
       <SiteHeader
         marca="Corporación Andes"
-        menu={['Rol de pagos', 'Vacaciones', 'Certificados', 'Ayuda']}
+        menu={["Rol de pagos", "Vacaciones", "Certificados", "Ayuda"]}
       />
       <h2 className={styles.pageTitle}>Portal del colaborador</h2>
       <p className={styles.pageSub}>
@@ -290,15 +326,15 @@ function PortalContent() {
         <fieldset className={styles.field}>
           <legend>Usuario</legend>
           <span className={styles.input}>
-            <span className="sr-only">Tu usuario, ya completado: </span>
-            {' '}{simulatedUser}
+            <span className="sr-only">Tu usuario, ya completado: </span>{" "}
+            {simulatedUser}
           </span>
         </fieldset>
         <fieldset className={styles.field}>
           <legend>Contraseña</legend>
           <span className={styles.input}>
-            <span className="sr-only">Tu contraseña, ya completada: </span>
-            {' '}••••••••
+            <span className="sr-only">Tu contraseña, ya completada: </span>{" "}
+            ••••••••
           </span>
         </fieldset>
         <HotspotButton
@@ -311,13 +347,16 @@ function PortalContent() {
       </div>
 
       <SiteNotice>
-        Tu rol de pagos está disponible los primeros cinco días de cada mes. Los reclamos se
-        registran desde el mismo portal.
+        Tu rol de pagos está disponible los primeros cinco días de cada mes. Los
+        reclamos se registran desde el mismo portal.
       </SiteNotice>
 
-      <SiteFooter texto="Corporación Andes · Talento Humano" enlaces={FOOTER_LINKS} />
+      <SiteFooter
+        texto="Corporación Andes · Talento Humano"
+        enlaces={FOOTER_LINKS}
+      />
     </div>
-  )
+  );
 }
 
 // Issue #253: antes "Ingresar" llevaba directo al veredicto ("revisaste tu
@@ -329,10 +368,12 @@ function PayrollDetailContent() {
     <div className={styles.page}>
       <SiteHeader
         marca="Corporación Andes"
-        menu={['Rol de pagos', 'Vacaciones', 'Certificados', 'Ayuda']}
+        menu={["Rol de pagos", "Vacaciones", "Certificados", "Ayuda"]}
       />
       <h2 className={styles.pageTitle}>Rol de pagos · {PERIOD_ROLE}</h2>
-      <p className={styles.pageSub}>Detalle de ingresos y descuentos del período.</p>
+      <p className={styles.pageSub}>
+        Detalle de ingresos y descuentos del período.
+      </p>
 
       <div className={styles.datos}>
         <div className={styles.dato}>
@@ -364,9 +405,9 @@ function PayrollDetailContent() {
       </div>
 
       <SiteNotice>
-        Tu marcación de asistencia registra <b>8 horas</b> extra este período, pero el rol solo
-        paga 6. Si la diferencia no es tuya, repórtala antes del {DEADLINE} desde este mismo
-        portal.
+        Tu marcación de asistencia registra <b>8 horas</b> extra este período,
+        pero el rol solo paga 6. Si la diferencia no es tuya, repórtala antes
+        del {DEADLINE} desde este mismo portal.
       </SiteNotice>
 
       <div className={styles.form}>
@@ -379,12 +420,21 @@ function PayrollDetailContent() {
         </HotspotButton>
       </div>
 
-      <SiteFooter texto="Corporación Andes · Talento Humano" enlaces={FOOTER_LINKS} />
+      <SiteFooter
+        texto="Corporación Andes · Talento Humano"
+        enlaces={FOOTER_LINKS}
+      />
     </div>
-  )
+  );
 }
 
-function PendingDecision({ fallo: failure, enFormulario: onForm }: { fallo: boolean; enFormulario: boolean }) {
+function PendingDecision({
+  fallo: failure,
+  enFormulario: onForm,
+}: {
+  fallo: boolean;
+  enFormulario: boolean;
+}) {
   return (
     <div className="grid gap-3">
       <p className="text-lg font-semibold text-ink">¿Qué haces?</p>
@@ -392,22 +442,26 @@ function PendingDecision({ fallo: failure, enFormulario: onForm }: { fallo: bool
         fallo={failure}
         pista={
           <p>
-            Tienes varios caminos posibles: entrar al portal por tu cuenta desde los marcadores del
-            navegador, responder el correo, o usar alguno de los botones de la barra de arriba. Cuál
-            de ellos es el acertado es justamente lo que decides tú.
+            Tienes varios caminos posibles: entrar al portal por tu cuenta desde
+            los marcadores del navegador por la ruta habitual del portal,
+            responder el correo, o usar alguno de los botones de la barra de
+            arriba. Cuál de ellos es el acertado es justamente lo que decides
+            tú.
           </p>
         }
       >
         <p className="text-lg leading-relaxed text-body">
-          Actúa sobre la ventana como lo harías frente a tu correo de verdad: puedes usar{' '}
-          <strong>cualquier parte de ella</strong>, incluida la barra de abajo.
+          Actúa sobre la ventana como lo harías frente a tu correo de verdad:
+          puedes usar <strong>cualquier parte de ella</strong>, incluida la
+          barra de abajo.
         </p>
 
         {onForm && (
           <p className="rounded-md border border-hairline-strong bg-canvas-soft px-3 py-2 text-base leading-relaxed text-body">
-            El formulario ya aparece con{' '}
-            <strong className="text-ink">tu usuario y tu clave escritos</strong>. Es así para no
-            pedirte datos reales, pero enviarlo cuenta como iniciar sesión.
+            El formulario ya aparece con{" "}
+            <strong className="text-ink">tu usuario y tu clave escritos</strong>
+            . Es así para no pedirte datos reales, pero enviarlo cuenta como
+            iniciar sesión.
           </p>
         )}
 
@@ -419,66 +473,67 @@ function PendingDecision({ fallo: failure, enFormulario: onForm }: { fallo: bool
             ¿Cuándo termina el escenario?
           </summary>
           <p className="mt-2">
-            Cuando decidas qué hacer con el mensaje, o si caes en lo que pide. No hay confirmación,
-            igual que en la vida real. Moverte entre pantallas, volver atrás o cerrar una pestaña no
-            decide nada.
+            Cuando decidas qué hacer con el mensaje, o si caes en lo que pide.
+            No hay confirmación, igual que en la vida real. Moverte entre
+            pantallas, volver atrás o cerrar una pestaña no decide nada.
           </p>
         </details>
       </Instructions>
     </div>
-  )
+  );
 }
 
 function PayrollStatement() {
-  const engine = useStoryEngine(STORY, 'n1', 'phishing/rol-de-pagos')
+  const engine = useStoryEngine(STORY, "n1", "phishing/rol-de-pagos");
 
-  const [currentScreen, setCurrentScreen] = useState('n1')
-  const [clickedEmptySpace, setClickedEmptySpace] = useState(false)
-  const [received, setReceived] = useState(getArrivalTime)
-  const [tabs, setTabs] = useState(['n1'])
-  const [reviewing, setReviewing] = useState(false)
+  const [currentScreen, setCurrentScreen] = useState("n1");
+  const [clickedEmptySpace, setClickedEmptySpace] = useState(false);
+  const [received, setReceived] = useState(getArrivalTime);
+  const [tabs, setTabs] = useState(["n1"]);
+  const [reviewing, setReviewing] = useState(false);
 
   function choose(goto: string, label?: string) {
-    if (engine.isEnding) return
-    engine.choose(goto, label)
-    if (STORY[goto]?.kind === 'scene') {
-      setCurrentScreen(goto)
-      setTabs((open) => (open.includes(goto) ? open : [...open, goto]))
+    if (engine.isEnding) return;
+    engine.choose(goto, label);
+    if (STORY[goto]?.kind === "scene") {
+      setCurrentScreen(goto);
+      setTabs((open) => (open.includes(goto) ? open : [...open, goto]));
     }
   }
 
   function restart() {
-    engine.restart()
-    setCurrentScreen('n1')
-    setTabs(['n1'])
-    setReviewing(false)
-    setClickedEmptySpace(false)
-    setReceived(getArrivalTime())
+    engine.restart();
+    setCurrentScreen("n1");
+    setTabs(["n1"]);
+    setReviewing(false);
+    setClickedEmptySpace(false);
+    setReceived(getArrivalTime());
   }
 
   const onHotspot = (event: React.MouseEvent) => {
-    const closed = (event.target as HTMLElement).closest<HTMLElement>('[data-cierra]')?.dataset
-      .cierra
+    const closed = (event.target as HTMLElement).closest<HTMLElement>(
+      "[data-cierra]",
+    )?.dataset.cierra;
     if (closed) {
-      const remaining = tabs.filter((id) => id !== closed)
-      setTabs(remaining)
+      const remaining = tabs.filter((id) => id !== closed);
+      setTabs(remaining);
       // Cerrar la pestaña que se está viendo devuelve el navegador a la que
       // quede abierta (el correo). Con el escenario ya terminado `elegir` sale
       // sin tocar la pantalla, así que sin esto la página cerrada seguía a la
       // vista aunque su pestaña ya no estuviera en la barra (issue #26).
-      if (closed === currentScreen) setCurrentScreen(remaining.at(-1) ?? 'n1')
+      if (closed === currentScreen) setCurrentScreen(remaining.at(-1) ?? "n1");
     }
 
     if (!handleHotspotClick(event, choose) && !engine.isEnding) {
-      setClickedEmptySpace(true)
+      setClickedEmptySpace(true);
     }
-  }
+  };
 
   // La pantalla que se está viendo siempre tiene su pestaña en la barra. Importa
   // en el repaso: las señales llevan a pantallas que se cerraron, o que nunca se
   // llegaron a abrir, y sin esto se explicaba la página con la pestaña del
   // correo marcada como activa.
-  const open = tabs.includes(currentScreen) ? tabs : [...tabs, currentScreen]
+  const open = tabs.includes(currentScreen) ? tabs : [...tabs, currentScreen];
 
   const screen = (
     <Browser
@@ -488,7 +543,7 @@ function PayrollStatement() {
       marcadores={MARKERS}
       onHotspot={onHotspot}
     >
-      {currentScreen === 'n1' ? (
+      {currentScreen === "n1" ? (
         <EmailContent
           recibido={received}
           carpetas={createEmailFolders(
@@ -498,13 +553,13 @@ function PayrollStatement() {
               : undefined,
           )}
         />
-      ) : currentScreen === 'n3' ? (
+      ) : currentScreen === "n3" ? (
         <PayrollDetailContent />
       ) : (
         <PortalContent />
       )}
     </Browser>
-  )
+  );
 
   const decision = engine.isEnding ? (
     <VerdictPanel
@@ -517,28 +572,30 @@ function PayrollStatement() {
       onRestart={restart}
       contenedorId="pantalla-escenario"
       onPantalla={(id) => {
-        setReviewing(Boolean(id))
-        if (id) setCurrentScreen(id)
+        setReviewing(Boolean(id));
+        if (id) setCurrentScreen(id);
       }}
     />
   ) : (
-    <PendingDecision fallo={clickedEmptySpace} enFormulario={currentScreen === 'n2'} />
-  )
+    <PendingDecision
+      fallo={clickedEmptySpace}
+      enFormulario={currentScreen === "n2"}
+    />
+  );
 
   return (
     <ScenarioLayout
       escenarioId="phishing/rol-de-pagos"
       resumen={SUMMARY}
       contexto={CONTEXT}
-      nota={NOTE}
       pantalla={screen}
-      identidad={['usuario', 'clave']}
+      identidad={["usuario", "clave"]}
       decision={decision}
       resultado={engine.resultado}
       onEmpezar={engine.restart}
       dispositivo="escritorio"
     />
-  )
+  );
 }
 
-export default PayrollStatement
+export default PayrollStatement;

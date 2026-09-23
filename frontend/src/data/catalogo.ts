@@ -137,7 +137,7 @@ const BASE: BaseScenario[] = [
     titulo: "Premio de lotería",
     descripcion:
       "Un correo anuncia un premio millonario y pide un pago para poder liberarlo.",
-    version: 8,
+    version: 10,
     naturaleza: "fraude",
     dificultad: 1,
     espeja: "phishing/aviso-filtracion",
@@ -149,7 +149,7 @@ const BASE: BaseScenario[] = [
     titulo: "Factura por validar",
     descripcion:
       "Un correo institucional anuncia un comprobante pendiente y da un plazo de 24 horas.",
-    version: 11,
+    version: 13,
     naturaleza: "fraude",
     dificultad: 2,
     espeja: "phishing/rol-de-pagos",
@@ -162,9 +162,9 @@ const BASE: BaseScenario[] = [
     titulo: "Contraseña por caducar",
     descripcion:
       "Soporte técnico avisa que tu clave vence hoy y ofrece un enlace para renovarla.",
-    version: 10,
+    version: 12,
     naturaleza: "fraude",
-    dificultad: 3,
+    dificultad: 2,
     espeja: "phishing/rol-de-pagos",
     Component: lazy(() => import("../secciones/phishing/ClaveCaducada")),
   },
@@ -174,7 +174,7 @@ const BASE: BaseScenario[] = [
     titulo: "Rol de pagos disponible",
     descripcion:
       "Talento Humano notifica que el rol del mes ya está publicado en el portal.",
-    version: 10,
+    version: 12,
     naturaleza: "legitimo",
     dificultad: 3,
     espeja: "phishing/clave-caducada",
@@ -187,9 +187,9 @@ const BASE: BaseScenario[] = [
     descripcion:
       "El banco pide escanear un código QR para no perder el acceso a la cuenta.",
     // El QR es el punto interactivo: no hay "vista previa" posible, así que escanear ya abre la página falsa.
-    version: 10,
+    version: 12,
     naturaleza: "fraude",
-    dificultad: 4,
+    dificultad: 3,
     espeja: "phishing/aviso-filtracion",
     Component: lazy(() => import("../secciones/phishing/QuishingActualice")),
   },
@@ -200,9 +200,9 @@ const BASE: BaseScenario[] = [
     titulo: "Cambio de cuenta bancaria",
     descripcion:
       "La secretaría del colegio informa una cuenta nueva para el pago de la pensión.",
-    version: 9,
+    version: 11,
     naturaleza: "fraude",
-    dificultad: 4,
+    dificultad: 3,
     espeja: "phishing/rol-de-pagos",
     Component: lazy(() => import("../secciones/phishing/SecuestroHilo")),
   },
@@ -212,7 +212,7 @@ const BASE: BaseScenario[] = [
     titulo: "Aviso de filtración de datos",
     descripcion:
       "Una tienda en línea comunica un incidente de seguridad que afecta a tu cuenta.",
-    version: 11,
+    version: 13,
     naturaleza: "legitimo",
     dificultad: 4,
     espeja: "phishing/sesion-bogota",
@@ -227,7 +227,7 @@ const BASE: BaseScenario[] = [
     titulo: "Inicio de sesión desconocido",
     descripcion:
       "Una alerta nocturna avisa de un acceso a tu cuenta desde otra ciudad.",
-    version: 9,
+    version: 11,
     naturaleza: "fraude",
     dificultad: 5,
     espeja: "phishing/aviso-filtracion",

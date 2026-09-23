@@ -36,6 +36,7 @@ const EMAIL: ScreenView = {
     <p>
       Su correo fue seleccionado como ganador del Sorteo Internacional de este mes.
     </p>
+    <p class="fine">No se requiere número de boleto para confirmar el premio.</p>
     <div class="correoDato">
       <span>Premio reservado</span>
       <strong>USD 48.500</strong>
@@ -140,21 +141,6 @@ const MARKERS: BrowserBookmark[] = [
   { Icono: Newspaper, texto: 'Diario Andino' },
 ]
 
-const INSTRUCTION = (
-  <>
-    <p className="text-lg leading-relaxed text-body">
-      Actúa sobre la ventana como lo harías frente a tu correo de verdad: puedes usar{' '}
-      <strong>cualquier parte de ella</strong>, incluidos los marcadores. Antes de tocar un enlace,
-      mantén el cursor encima para ver a dónde lleva.
-    </p>
-    <p className="text-base leading-relaxed text-body">
-      El escenario termina cuando decidas qué hacer con el mensaje, o si caes en lo que pide.
-      Moverte por las pantallas no decide nada: puedes abrir una página, mirarla y cerrarla, y
-      seguirás donde estabas.
-    </p>
-  </>
-)
-
 const CLUE = (
   <p>
     Tienes cuatro caminos posibles: hacer lo que el correo pide, contestarle, decidir qué hacer con
@@ -235,7 +221,13 @@ function LotteryPrize() {
       accionesCorreo={ACTIONS_BAR}
       identidad={['cedula', 'cuenta']}
       marcadores={MARKERS}
-      instruccion={INSTRUCTION}
+      guiaEnPantalla={{
+        pasos: [
+          { targetId: 'saludo', texto: '¿Participaste en algún sorteo? Revisa cómo te saluda el correo.' },
+          { targetId: 'pago', texto: 'Mira si te piden pagar antes de recibir el premio.' },
+          { targetId: 'remitente', texto: 'Comprueba quién envía el correo antes de actuar.' },
+        ],
+      }}
       pista={CLUE}
       senales={[...SIGNALS, SIGNAL_SEARCH]}
       rule={RULE}
