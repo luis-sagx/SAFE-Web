@@ -27,15 +27,15 @@ describe('Portada', () => {
     useAuthMock.mockReturnValue({ isAuthenticated: false, isAdmin: false })
   })
 
-  it('presenta la promesa, las señales del ejemplo y los ocho videos', () => {
+  it('presenta la promesa, las señales del ejemplo y los dos videos publicados', () => {
     renderPage()
 
     expect(screen.getByRole('heading', { level: 1 })).toBeDefined()
     expect(screen.getByText(/engaños simulados/i)).toBeDefined()
     expect(screen.getByText('Ningún premio necesita tu clave')).toBeDefined()
-    // Ocho espacios de video: el general es un boleto entero y los siete
-    // módulos son filas de la tira. Cada uno monta su reproductor al pedirlo.
-    expect(screen.getAllByRole('button', { name: /^Reproducir / })).toHaveLength(8)
+    // Solo el general y phishing publican reproductor; los demás módulos
+    // muestran que su video se publica pronto.
+    expect(screen.getAllByRole('button', { name: /^Reproducir / })).toHaveLength(2)
   })
 
   it('las señales están en el documento aunque nadie raspe el boleto', () => {

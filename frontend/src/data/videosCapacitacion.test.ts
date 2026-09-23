@@ -20,6 +20,19 @@ describe('catálogo de videos de capacitación', () => {
     )
   })
 
+  it('publica el video de phishing y mantiene los demás módulos como próximos', () => {
+    const moduleVideos = TRAINING_VIDEOS.filter((video) => video.sectionId)
+
+    expect(moduleVideos.find((video) => video.sectionId === 'phishing')?.youtubeUrl).toBe(
+      'https://youtu.be/6SxLDCPSSIc',
+    )
+    expect(
+      moduleVideos
+        .filter((video) => video.sectionId !== 'phishing')
+        .every((video) => video.youtubeUrl === null),
+    ).toBe(true)
+  })
+
   it.each([
     ['https://youtu.be/abcdefghijk', 'abcdefghijk'],
     ['https://www.youtube.com/watch?v=abcdefghijk', 'abcdefghijk'],
