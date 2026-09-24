@@ -488,7 +488,7 @@ function PayrollStatement() {
 
   const [currentScreen, setCurrentScreen] = useState("n1");
   const [clickedEmptySpace, setClickedEmptySpace] = useState(false);
-  const [received, setReceived] = useState(getArrivalTime);
+  const [received] = useState(getArrivalTime);
   const [tabs, setTabs] = useState(["n1"]);
   const [reviewing, setReviewing] = useState(false);
 

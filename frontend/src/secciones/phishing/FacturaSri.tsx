@@ -522,7 +522,7 @@ function SriInvoice() {
   // Se enciende con el primer clic en el vacío y ya no se apaga.
   const [clickedEmptySpace, setClickedEmptySpace] = useState(false);
   // Se calcula una vez al montar, no en cada render, o el correo "rejuvenecería" con el reloj.
-  const [received, setReceived] = useState(getArrivalTime);
+  const [received] = useState(getArrivalTime);
   const [tabs, setTabs] = useState(["n1"]);
   // Durante el repaso el mensaje vuelve a Recibidos: Spam/Papelera dejaban la
   // bandeja vacía y sin nada que señalar.
