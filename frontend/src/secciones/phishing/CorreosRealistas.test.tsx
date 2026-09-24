@@ -82,4 +82,35 @@ describe('correos de phishing realistas', () => {
     const school = openEmail(ThreadHijacking)
     expect(school.container.querySelector('img.mailHero')).toBeNull()
   })
+
+  it.each([
+    ['Factura del SRI', SriInvoice, /canal oficial para comprobar el plazo/i],
+    ['Clave por caducar', ExpiredPassword, /directorio interno para comparar el dominio/i],
+    ['Rol de pagos', PayrollStatement, /ruta habitual del portal/i],
+    ['Actualización por QR', QuishingUpdate, /vista previa antes de continuar/i],
+    ['Pago del colegio', ThreadHijacking, /teléfono oficial del colegio/i],
+    ['Aviso de filtración', DataLeakNotice, /marcador habitual de la tienda/i],
+    ['Sesión desconocida', BogotaSession, /código de un solo uso dentro de la aplicación/i],
+  ])('%s ofrece una comprobación concreta en su pista opcional', (_case, Component, clarity) => {
+    openEmail(Component)
+
+    fireEvent.click(screen.getByText('No sé por dónde empezar'))
+
+    expect(screen.getByText(clarity)).toBeDefined()
+  })
+
+  it.each([
+    ['Premio de lotería', LotteryPrize, /no se requiere número de boleto/i],
+    ['Factura del SRI', SriInvoice, /verifica el comprobante desde sri\.gob\.ec/i],
+    ['Clave por caducar', ExpiredPassword, /el correo institucional de andes termina en @andes\.com\.ec/i],
+    ['Rol de pagos', PayrollStatement, /marcador “portal andes”/i],
+    ['Actualización por QR', QuishingUpdate, /desde la cámara, no desde la aplicación/i],
+    ['Pago del colegio', ThreadHijacking, /cambiamos de banco y de número de cuenta/i],
+    ['Aviso de filtración', DataLeakNotice, /marcador guardado de la tienda/i],
+    ['Sesión desconocida', BogotaSession, /pediremos el código de un solo uso/i],
+  ])('%s muestra una señal adicional dentro de la simulación', (_case, Component, signal) => {
+    openEmail(Component)
+
+    expect(screen.getByText(signal)).toBeDefined()
+  })
 })

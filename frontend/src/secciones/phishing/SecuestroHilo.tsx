@@ -38,7 +38,7 @@ const EMAIL: ScreenView = {
     <p>Buenas de nuevo:</p>
     <p>
       Antes de que transfiera, le cuento que
-      <mark class="marca" data-signal="cuenta">cambiamos de banco</mark> este mes. Adjunto el
+      <mark class="marca" data-signal="cuenta">cambiamos de banco y de número de cuenta</mark> este mes. Adjunto el
       comprobante corregido con el nuevo número de cuenta para la pensión de este mes.
     </p>
     ${THREAD_PREVIOUS}
@@ -207,8 +207,8 @@ const CLUE = (
   <p>
     Aquí no hay nada raro que descubrir en el correo. Puedes abrir el comprobante adjunto y mirarlo.
     Lo que se decide es otra cosa: si haces la transferencia, si preguntas por donde llegó el
-    mensaje, si respondes con la barra del cliente o si lo confirmas por un camino que no dependa de
-    ese correo.
+    mensaje, si respondes con la barra del cliente o si confirmas el cambio con el teléfono oficial
+    del colegio, sin depender de ese correo.
   </p>
 )
 

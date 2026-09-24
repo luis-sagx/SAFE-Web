@@ -1,27 +1,46 @@
-import { Forward, Landmark, Newspaper, Reply, ShieldAlert, Trash2 } from 'lucide-react'
-import { useState } from 'react'
-import ScenarioLayout from '../../components/EscenarioLayout'
-import type { Context } from '../../components/ui/ContextoEscenario'
-import { createEmailFolders } from '../../components/ui/carpetasCorreo'
+import {
+  Forward,
+  Landmark,
+  Newspaper,
+  Reply,
+  ShieldAlert,
+  Trash2,
+} from "lucide-react";
+import { useState } from "react";
+import ScenarioLayout from "../../components/EscenarioLayout";
+import type { Context } from "../../components/ui/ContextoEscenario";
+import { createEmailFolders } from "../../components/ui/carpetasCorreo";
 import {
   EmailBody,
   type EmailAction,
   type EmailFolder,
-} from '../../components/ui/DesktopChrome'
-import { SiteNotice, SiteHeader, FOOTER_LINKS, SiteFooter } from '../../components/ui/armazonSitio'
-import styles from '../../components/ui/DeviceScreen.module.css'
-import { IDENTITY_FAKE } from '../../lib/identidadFicticia'
-import { createSignal } from '../../lib/crearSenal'
-import Instructions from '../../components/ui/Instrucciones'
-import { HotspotButton, handleHotspotClick } from '../../components/ui/interactivo'
+} from "../../components/ui/DesktopChrome";
+import {
+  SiteNotice,
+  SiteHeader,
+  FOOTER_LINKS,
+  SiteFooter,
+} from "../../components/ui/armazonSitio";
+import styles from "../../components/ui/DeviceScreen.module.css";
+import { IDENTITY_FAKE } from "../../lib/identidadFicticia";
+import { createSignal } from "../../lib/crearSenal";
+import Instructions from "../../components/ui/Instrucciones";
+import {
+  HotspotButton,
+  handleHotspotClick,
+} from "../../components/ui/interactivo";
 import {
   Browser,
   type BrowserBookmark,
   type TabConfig,
-} from '../../components/ui/Navegador'
-import VerdictPanel, { type Signal } from '../../components/ui/PanelVeredicto'
-import { formatTime } from '../../hooks/useRelojDelSistema'
-import { useStoryEngine, type Story, type StoryNode } from '../../hooks/useStoryEngine'
+} from "../../components/ui/Navegador";
+import VerdictPanel, { type Signal } from "../../components/ui/PanelVeredicto";
+import { formatTime } from "../../hooks/useRelojDelSistema";
+import {
+  useStoryEngine,
+  type Story,
+  type StoryNode,
+} from "../../hooks/useStoryEngine";
 
 // QR decorativo y fijo: no es escaneable de verdad, solo tiene que leerse
 // como un código QR dentro del cuerpo del correo. Tocarlo es "escanearlo".
@@ -40,16 +59,16 @@ const QR_SVG = `
       <rect x="24" y="22" width="2" height="5"/>
     </g>
   </svg>
-`
+`;
 
 const STORY: Story<StoryNode> = {
-  n1: { kind: 'scene' },
-  n2: { kind: 'scene' },
-  n3: { kind: 'scene' },
+  n1: { kind: "scene" },
+  n2: { kind: "scene" },
+  n3: { kind: "scene" },
 
   e_datos: {
-    kind: 'bad',
-    verdict: 'Caíste en la trampa',
+    kind: "bad",
+    verdict: "Caíste en la trampa",
     outcome: `Entregaste tu cédula ${IDENTITY_FAKE.cedula} y tu clave ${IDENTITY_FAKE.clave} en litoral-actualiza.web.app, un sitio que no es del banco. Entraron a tu cuenta esa misma noche.`,
   },
   // Absorbe el antiguo final "vista previa antes de escanear": un QR no tiene
@@ -57,163 +76,171 @@ const STORY: Story<StoryNode> = {
   // página falsa, y lo que distingue el buen final es cerrarla sin enviar el
   // formulario (ver spec §4.1).
   e_app: {
-    kind: 'good',
-    verdict: 'No caíste · entraste por tu cuenta',
-    outcome: 'Entraste a la app del banco por tu cuenta y revisaste el centro de seguridad. No había nada pendiente: el correo era falso.',
+    kind: "good",
+    verdict: "No caíste · entraste por tu cuenta",
+    outcome:
+      "Entraste a la app del banco por tu cuenta y revisaste el centro de seguridad. No había nada pendiente: el correo era falso.",
   },
   e_eliminar: {
-    kind: 'good',
-    verdict: 'No caíste · lo eliminaste',
+    kind: "good",
+    verdict: "No caíste · lo eliminaste",
     outcome:
-      'Borrarlo sin escanear el código ya es no caer. Marcarlo como spam habría hecho algo más: avisar al filtro.',
+      "Borrarlo sin escanear el código ya es no caer. Marcarlo como spam habría hecho algo más: avisar al filtro.",
   },
   e_spam: {
-    kind: 'good',
-    verdict: 'No caíste · lo reportaste',
-    outcome: 'Marcarlo como spam es la mejor reacción: no caíste, y tu proveedor aprende a filtrar ese remitente.',
+    kind: "good",
+    verdict: "No caíste · lo reportaste",
+    outcome:
+      "Marcarlo como spam es la mejor reacción: no caíste, y tu proveedor aprende a filtrar ese remitente.",
   },
   e_responder: {
-    kind: 'partial',
-    verdict: 'No entregaste nada, pero contestaste',
+    kind: "partial",
+    verdict: "No entregaste nada, pero contestaste",
     outcome:
-      'No escaneaste el código, pero confirmaste que tu dirección existe y alguien la lee. Justo lo que un atacante busca.',
+      "No escaneaste el código, pero confirmaste que tu dirección existe y alguien la lee. Justo lo que un atacante busca.",
   },
   e_reenviar: {
-    kind: 'partial',
-    verdict: 'No caíste tú, pero lo pasaste',
-    outcome: 'No caíste, pero el QR llegó a alguien que quizá lo escanee sin tu misma desconfianza.',
+    kind: "partial",
+    verdict: "No caíste tú, pero lo pasaste",
+    outcome:
+      "No caíste, pero el QR llegó a alguien que quizá lo escanee sin tu misma desconfianza.",
   },
-}
+};
 
 const ACTIONS: EmailAction[] = [
   {
     Icono: Reply,
-    etiqueta: 'Responder',
-    titulo: 'Responder',
-    goto: 'e_responder',
-    label: 'Respondió el correo',
+    etiqueta: "Responder",
+    titulo: "Responder",
+    goto: "e_responder",
+    label: "Respondió el correo",
   },
   {
     Icono: Forward,
-    etiqueta: 'Reenviar',
-    titulo: 'Reenviar',
-    goto: 'e_reenviar',
-    label: 'Reenvió el correo a otra persona',
+    etiqueta: "Reenviar",
+    titulo: "Reenviar",
+    goto: "e_reenviar",
+    label: "Reenvió el correo a otra persona",
   },
   {
     Icono: Trash2,
-    etiqueta: 'Eliminar',
-    titulo: 'Eliminar',
-    goto: 'e_eliminar',
-    label: 'Eliminó el correo',
+    etiqueta: "Eliminar",
+    titulo: "Eliminar",
+    goto: "e_eliminar",
+    label: "Eliminó el correo",
   },
   {
     Icono: ShieldAlert,
-    etiqueta: 'Spam',
-    titulo: 'Marcar como spam',
-    goto: 'e_spam',
-    label: 'Marcó el correo como spam',
+    etiqueta: "Spam",
+    titulo: "Marcar como spam",
+    goto: "e_spam",
+    label: "Marcó el correo como spam",
   },
-]
+];
 
-const SUBJECT = 'Actualice sus datos antes de que se limite su cuenta'
-const SENDER_NAME = 'Banco del Litoral · Actualización de datos'
-const ADDRESS = 'notificaciones@bancodel1itoral.com'
+const SUBJECT = "Actualice sus datos antes de que se limite su cuenta";
+const SENDER_NAME = "Banco del Litoral · Actualización de datos";
+const ADDRESS = "notificaciones@bancodel1itoral.com";
 
 /// El mensaje tal como lo muestran las carpetas cuando una acción de la barra
 /// lo mueve de bandeja. Lo pinta `carpetasCorreo`, compartido por todos los
 /// escenarios de correo.
-const MESSAGE = { nombre: SENDER_NAME, direccion: ADDRESS, asunto: SUBJECT }
+const MESSAGE = { nombre: SENDER_NAME, direccion: ADDRESS, asunto: SUBJECT };
 
 const SIGNALS: Signal[] = [
   createSignal(
-    's1',
-    'n1',
-    'qr',
-    'Un <b>código QR esconde el enlace dentro de un dibujo</b>: no puedes ver a dónde lleva hasta que ya lo abriste.',
+    "s1",
+    "n1",
+    "qr",
+    "Un <b>código QR esconde el enlace dentro de un dibujo</b>: no puedes ver a dónde lleva hasta que ya lo abriste.",
   ),
   createSignal(
-    's2',
-    'n1',
-    'remitente',
-    'El dominio escribe <b>bancodel1itoral.com</b> con el número <b>1</b> en lugar de la letra <b>l</b>. Es una imitación.',
+    "s2",
+    "n1",
+    "remitente",
+    "El dominio escribe <b>bancodel1itoral.com</b> con el número <b>1</b> en lugar de la letra <b>l</b>. Es una imitación.",
   ),
   createSignal(
-    's3',
-    'n2',
-    'campo-clave',
-    'El formulario pide la <b>clave de acceso</b>. Actualizar datos nunca necesita tu clave.',
+    "s3",
+    "n2",
+    "campo-clave",
+    "El formulario pide la <b>clave de acceso</b>. Actualizar datos nunca necesita tu clave.",
   ),
-  createSignal('s4', 'n1', 'plazo', 'Mete <b>prisa</b> con 72 horas, para que actúes antes de comprobar con el banco.'),
-]
+  createSignal(
+    "s4",
+    "n1",
+    "plazo",
+    "Mete <b>prisa</b> con 72 horas, para que actúes antes de comprobar con el banco.",
+  ),
+];
 
 const RULE =
-  'Regla de oro: al escanear un QR, primero <b>lee la vista previa de la URL</b> (vale para correos, locales, surtidores y parquímetros).'
+  "Regla de oro: al escanear un QR, primero <b>lee la vista previa de la URL</b> (vale para correos, locales, surtidores y parquímetros).";
 
-const SUMMARY = 'Un correo del banco pide escanear un QR para "actualizar tus datos".'
+const SUMMARY =
+  'Un correo del banco pide escanear un QR para "actualizar tus datos".';
 
 const CONTEXT: Context = {
   antes: (
     <>
-      Eres cliente del <strong>Banco del Litoral</strong>. <strong>Este mes</strong> el banco sí
-      pidió, dentro de su app, que los clientes actualicen algunos datos.
+      Eres cliente del <strong>Banco del Litoral</strong>.{" "}
+      <strong>Este mes</strong> el banco sí pidió, dentro de su app, que los
+      clientes actualicen algunos datos.
     </>
   ),
   ahora: (
     <>
-      <strong>Días después</strong> te llega un correo aparte, con un <strong>código QR</strong>{' '}
-      grande.
+      <strong>Días después</strong> te llega un correo aparte, con un{" "}
+      <strong>código QR</strong> grande.
     </>
   ),
-}
+};
 
-const NOTE = (
-  <>
-    <p>
-      Vas a ver tu computador con el correo abierto. Puedes actuar sobre la pantalla como lo harías
-      de verdad.
-    </p>
-    <p className="mt-2">
-      El escenario termina cuando decidas qué hacer con el mensaje, o si caes en lo que pide.
-      Moverte por las pantallas y cerrarlas no decide nada.
-    </p>
-  </>
-)
-
-const MINUTES_OF_AGE = 40
+const MINUTES_OF_AGE = 40;
 
 function getArrivalTime(): string {
-  const arrival = new Date(Date.now() - MINUTES_OF_AGE * 60_000)
-  return `hoy ${formatTime(arrival)}`
+  const arrival = new Date(Date.now() - MINUTES_OF_AGE * 60_000);
+  return `hoy ${formatTime(arrival)}`;
 }
 
 const TABS: Record<string, TabConfig> = {
-  n1: { titulo: 'Correo', url: 'https://correo.safeweb.com/u/0/#recibidos', segura: true },
+  n1: {
+    titulo: "Correo",
+    url: "https://correo.safeweb.com/u/0/#recibidos",
+    segura: true,
+  },
   n2: {
-    titulo: 'Actualización de datos',
-    url: 'http://litoral-actualiza.web.app/actualizar', // NOSONAR: URL insegura intencional que el participante debe detectar.
+    titulo: "Actualización de datos",
+    url: "http://litoral-actualiza.web.app/actualizar", // NOSONAR: URL insegura intencional que el participante debe detectar.
     segura: false,
-    cierra: 'n1',
+    cierra: "n1",
   },
   n3: {
-    titulo: 'Centro de seguridad',
-    url: 'https://bancodellitoral.com.ec/app/seguridad',
+    titulo: "Centro de seguridad",
+    url: "https://bancodellitoral.com.ec/app/seguridad",
     segura: true,
-    cierra: 'n1',
+    cierra: "n1",
   },
-}
+};
 
 const MARKERS: BrowserBookmark[] = [
   {
     Icono: Landmark,
-    texto: 'Banco del Litoral',
-    goto: 'n3',
-    label: 'Abrió la app del banco desde sus marcadores para comprobar la solicitud',
+    texto: "Banco del Litoral",
+    goto: "n3",
+    label:
+      "Abrió la app del banco desde sus marcadores para comprobar la solicitud",
   },
-  { Icono: Newspaper, texto: 'El Comercio' },
-]
+  { Icono: Newspaper, texto: "El Comercio" },
+];
 
-function EmailContent({ recibido: received, carpetas: folders }: { recibido: string; carpetas: EmailFolder[] }) {
+function EmailContent({
+  recibido: received,
+  carpetas: folders,
+}: {
+  recibido: string;
+  carpetas: EmailFolder[];
+}) {
   return (
     <EmailBody
       acciones={ACTIONS}
@@ -222,29 +249,34 @@ function EmailContent({ recibido: received, carpetas: folders }: { recibido: str
       remitente={{
         nombre: SENDER_NAME,
         direccion: ADDRESS,
-        etiqueta: 'Externo',
-        senalDireccion: 'remitente',
-        senalEtiqueta: 'externo',
+        etiqueta: "Externo",
+        senalDireccion: "remitente",
+        senalEtiqueta: "externo",
       }}
       recibido={received}
       marca={{
-        nombre: 'Banco del Litoral',
-        detalle: 'Actualización de información de clientes',
-        icono: 'banco',
-        variante: 'financiera',
+        nombre: "Banco del Litoral",
+        detalle: "Actualización de información de clientes",
+        icono: "banco",
+        variante: "financiera",
       }}
-      pie={<p className="fine">Banco del Litoral · Este es un mensaje automático.</p>}
+      pie={
+        <p className="fine">
+          Banco del Litoral · Este es un mensaje automático.
+        </p>
+      }
     >
       <p>Estimado(a) cliente:</p>
       <p>
-        Según nuestra política de actualización de datos, necesitamos que confirme su información
-        antes de{' '}
+        Según nuestra política de actualización de datos, necesitamos que
+        confirme su información antes de{" "}
         <mark className={styles.marca} data-signal="plazo">
           72 horas
         </mark>
-        . Escanee el siguiente código con la cámara de su celular para continuar:
+        . Escanee el siguiente código con la cámara de su celular para
+        continuar:
       </p>
-      <div style={{ textAlign: 'center', margin: '14px 0' }}>
+      <div style={{ textAlign: "center", margin: "14px 0" }}>
         {/* El nombre accesible de un botón sale de su texto visible, y el SVG
             no tiene ninguno: sin este span el botón quedaría sin nombre para
             un lector de pantalla (y sin forma de ubicarlo por rol+nombre en
@@ -254,8 +286,9 @@ function EmailContent({ recibido: received, carpetas: folders }: { recibido: str
           <span dangerouslySetInnerHTML={{ __html: QR_SVG }} />
         </HotspotButton>
       </div>
+      <p className={styles.fine}>Escanee desde la cámara, no desde la aplicación.</p>
     </EmailBody>
-  )
+  );
 }
 
 function FakePortalContent() {
@@ -263,7 +296,7 @@ function FakePortalContent() {
     <div className={styles.page}>
       <SiteHeader
         marca="Banco del Litoral"
-        menu={['Cuentas', 'Transferencias', 'Pagos', 'Ayuda']}
+        menu={["Cuentas", "Transferencias", "Pagos", "Ayuda"]}
       />
       <h2 className={styles.pageTitle}>Actualización de datos</h2>
       <p className={styles.pageSub}>
@@ -274,15 +307,14 @@ function FakePortalContent() {
         <fieldset className={styles.field}>
           <legend>Cédula</legend>
           <span className={styles.input}>
-            <span className="sr-only">Tu cédula, ya completada: </span>
-            {' '}{IDENTITY_FAKE.cedula}
+            <span className="sr-only">Tu cédula, ya completada: </span>{" "}
+            {IDENTITY_FAKE.cedula}
           </span>
         </fieldset>
         <fieldset className={styles.field} data-signal="campo-clave">
           <legend>Clave de acceso</legend>
           <span className={styles.input}>
-            <span className="sr-only">Tu clave, ya completada: </span>
-            {' '}••••••••
+            <span className="sr-only">Tu clave, ya completada: </span> ••••••••
           </span>
         </fieldset>
         <HotspotButton
@@ -295,13 +327,16 @@ function FakePortalContent() {
       </div>
 
       <SiteNotice>
-        La actualización es obligatoria para mantener activa su cuenta. Sus datos viajan cifrados y
-        no se comparten con terceros.
+        La actualización es obligatoria para mantener activa su cuenta. Sus
+        datos viajan cifrados y no se comparten con terceros.
       </SiteNotice>
 
-      <SiteFooter texto="Banco del Litoral · Entidad supervisada" enlaces={FOOTER_LINKS} />
+      <SiteFooter
+        texto="Banco del Litoral · Entidad supervisada"
+        enlaces={FOOTER_LINKS}
+      />
     </div>
-  )
+  );
 }
 
 function SecurityCenterContent() {
@@ -309,11 +344,12 @@ function SecurityCenterContent() {
     <div className={styles.page}>
       <SiteHeader
         marca="Banco del Litoral"
-        menu={['Cuentas', 'Transferencias', 'Pagos', 'Ayuda']}
+        menu={["Cuentas", "Transferencias", "Pagos", "Ayuda"]}
       />
       <h2 className={styles.pageTitle}>Centro de seguridad</h2>
       <p className={styles.pageSub}>
-        Revisa las solicitudes recientes antes de confirmar cambios en tu cuenta.
+        Revisa las solicitudes recientes antes de confirmar cambios en tu
+        cuenta.
       </p>
 
       <div className={styles.form}>
@@ -331,15 +367,25 @@ function SecurityCenterContent() {
       </div>
 
       <SiteNotice>
-        El banco nunca te pedirá confirmar una actualización desde un enlace recibido por correo.
+        El banco nunca te pedirá confirmar una actualización desde un enlace
+        recibido por correo.
       </SiteNotice>
 
-      <SiteFooter texto="Banco del Litoral · Entidad supervisada" enlaces={FOOTER_LINKS} />
+      <SiteFooter
+        texto="Banco del Litoral · Entidad supervisada"
+        enlaces={FOOTER_LINKS}
+      />
     </div>
-  )
+  );
 }
 
-function PendingDecision({ fallo: failure, enPagina: onPage }: { fallo: boolean; enPagina: boolean }) {
+function PendingDecision({
+  fallo: failure,
+  enPagina: onPage,
+}: {
+  fallo: boolean;
+  enPagina: boolean;
+}) {
   return (
     <div className="grid gap-3">
       <p className="text-lg font-semibold text-ink">¿Qué haces?</p>
@@ -347,23 +393,28 @@ function PendingDecision({ fallo: failure, enPagina: onPage }: { fallo: boolean;
         fallo={failure}
         pista={
           <p>
-            Tienes tres caminos posibles: escanear el código y ver a dónde lleva, dejarlo de lado y
-            entrar a la app del banco por tu cuenta desde los marcadores, o usar alguno de los
-            botones de la barra de arriba. Cuál de ellos es el acertado es justamente lo que decides
-            tú.
+            Tienes tres caminos posibles: escanear el código y detenerte en la
+            vista previa antes de continuar, dejarlo de lado y entrar a la app
+            del banco por tu cuenta desde los marcadores, o usar alguno de los
+            botones de la barra de arriba. Cuál de ellos es el acertado es
+            justamente lo que decides tú.
           </p>
         }
       >
         <p className="text-lg leading-relaxed text-body">
-          Actúa sobre la ventana como lo harías frente a tu correo de verdad: puedes usar{' '}
-          <strong>cualquier parte de ella</strong>, incluida la barra de abajo.
+          Actúa sobre la ventana como lo harías frente a tu correo de verdad:
+          puedes usar <strong>cualquier parte de ella</strong>, incluida la
+          barra de abajo.
         </p>
 
         {onPage && (
           <p className="rounded-md border border-hairline-strong bg-canvas-soft px-3 py-2 text-base leading-relaxed text-body">
-            El formulario ya aparece con{' '}
-            <strong className="text-ink">tu cédula y tu clave de acceso escritas</strong>. Es así
-            para no pedirte datos reales, pero enviarlo cuenta como entregarlos.
+            El formulario ya aparece con{" "}
+            <strong className="text-ink">
+              tu cédula y tu clave de acceso escritas
+            </strong>
+            . Es así para no pedirte datos reales, pero enviarlo cuenta como
+            entregarlos.
           </p>
         )}
 
@@ -375,66 +426,58 @@ function PendingDecision({ fallo: failure, enPagina: onPage }: { fallo: boolean;
             ¿Cuándo termina el escenario?
           </summary>
           <p className="mt-2">
-            Cuando decidas qué hacer con el mensaje, o si caes en lo que pide. No hay confirmación,
-            igual que en la vida real. Moverte entre pantallas, volver atrás o cerrar una pestaña no
-            decide nada.
+            Cuando decidas qué hacer con el mensaje, o si caes en lo que pide.
+            No hay confirmación, igual que en la vida real. Moverte entre
+            pantallas, volver atrás o cerrar una pestaña no decide nada.
           </p>
         </details>
       </Instructions>
     </div>
-  )
+  );
 }
 
 function QuishingUpdate() {
-  const engine = useStoryEngine(STORY, 'n1', 'phishing/quishing-actualice')
+  const engine = useStoryEngine(STORY, "n1", "phishing/quishing-actualice");
 
-  const [currentScreen, setCurrentScreen] = useState('n1')
-  const [clickedEmptySpace, setClickedEmptySpace] = useState(false)
-  const [received, setReceived] = useState(getArrivalTime)
-  const [tabs, setTabs] = useState(['n1'])
-  const [reviewing, setReviewing] = useState(false)
+  const [currentScreen, setCurrentScreen] = useState("n1");
+  const [clickedEmptySpace, setClickedEmptySpace] = useState(false);
+  const [received] = useState(getArrivalTime);
+  const [tabs, setTabs] = useState(["n1"]);
+  const [reviewing, setReviewing] = useState(false);
 
   function choose(goto: string, label?: string) {
-    if (engine.isEnding) return
-    engine.choose(goto, label)
-    if (STORY[goto]?.kind === 'scene') {
-      setCurrentScreen(goto)
-      setTabs((open) => (open.includes(goto) ? open : [...open, goto]))
+    if (engine.isEnding) return;
+    engine.choose(goto, label);
+    if (STORY[goto]?.kind === "scene") {
+      setCurrentScreen(goto);
+      setTabs((open) => (open.includes(goto) ? open : [...open, goto]));
     }
   }
 
-  function restart() {
-    engine.restart()
-    setCurrentScreen('n1')
-    setTabs(['n1'])
-    setReviewing(false)
-    setClickedEmptySpace(false)
-    setReceived(getArrivalTime())
-  }
-
   const onHotspot = (event: React.MouseEvent) => {
-    const closed = (event.target as HTMLElement).closest<HTMLElement>('[data-cierra]')?.dataset
-      .cierra
+    const closed = (event.target as HTMLElement).closest<HTMLElement>(
+      "[data-cierra]",
+    )?.dataset.cierra;
     if (closed) {
-      const remaining = tabs.filter((id) => id !== closed)
-      setTabs(remaining)
+      const remaining = tabs.filter((id) => id !== closed);
+      setTabs(remaining);
       // Cerrar la pestaña que se está viendo devuelve el navegador a la que
       // quede abierta (el correo). Con el escenario ya terminado `elegir` sale
       // sin tocar la pantalla, así que sin esto la página cerrada seguía a la
       // vista aunque su pestaña ya no estuviera en la barra (issue #26).
-      if (closed === currentScreen) setCurrentScreen(remaining.at(-1) ?? 'n1')
+      if (closed === currentScreen) setCurrentScreen(remaining.at(-1) ?? "n1");
     }
 
     if (!handleHotspotClick(event, choose) && !engine.isEnding) {
-      setClickedEmptySpace(true)
+      setClickedEmptySpace(true);
     }
-  }
+  };
 
   // La pantalla que se está viendo siempre tiene su pestaña en la barra. Importa
   // en el repaso: las señales llevan a pantallas que se cerraron, o que nunca se
   // llegaron a abrir, y sin esto se explicaba la página con la pestaña del
   // correo marcada como activa.
-  const open = tabs.includes(currentScreen) ? tabs : [...tabs, currentScreen]
+  const open = tabs.includes(currentScreen) ? tabs : [...tabs, currentScreen];
 
   const screen = (
     <Browser
@@ -444,7 +487,7 @@ function QuishingUpdate() {
       marcadores={MARKERS}
       onHotspot={onHotspot}
     >
-      {currentScreen === 'n1' ? (
+      {currentScreen === "n1" ? (
         <EmailContent
           recibido={received}
           carpetas={createEmailFolders(
@@ -452,13 +495,13 @@ function QuishingUpdate() {
             engine.isEnding && !reviewing ? engine.current : undefined,
           )}
         />
-      ) : currentScreen === 'n2' ? (
+      ) : currentScreen === "n2" ? (
         <FakePortalContent />
       ) : (
         <SecurityCenterContent />
       )}
     </Browser>
-  )
+  );
 
   const decision = engine.isEnding ? (
     <VerdictPanel
@@ -467,32 +510,32 @@ function QuishingUpdate() {
       node={engine.node}
       senales={SIGNALS}
       regla={RULE}
-      restartLabel="↻ Repetir el escenario"
-      onRestart={restart}
       contenedorId="pantalla-escenario"
       onPantalla={(id) => {
-        setReviewing(Boolean(id))
-        if (id) setCurrentScreen(id)
+        setReviewing(Boolean(id));
+        if (id) setCurrentScreen(id);
       }}
     />
   ) : (
-    <PendingDecision fallo={clickedEmptySpace} enPagina={currentScreen === 'n2'} />
-  )
+    <PendingDecision
+      fallo={clickedEmptySpace}
+      enPagina={currentScreen === "n2"}
+    />
+  );
 
   return (
     <ScenarioLayout
       escenarioId="phishing/quishing-actualice"
       resumen={SUMMARY}
       contexto={CONTEXT}
-      nota={NOTE}
       pantalla={screen}
-      identidad={['cedula', 'clave']}
+      identidad={["cedula", "clave"]}
       decision={decision}
       resultado={engine.resultado}
       onEmpezar={engine.restart}
       dispositivo="escritorio"
     />
-  )
+  );
 }
 
-export default QuishingUpdate
+export default QuishingUpdate;

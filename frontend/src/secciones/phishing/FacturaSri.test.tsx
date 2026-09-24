@@ -179,4 +179,12 @@ describe("FacturaSri", () => {
       screen.getByText("notificaciones@sri-facturacion-ec.com"),
     ).toBeDefined();
   });
+
+  it("clicar fuera de los hotspots muestra aviso de zona sin interacción", () => {
+    renderScenario();
+
+    fireEvent.click(screen.getByText("Estimado(a) contribuyente:"));
+
+    expect(screen.getByText(/Aquí no hay nada que hacer/)).toBeDefined();
+  });
 });

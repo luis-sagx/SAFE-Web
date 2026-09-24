@@ -95,6 +95,25 @@ describe('catálogo de escenarios', () => {
     expect(phishing.filter((e) => e.naturaleza === 'legitimo')).toHaveLength(2)
   })
 
+  it('mantiene el recorrido de phishing en dificultad ascendente tras actualizar sus guiones', () => {
+    expect(
+      getSectionScenarios('phishing').map(({ escenarioId, dificultad, version }) => ({
+        escenarioId,
+        dificultad,
+        version,
+      })),
+    ).toEqual([
+      { escenarioId: 'loteria-premiada', dificultad: 1, version: 10 },
+      { escenarioId: 'factura-sri', dificultad: 2, version: 13 },
+      { escenarioId: 'clave-caducada', dificultad: 2, version: 12 },
+      { escenarioId: 'rol-de-pagos', dificultad: 3, version: 12 },
+      { escenarioId: 'quishing-actualice', dificultad: 3, version: 12 },
+      { escenarioId: 'secuestro-hilo', dificultad: 3, version: 11 },
+      { escenarioId: 'aviso-filtracion', dificultad: 4, version: 13 },
+      { escenarioId: 'sesion-bogota', dificultad: 5, version: 11 },
+    ])
+  })
+
   // Misma forma que phishing, y por lo mismo (issue #72).
   it('smishing tiene 8 escenarios: 6 de fraude y 2 legítimos', () => {
     const smishing = getSectionScenarios('smishing')

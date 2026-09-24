@@ -98,4 +98,34 @@ describe('RolDePagos', () => {
     expect(screen.getByRole('heading', { name: 'Portal del colaborador' })).toBeDefined()
     expect(screen.getByText('https://portal.andes.com.ec/rrhh/rol')).toBeDefined()
   })
+
+  it('cerrar la pestaña del portal devuelve al correo sin terminar el escenario', () => {
+    renderScenario()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Abrir Portal Andes' }))
+    expect(screen.getAllByRole('tab')).toHaveLength(2)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Cerrar la pestaña Portal del colaborador' }))
+    expect(screen.getAllByRole('tab')).toHaveLength(1)
+  })
+
+  it('clicar fuera de los hotspots muestra aviso de zona sin interacción', () => {
+    renderScenario()
+
+    fireEvent.click(screen.getByText('Hola, María:'))
+
+    expect(screen.getByText(/Aquí no hay nada que hacer/)).toBeDefined()
+  })
+
+  it('cerrar la pestaña del rol de pagos vuelve al portal', () => {
+    renderScenario()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Abrir Portal Andes' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Ingresar' }))
+    expect(screen.getAllByRole('tab')).toHaveLength(3)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Cerrar la pestaña Rol de pagos' }))
+    expect(screen.getAllByRole('tab')).toHaveLength(2)
+    expect(screen.getByRole('heading', { name: 'Portal del colaborador' })).toBeDefined()
+  })
 })

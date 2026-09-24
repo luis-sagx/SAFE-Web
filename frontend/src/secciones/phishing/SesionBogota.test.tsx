@@ -72,4 +72,22 @@ describe('SesionBogota', () => {
 
     expect(screen.getByText('No caíste · verificaste por la app')).toBeDefined()
   })
+
+  it('clicar fuera de los hotspots muestra aviso de zona sin interacción', () => {
+    renderScenario()
+
+    fireEvent.click(screen.getByText('Estimado(a) cliente:'))
+
+    expect(screen.getByText(/Aquí no hay nada que hacer/)).toBeDefined()
+  })
+
+  it('cerrar la pestaña de verificación devuelve al correo', () => {
+    renderScenario()
+
+    fireEvent.click(screen.getByRole('link', { name: 'No fui yo (proteger mi cuenta)' }))
+    expect(screen.getAllByRole('tab')).toHaveLength(2)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Cerrar la pestaña Verificación de seguridad' }))
+    expect(screen.getAllByRole('tab')).toHaveLength(1)
+  })
 })

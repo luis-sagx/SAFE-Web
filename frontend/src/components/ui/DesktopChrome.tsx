@@ -430,6 +430,9 @@ export interface EmailWindowProps {
   // Fuerza una carpeta durante el repaso de señales, para señalar el mensaje.
   carpetaForzada?: string
   marca?: EmailBrand
+  /** Orientación contextual que aparece dentro del cliente de correo. */
+  guia?: ReactNode
+  guiaTargetId?: string
   children: ReactNode
 }
 
@@ -464,6 +467,8 @@ export function EmailBody({
   destinatario: recipient,
   carpetaForzada: forcedFolder,
   marca: brand,
+  guia: guide,
+  guiaTargetId: guideTargetId,
   children,
 }: EmailWindowProps) {
   const { correoSimulado: simulatedEmail } = useAuth()
@@ -500,7 +505,7 @@ export function EmailBody({
     <div className={styles.desktopBody}>
       <MailNav activa={activeFolder} carpetas={folders} onSelect={setFolderSelected} />
 
-      <div className={styles.mailPane}>
+      <div className={styles.mailPane} data-guia-target={guideTargetId}>
         {secondaryFolder ? (
           <div
             className={`${styles.mailbody} ${secondaryFolder.contenido ? '' : styles.mailFolderEmpty}`}
@@ -526,6 +531,8 @@ export function EmailBody({
                 ),
                 sender.senalDireccion,
               )}
+
+              {guide}
 
               {brand && <EmailBrandIdentity marca={brand} />}
 

@@ -33,19 +33,45 @@ vi.mock('../../lib/api', async () => {
   return { ...current, createRun: vi.fn().mockResolvedValue(undefined) }
 })
 
+function renderScenario() {
+  render(
+    <MemoryRouter>
+      <ThreadHijacking />
+    </MemoryRouter>,
+  )
+  fireEvent.click(screen.getByRole('button', { name: 'Empezar' }))
+}
+
 describe('SecuestroHilo', () => {
   it('muestra un beneficiario distinto a la escuela para hacer visible la trampa', () => {
-    render(
-      <MemoryRouter>
-        <ThreadHijacking />
-      </MemoryRouter>,
-    )
-
-    fireEvent.click(screen.getByRole('button', { name: 'Empezar' }))
+    renderScenario()
     fireEvent.click(screen.getByRole('button', { name: 'Abrir Banco del Litoral' }))
 
     expect(screen.getByText('Carlos Andrés Mena')).toBeDefined()
     expect(screen.getByText('Banco Austral · 2200418877')).toBeDefined()
     expect(screen.queryByText(/\(nueva\)/i)).toBeNull()
+  })
+
+  it('cerrar la pestaña de la banca vuelve al correo', () => {
+    renderScenario()
+    fireEvent.click(screen.getByRole('button', { name: 'Abrir Banco del Litoral' }))
+
+    expect(screen.getAllByRole('tab')).toHaveLength(2)
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Cerrar la pestaña Transferencia a terceros' }),
+    )
+
+    expect(screen.getAllByRole('tab')).toHaveLength(1)
+    expect(screen.getByText('Re: Pensión de este mes')).toBeDefined()
+  })
+
+  it('clicar la pestaña del correo mientras la banca está abierta muestra el correo', () => {
+    renderScenario()
+    fireEvent.click(screen.getByRole('button', { name: 'Abrir Banco del Litoral' }))
+
+    fireEvent.click(screen.getByRole('tab', { name: 'Correo' }))
+
+    expect(screen.getByText('Re: Pensión de este mes')).toBeDefined()
   })
 })
