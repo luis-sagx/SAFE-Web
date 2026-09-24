@@ -39,6 +39,7 @@ const EMAIL: ScreenView = {
       tiendaexpress.com.ec</mark>, no hace falta ningún enlace para esto, y por eso este correo no
       trae ninguno.
     </p>
+    <p class="fine">Puede usar el marcador guardado de la tienda para llegar a su cuenta.</p>
     <p class="fine">
       TiendaExpress · Seguridad de la información
     </p>
@@ -110,7 +111,7 @@ const INSTRUCTION = (
 const CLUE = (
   <p>
     Este correo no trae ningún enlace que seguir. Puedes deshacerte de él con la barra del cliente,
-    contestarlo, o entrar por tu cuenta al sitio de la tienda desde los marcadores. Si es de fiar o
+    contestarlo, o entrar por tu cuenta usando el marcador habitual de la tienda. Si es de fiar o
     no, eso lo decides tú.
   </p>
 )

@@ -32,6 +32,7 @@ const EMAIL: ScreenView = {
       perderás el acceso a tu buzón y tendrás que abrir un ticket con Sistemas para
       recuperarlo.
     </p>
+    <p class="fine">El correo institucional de Andes termina en @andes.com.ec.</p>
     <p><a class="cta" href="${FAKE_URL}" data-hotspot-goto="n2" data-hotspot-label="Pulsó &quot;Renovar mi contraseña ahora&quot; en el correo">Renovar mi contraseña ahora</a></p>
   `,
   footer: `
@@ -180,8 +181,8 @@ const INSTRUCTION = (
 const CLUE = (
   <p>
     Tienes cuatro caminos posibles: hacer lo que el correo pide, contestarle, decidir qué hacer con
-    el mensaje desde la barra del cliente, o dejarlo de lado y buscar a Soporte TI por tu cuenta en
-    la intranet de la empresa. Cuál de ellos es el acertado es justamente lo que decides tú.
+    el mensaje desde la barra del cliente, o dejarlo de lado y usar el directorio interno para
+    comparar el dominio de Soporte TI. Cuál de ellos es el acertado es justamente lo que decides tú.
   </p>
 )
 

@@ -51,10 +51,7 @@ const MODULE_DESCRIPTIONS: Record<string, string> = {
 // el provisional solo queda en los módulos hasta grabar los suyos.
 const GENERAL_URL = 'https://youtu.be/xN-O2gGRQEU'
 
-// PROVISIONAL: un video de prueba en los siete módulos, para ver la portada
-// con reproductores reales mientras se graban los definitivos. Al tener las
-// siete URL de verdad, cada registro lleva la suya y esta constante desaparece.
-const TEST_URL = 'https://youtu.be/1To_Wz5RWi0'
+const PHISHING_URL = 'https://youtu.be/6SxLDCPSSIc'
 
 export const TRAINING_VIDEOS: TrainingVideo[] = [
   {
@@ -69,6 +66,6 @@ export const TRAINING_VIDEOS: TrainingVideo[] = [
     sectionId: section.id,
     title: section.titulo,
     description: MODULE_DESCRIPTIONS[section.id] ?? section.descripcion,
-    youtubeUrl: TEST_URL,
+    youtubeUrl: section.id === 'phishing' ? PHISHING_URL : null,
   })),
 ]

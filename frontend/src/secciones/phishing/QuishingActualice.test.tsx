@@ -79,4 +79,32 @@ describe('QuishingActualice', () => {
     expect(screen.getByRole('heading', { name: 'Spam' })).toBeDefined()
     expect(screen.getByText('Actualice sus datos antes de que se limite su cuenta')).toBeDefined()
   })
+
+  it('clicar fuera de los hotspots muestra aviso de zona sin interacción', () => {
+    renderScenario()
+
+    fireEvent.click(screen.getByText('Estimado(a) cliente:'))
+
+    expect(screen.getByText(/Aquí no hay nada que hacer/)).toBeDefined()
+  })
+
+  it('cerrar la pestaña del centro de seguridad devuelve al correo', () => {
+    renderScenario()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Abrir Banco del Litoral' }))
+    expect(screen.getAllByRole('tab')).toHaveLength(2)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Cerrar la pestaña Centro de seguridad' }))
+    expect(screen.getAllByRole('tab')).toHaveLength(1)
+  })
+
+  it('cerrar la pestaña de actualización de datos devuelve al correo', () => {
+    renderScenario()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Código QR, escanear para continuar' }))
+    expect(screen.getAllByRole('tab')).toHaveLength(2)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Cerrar la pestaña Actualización de datos' }))
+    expect(screen.getAllByRole('tab')).toHaveLength(1)
+  })
 })

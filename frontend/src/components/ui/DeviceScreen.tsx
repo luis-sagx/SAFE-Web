@@ -1,5 +1,5 @@
 import { Bot, ImageIcon, Landmark, Paperclip, Search, SendHorizontal, UserRound, X } from 'lucide-react'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import { ACCOUNT_FAKE, IDENTITY_FAKE } from '../../lib/identidadFicticia'
 import { SiteNotice, SiteHeader, SiteFooter } from './armazonSitio'
@@ -248,6 +248,8 @@ function DeviceScreen({
   carpetaForzada: forcedFolder,
   terminada: finished,
   heardLines,
+  guiaCorreo: emailGuide,
+  guiaCorreoTarget: emailGuideTarget,
 }: {
   view: ScreenView
   acciones?: EmailAction[]
@@ -260,6 +262,8 @@ function DeviceScreen({
   // sobrevive a que la llamada se desmonte al mirar otra app y vuelva a
   // montarse al volver, para no repetir el audio de lo que ya sonó.
   heardLines?: Set<string>
+  guiaCorreo?: ReactNode
+  guiaCorreoTarget?: string
 }) {
   const { correoSimulado: simulatedEmail, displayName } = useAuth()
   const email = recipient ?? simulatedEmail
@@ -343,6 +347,8 @@ function DeviceScreen({
         }}
         recibido={view.date}
         marca={view.marca}
+        guia={emailGuide}
+        guiaTargetId={emailGuideTarget}
         adjunto={
           view.attachment && (
             <span
