@@ -859,9 +859,10 @@ function ScenarioStory({
           phoneScreen
         ) : !chatInBrowser &&
           (toView.kind === "sms" || toView.kind === "escena") ? (
-          <div className="contents" onClick={onHotspot}>
-            {" "}
-            {/* NOSONAR: delega el clic a los <button>/<a> nativos que contiene, que ya manejan teclado por sí solos */}
+          <div // NOSONAR: delega el clic a los <button>/<a> nativos que contiene, que ya manejan teclado
+            className="contents"
+            onClick={onHotspot}
+          >
             <DeviceScreen
               view={toView}
               acciones={emailActions}
