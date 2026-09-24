@@ -80,6 +80,14 @@ describe('QuishingActualice', () => {
     expect(screen.getByText('Actualice sus datos antes de que se limite su cuenta')).toBeDefined()
   })
 
+  it('clicar fuera de los hotspots muestra aviso de zona sin interacción', () => {
+    renderScenario()
+
+    fireEvent.click(screen.getByText('Estimado(a) cliente:'))
+
+    expect(screen.getByText(/Aquí no hay nada que hacer/)).toBeDefined()
+  })
+
   it('cerrar la pestaña del centro de seguridad devuelve al correo', () => {
     renderScenario()
 

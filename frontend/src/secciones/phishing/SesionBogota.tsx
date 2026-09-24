@@ -424,14 +424,6 @@ function BogotaSession() {
     }
   }
 
-  function restart() {
-    engine.restart();
-    setCurrentScreen("n1");
-    setTabs(["n1"]);
-    setReviewing(false);
-    setClickedEmptySpace(false);
-  }
-
   const onHotspot = (event: React.MouseEvent) => {
     const closed = (event.target as HTMLElement).closest<HTMLElement>(
       "[data-cierra]",
@@ -488,8 +480,6 @@ function BogotaSession() {
       node={engine.node}
       senales={SIGNALS}
       regla={RULE}
-      restartLabel="↻ Repetir el escenario"
-      onRestart={restart}
       contenedorId="pantalla-escenario"
       onPantalla={(id) => {
         setReviewing(Boolean(id));

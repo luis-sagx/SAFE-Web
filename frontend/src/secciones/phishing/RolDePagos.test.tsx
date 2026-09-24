@@ -109,6 +109,14 @@ describe('RolDePagos', () => {
     expect(screen.getAllByRole('tab')).toHaveLength(1)
   })
 
+  it('clicar fuera de los hotspots muestra aviso de zona sin interacción', () => {
+    renderScenario()
+
+    fireEvent.click(screen.getByText('Hola, María:'))
+
+    expect(screen.getByText(/Aquí no hay nada que hacer/)).toBeDefined()
+  })
+
   it('cerrar la pestaña del rol de pagos vuelve al portal', () => {
     renderScenario()
 

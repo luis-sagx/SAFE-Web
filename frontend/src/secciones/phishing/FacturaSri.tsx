@@ -539,18 +539,6 @@ function SriInvoice() {
     }
   }
 
-  function restart() {
-    engine.restart();
-    setCurrentScreen("n1");
-    setTabs(["n1"]);
-    setReviewing(false);
-    setClickedEmptySpace(false);
-    // Al repetir, el correo vuelve a acabar de llegar. Conservar la hora del
-    // intento anterior dejaría un mensaje de hace media hora en una bandeja
-    // cuyo reloj ya avanzó.
-    setReceived(getArrivalTime());
-  }
-
   const onHotspot = (event: React.MouseEvent) => {
     preventNavigation(event);
 
@@ -605,8 +593,6 @@ function SriInvoice() {
       node={engine.node}
       senales={SIGNALS}
       regla={RULE}
-      restartLabel="↻ Repetir el escenario"
-      onRestart={restart}
       contenedorId="pantalla-escenario"
       onPantalla={(id) => {
         setReviewing(Boolean(id));

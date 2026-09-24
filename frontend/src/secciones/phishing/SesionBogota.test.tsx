@@ -73,6 +73,14 @@ describe('SesionBogota', () => {
     expect(screen.getByText('No caíste · verificaste por la app')).toBeDefined()
   })
 
+  it('clicar fuera de los hotspots muestra aviso de zona sin interacción', () => {
+    renderScenario()
+
+    fireEvent.click(screen.getByText('Estimado(a) cliente:'))
+
+    expect(screen.getByText(/Aquí no hay nada que hacer/)).toBeDefined()
+  })
+
   it('cerrar la pestaña de verificación devuelve al correo', () => {
     renderScenario()
 

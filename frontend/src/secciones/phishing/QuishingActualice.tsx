@@ -454,15 +454,6 @@ function QuishingUpdate() {
     }
   }
 
-  function restart() {
-    engine.restart();
-    setCurrentScreen("n1");
-    setTabs(["n1"]);
-    setReviewing(false);
-    setClickedEmptySpace(false);
-    setReceived(getArrivalTime());
-  }
-
   const onHotspot = (event: React.MouseEvent) => {
     const closed = (event.target as HTMLElement).closest<HTMLElement>(
       "[data-cierra]",
@@ -519,8 +510,6 @@ function QuishingUpdate() {
       node={engine.node}
       senales={SIGNALS}
       regla={RULE}
-      restartLabel="↻ Repetir el escenario"
-      onRestart={restart}
       contenedorId="pantalla-escenario"
       onPantalla={(id) => {
         setReviewing(Boolean(id));
