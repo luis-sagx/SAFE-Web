@@ -59,16 +59,6 @@ const STEPS = [
   },
 ];
 
-/** Cuántos de los ocho videos existen ya. Sale del catálogo, no de una
- *  promesa: mientras falten, el contador lo dice en el primer viewport. */
-function videoCount() {
-  const total = TRAINING_VIDEOS.length;
-  const published = TRAINING_VIDEOS.filter((video) => video.youtubeUrl).length;
-  if (published === 0) return `${total} videos en preparación`;
-  if (published < total) return `${published} de ${total} videos`;
-  return `${total} videos`;
-}
-
 /** Resalta dentro del SMS el fragmento de cada señal y le pone su número.
  *  Un solo tamaño de letra, como en un celular de verdad: el remitente va
  *  aparte, arriba de la burbuja, y el énfasis del estafador son solo las
@@ -167,7 +157,6 @@ function Portada() {
               {[
                 `${SECTIONS.length} módulos`,
                 `${SCENARIOS.length} escenarios`,
-                videoCount(),
               ].map((count) => (
                 <span
                   key={count}
@@ -318,6 +307,10 @@ function Portada() {
                     className="font-medium text-link underline"
                   >
                     Lee la política de datos
+                  </Link>{" "}
+                  y los{" "}
+                  <Link to="/terminos" className="font-medium text-link underline">
+                    términos de uso
                   </Link>
                   .
                 </p>

@@ -1,6 +1,7 @@
-import { render, screen } from '@testing-library/react'
-import { BrowserRouter } from 'react-router'
+import { fireEvent, render, screen } from '@testing-library/react'
+import { BrowserRouter, MemoryRouter, Route, Routes } from 'react-router'
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import { CONTACTS, PROJECT_TITLE } from '../data/project'
 import DataPolicy from './PoliticaDatos'
 
 function renderPolicy() {
@@ -23,30 +24,62 @@ describe('PoliticaDatos', () => {
 
   it('muestra los títulos de secciones numerados', () => {
     renderPolicy()
-    expect(screen.getByRole('heading', { name: /^1\. Responsables del tratamiento/ })).toBeDefined()
+    expect(screen.getByRole('heading', { name: /^1\. Un proyecto académico/ })).toBeDefined()
+    expect(screen.getByRole('heading', { name: /Responsables del tratamiento/ })).toBeDefined()
     expect(screen.getByRole('heading', { name: /Qué datos recogemos/ })).toBeDefined()
-    expect(screen.getByRole('heading', { name: /Seudonimización y uso en la investigación/ })).toBeDefined()
+    expect(screen.getByRole('heading', { name: /Uso en la investigación/ })).toBeDefined()
     expect(screen.getByRole('heading', { name: /\d+\. Tus derechos/ })).toBeDefined()
     expect(screen.getByRole('heading', { name: /Menores de edad/ })).toBeDefined()
   })
 
-  it('muestra el enlace para volver al inicio', () => {
-    renderPolicy()
-    expect(screen.getByText('← Volver')).toBeDefined()
+  it('sin historial, volver lleva al registro', () => {
+    render(
+      <MemoryRouter>
+        <DataPolicy />
+      </MemoryRouter>
+    )
+    expect(screen.getByRole('link', { name: '← Volver' }).getAttribute('href')).toBe('/registro')
   })
 
-  it('muestra los correos de contacto de los responsables', () => {
-    renderPolicy()
-    expect(screen.getAllByRole('link', { name: 'luis@gmail.com' })[0]?.getAttribute('href')).toBe(
-      'mailto:luis@gmail.com'
+  it('con historial, volver regresa a la página anterior', () => {
+    render(
+      <MemoryRouter initialEntries={['/login', '/politica-de-datos']} initialIndex={1}>
+        <Routes>
+          <Route path="/login" element={<h1>Login</h1>} />
+          <Route path="/politica-de-datos" element={<DataPolicy />} />
+        </Routes>
+      </MemoryRouter>
     )
-    expect(screen.getAllByRole('link', { name: 'sebas@gmail.com' }).length).toBeGreaterThan(0)
+    fireEvent.click(screen.getByRole('link', { name: '← Volver' }))
+    expect(screen.getByRole('heading', { name: 'Login' })).toBeDefined()
+  })
+
+  it('los nombres de los autores aparecen solo en Contacto', () => {
+    const { container } = renderPolicy()
+    for (const { name } of CONTACTS) {
+      expect(container.textContent?.split(name)).toHaveLength(2)
+    }
+  })
+
+  it('muestra cada correo de contacto una sola vez, tomado de data/project', () => {
+    renderPolicy()
+    for (const { email } of CONTACTS) {
+      const links = screen.getAllByRole('link', { name: email })
+      expect(links).toHaveLength(1)
+      expect(links[0]?.getAttribute('href')).toBe(`mailto:${email}`)
+    }
+  })
+
+  it('aclara que es un proyecto académico de titulación', () => {
+    const { container } = renderPolicy()
+    expect(container.textContent).toContain(PROJECT_TITLE)
+    expect(screen.getByRole('link', { name: 'términos de uso' }).getAttribute('href')).toBe('/terminos')
   })
 
   it('usa una fecha de actualización fija, no la del día', () => {
     vi.useFakeTimers()
     vi.setSystemTime(new Date('2030-01-01T12:00:00Z'))
     renderPolicy()
-    expect(screen.getByText('Última actualización: 16 de septiembre de 2026')).toBeDefined()
+    expect(screen.getByText('Última actualización: 25 de septiembre de 2026')).toBeDefined()
   })
 })

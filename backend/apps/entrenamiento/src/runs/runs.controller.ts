@@ -58,8 +58,8 @@ export class RunsController {
     return this.runs.attestation(participant);
   }
 
-  /// Resultados del estudio para el supervisor: se ven dentro de la app, no se
-  /// descargan. Solo sale el seudónimo (P001), nunca un dato personal, este
+  /// Resultados del estudio para el supervisor: se ven en la app y el panel
+  /// los exporta a CSV para el análisis estadístico. Solo sale el seudónimo (P001), nunca un dato personal, este
   /// servicio no tiene la tabla de participantes ni permiso para alcanzarla.
   @UseGuards(AdminGuard)
   @Get('resultados')

@@ -6,6 +6,7 @@ import Field from "../components/Campo";
 import LoadingScreen from "../components/PantallaCarga";
 import { useAuth } from "../context/AuthContext";
 import { isEcuadorianId, normalizeEcuadorianId } from "../lib/cedula";
+import { PASSWORD_POLICY } from "../lib/passwordPolicy";
 
 function Registration() {
   const { isAuthenticated, loading, register } = useAuth();
@@ -71,7 +72,6 @@ function Registration() {
   // del dominio del correo, esta regla sí necesita reflejarse en el cliente
   // para el indicador de fortaleza en vivo, que no tiene ningún equivalente
   // en el servidor al que consultarle mientras se escribe.
-  const PASSWORD_POLICY = /^(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
   const invalidPassword =
     passwordTouched && password.length > 0 && !PASSWORD_POLICY.test(password);
 
@@ -169,7 +169,9 @@ function Registration() {
     }
 
     if (!acceptedPolicy) {
-      setError("Debes aceptar la política de datos para continuar");
+      setError(
+        "Debes aceptar los términos de uso y la política de datos para continuar",
+      );
       return;
     }
 
@@ -335,7 +337,16 @@ function Registration() {
             htmlFor="acceptPolicy"
             className="text-base leading-5 text-body"
           >
-            Acepto la{" "}
+            Acepto{" "}
+            <a
+              href="/terminos"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-link underline hover:text-link-active"
+            >
+              términos de uso
+            </a>{" "}
+            y{" "}
             <a
               href="/politica-de-datos"
               target="_blank"

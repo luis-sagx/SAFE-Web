@@ -6,47 +6,50 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { randomBytes } from 'node:crypto';
 import { hash } from 'bcryptjs';
-import { pseudonym } from '@comun';
 import { decryptOptional, encrypt, hashEmail } from '../pii/pii';
 import { PrismaService } from '../prisma/prisma.service';
 
 /// Mismo factor que el registro (OWASP Password Storage >= 10).
 const BCRYPT_ROUNDS = 12;
 
+/// Roles que el supervisor gestiona desde el panel. TRAINER se muestra como
+/// "tester" en la interfaz.
+type ManagedRole = 'PARTICIPANT' | 'TRAINER';
+
+const NOT_FOUND: Record<ManagedRole, string> = {
+  PARTICIPANT: 'No existe ese participante.',
+  TRAINER: 'No existe ese tester.',
+};
+
 export interface AdminParticipant {
   id: string;
-  /// El mismo código con el que salen los resultados en `entrenamiento`
-  /// (P001). Es la única llave para parear cada corrida con el pre/post-test
-  /// que el participante responde fuera de la plataforma; sin él el estudio
-  /// no se puede analizar. Solo lo ve el supervisor, nunca el participante.
-  seudonimo: string;
   nombre: string | null;
   apellido: string | null;
   email: string | null;
   activo: boolean;
-  createdAt: string;
 }
 
 /// Lo que el supervisor ve de cada cuenta. Sin `cedulaHash` ni `passwordHash`:
 /// no tienen por qué salir del servidor. La cédula en claro no existe.
+///
+/// Tampoco sale el seudónimo (P001) ni la fecha de alta: el seudónimo es el
+/// número de orden de registro, así que cualquiera de los dos junto al nombre
+/// enlaza a la persona con sus resultados. Identidad y resultados se ven en
+/// pestañas separadas y nunca juntos.
 const ADMIN_FIELDS = {
   id: true,
-  seq: true,
   nombre: true,
   apellido: true,
   email: true,
   disabledAt: true,
-  createdAt: true,
 } as const;
 
 interface AdminRow {
   id: string;
-  seq: number;
   nombre: string | null;
   apellido: string | null;
   email: string | null;
   disabledAt: Date | null;
-  createdAt: Date;
 }
 
 /// El supervisor sí necesita ver el nombre y el correo reales para poder
@@ -56,13 +59,19 @@ interface AdminRow {
 function toView(p: AdminRow, piiKey: string): AdminParticipant {
   return {
     id: p.id,
-    seudonimo: pseudonym(p.seq),
     nombre: decryptOptional(p.nombre, piiKey),
     apellido: decryptOptional(p.apellido, piiKey),
     email: decryptOptional(p.email, piiKey),
     activo: p.disabledAt === null,
-    createdAt: p.createdAt.toISOString(),
   };
+}
+
+/// Orden alfabético por nombre completo. Se ordena ya descifrado: en la base
+/// solo hay texto cifrado. No se ordena por fecha de alta porque ese orden
+/// coincide con el del seudónimo.
+function byName(a: AdminParticipant, b: AdminParticipant): number {
+  const name = (p: AdminParticipant) => `${p.nombre ?? ''} ${p.apellido ?? ''}`;
+  return name(a).localeCompare(name(b), 'es', { sensitivity: 'base' });
 }
 
 /// ~60 bits de entropía y legible: se puede dictar en voz alta. Igual criterio
@@ -120,23 +129,16 @@ export class AdminService {
   async listTrainers(): Promise<AdminParticipant[]> {
     const rows = await this.prisma.participant.findMany({
       where: { role: 'TRAINER' },
-      orderBy: { createdAt: 'asc' },
       select: ADMIN_FIELDS,
     });
-    return rows.map((trainer) => toView(trainer, this.piiKey));
+    return rows.map((trainer) => toView(trainer, this.piiKey)).sort(byName);
   }
 
   async changeTrainerStatus(
     id: string,
     active: boolean,
   ): Promise<AdminParticipant> {
-    const trainer = await this.prisma.participant.findFirst({
-      where: { id, role: 'TRAINER' },
-      select: ADMIN_FIELDS,
-    });
-    if (!trainer) {
-      throw new NotFoundException('No existe ese capacitador.');
-    }
+    await this.account(id, 'TRAINER');
     const updated = await this.prisma.participant.update({
       where: { id },
       data: { disabledAt: active ? null : new Date() },
@@ -150,28 +152,30 @@ export class AdminService {
   async list(): Promise<AdminParticipant[]> {
     const rows = await this.prisma.participant.findMany({
       where: { role: 'PARTICIPANT' },
-      orderBy: { createdAt: 'asc' },
       select: ADMIN_FIELDS,
     });
-    return rows.map((p) => toView(p, this.piiKey));
+    return rows.map((p) => toView(p, this.piiKey)).sort(byName);
   }
 
-  /// Busca una cuenta que sea PARTICIPANT. Devolver el mismo 404 para "no
-  /// existe" y para "no es participante" evita que se pueda sondear qué ids son
-  /// de supervisores.
-  private async participant(id: string): Promise<AdminRow> {
+  /// Busca una cuenta del rol pedido. Devolver el mismo 404 para "no existe"
+  /// y para "es de otro rol" evita que se pueda sondear qué ids son de
+  /// supervisores.
+  private async account(
+    id: string,
+    role: ManagedRole = 'PARTICIPANT',
+  ): Promise<AdminRow> {
     const p = await this.prisma.participant.findFirst({
-      where: { id, role: 'PARTICIPANT' },
+      where: { id, role },
       select: ADMIN_FIELDS,
     });
     if (!p) {
-      throw new NotFoundException('No existe ese participante.');
+      throw new NotFoundException(NOT_FOUND[role]);
     }
     return p;
   }
 
   async changeStatus(id: string, active: boolean): Promise<AdminParticipant> {
-    await this.participant(id);
+    await this.account(id);
     const p = await this.prisma.participant.update({
       where: { id },
       data: { disabledAt: active ? null : new Date() },
@@ -181,10 +185,13 @@ export class AdminService {
   }
 
   /// Genera una contraseña nueva y la devuelve UNA vez: no se guarda en claro,
-  /// solo su bcrypt. El supervisor se la entrega al participante por un canal
-  /// aparte.
-  async resetPassword(id: string): Promise<{ password: string }> {
-    await this.participant(id);
+  /// solo su bcrypt. El supervisor se la entrega a la persona por un canal
+  /// aparte. Vale para participantes y testers.
+  async resetPassword(
+    id: string,
+    role: ManagedRole = 'PARTICIPANT',
+  ): Promise<{ password: string }> {
+    await this.account(id, role);
     const password = generatePassword();
     await this.prisma.participant.update({
       where: { id },

@@ -1,4 +1,6 @@
+import { ArrowLeft } from "lucide-react";
 import type { ReactNode } from "react";
+import { Link } from "react-router";
 import { SCENARIOS, SECTIONS } from "../data/catalogo";
 import Brand from "./Marca";
 import ThemeMenu from "./MenuTema";
@@ -41,9 +43,16 @@ function AuthLayout({
                 siempre se queda pegado abajo del todo, no viaja con el resto. */}
             <div className="flex min-w-0 flex-col p-8 lg:flex-1 lg:p-12">
               <div className="lg:flex lg:flex-1 lg:flex-col lg:justify-center">
-                {/* self-start: dentro de un flex-col la imagen se estira a todo el
-                    ancho (align-items: stretch) aunque tenga w-auto. */}
-                <Brand variante="logo" className="h-12 w-auto self-start" />
+                {/* self-start: dentro de un flex-col el enlace se estira a todo el
+                    ancho (align-items: stretch) aunque la imagen tenga w-auto.
+                    La marca lleva a la portada, como en el resto del sitio. */}
+                <Link
+                  to="/"
+                  aria-label="SAFE-Web, ir al inicio"
+                  className="self-start rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-link"
+                >
+                  <Brand variante="logo" className="h-12 w-auto" />
+                </Link>
                 <h1 className="mt-4 font-display text-3xl uppercase leading-[1.2] tracking-[0.01em] text-ink sm:text-4xl">
                   Aprende a reconocer un engaño antes de caer en uno.
                 </h1>
@@ -81,9 +90,20 @@ function AuthLayout({
                 mismo filete que separa cabecera y contenido en el resto del
                 sistema, solo que rotado según cómo se acomodan las columnas. */}
             <div className="border-t border-dashed border-ticket-edge p-8 min-w-0 lg:flex-1 lg:border-l lg:border-t-0 lg:p-12">
-              <p className="font-mono text-sm uppercase tracking-[0.14em] text-muted">
-                {folio}
-              </p>
+              <div className="flex items-center justify-between gap-4">
+                <p className="font-mono text-sm uppercase tracking-[0.14em] text-muted">
+                  {folio}
+                </p>
+                {/* Salida explícita: quien llegó desde la portada y no quiere
+                    entrar no debería depender de reconocer el logo como enlace. */}
+                <Link
+                  to="/"
+                  className="inline-flex items-center gap-1 text-sm font-medium text-link underline-offset-4 hover:underline"
+                >
+                  <ArrowLeft aria-hidden className="size-4" />
+                  Volver al inicio
+                </Link>
+              </div>
               <h2 className="mt-3 text-2xl font-semibold tracking-tight text-ink">
                 {title}
               </h2>

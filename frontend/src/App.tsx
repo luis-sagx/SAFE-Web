@@ -1,6 +1,7 @@
 import { Fragment, Suspense } from 'react'
 import { Navigate, Route, Routes } from 'react-router'
 import LoadingScreen from './components/PantallaCarga'
+import PageMeta from './components/PageMeta'
 import RunNotifications from './components/RunNotifications'
 import RequireAvailableScenario from './components/RequireEscenarioDisponible'
 import RequireAuth from './components/RequireAuth'
@@ -13,6 +14,7 @@ import Dashboard from './pages/Dashboard'
 import Login from './pages/Login'
 import ForgotPassword from './pages/OlvidePassword'
 import DataPolicy from './pages/PoliticaDatos'
+import TermsOfUse from './pages/TermsOfUse'
 import Portada from './pages/Portada'
 import TrainingHistory from './pages/Recorrido'
 import Registration from './pages/Registro'
@@ -26,6 +28,7 @@ function App() {
 
   return (
     <>
+      <PageMeta />
       <RunNotifications enabled={isAuthenticated} />
       <Suspense fallback={<LoadingScreen />}>
         <Routes>
@@ -35,6 +38,7 @@ function App() {
           <Route path="/restablecer-password" element={<ResetPassword />} />
           <Route path="/registro" element={<Registration />} />
           <Route path="/politica-de-datos" element={<DataPolicy />} />
+          <Route path="/terminos" element={<TermsOfUse />} />
           <Route path="/verificar/:codigo" element={<VerifyCertificate />} />
 
           {/* Solo en desarrollo: import.meta.env.DEV es una constante de
