@@ -1,7 +1,7 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { SCENARIOS } from '../data/catalogo'
 import type { RunResult } from './api'
-import { resultsToCsv } from './resultsCsv'
+import { downloadCsv, resultsToCsv } from './resultsCsv'
 
 const scenario = SCENARIOS[0] ?? expect.unreachable('El catálogo no tiene escenarios')
 
@@ -40,5 +40,24 @@ describe('resultsToCsv', () => {
     const [, first] = resultsToCsv([run({ endingId: '=HYPERLINK("x")' })]).split('\r\n')
 
     expect(first).toContain(`"'=HYPERLINK(""x"")"`)
+  })
+})
+
+describe('downloadCsv', () => {
+  it('descarga el archivo con su nombre y libera la URL', () => {
+    const create = vi.fn(() => 'blob:csv')
+    const revoke = vi.fn()
+    vi.stubGlobal('URL', { ...URL, createObjectURL: create, revokeObjectURL: revoke })
+    const click = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function (this: HTMLAnchorElement) {
+      expect(this.download).toBe('resultados.csv')
+      expect(this.href).toBe('blob:csv')
+    })
+
+    downloadCsv('resultados.csv', 'a,b')
+
+    expect(click).toHaveBeenCalledOnce()
+    expect(revoke).toHaveBeenCalledWith('blob:csv')
+    click.mockRestore()
+    vi.unstubAllGlobals()
   })
 })
