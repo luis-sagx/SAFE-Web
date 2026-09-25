@@ -171,11 +171,9 @@ function Participants() {
           <table className="w-full min-w-[720px] border-collapse text-left text-sm">
             <thead>
               <tr className="border-b border-hairline bg-canvas-soft text-muted">
-                <th className="px-4 py-3 font-semibold">Seudónimo</th>
                 <th className="px-4 py-3 font-semibold">Nombre</th>
                 <th className="px-4 py-3 font-semibold">Correo</th>
                 <th className="px-4 py-3 font-semibold">Estado</th>
-                <th className="px-4 py-3 font-semibold">Alta</th>
                 <th className="px-4 py-3 text-right font-semibold">Acciones</th>
               </tr>
             </thead>
@@ -185,16 +183,10 @@ function Participants() {
                   key={p.id}
                   className="border-b border-hairline last:border-0"
                 >
-                  <td className="px-4 py-3 font-medium text-ink tabular-nums">
-                    {p.seudonimo}
-                  </td>
                   <td className="px-4 py-3 text-ink">{fullName(p)}</td>
                   <td className="px-4 py-3 text-body">{p.email ?? "Sin correo"}</td>
                   <td className="px-4 py-3">
                     <StatusPill active={p.activo} />
-                  </td>
-                  <td className="px-4 py-3 text-muted tabular-nums">
-                    {date(p.createdAt)}
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-end gap-2">

@@ -7,12 +7,10 @@ import type { PrismaService } from '../prisma/prisma.service';
 function row(overrides: Record<string, unknown> = {}) {
   return {
     id: 'p1',
-    seq: 7,
     nombre: 'Ana',
     apellido: 'Pérez',
     email: 'ana@ejemplo.com',
     disabledAt: null,
-    createdAt: new Date('2026-08-01T10:00:00.000Z'),
     ...overrides,
   };
 }
@@ -41,7 +39,7 @@ describe('AdminService.listar', () => {
         whereReceived = args.where;
         return Promise.resolve([
           row(),
-          row({ id: 'p2', disabledAt: new Date() }),
+          row({ id: 'p2', nombre: 'Zoe', disabledAt: new Date() }),
         ]);
       },
     });
@@ -50,9 +48,10 @@ describe('AdminService.listar', () => {
 
     expect(whereReceived).toEqual({ role: 'PARTICIPANT' });
     expect(list[0]).toMatchObject({ id: 'p1', activo: true });
-    // El seudónimo es la llave de pareo con el pre/post-test, y tiene que ser
-    // el mismo código que emite `entrenamiento` para esa misma `seq`.
-    expect(list[0].seudonimo).toBe('P007');
+    // Ni seudónimo ni fecha de alta: junto al nombre enlazarían a la persona
+    // con sus resultados.
+    expect(list[0]).not.toHaveProperty('seudonimo');
+    expect(list[0]).not.toHaveProperty('createdAt');
     expect(list[1]).toMatchObject({ id: 'p2', activo: false });
     // Nunca sale cédula ni hash.
     expect(JSON.stringify(list)).not.toContain('passwordHash');
@@ -98,6 +97,23 @@ describe('AdminService.cambiarEstado', () => {
 
     expect(receivedData?.disabledAt).toBeNull();
     expect(res.activo).toBe(true);
+  });
+});
+
+describe('AdminService orden', () => {
+  it('ordena alfabéticamente por nombre ya descifrado', async () => {
+    const admin = service({
+      findMany: () =>
+        Promise.resolve([
+          row({ id: 'a', nombre: 'Zoe' }),
+          row({ id: 'b', nombre: 'álvaro' }),
+          row({ id: 'c', nombre: 'Beto' }),
+        ]),
+    });
+
+    const list = await admin.list();
+
+    expect(list.map((p) => p.id)).toEqual(['b', 'c', 'a']);
   });
 });
 

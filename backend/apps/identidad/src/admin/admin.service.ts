@@ -6,7 +6,6 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { randomBytes } from 'node:crypto';
 import { hash } from 'bcryptjs';
-import { pseudonym } from '@comun';
 import { decryptOptional, encrypt, hashEmail } from '../pii/pii';
 import { PrismaService } from '../prisma/prisma.service';
 
@@ -24,38 +23,33 @@ const NOT_FOUND: Record<ManagedRole, string> = {
 
 export interface AdminParticipant {
   id: string;
-  /// El mismo código con el que salen los resultados en `entrenamiento`
-  /// (P001). Es la única llave para parear cada corrida con el pre/post-test
-  /// que el participante responde fuera de la plataforma; sin él el estudio
-  /// no se puede analizar. Solo lo ve el supervisor, nunca el participante.
-  seudonimo: string;
   nombre: string | null;
   apellido: string | null;
   email: string | null;
   activo: boolean;
-  createdAt: string;
 }
 
 /// Lo que el supervisor ve de cada cuenta. Sin `cedulaHash` ni `passwordHash`:
 /// no tienen por qué salir del servidor. La cédula en claro no existe.
+///
+/// Tampoco sale el seudónimo (P001) ni la fecha de alta: el seudónimo es el
+/// número de orden de registro, así que cualquiera de los dos junto al nombre
+/// enlaza a la persona con sus resultados. Identidad y resultados se ven en
+/// pestañas separadas y nunca juntos.
 const ADMIN_FIELDS = {
   id: true,
-  seq: true,
   nombre: true,
   apellido: true,
   email: true,
   disabledAt: true,
-  createdAt: true,
 } as const;
 
 interface AdminRow {
   id: string;
-  seq: number;
   nombre: string | null;
   apellido: string | null;
   email: string | null;
   disabledAt: Date | null;
-  createdAt: Date;
 }
 
 /// El supervisor sí necesita ver el nombre y el correo reales para poder
@@ -65,13 +59,19 @@ interface AdminRow {
 function toView(p: AdminRow, piiKey: string): AdminParticipant {
   return {
     id: p.id,
-    seudonimo: pseudonym(p.seq),
     nombre: decryptOptional(p.nombre, piiKey),
     apellido: decryptOptional(p.apellido, piiKey),
     email: decryptOptional(p.email, piiKey),
     activo: p.disabledAt === null,
-    createdAt: p.createdAt.toISOString(),
   };
+}
+
+/// Orden alfabético por nombre completo. Se ordena ya descifrado: en la base
+/// solo hay texto cifrado. No se ordena por fecha de alta porque ese orden
+/// coincide con el del seudónimo.
+function byName(a: AdminParticipant, b: AdminParticipant): number {
+  const name = (p: AdminParticipant) => `${p.nombre ?? ''} ${p.apellido ?? ''}`;
+  return name(a).localeCompare(name(b), 'es', { sensitivity: 'base' });
 }
 
 /// ~60 bits de entropía y legible: se puede dictar en voz alta. Igual criterio
@@ -129,10 +129,9 @@ export class AdminService {
   async listTrainers(): Promise<AdminParticipant[]> {
     const rows = await this.prisma.participant.findMany({
       where: { role: 'TRAINER' },
-      orderBy: { createdAt: 'asc' },
       select: ADMIN_FIELDS,
     });
-    return rows.map((trainer) => toView(trainer, this.piiKey));
+    return rows.map((trainer) => toView(trainer, this.piiKey)).sort(byName);
   }
 
   async changeTrainerStatus(
@@ -153,10 +152,9 @@ export class AdminService {
   async list(): Promise<AdminParticipant[]> {
     const rows = await this.prisma.participant.findMany({
       where: { role: 'PARTICIPANT' },
-      orderBy: { createdAt: 'asc' },
       select: ADMIN_FIELDS,
     });
-    return rows.map((p) => toView(p, this.piiKey));
+    return rows.map((p) => toView(p, this.piiKey)).sort(byName);
   }
 
   /// Busca una cuenta del rol pedido. Devolver el mismo 404 para "no existe"
