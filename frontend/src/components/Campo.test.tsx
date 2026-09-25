@@ -86,4 +86,21 @@ describe('Campo', () => {
     ).getByPlaceholderText('tu@email.com') as HTMLInputElement
     expect(input.type).toBe('email')
   })
+
+  it('en contraseñas, el ojo alterna entre ver y ocultar lo escrito', () => {
+    render(<Field id="clave" label="Contraseña" type="password" value="Secreta1!" onChange={vi.fn()} />)
+    const input = screen.getByLabelText('Contraseña') as HTMLInputElement
+    expect(input.type).toBe('password')
+
+    fireEvent.click(screen.getByRole('button', { name: 'Mostrar contraseña' }))
+    expect(input.type).toBe('text')
+
+    fireEvent.click(screen.getByRole('button', { name: 'Ocultar contraseña' }))
+    expect(input.type).toBe('password')
+  })
+
+  it('los campos que no son contraseña no llevan ojo', () => {
+    render(<Field id="correo" label="Correo" type="email" value="" onChange={vi.fn()} />)
+    expect(screen.queryByRole('button')).toBeNull()
+  })
 })

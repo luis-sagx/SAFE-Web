@@ -3,11 +3,11 @@ import { Link, useSearchParams } from 'react-router'
 import AuthLayout from '../components/AuthLayout'
 import Field from '../components/Campo'
 import { ApiError, resetPassword } from '../lib/api'
+import { PASSWORD_POLICY } from '../lib/passwordPolicy'
 
 // Misma política que RegisterDto en el backend (duplicada a propósito, igual
 // que NAME_PATTERN en Registro.tsx: no hay ningún endpoint al que consultarla
 // antes de enviar el formulario).
-const PASSWORD_POLICY = /^(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/
 const PASSWORD_MESSAGE =
   'La contraseña debe tener al menos 8 caracteres, con una mayúscula, un número y un carácter especial.'
 
