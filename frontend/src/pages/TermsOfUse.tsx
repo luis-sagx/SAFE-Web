@@ -1,11 +1,11 @@
-import type { ReactNode } from "react";
 import { Link } from "react-router";
-import { AUTHOR_NAMES, DEGREE, INSTITUTION, PROJECT_TITLE } from "../data/project";
+import LegalPage, { type LegalSection } from "../components/LegalPage";
+import { DEGREE, INSTITUTION, PROJECT_TITLE } from "../data/project";
 
 // Fecha fija de la versión vigente: se cambia a mano al editar el texto.
 const LAST_UPDATED = "25 de septiembre de 2026";
 
-const SECTIONS: { id: string; title: string; body: ReactNode }[] = [
+const SECTIONS: LegalSection[] = [
   {
     id: "que-es",
     title: "Qué es SAFE-Web",
@@ -132,9 +132,12 @@ const SECTIONS: { id: string; title: string; body: ReactNode }[] = [
     title: "Contacto",
     body: (
       <p>
-        Para dudas sobre estos términos escribe a los responsables del proyecto:{" "}
-        {AUTHOR_NAMES}. Sus correos están en la sección "Contacto" de la{" "}
-        <Link to="/politica-de-datos" className="font-medium text-link underline">
+        Para dudas sobre estos términos escribe a los autores del proyecto.
+        Sus correos están en la sección "Contacto" de la{" "}
+        <Link
+          to="/politica-de-datos"
+          className="font-medium text-link underline"
+        >
           política de datos
         </Link>
         .
@@ -145,29 +148,10 @@ const SECTIONS: { id: string; title: string; body: ReactNode }[] = [
 
 export default function TermsOfUse() {
   return (
-    <div className="min-h-screen bg-canvas">
-      <main className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
-        <Link
-          to="/"
-          className="mb-6 inline-flex min-h-11 items-center text-base font-medium text-link underline"
-        >
-          ← Volver
-        </Link>
-
-        <h1 className="text-4xl font-bold text-ink">Términos de uso</h1>
-        <p className="mt-3 text-base text-muted">Última actualización: {LAST_UPDATED}</p>
-
-        <div className="mt-8 space-y-10 text-base leading-relaxed text-body">
-          {SECTIONS.map((section, index) => (
-            <section key={section.id} id={section.id} aria-labelledby={`${section.id}-titulo`}>
-              <h2 id={`${section.id}-titulo`} className="mb-3 text-xl font-semibold text-ink">
-                {index + 1}. {section.title}
-              </h2>
-              {section.body}
-            </section>
-          ))}
-        </div>
-      </main>
-    </div>
+    <LegalPage
+      title="Términos de uso"
+      lastUpdated={LAST_UPDATED}
+      sections={SECTIONS}
+    />
   );
 }

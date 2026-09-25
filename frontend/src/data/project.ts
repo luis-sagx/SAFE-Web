@@ -8,11 +8,10 @@ export const INSTITUTION = "Universidad de las Fuerzas Armadas ESPE";
 
 export const DEGREE = "Ingeniería de Software";
 
-/// Autores y responsables del tratamiento de datos.
+/// Autores y responsables del tratamiento de datos. Sus nombres solo se
+/// muestran en la sección "Contacto" de la política.
 export const CONTACTS = [
   { name: "Luis Sagnay", email: "lesagnay@espe.edu.ec" },
   { name: "Sebastián Parra", email: "separra@espe.edu.ec" },
 ];
 
-/// "Luis Sagnay y Sebastián Parra", para usar dentro de una frase.
-export const AUTHOR_NAMES = CONTACTS.map((c) => c.name).join(" y ");

@@ -1,12 +1,7 @@
-import { useEffect, useState, type ReactNode } from "react";
+import type { ReactNode } from "react";
 import { Link } from "react-router";
-import {
-  AUTHOR_NAMES,
-  CONTACTS,
-  DEGREE,
-  INSTITUTION,
-  PROJECT_TITLE,
-} from "../data/project";
+import LegalPage, { type LegalSection } from "../components/LegalPage";
+import { CONTACTS, DEGREE, INSTITUTION, PROJECT_TITLE } from "../data/project";
 
 // Fecha fija de la versión vigente: se cambia a mano al editar el texto.
 // Nunca `new Date()`: la política no cambia sola cada día.
@@ -71,40 +66,6 @@ const COLLECTED_DATA: DataItem[] = [
   },
 ];
 
-const BROWSER_STORAGE: DataItem[] = [
-  {
-    data: "Cookie de sesión (mic-refresh-token)",
-    purpose: "Mantener tu sesión abierta durante una jornada de entrenamiento.",
-    storage:
-      "Dura hasta 12 horas. Es httpOnly (el código de la página no puede leerla), solo se envía a la ruta de renovación de sesión y se borra al cerrar sesión.",
-  },
-  {
-    data: "Token de acceso",
-    purpose: "Autorizar cada acción que haces dentro de la plataforma.",
-    storage:
-      "En el almacenamiento local del navegador; caduca a los 15 minutos. No contiene tu nombre, correo ni cédula.",
-  },
-  {
-    data: "Resultados pendientes de envío",
-    purpose:
-      "No perder un resultado si se corta la conexión al terminar un escenario.",
-    storage:
-      "En el almacenamiento local, solo hasta que el servidor lo recibe.",
-  },
-  {
-    data: "Preferencias de tema y sonido",
-    purpose: "Recordar si elegiste modo claro u oscuro y si quieres sonidos.",
-    storage: "En el almacenamiento local, sin vencimiento.",
-  },
-  {
-    data: "Marcas técnicas",
-    purpose:
-      "Que el sonido de módulo completado no se repita y que la página se recargue una sola vez tras una actualización.",
-    storage:
-      "En el almacenamiento local o de sesión. No contienen datos personales.",
-  },
-];
-
 function DataList({ items }: Readonly<{ items: DataItem[] }>) {
   return (
     <ul className="mt-4 space-y-3">
@@ -150,13 +111,7 @@ function ContactEmails() {
   );
 }
 
-interface Section {
-  id: string;
-  title: string;
-  body: ReactNode;
-}
-
-const SECTIONS: Section[] = [
+const SECTIONS: LegalSection[] = [
   {
     id: "proyecto-academico",
     title: "Un proyecto académico",
@@ -197,9 +152,9 @@ const SECTIONS: Section[] = [
     title: "Responsables del tratamiento",
     body: (
       <p>
-        Los responsables de tus datos personales son los autores del proyecto,{" "}
-        {AUTHOR_NAMES}. Sus correos están en la sección "Contacto", al final de
-        esta página.
+        Los responsables de tus datos personales son los autores del proyecto.
+        Sus nombres y correos están en la sección "Contacto", al final de esta
+        página.
       </p>
     ),
   },
@@ -210,16 +165,13 @@ const SECTIONS: Section[] = [
       <>
         <p>
           Tratamos tus datos conforme a la Ley Orgánica de Protección de Datos
-          Personales del Ecuador (LOPDP, publicada en el Registro Oficial el 26
-          de mayo de 2021) y su Reglamento.
+          Personales del Ecuador (LOPDP) y su Reglamento.
         </p>
         <p className="mt-3">
           La base del tratamiento es tu <strong>consentimiento</strong>, que das
           al marcar la casilla "Acepto los términos de uso y la política de
-          datos" al registrarte.
-          Participar es voluntario: puedes no registrarte o retirar tu
-          consentimiento después (ver la sección "Cómo ejercer tus derechos").
-          La portada pública y sus videos se pueden ver sin crear una cuenta.
+          datos" al registrarte. Participar es voluntario, y la portada y sus
+          videos se pueden ver sin crear una cuenta.
         </p>
       </>
     ),
@@ -270,61 +222,27 @@ const SECTIONS: Section[] = [
             Analizar, de forma seudonimizada, si el entrenamiento ayuda a
             reconocer fraudes, como parte del estudio académico.
           </li>
-          <li>
-            Detectar y corregir fallas, y proteger la plataforma frente a
-            abusos.
-          </li>
         </Bullets>
         <p className="mt-3">
-          No usamos tus datos para enviarte publicidad o boletines, no los
-          vendemos ni los cedemos, y no los usamos para ningún fin distinto de
-          los descritos aquí. Si alguna vez quisiéramos hacerlo, te pediríamos
-          un nuevo consentimiento.
+          No usamos tus datos para enviarte publicidad, no los vendemos ni los
+          cedemos, y no los usamos para ningún otro fin.
         </p>
       </>
     ),
   },
   {
     id: "investigacion",
-    title: "Seudonimización y uso en la investigación",
+    title: "Uso en la investigación",
     body: (
       <>
         <p>
-          Tus resultados se identifican con un seudónimo (por ejemplo, "P001"),
-          nunca con tu nombre, correo o cédula. Esa separación no depende solo
-          de buenas prácticas, sino de cómo está construida la plataforma:
-        </p>
-        <Bullets>
-          <li>
-            Tus datos personales y tus resultados viven en dos servicios
-            distintos, cada uno con su propio espacio y usuario en la base de
-            datos.
-          </li>
-          <li>
-            El servicio que guarda los resultados no tiene permiso para leer los
-            datos personales.
-          </li>
-          <li>
-            El equipo investigador consulta los resultados identificados solo
-            por el seudónimo, y puede exportarlos así (sin nombre, correo ni
-            cédula) para el análisis estadístico.
-          </li>
-          <li>
-            En el panel de administración, la gestión de cuentas (nombre y
-            correo) y los resultados (seudónimo) se muestran por separado, sin
-            mostrar juntos el nombre y el seudónimo.
-          </li>
-        </Bullets>
-        <p className="mt-3">
-          El estudio incluye además un pre-test y un post-test que se aplican
-          fuera de esta plataforma (en Moodle). SAFE-Web no envía datos a Moodle
-          ni recibe datos de Moodle.
+          Para el estudio, tus resultados se identifican con un seudónimo (por
+          ejemplo, "P001"), nunca con tu nombre, correo o cédula.
         </p>
         <p className="mt-3">
-          Los resultados que se publiquen en el Trabajo de Integración
-          Curricular o en cualquier presentación académica serán siempre{" "}
-          <strong>agregados</strong> (porcentajes, promedios, comparaciones
-          entre grupos), nunca de una persona concreta.
+          Lo que se publique en el Trabajo de Integración Curricular serán
+          siempre resultados <strong>agregados</strong> (porcentajes,
+          promedios), nunca los de una persona concreta.
         </p>
       </>
     ),
@@ -340,42 +258,17 @@ const SECTIONS: Section[] = [
             certificado.
           </li>
           <li>
-            <strong>El equipo investigador</strong> ({AUTHOR_NAMES}), con una
-            cuenta de supervisión: puede gestionar cuentas
-            (activarlas, desactivarlas, restablecer la contraseña o
-            eliminarlas), revocar certificados y ver los resultados
-            seudonimizados.
+            <strong>Los autores del proyecto</strong>, para administrar las
+            cuentas y analizar los resultados con seudónimo.
           </li>
           <li>
-            <strong>Autoridades competentes</strong>, solo si lo exige una orden
-            o disposición legal.
+            <strong>Autoridades competentes</strong>, solo si lo exige la ley.
           </li>
         </Bullets>
         <p className="mt-4">
-          Además, estos proveedores tratan algunos datos en nuestro nombre, solo
-          para el fin indicado:
-        </p>
-        <Bullets>
-          <li>
-            <strong>Resend</strong> (servicio de envío de correos, con
-            servidores en Estados Unidos): recibe tu correo, tu nombre y el PDF
-            de tu certificado para enviártelo. Es el único correo que te
-            enviamos.
-          </li>
-          <li>
-            <strong>YouTube (Google)</strong>: los videos de capacitación se
-            muestran en modo de privacidad mejorada (youtube-nocookie.com) y el
-            reproductor solo se carga cuando pulsas reproducir. Desde ese
-            momento, Google recibe datos técnicos de tu navegador, como tu
-            dirección IP, según su propia política de privacidad. Si no
-            reproduces un video, no se conecta con YouTube.
-          </li>
-        </Bullets>
-        <p className="mt-3">
-          El envío a Resend y la conexión con YouTube implican una transferencia
-          de datos fuera del Ecuador, que aceptas al dar tu consentimiento. La
-          plataforma y su base de datos se alojan en un servidor administrado
-          por el equipo investigador.
+          Usamos dos servicios externos: <strong>Resend</strong>, para enviarte
+          tu certificado por correo, y <strong>YouTube</strong>, para los videos
+          de capacitación, que solo se conectan cuando pulsas reproducir.
         </p>
       </>
     ),
@@ -391,9 +284,8 @@ const SECTIONS: Section[] = [
           un código único (por ejemplo, SW-XXXX-XXXX).
         </p>
         <p className="mt-3">
-          Cualquier persona que tenga ese código puede comprobar en la página de
-          verificación si el certificado es válido. Esa página muestra solo la
-          fecha de emisión, las horas, la calificación y los módulos:{" "}
+          Cualquier persona que tenga ese código puede comprobar si el
+          certificado es válido. La página de verificación{" "}
           <strong>no muestra tu nombre ni ningún otro dato personal</strong>. Tú
           decides con quién compartes tu certificado.
         </p>
@@ -402,25 +294,14 @@ const SECTIONS: Section[] = [
   },
   {
     id: "navegador",
-    title: "Cookies y almacenamiento en tu navegador",
+    title: "Cookies",
     body: (
-      <>
-        <p>
-          Solo usamos lo imprescindible para que la plataforma funcione. No
-          usamos cookies de publicidad, de analítica ni de terceros:
-        </p>
-        <DataList items={BROWSER_STORAGE} />
-        <p className="mt-4">
-          Todo lo anterior es necesario para que la plataforma funcione o
-          recuerda una preferencia que tú elegiste. Como no hay nada opcional que
-          aceptar o rechazar, no mostramos un aviso de cookies.
-        </p>
-        <p className="mt-4">
-          Si usas un computador compartido, cierra sesión al terminar. Si borras
-          los datos del navegador, se perderán los resultados que aún no se
-          hayan enviado y tendrás que volver a iniciar sesión.
-        </p>
-      </>
+      <p>
+        Solo usamos una cookie para mantener tu sesión abierta, y tu navegador
+        recuerda tus preferencias (tema claro u oscuro, sonido). No usamos
+        cookies de publicidad ni de seguimiento; por eso no verás un aviso de
+        cookies.
+      </p>
     ),
   },
   {
@@ -438,26 +319,11 @@ const SECTIONS: Section[] = [
             Nombre, apellido y correo cifrados en la base de datos; la cédula
             nunca se almacena.
           </li>
-          <li>Contraseñas guardadas solo como hash bcrypt.</li>
-          <li>
-            Sesiones de corta duración y límite de intentos de inicio de sesión
-            y registro.
-          </li>
-          <li>
-            Mismo mensaje de error si el correo no existe o la contraseña es
-            incorrecta, para que nadie pueda averiguar quién está registrado.
-          </li>
-          <li>
-            Servicios aislados: la base de datos no es accesible desde Internet
-            y cada servicio tiene solo los permisos que necesita.
-          </li>
+          <li>Contraseñas guardadas de forma que nadie puede leerlas.</li>
         </Bullets>
         <p className="mt-3">
-          Ningún sistema es infalible y no podemos garantizar una seguridad
-          absoluta. Si ocurriera un incidente de seguridad que afecte tus datos
-          personales, actuaremos conforme a la LOPDP: lo notificaremos a la
-          Superintendencia de Protección de Datos Personales y te informaremos,
-          indicando qué pasó y qué medidas tomamos.
+          Si ocurriera un problema de seguridad que afecte tus datos, te lo
+          informaremos.
         </p>
       </>
     ),
@@ -468,24 +334,19 @@ const SECTIONS: Section[] = [
     body: (
       <Bullets>
         <li>
-          <strong>Datos personales</strong> (nombre, apellido, correo, huella de
-          la cédula y contraseña): mientras tu cuenta exista. Se eliminan si lo
-          solicitas y, en todo caso, al concluir el Trabajo de Integración
-          Curricular.
+          <strong>Datos personales</strong>: mientras tu cuenta exista. Se
+          eliminan si lo solicitas y, en todo caso, al concluir el Trabajo de
+          Integración Curricular.
         </li>
         <li>
-          <strong>Resultados seudonimizados</strong>: se conservan como datos de
-          la investigación. Una vez eliminada tu cuenta, ya no es posible
-          asociarlos con tu nombre, correo ni cédula.
+          <strong>Resultados con seudónimo</strong>: se conservan para la
+          investigación. Una vez eliminada tu cuenta, ya no se pueden asociar
+          contigo.
         </li>
         <li>
-          <strong>Registro del certificado</strong> (código, fecha, horas,
-          calificación y módulos, sin tu nombre): se conserva para que el
-          certificado siga siendo verificable, salvo que pidas revocarlo.
-        </li>
-        <li>
-          <strong>Datos en tu navegador</strong>: según lo indicado en la
-          sección de cookies y almacenamiento.
+          <strong>Registro del certificado</strong> (sin tu nombre): se conserva
+          para que el certificado siga siendo verificable, salvo que pidas
+          revocarlo.
         </li>
       </Bullets>
     ),
@@ -495,88 +356,15 @@ const SECTIONS: Section[] = [
     title: "Tus derechos",
     body: (
       <>
-        <p>La LOPDP te reconoce, entre otros, los siguientes derechos:</p>
-        <Bullets>
-          <li>
-            <strong>Información:</strong> saber quién trata tus datos, para qué
-            y cómo (lo que explica esta página).
-          </li>
-          <li>
-            <strong>Acceso:</strong> conocer qué datos tuyos tenemos.
-          </li>
-          <li>
-            <strong>Rectificación y actualización:</strong> corregir datos
-            inexactos o incompletos, por ejemplo un error en tu nombre antes de
-            emitir el certificado.
-          </li>
-          <li>
-            <strong>Eliminación:</strong> pedir que borremos tus datos
-            personales.
-          </li>
-          <li>
-            <strong>Oposición y suspensión del tratamiento:</strong> pedir que
-            dejemos de usar tus datos, o que pausemos su uso mientras se
-            resuelve una solicitud.
-          </li>
-          <li>
-            <strong>Portabilidad:</strong> recibir tus datos en un formato
-            estructurado y de uso común.
-          </li>
-          <li>
-            <strong>No ser objeto de decisiones automatizadas</strong> que te
-            afecten de forma significativa.
-          </li>
-          <li>
-            <strong>Retirar tu consentimiento</strong> en cualquier momento.
-          </li>
-        </Bullets>
-        <p className="mt-3">
-          Sobre decisiones automatizadas: la plataforma decide de forma
-          automática si apruebas un módulo y qué escenario se habilita después,
-          a partir de tus respuestas. Esa decisión solo organiza tu
-          entrenamiento; no tiene efectos legales ni económicos y puedes volver
-          a intentar un módulo cuando quieras.
-        </p>
-      </>
-    ),
-  },
-  {
-    id: "ejercer-derechos",
-    title: "Cómo ejercer tus derechos",
-    body: (
-      <>
-        <ol className="mt-3 list-decimal space-y-2 pl-6">
-          <li>
-            Escribe a cualquiera de los correos de contacto con el asunto
-            "Protección de datos – SAFE-Web".
-          </li>
-          <li>
-            Envía el mensaje{" "}
-            <strong>desde el correo con el que te registraste</strong>, para que
-            podamos confirmar que la cuenta es tuya. Si ya no tienes acceso a
-            ese correo, indícalo y te pediremos otra forma de verificación.
-          </li>
-          <li>
-            Indica qué derecho quieres ejercer y, si aplica, qué dato debe
-            corregirse.
-          </li>
-        </ol>
-        <p className="mt-3">
-          Responderemos dentro del plazo que fija la LOPDP (15 días). El trámite
-          es gratuito.
+        <p>
+          Puedes pedirnos, cuando quieras, ver qué datos tuyos tenemos,
+          corregirlos, eliminarlos o retirar tu consentimiento. Si eliminas tu
+          cuenta, también se revoca tu certificado.
         </p>
         <p className="mt-3">
-          <strong>Si retiras tu consentimiento o pides eliminar tus datos</strong>,
-          eliminamos tu cuenta y tus datos personales, y revocamos tu
-          certificado si lo tenías. Tus resultados seudonimizados quedan sin
-          vínculo con tu identidad; si además pides que se excluyan del estudio,
-          los retiraremos del análisis siempre que este no haya concluido.
-        </p>
-        <p className="mt-3">
-          Si no estás conforme con nuestra respuesta, puedes presentar un
-          reclamo ante la{" "}
-          <strong>Superintendencia de Protección de Datos Personales</strong>{" "}
-          del Ecuador.
+          Para hacerlo, escríbenos a los correos de contacto{" "}
+          <strong>desde el correo con el que te registraste</strong>, así
+          sabemos que la cuenta es tuya. Es gratuito.
         </p>
       </>
     ),
@@ -585,20 +373,11 @@ const SECTIONS: Section[] = [
     id: "menores",
     title: "Menores de edad",
     body: (
-      <>
-        <p>
-          SAFE-Web está pensada también para adolescentes. Según el artículo 21
-          de la LOPDP, a partir de los 15 años puedes dar tu consentimiento por
-          ti mismo y ejercer tus derechos directamente.
-        </p>
-        <p className="mt-3">
-          Si tienes <strong>menos de 15 años</strong>, necesitas la autorización
-          de tu madre, padre o representante legal antes de registrarte, y es tu
-          representante quien puede ejercer tus derechos en tu nombre. Si
-          descubrimos que se registró una persona menor de 15 años sin esa
-          autorización, eliminaremos su cuenta.
-        </p>
-      </>
+      <p>
+        A partir de los 15 años puedes registrarte por ti mismo. Si tienes{" "}
+        <strong>menos de 15 años</strong>, necesitas la autorización de tu
+        madre, padre o representante legal antes de registrarte.
+      </p>
     ),
   },
   {
@@ -608,8 +387,7 @@ const SECTIONS: Section[] = [
       <p>
         Si cambiamos esta política, actualizaremos la fecha que aparece al
         inicio de esta página. Si el cambio afecta qué datos recogemos o para
-        qué los usamos, lo avisaremos dentro de la plataforma y, cuando la ley
-        lo requiera, te pediremos de nuevo tu consentimiento antes de aplicarlo.
+        qué los usamos, te pediremos de nuevo tu consentimiento.
       </p>
     ),
   },
@@ -620,7 +398,7 @@ const SECTIONS: Section[] = [
       <>
         <p>
           Para cualquier duda sobre esta política o sobre cómo tratamos tus
-          datos, escríbenos a:
+          datos, escribe a los autores del proyecto:
         </p>
         <ContactEmails />
       </>
@@ -628,168 +406,46 @@ const SECTIONS: Section[] = [
   },
 ];
 
-/** Sección visible en pantalla, para marcarla en el índice como Wikipedia.
- *  Sin IntersectionObserver (jsdom, navegadores muy viejos) no marca nada. */
-function useActiveSection(ids: string[]) {
-  const [active, setActive] = useState(ids[0]);
-
-  useEffect(() => {
-    if (typeof IntersectionObserver === "undefined") return;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visible = entries.find((entry) => entry.isIntersecting);
-        if (visible) setActive(visible.target.id);
-      },
-      // Solo cuenta la franja superior de la pantalla: la sección "actual" es
-      // la que se está empezando a leer, no la que asoma abajo.
-      { rootMargin: "0px 0px -70% 0px" },
-    );
-    ids.forEach((id) => {
-      const element = document.getElementById(id);
-      if (element) observer.observe(element);
-    });
-    return () => observer.disconnect();
-  }, [ids]);
-
-  return active;
-}
-
-const SECTION_IDS = SECTIONS.map((section) => section.id);
-
-function TableOfContents({ active }: Readonly<{ active?: string }>) {
-  return (
-    <ol className="space-y-0.5 border-l border-hairline">
-      {SECTIONS.map((section, index) => {
-        const current = section.id === active;
-        return (
-          <li key={section.id}>
-            <a
-              href={`#${section.id}`}
-              aria-current={current ? "location" : undefined}
-              className={`-ml-px flex min-h-11 items-center gap-2 border-l-2 py-1.5 pl-4 pr-2 text-base leading-snug hover:underline ${
-                current
-                  ? "border-primary font-semibold text-ink"
-                  : "border-transparent text-link"
-              }`}
-            >
-              <span className="w-5 shrink-0 font-mono text-sm text-muted">
-                {index + 1}
-              </span>
-              {section.title}
-            </a>
-          </li>
-        );
-      })}
-    </ol>
-  );
-}
-
 export default function DataPolicy() {
-  const active = useActiveSection(SECTION_IDS);
-
   return (
-    <div className="min-h-screen bg-canvas">
-      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:grid lg:grid-cols-[17rem_minmax(0,1fr)] lg:gap-12">
-        {/* Índice lateral fijo al hacer scroll, como en la documentación. */}
-        <aside className="hidden lg:block">
-          <nav
-            aria-labelledby="indice"
-            className="sticky top-0 max-h-screen overflow-y-auto py-12"
-          >
-            <h2
-              id="indice"
-              className="mb-3 font-mono text-sm uppercase tracking-[0.14em] text-muted"
-            >
-              Contenido
-            </h2>
-            <TableOfContents active={active} />
-          </nav>
-        </aside>
+    <LegalPage
+      title="Política de Datos"
+      lastUpdated={LAST_UPDATED}
+      sections={SECTIONS}
+    >
+      <p>
+        Esta política explica, en lenguaje claro, qué datos personales recoge
+        SAFE-Web, para qué, cómo los protegemos y qué derechos tienes sobre
+        ellos. Léela antes de registrarte.
+      </p>
 
-        <main className="max-w-3xl py-12">
-          <Link
-            to="/"
-            className="mb-6 inline-flex min-h-11 items-center text-base font-medium text-link underline"
-          >
-            ← Volver
-          </Link>
-
-          <h1 className="text-4xl font-bold text-ink">Política de Datos</h1>
-          <p className="mt-3 text-base text-muted">
-            Última actualización: {LAST_UPDATED}
-          </p>
-
-          <div className="mt-8 space-y-10 text-base leading-relaxed text-body">
-            <p>
-              Esta política explica, en lenguaje claro, qué datos personales
-              recoge SAFE-Web, para qué, cómo los protegemos, quién puede verlos y
-              qué derechos tienes sobre ellos. Léela antes de registrarte.
-            </p>
-
-            {/* En celular no hay lateral: el índice se pliega arriba. */}
-            <details className="rounded-lg border border-hairline-strong bg-surface lg:hidden">
-              <summary className="min-h-11 cursor-pointer px-5 py-2.5 font-semibold text-ink">
-                Contenido
-              </summary>
-              <nav aria-label="Contenido" className="px-3 pb-4">
-                <TableOfContents />
-              </nav>
-            </details>
-
-            <aside
-              className="rounded-lg border border-hairline-strong bg-surface p-5"
-              aria-labelledby="resumen"
-            >
-              <h2 id="resumen" className="text-xl font-semibold text-ink">
-                En resumen
-              </h2>
-              <Bullets>
-                <li>
-                  Pedimos nombre, apellido, correo y cédula solo para darte acceso
-                  y emitir tu certificado.
-                </li>
-                <li>
-                  Tu cédula no se guarda, y tu nombre y correo se almacenan
-                  cifrados.
-                </li>
-                <li>
-                  Tus resultados se analizan con un seudónimo, nunca con tu
-                  nombre.
-                </li>
-                <li>
-                  No vendemos tus datos, no mostramos publicidad y no usamos
-                  rastreadores.
-                </li>
-                <li>
-                  Puedes pedir acceso, corrección o eliminación de tus datos
-                  cuando quieras.
-                </li>
-              </Bullets>
-            </aside>
-
-            {SECTIONS.map((section, index) => (
-              <section
-                key={section.id}
-                id={section.id}
-                aria-labelledby={`${section.id}-titulo`}
-                className="scroll-mt-6"
-              >
-                <h2
-                  id={`${section.id}-titulo`}
-                  className="mb-3 text-xl font-semibold text-ink"
-                >
-                  {index + 1}. {section.title}
-                </h2>
-                {section.body}
-              </section>
-            ))}
-
-            <p className="border-t border-hairline pt-6 text-sm text-muted">
-              SAFE-Web · Versión vigente desde el {LAST_UPDATED}
-            </p>
-          </div>
-        </main>
-      </div>
-    </div>
+      <aside
+        className="rounded-lg border border-hairline-strong bg-surface p-5"
+        aria-labelledby="resumen"
+      >
+        <h2 id="resumen" className="text-xl font-semibold text-ink">
+          En resumen
+        </h2>
+        <Bullets>
+          <li>
+            Pedimos nombre, apellido, correo y cédula solo para darte acceso y
+            emitir tu certificado.
+          </li>
+          <li>
+            Tu cédula no se guarda, y tu nombre y correo se almacenan cifrados.
+          </li>
+          <li>
+            Tus resultados se analizan con un seudónimo, nunca con tu nombre.
+          </li>
+          <li>
+            No vendemos tus datos, no mostramos publicidad y no usamos
+            rastreadores.
+          </li>
+          <li>
+            Puedes pedir ver, corregir o eliminar tus datos cuando quieras.
+          </li>
+        </Bullets>
+      </aside>
+    </LegalPage>
   );
 }

@@ -1,5 +1,5 @@
-import { render, screen } from '@testing-library/react'
-import { BrowserRouter } from 'react-router'
+import { fireEvent, render, screen } from '@testing-library/react'
+import { BrowserRouter, MemoryRouter, Route, Routes } from 'react-router'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { CONTACTS, PROJECT_TITLE } from '../data/project'
 import DataPolicy from './PoliticaDatos'
@@ -27,14 +27,38 @@ describe('PoliticaDatos', () => {
     expect(screen.getByRole('heading', { name: /^1\. Un proyecto académico/ })).toBeDefined()
     expect(screen.getByRole('heading', { name: /Responsables del tratamiento/ })).toBeDefined()
     expect(screen.getByRole('heading', { name: /Qué datos recogemos/ })).toBeDefined()
-    expect(screen.getByRole('heading', { name: /Seudonimización y uso en la investigación/ })).toBeDefined()
+    expect(screen.getByRole('heading', { name: /Uso en la investigación/ })).toBeDefined()
     expect(screen.getByRole('heading', { name: /\d+\. Tus derechos/ })).toBeDefined()
     expect(screen.getByRole('heading', { name: /Menores de edad/ })).toBeDefined()
   })
 
-  it('muestra el enlace para volver al inicio', () => {
-    renderPolicy()
-    expect(screen.getByText('← Volver')).toBeDefined()
+  it('sin historial, volver lleva al registro', () => {
+    render(
+      <MemoryRouter>
+        <DataPolicy />
+      </MemoryRouter>
+    )
+    expect(screen.getByRole('link', { name: '← Volver' }).getAttribute('href')).toBe('/registro')
+  })
+
+  it('con historial, volver regresa a la página anterior', () => {
+    render(
+      <MemoryRouter initialEntries={['/login', '/politica-de-datos']} initialIndex={1}>
+        <Routes>
+          <Route path="/login" element={<h1>Login</h1>} />
+          <Route path="/politica-de-datos" element={<DataPolicy />} />
+        </Routes>
+      </MemoryRouter>
+    )
+    fireEvent.click(screen.getByRole('link', { name: '← Volver' }))
+    expect(screen.getByRole('heading', { name: 'Login' })).toBeDefined()
+  })
+
+  it('los nombres de los autores aparecen solo en Contacto', () => {
+    const { container } = renderPolicy()
+    for (const { name } of CONTACTS) {
+      expect(container.textContent?.split(name)).toHaveLength(2)
+    }
   })
 
   it('muestra cada correo de contacto una sola vez, tomado de data/project', () => {
