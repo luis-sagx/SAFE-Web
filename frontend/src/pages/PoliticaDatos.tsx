@@ -91,7 +91,7 @@ const BROWSER_STORAGE: DataItem[] = [
   },
   {
     data: "Preferencia de tema",
-    purpose: "Recordar si elegiste modo claro, oscuro o el del sistema.",
+    purpose: "Recordar si elegiste modo claro u oscuro.",
     storage: "En el almacenamiento local, sin vencimiento.",
   },
 ];
