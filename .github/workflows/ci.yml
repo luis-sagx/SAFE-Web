@@ -98,6 +98,10 @@ jobs:
       # servicios instancian MailModule al arrancar (identidad y su
       # test module), y ningún test de este job dispara un envío de verdad.
       RESEND_API_KEY: re_dummy_solo_para_que_arranque_en_ci
+      # Dummy: NarracionModule vive en el AppModule de identidad, así que
+      # config.getOrThrow('CARTESIA_API_KEY') exige que exista para que la
+      # app arranque. Ningún test e2e de este job llama a Cartesia de verdad.
+      CARTESIA_API_KEY: sk_dummy_solo_para_que_arranque_en_ci
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - uses: pnpm/action-setup@f40ffcd9367d9f12939873eb1018b921a783ffaa # v4

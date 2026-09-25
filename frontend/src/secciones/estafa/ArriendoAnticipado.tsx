@@ -306,7 +306,7 @@ const RULE =
 
 const SUMMARY = 'Un departamento barato cuya garantía hay que depositar antes de poder verlo.'
 
-const CONTEXT: Context = {
+export const CONTEXT: Context = {
   antes: (
     <>
       Llevas <strong>un mes buscando departamento</strong> y todo lo que ves en el sector que te

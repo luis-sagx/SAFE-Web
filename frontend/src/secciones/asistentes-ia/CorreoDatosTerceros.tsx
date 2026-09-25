@@ -147,7 +147,7 @@ const RULE =
 
 const SUMMARY = 'Le pides a una IA que redacte un correo a nombre de una compañera, con los datos de ella a la mano.'
 
-const CONTEXT: Context = {
+export const CONTEXT: Context = {
   antes: 'Coordinas trámites de tus compañeros de clase y sueles usar una IA para que tus correos suenen más formales.',
   ahora: (
     <>

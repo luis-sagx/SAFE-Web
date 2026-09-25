@@ -272,7 +272,7 @@ const RULE =
 
 const SUMMARY = 'Vendes una lavadora y la compradora dice que ya te transfirió.'
 
-const CONTEXT: Context = {
+export const CONTEXT: Context = {
   antes: (
     <>
       Pusiste en venta tu <strong>lavadora en $180</strong> por una página de compraventa, y una

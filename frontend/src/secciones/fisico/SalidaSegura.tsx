@@ -30,6 +30,21 @@ import styles from './fisico.module.css'
 // botón sobre el teclado y el de la barra de tareas; y como
 // tocar la pantalla bloqueada la desbloquea, bloquear primero ya no es trampa.
 
+export const CONTEXT: Context = {
+  antes: (
+    <p>
+      La seguridad física pesa tanto como la digital. Lo que dejas a la vista al irte no necesita
+      que nadie te robe una contraseña: basta con mirar.
+    </p>
+  ),
+  ahora: (
+    <>
+      <strong>Son las 5:50 PM y eres el último en salir</strong>. Esta noche entra personal de
+      limpieza, y mañana la oficina se llena antes que tú. Antes de irte, revisa tu puesto.
+    </>
+  ),
+}
+
 interface Tab {
   id: string
   // Corto a propósito: con varias pestañas abiertas tiene que caber en la barra.
@@ -469,21 +484,6 @@ function SafeExit() {
     drag.current = null
   }
 
-  const context: Context = {
-    antes: (
-      <p>
-        La seguridad física pesa tanto como la digital. Lo que dejas a la vista al irte no necesita
-        que nadie te robe una contraseña: basta con mirar.
-      </p>
-    ),
-    ahora: (
-      <>
-        <strong>Son las 5:50 PM y eres el último en salir</strong>. Esta noche entra personal de
-        limpieza, y mañana la oficina se llena antes que tú. Antes de irte, revisa tu puesto.
-      </>
-    ),
-  }
-
   const activeId = activeView !== null ? TABS[activeView]?.id : undefined
   const activeScreen = activeView !== null ? VIEWS[activeView] : undefined
 
@@ -772,7 +772,7 @@ function SafeExit() {
     <ScenarioLayout
       escenarioId="fisico/salida-segura"
       resumen="Fin de jornada, Deja tu puesto asegurado"
-      contexto={context}
+      contexto={CONTEXT}
       nota={note}
       identidad={[]}
       pantalla={screen}

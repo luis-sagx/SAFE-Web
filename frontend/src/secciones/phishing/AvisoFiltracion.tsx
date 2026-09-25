@@ -148,7 +148,7 @@ const RULE =
 
 const SUMMARY = 'TiendaExpress avisa que un incidente de seguridad expuso tus datos.'
 
-const CONTEXT: Context = {
+export const CONTEXT: Context = {
   antes: (
     <>
       Compras seguido en <strong>TiendaExpress</strong> y tienes cuenta con ellos desde hace tiempo.

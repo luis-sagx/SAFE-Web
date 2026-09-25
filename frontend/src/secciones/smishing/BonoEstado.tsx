@@ -221,7 +221,7 @@ const RULE =
 
 const SUMMARY = 'Un SMS anuncia que tu cédula quedó preseleccionada para un bono de $180.'
 
-const CONTEXT: Context = {
+export const CONTEXT: Context = {
   antes: 'Nunca postulaste a ningún bono, pero el dinero haría falta este mes.',
   ahora: (
     <>

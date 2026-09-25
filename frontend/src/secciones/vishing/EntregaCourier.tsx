@@ -192,7 +192,7 @@ const RULE =
 
 const SUMMARY = 'Un repartidor llama desde la puerta para entregarte un paquete.'
 
-const CONTEXT: Context = {
+export const CONTEXT: Context = {
   antes: (
     <>
       Compraste algo por internet la semana pasada y{' '}

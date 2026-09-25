@@ -23,6 +23,23 @@ import { useAuth } from '../../context/AuthContext'
 import { useScenarioRun } from '../../hooks/useScenarioRun'
 import type { StoryNode } from '../../hooks/useStoryEngine'
 
+export const CONTEXT: Context = {
+  antes: (
+    <p>
+      En una oficina compartida no hace falta que nadie toque tu equipo: lo que tengas en
+      pantalla lo lee cualquiera que se acerque a hablar contigo, y se lee entero en los segundos
+      que tarda en llegar a tu silla.
+    </p>
+  ),
+  ahora: (
+    <>
+      <strong>Un compañero se levanta y viene hacia tu escritorio</strong> a preguntarte algo. En
+      tu pantalla están abiertas tres aplicaciones: tu gestor de credenciales, el explorador con
+      tus documentos y el correo. La sesión está desbloqueada.
+    </>
+  ),
+}
+
 type AppId = 'credenciales' | 'archivos' | 'correo'
 
 interface App {
@@ -358,23 +375,6 @@ function PasswordPrivacy() {
     setReview(null)
   }
 
-  const context: Context = {
-    antes: (
-      <p>
-        En una oficina compartida no hace falta que nadie toque tu equipo: lo que tengas en
-        pantalla lo lee cualquiera que se acerque a hablar contigo, y se lee entero en los segundos
-        que tarda en llegar a tu silla.
-      </p>
-    ),
-    ahora: (
-      <>
-        <strong>Un compañero se levanta y viene hacia tu escritorio</strong> a preguntarte algo. En
-        tu pantalla están abiertas tres aplicaciones: tu gestor de credenciales, el explorador con
-        tus documentos y el correo. La sesión está desbloqueada.
-      </>
-    ),
-  }
-
   const screen = blockedView ? (
     // La pantalla de bloqueo tapa el escritorio entero, como el sistema real:
     // con la sesión bloqueada no se puede cerrar nada sin desbloquear antes.
@@ -514,7 +514,7 @@ function PasswordPrivacy() {
     <ScenarioLayout
       escenarioId="fisico/privacidad-claves"
       resumen="Privacidad, Alguien se acerca a tu escritorio"
-      contexto={context}
+      contexto={CONTEXT}
       nota={note}
       identidad={[]}
       pantalla={screen}

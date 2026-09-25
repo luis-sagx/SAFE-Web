@@ -333,7 +333,7 @@ const RULE =
 
 const SUMMARY = 'Un amigo te escribe desde su chat de siempre pidiendo dinero por una urgencia.'
 
-const CONTEXT: Context = {
+export const CONTEXT: Context = {
   antes: (
     <>
       <strong>Byron</strong> es amigo tuyo desde el colegio. Tienes su número guardado hace años y

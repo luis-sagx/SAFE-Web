@@ -256,7 +256,7 @@ const RULE =
 
 const SUMMARY = 'La secretaría del colegio de tu hijo dice que "cambió de banco" para la pensión.'
 
-const CONTEXT: Context = {
+export const CONTEXT: Context = {
   antes: (
     <>
       Pagas la pensión del colegio de tu hijo y tienes un hilo de correo real y en curso con la{' '}

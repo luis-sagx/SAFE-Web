@@ -201,7 +201,7 @@ const RULE =
 const SUMMARY =
   'Un correo anuncia que ganaste un premio de una lotería y pide un pago para cobrarlo.'
 
-const CONTEXT: Context = {
+export const CONTEXT: Context = {
   antes: 'No juegas a la lotería: no recuerdas haber comprado ningún boleto.',
   ahora: (
     <>

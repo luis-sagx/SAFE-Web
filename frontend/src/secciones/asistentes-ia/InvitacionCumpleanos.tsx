@@ -113,7 +113,7 @@ const RULE =
 
 const SUMMARY = 'Le pides a una IA la invitación del cumpleaños de tu hija, con fotos de ella y de su aula en la galería.'
 
-const CONTEXT: Context = {
+export const CONTEXT: Context = {
   antes: `Es de noche y estás organizando el cumpleaños de tu hija ${DAUGHTER}. Viste que las IA convierten fotos en caricaturas.`,
   ahora: (
     <>

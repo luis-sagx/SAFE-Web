@@ -301,7 +301,7 @@ const RULE =
 
 const SUMMARY = 'Búsqueda de software - Identifica sitios oficiales vs. falsos'
 
-const CONTEXT: Context = {
+export const CONTEXT: Context = {
   antes:
     'Los atacantes crean sitios falsos que parecen legales y los posicionan en los primeros resultados de búsqueda. Si descargas desde un sitio pirata, tu computadora se infecta con malware. En una empresa, esto compromete toda la red corporativa.',
   ahora: (

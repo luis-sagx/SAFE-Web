@@ -15,6 +15,7 @@ export default defineConfig({
       '/api/auth': 'http://localhost:3001',
       '/api/admin': 'http://localhost:3001',
       '/api/certificados': 'http://localhost:3001',
+      '/api/narracion': 'http://localhost:3001',
       '/api/runs': 'http://localhost:3002',
       '/api/health': 'http://localhost:3001',
     },

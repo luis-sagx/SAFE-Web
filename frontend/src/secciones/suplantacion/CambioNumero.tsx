@@ -386,7 +386,7 @@ const RULE =
 
 const SUMMARY = 'Un número desconocido dice ser tu hijo, que perdió el celular, y pide dinero.'
 
-const CONTEXT: Context = {
+export const CONTEXT: Context = {
   antes: (
     <>
       Tu hijo <strong>Andrés</strong> vive fuera de casa y hablan casi a diario. Tienes su número

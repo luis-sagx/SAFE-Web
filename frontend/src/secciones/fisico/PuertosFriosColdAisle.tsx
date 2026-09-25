@@ -88,7 +88,7 @@ const STORY: Story<ScreenNode> = {
   },
 }
 
-const context: Context = {
+export const CONTEXT: Context = {
   antes:
     'El piso de Tecnología guarda las laptops del equipo y los equipos que administran los sistemas de la institución. La puerta abre con tarjeta.',
   ahora: (
@@ -105,7 +105,7 @@ export default function ColdAislePorts() {
     <ScenarioStory
       escenarioId="fisico/puertos-frios-datacenter"
       resumen="Entrada al área de sistemas, alguien necesita pasar"
-      contexto={context}
+      contexto={CONTEXT}
       nota="Mira la escena con calma antes de decidir."
       story={STORY}
       senales={SIGNALS}

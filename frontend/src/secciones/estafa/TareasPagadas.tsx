@@ -333,7 +333,7 @@ const RULE =
 
 const SUMMARY = 'Un trabajo desde casa que sí te pagó las primeras tareas y ahora pide un depósito.'
 
-const CONTEXT: Context = {
+export const CONTEXT: Context = {
   antes: (
     <>
       Llevas meses buscando algo que hacer desde la casa y te metieron en un{' '}

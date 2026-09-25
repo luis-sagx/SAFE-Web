@@ -180,7 +180,7 @@ const RULE =
 const SUMMARY =
   'Un correo del banco pide escanear un QR para "actualizar tus datos".';
 
-const CONTEXT: Context = {
+export const CONTEXT: Context = {
   antes: (
     <>
       Eres cliente del <strong>Banco del Litoral</strong>.{" "}

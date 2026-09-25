@@ -173,7 +173,7 @@ const RULE =
 
 const SUMMARY = 'Le pides a una IA que mejore un informe escolar de un estudiante, con su cédula y su domicilio dentro.'
 
-const CONTEXT: Context = {
+export const CONTEXT: Context = {
   antes: 'Eres tutor de un curso y te pidieron mejorar la redacción de un informe de seguimiento antes de entregarlo a coordinación.',
   ahora: (
     <>

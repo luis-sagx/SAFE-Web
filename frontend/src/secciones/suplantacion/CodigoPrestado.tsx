@@ -265,7 +265,7 @@ const RULE =
 
 const SUMMARY = 'Tu prima pide que le pases un código de seis dígitos que te llegó por error.'
 
-const CONTEXT: Context = {
+export const CONTEXT: Context = {
   antes: (
     <>
       <strong>Gaby</strong> es tu prima y se escriben casi todas las semanas por el{' '}

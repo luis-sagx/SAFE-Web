@@ -368,7 +368,7 @@ const RULE =
 
 const SUMMARY = 'Tu jefa escribe desde otro número y pide comprar tarjetas de regalo con urgencia.'
 
-const CONTEXT: Context = {
+export const CONTEXT: Context = {
   antes: (
     <>
       Trabajas en una empresa mediana. Tu gerente, la <strong>Ing. Patricia Cedeño</strong>, te

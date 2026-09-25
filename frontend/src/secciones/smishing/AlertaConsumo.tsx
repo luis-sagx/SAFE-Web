@@ -188,7 +188,7 @@ const RULE =
 
 const SUMMARY = 'Llega un SMS del banco avisando un consumo de $42,90 con tu tarjeta.'
 
-const CONTEXT: Context = {
+export const CONTEXT: Context = {
   antes: (
     <>
       Cliente del <strong>Banco del Litoral</strong>, con las <strong>alertas de consumo</strong>{' '}

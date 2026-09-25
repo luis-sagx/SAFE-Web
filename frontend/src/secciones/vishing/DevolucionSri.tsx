@@ -322,7 +322,7 @@ const RULE =
 const SUMMARY =
   "Una llamada dice que el SRI tiene una devolución de impuestos a tu favor.";
 
-const CONTEXT: Context = {
+export const CONTEXT: Context = {
   antes: (
     <>
       Declaraste tus impuestos el año pasado, como siempre, y{" "}

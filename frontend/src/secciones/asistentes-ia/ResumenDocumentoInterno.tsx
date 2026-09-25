@@ -147,7 +147,7 @@ const RULE =
 
 const SUMMARY = 'Le pides a una IA que resuma un informe que identifica a una empresa y contiene cifras sin publicar.'
 
-const CONTEXT: Context = {
+export const CONTEXT: Context = {
   antes: 'Te pidieron preparar un resumen ejecutivo del informe financiero interno para la reunión de gerencia.',
   ahora: (
     <>

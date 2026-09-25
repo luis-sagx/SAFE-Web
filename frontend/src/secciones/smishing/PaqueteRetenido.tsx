@@ -218,7 +218,7 @@ const RULE =
 
 const SUMMARY = 'Un SMS dice que tu paquete está retenido por $1,20 de aduana.'
 
-const CONTEXT: Context = {
+export const CONTEXT: Context = {
   antes: (
     <>
       Compraste algo por internet la semana pasada y <strong>sí estás esperando un paquete</strong>:

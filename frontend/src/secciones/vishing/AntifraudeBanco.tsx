@@ -310,7 +310,7 @@ const RULE =
 const SUMMARY =
   "Una llamada dice ser del banco y avisa de un consumo que no reconoces.";
 
-const CONTEXT: Context = {
+export const CONTEXT: Context = {
   antes: (
     <>
       Cliente del <strong>Banco del Litoral</strong>. Usas esa tarjeta casi a
