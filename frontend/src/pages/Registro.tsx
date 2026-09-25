@@ -169,7 +169,9 @@ function Registration() {
     }
 
     if (!acceptedPolicy) {
-      setError("Debes aceptar los términos de uso y la política de datos para continuar");
+      setError(
+        "Debes aceptar los términos de uso y la política de datos para continuar",
+      );
       return;
     }
 
@@ -335,7 +337,7 @@ function Registration() {
             htmlFor="acceptPolicy"
             className="text-base leading-5 text-body"
           >
-            Acepto los{" "}
+            Acepto{" "}
             <a
               href="/terminos"
               target="_blank"
@@ -344,7 +346,7 @@ function Registration() {
             >
               términos de uso
             </a>{" "}
-            y la{" "}
+            y{" "}
             <a
               href="/politica-de-datos"
               target="_blank"
