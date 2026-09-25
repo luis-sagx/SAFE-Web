@@ -137,6 +137,29 @@ describe('AdminService.resetPassword', () => {
 
     expect(updateData?.tokenVersion).toEqual({ increment: 1 });
   });
+
+  it('con rol TRAINER solo busca cuentas de tester', async () => {
+    let whereReceived: unknown;
+    const admin = service({
+      findFirst: (args: { where: unknown }) => {
+        whereReceived = args.where;
+        return Promise.resolve(row());
+      },
+      update: () => Promise.resolve(row()),
+    });
+
+    await admin.resetPassword('t1', 'TRAINER');
+
+    expect(whereReceived).toEqual({ id: 't1', role: 'TRAINER' });
+  });
+
+  it('da 404 si la cuenta no es del rol pedido', async () => {
+    const admin = service({ findFirst: () => Promise.resolve(null) });
+
+    await expect(admin.resetPassword('p1', 'TRAINER')).rejects.toBeInstanceOf(
+      NotFoundException,
+    );
+  });
 });
 
 describe('AdminService.eliminar', () => {

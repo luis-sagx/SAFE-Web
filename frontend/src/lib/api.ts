@@ -369,6 +369,12 @@ export function changeTrainerStatus(
   })
 }
 
+export function resetTrainerPassword(id: string): Promise<{ password: string }> {
+  return request<{ password: string }>(`/admin/trainers/${id}/restablecer-password`, {
+    method: 'POST',
+  })
+}
+
 // --- Certificado (spec 2026-09-03-gamificacion-y-certificado-design.md) ---
 
 /** Un solo salto a través del cliente: lo firma `entrenamiento` cuando todos

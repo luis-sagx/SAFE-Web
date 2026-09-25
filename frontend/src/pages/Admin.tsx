@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState, type SyntheticEvent } from "react";
 import {
   KeyRound,
   Loader2,
+  Plus,
   Copy,
   Trash2,
   UserCheck,
@@ -9,6 +10,7 @@ import {
 } from "lucide-react";
 import AppHeader from "../components/AppHeader";
 import ConfirmDialog, { type Confirmation } from "../components/ConfirmDialog";
+import Modal from "../components/Modal";
 import {
   changeParticipantStatus,
   changeTrainerStatus,
@@ -18,11 +20,12 @@ import {
   fetchResults,
   fetchTrainers,
   resetParticipantPassword,
+  resetTrainerPassword,
   type AdminParticipant,
   type RunResult,
 } from "../lib/api";
 
-type Tab = "participantes" | "formadores" | "resultados";
+type Tab = "participantes" | "testers" | "resultados";
 
 function fullName(p: AdminParticipant): string {
   const parts = [p.nombre, p.apellido].filter(Boolean);
@@ -188,19 +191,7 @@ function Participants() {
                   <td className="px-4 py-3 text-ink">{fullName(p)}</td>
                   <td className="px-4 py-3 text-body">{p.email ?? "Sin correo"}</td>
                   <td className="px-4 py-3">
-                    <span
-                      className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium ${
-                        p.activo
-                          ? "bg-success/10 text-success-ink"
-                          : "bg-surface-strong text-muted"
-                      }`}
-                    >
-                      <span
-                        aria-hidden
-                        className={`size-1.5 rounded-full ${p.activo ? "bg-success" : "bg-muted"}`}
-                      />
-                      {p.activo ? "Activa" : "Desactivada"}
-                    </span>
+                    <StatusPill active={p.activo} />
                   </td>
                   <td className="px-4 py-3 text-muted tabular-nums">
                     {date(p.createdAt)}
@@ -270,13 +261,145 @@ const OUTCOME_LABEL: Record<string, string> = {
   INCORRECTO: "Incorrecto",
 };
 
-function Trainers() {
+const INPUT_CLASS =
+  "mt-1 block h-10 w-full rounded-md border border-hairline-strong bg-canvas px-3 text-ink";
+
+const EMPTY_TESTER = { nombre: "", apellido: "", email: "" };
+
+/// Formulario de alta dentro de un modal. Al crear, el mismo modal pasa a
+/// mostrar la contraseña inicial, que solo se ve esa vez.
+function CreateTesterModal({
+  onClose,
+  onCreated,
+}: {
+  onClose: () => void;
+  onCreated: () => void;
+}) {
+  const [form, setForm] = useState(EMPTY_TESTER);
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+
+  async function submit(event: SyntheticEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setError("");
+    setSubmitting(true);
+    try {
+      const created = await createTrainer(form);
+      setPassword(created.password);
+      onCreated();
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  if (password) {
+    return (
+      <Modal titulo="Tester creado" onClose={onClose}>
+        <p className="mt-2 text-sm text-body">
+          Entrega esta contraseña inicial por un canal seguro.
+        </p>
+        <div className="mt-4">
+          <PasswordBanner password={password} onClose={onClose} />
+        </div>
+      </Modal>
+    );
+  }
+
+  return (
+    <Modal titulo="Crear tester" onClose={onClose} busy={submitting}>
+      <p className="mt-1 text-sm text-body">
+        La contraseña inicial se muestra una sola vez para entregarla por un canal seguro.
+      </p>
+      <form className="mt-5 grid gap-4 sm:grid-cols-2" onSubmit={submit}>
+        <label className="text-sm font-medium text-ink">
+          <span>Nombre</span>
+          <input
+            required
+            value={form.nombre}
+            onChange={(e) => setForm({ ...form, nombre: e.target.value })}
+            className={INPUT_CLASS}
+          />
+        </label>
+        <label className="text-sm font-medium text-ink">
+          <span>Apellido</span>
+          <input
+            required
+            value={form.apellido}
+            onChange={(e) => setForm({ ...form, apellido: e.target.value })}
+            className={INPUT_CLASS}
+          />
+        </label>
+        <label className="text-sm font-medium text-ink sm:col-span-2">
+          <span>Correo</span>
+          <input
+            required
+            type="email"
+            value={form.email}
+            onChange={(e) => setForm({ ...form, email: e.target.value })}
+            className={INPUT_CLASS}
+          />
+        </label>
+        {error && (
+          <p role="alert" className="text-sm text-danger sm:col-span-2">
+            {error}
+          </p>
+        )}
+        <div className="flex justify-end gap-2 sm:col-span-2">
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={submitting}
+            className="h-10 rounded-md border border-hairline-strong bg-surface px-4 text-sm font-medium text-ink transition hover:bg-surface-strong disabled:opacity-50"
+          >
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            disabled={submitting}
+            className="inline-flex h-10 items-center gap-1.5 rounded-md bg-primary px-4 text-sm font-medium text-on-primary transition hover:bg-primary-active disabled:opacity-60"
+          >
+            {submitting && (
+              <Loader2 aria-hidden className="size-4 animate-spin motion-reduce:animate-none" />
+            )}
+            {submitting ? "Creando…" : "Crear tester"}
+          </button>
+        </div>
+      </form>
+    </Modal>
+  );
+}
+
+function StatusPill({ active }: { active: boolean }) {
+  return (
+    <span
+      className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium ${
+        active ? "bg-success/10 text-success-ink" : "bg-surface-strong text-muted"
+      }`}
+    >
+      <span
+        aria-hidden
+        className={`size-1.5 rounded-full ${active ? "bg-success" : "bg-muted"}`}
+      />
+      {active ? "Activa" : "Desactivada"}
+    </span>
+  );
+}
+
+const ROW_BUTTON_CLASS =
+  "inline-flex h-8 items-center gap-1 rounded-md border border-hairline-strong bg-surface px-2.5 text-xs font-medium text-ink transition hover:bg-surface-strong";
+
+/// Los testers son cuentas de prueba (rol TRAINER en el backend): recorren
+/// los escenarios sin contar para el estudio.
+function Testers() {
   const [list, setList] = useState<AdminParticipant[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [password, setPassword] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-  const [form, setForm] = useState({ nombre: "", apellido: "", email: "" });
+  const [creating, setCreating] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmation, setConfirmation] = useState<Confirmation | null>(null);
 
   const load = useCallback(() => {
     setLoading(true);
@@ -288,72 +411,118 @@ function Trainers() {
 
   useEffect(load, [load]);
 
-  async function submit(event: SyntheticEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setError("");
-    setPassword("");
-    setSubmitting(true);
-    try {
-      const created = await createTrainer(form);
-      setPassword(created.password);
-      setForm({ nombre: "", apellido: "", email: "" });
-      load();
-    } catch (e) {
-      setError((e as Error).message);
-    } finally {
-      setSubmitting(false);
-    }
-  }
+  const toggleStatus = (t: AdminParticipant) =>
+    setConfirmation({
+      titulo: t.activo ? "¿Desactivar este tester?" : "¿Activar este tester?",
+      mensaje: t.activo
+        ? `${fullName(t)} no podrá iniciar sesión hasta que lo reactives.`
+        : `${fullName(t)} podrá volver a iniciar sesión.`,
+      etiqueta: t.activo ? "Sí, desactivar" : "Sí, activar",
+      Icono: t.activo ? UserX : UserCheck,
+      accion: async () => {
+        const updated = await changeTrainerStatus(t.id, !t.activo);
+        setList((prev) => prev.map((x) => (x.id === t.id ? updated : x)));
+      },
+    });
 
-  async function toggle(trainer: AdminParticipant) {
-    setError("");
-    try {
-      const updated = await changeTrainerStatus(trainer.id, !trainer.activo);
-      setList((current) => current.map((item) => item.id === updated.id ? updated : item));
-    } catch (e) {
-      setError((e as Error).message);
-    }
-  }
+  const reset = (t: AdminParticipant) =>
+    setConfirmation({
+      titulo: "¿Restablecer la contraseña?",
+      mensaje: `Se generará una contraseña nueva para ${fullName(t)} y la actual dejará de funcionar.`,
+      etiqueta: "Sí, restablecer",
+      Icono: KeyRound,
+      accion: async () => {
+        const { password } = await resetTrainerPassword(t.id);
+        setNewPassword(password);
+      },
+    });
 
   return (
-    <div className="max-w-4xl">
-      <div className="rounded-lg border border-hairline-strong bg-surface p-5">
-        <h2 className="text-xl font-semibold text-ink">Crear capacitador</h2>
-        <p className="mt-1 text-sm text-body">
-          La contraseña inicial se muestra una sola vez para entregarla por un canal seguro.
+    <div>
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <p className="text-sm text-body">
+          Cuentas para probar los escenarios. Sus corridas no cuentan para el estudio.
         </p>
-        <form className="mt-5 grid gap-4 sm:grid-cols-2" onSubmit={submit}>
-          <label className="text-sm font-medium text-ink">
-            <span>Nombre</span>
-            <input required value={form.nombre} onChange={(e) => setForm({ ...form, nombre: e.target.value })} className="mt-1 block h-10 w-full rounded-md border border-hairline-strong bg-canvas px-3 text-ink" />
-          </label>
-          <label className="text-sm font-medium text-ink">
-            <span>Apellido</span>
-            <input required value={form.apellido} onChange={(e) => setForm({ ...form, apellido: e.target.value })} className="mt-1 block h-10 w-full rounded-md border border-hairline-strong bg-canvas px-3 text-ink" />
-          </label>
-          <label className="text-sm font-medium text-ink sm:col-span-2">
-            <span>Correo</span>
-            <input required type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="mt-1 block h-10 w-full rounded-md border border-hairline-strong bg-canvas px-3 text-ink" />
-          </label>
-          <button type="submit" disabled={submitting} className="h-10 rounded-md bg-primary px-4 text-sm font-medium text-on-primary disabled:opacity-60 sm:w-fit">
-            {submitting ? "Creando…" : "Crear capacitador"}
-          </button>
-        </form>
+        <button
+          type="button"
+          onClick={() => setCreating(true)}
+          className="inline-flex h-9 items-center gap-1.5 rounded-md bg-primary px-3 text-sm font-medium text-on-primary transition hover:bg-primary-active"
+        >
+          <Plus aria-hidden className="size-4" strokeWidth={2} />
+          Crear tester
+        </button>
       </div>
 
-      {password && <div className="mt-4"><PasswordBanner password={password} onClose={() => setPassword("")} /></div>}
-      {error && <p role="alert" className="mt-4 text-sm text-danger">{error}</p>}
+      {newPassword && (
+        <PasswordBanner password={newPassword} onClose={() => setNewPassword("")} />
+      )}
+      {error && (
+        <p role="alert" className="mb-4 text-sm text-danger">
+          {error}
+        </p>
+      )}
 
-      <h2 className="mt-8 text-xl font-semibold text-ink">Capacitadores</h2>
-      {loading && <output className="mt-3 block text-base text-muted">Cargando capacitadores…</output>}
-      {!loading && list.length === 0 && <p className="mt-3 text-base text-muted">Todavía no hay capacitadores creados.</p>}
+      {loading && (
+        <p role="status" className="flex items-center gap-2 text-base text-muted">
+          <Loader2 aria-hidden className="size-4 animate-spin motion-reduce:animate-none" />
+          Cargando testers…
+        </p>
+      )}
+      {!loading && list.length === 0 && (
+        <p className="text-base text-muted">Todavía no hay testers creados.</p>
+      )}
       {!loading && list.length > 0 && (
-        <div className="mt-4 overflow-x-auto rounded-lg border border-hairline-strong">
-          <table className="w-full min-w-[580px] text-left text-sm">
-            <thead><tr className="border-b border-hairline bg-canvas-soft text-muted"><th className="px-4 py-3">Nombre</th><th className="px-4 py-3">Correo</th><th className="px-4 py-3">Estado</th><th className="px-4 py-3 text-right">Acción</th></tr></thead>
-            <tbody>{list.map((trainer) => <tr key={trainer.id} className="border-b border-hairline last:border-0"><td className="px-4 py-3 text-ink">{fullName(trainer)}</td><td className="px-4 py-3 text-body">{trainer.email ?? "Sin correo"}</td><td className="px-4 py-3">{trainer.activo ? "Activo" : "Desactivado"}</td><td className="px-4 py-3 text-right"><button type="button" onClick={() => void toggle(trainer)} className="h-8 rounded-md border border-hairline-strong px-2.5 text-xs font-medium text-ink">{trainer.activo ? "Desactivar" : "Activar"}</button></td></tr>)}</tbody>
+        <div className="overflow-x-auto rounded-lg border border-hairline-strong">
+          <table className="w-full min-w-[720px] border-collapse text-left text-sm">
+            <thead>
+              <tr className="border-b border-hairline bg-canvas-soft text-muted">
+                <th className="px-4 py-3 font-semibold">Nombre</th>
+                <th className="px-4 py-3 font-semibold">Correo</th>
+                <th className="px-4 py-3 font-semibold">Estado</th>
+                <th className="px-4 py-3 text-right font-semibold">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {list.map((t) => (
+                <tr key={t.id} className="border-b border-hairline last:border-0">
+                  <td className="px-4 py-3 text-ink">{fullName(t)}</td>
+                  <td className="px-4 py-3 text-body">{t.email ?? "Sin correo"}</td>
+                  <td className="px-4 py-3">
+                    <StatusPill active={t.activo} />
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center justify-end gap-2">
+                      <button type="button" onClick={() => toggleStatus(t)} className={ROW_BUTTON_CLASS}>
+                        {t.activo ? (
+                          <UserX aria-hidden className="size-3.5" strokeWidth={1.75} />
+                        ) : (
+                          <UserCheck aria-hidden className="size-3.5" strokeWidth={1.75} />
+                        )}
+                        {t.activo ? "Desactivar" : "Activar"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => reset(t)}
+                        title="Restablecer contraseña"
+                        className={ROW_BUTTON_CLASS}
+                      >
+                        <KeyRound aria-hidden className="size-3.5" strokeWidth={1.75} />
+                        Clave
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
           </table>
         </div>
+      )}
+
+      {creating && (
+        <CreateTesterModal onClose={() => setCreating(false)} onCreated={load} />
+      )}
+      {confirmation && (
+        <ConfirmDialog confirmation={confirmation} onClose={() => setConfirmation(null)} />
       )}
     </div>
   );
@@ -448,8 +617,8 @@ function Admin() {
   let content = <Results />;
   if (tab === "participantes") {
     content = <Participants />;
-  } else if (tab === "formadores") {
-    content = <Trainers />;
+  } else if (tab === "testers") {
+    content = <Testers />;
   }
 
   const tabClassName = (active: boolean) =>
@@ -476,11 +645,11 @@ function Admin() {
           <button
             type="button"
             role="tab"
-            aria-selected={tab === "formadores"}
-            onClick={() => setTab("formadores")}
-            className={tabClassName(tab === "formadores")}
+            aria-selected={tab === "testers"}
+            onClick={() => setTab("testers")}
+            className={tabClassName(tab === "testers")}
           >
-            Capacitadores
+            Testers
           </button>
           <button
             type="button"

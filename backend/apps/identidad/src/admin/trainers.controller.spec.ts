@@ -5,6 +5,7 @@ describe('TrainersController', () => {
     createTrainer: jest.fn(),
     listTrainers: jest.fn(),
     changeTrainerStatus: jest.fn(),
+    resetPassword: jest.fn(),
   };
   const controller = new TrainersController(admin as never);
 
@@ -30,5 +31,11 @@ describe('TrainersController', () => {
     await controller.changeStatus('trainer-1', { activo: false });
 
     expect(admin.changeTrainerStatus).toHaveBeenCalledWith('trainer-1', false);
+  });
+
+  it('resets only a TRAINER account password', async () => {
+    await controller.resetPassword('trainer-1');
+
+    expect(admin.resetPassword).toHaveBeenCalledWith('trainer-1', 'TRAINER');
   });
 });

@@ -13,6 +13,15 @@ import { PrismaService } from '../prisma/prisma.service';
 /// Mismo factor que el registro (OWASP Password Storage >= 10).
 const BCRYPT_ROUNDS = 12;
 
+/// Roles que el supervisor gestiona desde el panel. TRAINER se muestra como
+/// "tester" en la interfaz.
+type ManagedRole = 'PARTICIPANT' | 'TRAINER';
+
+const NOT_FOUND: Record<ManagedRole, string> = {
+  PARTICIPANT: 'No existe ese participante.',
+  TRAINER: 'No existe ese tester.',
+};
+
 export interface AdminParticipant {
   id: string;
   /// El mismo código con el que salen los resultados en `entrenamiento`
@@ -130,13 +139,7 @@ export class AdminService {
     id: string,
     active: boolean,
   ): Promise<AdminParticipant> {
-    const trainer = await this.prisma.participant.findFirst({
-      where: { id, role: 'TRAINER' },
-      select: ADMIN_FIELDS,
-    });
-    if (!trainer) {
-      throw new NotFoundException('No existe ese capacitador.');
-    }
+    await this.account(id, 'TRAINER');
     const updated = await this.prisma.participant.update({
       where: { id },
       data: { disabledAt: active ? null : new Date() },
@@ -156,22 +159,25 @@ export class AdminService {
     return rows.map((p) => toView(p, this.piiKey));
   }
 
-  /// Busca una cuenta que sea PARTICIPANT. Devolver el mismo 404 para "no
-  /// existe" y para "no es participante" evita que se pueda sondear qué ids son
-  /// de supervisores.
-  private async participant(id: string): Promise<AdminRow> {
+  /// Busca una cuenta del rol pedido. Devolver el mismo 404 para "no existe"
+  /// y para "es de otro rol" evita que se pueda sondear qué ids son de
+  /// supervisores.
+  private async account(
+    id: string,
+    role: ManagedRole = 'PARTICIPANT',
+  ): Promise<AdminRow> {
     const p = await this.prisma.participant.findFirst({
-      where: { id, role: 'PARTICIPANT' },
+      where: { id, role },
       select: ADMIN_FIELDS,
     });
     if (!p) {
-      throw new NotFoundException('No existe ese participante.');
+      throw new NotFoundException(NOT_FOUND[role]);
     }
     return p;
   }
 
   async changeStatus(id: string, active: boolean): Promise<AdminParticipant> {
-    await this.participant(id);
+    await this.account(id);
     const p = await this.prisma.participant.update({
       where: { id },
       data: { disabledAt: active ? null : new Date() },
@@ -181,10 +187,13 @@ export class AdminService {
   }
 
   /// Genera una contraseña nueva y la devuelve UNA vez: no se guarda en claro,
-  /// solo su bcrypt. El supervisor se la entrega al participante por un canal
-  /// aparte.
-  async resetPassword(id: string): Promise<{ password: string }> {
-    await this.participant(id);
+  /// solo su bcrypt. El supervisor se la entrega a la persona por un canal
+  /// aparte. Vale para participantes y testers.
+  async resetPassword(
+    id: string,
+    role: ManagedRole = 'PARTICIPANT',
+  ): Promise<{ password: string }> {
+    await this.account(id, role);
     const password = generatePassword();
     await this.prisma.participant.update({
       where: { id },

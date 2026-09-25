@@ -33,4 +33,10 @@ export class TrainersController {
   changeStatus(@Param('id') id: string, @Body() dto: ChangeStatusDto) {
     return this.admin.changeTrainerStatus(id, dto.activo);
   }
+
+  @Post(':id/restablecer-password')
+  @HttpCode(200)
+  resetPassword(@Param('id') id: string) {
+    return this.admin.resetPassword(id, 'TRAINER');
+  }
 }
