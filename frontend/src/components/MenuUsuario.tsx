@@ -1,4 +1,4 @@
-import { ChevronDown, LogOut, Route } from 'lucide-react'
+import { ChevronDown, House, LogOut, Route } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { Link } from 'react-router'
 import { useAuth } from '../context/AuthContext'
@@ -69,6 +69,11 @@ function UserMenu() {
           <div className="border-b border-hairline py-1.5">
             <SoundSelector />
           </div>
+
+          <Link role="menuitem" to="/" onClick={() => setOpen(false)} className={itemClassName}>
+            <House aria-hidden className="size-4 text-muted" strokeWidth={1.75} />
+            Inicio
+          </Link>
 
           {!isAdmin && (
             <Link
