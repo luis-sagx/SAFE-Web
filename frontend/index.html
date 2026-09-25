@@ -9,7 +9,9 @@
       name="description"
       content="Plataforma educativa gratuita de la ESPE para aprender a reconocer phishing, smishing, vishing y otros fraudes digitales con simulaciones seguras."
     />
+    <link rel="canonical" href="https://safe-web.site/" />
     <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://safe-web.site/" />
     <meta property="og:site_name" content="SAFE-Web" />
     <meta property="og:locale" content="es_EC" />
     <meta property="og:title" content="SAFE-Web · Aprende a reconocer fraudes digitales" />
@@ -17,7 +19,13 @@
       property="og:description"
       content="Simulaciones seguras de fraudes digitales para personas no técnicas. Proyecto académico de la ESPE."
     />
-    <meta name="twitter:card" content="summary" />
+    <!-- Nombre versionado a propósito: nginx cachea los .png un año como
+         immutable. Si cambia la imagen, cambia el nombre (v2, v3…). -->
+    <meta property="og:image" content="https://safe-web.site/og-safeweb-v1.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="SAFE-Web: aprende a reconocer fraudes digitales" />
+    <meta name="twitter:card" content="summary_large_image" />
     <!-- Tema antes del primer pintado; por qué va en un archivo, en public/tema.js. -->
     <script src="/tema.js"></script>
   </head>

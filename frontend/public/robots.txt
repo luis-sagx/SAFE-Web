@@ -4,3 +4,5 @@
 User-agent: *
 Allow: /
 Disallow: /api/
+
+Sitemap: https://safe-web.site/sitemap.xml
