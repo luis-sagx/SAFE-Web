@@ -1,5 +1,5 @@
 import { Fragment, Suspense } from 'react'
-import { Navigate, Route, Routes } from 'react-router'
+import { Route, Routes } from 'react-router'
 import LoadingScreen from './components/PantallaCarga'
 import PageMeta from './components/PageMeta'
 import RunNotifications from './components/RunNotifications'
@@ -12,6 +12,7 @@ import Welcome from './pages/Bienvenida'
 import BadgePreview from './pages/InsigniaPreview'
 import Dashboard from './pages/Dashboard'
 import Login from './pages/Login'
+import NotFound from './pages/NotFound'
 import ForgotPassword from './pages/OlvidePassword'
 import DataPolicy from './pages/PoliticaDatos'
 import TermsOfUse from './pages/TermsOfUse'
@@ -83,7 +84,7 @@ function App() {
             })}
           </Route>
 
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>
     </>
