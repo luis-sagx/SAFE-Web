@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState, type SyntheticEvent } from "react";
 import {
+  ChevronRight,
+  Download,
   KeyRound,
   Loader2,
   Plus,
@@ -11,6 +13,7 @@ import {
 import AppHeader from "../components/AppHeader";
 import ConfirmDialog, { type Confirmation } from "../components/ConfirmDialog";
 import Modal from "../components/Modal";
+import { getScenario, SECTIONS } from "../data/catalogo";
 import {
   changeParticipantStatus,
   changeTrainerStatus,
@@ -24,6 +27,7 @@ import {
   type AdminParticipant,
   type RunResult,
 } from "../lib/api";
+import { downloadCsv, resultsToCsv } from "../lib/resultsCsv";
 
 type Tab = "participantes" | "testers" | "resultados";
 
@@ -520,10 +524,44 @@ function Testers() {
   );
 }
 
+interface ParticipantGroup {
+  seudonimo: string;
+  runs: RunResult[];
+  correct: number;
+  averageScore: number;
+  totalMs: number;
+  lastFinishedAt: string;
+}
+
+/// Agrupa las corridas por seudónimo, en el orden P001, P002… El backend ya
+/// las devuelve ordenadas por participante y fecha de término.
+function groupByParticipant(rows: RunResult[]): ParticipantGroup[] {
+  const groups = new Map<string, RunResult[]>();
+  for (const r of rows) {
+    groups.set(r.seudonimo, [...(groups.get(r.seudonimo) ?? []), r]);
+  }
+  return [...groups].map(([seudonimo, runs]) => ({
+    seudonimo,
+    runs,
+    correct: runs.filter((r) => r.outcome === "CORRECTO").length,
+    averageScore: Math.round(runs.reduce((sum, r) => sum + r.score, 0) / runs.length),
+    totalMs: runs.reduce((sum, r) => sum + r.durationMs, 0),
+    lastFinishedAt: runs.reduce(
+      (last, r) => (r.finishedAt > last ? r.finishedAt : last),
+      "",
+    ),
+  }));
+}
+
+function minutes(ms: number): string {
+  return `${Math.round(ms / 60000)} min`;
+}
+
 function Results() {
   const [rows, setRows] = useState<RunResult[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [module, setModule] = useState("");
 
   useEffect(() => {
     fetchResults()
@@ -553,53 +591,116 @@ function Results() {
     );
   }
 
+  const visible = module ? rows.filter((r) => r.scenarioId.startsWith(`${module}/`)) : rows;
+  const groups = groupByParticipant(visible);
+
+  function exportCsv() {
+    const suffix = module ? `-${module}` : "";
+    const day = new Date().toISOString().slice(0, 10);
+    downloadCsv(`resultados${suffix}-${day}.csv`, resultsToCsv(visible));
+  }
+
   return (
     <div>
-      <p className="mb-4 text-sm text-body">
-        {rows.length} corridas. Cada participante aparece solo por su seudónimo
-        (P001…): ningún dato personal sale de aquí.
-      </p>
-      <div className="overflow-x-auto rounded-lg border border-hairline-strong">
-        <table className="w-full min-w-[820px] border-collapse text-left text-sm">
-          <thead>
-            <tr className="border-b border-hairline bg-canvas-soft text-muted">
-              <th className="px-4 py-3 font-semibold">Seudónimo</th>
-              <th className="px-4 py-3 font-semibold">Escenario</th>
-              <th className="px-4 py-3 font-semibold">Ver.</th>
-              <th className="px-4 py-3 font-semibold">Resultado</th>
-              <th className="px-4 py-3 font-semibold">Puntaje</th>
-              <th className="px-4 py-3 font-semibold">Duración</th>
-              <th className="px-4 py-3 font-semibold">Terminó</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((r, i) => (
-              <tr
-                key={`${r.seudonimo}-${i}`}
-                className="border-b border-hairline last:border-0"
-              >
-                <td className="px-4 py-3 font-medium text-ink tabular-nums">
-                  {r.seudonimo}
-                </td>
-                <td className="px-4 py-3 text-body">{r.scenarioId}</td>
-                <td className="px-4 py-3 text-muted tabular-nums">
-                  {r.version}
-                </td>
-                <td className="px-4 py-3 text-body">
-                  {OUTCOME_LABEL[r.outcome] ?? r.outcome}
-                </td>
-                <td className="px-4 py-3 text-ink tabular-nums">{r.score}</td>
-                <td className="px-4 py-3 text-muted tabular-nums">
-                  {Math.round(r.durationMs / 1000)}s
-                </td>
-                <td className="px-4 py-3 text-muted tabular-nums">
-                  {date(r.finishedAt)}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+        <p className="text-sm text-body">
+          {visible.length} corridas de {groups.length} participantes. Cada uno
+          aparece solo por su seudónimo (P001…): ningún dato personal sale de aquí.
+        </p>
+        <div className="flex flex-wrap items-end gap-2">
+          <label className="text-xs font-medium text-muted">
+            <span>Módulo</span>
+            <select
+              value={module}
+              onChange={(e) => setModule(e.target.value)}
+              className="mt-1 block h-9 rounded-md border border-hairline-strong bg-surface px-2 text-sm text-ink"
+            >
+              <option value="">Todos</option>
+              {SECTIONS.map((section) => (
+                <option key={section.id} value={section.id}>
+                  {section.titulo}
+                </option>
+              ))}
+            </select>
+          </label>
+          <button
+            type="button"
+            onClick={exportCsv}
+            disabled={visible.length === 0}
+            className="inline-flex h-9 items-center gap-1.5 rounded-md border border-hairline-strong bg-surface px-3 text-sm font-medium text-ink transition hover:bg-surface-strong disabled:opacity-50"
+          >
+            <Download aria-hidden className="size-4" strokeWidth={1.75} />
+            Exportar CSV
+          </button>
+        </div>
       </div>
+
+      {groups.length === 0 ? (
+        <p className="text-base text-muted">No hay corridas en este módulo.</p>
+      ) : (
+        <ul className="divide-y divide-hairline overflow-hidden rounded-lg border border-hairline-strong">
+          {groups.map((g) => (
+            <li key={g.seudonimo}>
+              <details className="group">
+                <summary className="flex cursor-pointer list-none flex-wrap items-center gap-x-6 gap-y-1 bg-surface px-4 py-3 text-sm hover:bg-canvas-soft">
+                  <ChevronRight
+                    aria-hidden
+                    className="size-4 text-muted transition group-open:rotate-90 motion-reduce:transition-none"
+                  />
+                  <span className="w-16 font-semibold text-ink tabular-nums">{g.seudonimo}</span>
+                  <span className="text-body tabular-nums">{g.runs.length} corridas</span>
+                  <span className="text-body tabular-nums">
+                    {g.correct}/{g.runs.length} correctas
+                  </span>
+                  <span className="text-body tabular-nums">Puntaje medio {g.averageScore}</span>
+                  <span className="text-muted tabular-nums">{minutes(g.totalMs)}</span>
+                  <span className="ml-auto text-muted tabular-nums">
+                    Última: {date(g.lastFinishedAt)}
+                  </span>
+                </summary>
+                <div className="overflow-x-auto border-t border-hairline">
+                  <table className="w-full min-w-[720px] border-collapse text-left text-sm">
+                    <thead>
+                      <tr className="border-b border-hairline bg-canvas-soft text-muted">
+                        <th className="px-4 py-2 font-semibold">Escenario</th>
+                        <th className="px-4 py-2 font-semibold">Ver.</th>
+                        <th className="px-4 py-2 font-semibold">Resultado</th>
+                        <th className="px-4 py-2 font-semibold">Puntaje</th>
+                        <th className="px-4 py-2 font-semibold">Duración</th>
+                        <th className="px-4 py-2 font-semibold">Terminó</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {g.runs.map((r) => (
+                        <tr
+                          key={`${r.scenarioId}-${r.finishedAt}`}
+                          className="border-b border-hairline last:border-0"
+                        >
+                          <td className="px-4 py-2 text-body">
+                            {getScenario(r.scenarioId)?.titulo ?? r.scenarioId}
+                            <span className="block text-xs text-muted">{r.scenarioId}</span>
+                          </td>
+                          <td className="px-4 py-2 text-muted tabular-nums">{r.version}</td>
+                          <td className="px-4 py-2 text-body">
+                            {OUTCOME_LABEL[r.outcome] ?? r.outcome}
+                          </td>
+                          <td className="px-4 py-2 text-ink tabular-nums">{r.score}</td>
+                          <td className="px-4 py-2 text-muted tabular-nums">
+                            {Math.round(r.durationMs / 1000)}s
+                          </td>
+                          <td className="px-4 py-2 text-muted tabular-nums">
+                            {date(r.finishedAt)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </details>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }
