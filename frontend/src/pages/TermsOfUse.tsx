@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { Link } from "react-router";
-import { AUTHOR_NAMES, DEGREE, INSTITUTION, PROJECT_TITLE } from "../data/proyecto";
+import { AUTHOR_NAMES, DEGREE, INSTITUTION, PROJECT_TITLE } from "../data/project";
 
 // Fecha fija de la versión vigente: se cambia a mano al editar el texto.
 const LAST_UPDATED = "25 de septiembre de 2026";

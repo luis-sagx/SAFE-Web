@@ -6,7 +6,7 @@ import {
   DEGREE,
   INSTITUTION,
   PROJECT_TITLE,
-} from "../data/proyecto";
+} from "../data/project";
 
 // Fecha fija de la versión vigente: se cambia a mano al editar el texto.
 // Nunca `new Date()`: la política no cambia sola cada día.

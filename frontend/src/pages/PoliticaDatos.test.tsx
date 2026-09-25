@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import { BrowserRouter } from 'react-router'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { CONTACTS, PROJECT_TITLE } from '../data/proyecto'
+import { CONTACTS, PROJECT_TITLE } from '../data/project'
 import DataPolicy from './PoliticaDatos'
 
 function renderPolicy() {
@@ -37,7 +37,7 @@ describe('PoliticaDatos', () => {
     expect(screen.getByText('← Volver')).toBeDefined()
   })
 
-  it('muestra cada correo de contacto una sola vez, tomado de data/proyecto', () => {
+  it('muestra cada correo de contacto una sola vez, tomado de data/project', () => {
     renderPolicy()
     for (const { email } of CONTACTS) {
       const links = screen.getAllByRole('link', { name: email })
