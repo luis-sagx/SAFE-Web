@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState, type SyntheticEvent } from "react";
+import { useCallback, useEffect, useState, type SyntheticEvent } from "react";
 import {
   KeyRound,
   Loader2,
@@ -6,9 +6,9 @@ import {
   Trash2,
   UserCheck,
   UserX,
-  type LucideIcon,
 } from "lucide-react";
 import AppHeader from "../components/AppHeader";
+import ConfirmDialog, { type Confirmation } from "../components/ConfirmDialog";
 import {
   changeParticipantStatus,
   changeTrainerStatus,
@@ -23,17 +23,6 @@ import {
 } from "../lib/api";
 
 type Tab = "participantes" | "formadores" | "resultados";
-
-interface Confirmation {
-  titulo: string;
-  mensaje: string;
-  /// Texto del botón que confirma ("Sí, desactivar").
-  etiqueta: string;
-  Icono: LucideIcon;
-  /// true pinta el botón de confirmar en rojo (acción destructiva).
-  peligro?: boolean;
-  accion: () => void | Promise<void>;
-}
 
 function fullName(p: AdminParticipant): string {
   const parts = [p.nombre, p.apellido].filter(Boolean);
@@ -96,10 +85,8 @@ function Participants() {
   const [list, setList] = useState<AdminParticipant[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [busy, setBusy] = useState<string | null>(null);
   const [newPassword, setNewPassword] = useState("");
   const [confirmation, setConfirmation] = useState<Confirmation | null>(null);
-  const dialogueRef = useRef<HTMLDialogElement>(null);
 
   const load = useCallback(() => {
     setLoading(true);
@@ -111,64 +98,44 @@ function Participants() {
 
   useEffect(load, [load]);
 
-  async function withBlocking(id: string, action: () => Promise<void>) {
-    setError("");
-    setBusy(id);
-    try {
-      await action();
-    } catch (e) {
-      setError((e as Error).message);
-    } finally {
-      setBusy(null);
-    }
-  }
-
-  /// Toda acción sobre un participante pasa por este modal antes de ejecutarse.
-  function requestConfirmation(conf: Confirmation) {
-    setConfirmation(conf);
-    dialogueRef.current?.showModal();
-  }
-
+  // Toda acción sobre un participante pasa por el modal de confirmación.
   const toggleStatus = (p: AdminParticipant) =>
-    requestConfirmation({
+    setConfirmation({
       titulo: p.activo ? "¿Desactivar esta cuenta?" : "¿Activar esta cuenta?",
       mensaje: p.activo
         ? `${fullName(p)} no podrá iniciar sesión hasta que la reactives.`
         : `${fullName(p)} podrá volver a iniciar sesión.`,
       etiqueta: p.activo ? "Sí, desactivar" : "Sí, activar",
       Icono: p.activo ? UserX : UserCheck,
-      accion: () =>
-        withBlocking(p.id, async () => {
-          const updated = await changeParticipantStatus(p.id, !p.activo);
-          setList((prev) => prev.map((x) => (x.id === p.id ? updated : x)));
-        }),
+      accion: async () => {
+        const updated = await changeParticipantStatus(p.id, !p.activo);
+        setList((prev) => prev.map((x) => (x.id === p.id ? updated : x)));
+      },
     });
 
   const reset = (p: AdminParticipant) =>
-    requestConfirmation({
+    setConfirmation({
       titulo: "¿Restablecer la contraseña?",
       mensaje: `Se generará una contraseña nueva para ${fullName(p)} y la actual dejará de funcionar.`,
       etiqueta: "Sí, restablecer",
       Icono: KeyRound,
-      accion: () =>
-        withBlocking(p.id, async () => {
-          const { password } = await resetParticipantPassword(p.id);
-          setNewPassword(password);
-        }),
+      accion: async () => {
+        const { password } = await resetParticipantPassword(p.id);
+        setNewPassword(password);
+      },
     });
 
   const removeParticipant = (p: AdminParticipant) =>
-    requestConfirmation({
+    setConfirmation({
       titulo: "¿Eliminar esta cuenta?",
       mensaje: `Se borrará la cuenta de ${fullName(p)}. Esta acción no se puede deshacer.`,
       etiqueta: "Sí, eliminar",
       Icono: Trash2,
       peligro: true,
-      accion: () =>
-        withBlocking(p.id, async () => {
-          await deleteParticipant(p.id);
-          setList((prev) => prev.filter((x) => x.id !== p.id));
-        }),
+      accion: async () => {
+        await deleteParticipant(p.id);
+        setList((prev) => prev.filter((x) => x.id !== p.id));
+      },
     });
 
   if (loading) {
@@ -240,17 +207,10 @@ function Participants() {
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-end gap-2">
-                      {busy === p.id && (
-                        <Loader2
-                          aria-hidden
-                          className="size-4 animate-spin text-muted"
-                        />
-                      )}
                       <button
                         type="button"
-                        disabled={busy === p.id}
                         onClick={() => toggleStatus(p)}
-                        className="inline-flex h-8 items-center gap-1 rounded-md border border-hairline-strong bg-surface px-2.5 text-xs font-medium text-ink transition hover:bg-surface-strong disabled:opacity-50"
+                        className="inline-flex h-8 items-center gap-1 rounded-md border border-hairline-strong bg-surface px-2.5 text-xs font-medium text-ink transition hover:bg-surface-strong"
                       >
                         {p.activo ? (
                           <UserX aria-hidden className="size-3.5" strokeWidth={1.75} />
@@ -261,10 +221,9 @@ function Participants() {
                       </button>
                       <button
                         type="button"
-                        disabled={busy === p.id}
                         onClick={() => reset(p)}
                         title="Restablecer contraseña"
-                        className="inline-flex h-8 items-center gap-1 rounded-md border border-hairline-strong bg-surface px-2.5 text-xs font-medium text-ink transition hover:bg-surface-strong disabled:opacity-50"
+                        className="inline-flex h-8 items-center gap-1 rounded-md border border-hairline-strong bg-surface px-2.5 text-xs font-medium text-ink transition hover:bg-surface-strong"
                       >
                         <KeyRound
                           aria-hidden
@@ -275,10 +234,9 @@ function Participants() {
                       </button>
                       <button
                         type="button"
-                        disabled={busy === p.id}
                         onClick={() => removeParticipant(p)}
                         title="Eliminar cuenta"
-                        className="inline-flex h-8 items-center gap-1 rounded-md border border-danger/30 bg-surface px-2.5 text-xs font-medium text-danger transition hover:bg-danger/10 disabled:opacity-50"
+                        className="inline-flex h-8 items-center gap-1 rounded-md border border-danger/30 bg-surface px-2.5 text-xs font-medium text-danger transition hover:bg-danger/10"
                       >
                         <Trash2
                           aria-hidden
@@ -296,67 +254,12 @@ function Participants() {
         </div>
       )}
 
-      {/* <dialog> nativo: el navegador atrapa el foco, cierra con Escape y deja
-          el fondo inerte. Toda acción sobre un participante confirma aquí. */}
-      <dialog
-        ref={dialogueRef}
-        onClose={() => setConfirmation(null)}
-        className="m-auto w-[min(92vw,26rem)] rounded-xl border border-hairline-strong bg-surface p-6 text-ink shadow-card backdrop:bg-scrim"
-      >
-        {confirmation && (
-          <>
-            <div className="flex items-start gap-3">
-              <span
-                aria-hidden
-                className={`flex size-10 shrink-0 items-center justify-center rounded-full ${
-                  confirmation.peligro
-                    ? "bg-danger/10 text-danger"
-                    : "bg-surface-strong text-ink"
-                }`}
-              >
-                <confirmation.Icono className="size-5" strokeWidth={1.75} />
-              </span>
-              <div className="min-w-0">
-                <h2 className="text-lg font-semibold text-ink">
-                  {confirmation.titulo}
-                </h2>
-                <p className="mt-1 text-sm leading-relaxed text-body">
-                  {confirmation.mensaje}
-                </p>
-              </div>
-            </div>
-            <form method="dialog" className="mt-6 flex justify-end gap-2">
-              {/* El foco arranca en Cancelar: la acción destructiva no se
-                  confirma con un Enter reflejo. */}
-              <button
-                type="button"
-                value="cancel"
-                autoFocus
-                className="h-9 rounded-md border border-hairline-strong bg-surface px-3 text-sm font-medium text-ink transition hover:bg-surface-strong"
-              >
-                No, cancelar
-              </button>
-              <button
-                type="button"
-                value="confirm"
-                onClick={() => void confirmation.accion()}
-                className={`inline-flex h-9 items-center gap-1.5 rounded-md px-3 text-sm font-medium text-on-primary transition ${
-                  confirmation.peligro
-                    ? "bg-danger hover:opacity-90"
-                    : "bg-primary hover:bg-primary-active"
-                }`}
-              >
-                <confirmation.Icono
-                  aria-hidden
-                  className="size-4"
-                  strokeWidth={1.75}
-                />
-                {confirmation.etiqueta}
-              </button>
-            </form>
-          </>
-        )}
-      </dialog>
+      {confirmation && (
+        <ConfirmDialog
+          confirmation={confirmation}
+          onClose={() => setConfirmation(null)}
+        />
+      )}
     </div>
   );
 }
