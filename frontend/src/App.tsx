@@ -1,6 +1,7 @@
 import { Fragment, Suspense } from 'react'
 import { Navigate, Route, Routes } from 'react-router'
 import LoadingScreen from './components/PantallaCarga'
+import PageMeta from './components/PageMeta'
 import RunNotifications from './components/RunNotifications'
 import RequireAvailableScenario from './components/RequireEscenarioDisponible'
 import RequireAuth from './components/RequireAuth'
@@ -27,6 +28,7 @@ function App() {
 
   return (
     <>
+      <PageMeta />
       <RunNotifications enabled={isAuthenticated} />
       <Suspense fallback={<LoadingScreen />}>
         <Routes>

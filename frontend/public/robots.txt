@@ -1,0 +1,6 @@
+# Solo rutas públicas y ya conocidas. No se listan rutas privadas: este
+# archivo lo puede leer cualquiera, y la protección real es el login. Las
+# páginas privadas llevan <meta name="robots" content="noindex">.
+User-agent: *
+Allow: /
+Disallow: /api/
