@@ -1,14 +1,16 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { Link } from "react-router";
+import {
+  AUTHOR_NAMES,
+  CONTACTS,
+  DEGREE,
+  INSTITUTION,
+  PROJECT_TITLE,
+} from "../data/proyecto";
 
 // Fecha fija de la versión vigente: se cambia a mano al editar el texto.
 // Nunca `new Date()`: la política no cambia sola cada día.
-const LAST_UPDATED = "16 de septiembre de 2026";
-
-const CONTACTS = [
-  { name: "Luis Sagnay", email: "luis@gmail.com" },
-  { name: "Sebastián Parra", email: "sebas@gmail.com" },
-];
+const LAST_UPDATED = "25 de septiembre de 2026";
 
 interface DataItem {
   data: string;
@@ -90,9 +92,16 @@ const BROWSER_STORAGE: DataItem[] = [
       "En el almacenamiento local, solo hasta que el servidor lo recibe.",
   },
   {
-    data: "Preferencia de tema",
-    purpose: "Recordar si elegiste modo claro u oscuro.",
+    data: "Preferencias de tema y sonido",
+    purpose: "Recordar si elegiste modo claro u oscuro y si quieres sonidos.",
     storage: "En el almacenamiento local, sin vencimiento.",
+  },
+  {
+    data: "Marcas técnicas",
+    purpose:
+      "Que el sonido de módulo completado no se repita y que la página se recargue una sola vez tras una actualización.",
+    storage:
+      "En el almacenamiento local o de sesión. No contienen datos personales.",
   },
 ];
 
@@ -149,22 +158,49 @@ interface Section {
 
 const SECTIONS: Section[] = [
   {
-    id: "responsables",
-    title: "Responsables del tratamiento",
+    id: "proyecto-academico",
+    title: "Un proyecto académico",
     body: (
       <>
         <p>
-          SAFE-Web es una plataforma de simulación de ciberamenazas desarrollada
-          como Trabajo de Integración Curricular de la Carrera de Software de la
-          Universidad de las Fuerzas Armadas ESPE. Los responsables de tus datos
-          personales son sus autores:
+          SAFE-Web es el prototipo del Trabajo de Integración Curricular
+          "{PROJECT_TITLE}", que sus autores desarrollan para obtener el título
+          de {DEGREE} en la {INSTITUTION}.
         </p>
-        <ContactEmails />
+        <Bullets>
+          <li>
+            No es un servicio comercial: no vende productos, no muestra
+            publicidad y no tiene fines de lucro.
+          </li>
+          <li>
+            Lo mantiene un equipo de estudiantes, con recursos limitados. Se
+            ofrece tal como está, sin garantía de disponibilidad continua.
+          </li>
+          <li>
+            Estará en funcionamiento mientras dure el proyecto. Al concluir, la
+            plataforma se retira y los datos personales se eliminan (ver
+            "Cuánto tiempo conservamos tus datos").
+          </li>
+        </Bullets>
         <p className="mt-3">
-          SAFE-Web no es una entidad comercial: no vende productos, no muestra
-          publicidad y no tiene fines de lucro.
+          El uso de la plataforma se rige además por los{" "}
+          <Link to="/terminos" className="font-medium text-link underline">
+            términos de uso
+          </Link>
+          .
         </p>
       </>
+    ),
+  },
+  {
+    id: "responsables",
+    title: "Responsables del tratamiento",
+    body: (
+      <p>
+        Los responsables de tus datos personales son los autores del proyecto,{" "}
+        {AUTHOR_NAMES}. Sus correos están en la sección "Contacto", al final de
+        esta página.
+      </p>
     ),
   },
   {
@@ -179,7 +215,8 @@ const SECTIONS: Section[] = [
         </p>
         <p className="mt-3">
           La base del tratamiento es tu <strong>consentimiento</strong>, que das
-          al marcar la casilla "Acepto la política de datos" al registrarte.
+          al marcar la casilla "Acepto los términos de uso y la política de
+          datos" al registrarte.
           Participar es voluntario: puedes no registrarte o retirar tu
           consentimiento después (ver la sección "Cómo ejercer tus derechos").
           La portada pública y sus videos se pueden ver sin crear una cuenta.
@@ -268,14 +305,20 @@ const SECTIONS: Section[] = [
             datos personales.
           </li>
           <li>
-            El equipo investigador consulta los resultados dentro de la
-            plataforma, identificados solo por el seudónimo.
+            El equipo investigador consulta los resultados identificados solo
+            por el seudónimo, y puede exportarlos así (sin nombre, correo ni
+            cédula) para el análisis estadístico.
+          </li>
+          <li>
+            En el panel de administración, la gestión de cuentas (nombre y
+            correo) y los resultados (seudónimo) se muestran por separado, sin
+            mostrar juntos el nombre y el seudónimo.
           </li>
         </Bullets>
         <p className="mt-3">
-          El seudónimo sirve para relacionar tus resultados con el pre-test y el
-          post-test del estudio, que se aplican fuera de esta plataforma (en
-          Moodle). SAFE-Web no envía datos a Moodle ni recibe datos de Moodle.
+          El estudio incluye además un pre-test y un post-test que se aplican
+          fuera de esta plataforma (en Moodle). SAFE-Web no envía datos a Moodle
+          ni recibe datos de Moodle.
         </p>
         <p className="mt-3">
           Los resultados que se publiquen en el Trabajo de Integración
@@ -297,8 +340,8 @@ const SECTIONS: Section[] = [
             certificado.
           </li>
           <li>
-            <strong>El equipo investigador</strong> (Luis Sagnay y Sebastián
-            Parra), con una cuenta de supervisión: puede gestionar cuentas
+            <strong>El equipo investigador</strong> ({AUTHOR_NAMES}), con una
+            cuenta de supervisión: puede gestionar cuentas
             (activarlas, desactivarlas, restablecer la contraseña o
             eliminarlas), revocar certificados y ver los resultados
             seudonimizados.
@@ -368,6 +411,11 @@ const SECTIONS: Section[] = [
         </p>
         <DataList items={BROWSER_STORAGE} />
         <p className="mt-4">
+          Todo lo anterior es necesario para que la plataforma funcione o
+          recuerda una preferencia que tú elegiste. Como no hay nada opcional que
+          aceptar o rechazar, no mostramos un aviso de cookies.
+        </p>
+        <p className="mt-4">
           Si usas un computador compartido, cierra sesión al terminar. Si borras
           los datos del navegador, se perderán los resultados que aún no se
           hayan enviado y tendrás que volver a iniciar sesión.
@@ -380,6 +428,10 @@ const SECTIONS: Section[] = [
     title: "Cómo protegemos tus datos",
     body: (
       <>
+        <p>
+          Aplicamos medidas de seguridad razonables para un proyecto académico
+          de este tamaño, entre ellas:
+        </p>
         <Bullets>
           <li>Conexión cifrada (HTTPS) entre tu navegador y la plataforma.</li>
           <li>
@@ -401,11 +453,11 @@ const SECTIONS: Section[] = [
           </li>
         </Bullets>
         <p className="mt-3">
-          Ningún sistema es infalible. Si ocurriera un incidente de seguridad
-          que afecte tus datos personales, lo notificaremos a la
-          Superintendencia de Protección de Datos Personales y te informaremos a
-          ti, en los plazos que establece la LOPDP, indicando qué pasó y qué
-          medidas tomamos.
+          Ningún sistema es infalible y no podemos garantizar una seguridad
+          absoluta. Si ocurriera un incidente de seguridad que afecte tus datos
+          personales, actuaremos conforme a la LOPDP: lo notificaremos a la
+          Superintendencia de Protección de Datos Personales y te informaremos,
+          indicando qué pasó y qué medidas tomamos.
         </p>
       </>
     ),
@@ -510,8 +562,8 @@ const SECTIONS: Section[] = [
           </li>
         </ol>
         <p className="mt-3">
-          Responderemos en un plazo máximo de <strong>15 días</strong>. El
-          trámite es gratuito.
+          Responderemos dentro del plazo que fija la LOPDP (15 días). El trámite
+          es gratuito.
         </p>
         <p className="mt-3">
           <strong>Si retiras tu consentimiento o pides eliminar tus datos</strong>,

@@ -307,6 +307,10 @@ function Portada() {
                     className="font-medium text-link underline"
                   >
                     Lee la política de datos
+                  </Link>{" "}
+                  y los{" "}
+                  <Link to="/terminos" className="font-medium text-link underline">
+                    términos de uso
                   </Link>
                   .
                 </p>
