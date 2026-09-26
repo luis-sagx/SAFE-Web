@@ -88,7 +88,6 @@ jobs:
     env:
       IDENTIDAD_DATABASE_URL: postgresql://identidad:ci@localhost:5432/ci_test?schema=identidad
       ENTRENAMIENTO_DATABASE_URL: postgresql://entrenamiento:ci@localhost:5432/ci_test?schema=entrenamiento
-      JWT_SECRET: secreto-solo-para-pruebas-de-ci
       CEDULA_PEPPER: pepper-solo-para-pruebas-de-ci
       EMAIL_PEPPER: email-pepper-solo-para-pruebas-de-ci
       # 32 bytes en base64 de verdad: pii.ts exige ese largo exacto para
@@ -113,6 +112,10 @@ jobs:
           cache: pnpm
           cache-dependency-path: backend/pnpm-lock.yaml
       - run: pnpm install --frozen-lockfile
+      # Claves de usar y tirar, nuevas en cada corrida: no hay un secreto de
+      # CI que filtrar ni que rotar.
+      - name: Claves JWT de prueba
+        run: ../scripts/generate-jwt-keys.sh >> "$GITHUB_ENV"
       # El MISMO script que corre en producción, no una copia: si los permisos
       # entre servicios se aflojan ahí, las pruebas dejan de reflejarlo.
       - name: Un rol y un schema por servicio
@@ -241,7 +244,6 @@ jobs:
       POSTGRES_DB: ci
       IDENTIDAD_DB_PASSWORD: ci-identidad
       ENTRENAMIENTO_DB_PASSWORD: ci-entrenamiento
-      JWT_SECRET: ci-secret-solo-para-pruebas
       CEDULA_PEPPER: ci-pepper-solo-para-pruebas
       EMAIL_PEPPER: ci-email-pepper-solo-para-pruebas
       # 32 bytes en base64 de verdad: pii.ts exige ese largo exacto para
@@ -259,6 +261,11 @@ jobs:
       CARTESIA_API_KEY: sk_car_dummy_solo_para_que_arranque_en_ci
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      # docker compose exige las claves para interpolar el archivo, incluso
+      # para `build`. Nuevas en cada corrida.
+      - name: Claves JWT de prueba
+        run: scripts/generate-jwt-keys.sh >> "$GITHUB_ENV"
 
       - run: docker compose build
 

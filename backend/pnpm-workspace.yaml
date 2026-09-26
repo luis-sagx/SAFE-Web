@@ -2,6 +2,10 @@ allowBuilds:
   unrs-resolver: true
   prisma: true
   '@prisma/engines': true
+  # bcrypt trae binarios precompilados (glibc y musl, x64 y arm64) que carga
+  # en tiempo de ejecución: su script de build solo compilaría si faltara uno,
+  # y la imagen alpine no tiene compilador. No se ejecuta.
+  bcrypt: false
   esbuild: set this to true or false
   msgpackr-extract: set this to true or false
   workerd: set this to true or false
