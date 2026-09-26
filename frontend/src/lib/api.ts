@@ -233,8 +233,8 @@ async function requestBlob(
   return response.blob()
 }
 
-export function register(credentials: Credentials): Promise<Session> {
-  return request<Session>('/auth/register', {
+export function register(credentials: Credentials): Promise<{ email: string }> {
+  return request<{ email: string }>('/auth/register', {
     method: 'POST',
     body: credentials,
     auth: false,
@@ -263,6 +263,24 @@ export function resetPassword(token: string, password: string): Promise<null> {
   return request<null>('/auth/reset-password', {
     method: 'POST',
     body: { token, password },
+    auth: false,
+  })
+}
+
+export function confirmEmail(token: string): Promise<null> {
+  return request<null>('/auth/confirm-email', {
+    method: 'POST',
+    body: { token },
+    auth: false,
+  })
+}
+
+// Misma discreción que forgotPassword: la respuesta no distingue cuenta
+// inexistente de ya confirmada.
+export function resendConfirmation(email: string): Promise<null> {
+  return request<null>('/auth/resend-confirmation', {
+    method: 'POST',
+    body: { email },
     auth: false,
   })
 }

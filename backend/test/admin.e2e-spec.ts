@@ -6,7 +6,7 @@ import {
   createTestApp,
   responseBody,
   cleanDatabase,
-  registrationData,
+  registerConfirmedSession,
   type SessionBody,
 } from './identidad.e2e';
 
@@ -24,17 +24,13 @@ describe('Gestión de cuentas por el supervisor (e2e)', () => {
     return responseBody<SessionBody>(res).accessToken;
   }
 
-  /// Registra un participante y devuelve su id y token.
+  /// Registra, confirma e inicia sesión un participante; devuelve su id y
+  /// token. El registro ya no abre sesión por sí solo (issue #295).
   async function newParticipant(suffix: string) {
-    const data = registrationData(suffix);
-    const res = await server()
-      .post('/api/auth/register')
-      .send(data)
-      .expect(201);
-    const session = responseBody<SessionBody>(res);
+    const { session, datos } = await registerConfirmedSession(app, suffix);
     return {
       id: session.participant.id,
-      datos: data,
+      datos,
       token: session.accessToken,
     };
   }
@@ -45,12 +41,16 @@ describe('Gestión de cuentas por el supervisor (e2e)', () => {
     ({ app, prisma } = await createTestApp());
     await cleanDatabase(prisma);
 
-    // Un supervisor: se registra como cualquiera y luego se le sube el rol en
-    // la base (en producción lo hace `pnpm seed`).
-    const sup = registrationData('supervisor');
-    const res = await server().post('/api/auth/register').send(sup).expect(201);
+    // Un supervisor: se registra, confirma e inicia sesión como cualquiera y
+    // luego se le sube el rol en la base (en producción lo hace `pnpm
+    // seed`). Subirle el rol después de confirmar evita depender de que un
+    // ADMIN esté exento de la comprobación de correo confirmado en login.
+    const { session, datos: sup } = await registerConfirmedSession(
+      app,
+      'supervisor',
+    );
     await prisma.participant.update({
-      where: { id: responseBody<SessionBody>(res).participant.id },
+      where: { id: session.participant.id },
       data: { role: 'ADMIN' },
     });
     supervisorToken = await login(sup.email, sup.password);

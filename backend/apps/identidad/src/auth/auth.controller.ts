@@ -13,10 +13,12 @@ import { Throttle } from '@nestjs/throttler';
 import type { CookieOptions, Request, Response } from 'express';
 import { CurrentParticipant, JwtAuthGuard, type JwtPayload } from '@comun';
 import { AuthService } from './auth.service';
+import { ConfirmEmailDto } from './dto/confirm-email.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { LoginDto } from './dto/login.dto';
 import { PatchMeDto } from './dto/patch-me.dto';
 import { RegisterDto } from './dto/register.dto';
+import { ResendConfirmationDto } from './dto/resend-confirmation.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 
 /// Nombre de la cookie del refresh token.
@@ -53,20 +55,8 @@ export class AuthController {
   /// Límite contra registro automatizado: 5 cuentas por minuto y por IP.
   @Throttle({ default: { limit: 5, ttl: 60_000 } })
   @Post('register')
-  async register(
-    @Body() dto: RegisterDto,
-    @Res({ passthrough: true }) res: Response,
-  ) {
-    const session = await this.auth.register(dto);
-    this.setRefreshCookie(
-      res,
-      session.refreshToken,
-      session.refreshTokenExpiresAt,
-    );
-    return {
-      accessToken: session.accessToken,
-      participant: session.participant,
-    };
+  async register(@Body() dto: RegisterDto): Promise<{ email: string }> {
+    return this.auth.register(dto);
   }
 
   /// Límite estricto contra fuerza bruta (OWASP Authentication):
@@ -143,6 +133,25 @@ export class AuthController {
   @Post('reset-password')
   async resetPassword(@Body() dto: ResetPasswordDto): Promise<void> {
     await this.auth.resetPassword(dto.token, dto.password);
+  }
+
+  /// Mismo límite que login: 5 por minuto y por IP, contra quien prueba
+  /// tokens al azar.
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
+  @HttpCode(204)
+  @Post('confirm-email')
+  async confirmEmail(@Body() dto: ConfirmEmailDto): Promise<void> {
+    await this.auth.confirmEmail(dto.token);
+  }
+
+  /// Mismo límite que forgot-password: 5 por minuto y por IP, y misma
+  /// respuesta genérica exista o no la cuenta (ver
+  /// AuthService.resendConfirmation).
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
+  @HttpCode(204)
+  @Post('resend-confirmation')
+  async resendConfirmation(@Body() dto: ResendConfirmationDto): Promise<void> {
+    await this.auth.resendConfirmation(dto.email);
   }
 
   /// El access token lo descarta el propio frontend (vive en memoria/

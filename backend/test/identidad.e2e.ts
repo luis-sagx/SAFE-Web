@@ -1,6 +1,8 @@
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { ThrottlerStorage } from '@nestjs/throttler';
+import request from 'supertest';
+import type { App } from 'supertest/types';
 import { configureApp } from '@comun';
 import { AppModule } from '../apps/identidad/src/app.module';
 import { MailService } from '../apps/identidad/src/mail/mail.service';
@@ -43,6 +45,7 @@ export async function createTestApp(): Promise<{
     .useValue({
       enviarCertificado: () => Promise.resolve(true),
       sendPasswordReset: jest.fn().mockResolvedValue(true),
+      sendEmailConfirmation: jest.fn().mockResolvedValue(true),
     })
     .compile();
 
@@ -134,4 +137,50 @@ export function registrationData(suffix: string) {
     cedula: ecuadorianIdOfTest(),
     password: PASSWORD_TEST,
   };
+}
+
+/// El token de confirmación nunca sale por la API (solo se guarda su hash):
+/// la única forma de conseguirlo en un e2e es leer el enlace del enlace que
+/// capturó el mock de `sendEmailConfirmation`/`sendPasswordReset`.
+export function tokenFromLink(link: string): string {
+  return new URL(link).searchParams.get('token')!;
+}
+
+/// Registra, confirma el correo (leyendo el token real del enlace que
+/// capturó el mock de sendEmailConfirmation) e inicia sesión — el camino
+/// completo que antes cubría un solo POST /auth/register. La mayoría de
+/// los tests que "solo necesitan una cuenta lista" deben usar esto en vez
+/// de reimplementar los tres pasos.
+export async function registerConfirmedSession(
+  app: INestApplication,
+  suffix: string,
+): Promise<{
+  session: SessionBody;
+  datos: ReturnType<typeof registrationData>;
+}> {
+  const server = () => request(app.getHttpServer() as App);
+  const datos = registrationData(suffix);
+
+  await server().post('/api/auth/register').send(datos).expect(201);
+
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+  const mail = app.get(MailService) as { sendEmailConfirmation: jest.Mock };
+  const calls = mail.sendEmailConfirmation.mock.calls as [
+    string,
+    string,
+    string,
+  ][];
+  const [, , link] = calls[calls.length - 1];
+
+  await server()
+    .post('/api/auth/confirm-email')
+    .send({ token: tokenFromLink(link) })
+    .expect(204);
+
+  const res = await server()
+    .post('/api/auth/login')
+    .send({ email: datos.email, password: datos.password })
+    .expect(200);
+
+  return { session: responseBody<SessionBody>(res), datos };
 }

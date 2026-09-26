@@ -49,36 +49,21 @@ function fakeRequest(
 }
 
 describe('AuthController.register', () => {
-  it('pone la cookie del refresh token y devuelve solo el access token y el participante', async () => {
+  it('delega en el servicio y devuelve solo el correo, sin poner cookie', async () => {
     const service = {
-      register: () => Promise.resolve(SESSION),
+      register: () => Promise.resolve({ email: 'ana@correo.com' }),
     } as unknown as AuthService;
-    const { res, calls } = fakeResponse();
 
     const controller = new AuthController(service);
-    const result = await controller.register(
-      {
-        nombre: 'Ana',
-        apellido: 'Pérez',
-        email: 'ana@correo.com',
-        cedula: '1710034065',
-        password: 'Clave-Segura-123!',
-      },
-      res,
-    );
+    const result = await controller.register({
+      nombre: 'Ana',
+      apellido: 'Pérez',
+      email: 'ana@correo.com',
+      cedula: '1710034065',
+      password: 'ClaveSegura123!',
+    });
 
-    expect(calls.cookieName).toBe('mic-refresh-token');
-    expect(calls.cookieValue).toBe(SESSION.refreshToken);
-    expect(calls.cookieOptions).toMatchObject({
-      httpOnly: true,
-      sameSite: 'strict',
-      path: '/api/auth/refresh',
-    });
-    expect(result).toEqual({
-      accessToken: SESSION.accessToken,
-      participant: SESSION.participant,
-    });
-    expect(result).not.toHaveProperty('refreshToken');
+    expect(result).toEqual({ email: 'ana@correo.com' });
   });
 });
 
@@ -230,5 +215,43 @@ describe('AuthController.resetPassword', () => {
       token: 'un-token',
       password: 'Otra-Clave-123!',
     });
+  });
+});
+
+describe('AuthController.confirmEmail', () => {
+  it('delega en el servicio con el token del dto', async () => {
+    let receivedToken: string | undefined;
+    const service = {
+      confirmEmail: (token: string) => {
+        receivedToken = token;
+        return Promise.resolve(undefined);
+      },
+    } as unknown as AuthService;
+
+    const controller = new AuthController(service);
+    const result = await controller.confirmEmail({ token: 'un-token' });
+
+    expect(receivedToken).toBe('un-token');
+    expect(result).toBeUndefined();
+  });
+});
+
+describe('AuthController.resendConfirmation', () => {
+  it('delega en el servicio con el correo del dto', async () => {
+    let receivedEmail: string | undefined;
+    const service = {
+      resendConfirmation: (email: string) => {
+        receivedEmail = email;
+        return Promise.resolve(undefined);
+      },
+    } as unknown as AuthService;
+
+    const controller = new AuthController(service);
+    const result = await controller.resendConfirmation({
+      email: 'ana@correo.com',
+    });
+
+    expect(receivedEmail).toBe('ana@correo.com');
+    expect(result).toBeUndefined();
   });
 });
