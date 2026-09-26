@@ -27,13 +27,13 @@ describe('MenuTema', () => {
     expect(screen.queryAllByRole('radio')).toHaveLength(0)
   })
 
-  it('abre las tres opciones, elige una y se cierra devolviendo el foco', () => {
+  it('abre las dos opciones, elige una y se cierra devolviendo el foco', () => {
     render(<ThemeMenu />)
     const button = screen.getByRole('button', { name: /Tema/ })
 
     fireEvent.click(button)
     expect(button.getAttribute('aria-expanded')).toBe('true')
-    expect(screen.getAllByRole('radio')).toHaveLength(3)
+    expect(screen.getAllByRole('radio')).toHaveLength(2)
 
     fireEvent.click(screen.getByRole('radio', { name: 'Claro' }))
     expect(setPreferenceMock).toHaveBeenCalledWith('claro')

@@ -673,13 +673,14 @@ Antes de escribir código en este repositorio:
 - Tipar de verdad: el frontend está en TypeScript `strict`. Nada de `any`.
 - Correr `pnpm lint && pnpm build` en el proyecto tocado, y `pnpm test` si fue
   el backend, antes de dar el trabajo por terminado.
-- Escribir el código y los comentarios en español, como el resto del repositorio.
+- Seguir las reglas de idioma de [`AGENTS.md`](../AGENTS.md): identificadores
+  nuevos en inglés; interfaz, comentarios y pruebas en español.
 - **Comentar poco y concreto.** Un comentario explica *por qué*, nunca *qué*. Si
   el código ya lo dice, sobra. Si describe una trampa (un orden que importa, una
   decisión de seguridad, un comportamiento raro de una librería), se queda —
   corto.
-- Usar los tokens de `docs/DESIGN.md` mediante clases de Tailwind. Solo modo
-  claro, salvo el interior de un escenario que simula una app oscura.
+- Usar los tokens de `docs/DESIGN.md` mediante clases de Tailwind; cubren el
+  tema claro y el oscuro.
 
 **No hacer**
 

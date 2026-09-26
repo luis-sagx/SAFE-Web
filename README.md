@@ -51,12 +51,13 @@ pnpm start:entrenamiento                            # http://localhost:3002/api
 
 ## Antes de escribir código
 
-Lee **[`docs/ARQUITECTURA.md`](docs/ARQUITECTURA.md)**. Es normativo: define
+Lee **[`AGENTS.md`](AGENTS.md)** (resumen, reglas de idioma y trampas
+conocidas) y **[`docs/ARQUITECTURA.md`](docs/ARQUITECTURA.md)**. Es normativo: define
 cómo se agrega un escenario, cómo se registran los resultados y qué reglas de
 privacidad no se negocian. Aplica igual a personas y a agentes de IA.
 
 Documentos de apoyo:
 
-- [`docs/DESIGN.md`](docs/DESIGN.md) — sistema de diseño (Tailwind, solo modo claro).
+- [`docs/DESIGN.md`](docs/DESIGN.md) — sistema de diseño (Tailwind, tema claro y oscuro).
 - [`docs/justificacion-tecnologias.md`](docs/justificacion-tecnologias.md) — por qué cada tecnología, con fuentes.
 - [`docs/superpowers/specs/2026-07-25-escenarios-ciberamenazas-design.md`](docs/superpowers/specs/2026-07-25-escenarios-ciberamenazas-design.md) — diseño pedagógico de los 35 escenarios.

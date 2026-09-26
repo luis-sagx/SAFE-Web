@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Solo páginas públicas. Mantener en sync con PUBLIC_TITLES de src/components/PageMeta.tsx. -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://safe-web.site/</loc></url>
+  <url><loc>https://safe-web.site/registro</loc></url>
+  <url><loc>https://safe-web.site/login</loc></url>
+  <url><loc>https://safe-web.site/politica-de-datos</loc></url>
+  <url><loc>https://safe-web.site/terminos</loc></url>
+</urlset>

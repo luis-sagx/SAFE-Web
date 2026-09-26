@@ -154,7 +154,7 @@ export class RunsService {
   }
 
   /// Todas las corridas del estudio para el supervisor, seudonimizadas. Se
-  /// devuelven como JSON para verlas dentro de la app; no se descargan.
+  /// devuelven como JSON; el panel las muestra y las exporta a CSV.
   ///
   /// Sale el código pseudónimo (P001), nunca un dato personal: no hay `join`
   /// con el participante ni forma de hacerlo. Los datos personales viven en

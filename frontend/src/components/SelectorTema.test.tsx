@@ -19,20 +19,20 @@ describe('SelectorTema', () => {
     })
   })
 
-  it('tres opciones apiladas, y solo la activa lleva el check', () => {
+  it('dos opciones apiladas, y solo la activa lleva el check', () => {
     render(<ThemeSelector />)
 
-    expect(screen.getAllByRole('radio')).toHaveLength(3)
+    expect(screen.getAllByRole('radio')).toHaveLength(2)
 
     // El check es el único indicio visual además del texto (SC 1.4.1): solo
     // debe aparecer junto a la opción activa.
     const active = screen.getByRole('radio', { name: 'Claro' })
     expect(active.querySelector('svg.lucide-check')).not.toBeNull()
 
-    const inactive = screen.getByRole('radio', { name: 'Sistema' })
+    const inactive = screen.getByRole('radio', { name: 'Oscuro' })
     expect(inactive.querySelector('svg.lucide-check')).toBeNull()
 
-    fireEvent.click(screen.getByRole('radio', { name: 'Sistema' }))
-    expect(setPreferenceMock).toHaveBeenCalledWith('sistema')
+    fireEvent.click(screen.getByRole('radio', { name: 'Oscuro' }))
+    expect(setPreferenceMock).toHaveBeenCalledWith('oscuro')
   })
 })

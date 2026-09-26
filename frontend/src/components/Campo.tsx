@@ -1,3 +1,6 @@
+import { Eye, EyeOff } from 'lucide-react'
+import { useState } from 'react'
+
 interface FieldProps {
   id: string
   label: string
@@ -30,6 +33,10 @@ function Field({
   inputMode,
   error,
 }: FieldProps) {
+  // Con type="password" el campo trae un ojo para ver lo que se escribe: evita
+  // errores de tipeo sin pedir un segundo campo de confirmación.
+  const [visible, setVisible] = useState(false)
+  const isPassword = type === 'password'
   const helpId = help ? `${id}-ayuda` : undefined
   const errorId = error ? `${id}-error` : undefined
 
@@ -38,10 +45,11 @@ function Field({
       <label htmlFor={id} className="block text-sm font-medium text-ink">
         {label}
       </label>
+      <div className="relative">
       <input
         id={id}
         name={id}
-        type={type}
+        type={isPassword && visible ? 'text' : type}
         value={value}
         onChange={(event) => onChange(event.target.value)}
         onBlur={onBlur}
@@ -52,12 +60,25 @@ function Field({
         required
         aria-invalid={error ? true : undefined}
         aria-describedby={[errorId, helpId].filter(Boolean).join(' ') || undefined}
-        className={`mt-1.5 h-11 w-full rounded-md border bg-surface px-4 text-base text-ink placeholder:text-muted-soft focus:outline-none focus:ring-1 ${
+        className={`mt-1.5 h-11 w-full rounded-md border bg-surface px-4 ${isPassword ? 'pr-12' : ''} text-base text-ink placeholder:text-muted-soft focus:outline-none focus:ring-1 ${
           error
             ? 'border-danger focus:border-danger focus:ring-danger'
             : 'border-border-control focus:border-ink focus:ring-ink'
         }`}
       />
+      {isPassword && (
+        <button
+          type="button"
+          onClick={() => setVisible((v) => !v)}
+          aria-label={visible ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+          aria-pressed={visible}
+          aria-controls={id}
+          className="absolute right-1 top-1.5 flex size-11 items-center justify-center rounded-md text-muted transition hover:text-ink focus:outline-none focus-visible:ring-1 focus-visible:ring-ink"
+        >
+          {visible ? <EyeOff aria-hidden className="size-5" /> : <Eye aria-hidden className="size-5" />}
+        </button>
+      )}
+      </div>
       {/* El error va debajo de su campo y no en un banner al inicio del
           formulario: el usuario no técnico no relaciona un banner lejano con
           el campo que falló. */}

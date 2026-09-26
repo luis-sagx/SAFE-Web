@@ -296,14 +296,10 @@ export function restartModule(module: string): Promise<Progress> {
 
 export interface AdminParticipant {
   id: string
-  /** El mismo código que identifica las corridas (P001). Es la llave con la
-   *  que el supervisor cruza a esta persona con su pre-test y su post-test. */
-  seudonimo: string
   nombre: string | null
   apellido: string | null
   email: string | null
   activo: boolean
-  createdAt: string
 }
 
 /** Una corrida del estudio, seudonimizada. Sin ningún dato personal. */
@@ -368,6 +364,12 @@ export function changeTrainerStatus(
   return request<AdminParticipant>(`/admin/trainers/${id}/estado`, {
     method: 'PATCH',
     body: { activo: active },
+  })
+}
+
+export function resetTrainerPassword(id: string): Promise<{ password: string }> {
+  return request<{ password: string }>(`/admin/trainers/${id}/restablecer-password`, {
+    method: 'POST',
   })
 }
 

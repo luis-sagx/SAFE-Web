@@ -1,14 +1,19 @@
-import { useCallback, useEffect, useRef, useState, type SyntheticEvent } from "react";
+import { useCallback, useEffect, useState, type SyntheticEvent } from "react";
 import {
+  ChevronRight,
+  Download,
   KeyRound,
   Loader2,
+  Plus,
   Copy,
   Trash2,
   UserCheck,
   UserX,
-  type LucideIcon,
 } from "lucide-react";
 import AppHeader from "../components/AppHeader";
+import ConfirmDialog, { type Confirmation } from "../components/ConfirmDialog";
+import Modal from "../components/Modal";
+import { getScenario, SECTIONS } from "../data/catalogo";
 import {
   changeParticipantStatus,
   changeTrainerStatus,
@@ -18,22 +23,13 @@ import {
   fetchResults,
   fetchTrainers,
   resetParticipantPassword,
+  resetTrainerPassword,
   type AdminParticipant,
   type RunResult,
 } from "../lib/api";
+import { downloadCsv, resultsToCsv } from "../lib/resultsCsv";
 
-type Tab = "participantes" | "formadores" | "resultados";
-
-interface Confirmation {
-  titulo: string;
-  mensaje: string;
-  /// Texto del botón que confirma ("Sí, desactivar").
-  etiqueta: string;
-  Icono: LucideIcon;
-  /// true pinta el botón de confirmar en rojo (acción destructiva).
-  peligro?: boolean;
-  accion: () => void | Promise<void>;
-}
+type Tab = "participantes" | "testers" | "resultados";
 
 function fullName(p: AdminParticipant): string {
   const parts = [p.nombre, p.apellido].filter(Boolean);
@@ -96,10 +92,8 @@ function Participants() {
   const [list, setList] = useState<AdminParticipant[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [busy, setBusy] = useState<string | null>(null);
   const [newPassword, setNewPassword] = useState("");
   const [confirmation, setConfirmation] = useState<Confirmation | null>(null);
-  const dialogueRef = useRef<HTMLDialogElement>(null);
 
   const load = useCallback(() => {
     setLoading(true);
@@ -111,64 +105,44 @@ function Participants() {
 
   useEffect(load, [load]);
 
-  async function withBlocking(id: string, action: () => Promise<void>) {
-    setError("");
-    setBusy(id);
-    try {
-      await action();
-    } catch (e) {
-      setError((e as Error).message);
-    } finally {
-      setBusy(null);
-    }
-  }
-
-  /// Toda acción sobre un participante pasa por este modal antes de ejecutarse.
-  function requestConfirmation(conf: Confirmation) {
-    setConfirmation(conf);
-    dialogueRef.current?.showModal();
-  }
-
+  // Toda acción sobre un participante pasa por el modal de confirmación.
   const toggleStatus = (p: AdminParticipant) =>
-    requestConfirmation({
+    setConfirmation({
       titulo: p.activo ? "¿Desactivar esta cuenta?" : "¿Activar esta cuenta?",
       mensaje: p.activo
         ? `${fullName(p)} no podrá iniciar sesión hasta que la reactives.`
         : `${fullName(p)} podrá volver a iniciar sesión.`,
       etiqueta: p.activo ? "Sí, desactivar" : "Sí, activar",
       Icono: p.activo ? UserX : UserCheck,
-      accion: () =>
-        withBlocking(p.id, async () => {
-          const updated = await changeParticipantStatus(p.id, !p.activo);
-          setList((prev) => prev.map((x) => (x.id === p.id ? updated : x)));
-        }),
+      accion: async () => {
+        const updated = await changeParticipantStatus(p.id, !p.activo);
+        setList((prev) => prev.map((x) => (x.id === p.id ? updated : x)));
+      },
     });
 
   const reset = (p: AdminParticipant) =>
-    requestConfirmation({
+    setConfirmation({
       titulo: "¿Restablecer la contraseña?",
       mensaje: `Se generará una contraseña nueva para ${fullName(p)} y la actual dejará de funcionar.`,
       etiqueta: "Sí, restablecer",
       Icono: KeyRound,
-      accion: () =>
-        withBlocking(p.id, async () => {
-          const { password } = await resetParticipantPassword(p.id);
-          setNewPassword(password);
-        }),
+      accion: async () => {
+        const { password } = await resetParticipantPassword(p.id);
+        setNewPassword(password);
+      },
     });
 
   const removeParticipant = (p: AdminParticipant) =>
-    requestConfirmation({
+    setConfirmation({
       titulo: "¿Eliminar esta cuenta?",
       mensaje: `Se borrará la cuenta de ${fullName(p)}. Esta acción no se puede deshacer.`,
       etiqueta: "Sí, eliminar",
       Icono: Trash2,
       peligro: true,
-      accion: () =>
-        withBlocking(p.id, async () => {
-          await deleteParticipant(p.id);
-          setList((prev) => prev.filter((x) => x.id !== p.id));
-        }),
+      accion: async () => {
+        await deleteParticipant(p.id);
+        setList((prev) => prev.filter((x) => x.id !== p.id));
+      },
     });
 
   if (loading) {
@@ -201,11 +175,9 @@ function Participants() {
           <table className="w-full min-w-[720px] border-collapse text-left text-sm">
             <thead>
               <tr className="border-b border-hairline bg-canvas-soft text-muted">
-                <th className="px-4 py-3 font-semibold">Seudónimo</th>
                 <th className="px-4 py-3 font-semibold">Nombre</th>
                 <th className="px-4 py-3 font-semibold">Correo</th>
                 <th className="px-4 py-3 font-semibold">Estado</th>
-                <th className="px-4 py-3 font-semibold">Alta</th>
                 <th className="px-4 py-3 text-right font-semibold">Acciones</th>
               </tr>
             </thead>
@@ -215,42 +187,17 @@ function Participants() {
                   key={p.id}
                   className="border-b border-hairline last:border-0"
                 >
-                  <td className="px-4 py-3 font-medium text-ink tabular-nums">
-                    {p.seudonimo}
-                  </td>
                   <td className="px-4 py-3 text-ink">{fullName(p)}</td>
                   <td className="px-4 py-3 text-body">{p.email ?? "Sin correo"}</td>
                   <td className="px-4 py-3">
-                    <span
-                      className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium ${
-                        p.activo
-                          ? "bg-success/10 text-success-ink"
-                          : "bg-surface-strong text-muted"
-                      }`}
-                    >
-                      <span
-                        aria-hidden
-                        className={`size-1.5 rounded-full ${p.activo ? "bg-success" : "bg-muted"}`}
-                      />
-                      {p.activo ? "Activa" : "Desactivada"}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-muted tabular-nums">
-                    {date(p.createdAt)}
+                    <StatusPill active={p.activo} />
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-end gap-2">
-                      {busy === p.id && (
-                        <Loader2
-                          aria-hidden
-                          className="size-4 animate-spin text-muted"
-                        />
-                      )}
                       <button
                         type="button"
-                        disabled={busy === p.id}
                         onClick={() => toggleStatus(p)}
-                        className="inline-flex h-8 items-center gap-1 rounded-md border border-hairline-strong bg-surface px-2.5 text-xs font-medium text-ink transition hover:bg-surface-strong disabled:opacity-50"
+                        className="inline-flex h-8 items-center gap-1 rounded-md border border-hairline-strong bg-surface px-2.5 text-xs font-medium text-ink transition hover:bg-surface-strong"
                       >
                         {p.activo ? (
                           <UserX aria-hidden className="size-3.5" strokeWidth={1.75} />
@@ -261,10 +208,9 @@ function Participants() {
                       </button>
                       <button
                         type="button"
-                        disabled={busy === p.id}
                         onClick={() => reset(p)}
                         title="Restablecer contraseña"
-                        className="inline-flex h-8 items-center gap-1 rounded-md border border-hairline-strong bg-surface px-2.5 text-xs font-medium text-ink transition hover:bg-surface-strong disabled:opacity-50"
+                        className="inline-flex h-8 items-center gap-1 rounded-md border border-hairline-strong bg-surface px-2.5 text-xs font-medium text-ink transition hover:bg-surface-strong"
                       >
                         <KeyRound
                           aria-hidden
@@ -275,10 +221,9 @@ function Participants() {
                       </button>
                       <button
                         type="button"
-                        disabled={busy === p.id}
                         onClick={() => removeParticipant(p)}
                         title="Eliminar cuenta"
-                        className="inline-flex h-8 items-center gap-1 rounded-md border border-danger/30 bg-surface px-2.5 text-xs font-medium text-danger transition hover:bg-danger/10 disabled:opacity-50"
+                        className="inline-flex h-8 items-center gap-1 rounded-md border border-danger/30 bg-surface px-2.5 text-xs font-medium text-danger transition hover:bg-danger/10"
                       >
                         <Trash2
                           aria-hidden
@@ -296,67 +241,12 @@ function Participants() {
         </div>
       )}
 
-      {/* <dialog> nativo: el navegador atrapa el foco, cierra con Escape y deja
-          el fondo inerte. Toda acción sobre un participante confirma aquí. */}
-      <dialog
-        ref={dialogueRef}
-        onClose={() => setConfirmation(null)}
-        className="m-auto w-[min(92vw,26rem)] rounded-xl border border-hairline-strong bg-surface p-6 text-ink shadow-card backdrop:bg-scrim"
-      >
-        {confirmation && (
-          <>
-            <div className="flex items-start gap-3">
-              <span
-                aria-hidden
-                className={`flex size-10 shrink-0 items-center justify-center rounded-full ${
-                  confirmation.peligro
-                    ? "bg-danger/10 text-danger"
-                    : "bg-surface-strong text-ink"
-                }`}
-              >
-                <confirmation.Icono className="size-5" strokeWidth={1.75} />
-              </span>
-              <div className="min-w-0">
-                <h2 className="text-lg font-semibold text-ink">
-                  {confirmation.titulo}
-                </h2>
-                <p className="mt-1 text-sm leading-relaxed text-body">
-                  {confirmation.mensaje}
-                </p>
-              </div>
-            </div>
-            <form method="dialog" className="mt-6 flex justify-end gap-2">
-              {/* El foco arranca en Cancelar: la acción destructiva no se
-                  confirma con un Enter reflejo. */}
-              <button
-                type="button"
-                value="cancel"
-                autoFocus
-                className="h-9 rounded-md border border-hairline-strong bg-surface px-3 text-sm font-medium text-ink transition hover:bg-surface-strong"
-              >
-                No, cancelar
-              </button>
-              <button
-                type="button"
-                value="confirm"
-                onClick={() => void confirmation.accion()}
-                className={`inline-flex h-9 items-center gap-1.5 rounded-md px-3 text-sm font-medium text-on-primary transition ${
-                  confirmation.peligro
-                    ? "bg-danger hover:opacity-90"
-                    : "bg-primary hover:bg-primary-active"
-                }`}
-              >
-                <confirmation.Icono
-                  aria-hidden
-                  className="size-4"
-                  strokeWidth={1.75}
-                />
-                {confirmation.etiqueta}
-              </button>
-            </form>
-          </>
-        )}
-      </dialog>
+      {confirmation && (
+        <ConfirmDialog
+          confirmation={confirmation}
+          onClose={() => setConfirmation(null)}
+        />
+      )}
     </div>
   );
 }
@@ -367,13 +257,145 @@ const OUTCOME_LABEL: Record<string, string> = {
   INCORRECTO: "Incorrecto",
 };
 
-function Trainers() {
+const INPUT_CLASS =
+  "mt-1 block h-10 w-full rounded-md border border-hairline-strong bg-canvas px-3 text-ink";
+
+const EMPTY_TESTER = { nombre: "", apellido: "", email: "" };
+
+/// Formulario de alta dentro de un modal. Al crear, el mismo modal pasa a
+/// mostrar la contraseña inicial, que solo se ve esa vez.
+function CreateTesterModal({
+  onClose,
+  onCreated,
+}: {
+  onClose: () => void;
+  onCreated: () => void;
+}) {
+  const [form, setForm] = useState(EMPTY_TESTER);
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+
+  async function submit(event: SyntheticEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setError("");
+    setSubmitting(true);
+    try {
+      const created = await createTrainer(form);
+      setPassword(created.password);
+      onCreated();
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  if (password) {
+    return (
+      <Modal titulo="Tester creado" onClose={onClose}>
+        <p className="mt-2 text-sm text-body">
+          Entrega esta contraseña inicial por un canal seguro.
+        </p>
+        <div className="mt-4">
+          <PasswordBanner password={password} onClose={onClose} />
+        </div>
+      </Modal>
+    );
+  }
+
+  return (
+    <Modal titulo="Crear tester" onClose={onClose} busy={submitting}>
+      <p className="mt-1 text-sm text-body">
+        La contraseña inicial se muestra una sola vez para entregarla por un canal seguro.
+      </p>
+      <form className="mt-5 grid gap-4 sm:grid-cols-2" onSubmit={submit}>
+        <label className="text-sm font-medium text-ink">
+          <span>Nombre</span>
+          <input
+            required
+            value={form.nombre}
+            onChange={(e) => setForm({ ...form, nombre: e.target.value })}
+            className={INPUT_CLASS}
+          />
+        </label>
+        <label className="text-sm font-medium text-ink">
+          <span>Apellido</span>
+          <input
+            required
+            value={form.apellido}
+            onChange={(e) => setForm({ ...form, apellido: e.target.value })}
+            className={INPUT_CLASS}
+          />
+        </label>
+        <label className="text-sm font-medium text-ink sm:col-span-2">
+          <span>Correo</span>
+          <input
+            required
+            type="email"
+            value={form.email}
+            onChange={(e) => setForm({ ...form, email: e.target.value })}
+            className={INPUT_CLASS}
+          />
+        </label>
+        {error && (
+          <p role="alert" className="text-sm text-danger sm:col-span-2">
+            {error}
+          </p>
+        )}
+        <div className="flex justify-end gap-2 sm:col-span-2">
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={submitting}
+            className="h-10 rounded-md border border-hairline-strong bg-surface px-4 text-sm font-medium text-ink transition hover:bg-surface-strong disabled:opacity-50"
+          >
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            disabled={submitting}
+            className="inline-flex h-10 items-center gap-1.5 rounded-md bg-primary px-4 text-sm font-medium text-on-primary transition hover:bg-primary-active disabled:opacity-60"
+          >
+            {submitting && (
+              <Loader2 aria-hidden className="size-4 animate-spin motion-reduce:animate-none" />
+            )}
+            {submitting ? "Creando…" : "Crear tester"}
+          </button>
+        </div>
+      </form>
+    </Modal>
+  );
+}
+
+function StatusPill({ active }: { active: boolean }) {
+  return (
+    <span
+      className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium ${
+        active ? "bg-success/10 text-success-ink" : "bg-surface-strong text-muted"
+      }`}
+    >
+      <span
+        aria-hidden
+        className={`size-1.5 rounded-full ${active ? "bg-success" : "bg-muted"}`}
+      />
+      {active ? "Activa" : "Desactivada"}
+    </span>
+  );
+}
+
+const ROW_BUTTON_CLASS =
+  "inline-flex h-8 items-center gap-1 rounded-md border border-hairline-strong bg-surface px-2.5 text-xs font-medium text-ink transition hover:bg-surface-strong";
+
+/// Los testers son cuentas de prueba (rol TRAINER en el backend): recorren
+/// los escenarios sin contar para el estudio.
+function Testers() {
   const [list, setList] = useState<AdminParticipant[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [password, setPassword] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-  const [form, setForm] = useState({ nombre: "", apellido: "", email: "" });
+  const [creating, setCreating] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmation, setConfirmation] = useState<Confirmation | null>(null);
 
   const load = useCallback(() => {
     setLoading(true);
@@ -385,81 +407,161 @@ function Trainers() {
 
   useEffect(load, [load]);
 
-  async function submit(event: SyntheticEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setError("");
-    setPassword("");
-    setSubmitting(true);
-    try {
-      const created = await createTrainer(form);
-      setPassword(created.password);
-      setForm({ nombre: "", apellido: "", email: "" });
-      load();
-    } catch (e) {
-      setError((e as Error).message);
-    } finally {
-      setSubmitting(false);
-    }
-  }
+  const toggleStatus = (t: AdminParticipant) =>
+    setConfirmation({
+      titulo: t.activo ? "¿Desactivar este tester?" : "¿Activar este tester?",
+      mensaje: t.activo
+        ? `${fullName(t)} no podrá iniciar sesión hasta que lo reactives.`
+        : `${fullName(t)} podrá volver a iniciar sesión.`,
+      etiqueta: t.activo ? "Sí, desactivar" : "Sí, activar",
+      Icono: t.activo ? UserX : UserCheck,
+      accion: async () => {
+        const updated = await changeTrainerStatus(t.id, !t.activo);
+        setList((prev) => prev.map((x) => (x.id === t.id ? updated : x)));
+      },
+    });
 
-  async function toggle(trainer: AdminParticipant) {
-    setError("");
-    try {
-      const updated = await changeTrainerStatus(trainer.id, !trainer.activo);
-      setList((current) => current.map((item) => item.id === updated.id ? updated : item));
-    } catch (e) {
-      setError((e as Error).message);
-    }
-  }
+  const reset = (t: AdminParticipant) =>
+    setConfirmation({
+      titulo: "¿Restablecer la contraseña?",
+      mensaje: `Se generará una contraseña nueva para ${fullName(t)} y la actual dejará de funcionar.`,
+      etiqueta: "Sí, restablecer",
+      Icono: KeyRound,
+      accion: async () => {
+        const { password } = await resetTrainerPassword(t.id);
+        setNewPassword(password);
+      },
+    });
 
   return (
-    <div className="max-w-4xl">
-      <div className="rounded-lg border border-hairline-strong bg-surface p-5">
-        <h2 className="text-xl font-semibold text-ink">Crear capacitador</h2>
-        <p className="mt-1 text-sm text-body">
-          La contraseña inicial se muestra una sola vez para entregarla por un canal seguro.
+    <div>
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <p className="text-sm text-body">
+          Cuentas para probar los escenarios. Sus corridas no cuentan para el estudio.
         </p>
-        <form className="mt-5 grid gap-4 sm:grid-cols-2" onSubmit={submit}>
-          <label className="text-sm font-medium text-ink">
-            <span>Nombre</span>
-            <input required value={form.nombre} onChange={(e) => setForm({ ...form, nombre: e.target.value })} className="mt-1 block h-10 w-full rounded-md border border-hairline-strong bg-canvas px-3 text-ink" />
-          </label>
-          <label className="text-sm font-medium text-ink">
-            <span>Apellido</span>
-            <input required value={form.apellido} onChange={(e) => setForm({ ...form, apellido: e.target.value })} className="mt-1 block h-10 w-full rounded-md border border-hairline-strong bg-canvas px-3 text-ink" />
-          </label>
-          <label className="text-sm font-medium text-ink sm:col-span-2">
-            <span>Correo</span>
-            <input required type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="mt-1 block h-10 w-full rounded-md border border-hairline-strong bg-canvas px-3 text-ink" />
-          </label>
-          <button type="submit" disabled={submitting} className="h-10 rounded-md bg-primary px-4 text-sm font-medium text-on-primary disabled:opacity-60 sm:w-fit">
-            {submitting ? "Creando…" : "Crear capacitador"}
-          </button>
-        </form>
+        <button
+          type="button"
+          onClick={() => setCreating(true)}
+          className="inline-flex h-9 items-center gap-1.5 rounded-md bg-primary px-3 text-sm font-medium text-on-primary transition hover:bg-primary-active"
+        >
+          <Plus aria-hidden className="size-4" strokeWidth={2} />
+          Crear tester
+        </button>
       </div>
 
-      {password && <div className="mt-4"><PasswordBanner password={password} onClose={() => setPassword("")} /></div>}
-      {error && <p role="alert" className="mt-4 text-sm text-danger">{error}</p>}
+      {newPassword && (
+        <PasswordBanner password={newPassword} onClose={() => setNewPassword("")} />
+      )}
+      {error && (
+        <p role="alert" className="mb-4 text-sm text-danger">
+          {error}
+        </p>
+      )}
 
-      <h2 className="mt-8 text-xl font-semibold text-ink">Capacitadores</h2>
-      {loading && <output className="mt-3 block text-base text-muted">Cargando capacitadores…</output>}
-      {!loading && list.length === 0 && <p className="mt-3 text-base text-muted">Todavía no hay capacitadores creados.</p>}
+      {loading && (
+        <p role="status" className="flex items-center gap-2 text-base text-muted">
+          <Loader2 aria-hidden className="size-4 animate-spin motion-reduce:animate-none" />
+          Cargando testers…
+        </p>
+      )}
+      {!loading && list.length === 0 && (
+        <p className="text-base text-muted">Todavía no hay testers creados.</p>
+      )}
       {!loading && list.length > 0 && (
-        <div className="mt-4 overflow-x-auto rounded-lg border border-hairline-strong">
-          <table className="w-full min-w-[580px] text-left text-sm">
-            <thead><tr className="border-b border-hairline bg-canvas-soft text-muted"><th className="px-4 py-3">Nombre</th><th className="px-4 py-3">Correo</th><th className="px-4 py-3">Estado</th><th className="px-4 py-3 text-right">Acción</th></tr></thead>
-            <tbody>{list.map((trainer) => <tr key={trainer.id} className="border-b border-hairline last:border-0"><td className="px-4 py-3 text-ink">{fullName(trainer)}</td><td className="px-4 py-3 text-body">{trainer.email ?? "Sin correo"}</td><td className="px-4 py-3">{trainer.activo ? "Activo" : "Desactivado"}</td><td className="px-4 py-3 text-right"><button type="button" onClick={() => void toggle(trainer)} className="h-8 rounded-md border border-hairline-strong px-2.5 text-xs font-medium text-ink">{trainer.activo ? "Desactivar" : "Activar"}</button></td></tr>)}</tbody>
+        <div className="overflow-x-auto rounded-lg border border-hairline-strong">
+          <table className="w-full min-w-[720px] border-collapse text-left text-sm">
+            <thead>
+              <tr className="border-b border-hairline bg-canvas-soft text-muted">
+                <th className="px-4 py-3 font-semibold">Nombre</th>
+                <th className="px-4 py-3 font-semibold">Correo</th>
+                <th className="px-4 py-3 font-semibold">Estado</th>
+                <th className="px-4 py-3 text-right font-semibold">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {list.map((t) => (
+                <tr key={t.id} className="border-b border-hairline last:border-0">
+                  <td className="px-4 py-3 text-ink">{fullName(t)}</td>
+                  <td className="px-4 py-3 text-body">{t.email ?? "Sin correo"}</td>
+                  <td className="px-4 py-3">
+                    <StatusPill active={t.activo} />
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center justify-end gap-2">
+                      <button type="button" onClick={() => toggleStatus(t)} className={ROW_BUTTON_CLASS}>
+                        {t.activo ? (
+                          <UserX aria-hidden className="size-3.5" strokeWidth={1.75} />
+                        ) : (
+                          <UserCheck aria-hidden className="size-3.5" strokeWidth={1.75} />
+                        )}
+                        {t.activo ? "Desactivar" : "Activar"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => reset(t)}
+                        title="Restablecer contraseña"
+                        className={ROW_BUTTON_CLASS}
+                      >
+                        <KeyRound aria-hidden className="size-3.5" strokeWidth={1.75} />
+                        Clave
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
           </table>
         </div>
       )}
+
+      {creating && (
+        <CreateTesterModal onClose={() => setCreating(false)} onCreated={load} />
+      )}
+      {confirmation && (
+        <ConfirmDialog confirmation={confirmation} onClose={() => setConfirmation(null)} />
+      )}
     </div>
   );
+}
+
+interface ParticipantGroup {
+  seudonimo: string;
+  runs: RunResult[];
+  correct: number;
+  averageScore: number;
+  totalMs: number;
+  lastFinishedAt: string;
+}
+
+/// Agrupa las corridas por seudónimo, en el orden P001, P002… El backend ya
+/// las devuelve ordenadas por participante y fecha de término.
+function groupByParticipant(rows: RunResult[]): ParticipantGroup[] {
+  const groups = new Map<string, RunResult[]>();
+  for (const r of rows) {
+    groups.set(r.seudonimo, [...(groups.get(r.seudonimo) ?? []), r]);
+  }
+  return [...groups].map(([seudonimo, runs]) => ({
+    seudonimo,
+    runs,
+    correct: runs.filter((r) => r.outcome === "CORRECTO").length,
+    averageScore: Math.round(runs.reduce((sum, r) => sum + r.score, 0) / runs.length),
+    totalMs: runs.reduce((sum, r) => sum + r.durationMs, 0),
+    lastFinishedAt: runs.reduce(
+      (last, r) => (r.finishedAt > last ? r.finishedAt : last),
+      "",
+    ),
+  }));
+}
+
+function minutes(ms: number): string {
+  return `${Math.round(ms / 60000)} min`;
 }
 
 function Results() {
   const [rows, setRows] = useState<RunResult[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [module, setModule] = useState("");
 
   useEffect(() => {
     fetchResults()
@@ -489,53 +591,116 @@ function Results() {
     );
   }
 
+  const visible = module ? rows.filter((r) => r.scenarioId.startsWith(`${module}/`)) : rows;
+  const groups = groupByParticipant(visible);
+
+  function exportCsv() {
+    const suffix = module ? `-${module}` : "";
+    const day = new Date().toISOString().slice(0, 10);
+    downloadCsv(`resultados${suffix}-${day}.csv`, resultsToCsv(visible));
+  }
+
   return (
     <div>
-      <p className="mb-4 text-sm text-body">
-        {rows.length} corridas. Cada participante aparece solo por su seudónimo
-        (P001…): ningún dato personal sale de aquí.
-      </p>
-      <div className="overflow-x-auto rounded-lg border border-hairline-strong">
-        <table className="w-full min-w-[820px] border-collapse text-left text-sm">
-          <thead>
-            <tr className="border-b border-hairline bg-canvas-soft text-muted">
-              <th className="px-4 py-3 font-semibold">Seudónimo</th>
-              <th className="px-4 py-3 font-semibold">Escenario</th>
-              <th className="px-4 py-3 font-semibold">Ver.</th>
-              <th className="px-4 py-3 font-semibold">Resultado</th>
-              <th className="px-4 py-3 font-semibold">Puntaje</th>
-              <th className="px-4 py-3 font-semibold">Duración</th>
-              <th className="px-4 py-3 font-semibold">Terminó</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((r, i) => (
-              <tr
-                key={`${r.seudonimo}-${i}`}
-                className="border-b border-hairline last:border-0"
-              >
-                <td className="px-4 py-3 font-medium text-ink tabular-nums">
-                  {r.seudonimo}
-                </td>
-                <td className="px-4 py-3 text-body">{r.scenarioId}</td>
-                <td className="px-4 py-3 text-muted tabular-nums">
-                  {r.version}
-                </td>
-                <td className="px-4 py-3 text-body">
-                  {OUTCOME_LABEL[r.outcome] ?? r.outcome}
-                </td>
-                <td className="px-4 py-3 text-ink tabular-nums">{r.score}</td>
-                <td className="px-4 py-3 text-muted tabular-nums">
-                  {Math.round(r.durationMs / 1000)}s
-                </td>
-                <td className="px-4 py-3 text-muted tabular-nums">
-                  {date(r.finishedAt)}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+        <p className="text-sm text-body">
+          {visible.length} corridas de {groups.length} participantes. Cada uno
+          aparece solo por su seudónimo (P001…): ningún dato personal sale de aquí.
+        </p>
+        <div className="flex flex-wrap items-end gap-2">
+          <label className="text-xs font-medium text-muted">
+            <span>Módulo</span>
+            <select
+              value={module}
+              onChange={(e) => setModule(e.target.value)}
+              className="mt-1 block h-9 rounded-md border border-hairline-strong bg-surface px-2 text-sm text-ink"
+            >
+              <option value="">Todos</option>
+              {SECTIONS.map((section) => (
+                <option key={section.id} value={section.id}>
+                  {section.titulo}
+                </option>
+              ))}
+            </select>
+          </label>
+          <button
+            type="button"
+            onClick={exportCsv}
+            disabled={visible.length === 0}
+            className="inline-flex h-9 items-center gap-1.5 rounded-md border border-hairline-strong bg-surface px-3 text-sm font-medium text-ink transition hover:bg-surface-strong disabled:opacity-50"
+          >
+            <Download aria-hidden className="size-4" strokeWidth={1.75} />
+            Exportar CSV
+          </button>
+        </div>
       </div>
+
+      {groups.length === 0 ? (
+        <p className="text-base text-muted">No hay corridas en este módulo.</p>
+      ) : (
+        <ul className="divide-y divide-hairline overflow-hidden rounded-lg border border-hairline-strong">
+          {groups.map((g) => (
+            <li key={g.seudonimo}>
+              <details className="group">
+                <summary className="flex cursor-pointer list-none flex-wrap items-center gap-x-6 gap-y-1 bg-surface px-4 py-3 text-sm hover:bg-canvas-soft">
+                  <ChevronRight
+                    aria-hidden
+                    className="size-4 text-muted transition group-open:rotate-90 motion-reduce:transition-none"
+                  />
+                  <span className="w-16 font-semibold text-ink tabular-nums">{g.seudonimo}</span>
+                  <span className="text-body tabular-nums">{g.runs.length} corridas</span>
+                  <span className="text-body tabular-nums">
+                    {g.correct}/{g.runs.length} correctas
+                  </span>
+                  <span className="text-body tabular-nums">Puntaje medio {g.averageScore}</span>
+                  <span className="text-muted tabular-nums">{minutes(g.totalMs)}</span>
+                  <span className="ml-auto text-muted tabular-nums">
+                    Última: {date(g.lastFinishedAt)}
+                  </span>
+                </summary>
+                <div className="overflow-x-auto border-t border-hairline">
+                  <table className="w-full min-w-[720px] border-collapse text-left text-sm">
+                    <thead>
+                      <tr className="border-b border-hairline bg-canvas-soft text-muted">
+                        <th className="px-4 py-2 font-semibold">Escenario</th>
+                        <th className="px-4 py-2 font-semibold">Ver.</th>
+                        <th className="px-4 py-2 font-semibold">Resultado</th>
+                        <th className="px-4 py-2 font-semibold">Puntaje</th>
+                        <th className="px-4 py-2 font-semibold">Duración</th>
+                        <th className="px-4 py-2 font-semibold">Terminó</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {g.runs.map((r) => (
+                        <tr
+                          key={`${r.scenarioId}-${r.finishedAt}`}
+                          className="border-b border-hairline last:border-0"
+                        >
+                          <td className="px-4 py-2 text-body">
+                            {getScenario(r.scenarioId)?.titulo ?? r.scenarioId}
+                            <span className="block text-xs text-muted">{r.scenarioId}</span>
+                          </td>
+                          <td className="px-4 py-2 text-muted tabular-nums">{r.version}</td>
+                          <td className="px-4 py-2 text-body">
+                            {OUTCOME_LABEL[r.outcome] ?? r.outcome}
+                          </td>
+                          <td className="px-4 py-2 text-ink tabular-nums">{r.score}</td>
+                          <td className="px-4 py-2 text-muted tabular-nums">
+                            {Math.round(r.durationMs / 1000)}s
+                          </td>
+                          <td className="px-4 py-2 text-muted tabular-nums">
+                            {date(r.finishedAt)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </details>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }
@@ -545,8 +710,8 @@ function Admin() {
   let content = <Results />;
   if (tab === "participantes") {
     content = <Participants />;
-  } else if (tab === "formadores") {
-    content = <Trainers />;
+  } else if (tab === "testers") {
+    content = <Testers />;
   }
 
   const tabClassName = (active: boolean) =>
@@ -573,11 +738,11 @@ function Admin() {
           <button
             type="button"
             role="tab"
-            aria-selected={tab === "formadores"}
-            onClick={() => setTab("formadores")}
-            className={tabClassName(tab === "formadores")}
+            aria-selected={tab === "testers"}
+            onClick={() => setTab("testers")}
+            className={tabClassName(tab === "testers")}
           >
-            Capacitadores
+            Testers
           </button>
           <button
             type="button"
