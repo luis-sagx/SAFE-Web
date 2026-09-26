@@ -1,6 +1,6 @@
 import { ConflictException, NotFoundException } from '@nestjs/common';
 import type { ConfigService } from '@nestjs/config';
-import { compare } from 'bcryptjs';
+import { compare } from 'bcrypt';
 import { AdminService } from './admin.service';
 import type { PrismaService } from '../prisma/prisma.service';
 

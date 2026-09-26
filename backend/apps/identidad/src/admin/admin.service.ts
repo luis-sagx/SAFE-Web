@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { randomBytes } from 'node:crypto';
-import { hash } from 'bcryptjs';
+import { hash } from 'bcrypt';
 import { decryptOptional, encrypt, hashEmail } from '../pii/pii';
 import { PrismaService } from '../prisma/prisma.service';
 

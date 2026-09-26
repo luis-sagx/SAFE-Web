@@ -35,7 +35,8 @@ personal** — ni tabla, ni permiso de Postgres.
 ## Empezar
 
 ```bash
-cp .env.example .env          # rellenar las contraseñas y JWT_SECRET
+cp .env.example .env          # rellenar las contraseñas
+scripts/generate-jwt-keys.sh >> .env   # claves de los JWT
 docker compose up -d --build
 docker compose exec identidad node prisma/seed.mts --email tu.correo@espe.edu.ec
 ```

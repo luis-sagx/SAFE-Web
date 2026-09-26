@@ -3,8 +3,14 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { pseudonym, type AttestationPayload, type JwtPayload } from '@comun';
+import {
+  pseudonym,
+  readPemKey,
+  type AttestationPayload,
+  type JwtPayload,
+} from '@comun';
 import { Prisma } from '../../../../generated/entrenamiento/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateRunDto } from './dto/create-run.dto';
@@ -29,10 +35,18 @@ export interface RunResult {
 
 @Injectable()
 export class RunsService {
+  /// Clave propia de `entrenamiento`: la única que firma atestaciones.
+  /// `identidad` solo tiene la pública, y este servicio no tiene la privada
+  /// de sesiones, así que ninguno puede fabricar lo del otro.
+  private readonly attestationKey: string;
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwt: JwtService,
-  ) {}
+    config: ConfigService,
+  ) {
+    this.attestationKey = readPemKey(config, 'ENTRENAMIENTO_JWT_PRIVATE_KEY');
+  }
 
   create(participant: JwtPayload, dto: CreateRunDto) {
     return this.prisma.scenarioRun.create({
@@ -147,6 +161,7 @@ export class RunsService {
     };
 
     const attestation = await this.jwt.signAsync(payload, {
+      privateKey: this.attestationKey,
       expiresIn: ATTESTATION_EXPIRES_IN,
     });
 

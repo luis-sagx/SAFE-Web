@@ -1,3 +1,4 @@
+import { generateKeyPairSync } from 'node:crypto';
 import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import type { ConfigService } from '@nestjs/config';
 import type { JwtService } from '@nestjs/jwt';
@@ -32,13 +33,23 @@ function jwtReturning(payload: unknown) {
   } as unknown as JwtService;
 }
 
+/// Clave real (el constructor la valida); la verificación está simulada.
+const ATTESTATION_PUBLIC_KEY = Buffer.from(
+  generateKeyPairSync('ec', { namedCurve: 'P-256' })
+    .publicKey.export({ type: 'spki', format: 'pem' })
+    .toString(),
+).toString('base64');
+
 function fakeConfig() {
   return {
     get: () => 'https://safeweb.espe.edu.ec',
-    // Valor fijo cualquiera: los fixtures de este archivo son texto plano
-    // sin el prefijo "v1:", así que `decryptOptional()` los deja pasar tal
-    // cual sin necesitar la clave real.
-    getOrThrow: () => 'clave-de-prueba',
+    // Para la clave PII, valor fijo cualquiera: los fixtures de este archivo
+    // son texto plano sin el prefijo "v1:", así que `decryptOptional()` los
+    // deja pasar tal cual sin necesitar la clave real.
+    getOrThrow: (name: string) =>
+      name === 'ENTRENAMIENTO_JWT_PUBLIC_KEY'
+        ? ATTESTATION_PUBLIC_KEY
+        : 'clave-de-prueba',
   } as unknown as ConfigService;
 }
 

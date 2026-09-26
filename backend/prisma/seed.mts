@@ -8,7 +8,7 @@
 import 'dotenv/config';
 import { randomBytes } from 'node:crypto';
 import { PrismaPg } from '@prisma/adapter-pg';
-import { hash } from 'bcryptjs';
+import { hash } from 'bcrypt';
 // Extensión .js: Node lo ejecuta como ESM y la resolución la exige.
 import { PrismaClient } from '../generated/identidad/client.js';
 import { encrypt, hashEmail } from '../apps/identidad/src/pii/pii.ts';

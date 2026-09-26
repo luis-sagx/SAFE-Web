@@ -337,9 +337,9 @@ a `identidad`, `/api/runs/*` a `entrenamiento`.
 | Método | Ruta | Servicio | Auth | Qué hace |
 |---|---|---|---|---|
 | `GET` | `/api/health` | ambos | — | Health check (Docker y CI). Nginx expone el de `identidad`. |
-| `POST` | `/api/auth/register` | identidad | — | `{ nombre, apellido, email, cedula, password }` → `{ accessToken, participant }` + cookie `Set-Cookie` con el refresh token. Máx. 5/min por IP. |
-| `POST` | `/api/auth/login` | identidad | — | `{ email, password }` → `{ accessToken, participant }` + cookie con el refresh token. Máx. 5 intentos/min por IP. |
-| `POST` | `/api/auth/refresh` | identidad | cookie `mic-refresh-token` | Sin body: lee el refresh token de la cookie httpOnly. → nuevo `{ accessToken, participant }` + cookie rotada. Relee la cuenta de la base (rechaza si está desactivada). Máx. 20/min por IP. |
+| `POST` | `/api/auth/register` | identidad | — | `{ nombre, apellido, email, cedula, password }` → `{ accessToken, participant }` + cookie `Set-Cookie` con el refresh token. Máx. 5/min por correo. |
+| `POST` | `/api/auth/login` | identidad | — | `{ email, password }` → `{ accessToken, participant }` + cookie con el refresh token. Máx. 5 intentos/min por correo. |
+| `POST` | `/api/auth/refresh` | identidad | cookie `mic-refresh-token` | Sin body: lee el refresh token de la cookie httpOnly. → nuevo `{ accessToken, participant }` + cookie rotada. Relee la cuenta de la base (rechaza si está desactivada). Máx. 20/min por sesión (hash de la cookie). |
 | `POST` | `/api/auth/logout` | identidad | — | Borra la cookie del refresh token. `204`. |
 | `GET` | `/api/auth/me` | identidad | JWT | Devuelve el participante del token. |
 | `PATCH` | `/api/auth/me` | identidad | JWT | Actualiza `onboardingVisto`. |
@@ -359,9 +359,23 @@ a `identidad`, `/api/runs/*` a `entrenamiento`.
 
 ### 5.1 Contrato del token
 
-Tres tokens, todos firmados con `JWT_SECRET`, distinguidos por `typ` — sin esa
-marca, un refresh token (vida larga) serviría como access token en cualquier
-ruta protegida, y viceversa. `JwtAuthGuard` rechaza cualquiera cuyo `typ` no
+Tres tokens ES256 (ECDSA P-256) con **dos pares de claves**:
+
+| Token | Firma | Verifica |
+|---|---|---|
+| access, refresh | `identidad` (`IDENTIDAD_JWT_PRIVATE_KEY`) | `identidad` y `entrenamiento` (pública) |
+| atestación | `entrenamiento` (`ENTRENAMIENTO_JWT_PRIVATE_KEY`) | `identidad` (pública) |
+
+Cada servicio recibe solo su privada y la pública del otro
+(`docker-compose.yml`). Con un secreto compartido, quien comprometiera
+`entrenamiento` podía fabricar un access token de supervisor y entrar a
+`identidad`; ahora su clave solo firma atestaciones. El algoritmo va fijo al
+verificar (`alg: none` o HS256 se rechazan). Las claves se generan con
+`scripts/generate-jwt-keys.sh`; rotar el par de `identidad` cierra todas las
+sesiones.
+
+Además se distinguen por `typ` — sin esa marca, un refresh token (vida larga)
+serviría como access token en cualquier ruta protegida, y viceversa. `JwtAuthGuard` rechaza cualquiera cuyo `typ` no
 sea `'access'`; `CertificadosService` rechaza igual cualquiera cuyo `typ` no
 sea `'atestacion'`.
 
@@ -415,8 +429,26 @@ un JWT de una sola vida larga.
 
 Las cabeceras de proxy de Nginx (`X-Real-IP`, `X-Forwarded-For`) van en
 `frontend/proxy-comun.inc` y se incluyen en **cada** `location`: nginx no hereda
-`proxy_set_header`, y sin ellas el límite de 5 intentos de login por minuto
-contaría todas las peticiones como si vinieran del contenedor de nginx.
+`proxy_set_header`, y sin ellas los límites por IP contarían todas las
+peticiones como si vinieran del contenedor de nginx.
+
+**Límites de peticiones.** Una sesión presencial pone a 30–40 personas detrás
+de la misma IP pública (el NAT de la universidad), así que casi ningún límite
+es por IP:
+
+| Qué | Cubo | Dónde |
+|---|---|---|
+| Rutas con access token | participante (`sub` del token, verificado): 120/min | `ParticipantThrottlerGuard` (`libs/comun`) |
+| login, registro, forgot-password, resend-confirmation | correo: 5/min | `emailTracker` en `auth.controller.ts` |
+| refresh | sesión (hash de la cookie): 20/min | `auth.controller.ts` |
+| confirm-email, reset-password | IP: 30/min (el token de 256 bits no se adivina) | `auth.controller.ts` |
+| todo `/api/auth` | IP: 120/min, ráfaga 60 | `limit_req` en `nginx.conf` |
+| sin token | IP: 120/min | `ParticipantThrottlerGuard` |
+
+Si hay un reverse proxy delante de `web` (el que termina TLS), nginx toma la IP
+real de `X-Forwarded-For` solo cuando la petición llega desde un rango privado
+(`set_real_ip_from`). Si ese proxy es un CDN con IPs públicas, hay que agregar
+sus rangos.
 
 Cuerpo de `POST /api/runs`:
 
@@ -549,7 +581,7 @@ Reglas que **no se negocian**:
    ve; es solo la llave con la que el supervisor cruza estos resultados con
    las respuestas del pre-test y post-test.
 3. **Contraseñas con bcrypt** (factor 12). Nunca en texto plano ni en logs.
-4. **Login y registro con límite de 5/min por IP.** El login responde el mismo
+4. **Login y registro con límite de 5/min por correo** (y un techo por IP en nginx, ver §5.1). El login responde el mismo
    error para correo inexistente y contraseña incorrecta, y compara siempre
    contra un hash señuelo, para no revelar quién está registrado.
 5. **Access token de expiración corta** (15 min por defecto) y sin datos
@@ -582,7 +614,8 @@ Servidor propio, con Docker Compose. Cuatro servicios: `db`, `identidad`,
 `entrenamiento` y `web`.
 
 ```bash
-cp .env.example .env          # contraseñas de los dos roles y JWT_SECRET
+cp .env.example .env          # contraseñas de los dos roles
+scripts/generate-jwt-keys.sh >> .env   # claves de los JWT
 docker compose up -d --build
 docker compose exec identidad node prisma/seed.mts --email tu.correo@espe.edu.ec
 ```
@@ -607,7 +640,35 @@ Sheet), ya aplicada en `docker-compose.yml` y en los `Dockerfile`:
 - un rol de Postgres por servicio, sin permisos sobre el schema del otro.
 
 Pendiente al desplegar de verdad: **TLS delante de `web`** (reverse proxy con
-Let's Encrypt) y una rutina de respaldo del volumen `pgdata`.
+Let's Encrypt).
+
+### Respaldos
+
+`scripts/backup-db.sh` hace un `pg_dump` de los schemas `identidad` y
+`entrenamiento`, conserva 14 días en el servidor y, con `BACKUP_REMOTE`, copia
+cada respaldo fuera con `rclone` (conviene un remoto `crypt`). Se programa con
+cron:
+
+```bash
+0 3 * * * BACKUP_REMOTE=cifrado:safe-web /ruta/safe-web/scripts/backup-db.sh >> /var/log/safe-web-backup.log 2>&1
+```
+
+- **Nunca se copia el volumen `pgdata` en caliente**: sale corrupto. Siempre
+  `pg_dump`.
+- **Las claves van aparte.** Sin `PII_ENCRYPTION_KEY`, `EMAIL_PEPPER` y
+  `CEDULA_PEPPER` el dump no sirve (nombres y correos ilegibles, ninguna
+  cédula vuelve a coincidir). Se guardan en un gestor de contraseñas, nunca
+  junto al dump.
+- **Prueba mensual**: `scripts/verify-backup.sh <archivo.dump>` lo restaura en
+  un Postgres desechable en memoria, con el mismo `db-init`, y cuenta filas.
+
+Restaurar de verdad (servidor nuevo o volumen perdido), con el mismo `.env`:
+
+```bash
+docker compose up -d db                   # volumen nuevo: db-init crea roles y schemas
+docker compose exec -T db sh -c 'pg_restore -U "$POSTGRES_USER" -d "$POSTGRES_DB" --clean --if-exists' < respaldo.dump
+docker compose up -d                      # migrate deploy ve las migraciones ya aplicadas
+```
 
 ### CI
 
@@ -624,6 +685,49 @@ Dos pasos que existen por la arquitectura de microservicios y no deben quitarse:
 - **Un paso comprueba que el rol `entrenamiento` recibe `permission denied` al
   leer `identidad."Participant"`.** Es la verificación directa de la regla de
   privacidad del estudio contra una base real.
+
+### Pruebas de carga
+
+`tests/carga/nominal.js` es el smoke de CI (1 petición/s). La prueba de
+capacidad es `tests/carga/aula.js`: cada usuario virtual es una persona con su
+propia cuenta que entra, abre una sección, juega un escenario (pausa de
+20–60 s), registra la corrida y a veces revisa su recorrido. Todo sale de una
+IP, como un aula tras el NAT de la universidad.
+
+| Perfil | Forma | Pregunta |
+|---|---|---|
+| `smoke` | 1 VU, 1 min | ¿Funciona? |
+| `spike` | 40 VUs entran en 10 s, 3 min | ¿Aguanta el inicio de una clase? |
+| `carga` | 50 VUs sostenidos 10 min | ¿p95 < 750 ms en uso normal? |
+| `estres` | +10 VUs cada 2 min hasta `MAX_VUS` | ¿Dónde se rompe? (sin umbrales: el quiebre es el dato) |
+| `soak` | 30 VUs, 1 h | ¿Hay fugas de memoria? |
+
+En el entorno de pruebas, nunca en producción:
+
+```bash
+CONFIRMO_ENTORNO_DE_PRUEBA=si python3 tests/carga/seed_accounts.py --count 100
+k6 run -e BASE_URL=https://pruebas… -e PROFILE=spike -e ACCOUNTS=100 tests/carga/aula.js
+```
+
+`seed_accounts.py` registra por el API y confirma en la base solo las cuentas
+de esa corrida. Con una `RESEND_API_KEY` real mandaría un correo por cuenta:
+en pruebas va una de mentira. El workflow `stress.yml` corre el perfil elegido
+contra `LOAD_TEST_URL`. Mientras corre, `docker stats` muestra qué contenedor
+se satura.
+
+Medición de referencia (26-09-2026, stack completo en Docker sobre la máquina
+de desarrollo, no el servidor; repetirla allí antes de citarla):
+
+| Prueba | bcryptjs | bcrypt nativo |
+|---|---|---|
+| `spike` 40 VUs: error / p95 / p95 login | 0 % / 218 ms / 228 ms | 0 % / 174 ms / 208 ms |
+| `spike`: CPU máx. de `identidad` | 86 % | 46 % |
+| 120 logins simultáneos (40 × 3): p95 | 8,88 s | 2,26 s |
+
+`identidad` es el cuello de botella (hash de contraseñas); `entrenamiento`,
+`db` y `web` no pasaron del 8 % de CPU. `bcrypt` nativo hashea en el threadpool
+de libuv (4 hilos) en vez del hilo principal, y lee los hashes que dejó
+`bcryptjs` sin migrar nada.
 
 ---
 
@@ -711,6 +815,7 @@ Antes de escribir código en este repositorio:
 | Estado global | Context API | Solo hay un estado compartido (la sesión). Redux sería sobreingeniería. |
 | Backend | Dos microservicios cortados por sensibilidad del dato | Hace que la regla de privacidad del estudio deje de depender de la disciplina al escribir consultas y pase a ser una imposibilidad técnica (§2.1). |
 | Comunicación entre servicios | Ninguna: todo lo que necesitan viaja en el JWT | Evita acoplamiento en tiempo de ejecución y una cadena de fallos donde un servicio caído tumba al otro. |
+| Firma de los JWT | ES256, un par de claves por servicio | Con un secreto compartido, un servicio comprometido podía emitir sesiones del otro (§5.1). |
 | Base de datos | Un Postgres, un schema y un rol por servicio | Dos contenedores de base complicarían la operación de una sesión presencial sin añadir aislamiento que los roles no den ya. |
 | Contenido de escenarios | En el repositorio, no en la base | No es dato del estudio ni varía por usuario. |
 | Pre/post-test | Moodle, fuera de la plataforma | Ya resuelto y validado; construirlo dentro no aportaría al objetivo. |

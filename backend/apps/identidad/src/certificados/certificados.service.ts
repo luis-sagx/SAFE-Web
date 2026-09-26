@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import type { AttestationPayload, JwtPayload } from '@comun';
+import { readPemKey, type AttestationPayload, type JwtPayload } from '@comun';
 import { MailService } from '../mail/mail.service';
 import { decryptOptional } from '../pii/pii';
 import { PrismaService } from '../prisma/prisma.service';
@@ -51,6 +51,8 @@ export interface CertificateVerification {
 export class CertificatesService {
   private readonly logger = new Logger(CertificatesService.name);
   private readonly piiKey: string;
+  /// Pública de `entrenamiento`: verifica atestaciones, no puede firmarlas.
+  private readonly attestationKey: string;
 
   constructor(
     private readonly prisma: PrismaService,
@@ -59,6 +61,7 @@ export class CertificatesService {
     private readonly mail: MailService,
   ) {
     this.piiKey = config.getOrThrow<string>('PII_ENCRYPTION_KEY');
+    this.attestationKey = readPemKey(config, 'ENTRENAMIENTO_JWT_PUBLIC_KEY');
   }
 
   private certificateOrigin(): string {
@@ -75,7 +78,9 @@ export class CertificatesService {
   ): Promise<AttestationPayload> {
     let payload: AttestationPayload;
     try {
-      payload = await this.jwt.verifyAsync<AttestationPayload>(attestation);
+      payload = await this.jwt.verifyAsync<AttestationPayload>(attestation, {
+        publicKey: this.attestationKey,
+      });
     } catch {
       throw new ForbiddenException('Atestación inválida o vencida.');
     }

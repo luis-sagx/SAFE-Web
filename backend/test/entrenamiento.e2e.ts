@@ -5,6 +5,7 @@ import { ThrottlerStorage } from '@nestjs/throttler';
 import { configureApp, type JwtPayload } from '@comun';
 import { AppModule } from '../apps/entrenamiento/src/app.module';
 import { PrismaService } from '../apps/entrenamiento/src/prisma/prisma.service';
+import { envPem } from './keys.e2e';
 
 export interface TestEnvironment {
   app: INestApplication;
@@ -12,7 +13,8 @@ export interface TestEnvironment {
   /// Firma un token como lo haría `identidad`. Que estas pruebas puedan
   /// hacerlo sin levantar el otro servicio ES la propiedad que se verifica:
   /// `entrenamiento` valida el JWT localmente y nunca llama a `identidad`.
-  token: (payload: Partial<JwtPayload>) => Promise<string>;
+  /// `privateKey` permite firmar con otra clave para probar que se rechaza.
+  token: (payload: Partial<JwtPayload>, privateKey?: string) => Promise<string>;
 }
 
 export async function createTestApp(): Promise<TestEnvironment> {
@@ -37,14 +39,19 @@ export async function createTestApp(): Promise<TestEnvironment> {
   return {
     app,
     prisma: app.get(PrismaService),
-    token: (payload) =>
-      jwt.signAsync({
-        sub: 'p-1',
-        seq: 1,
-        role: 'PARTICIPANT',
-        typ: 'access',
-        ...payload,
-      } satisfies JwtPayload),
+    // Con la privada de `identidad` explícita: el servicio desplegado no la
+    // tiene, solo la pública para verificar.
+    token: (payload, privateKey = envPem('IDENTIDAD_JWT_PRIVATE_KEY')) =>
+      jwt.signAsync(
+        {
+          sub: 'p-1',
+          seq: 1,
+          role: 'PARTICIPANT',
+          typ: 'access',
+          ...payload,
+        } satisfies JwtPayload,
+        { privateKey },
+      ),
   };
 }
 
