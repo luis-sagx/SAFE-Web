@@ -24,22 +24,24 @@ export const options = {
 }
 
 export function setup() {
-  const suffix = Date.now()
+  // Ya no se registra una cuenta nueva aquí: desde que el registro exige
+  // confirmar el correo (issue #295), una cuenta recién creada no puede
+  // iniciar sesión de inmediato, y k6 corre en su propio contenedor sin
+  // acceso a Postgres para confirmarla a mano (a diferencia del paso previo
+  // del pipeline, "Registro y corrida contra la pila real", que sí tiene
+  // acceso vía `docker compose exec`). En su lugar, se reutiliza esa misma
+  // cuenta — ya registrada y confirmada por ese paso anterior — con un
+  // login normal, que sigue entregando sesión de inmediato sin cambios.
   const response = http.post(
-    `${baseUrl}/api/auth/register`,
+    `${baseUrl}/api/auth/login`,
     JSON.stringify({
-      nombre: 'Carga',
-      apellido: 'CI',
-      email: `carga-${suffix}@ejemplo.ec`,
-      // Distinta de la usada por el smoke previo del pipeline, pero igual de
-      // válida: la cédula se indexa de forma única incluso como HMAC.
-      cedula: '1710034073',
+      email: 'ci@ejemplo.ec',
       password: 'Clave-Larga-123!',
     }),
     { headers: { 'Content-Type': 'application/json' }, responseType: 'text' },
   )
 
-  check(response, { 'registro de carga responde 201': (r) => r.status === 201 })
+  check(response, { 'login de carga responde 200': (r) => r.status === 200 })
   const body = response.json()
   return { accessToken: body.accessToken }
 }

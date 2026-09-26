@@ -292,9 +292,23 @@ jobs:
       # y la única forma de verificarlo es a través del gateway real.
       - name: Registro y corrida contra la pila real
         run: |
-          token=$(curl -fsS -X POST http://localhost:8080/api/auth/register \
+          curl -fsS -X POST http://localhost:8080/api/auth/register \
             -H 'Content-Type: application/json' \
             -d '{"nombre":"Prueba","apellido":"CI","email":"ci@ejemplo.ec","cedula":"1710034065","password":"Clave-Larga-123!"}' \
+            > /dev/null
+
+          # El registro ya no entrega sesión (issue #295): la cuenta queda sin
+          # confirmar, y el correo real no se puede leer desde este smoke
+          # test (Resend usa una clave dummy aquí). Se confirma directo en la
+          # base, mismo patrón que ya usa el paso de abajo para hablar con
+          # Postgres a través del contenedor.
+          docker compose exec -T -e PGPASSWORD=ci-identidad db \
+            psql -U identidad -d ci -h 127.0.0.1 \
+            -c 'UPDATE identidad."Participant" SET "emailConfirmedAt" = now() WHERE email IS NOT NULL;'
+
+          token=$(curl -fsS -X POST http://localhost:8080/api/auth/login \
+            -H 'Content-Type: application/json' \
+            -d '{"email":"ci@ejemplo.ec","password":"Clave-Larga-123!"}' \
             | python3 -c 'import json,sys; print(json.load(sys.stdin)["accessToken"])')
           curl -fsS -X POST http://localhost:8080/api/runs \
             -H "Authorization: Bearer $token" -H 'Content-Type: application/json' \
