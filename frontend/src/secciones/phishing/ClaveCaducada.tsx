@@ -198,7 +198,7 @@ const RULE =
 
 const SUMMARY = 'Un correo de "Soporte TI" avisa que tu contraseña caduca hoy a las 18:00.'
 
-const CONTEXT: Context = {
+export const CONTEXT: Context = {
   antes: (
     <>
       Trabajas en <strong>Corporación Andes</strong> y tu correo institucional termina en{' '}

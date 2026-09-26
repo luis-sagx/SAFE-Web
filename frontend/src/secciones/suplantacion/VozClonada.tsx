@@ -326,7 +326,7 @@ const RULE =
 
 const SUMMARY = 'Llamas a contestar y oyes a tu hija llorando: dice que tuvo un accidente.'
 
-const CONTEXT: Context = {
+export const CONTEXT: Context = {
   antes: (
     <>
       Tu hija <strong>Camila</strong> está en la universidad esta tarde y se llevó el carro, como

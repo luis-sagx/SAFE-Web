@@ -352,7 +352,7 @@ const RULE =
 
 const SUMMARY = 'Un SMS avisa que tu tarjeta fue bloqueada y da un número para reactivarla.'
 
-const CONTEXT: Context = {
+export const CONTEXT: Context = {
   antes:
     'Usas esa tarjeta casi a diario y la última compra fue hace unos días, en el supermercado.',
   ahora: (

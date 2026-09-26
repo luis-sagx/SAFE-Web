@@ -306,7 +306,7 @@ const RULE =
 
 const SUMMARY = 'Un celular a mitad de precio, pero solo se paga por adelantado y sin verlo.'
 
-const CONTEXT: Context = {
+export const CONTEXT: Context = {
   antes: (
     <>
       Llevas semanas queriendo cambiar de celular y vas mirando anuncios en una{' '}

@@ -31,13 +31,13 @@ const SIGNALS: Signal[] = [
   { id: 'vacio', targetId: 'estacionamiento-vacio', texto: '<b>Repórtalo a IT</b> en vez de llevártelo: no hay a quién preguntar de quién es.' },
 ]
 
-const context: Context = {
+export const CONTEXT: Context = {
   antes: 'Los dispositivos encontrados en estacionamientos, salas de descanso o escritorios pueden estar preparados para comprometer un equipo cuando alguien los conecta.',
   ahora: <><strong>Hoy temprano</strong> encuentras un USB negro tirado junto a tu auto. No hay nadie cerca para saber de quién es.</>,
 }
 
 export default function UsbTrap() {
-  return <ScenarioStory escenarioId="fisico/trampa-usb" resumen="USB abandonado, decide qué hacer con él" contexto={context}
+  return <ScenarioStory escenarioId="fisico/trampa-usb" resumen="USB abandonado, decide qué hacer con él" contexto={CONTEXT}
     nota="Un USB encontrado no es un objeto perdido que debas conectar ni llevarte." story={STORY} senales={SIGNALS}
     rule="<b>No conectes ni recojas dispositivos desconocidos.</b> Déjalos donde están y avisa al área responsable."
     restartLabel="Intentar de nuevo" cuandoTermina="Cuando elijas qué hacer con el USB. La primera decisión cierra el escenario."

@@ -286,7 +286,7 @@ const RULE =
 
 const SUMMARY = 'El banco llama para preguntarte si un consumo de $890 es tuyo.'
 
-const CONTEXT: Context = {
+export const CONTEXT: Context = {
   antes: (
     <>
       Cliente del <strong>Banco del Litoral</strong>. Hoy solo compraste en la farmacia y{' '}

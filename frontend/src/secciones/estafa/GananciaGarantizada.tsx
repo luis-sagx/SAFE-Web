@@ -364,7 +364,7 @@ const RULE =
 
 const SUMMARY = 'Una plataforma garantiza 30% mensual, y tu primer retiro pequeño sí llegó.'
 
-const CONTEXT: Context = {
+export const CONTEXT: Context = {
   antes: (
     <>
       Un conocido te metió en un <strong>grupo de inversión</strong> por mensajería, donde la gente

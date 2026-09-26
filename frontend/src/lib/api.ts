@@ -197,35 +197,37 @@ async function request<T>(
   return throwResponseError(response)
 }
 
-// Variante de `request` para la única respuesta no-JSON del API (el PDF del
-// certificado); repite el reintento de sesión en vez de compartir código
-// porque el cuerpo se lee de dos formas distintas.
+// Variante de `request` para las respuestas no-JSON del API (el PDF del
+// certificado, el audio del saludo); repite el reintento de sesión en vez de
+// compartir código porque el cuerpo se lee de dos formas distintas.
 async function requestBlob(
   path: string,
-  body: unknown,
+  options: { method?: string; body?: unknown } = {},
   retried = false,
 ): Promise<Blob> {
+  const { method = 'POST', body } = options
   const token = getToken()
-  const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+  const headers: Record<string, string> = {}
+  if (body !== undefined) headers['Content-Type'] = 'application/json'
   if (token) {
     headers.Authorization = `Bearer ${token}`
   }
 
   const response = await fetch(`${BASE_URL}${path}`, {
-    method: 'POST',
+    method,
     headers,
     credentials: 'same-origin',
-    body: JSON.stringify(body),
+    body: body === undefined ? undefined : JSON.stringify(body),
   })
 
   if (!response.ok) {
     if (response.status === 401 && !retried && (await refreshSession())) {
-      return requestBlob(path, body, true)
+      return requestBlob(path, options, true)
     }
     if (response.status === 401) {
       setToken(null)
     }
-    throw new ApiError('No se pudo generar el certificado.', response.status)
+    throw new ApiError('No se pudo obtener el archivo.', response.status)
   }
 
   return response.blob()
@@ -403,10 +405,17 @@ export function issueCertificate(attestation: string): Promise<Certificate> {
 }
 
 export function downloadCertificatePdf(attestation: string): Promise<Blob> {
-  return requestBlob('/certificados/pdf', { atestacion: attestation })
+  return requestBlob('/certificados/pdf', { body: { atestacion: attestation } })
 }
 
 /** Pública, sin sesión: no pasa por `auth`. */
 export function verifyCertificate(code: string): Promise<CertificateVerification> {
   return request<CertificateVerification>(`/certificados/verificar/${code}`, { auth: false })
+}
+
+// --- Narración (saludo personalizado) ---
+
+/** Sin body: el nombre sale del participante autenticado, nunca de aquí. */
+export function fetchGreetingAudio(): Promise<Blob> {
+  return requestBlob('/narracion/saludo', { method: 'GET' })
 }

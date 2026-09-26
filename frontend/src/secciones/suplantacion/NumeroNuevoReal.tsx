@@ -290,7 +290,7 @@ const RULE =
 const SUMMARY =
   "Tu tía escribe desde un número nuevo para avisar que perdió el celular.";
 
-const CONTEXT: Context = {
+export const CONTEXT: Context = {
   antes: (
     <>
       Tu tía <strong>Rocío</strong> te escribe cada tanto y la ves en las

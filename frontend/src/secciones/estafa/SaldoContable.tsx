@@ -302,7 +302,7 @@ const RULE =
 const SUMMARY =
   'Vendes una laptop y el comprador manda un comprobante de depósito pidiendo que despaches ya.'
 
-const CONTEXT: Context = {
+export const CONTEXT: Context = {
   antes: (
     <>
       Pusiste en venta tu <strong>laptop en $1.000</strong> por una página de compraventa, y un

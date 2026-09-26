@@ -88,7 +88,7 @@ const STORY: Story<ScreenNode> = {
   },
 }
 
-const context: Context = {
+export const CONTEXT: Context = {
   antes:
     'En tu celular tienes la app del banco, el correo del trabajo y los chats con tus compañeros. No le pusiste clave de bloqueo: desbloquearlo a cada rato te parecía una molestia.',
   ahora: (
@@ -105,7 +105,7 @@ export default function CompromisedCable() {
     <ScenarioStory
       escenarioId="fisico/cable-comprometido"
       resumen="Camino a casa, te roban el celular"
-      contexto={context}
+      contexto={CONTEXT}
       nota="Mira la escena con calma antes de decidir."
       story={STORY}
       senales={SIGNALS}

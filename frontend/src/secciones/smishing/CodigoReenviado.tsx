@@ -279,7 +279,7 @@ const RULE =
 
 const SUMMARY = 'Alguien dice ser del banco y pide que le reenvíes el código que acaba de llegarte.'
 
-const CONTEXT: Context = {
+export const CONTEXT: Context = {
   antes: 'Tienes la app del banco instalada y la usas de vez en cuando para revisar el saldo.',
   ahora: (
     <>

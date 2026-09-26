@@ -246,7 +246,7 @@ const RULE =
 
 const SUMMARY = 'Amaneces con una llamada perdida de madrugada de un número extranjero.'
 
-const CONTEXT: Context = {
+export const CONTEXT: Context = {
   antes: (
     <>
       No esperas ninguna llamada del exterior: <strong>no tienes familia fuera</strong> ni trámites

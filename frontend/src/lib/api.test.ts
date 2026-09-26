@@ -5,6 +5,7 @@ import {
   downloadCertificatePdf,
   issueCertificate,
   fetchAttestation,
+  fetchGreetingAudio,
   fetchMe,
   forgotPassword,
   getToken,
@@ -279,5 +280,25 @@ describe('api · certificado', () => {
 
     await expect(downloadCertificatePdf('un.jwt.firmado')).rejects.toBeInstanceOf(ApiError)
     expect(getToken()).toBeNull()
+  })
+})
+
+describe('api · narración', () => {
+  beforeEach(() => {
+    localStorage.clear()
+  })
+
+  it('fetchGreetingAudio pide GET /narracion/saludo con el token y devuelve el blob', async () => {
+    setToken('t0ken')
+    const audio = new Blob(['mp3-falso'])
+    const fetchMock = mockFetch({ blob: () => Promise.resolve(audio) })
+
+    const result = await fetchGreetingAudio()
+
+    expect(result).toBe(audio)
+    const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit]
+    expect(url).toContain('/narracion/saludo')
+    expect(init.method).toBe('GET')
+    expect((init.headers as Record<string, string>).Authorization).toBe('Bearer t0ken')
   })
 })

@@ -202,7 +202,7 @@ const RULE =
 
 const SUMMARY = 'Un SMS avisa una citación de tránsito y amenaza con duplicar el valor.'
 
-const CONTEXT: Context = {
+export const CONTEXT: Context = {
   antes: (
     <>
       Tienes carro y ya te ha pasado pagar multas tarde, así que una citación nueva no te parece

@@ -108,7 +108,7 @@ const RULE =
 
 const SUMMARY = 'Un correo con tu nombre y cédula pide $2.40 para liberar un paquete de aduana.'
 
-const CONTEXT: Context = {
+export const CONTEXT: Context = {
   antes: 'Compraste unos audífonos inalámbricos hace unos días y sí estás esperando el envío.',
   ahora: (
     <>

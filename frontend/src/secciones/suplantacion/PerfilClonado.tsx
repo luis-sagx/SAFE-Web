@@ -380,7 +380,7 @@ const RULE =
 
 const SUMMARY = 'Una amiga te escribe desde una cuenta nueva y termina pidiéndote dinero prestado.'
 
-const CONTEXT: Context = {
+export const CONTEXT: Context = {
   antes: (
     <>
       <strong>Marcela</strong> es amiga tuya desde el colegio. Se escriben de vez en cuando por la

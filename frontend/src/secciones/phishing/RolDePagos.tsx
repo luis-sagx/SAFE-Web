@@ -187,7 +187,7 @@ const RULE =
 
 const SUMMARY = `Talento Humano avisa que tu rol de pagos de ${PERIOD_ROLE} ya está en el portal.`;
 
-const CONTEXT: Context = {
+export const CONTEXT: Context = {
   antes: (
     <>
       Trabajas en <strong>Corporación Andes</strong>. Todos los meses Talento

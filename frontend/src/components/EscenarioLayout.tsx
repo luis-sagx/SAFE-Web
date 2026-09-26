@@ -4,6 +4,7 @@ import { Link } from "react-router";
 import AppHeader, { BACK_CLASS } from "./AppHeader";
 import ScenarioEndNotice from "./ui/AvisoFinEscenario";
 import ScenarioContext, { type Context } from "./ui/ContextoEscenario";
+import NarracionContexto from "./ui/NarracionContexto";
 import type { ScenarioResult } from "../hooks/useScenarioRun";
 import { useAuth } from "../context/AuthContext";
 import { getSectionScenarios, getScenario, getSection } from "../data/catalogo";
@@ -208,6 +209,7 @@ function ScenarioLayout({
 
               <div className="mt-5">
                 <ScenarioContext contexto={context} />
+                <NarracionContexto contexto={context} />
               </div>
 
               {/* Sin caja: es una frase más de lo que estás a punto de hacer,

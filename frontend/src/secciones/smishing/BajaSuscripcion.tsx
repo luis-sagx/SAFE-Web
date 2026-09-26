@@ -183,7 +183,7 @@ const RULE =
 
 const SUMMARY = 'Un SMS cobra una suscripción que nunca contrataste y ofrece cancelarla.'
 
-const CONTEXT: Context = {
+export const CONTEXT: Context = {
   antes: 'Tienes una línea prepago y recargas cada tanto, sin llevar mucho la cuenta del saldo.',
   ahora: (
     <>

@@ -290,7 +290,7 @@ const RULE =
 const SUMMARY =
   'Una agente inmobiliaria te da la dirección y tres horarios para ver un departamento.'
 
-const CONTEXT: Context = {
+export const CONTEXT: Context = {
   antes: (
     <>
       Llevas <strong>un mes buscando departamento</strong> y escribiste a varios anuncios del sector

@@ -318,7 +318,7 @@ const RULE =
 const SUMMARY =
   'Un comprador te transfiere de más "por error" y te pide que le devuelvas la diferencia.'
 
-const CONTEXT: Context = {
+export const CONTEXT: Context = {
   antes: (
     <>
       Vendiste una <strong>bicicleta en $130</strong> por una página de compraventa. Quedaste con el

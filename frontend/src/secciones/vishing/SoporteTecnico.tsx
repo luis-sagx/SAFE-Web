@@ -320,7 +320,7 @@ const RULE =
 
 const SUMMARY = 'Una llamada dice ser del soporte de tu internet y quiere arreglarte el router.'
 
-const CONTEXT: Context = {
+export const CONTEXT: Context = {
   antes: (
     <>
       Tienes internet en casa con <strong>AndinaNet</strong> y, como a todo el mundo, alguna tarde

@@ -346,7 +346,7 @@ const RULE =
 
 const SUMMARY = 'Un número desconocido llama para avisarte de que ganaste un sorteo.'
 
-const CONTEXT: Context = {
+export const CONTEXT: Context = {
   antes: (
     <>
       Estás en tu casa, sin ningún trámite pendiente, y{' '}

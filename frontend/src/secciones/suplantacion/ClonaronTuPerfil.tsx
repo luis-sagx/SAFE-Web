@@ -345,7 +345,7 @@ const RULE =
 
 const SUMMARY = 'Una amiga te avisa de que alguien usa tu nombre y tus fotos para pedir dinero.'
 
-const CONTEXT: Context = {
+export const CONTEXT: Context = {
   antes: (
     <>
       Tienes una cuenta en la red social desde hace años, con <strong>fotos públicas</strong> y tu

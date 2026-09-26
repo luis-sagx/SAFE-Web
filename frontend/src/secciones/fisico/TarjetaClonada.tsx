@@ -86,7 +86,7 @@ const STORY: Story<ScreenNode> = {
   },
 }
 
-const context: Context = {
+export const CONTEXT: Context = {
   antes:
     'Sacar efectivo es parte de la rutina, y los cajeros de la calle suelen tener gente alrededor, sobre todo al final de la semana.',
   ahora: (
@@ -104,7 +104,7 @@ export default function ClonedCard() {
     <ScenarioStory
       escenarioId="fisico/tarjeta-clonada"
       resumen="Retiro en el cajero, el cajero falla"
-      contexto={context}
+      contexto={CONTEXT}
       nota="Mira la escena con calma antes de decidir."
       story={STORY}
       senales={SIGNALS}

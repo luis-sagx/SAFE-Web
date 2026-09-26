@@ -173,7 +173,7 @@ const RULE =
 
 const SUMMARY = 'Un SMS del courier avisa que tu paquete llega mañana en la mañana.'
 
-const CONTEXT: Context = {
+export const CONTEXT: Context = {
   antes: 'Compraste algo por internet hace unos días y estás esperando que llegue.',
   ahora: (
     <>

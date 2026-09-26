@@ -6,6 +6,7 @@ import { HealthController } from '@comun';
 import { AdminModule } from './admin/admin.module';
 import { AuthModule } from './auth/auth.module';
 import { CertificatesModule } from './certificados/certificados.module';
+import { NarracionModule } from './narracion/narracion.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { assertPiiEncryptionKey } from './pii/pii';
 
@@ -30,6 +31,7 @@ import { assertPiiEncryptionKey } from './pii/pii';
     AuthModule,
     AdminModule,
     CertificatesModule,
+    NarracionModule,
   ],
   controllers: [HealthController],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],

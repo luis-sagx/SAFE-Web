@@ -296,7 +296,7 @@ const RULE =
 const SUMMARY =
   'Una encuesta de satisfacción de tu banco te hace unas preguntas para "validarte".';
 
-const CONTEXT: Context = {
+export const CONTEXT: Context = {
   antes: (
     <>
       Cliente del <strong>Banco del Litoral</strong> desde hace años. La semana

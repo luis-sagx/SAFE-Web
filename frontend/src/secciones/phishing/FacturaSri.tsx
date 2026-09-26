@@ -194,7 +194,7 @@ const RULE =
 const SUMMARY =
   "Un correo dice que tienes una factura electrónica pendiente de validar.";
 
-const CONTEXT: Context = {
+export const CONTEXT: Context = {
   antes: (
     <>
       Emites facturas de vez en cuando, así que un aviso del{" "}

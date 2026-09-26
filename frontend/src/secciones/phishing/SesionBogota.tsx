@@ -156,7 +156,7 @@ const RULE =
 const SUMMARY =
   "Un correo avisa que alguien inició sesión en tu cuenta desde Bogotá.";
 
-const CONTEXT: Context = {
+export const CONTEXT: Context = {
   antes: (
     <>
       Eres cliente del <strong>Banco del Litoral</strong>.
