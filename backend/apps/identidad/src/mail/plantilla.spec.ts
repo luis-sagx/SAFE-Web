@@ -13,7 +13,10 @@ describe('emailLayout', () => {
   });
 
   it('no revienta con HTML que ya trae etiquetas propias en el cuerpo', () => {
-    const html = emailLayout('Título', '<p>Con <a href="https://x.com">un link</a> adentro.</p>');
+    const html = emailLayout(
+      'Título',
+      '<p>Con <a href="https://x.com">un link</a> adentro.</p>',
+    );
 
     expect(html).toContain('<a href="https://x.com">un link</a>');
   });

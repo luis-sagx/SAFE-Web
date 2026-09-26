@@ -8,8 +8,7 @@ import {
   createTestApp,
   responseBody,
   cleanDatabase,
-  registrationData,
-  type SessionBody,
+  registerConfirmedSession,
 } from './identidad.e2e';
 
 interface CertificateBody {
@@ -67,16 +66,12 @@ describe('Certificados (e2e)', () => {
     } satisfies AttestationPayload);
   }
 
-  /// Registra un participante real y decodifica su propio access token para
-  /// sacarle `sub`/`seq`: el perfil que devuelve `/auth/register` nunca trae
-  /// `seq` (el participante no debe verlo), así que es el único lugar de
-  /// donde tomarlo sin tocar la base a mano.
+  /// Registra, confirma e inicia sesión un participante real, y decodifica
+  /// su propio access token para sacarle `sub`/`seq`: el perfil que
+  /// devuelve login nunca trae `seq` (el participante no debe verlo), así
+  /// que es el único lugar de donde tomarlo sin tocar la base a mano.
   async function participant(suffix: string) {
-    const res = await server()
-      .post('/api/auth/register')
-      .send(registrationData(suffix))
-      .expect(201);
-    const session = responseBody<SessionBody>(res);
+    const { session } = await registerConfirmedSession(app, suffix);
     const payload = jwt.decode<JwtPayload>(session.accessToken);
     return {
       accessToken: session.accessToken,

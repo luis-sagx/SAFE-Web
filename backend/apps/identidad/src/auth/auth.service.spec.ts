@@ -648,21 +648,22 @@ describe('AuthService.resendConfirmation', () => {
     // emailConfirmedAt), así que sin este filtro cualquiera que supiera su
     // correo podría disparar un envío de "confirma tu cuenta" hacia esa
     // cuenta de staff desde este endpoint público.
-    const findFirst = jest.fn().mockResolvedValue(null);
+    let whereClause: Record<string, unknown> | undefined;
     const sendEmailConfirmation = jest.fn();
     const auth = service(
-      { findFirst },
+      {
+        findFirst: ({ where }: { where: Record<string, unknown> }) => {
+          whereClause = where;
+          return Promise.resolve(null);
+        },
+      },
       jwtFake(),
       fakeMail({ sendEmailConfirmation }),
     );
 
     await auth.resendConfirmation('trainer@correo.com');
 
-    expect(findFirst).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: expect.objectContaining({ role: 'PARTICIPANT' }),
-      }),
-    );
+    expect(whereClause?.role).toBe('PARTICIPANT');
     expect(sendEmailConfirmation).not.toHaveBeenCalled();
   });
 });

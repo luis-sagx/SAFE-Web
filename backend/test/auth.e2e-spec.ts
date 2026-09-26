@@ -8,6 +8,8 @@ import {
   createTestApp,
   responseBody,
   cleanDatabase,
+  registerConfirmedSession,
+  tokenFromLink,
   PASSWORD_INVALID,
   PASSWORD_TEST,
   registrationData,
@@ -32,8 +34,14 @@ describe('Autenticación (e2e)', () => {
     return mail.sendPasswordReset;
   }
 
-  function tokenFromLink(link: string): string {
-    return new URL(link).searchParams.get('token')!;
+  // Igual que sendPasswordReset(), pero para el enlace de confirmación de
+  // correo que manda register()/resendConfirmation().
+  function sendEmailConfirmation(): jest.Mock {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+    const mail = app.get(MailService) as {
+      sendEmailConfirmation: jest.Mock;
+    };
+    return mail.sendEmailConfirmation;
   }
 
   beforeAll(async () => {
@@ -53,20 +61,34 @@ describe('Autenticación (e2e)', () => {
   });
 
   describe('POST /api/auth/register', () => {
-    it('crea el participante y devuelve un token', async () => {
+    it('crea el participante sin confirmar y solo devuelve el correo', async () => {
+      sendEmailConfirmation().mockClear();
+
       const res = await server()
         .post('/api/auth/register')
         .send(registrationData('alta'))
         .expect(201);
 
-      const session = responseBody<SessionBody>(res);
-      expect(typeof session.accessToken).toBe('string');
-      expect(session.participant).toMatchObject({
-        nombre: 'María',
-        apellido: 'Pérez',
+      // Ya no hay sesión inmediata: el contrato nuevo (issue #295) exige
+      // confirmar el correo antes de poder iniciar sesión.
+      expect(responseBody<{ email: string }>(res)).toEqual({
         email: 'maria.alta@ejemplo.ec',
-        role: 'PARTICIPANT',
       });
+
+      // El intento de notificar es la prueba de que la cuenta se creó de
+      // verdad: el correo real está cifrado en la base (ver el siguiente
+      // bloque de tests), así que no se busca ahí.
+      expect(sendEmailConfirmation()).toHaveBeenCalledWith(
+        'maria.alta@ejemplo.ec',
+        expect.any(String),
+        expect.stringContaining('/confirmar-correo?token='),
+      );
+
+      const saved = await prisma.participant.findFirst({
+        orderBy: { createdAt: 'desc' },
+        take: 1,
+      });
+      expect(saved?.emailConfirmedAt).toBeNull();
     });
 
     it('no devuelve el hash de la contraseña, el seudónimo ni la cédula', async () => {
@@ -76,12 +98,12 @@ describe('Autenticación (e2e)', () => {
         .send(data)
         .expect(201);
 
-      const session = responseBody<SessionBody>(res);
-      expect(session.participant.passwordHash).toBeUndefined();
-      expect(session.participant.seq).toBeUndefined();
-      expect(session.participant.cedulaHash).toBeUndefined();
-      expect(JSON.stringify(session)).not.toContain(PASSWORD_TEST);
-      expect(JSON.stringify(session)).not.toContain(data.cedula);
+      const body = responseBody<Record<string, unknown>>(res);
+      expect(body.passwordHash).toBeUndefined();
+      expect(body.seq).toBeUndefined();
+      expect(body.cedulaHash).toBeUndefined();
+      expect(JSON.stringify(body)).not.toContain(PASSWORD_TEST);
+      expect(JSON.stringify(body)).not.toContain(data.cedula);
     });
 
     // La regla que sostiene el diseño de privacidad: la cédula solo existe el
@@ -89,14 +111,13 @@ describe('Autenticación (e2e)', () => {
     // acaso", esto lo atrapa.
     it('nunca guarda la cédula en claro, solo su huella', async () => {
       const data = registrationData('cedula');
-      const res = await server()
-        .post('/api/auth/register')
-        .send(data)
-        .expect(201);
-      const { id } = responseBody<SessionBody>(res).participant;
+      await server().post('/api/auth/register').send(data).expect(201);
 
-      const saved = await prisma.participant.findUnique({
-        where: { id },
+      // Registro fresco: en este archivo no hay registros concurrentes, así
+      // que la fila más reciente es la que se acaba de crear.
+      const saved = await prisma.participant.findFirst({
+        orderBy: { createdAt: 'desc' },
+        take: 1,
       });
 
       expect(saved?.cedulaHash).toEqual(expect.any(String));
@@ -109,13 +130,12 @@ describe('Autenticación (e2e)', () => {
     // descifrándolos con la clave que vive solo en el servidor.
     it('nunca guarda nombre, apellido ni correo en claro', async () => {
       const data = registrationData('cifrado');
-      const res = await server()
-        .post('/api/auth/register')
-        .send(data)
-        .expect(201);
-      const { id } = responseBody<SessionBody>(res).participant;
+      await server().post('/api/auth/register').send(data).expect(201);
 
-      const saved = await prisma.participant.findUnique({ where: { id } });
+      const saved = await prisma.participant.findFirst({
+        orderBy: { createdAt: 'desc' },
+        take: 1,
+      });
 
       expect(saved?.nombre).toMatch(/^v1:/);
       expect(saved?.apellido).toMatch(/^v1:/);
@@ -123,17 +143,13 @@ describe('Autenticación (e2e)', () => {
       expect(saved?.nombre).not.toBe(data.nombre);
       expect(saved?.email).not.toBe(data.email);
       expect(JSON.stringify(saved)).not.toContain(data.email);
-
-      // Pero la app sí lo descifra de vuelta para quien tiene sesión.
-      expect(responseBody<SessionBody>(res).participant.email).toBe(data.email);
-      expect(responseBody<SessionBody>(res).participant.nombre).toBe(
-        data.nombre,
-      );
     });
 
     it('normaliza el correo y acepta la cédula con guiones', async () => {
       const data = registrationData('normaliza');
-      const res = await server()
+      sendEmailConfirmation().mockClear();
+
+      await server()
         .post('/api/auth/register')
         .send({
           ...data,
@@ -142,15 +158,18 @@ describe('Autenticación (e2e)', () => {
         })
         .expect(201);
 
-      // El correo normalizado se ve en la propia respuesta, descifrado de
-      // vuelta por el servidor, así que no hace falta releer la base para
-      // comprobar que se guardó en minúsculas y sin espacios.
-      expect(responseBody<SessionBody>(res).participant.email).toBe(
+      // El correo normalizado se ve en el propio enlace de confirmación,
+      // que lleva el correo en claro solo hasta llegar a la bandeja de la
+      // persona (nunca a la base).
+      expect(sendEmailConfirmation()).toHaveBeenCalledWith(
         'maria.normaliza@ejemplo.ec',
+        expect.any(String),
+        expect.any(String),
       );
 
-      const saved = await prisma.participant.findUnique({
-        where: { id: responseBody<SessionBody>(res).participant.id },
+      const saved = await prisma.participant.findFirst({
+        orderBy: { createdAt: 'desc' },
+        take: 1,
       });
 
       expect(saved?.cedulaHash).toEqual(expect.any(String));
@@ -229,17 +248,17 @@ describe('Autenticación (e2e)', () => {
   });
 
   describe('POST /api/auth/login', () => {
+    let confirmed: { email: string };
+
     beforeAll(async () => {
-      await server()
-        .post('/api/auth/register')
-        .send(registrationData('login'))
-        .expect(201);
+      const { datos } = await registerConfirmedSession(app, 'login');
+      confirmed = { email: datos.email };
     });
 
     it('entrega un token con las credenciales correctas', async () => {
       const res = await server()
         .post('/api/auth/login')
-        .send({ email: 'maria.login@ejemplo.ec', password: PASSWORD_TEST })
+        .send({ email: confirmed.email, password: PASSWORD_TEST })
         .expect(200);
 
       expect(typeof responseBody<SessionBody>(res).accessToken).toBe('string');
@@ -250,7 +269,7 @@ describe('Autenticación (e2e)', () => {
     it('tampoco devuelve el hash de la contraseña ni la huella de la cédula', async () => {
       const res = await server()
         .post('/api/auth/login')
-        .send({ email: 'maria.login@ejemplo.ec', password: PASSWORD_TEST })
+        .send({ email: confirmed.email, password: PASSWORD_TEST })
         .expect(200);
 
       const session = responseBody<SessionBody>(res);
@@ -269,11 +288,26 @@ describe('Autenticación (e2e)', () => {
 
       const wrongPasswordResponse = await server()
         .post('/api/auth/login')
-        .send({ email: 'maria.login@ejemplo.ec', password: PASSWORD_INVALID })
+        .send({ email: confirmed.email, password: PASSWORD_INVALID })
         .expect(401);
 
       expect(responseBody<ErrorBody>(nonexistent).message).toBe(
         responseBody<ErrorBody>(wrongPasswordResponse).message,
+      );
+    });
+
+    // El corazón del issue #295: sin confirmar el correo, no se entra.
+    it('rechaza el login de un participante que no confirmó su correo', async () => {
+      const data = registrationData('sin-confirmar');
+      await server().post('/api/auth/register').send(data).expect(201);
+
+      const res = await server()
+        .post('/api/auth/login')
+        .send({ email: data.email, password: data.password })
+        .expect(401);
+
+      expect(responseBody<ErrorBody>(res).message).toContain(
+        'Confirma tu correo',
       );
     });
   });
@@ -282,10 +316,8 @@ describe('Autenticación (e2e)', () => {
     let token: string;
 
     beforeAll(async () => {
-      const res = await server()
-        .post('/api/auth/register')
-        .send(registrationData('perfil'));
-      token = responseBody<SessionBody>(res).accessToken;
+      const { session } = await registerConfirmedSession(app, 'perfil');
+      token = session.accessToken;
     });
 
     it('devuelve el perfil del token', async () => {
@@ -327,10 +359,8 @@ describe('Autenticación (e2e)', () => {
     let token: string;
 
     beforeAll(async () => {
-      const res = await server()
-        .post('/api/auth/register')
-        .send(registrationData('onboarding'));
-      token = responseBody<SessionBody>(res).accessToken;
+      const { session } = await registerConfirmedSession(app, 'onboarding');
+      token = session.accessToken;
     });
 
     it('marca onboardingVisto y luego lo puede volver a desmarcar', async () => {
@@ -378,13 +408,21 @@ describe('Autenticación (e2e)', () => {
 
   describe('POST /api/auth/refresh', () => {
     // El refresh token nunca aparece en el JSON: viaja solo en una cookie
-    // httpOnly que puso register/login. `cookieRefresh` la extrae de
-    // `Set-Cookie`, tal como haría el navegador solo, sin que JS la toque.
+    // httpOnly que puso login/refresh (el registro ya no abre sesión).
+    // `cookieRefresh` la extrae de `Set-Cookie`, tal como haría el
+    // navegador solo, sin que JS la toque.
     it('pone la cookie del refresh token, httpOnly y restringida a esta ruta', async () => {
+      const { session } = await registerConfirmedSession(app, 'refresh-cookie');
+
+      expect(session).not.toHaveProperty('refreshToken');
+
       const res = await server()
-        .post('/api/auth/register')
-        .send(registrationData('refresh-cookie'))
-        .expect(201);
+        .post('/api/auth/login')
+        .send({
+          email: 'maria.refresh-cookie@ejemplo.ec',
+          password: PASSWORD_TEST,
+        })
+        .expect(200);
 
       const cookie = (res.headers['set-cookie'] as unknown as string[]).find(
         (c) => c.startsWith('mic-refresh-token='),
@@ -398,11 +436,12 @@ describe('Autenticación (e2e)', () => {
     });
 
     it('entrega un access token nuevo y rota la cookie', async () => {
-      const registered = await server()
-        .post('/api/auth/register')
-        .send(registrationData('refresh'))
-        .expect(201);
-      const originalCookie = getRefreshCookie(registered);
+      const { datos } = await registerConfirmedSession(app, 'refresh');
+      const loginRes = await server()
+        .post('/api/auth/login')
+        .send({ email: datos.email, password: datos.password })
+        .expect(200);
+      const originalCookie = getRefreshCookie(loginRes);
 
       const res = await server()
         .post('/api/auth/refresh')
@@ -440,11 +479,8 @@ describe('Autenticación (e2e)', () => {
     // vía XSS, ya que el refresh es httpOnly) podría reutilizarse aquí para
     // sacar un refresh token de vida larga.
     it('rechaza un access token usado como refresh token', async () => {
-      const res = await server()
-        .post('/api/auth/register')
-        .send(registrationData('refresh-typ'))
-        .expect(201);
-      const { accessToken } = responseBody<SessionBody>(res);
+      const { session } = await registerConfirmedSession(app, 'refresh-typ');
+      const { accessToken } = session;
 
       await server()
         .post('/api/auth/refresh')
@@ -455,11 +491,12 @@ describe('Autenticación (e2e)', () => {
     // Y a la inversa: el refresh token nunca debe abrir una ruta protegida
     // como si fuera un access token.
     it('rechaza un refresh token usado como access token', async () => {
-      const res = await server()
-        .post('/api/auth/register')
-        .send(registrationData('refresh-typ-2'))
-        .expect(201);
-      const refreshToken = getRefreshCookie(res).split('=')[1];
+      const { datos } = await registerConfirmedSession(app, 'refresh-typ-2');
+      const loginRes = await server()
+        .post('/api/auth/login')
+        .send({ email: datos.email, password: datos.password })
+        .expect(200);
+      const refreshToken = getRefreshCookie(loginRes).split('=')[1];
 
       await server()
         .get('/api/auth/me')
@@ -468,15 +505,18 @@ describe('Autenticación (e2e)', () => {
     });
 
     it('rechaza el refresh de una cuenta desactivada', async () => {
-      const data = registrationData('refresh-desactivada');
-      const res = await server()
-        .post('/api/auth/register')
-        .send(data)
-        .expect(201);
-      const cookie = getRefreshCookie(res);
+      const { session, datos } = await registerConfirmedSession(
+        app,
+        'refresh-desactivada',
+      );
+      const loginRes = await server()
+        .post('/api/auth/login')
+        .send({ email: datos.email, password: datos.password })
+        .expect(200);
+      const cookie = getRefreshCookie(loginRes);
 
       await prisma.participant.update({
-        where: { id: responseBody<SessionBody>(res).participant.id },
+        where: { id: session.participant.id },
         data: { disabledAt: new Date() },
       });
 
@@ -501,8 +541,119 @@ describe('Autenticación (e2e)', () => {
     });
   });
 
+  describe('POST /api/auth/confirm-email', () => {
+    it('con un token vigente, confirma la cuenta y deja iniciar sesión', async () => {
+      const data = registrationData('confirmar');
+      sendEmailConfirmation().mockClear();
+      await server().post('/api/auth/register').send(data).expect(201);
+
+      const [, , link] = sendEmailConfirmation().mock.calls[0] as [
+        string,
+        string,
+        string,
+      ];
+
+      await server()
+        .post('/api/auth/confirm-email')
+        .send({ token: tokenFromLink(link) })
+        .expect(204);
+
+      await server()
+        .post('/api/auth/login')
+        .send({ email: data.email, password: data.password })
+        .expect(200);
+    });
+
+    it('rechaza un token inventado o inexistente con el mensaje genérico', async () => {
+      const res = await server()
+        .post('/api/auth/confirm-email')
+        .send({ token: 'no-es-un-token-real' })
+        .expect(401);
+
+      expect(responseBody<ErrorBody>(res).message).toBe(
+        'El enlace no es válido o ya venció.',
+      );
+    });
+
+    it('un token ya usado no sirve una segunda vez', async () => {
+      const data = registrationData('confirmar-reuso');
+      sendEmailConfirmation().mockClear();
+      await server().post('/api/auth/register').send(data).expect(201);
+      const [, , link] = sendEmailConfirmation().mock.calls[0] as [
+        string,
+        string,
+        string,
+      ];
+      const token = tokenFromLink(link);
+
+      await server()
+        .post('/api/auth/confirm-email')
+        .send({ token })
+        .expect(204);
+
+      await server()
+        .post('/api/auth/confirm-email')
+        .send({ token })
+        .expect(401);
+    });
+  });
+
+  describe('POST /api/auth/resend-confirmation', () => {
+    it('genera un token nuevo que reemplaza al anterior', async () => {
+      const data = registrationData('reenvio');
+      sendEmailConfirmation().mockClear();
+      await server().post('/api/auth/register').send(data).expect(201);
+      const [, , firstLink] = sendEmailConfirmation().mock.calls[0] as [
+        string,
+        string,
+        string,
+      ];
+      const firstToken = tokenFromLink(firstLink);
+
+      sendEmailConfirmation().mockClear();
+      await server()
+        .post('/api/auth/resend-confirmation')
+        .send({ email: data.email })
+        .expect(204);
+
+      const [, , secondLink] = sendEmailConfirmation().mock.calls[0] as [
+        string,
+        string,
+        string,
+      ];
+      const secondToken = tokenFromLink(secondLink);
+
+      expect(secondToken).not.toBe(firstToken);
+
+      // El token viejo ya no sirve...
+      await server()
+        .post('/api/auth/confirm-email')
+        .send({ token: firstToken })
+        .expect(401);
+      // ...el nuevo sí.
+      await server()
+        .post('/api/auth/confirm-email')
+        .send({ token: secondToken })
+        .expect(204);
+    });
+
+    // Distinguirlos permitiría averiguar qué correos están registrados.
+    it('responde el mismo 204 aunque el correo no exista, sin mandar nada', async () => {
+      sendEmailConfirmation().mockClear();
+
+      await server()
+        .post('/api/auth/resend-confirmation')
+        .send({ email: 'nadie-registrado@ejemplo.ec' })
+        .expect(204);
+
+      expect(sendEmailConfirmation()).not.toHaveBeenCalled();
+    });
+  });
+
   describe('POST /api/auth/forgot-password', () => {
     beforeAll(async () => {
+      // forgotPassword no exige el correo confirmado (issue #295 no lo
+      // cambió): un registro sin confirmar basta para este bloque.
       await server()
         .post('/api/auth/register')
         .send(registrationData('olvido'))
@@ -546,14 +697,13 @@ describe('Autenticación (e2e)', () => {
 
   describe('POST /api/auth/reset-password', () => {
     it('con un token vigente, cambia la contraseña y deja entrar con la nueva', async () => {
-      await server()
-        .post('/api/auth/register')
-        .send(registrationData('reset'))
-        .expect(201);
+      // El login final exige la cuenta confirmada, así que aquí sí se pasa
+      // por el flujo completo (registrar → confirmar) antes de forgot/reset.
+      const { datos } = await registerConfirmedSession(app, 'reset');
       sendPasswordReset().mockClear();
       await server()
         .post('/api/auth/forgot-password')
-        .send({ email: 'maria.reset@ejemplo.ec' })
+        .send({ email: datos.email })
         .expect(204);
       const [, , link] = sendPasswordReset().mock.calls[0] as [
         string,
@@ -569,24 +719,21 @@ describe('Autenticación (e2e)', () => {
       // La contraseña vieja ya no sirve...
       await server()
         .post('/api/auth/login')
-        .send({ email: 'maria.reset@ejemplo.ec', password: PASSWORD_TEST })
+        .send({ email: datos.email, password: PASSWORD_TEST })
         .expect(401);
       // ...la nueva sí.
       await server()
         .post('/api/auth/login')
-        .send({ email: 'maria.reset@ejemplo.ec', password: PASSWORD_INVALID })
+        .send({ email: datos.email, password: PASSWORD_INVALID })
         .expect(200);
     });
 
     it('un token ya usado no sirve una segunda vez', async () => {
-      await server()
-        .post('/api/auth/register')
-        .send(registrationData('reset-reuso'))
-        .expect(201);
+      const { datos } = await registerConfirmedSession(app, 'reset-reuso');
       sendPasswordReset().mockClear();
       await server()
         .post('/api/auth/forgot-password')
-        .send({ email: 'maria.reset-reuso@ejemplo.ec' })
+        .send({ email: datos.email })
         .expect(204);
       const [, , link] = sendPasswordReset().mock.calls[0] as [
         string,
@@ -614,14 +761,14 @@ describe('Autenticación (e2e)', () => {
     });
 
     it('rechaza una contraseña que no cumple la política', async () => {
-      await server()
-        .post('/api/auth/register')
-        .send(registrationData('reset-debil'))
-        .expect(201);
+      const data = registrationData('reset-debil');
+      // La política de reset-password no depende de que el correo esté
+      // confirmado: forgotPassword tampoco lo exige.
+      await server().post('/api/auth/register').send(data).expect(201);
       sendPasswordReset().mockClear();
       await server()
         .post('/api/auth/forgot-password')
-        .send({ email: 'maria.reset-debil@ejemplo.ec' })
+        .send({ email: data.email })
         .expect(204);
       const [, , link] = sendPasswordReset().mock.calls[0] as [
         string,
@@ -637,16 +784,17 @@ describe('Autenticación (e2e)', () => {
 
     // Cierra sesiones abiertas en otros dispositivos (issue #256).
     it('invalida un refresh token emitido antes del restablecimiento', async () => {
-      const registered = await server()
-        .post('/api/auth/register')
-        .send(registrationData('reset-sesiones'))
-        .expect(201);
-      const oldCookie = getRefreshCookie(registered);
+      const { datos } = await registerConfirmedSession(app, 'reset-sesiones');
+      const loginRes = await server()
+        .post('/api/auth/login')
+        .send({ email: datos.email, password: datos.password })
+        .expect(200);
+      const oldCookie = getRefreshCookie(loginRes);
 
       sendPasswordReset().mockClear();
       await server()
         .post('/api/auth/forgot-password')
-        .send({ email: 'maria.reset-sesiones@ejemplo.ec' })
+        .send({ email: datos.email })
         .expect(204);
       const [, , link] = sendPasswordReset().mock.calls[0] as [
         string,

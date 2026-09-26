@@ -24,7 +24,8 @@ describe('MailService.enviarCertificado', () => {
   });
 
   it('devuelve true y manda el PDF adjunto cuando Resend no reporta error', async () => {
-    let received: { to: string; text?: string; attachments?: unknown } | undefined;
+    let received:
+      { to: string; text?: string; attachments?: unknown } | undefined;
     sendMock.mockImplementation(
       (payload: { to: string; text?: string; attachments?: unknown }) => {
         received = payload;
