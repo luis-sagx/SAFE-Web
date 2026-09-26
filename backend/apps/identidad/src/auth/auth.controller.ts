@@ -9,9 +9,15 @@ import {
   Res,
   UseGuards,
 } from '@nestjs/common';
+import { createHash } from 'node:crypto';
 import { Throttle } from '@nestjs/throttler';
 import type { CookieOptions, Request, Response } from 'express';
-import { CurrentParticipant, JwtAuthGuard, type JwtPayload } from '@comun';
+import {
+  CurrentParticipant,
+  emailTracker,
+  JwtAuthGuard,
+  type JwtPayload,
+} from '@comun';
 import { AuthService } from './auth.service';
 import { ConfirmEmailDto } from './dto/confirm-email.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
@@ -37,6 +43,29 @@ const COOKIE_OPTIONS: CookieOptions = {
   path: '/api/auth/refresh',
 };
 
+/// Por correo y no por IP: un aula entera sale por la misma IP pública
+/// (ver emailTracker). El techo por IP lo pone nginx.
+const PER_EMAIL = { limit: 5, ttl: 60_000, getTracker: emailTracker };
+
+/// Para rutas con un token de un solo uso: adivinarlo es inviable, así que
+/// el límite por IP puede ser holgado y no bloquea a un aula que confirma su
+/// correo a la vez.
+const PER_IP_TOKEN = { limit: 30, ttl: 60_000 };
+
+/// Por sesión y no por IP: los access tokens de un aula que entró a la vez
+/// vencen a la vez, y 30 refrescos en el mismo minuto desde una sola IP
+/// cerrarían la sesión de la mitad. Se usa el hash de la cookie (no el token
+/// en sí) para no guardarlo en el almacén del límite.
+function refreshCookieTracker(req: {
+  cookies?: Record<string, string | undefined>;
+  ip?: string;
+}): string {
+  const cookie = req.cookies?.[REFRESH_COOKIE];
+  return cookie
+    ? `refresh:${createHash('sha256').update(cookie).digest('hex')}`
+    : `ip:${req.ip}`;
+}
+
 @Controller('auth')
 export class AuthController {
   constructor(private readonly auth: AuthService) {}
@@ -52,16 +81,16 @@ export class AuthController {
     });
   }
 
-  /// Límite contra registro automatizado: 5 cuentas por minuto y por IP.
-  @Throttle({ default: { limit: 5, ttl: 60_000 } })
+  /// Límite contra registro automatizado: 5 intentos por minuto y por correo.
+  @Throttle({ default: PER_EMAIL })
   @Post('register')
   async register(@Body() dto: RegisterDto): Promise<{ email: string }> {
     return this.auth.register(dto);
   }
 
   /// Límite estricto contra fuerza bruta (OWASP Authentication):
-  /// 5 intentos por minuto y por IP.
-  @Throttle({ default: { limit: 5, ttl: 60_000 } })
+  /// 5 intentos por minuto y por cuenta.
+  @Throttle({ default: PER_EMAIL })
   @HttpCode(200)
   @Post('login')
   async login(
@@ -86,7 +115,9 @@ export class AuthController {
   /// register. Límite más alto que login: el frontend lo llama solo
   /// automáticamente cuando un access token expira, no a golpe de teclado de
   /// un usuario, pero varias pestañas abiertas pueden refrescar a la vez.
-  @Throttle({ default: { limit: 20, ttl: 60_000 } })
+  @Throttle({
+    default: { limit: 20, ttl: 60_000, getTracker: refreshCookieTracker },
+  })
   @HttpCode(200)
   @Post('refresh')
   async refresh(
@@ -116,38 +147,34 @@ export class AuthController {
     }
   }
 
-  /// Mismo límite que login: 5 por minuto y por IP. La respuesta es idéntica
-  /// exista o no la cuenta (ver AuthService.forgotPassword), así que 204 no
-  /// filtra nada por sí solo.
-  @Throttle({ default: { limit: 5, ttl: 60_000 } })
+  /// Mismo límite que login: 5 por minuto y por correo. La respuesta es
+  /// idéntica exista o no la cuenta (ver AuthService.forgotPassword), así que
+  /// 204 no filtra nada por sí solo.
+  @Throttle({ default: PER_EMAIL })
   @HttpCode(204)
   @Post('forgot-password')
   async forgotPassword(@Body() dto: ForgotPasswordDto): Promise<void> {
     await this.auth.forgotPassword(dto.email);
   }
 
-  /// Mismo límite que login: 5 por minuto y por IP, contra quien prueba
-  /// tokens al azar.
-  @Throttle({ default: { limit: 5, ttl: 60_000 } })
+  @Throttle({ default: PER_IP_TOKEN })
   @HttpCode(204)
   @Post('reset-password')
   async resetPassword(@Body() dto: ResetPasswordDto): Promise<void> {
     await this.auth.resetPassword(dto.token, dto.password);
   }
 
-  /// Mismo límite que login: 5 por minuto y por IP, contra quien prueba
-  /// tokens al azar.
-  @Throttle({ default: { limit: 5, ttl: 60_000 } })
+  @Throttle({ default: PER_IP_TOKEN })
   @HttpCode(204)
   @Post('confirm-email')
   async confirmEmail(@Body() dto: ConfirmEmailDto): Promise<void> {
     await this.auth.confirmEmail(dto.token);
   }
 
-  /// Mismo límite que forgot-password: 5 por minuto y por IP, y misma
+  /// Mismo límite que forgot-password: 5 por minuto y por correo, y misma
   /// respuesta genérica exista o no la cuenta (ver
   /// AuthService.resendConfirmation).
-  @Throttle({ default: { limit: 5, ttl: 60_000 } })
+  @Throttle({ default: PER_EMAIL })
   @HttpCode(204)
   @Post('resend-confirmation')
   async resendConfirmation(@Body() dto: ResendConfirmationDto): Promise<void> {

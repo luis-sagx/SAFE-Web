@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService, type JwtSignOptions } from '@nestjs/jwt';
-import { compare, hash } from 'bcryptjs';
+import { compare, hash } from 'bcrypt';
 import type { JwtPayload, RefreshTokenPayload } from '@comun';
 import { hashEcuadorianId } from '../cedula/cedula';
 import { MailService } from '../mail/mail.service';

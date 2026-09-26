@@ -11,6 +11,7 @@ import {
   type TestEnvironment,
   type ProgressBody,
 } from './entrenamiento.e2e';
+import { envPem } from './keys.e2e';
 
 describe('Corridas (e2e)', () => {
   let app: INestApplication;
@@ -71,6 +72,22 @@ describe('Corridas (e2e)', () => {
       where: { id: responseBody<RunBody>(res).id },
     });
     expect(saved?.participantSeq).toBe(7);
+  });
+
+  // La razón de las claves asimétricas: si `entrenamiento` quedara
+  // comprometido, su clave (la de atestaciones) no le sirve para fabricar
+  // una sesión, ni siquiera una que él mismo aceptaría.
+  it('rechaza un access token firmado con la clave de entrenamiento', async () => {
+    const forged = await token(
+      { sub: 'maria', role: 'ADMIN' },
+      envPem('ENTRENAMIENTO_JWT_PRIVATE_KEY'),
+    );
+
+    await server()
+      .post('/api/runs')
+      .set('Authorization', `Bearer ${forged}`)
+      .send(run())
+      .expect(401);
   });
 
   it('exige token para escribir', async () => {

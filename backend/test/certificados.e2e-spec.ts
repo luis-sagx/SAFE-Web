@@ -10,6 +10,7 @@ import {
   cleanDatabase,
   registerConfirmedSession,
 } from './identidad.e2e';
+import { envPem } from './keys.e2e';
 
 interface CertificateBody {
   codigo: string;
@@ -53,17 +54,23 @@ describe('Certificados (e2e)', () => {
   });
 
   /// `identidad` nunca calcula el progreso: la atestación es lo único que
-  /// `entrenamiento` firmaría en producción, y aquí se firma igual, con el
-  /// mismo `JwtService` que ya comparten los dos servicios.
-  function attestation(payload: Partial<AttestationPayload>): Promise<string> {
-    return jwt.signAsync({
-      sub: 'sin-usar',
-      seq: 0,
-      modulos: MODULES,
-      calificacion: 36,
-      typ: 'atestacion',
-      ...payload,
-    } satisfies AttestationPayload);
+  /// `entrenamiento` firmaría en producción, y aquí se firma igual, con la
+  /// clave privada de `entrenamiento`.
+  function attestation(
+    payload: Partial<AttestationPayload>,
+    privateKey = envPem('ENTRENAMIENTO_JWT_PRIVATE_KEY'),
+  ): Promise<string> {
+    return jwt.signAsync(
+      {
+        sub: 'sin-usar',
+        seq: 0,
+        modulos: MODULES,
+        calificacion: 36,
+        typ: 'atestacion',
+        ...payload,
+      } satisfies AttestationPayload,
+      { privateKey },
+    );
   }
 
   /// Registra, confirma e inicia sesión un participante real, y decodifica
@@ -113,6 +120,22 @@ describe('Certificados (e2e)', () => {
         .post('/api/certificados')
         .set('Authorization', `Bearer ${accessToken}`)
         .send({ atestacion: accessToken })
+        .expect(403);
+    });
+
+    // Con claves separadas, `identidad` no puede fabricarse una atestación
+    // con su propia clave de sesión: solo vale lo que firmó `entrenamiento`.
+    it('rechaza una atestación firmada con la clave de sesiones', async () => {
+      const { accessToken, sub, seq } = await participant('cert-clave');
+      const forged = await attestation(
+        { sub, seq },
+        envPem('IDENTIDAD_JWT_PRIVATE_KEY'),
+      );
+
+      await server()
+        .post('/api/certificados')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({ atestacion: forged })
         .expect(403);
     });
 

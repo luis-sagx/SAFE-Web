@@ -1,8 +1,12 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
-import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
-import { HealthController } from '@comun';
+import { ThrottlerModule } from '@nestjs/throttler';
+import {
+  AuthJwtModule,
+  HealthController,
+  ParticipantThrottlerGuard,
+} from '@comun';
 import { AdminModule } from './admin/admin.module';
 import { AuthModule } from './auth/auth.module';
 import { CertificatesModule } from './certificados/certificados.module';
@@ -19,7 +23,8 @@ import { assertPiiEncryptionKey } from './pii/pii';
         return config;
       },
     }),
-    // El límite estricto del login se declara aparte, en su controlador.
+    // 120/min por participante (por IP si no hay sesión). Los límites
+    // estrictos de login y registro se declaran aparte, en su controlador.
     ThrottlerModule.forRoot({
       throttlers: [{ ttl: 60_000, limit: 120 }],
       // Sin esto, el 429 llega con el mensaje en inglés de la librería
@@ -27,6 +32,8 @@ import { assertPiiEncryptionKey } from './pii/pii';
       errorMessage:
         'Demasiadas solicitudes. Espera un momento e inténtalo de nuevo.',
     }),
+    // Lo necesita ParticipantThrottlerGuard para verificar el token.
+    AuthJwtModule,
     PrismaModule,
     AuthModule,
     AdminModule,
@@ -34,6 +41,6 @@ import { assertPiiEncryptionKey } from './pii/pii';
     NarracionModule,
   ],
   controllers: [HealthController],
-  providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
+  providers: [{ provide: APP_GUARD, useClass: ParticipantThrottlerGuard }],
 })
 export class AppModule {}

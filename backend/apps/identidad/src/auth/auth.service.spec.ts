@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import type { ConfigService } from '@nestjs/config';
 import type { JwtService } from '@nestjs/jwt';
-import { hash } from 'bcryptjs';
+import { hash } from 'bcrypt';
 import { AuthService } from './auth.service';
 import type { PrismaService } from '../prisma/prisma.service';
 import { encrypt } from '../pii/pii';
@@ -189,7 +189,7 @@ describe('AuthService.login', () => {
           passwordHash: '$2b$12$hash-de-prueba',
         }),
     });
-    // `bcryptjs.compare` real contra un hash inventado siempre da falso; se
+    // `bcrypt.compare` real contra un hash inventado siempre da falso; se
     // prueba aparte con un hash de verdad más abajo.
     await expect(
       auth.login({ email: 'ana@correo.com', password: 'lo-que-sea' }),
@@ -205,7 +205,7 @@ describe('AuthService.login', () => {
   });
 
   it('una cuenta desactivada no entra, aunque la contraseña sea correcta', async () => {
-    // bcryptjs real: se genera un hash de verdad para que `compare` de
+    // bcrypt real: se genera un hash de verdad para que `compare` de
     // adentro del servicio lo acepte.
     const passwordHash = await hash('ClaveSegura123!', 4);
     const auth = service({
