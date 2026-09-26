@@ -253,6 +253,10 @@ jobs:
       # dispara un envío de correo aquí, Resend responde 401 y el catch de
       # MailService lo absorbe (mismo diseño que en producción).
       RESEND_API_KEY: re_dummy_solo_para_que_arranque_en_ci
+      # Mismo motivo: NarracionService.getOrThrow la exige para arrancar.
+      # Si algo llega a pedir el saludo en este job, Cartesia responde 401
+      # y ese endpoint devuelve 500 — no rompe nada más del smoke test.
+      CARTESIA_API_KEY: sk_car_dummy_solo_para_que_arranque_en_ci
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
