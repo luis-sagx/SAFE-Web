@@ -49,6 +49,7 @@ function verifyPayload(payload: object): JwtService['verifyAsync'] {
 function fakeMail(overrides: Record<string, unknown> = {}) {
   return {
     sendPasswordReset: () => Promise.resolve(true),
+    sendEmailConfirmation: () => Promise.resolve(true),
     ...overrides,
   } as never;
 }
@@ -77,6 +78,9 @@ function participantRow(overrides: Record<string, unknown> = {}) {
     onboardingVistoAt: null,
     disabledAt: null,
     tokenVersion: 0,
+    // Confirmada por defecto: los tests que necesitan probar el camino de
+    // "no confirmada" la pisan explícitamente con `emailConfirmedAt: null`.
+    emailConfirmedAt: new Date('2026-01-01T00:00:00.000Z'),
     ...overrides,
   };
 }
@@ -112,17 +116,33 @@ describe('AuthService.register', () => {
     expect(createdData?.nombre).not.toBe('Ana');
   });
 
-  it('la sesión devuelta trae el nombre y el correo descifrados', async () => {
-    const auth = service({
-      findFirst: () => Promise.resolve(null),
-      create: ({ data }: { data: Record<string, unknown> }) =>
-        Promise.resolve(participantRow({ ...data, seq: 1 })),
-    });
+  it('no arma sesión: crea la cuenta sin confirmar y manda el correo de confirmación', async () => {
+    let createdData: Record<string, unknown> | undefined;
+    const sendEmailConfirmation = jest.fn().mockResolvedValue(true);
+    const auth = service(
+      {
+        findFirst: () => Promise.resolve(null),
+        create: ({ data }: { data: Record<string, unknown> }) => {
+          createdData = data;
+          return Promise.resolve(participantRow(data));
+        },
+      },
+      jwtFake(),
+      fakeMail({ sendEmailConfirmation }),
+    );
 
-    const session = await auth.register(registrationDto());
+    const result = await auth.register(registrationDto());
 
-    expect(session.participant.nombre).toBe('Ana');
-    expect(session.participant.email).toBe('ana@correo.com');
+    expect(result).toEqual({ email: 'ana@correo.com' });
+    expect(createdData?.emailConfirmedAt).toBeUndefined();
+    expect(sendEmailConfirmation).toHaveBeenCalledTimes(1);
+    const [emailArg, , linkArg] = sendEmailConfirmation.mock.calls[0] as [
+      string,
+      string,
+      string,
+    ];
+    expect(emailArg).toBe('ana@correo.com');
+    expect(linkArg).toContain('/confirmar-correo?token=');
   });
 
   it('rechaza un correo o cédula ya registrados con el mismo mensaje', async () => {
@@ -216,6 +236,39 @@ describe('AuthService.login', () => {
     });
 
     expect(session.participant.email).toBe('ana@correo.com');
+    expect(session.accessToken).toEqual(expect.any(String));
+  });
+
+  it('rechaza a un PARTICIPANT que no confirmó su correo', async () => {
+    const passwordHash = await hash('ClaveSegura123!', 4);
+    const auth = service({
+      findFirst: () =>
+        Promise.resolve({
+          ...participantRow({ emailConfirmedAt: null }),
+          passwordHash,
+        }),
+    });
+
+    await expect(
+      auth.login({ email: 'ana@correo.com', password: 'ClaveSegura123!' }),
+    ).rejects.toBeInstanceOf(UnauthorizedException);
+  });
+
+  it('una cuenta TRAINER o ADMIN sin emailConfirmedAt sí entra (no aplica el bloqueo)', async () => {
+    const passwordHash = await hash('ClaveSegura123!', 4);
+    const auth = service({
+      findFirst: () =>
+        Promise.resolve({
+          ...participantRow({ role: 'ADMIN', emailConfirmedAt: null }),
+          passwordHash,
+        }),
+    });
+
+    const session = await auth.login({
+      email: 'ana@correo.com',
+      password: 'ClaveSegura123!',
+    });
+
     expect(session.accessToken).toEqual(expect.any(String));
   });
 });
@@ -485,5 +538,131 @@ describe('AuthService.resetPassword', () => {
     expect(updateData?.tokenVersion).toEqual({ increment: 1 });
     expect(updateData?.passwordHash).toEqual(expect.any(String));
     expect(updateData?.passwordHash).not.toBe('ClaveNueva123!');
+  });
+});
+
+describe('AuthService.confirmEmail', () => {
+  it('con un token que no corresponde a ninguna cuenta, rechaza', async () => {
+    const auth = service({ findFirst: () => Promise.resolve(null) });
+
+    await expect(auth.confirmEmail('token-cualquiera')).rejects.toBeInstanceOf(
+      UnauthorizedException,
+    );
+  });
+
+  it('con el token ya vencido, rechaza', async () => {
+    const auth = service({
+      findFirst: () =>
+        Promise.resolve(
+          participantRow({
+            emailConfirmationExpiresAt: new Date(Date.now() - 1000),
+          }),
+        ),
+    });
+
+    await expect(auth.confirmEmail('token-cualquiera')).rejects.toBeInstanceOf(
+      UnauthorizedException,
+    );
+  });
+
+  it('con un token vigente, marca emailConfirmedAt y limpia el token', async () => {
+    let updateData: Record<string, unknown> | undefined;
+    const auth = service({
+      findFirst: () =>
+        Promise.resolve(
+          participantRow({
+            emailConfirmationExpiresAt: new Date(Date.now() + 60_000),
+            emailConfirmedAt: null,
+          }),
+        ),
+      update: ({ data }: { data: Record<string, unknown> }) => {
+        updateData = data;
+        return Promise.resolve(participantRow());
+      },
+    });
+
+    await auth.confirmEmail('token-cualquiera');
+
+    expect(updateData?.emailConfirmedAt).toBeInstanceOf(Date);
+    expect(updateData?.emailConfirmationTokenHash).toBeNull();
+    expect(updateData?.emailConfirmationExpiresAt).toBeNull();
+  });
+});
+
+describe('AuthService.resendConfirmation', () => {
+  it('sin ninguna cuenta con ese correo, responde el mensaje genérico sin mandar correo', async () => {
+    const sendEmailConfirmation = jest.fn();
+    const auth = service(
+      { findFirst: () => Promise.resolve(null) },
+      jwtFake(),
+      fakeMail({ sendEmailConfirmation }),
+    );
+
+    await expect(
+      auth.resendConfirmation('nadie@correo.com'),
+    ).resolves.toBeUndefined();
+    expect(sendEmailConfirmation).not.toHaveBeenCalled();
+  });
+
+  it('con la cuenta ya confirmada, responde igual sin mandar correo', async () => {
+    const sendEmailConfirmation = jest.fn();
+    const auth = service(
+      {
+        findFirst: () =>
+          Promise.resolve(participantRow({ emailConfirmedAt: new Date() })),
+      },
+      jwtFake(),
+      fakeMail({ sendEmailConfirmation }),
+    );
+
+    await auth.resendConfirmation('ana@correo.com');
+
+    expect(sendEmailConfirmation).not.toHaveBeenCalled();
+  });
+
+  it('con una cuenta real sin confirmar, guarda un token nuevo y reenvía', async () => {
+    const sendEmailConfirmation = jest.fn().mockResolvedValue(true);
+    let updateData: Record<string, unknown> | undefined;
+    const auth = service(
+      {
+        findFirst: () =>
+          Promise.resolve(participantRow({ emailConfirmedAt: null })),
+        update: ({ data }: { data: Record<string, unknown> }) => {
+          updateData = data;
+          return Promise.resolve(participantRow());
+        },
+      },
+      jwtFake(),
+      fakeMail({ sendEmailConfirmation }),
+    );
+
+    await auth.resendConfirmation('ana@correo.com');
+
+    expect(updateData?.emailConfirmationTokenHash).toEqual(expect.any(String));
+    expect(updateData?.emailConfirmationExpiresAt).toBeInstanceOf(Date);
+    expect(sendEmailConfirmation).toHaveBeenCalledTimes(1);
+  });
+
+  it('filtra por role: PARTICIPANT, para que un TRAINER/ADMIN no reciba reenvíos', async () => {
+    // TRAINER/ADMIN no nacen confirmados (createTrainer nunca setea
+    // emailConfirmedAt), así que sin este filtro cualquiera que supiera su
+    // correo podría disparar un envío de "confirma tu cuenta" hacia esa
+    // cuenta de staff desde este endpoint público.
+    const findFirst = jest.fn().mockResolvedValue(null);
+    const sendEmailConfirmation = jest.fn();
+    const auth = service(
+      { findFirst },
+      jwtFake(),
+      fakeMail({ sendEmailConfirmation }),
+    );
+
+    await auth.resendConfirmation('trainer@correo.com');
+
+    expect(findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ role: 'PARTICIPANT' }),
+      }),
+    );
+    expect(sendEmailConfirmation).not.toHaveBeenCalled();
   });
 });

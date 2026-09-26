@@ -9,6 +9,7 @@ import RequireSupervisor from './components/RequireSupervisor'
 import { SCENARIOS, getScenarioPath } from './data/catalogo'
 import Admin from './pages/Admin'
 import Welcome from './pages/Bienvenida'
+import ConfirmarCorreo from './pages/ConfirmarCorreo'
 import BadgePreview from './pages/InsigniaPreview'
 import Dashboard from './pages/Dashboard'
 import Login from './pages/Login'
@@ -19,6 +20,7 @@ import TermsOfUse from './pages/TermsOfUse'
 import Portada from './pages/Portada'
 import TrainingHistory from './pages/Recorrido'
 import Registration from './pages/Registro'
+import RevisaTuCorreo from './pages/RevisaTuCorreo'
 import ResetPassword from './pages/RestablecerPassword'
 import Section from './pages/Seccion'
 import VerifyCertificate from './pages/Verificar'
@@ -38,6 +40,8 @@ function App() {
           <Route path="/olvide-password" element={<ForgotPassword />} />
           <Route path="/restablecer-password" element={<ResetPassword />} />
           <Route path="/registro" element={<Registration />} />
+          <Route path="/revisa-tu-correo" element={<RevisaTuCorreo />} />
+          <Route path="/confirmar-correo" element={<ConfirmarCorreo />} />
           <Route path="/politica-de-datos" element={<DataPolicy />} />
           <Route path="/terminos" element={<TermsOfUse />} />
           <Route path="/verificar/:codigo" element={<VerifyCertificate />} />

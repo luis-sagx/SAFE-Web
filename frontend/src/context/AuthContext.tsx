@@ -17,7 +17,7 @@ interface AuthValue {
   /** ADMIN gestiona cuentas y ve resultados; no hace escenarios. */
   isAdmin: boolean
   login: (email: string, password: string) => Promise<Participant>
-  register: (credentials: Credentials) => Promise<Participant>
+  register: (credentials: Credentials) => Promise<{ email: string }>
   logout: () => void
   /** true: la bienvenida no vuelve a aparecer sola. false: reactivarla. */
   marcarOnboardingVisto: (seen: boolean) => Promise<void>
@@ -108,12 +108,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return session.participant
   }, [])
 
+  // Ya no arma sesión: el registro exige confirmar el correo antes de poder
+  // entrar. Quien llama (Registro.tsx) decide qué mostrar con el correo que
+  // devuelve, no este contexto.
   const register = useCallback(async (credentials: Credentials) => {
-    const session = await api.register(credentials)
-    api.setToken(session.accessToken)
-    setParticipant(session.participant)
-    setOnboardingDismissed(false)
-    return session.participant
+    return api.register(credentials)
   }, [])
 
   // La cookie httpOnly del refresh token no la puede borrar JS: hay que pedirlo al

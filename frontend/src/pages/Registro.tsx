@@ -178,14 +178,14 @@ function Registration() {
     setSubmitting(true);
 
     try {
-      await register({
+      const { email: confirmedEmail } = await register({
         nombre: name,
         apellido: lastName,
         email,
         cedula: normalizedEcuadorianId,
         password,
       });
-      navigate("/dashboard");
+      navigate("/revisa-tu-correo", { state: { email: confirmedEmail } });
     } catch (submitError) {
       setError((submitError as Error).message);
     } finally {

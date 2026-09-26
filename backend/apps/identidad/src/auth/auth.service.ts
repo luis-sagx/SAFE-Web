@@ -35,6 +35,10 @@ const ALREADY_REGISTERED =
 /// pasó, información que no necesita para nada legítimo (issue #256).
 const RESET_LINK_INVALID = 'El enlace no es válido o ya venció.';
 
+/// Mismo mensaje genérico que RESET_LINK_INVALID, mismo motivo: no hace
+/// falta que quien lo intenta sepa si el token no existe, ya se usó, o venció.
+const CONFIRMATION_LINK_INVALID = 'El enlace no es válido o ya venció.';
+
 /// 32 bytes al azar, en base64url (sin +/ que compliquen la URL del correo).
 const RESET_TOKEN_BYTES = 32;
 
@@ -42,10 +46,21 @@ const RESET_TOKEN_BYTES = 32;
 /// enlace olvidado en la bandeja siga sirviendo semanas después.
 const RESET_TOKEN_TTL_MS = 30 * 60 * 1000;
 
+/// 24 horas: confirmar cuenta es menos urgente que resetear una clave
+/// comprometida (30 minutos), pero no debe quedar vigente indefinidamente.
+const EMAIL_CONFIRMATION_TTL_MS = 24 * 60 * 60 * 1000;
+
+/// Un solo mensaje: no hace falta distinguir "nunca confirmaste" de
+/// cualquier otra causa de rechazo del lado del participante.
+const EMAIL_NOT_CONFIRMED =
+  'Confirma tu correo antes de iniciar sesión. Revisa tu bandeja o pide que te lo reenviemos.';
+
 /// El token viaja en claro solo por correo; en la base se guarda este hash
 /// (SHA-256 alcanza: a diferencia de una contraseña, son 32 bytes al azar,
 /// no algo que un diccionario pueda adivinar, así que no hace falta bcrypt).
-function hashResetToken(token: string): string {
+/// Genérico a propósito: lo usan tanto el token de recuperación de clave
+/// como el de confirmación de correo.
+function hashToken(token: string): string {
   return createHash('sha256').update(token).digest('hex');
 }
 
@@ -150,7 +165,7 @@ export class AuthService {
     );
   }
 
-  async register(dto: RegisterDto) {
+  async register(dto: RegisterDto): Promise<{ email: string }> {
     const ecuadorianIdHash = hashEcuadorianId(
       dto.cedula,
       this.ecuadorianIdPepper,
@@ -176,9 +191,14 @@ export class AuthService {
       throw new ConflictException(ALREADY_REGISTERED);
     }
 
-    let participant: ParticipantWithSession;
+    // El token viaja en claro solo por correo; en la base se guarda su hash
+    // (mismo criterio que el de recuperación de clave, ver hashToken más
+    // abajo).
+    const confirmationToken =
+      randomBytes(RESET_TOKEN_BYTES).toString('base64url');
+
     try {
-      participant = await this.prisma.participant.create({
+      await this.prisma.participant.create({
         data: {
           nombre: encrypt(dto.nombre, this.piiKey),
           apellido: encrypt(dto.apellido, this.piiKey),
@@ -186,6 +206,10 @@ export class AuthService {
           emailHash,
           cedulaHash: ecuadorianIdHash,
           passwordHash: await hash(dto.password, BCRYPT_ROUNDS),
+          emailConfirmationTokenHash: hashToken(confirmationToken),
+          emailConfirmationExpiresAt: new Date(
+            Date.now() + EMAIL_CONFIRMATION_TTL_MS,
+          ),
         },
         select: SESSION_FIELDS,
       });
@@ -199,7 +223,10 @@ export class AuthService {
       throw error;
     }
 
-    return this.session(participant);
+    const link = `${this.frontendOrigin}/confirmar-correo?token=${confirmationToken}`;
+    await this.mail.sendEmailConfirmation(dto.email, dto.nombre, link);
+
+    return { email: dto.email };
   }
 
   async login(dto: LoginDto) {
@@ -218,7 +245,12 @@ export class AuthService {
       },
       // `select` explícito, no el registro entero: sin esto el passwordHash
       // viaja hasta `sesion()` y termina en la respuesta al cliente.
-      select: { ...SESSION_FIELDS, passwordHash: true, disabledAt: true },
+      select: {
+        ...SESSION_FIELDS,
+        passwordHash: true,
+        disabledAt: true,
+        emailConfirmedAt: true,
+      },
     });
 
     const ok = await compare(
@@ -239,6 +271,10 @@ export class AuthService {
       throw new ForbiddenException(
         'Tu cuenta está desactivada. Contacta al supervisor del estudio.',
       );
+    }
+
+    if (participant.role === 'PARTICIPANT' && !participant.emailConfirmedAt) {
+      throw new UnauthorizedException(EMAIL_NOT_CONFIRMED);
     }
 
     return this.session(participant);
@@ -339,7 +375,7 @@ export class AuthService {
     await this.prisma.participant.update({
       where: { id: participant.id },
       data: {
-        passwordResetTokenHash: hashResetToken(token),
+        passwordResetTokenHash: hashToken(token),
         passwordResetExpiresAt: new Date(Date.now() + RESET_TOKEN_TTL_MS),
       },
     });
@@ -358,7 +394,7 @@ export class AuthService {
   /// nadie legítimo y sí le sirve a quien está probando tokens al azar.
   async resetPassword(token: string, password: string): Promise<void> {
     const participant = await this.prisma.participant.findFirst({
-      where: { passwordResetTokenHash: hashResetToken(token) },
+      where: { passwordResetTokenHash: hashToken(token) },
       select: { id: true, disabledAt: true, passwordResetExpiresAt: true },
     });
 
@@ -382,6 +418,73 @@ export class AuthService {
         tokenVersion: { increment: 1 },
       },
     });
+  }
+
+  /// Mismo principio que resetPassword: un solo mensaje para token
+  /// inexistente, vencido o ya usado.
+  async confirmEmail(token: string): Promise<void> {
+    const participant = await this.prisma.participant.findFirst({
+      where: { emailConfirmationTokenHash: hashToken(token) },
+      select: { id: true, emailConfirmationExpiresAt: true },
+    });
+
+    if (
+      !participant ||
+      !participant.emailConfirmationExpiresAt ||
+      participant.emailConfirmationExpiresAt.getTime() < Date.now()
+    ) {
+      throw new UnauthorizedException(CONFIRMATION_LINK_INVALID);
+    }
+
+    await this.prisma.participant.update({
+      where: { id: participant.id },
+      data: {
+        emailConfirmedAt: new Date(),
+        emailConfirmationTokenHash: null,
+        emailConfirmationExpiresAt: null,
+      },
+    });
+  }
+
+  /// Responde siempre lo mismo exista o no la cuenta, o ya esté confirmada
+  /// (mismo principio que forgotPassword, issue #256): de lo contrario este
+  /// formulario serviría para averiguar qué correos están registrados, o
+  /// cuáles ya confirmaron.
+  ///
+  /// `role: 'PARTICIPANT'` a propósito: TRAINER/ADMIN no nacen confirmados
+  /// (`createTrainer` nunca pone `emailConfirmedAt`), solo no se les exige
+  /// confirmar para iniciar sesión (ver el filtro por rol en `login`). Sin
+  /// este `role`, cualquiera que supiera el correo de un TRAINER/ADMIN podría
+  /// disparar un envío de "confirma tu cuenta" hacia esa persona desde este
+  /// endpoint público.
+  async resendConfirmation(email: string): Promise<void> {
+    const participant = await this.prisma.participant.findFirst({
+      where: {
+        role: 'PARTICIPANT',
+        OR: [{ emailHash: hashEmail(email, this.emailPepper) }, { email }],
+      },
+      select: { id: true, nombre: true, emailConfirmedAt: true },
+    });
+
+    if (!participant || participant.emailConfirmedAt) {
+      return;
+    }
+
+    const token = randomBytes(RESET_TOKEN_BYTES).toString('base64url');
+
+    await this.prisma.participant.update({
+      where: { id: participant.id },
+      data: {
+        emailConfirmationTokenHash: hashToken(token),
+        emailConfirmationExpiresAt: new Date(
+          Date.now() + EMAIL_CONFIRMATION_TTL_MS,
+        ),
+      },
+    });
+
+    const name = decryptOptional(participant.nombre, this.piiKey) ?? '';
+    const link = `${this.frontendOrigin}/confirmar-correo?token=${token}`;
+    await this.mail.sendEmailConfirmation(email, name, link);
   }
 
   private async session(participant: ParticipantWithSession) {

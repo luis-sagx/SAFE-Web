@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   ApiError,
+  confirmEmail,
   createRun,
   downloadCertificatePdf,
   issueCertificate,
@@ -10,6 +11,8 @@ import {
   forgotPassword,
   getToken,
   login,
+  register,
+  resendConfirmation,
   resetPassword,
   setToken,
   verifyCertificate,
@@ -89,6 +92,44 @@ describe('api', () => {
       token: 'token-abc',
       password: 'ClaveNueva123!',
     })
+  })
+
+  it('register ya no arma sesión: devuelve solo el correo', async () => {
+    mockFetch({ json: () => Promise.resolve({ email: 'ana@correo.com' }) })
+
+    const result = await register({
+      nombre: 'Ana',
+      apellido: 'Pérez',
+      email: 'ana@correo.com',
+      cedula: '1710034065',
+      password: 'ClaveSegura123!',
+    })
+
+    expect(result).toEqual({ email: 'ana@correo.com' })
+  })
+
+  it('confirmEmail manda el token, sin sesión (auth: false)', async () => {
+    setToken('t0ken')
+    const fetchMock = mockFetch({ json: () => Promise.resolve(null) })
+
+    await confirmEmail('un-token')
+
+    const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit]
+    expect(url).toContain('/auth/confirm-email')
+    expect(JSON.parse(init.body as string)).toEqual({ token: 'un-token' })
+    expect((init.headers as Record<string, string> | undefined)?.Authorization).toBeUndefined()
+  })
+
+  it('resendConfirmation manda el correo, sin sesión (auth: false)', async () => {
+    setToken('t0ken')
+    const fetchMock = mockFetch({ json: () => Promise.resolve(null) })
+
+    await resendConfirmation('ana@correo.com')
+
+    const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit]
+    expect(url).toContain('/auth/resend-confirmation')
+    expect(JSON.parse(init.body as string)).toEqual({ email: 'ana@correo.com' })
+    expect((init.headers as Record<string, string> | undefined)?.Authorization).toBeUndefined()
   })
 
   // Sin descartarlo, la app queda en un bucle de 401 sin llegar al login.

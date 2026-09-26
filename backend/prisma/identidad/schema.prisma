@@ -95,6 +95,21 @@ model Participant {
   /// auth.service.ts). Null cuando no hay ningún restablecimiento pendiente.
   passwordResetExpiresAt DateTime?
 
+  /// Null = pendiente de confirmar el correo. Con fecha = ya confirmó (o la
+  /// cuenta se creó antes de este cambio y la migración la marcó
+  /// confirmada). Solo aplica a PARTICIPANT: TRAINER/ADMIN nacen
+  /// confirmados, los da de alta alguien del equipo a mano.
+  emailConfirmedAt DateTime?
+
+  /// Hash SHA-256 del token de un solo uso para confirmar el correo, mismo
+  /// patrón que passwordResetTokenHash.
+  emailConfirmationTokenHash String? @unique
+
+  /// Vence a las 24 horas de pedirse (confirmar cuenta es menos urgente que
+  /// resetear una clave comprometida). Null cuando no hay ninguna
+  /// confirmación pendiente.
+  emailConfirmationExpiresAt DateTime?
+
   /// Se incrementa al restablecer la contraseña. El refresh token lleva la
   /// versión con la que se emitió; si no coincide con esta, `refreshSession`
   /// lo rechaza, así un restablecimiento cierra las sesiones ya abiertas en
