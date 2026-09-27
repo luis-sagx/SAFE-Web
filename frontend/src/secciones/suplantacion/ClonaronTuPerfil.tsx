@@ -2,6 +2,7 @@ import { MessageCircle, Users, Wallet } from 'lucide-react'
 import ScenarioStory, { type PhoneApp, type ScreenNode } from '../../components/StoryEscenario'
 import type { Context } from '../../components/ui/ContextoEscenario'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
+import { APP_ACCENTS } from '../../components/ui/appAccents'
 import type { Signal } from '../../components/ui/PanelVeredicto'
 import type { Story } from '../../hooks/useStoryEngine'
 import { IDENTITY_FAKE } from '../../lib/identidadFicticia'
@@ -107,6 +108,7 @@ const CAPTURE: ScreenView = {
 const NETWORK: ScreenView = {
   kind: 'web',
   app: 'Red social',
+  appAccent: APP_ACCENTS.social,
   url: 'inicio',
   secure: true,
   brand: 'Inicio',
@@ -129,6 +131,7 @@ const NETWORK: ScreenView = {
 const RESULTS: ScreenView = {
   kind: 'web',
   app: 'Red social',
+  appAccent: APP_ACCENTS.social,
   url: 'buscar',
   secure: true,
   brand: 'Resultados',
@@ -157,6 +160,7 @@ const RESULTS: ScreenView = {
 const CLONE: ScreenView = {
   kind: 'web',
   app: 'Red social',
+  appAccent: APP_ACCENTS.social,
   url: 'perfil',
   secure: true,
   brand: 'Perfil',
@@ -199,6 +203,7 @@ const CLONE: ScreenView = {
 const YOUR_PROFILE: ScreenView = {
   kind: 'web',
   app: 'Red social',
+  appAccent: APP_ACCENTS.social,
   url: 'perfil',
   secure: true,
   brand: 'Tu perfil',
@@ -255,11 +260,11 @@ const APPS: PhoneApp[] = [
   {
     Icono: Users,
     texto: 'Red social',
-    color: '#1971c2',
+    color: APP_ACCENTS.social,
     viewNode: 'n3',
     label: 'Abrió la red social',
   },
-  { Icono: Wallet, texto: 'Banco del Litoral', color: '#155e75', relleno: 'banco' },
+  { Icono: Wallet, texto: 'Banco del Litoral', color: APP_ACCENTS.bank, relleno: 'banco' },
 ]
 
 export const STORY: Story<ScreenNode> = {

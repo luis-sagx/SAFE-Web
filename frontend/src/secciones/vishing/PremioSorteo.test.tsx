@@ -122,15 +122,15 @@ describe('PremioSorteo', () => {
     expect(screen.getByText('Caíste en la estafa')).toBeDefined()
   })
 
-  it('la llamada sigue abierta mientras compruebas en otra app', () => {
+  it('la llamada sigue abierta mientras compruebas en el banco', () => {
     const phone = start()
 
     fireEvent.click(within(phone).getByRole('button', { name: 'Contestar la llamada' }))
-    fireEvent.click(within(phone).getByRole('button', { name: /Galería/ }))
-    expect(within(phone).getByText('248 elementos')).toBeDefined()
+    fireEvent.click(within(phone).getByRole('button', { name: /Banco del Litoral/ }))
+    expect(within(phone).getByText('Tus cuentas')).toBeDefined()
 
     // Volver deja la conversación donde estaba, sin haber decidido nada.
-    fireEvent.click(within(phone).getByRole('button', { name: 'Volver a la llamada' }))
+    fireEvent.click(within(phone).getByRole('button', { name: 'Salir de la aplicación' }))
     terminarDeHablar(phone)
     expect(within(phone).getByText(/ganador de una cocina/)).toBeDefined()
     expect(screen.getByText('¿Qué haces?')).toBeDefined()
