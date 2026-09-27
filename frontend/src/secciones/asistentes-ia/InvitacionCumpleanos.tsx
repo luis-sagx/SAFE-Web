@@ -109,7 +109,7 @@ const SIGNALS = [
 ]
 
 const RULE =
-  '<b>No subas a una IA externa fotos de menores</b>. Si salen otros niños, pide permiso a sus familias.'
+  '<b>Tu hija no puede dar permiso para subir su foto a una IA externa</b>. Si aparecen otros niños, la decisión es de sus familias.'
 
 const SUMMARY = 'Pides a una IA crear una invitación para tu hija con imágenes de la galería.'
 
