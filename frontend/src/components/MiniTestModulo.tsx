@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { CheckCircle2, RotateCcw } from 'lucide-react'
 import Ticket from './Boleto'
 import { TRAMA_FONDO } from './TramaFondo'
 
@@ -293,10 +294,22 @@ function ModuleQuiz({ seccionId, onComplete }: Readonly<ModuleQuizProps>) {
           </div>
 
           {resultado === 'correcta' && (
-            <p className="mt-4 text-base font-medium text-success-ink">¡Correcto! {pregunta.explicacion}</p>
+            <div role="status" className="mt-5 flex gap-3 rounded-lg border border-success-ink/40 bg-success/10 p-4 text-ink" data-testid="feedback-correcto">
+              <CheckCircle2 aria-hidden="true" className="mt-0.5 size-6 shrink-0 text-success-ink" strokeWidth={2.5} />
+              <div>
+                <h2 className="text-base font-semibold text-success-ink">¡Respuesta correcta!</h2>
+                <p className="mt-1 text-sm leading-relaxed">{pregunta.explicacion}</p>
+              </div>
+            </div>
           )}
           {resultado === 'incorrecta' && (
-            <p className="mt-4 text-base font-medium text-danger">Esa opción no parece correcta. Revisa la situación y prueba otra vez.</p>
+            <div role="alert" className="mt-5 flex gap-3 rounded-lg border border-danger/40 bg-danger/10 p-4 text-ink" data-testid="feedback-incorrecto">
+              <RotateCcw aria-hidden="true" className="mt-0.5 size-6 shrink-0 text-danger" strokeWidth={2.5} />
+              <div>
+                <h2 className="text-base font-semibold text-danger">Revisa tu respuesta</h2>
+                <p className="mt-1 text-sm leading-relaxed">Piensa en las señales de la situación y elige otra opción.</p>
+              </div>
+            </div>
           )}
 
           {resultado === 'correcta' ? (

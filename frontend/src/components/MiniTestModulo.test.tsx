@@ -23,8 +23,11 @@ describe('ModuleQuiz', () => {
     fireEvent.click(screen.getByText(/empiece con https/))
     fireEvent.click(screen.getByRole('button', { name: 'Comprobar' }))
 
-    expect(screen.getByText(/Esa opción no parece correcta/)).toBeDefined()
+    expect(screen.getByRole('alert').textContent).toMatch(/Revisa tu respuesta/)
+    expect(screen.getByRole('heading', { name: 'Revisa tu respuesta' })).toBeDefined()
     expect(screen.getByText('Pregunta 1 de 2')).toBeDefined()
+    expect(screen.getByRole('button', { name: 'Comprobar' })).toBeDefined()
+    expect((screen.getByLabelText('El nombre del sitio después de https:// y antes de la siguiente barra (/)') as HTMLInputElement).checked).toBe(false)
   })
 
   it('al acertar las dos preguntas, llama a onComplete', () => {
@@ -33,7 +36,8 @@ describe('ModuleQuiz', () => {
 
     fireEvent.click(screen.getByText(/nombre del sitio después de https/))
     fireEvent.click(screen.getByRole('button', { name: 'Comprobar' }))
-    expect(screen.getByText(/Correcto/)).toBeDefined()
+    expect(screen.getByRole('status').textContent).toMatch(/¡Respuesta correcta!/)
+    expect(screen.getByRole('heading', { name: '¡Respuesta correcta!' })).toBeDefined()
 
     fireEvent.click(screen.getByRole('button', { name: 'Siguiente pregunta' }))
     expect(screen.getByText('Pregunta 2 de 2')).toBeDefined()
@@ -41,7 +45,7 @@ describe('ModuleQuiz', () => {
 
     fireEvent.click(screen.getByText(/Abro la aplicación o el sitio oficial/))
     fireEvent.click(screen.getByRole('button', { name: 'Comprobar' }))
-    expect(screen.getByText(/Correcto/)).toBeDefined()
+    expect(screen.getByRole('heading', { name: '¡Respuesta correcta!' })).toBeDefined()
 
     fireEvent.click(screen.getByRole('button', { name: 'Continuar' }))
     expect(onComplete).toHaveBeenCalledTimes(1)
