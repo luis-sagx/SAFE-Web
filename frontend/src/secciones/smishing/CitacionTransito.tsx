@@ -4,6 +4,7 @@ import type { Context } from '../../components/ui/ContextoEscenario'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
 import type { Signal } from '../../components/ui/PanelVeredicto'
 import type { Story } from '../../hooks/useStoryEngine'
+import { APP_ACCENTS } from '../../components/ui/appAccents'
 
 const LINK =
   '<a href="https://transito-ec-pagos.com/citacion" data-hotspot-goto="n2" data-hotspot-label="Abrió el enlace de pago del mensaje">https://transito-ec-pagos.com/citacion</a>'
@@ -119,7 +120,7 @@ const PORTAL: ScreenView = {
 /// camino para consultar la multa escribiendo tú la dirección oficial.
 const APPS: PhoneApp[] = [
   { Icono: MessageSquareText, texto: 'Mensajes', color: '#2f9e44' },
-  { Icono: Wallet, texto: 'Banco', color: '#155e75', relleno: 'banco' },
+  { Icono: Wallet, texto: 'Banco', color: APP_ACCENTS.bank, relleno: 'banco' },
   {
     Icono: Compass,
     texto: 'Navegador',

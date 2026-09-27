@@ -16,7 +16,7 @@ describe('BajaSuscripcion', () => {
     fireEvent.click(within(phone).getByRole('button', { name: /Mi Operadora/ }))
     expect(phone.querySelectorAll('[class*="opciones"] li')).toHaveLength(3)
     expect(within(phone).queryByRole('button', { name: /Consumo de datos/ })).toBeNull()
-    expect((phone.querySelector('[class*="phoneAppBar"]') as HTMLElement).style.backgroundColor).toBe('rgb(180, 35, 24)')
+    expect((phone.querySelector('[class*="phoneAppBar"]') as HTMLElement).style.backgroundColor).toBe('rgb(194, 37, 92)')
 
     fireEvent.click(within(phone).getByRole('button', { name: /Banco/ }))
     const bank = within(phone).getByRole('button', { name: /Banco/ })

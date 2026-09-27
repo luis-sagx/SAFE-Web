@@ -381,9 +381,9 @@ function DeviceScreen({
       <div className={styles.page}>
         {view.menu ? (
           <SiteHeader marca={view.brand} menu={view.menu} />
-        ) : (
+        ) : !view.app || view.app === 'Navegador' ? (
           <p className={styles.brand}>{view.brand}</p>
-        )}
+        ) : null}
 
         {/* La caja de búsqueda deja claro que los resultados vienen de buscar. */}
         {view.resultados ? (

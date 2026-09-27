@@ -44,6 +44,9 @@ describe('CodigoReenviado', () => {
 
     fireEvent.click(within(phone).getByRole('button', { name: /Banco/ }))
 
+    expect(phone.querySelector('[class*="phoneAppBar"]')?.getAttribute('style')).toContain(
+      'background-color: rgb(15, 118, 110)',
+    )
     expect(within(phone).getByText('Saldo disponible $312,45')).toBeDefined()
     expect(screen.getByText('¿Qué haces?')).toBeDefined()
 
