@@ -175,7 +175,7 @@ export async function registerConfirmedSession(
   await server()
     .post('/api/auth/confirm-email')
     .send({ token: tokenFromLink(link) })
-    .expect(204);
+    .expect(200);
 
   const res = await server()
     .post('/api/auth/login')

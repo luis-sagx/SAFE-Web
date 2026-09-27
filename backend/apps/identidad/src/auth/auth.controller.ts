@@ -164,11 +164,25 @@ export class AuthController {
     await this.auth.resetPassword(dto.token, dto.password);
   }
 
+  /// Responde como login (access token en el cuerpo, refresh en la cookie):
+  /// confirmar el correo deja la sesión iniciada.
   @Throttle({ default: PER_IP_TOKEN })
-  @HttpCode(204)
+  @HttpCode(200)
   @Post('confirm-email')
-  async confirmEmail(@Body() dto: ConfirmEmailDto): Promise<void> {
-    await this.auth.confirmEmail(dto.token);
+  async confirmEmail(
+    @Body() dto: ConfirmEmailDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const session = await this.auth.confirmEmail(dto.token);
+    this.setRefreshCookie(
+      res,
+      session.refreshToken,
+      session.refreshTokenExpiresAt,
+    );
+    return {
+      accessToken: session.accessToken,
+      participant: session.participant,
+    };
   }
 
   /// Mismo límite que forgot-password: 5 por minuto y por correo, y misma

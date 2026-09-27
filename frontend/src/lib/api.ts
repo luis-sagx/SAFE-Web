@@ -267,8 +267,9 @@ export function resetPassword(token: string, password: string): Promise<null> {
   })
 }
 
-export function confirmEmail(token: string): Promise<null> {
-  return request<null>('/auth/confirm-email', {
+// Responde como login: confirmar el correo deja la sesión iniciada.
+export function confirmEmail(token: string): Promise<Session> {
+  return request<Session>('/auth/confirm-email', {
     method: 'POST',
     body: { token },
     auth: false,
