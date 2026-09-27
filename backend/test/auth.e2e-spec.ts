@@ -674,7 +674,7 @@ describe('Autenticación (e2e)', () => {
       await server()
         .post('/api/auth/confirm-email')
         .send({ token: secondToken })
-        .expect(204);
+        .expect(200);
     });
 
     // Distinguirlos permitiría averiguar qué correos están registrados.
