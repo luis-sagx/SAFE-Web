@@ -71,7 +71,9 @@ function PasswordBanner({
     >
       <div className="flex flex-wrap items-center gap-2 text-sm text-body">
         <span>Contraseña nueva (cópiala ahora, no vuelve a mostrarse):</span>
-        <code className="rounded bg-surface-strong px-1.5 py-0.5 font-mono text-ink">{password}</code>
+        <code className="rounded bg-surface-strong px-1.5 py-0.5 font-mono text-ink">
+          {password}
+        </code>
         <button
           type="button"
           onClick={() => void copyPassword()}
@@ -81,7 +83,11 @@ function PasswordBanner({
           {copied ? "Copiada" : "Copiar contraseña"}
         </button>
       </div>
-      <button type="button" onClick={onClose} className="text-sm font-medium text-link underline">
+      <button
+        type="button"
+        onClick={onClose}
+        className="text-sm font-medium text-link underline"
+      >
         Ya la copié, ocultar contraseña
       </button>
     </div>
@@ -146,10 +152,15 @@ function Participants() {
     });
 
   if (loading) {
-    return <p role="status" className="flex items-center gap-2 text-base text-muted">
-      <Loader2 aria-hidden className="size-4 animate-spin motion-reduce:animate-none" />
-      Cargando participantes…
-    </p>;
+    return (
+      <p role="status" className="flex items-center gap-2 text-base text-muted">
+        <Loader2
+          aria-hidden
+          className="size-4 animate-spin motion-reduce:animate-none"
+        />
+        Cargando participantes…
+      </p>
+    );
   }
 
   return (
@@ -188,7 +199,9 @@ function Participants() {
                   className="border-b border-hairline last:border-0"
                 >
                   <td className="px-4 py-3 text-ink">{fullName(p)}</td>
-                  <td className="px-4 py-3 text-body">{p.email ?? "Sin correo"}</td>
+                  <td className="px-4 py-3 text-body">
+                    {p.email ?? "Sin correo"}
+                  </td>
                   <td className="px-4 py-3">
                     <StatusPill active={p.activo} />
                   </td>
@@ -200,9 +213,17 @@ function Participants() {
                         className="inline-flex h-8 items-center gap-1 rounded-md border border-hairline-strong bg-surface px-2.5 text-xs font-medium text-ink transition hover:bg-surface-strong"
                       >
                         {p.activo ? (
-                          <UserX aria-hidden className="size-3.5" strokeWidth={1.75} />
+                          <UserX
+                            aria-hidden
+                            className="size-3.5"
+                            strokeWidth={1.75}
+                          />
                         ) : (
-                          <UserCheck aria-hidden className="size-3.5" strokeWidth={1.75} />
+                          <UserCheck
+                            aria-hidden
+                            className="size-3.5"
+                            strokeWidth={1.75}
+                          />
                         )}
                         {p.activo ? "Desactivar" : "Activar"}
                       </button>
@@ -307,7 +328,8 @@ function CreateTesterModal({
   return (
     <Modal titulo="Crear tester" onClose={onClose} busy={submitting}>
       <p className="mt-1 text-sm text-body">
-        La contraseña inicial se muestra una sola vez para entregarla por un canal seguro.
+        La contraseña inicial se muestra una sola vez para entregarla por un
+        canal seguro.
       </p>
       <form className="mt-5 grid gap-4 sm:grid-cols-2" onSubmit={submit}>
         <label className="text-sm font-medium text-ink">
@@ -358,7 +380,10 @@ function CreateTesterModal({
             className="inline-flex h-10 items-center gap-1.5 rounded-md bg-primary px-4 text-sm font-medium text-on-primary transition hover:bg-primary-active disabled:opacity-60"
           >
             {submitting && (
-              <Loader2 aria-hidden className="size-4 animate-spin motion-reduce:animate-none" />
+              <Loader2
+                aria-hidden
+                className="size-4 animate-spin motion-reduce:animate-none"
+              />
             )}
             {submitting ? "Creando…" : "Crear tester"}
           </button>
@@ -372,7 +397,9 @@ function StatusPill({ active }: { active: boolean }) {
   return (
     <span
       className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium ${
-        active ? "bg-success/10 text-success-ink" : "bg-surface-strong text-muted"
+        active
+          ? "bg-success/10 text-success-ink"
+          : "bg-surface-strong text-muted"
       }`}
     >
       <span
@@ -437,7 +464,8 @@ function Testers() {
     <div>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-body">
-          Cuentas para probar los escenarios. Sus corridas no cuentan para el estudio.
+          Cuentas para probar los escenarios. Sus corridas no cuentan para el
+          estudio.
         </p>
         <button
           type="button"
@@ -450,7 +478,10 @@ function Testers() {
       </div>
 
       {newPassword && (
-        <PasswordBanner password={newPassword} onClose={() => setNewPassword("")} />
+        <PasswordBanner
+          password={newPassword}
+          onClose={() => setNewPassword("")}
+        />
       )}
       {error && (
         <p role="alert" className="mb-4 text-sm text-danger">
@@ -459,8 +490,14 @@ function Testers() {
       )}
 
       {loading && (
-        <p role="status" className="flex items-center gap-2 text-base text-muted">
-          <Loader2 aria-hidden className="size-4 animate-spin motion-reduce:animate-none" />
+        <p
+          role="status"
+          className="flex items-center gap-2 text-base text-muted"
+        >
+          <Loader2
+            aria-hidden
+            className="size-4 animate-spin motion-reduce:animate-none"
+          />
           Cargando testers…
         </p>
       )}
@@ -480,19 +517,36 @@ function Testers() {
             </thead>
             <tbody>
               {list.map((t) => (
-                <tr key={t.id} className="border-b border-hairline last:border-0">
+                <tr
+                  key={t.id}
+                  className="border-b border-hairline last:border-0"
+                >
                   <td className="px-4 py-3 text-ink">{fullName(t)}</td>
-                  <td className="px-4 py-3 text-body">{t.email ?? "Sin correo"}</td>
+                  <td className="px-4 py-3 text-body">
+                    {t.email ?? "Sin correo"}
+                  </td>
                   <td className="px-4 py-3">
                     <StatusPill active={t.activo} />
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-end gap-2">
-                      <button type="button" onClick={() => toggleStatus(t)} className={ROW_BUTTON_CLASS}>
+                      <button
+                        type="button"
+                        onClick={() => toggleStatus(t)}
+                        className={ROW_BUTTON_CLASS}
+                      >
                         {t.activo ? (
-                          <UserX aria-hidden className="size-3.5" strokeWidth={1.75} />
+                          <UserX
+                            aria-hidden
+                            className="size-3.5"
+                            strokeWidth={1.75}
+                          />
                         ) : (
-                          <UserCheck aria-hidden className="size-3.5" strokeWidth={1.75} />
+                          <UserCheck
+                            aria-hidden
+                            className="size-3.5"
+                            strokeWidth={1.75}
+                          />
                         )}
                         {t.activo ? "Desactivar" : "Activar"}
                       </button>
@@ -502,7 +556,11 @@ function Testers() {
                         title="Restablecer contraseña"
                         className={ROW_BUTTON_CLASS}
                       >
-                        <KeyRound aria-hidden className="size-3.5" strokeWidth={1.75} />
+                        <KeyRound
+                          aria-hidden
+                          className="size-3.5"
+                          strokeWidth={1.75}
+                        />
                         Clave
                       </button>
                     </div>
@@ -515,10 +573,16 @@ function Testers() {
       )}
 
       {creating && (
-        <CreateTesterModal onClose={() => setCreating(false)} onCreated={load} />
+        <CreateTesterModal
+          onClose={() => setCreating(false)}
+          onCreated={load}
+        />
       )}
       {confirmation && (
-        <ConfirmDialog confirmation={confirmation} onClose={() => setConfirmation(null)} />
+        <ConfirmDialog
+          confirmation={confirmation}
+          onClose={() => setConfirmation(null)}
+        />
       )}
     </div>
   );
@@ -544,7 +608,9 @@ function groupByParticipant(rows: RunResult[]): ParticipantGroup[] {
     seudonimo,
     runs,
     correct: runs.filter((r) => r.outcome === "CORRECTO").length,
-    averageScore: Math.round(runs.reduce((sum, r) => sum + r.score, 0) / runs.length),
+    averageScore: Math.round(
+      runs.reduce((sum, r) => sum + r.score, 0) / runs.length,
+    ),
     totalMs: runs.reduce((sum, r) => sum + r.durationMs, 0),
     lastFinishedAt: runs.reduce(
       (last, r) => (r.finishedAt > last ? r.finishedAt : last),
@@ -571,10 +637,15 @@ function Results() {
   }, []);
 
   if (loading) {
-    return <p role="status" className="flex items-center gap-2 text-base text-muted">
-      <Loader2 aria-hidden className="size-4 animate-spin motion-reduce:animate-none" />
-      Cargando resultados…
-    </p>;
+    return (
+      <p role="status" className="flex items-center gap-2 text-base text-muted">
+        <Loader2
+          aria-hidden
+          className="size-4 animate-spin motion-reduce:animate-none"
+        />
+        Cargando resultados…
+      </p>
+    );
   }
   if (error) {
     return (
@@ -591,7 +662,9 @@ function Results() {
     );
   }
 
-  const visible = module ? rows.filter((r) => r.scenarioId.startsWith(`${module}/`)) : rows;
+  const visible = module
+    ? rows.filter((r) => r.scenarioId.startsWith(`${module}/`))
+    : rows;
   const groups = groupByParticipant(visible);
 
   function exportCsv() {
@@ -605,7 +678,8 @@ function Results() {
       <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
         <p className="text-sm text-body">
           {visible.length} corridas de {groups.length} participantes. Cada uno
-          aparece solo por su seudónimo (P001…): ningún dato personal sale de aquí.
+          aparece solo por su seudónimo (P001…): ningún dato personal sale de
+          aquí.
         </p>
         <div className="flex flex-wrap items-end gap-2">
           <label className="text-xs font-medium text-muted">
@@ -647,13 +721,21 @@ function Results() {
                     aria-hidden
                     className="size-4 text-muted transition group-open:rotate-90 motion-reduce:transition-none"
                   />
-                  <span className="w-16 font-semibold text-ink tabular-nums">{g.seudonimo}</span>
-                  <span className="text-body tabular-nums">{g.runs.length} corridas</span>
+                  <span className="w-16 font-semibold text-ink tabular-nums">
+                    {g.seudonimo}
+                  </span>
+                  <span className="text-body tabular-nums">
+                    {g.runs.length} corridas
+                  </span>
                   <span className="text-body tabular-nums">
                     {g.correct}/{g.runs.length} correctas
                   </span>
-                  <span className="text-body tabular-nums">Puntaje medio {g.averageScore}</span>
-                  <span className="text-muted tabular-nums">{minutes(g.totalMs)}</span>
+                  <span className="text-body tabular-nums">
+                    Puntaje medio {g.averageScore}
+                  </span>
+                  <span className="text-muted tabular-nums">
+                    {minutes(g.totalMs)}
+                  </span>
                   <span className="ml-auto text-muted tabular-nums">
                     Última: {date(g.lastFinishedAt)}
                   </span>
@@ -678,13 +760,19 @@ function Results() {
                         >
                           <td className="px-4 py-2 text-body">
                             {getScenario(r.scenarioId)?.titulo ?? r.scenarioId}
-                            <span className="block text-xs text-muted">{r.scenarioId}</span>
+                            <span className="block text-xs text-muted">
+                              {r.scenarioId}
+                            </span>
                           </td>
-                          <td className="px-4 py-2 text-muted tabular-nums">{r.version}</td>
+                          <td className="px-4 py-2 text-muted tabular-nums">
+                            {r.version}
+                          </td>
                           <td className="px-4 py-2 text-body">
                             {OUTCOME_LABEL[r.outcome] ?? r.outcome}
                           </td>
-                          <td className="px-4 py-2 text-ink tabular-nums">{r.score}</td>
+                          <td className="px-4 py-2 text-ink tabular-nums">
+                            {r.score}
+                          </td>
                           <td className="px-4 py-2 text-muted tabular-nums">
                             {Math.round(r.durationMs / 1000)}s
                           </td>
@@ -724,13 +812,6 @@ function Admin() {
       <AppHeader etiqueta="Administración" />
 
       <main className="mx-auto max-w-7xl px-6 py-12">
-        <p className="text-xs font-semibold uppercase tracking-[0.88px] text-muted">
-          Panel de administración
-        </p>
-        <h1 className="mt-2 text-4xl font-semibold tracking-tight text-ink">
-          Gestión del estudio
-        </h1>
-
         <div
           className="mt-8 flex gap-1 border-b border-hairline pb-3"
           role="tablist"
@@ -764,9 +845,7 @@ function Admin() {
           </button>
         </div>
 
-        <section className="mt-8">
-          {content}
-        </section>
+        <section className="mt-8">{content}</section>
       </main>
     </div>
   );
