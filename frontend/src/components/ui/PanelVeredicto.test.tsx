@@ -29,6 +29,29 @@ describe("PanelVeredicto", () => {
     useSoundMock.mockReturnValue({ activado: true, setActivado: vi.fn() });
   });
 
+  it("muestra en negrita el énfasis del resultado sin exponer etiquetas HTML", () => {
+    render(
+      <MemoryRouter>
+        <VerdictPanel
+          escenarioId="smishing/entrega-programada"
+          node={{
+            kind: "good",
+            verdict: "Acertaste · el aviso era legítimo",
+            outcome:
+              "<b>El envío era el que esperabas</b>, salía a reparto al día siguiente y no había ningún valor pendiente.",
+          }}
+          senales={[]}
+          regla="Comprueba por otro canal."
+          contenedorId="pantalla-escenario"
+        />
+      </MemoryRouter>,
+    );
+
+    const emphasizedOutcome = screen.getByText("El envío era el que esperabas");
+    expect(emphasizedOutcome.tagName).toBe("B");
+    expect(screen.queryByText(/<\/?b>/)).toBeNull();
+  });
+
   it("separa el repaso de señales con un fondo propio y conserva compacto el veredicto", () => {
     render(
       <MemoryRouter>

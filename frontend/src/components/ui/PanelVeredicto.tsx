@@ -191,7 +191,10 @@ function VerdictPanel({
         </span>
         {node.verdict}
       </p>
-      <p className="mt-2 text-base leading-relaxed text-body">{node.outcome}</p>
+      <p
+        className="mt-2 text-base leading-relaxed text-body"
+        dangerouslySetInnerHTML={{ __html: node.outcome ?? "" }}
+      />
 
       <ApprovalLabel node={node} />
 
