@@ -10,7 +10,7 @@ Restricciones: interfaz y comentarios/pruebas en español; identificadores nuevo
 
 Configuración de pruebas: TDD desactivado según la configuración registrada en tareas frontend del proyecto; runner `pnpm test` (Vitest), con typecheck, lint y build según AGENTS.md. RDD: `gentle-ai` no está instalado, por tanto `disabled/unmanaged`. Engram no está disponible en las herramientas de esta sesión; espejo pendiente.
 
-Estimación inicial: ~600 líneas editadas acumuladas; estrategia de entrega `feature-branch-chain`, inferida de la autorización del usuario para crear commits en esta rama. No se hará push ni se creará PR.
+Estimación inicial: ~600 líneas editadas acumuladas; estrategia de entrega `feature-branch-chain`, inferida de la autorización del usuario para crear commits en esta rama. No se hará push ni se creará PR. Total observado contra `97081e4`: 573 líneas editadas (493 inserciones + 80 eliminaciones).
 
 ## Tareas
 
@@ -33,12 +33,14 @@ Estimación inicial: ~600 líneas editadas acumuladas; estrategia de entrega `fe
 - Mapeo previo de solo lectura: `AppRelleno.tsx` y `StoryEscenario.tsx` son compartidos. La mayoría de los docks ya tienen tres; las excepciones y menús de cuatro se detallan en T2/T3. `PremioSorteo.test.tsx` ahora comprueba que la llamada sigue abierta al revisar la app bancaria y volver.
 - Rama: `feat/simulated-apps-ui`.
 - Commits: `568b342` (T1), `a5d682c` (T2), `5f2b87a` (T3).
-- Próximo paso: revisión final de la rama; build y suite completa.
+- Commit `717b308` registra la evidencia de T4.
 
 ## Verificación final
 
 - `pnpm build` desde `frontend/`: OK (`tsc -b && vite build`).
+- `pnpm test` desde `frontend/`: OK (119 archivos; 880 pruebas pasaron, 4 omitidas). Vitest reportó avisos conocidos de jsdom por APIs de media/canvas y navegación no implementadas.
 - `git diff --check`: OK.
 - Detector visual Impeccable sobre todos los targets modificados: una advertencia preexistente en `DeviceScreen.module.css:724` (`border-left: 4px solid #d39b19`, regla `side-tab`); la línea no forma parte del diff de esta rama (`git blame`: commit `ec31a908`, 2026-09-10). No se cambió código ajeno al alcance.
-- Diff acumulado de T1–T3 contra `main`: 442 inserciones + 74 eliminaciones = 516 líneas editadas. La entrega queda en la rama feature, según la autorización del usuario para crear commits.
-- T4: CodeGraph MCP no reconoció el índice `.codegraph/` y `gentle-ai codegraph init` no está instalado; se usó lectura puntual de los archivos indicados. Checks focalizados y typecheck/lint registrados arriba; build y suite completa pendientes para la revisión final.
+- Diff acumulado contra el punto de rama `97081e4`: 493 inserciones + 80 eliminaciones = 573 líneas editadas. La entrega queda en la rama feature, según la autorización del usuario para crear commits.
+- T4: CodeGraph MCP no reconoció el índice `.codegraph/` y `gentle-ai codegraph init` no está instalado; se usó lectura puntual de los archivos indicados. Typecheck/lint y pruebas focalizadas registradas arriba; suite completa y build final también pasaron.
+- Estado final: árbol de trabajo limpio; commits de trabajo y documentación registrados en la rama feature. Sin push ni PR.
