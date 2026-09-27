@@ -542,7 +542,7 @@ describe('Autenticación (e2e)', () => {
   });
 
   describe('POST /api/auth/confirm-email', () => {
-    it('con un token vigente, confirma la cuenta y deja iniciar sesión', async () => {
+    it('con un token vigente, confirma la cuenta, abre sesión y deja iniciar sesión', async () => {
       const data = registrationData('confirmar');
       sendEmailConfirmation().mockClear();
       await server().post('/api/auth/register').send(data).expect(201);
@@ -553,10 +553,17 @@ describe('Autenticación (e2e)', () => {
         string,
       ];
 
-      await server()
+      const res = await server()
         .post('/api/auth/confirm-email')
         .send({ token: tokenFromLink(link) })
-        .expect(204);
+        .expect(200);
+
+      const session = responseBody<SessionBody>(res);
+      expect(session.accessToken).toEqual(expect.any(String));
+      expect(session.participant.email).toBe(data.email);
+      expect(
+        (res.headers['set-cookie'] as unknown as string[]).join(';'),
+      ).toMatch(/mic-refresh-token=/);
 
       await server()
         .post('/api/auth/login')
@@ -589,7 +596,7 @@ describe('Autenticación (e2e)', () => {
       await server()
         .post('/api/auth/confirm-email')
         .send({ token })
-        .expect(204);
+        .expect(200);
 
       await server()
         .post('/api/auth/confirm-email')

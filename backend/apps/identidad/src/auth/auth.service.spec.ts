@@ -581,11 +581,38 @@ describe('AuthService.confirmEmail', () => {
       },
     });
 
-    await auth.confirmEmail('token-cualquiera');
+    const session = await auth.confirmEmail('token-cualquiera');
 
     expect(updateData?.emailConfirmedAt).toBeInstanceOf(Date);
     expect(updateData?.emailConfirmationTokenHash).toBeNull();
     expect(updateData?.emailConfirmationExpiresAt).toBeNull();
+    expect(session.accessToken).toEqual(expect.any(String));
+    expect(session.refreshToken).toEqual(expect.any(String));
+    expect(session.participant.email).toBe('ana@correo.com');
+    expect(session.participant).not.toHaveProperty('seq');
+  });
+
+  it('con una cuenta desactivada, confirma el correo pero no arma sesión', async () => {
+    let updateData: Record<string, unknown> | undefined;
+    const auth = service({
+      findFirst: () =>
+        Promise.resolve(
+          participantRow({
+            emailConfirmationExpiresAt: new Date(Date.now() + 60_000),
+            emailConfirmedAt: null,
+            disabledAt: new Date(),
+          }),
+        ),
+      update: ({ data }: { data: Record<string, unknown> }) => {
+        updateData = data;
+        return Promise.resolve(participantRow());
+      },
+    });
+
+    await expect(auth.confirmEmail('token-cualquiera')).rejects.toBeInstanceOf(
+      ForbiddenException,
+    );
+    expect(updateData?.emailConfirmedAt).toBeInstanceOf(Date);
   });
 });
 

@@ -422,10 +422,15 @@ export class AuthService {
 
   /// Mismo principio que resetPassword: un solo mensaje para token
   /// inexistente, vencido o ya usado.
-  async confirmEmail(token: string): Promise<void> {
+  ///
+  /// Devuelve una sesión: quien acaba de probar que controla el correo no
+  /// tiene por qué volver al login a escribir la contraseña. El enlace pasa
+  /// así a valer como credencial, igual que el de restablecer contraseña: un
+  /// solo uso, con vencimiento, y solo su hash en la base.
+  async confirmEmail(token: string) {
     const participant = await this.prisma.participant.findFirst({
       where: { emailConfirmationTokenHash: hashToken(token) },
-      select: { id: true, emailConfirmationExpiresAt: true },
+      select: { id: true, emailConfirmationExpiresAt: true, disabledAt: true },
     });
 
     if (
@@ -436,14 +441,25 @@ export class AuthService {
       throw new UnauthorizedException(CONFIRMATION_LINK_INVALID);
     }
 
-    await this.prisma.participant.update({
+    const confirmed = await this.prisma.participant.update({
       where: { id: participant.id },
       data: {
         emailConfirmedAt: new Date(),
         emailConfirmationTokenHash: null,
         emailConfirmationExpiresAt: null,
       },
+      select: SESSION_FIELDS,
     });
+
+    // Mismo criterio que login: el correo queda confirmado, pero una cuenta
+    // desactivada por un supervisor no recibe sesión.
+    if (participant.disabledAt) {
+      throw new ForbiddenException(
+        'Tu cuenta está desactivada. Contacta al supervisor del estudio.',
+      );
+    }
+
+    return this.session(confirmed);
   }
 
   /// Responde siempre lo mismo exista o no la cuenta, o ya esté confirmada
