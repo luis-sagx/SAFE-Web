@@ -386,18 +386,49 @@
     background 0.2s;
 }
 
-/* La guía de ESC-01 se ancla dentro del cliente de correo. No se reutiliza
-   como un aviso global: solo el objetivo del paso actual recibe este realce. */
-.mailPane[data-guia-target='saludo'] :global([data-signal='saludo']),
-.mailPane[data-guia-target='pago'] :global([data-signal='pago']),
-.mailPane[data-guia-target='remitente'] :global([data-signal='remitente']) {
-  outline: 3px solid #ab6400;
-  outline-offset: 3px;
-  border-radius: 0.25rem;
-  background: rgba(171, 100, 0, 0.12);
-  transition:
-    outline-color 0.2s,
-    background 0.2s;
+/* Guía de ESC-01: el objetivo del paso queda por encima de una sombra que
+   atenúa el resto del correo (global: se aplica con classList). La sombra no
+   recibe clics, así que el correo sigue usable; .mailbody la recorta con su
+   overflow. */
+:global(.guide-focus) {
+  position: relative;
+  z-index: 1;
+  box-shadow: 0 0 0 100vmax rgb(15 23 42 / 38%);
+}
+
+.guideBubble {
+  position: absolute;
+  top: 0;
+  left: 0.75rem;
+  z-index: 2;
+  width: min(22.5rem, calc(100% - 1.5rem));
+  padding: 0.625rem 0.875rem 0.75rem;
+  border: 1px solid var(--color-link);
+  border-radius: 0.5rem;
+  background: var(--color-surface);
+  box-shadow: 0 8px 24px rgb(15 23 42 / 25%);
+}
+
+/* Flecha hacia el objetivo: abajo si el globo va encima, arriba si va debajo. */
+.guideBubble::after {
+  content: '';
+  position: absolute;
+  left: var(--arrow-left, 1.5rem);
+  width: 0.75rem;
+  height: 0.75rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-link);
+  transform: translateX(-50%) rotate(45deg);
+}
+.guideBubble[data-placement='above']::after {
+  bottom: -0.4375rem;
+  border-top: 0;
+  border-left: 0;
+}
+.guideBubble[data-placement='below']::after {
+  top: -0.4375rem;
+  border-bottom: 0;
+  border-right: 0;
 }
 
 .desktopBody {
@@ -497,6 +528,7 @@
 }
 
 .mailbody {
+  position: relative;
   flex: 1;
   min-width: 0;
   min-height: 0;

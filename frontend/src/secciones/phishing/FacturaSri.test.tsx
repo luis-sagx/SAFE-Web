@@ -150,7 +150,7 @@ describe("FacturaSri", () => {
     // Señal 5: la conexión insegura, en la pestaña que se cerró al terminar.
     for (let i = 0; i < 3; i++)
       fireEvent.click(screen.getByRole("button", { name: "Siguiente →" }));
-    expect(screen.getByRole("heading", { name: "Señal 5 de 7" })).toBeDefined();
+    expect(screen.getByRole("heading", { name: "Señal 5 de 8" })).toBeDefined();
     expect(
       screen
         .getByRole("tab", { name: /Validación de comprobante/ })
@@ -176,7 +176,7 @@ describe("FacturaSri", () => {
       screen.getByText("Factura electrónica pendiente de validación"),
     ).toBeDefined();
     expect(
-      screen.getByText("notificaciones@sri-facturacion-ec.com"),
+      screen.getByText("sri.notificaciones.ec@gmail.com"),
     ).toBeDefined();
   });
 

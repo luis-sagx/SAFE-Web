@@ -9,8 +9,8 @@ import type { ScreenView } from '../../components/ui/DeviceScreen'
 import type { Signal } from '../../components/ui/PanelVeredicto'
 import { createSignal } from '../../lib/crearSenal'
 
-// Único escenario sin nada raro que señalar: la cuenta de la secretaría está hackeada de
-// verdad, y todo lo que se aprendió a mirar sale bien igual. Solo el hábito de confirmar salva.
+// El atacante conoce el hilo y responde desde un dominio casi igual al del colegio:
+// el "Re:" y la cita previa dan la confianza que la dirección no merece.
 
 const THREAD_PREVIOUS = `
   <div style="border-left:3px solid #d7dde1;padding-left:12px;margin:14px 0;color:#5f6b7a;font-size:13px;line-height:1.55;">
@@ -24,7 +24,7 @@ const THREAD_PREVIOUS = `
 const EMAIL: ScreenView = {
   kind: 'mail',
   from: 'Secretaría, Unidad Educativa San Rafael',
-  address: 'secretaria@unidadsanrafael.edu.ec',
+  address: 'secretaria.sanrafael.pagos@gmail.com',
   senalDireccion: 'remitente',
   subject: 'Re: Pensión de este mes',
   date: 'hoy 11:15',
@@ -40,6 +40,10 @@ const EMAIL: ScreenView = {
       Antes de que transfiera, le cuento que
       <mark class="marca" data-signal="cuenta">cambiamos de banco y de número de cuenta</mark> este mes. Adjunto el
       comprobante corregido con el nuevo número de cuenta para la pensión de este mes.
+    </p>
+    <p>
+      Por favor <mark class="marca" data-signal="presion">no llame al colegio, la línea está dañada</mark>.
+      Transfiera hoy mismo para que no se genere recargo.
     </p>
     ${THREAD_PREVIOUS}
   `,
@@ -124,6 +128,7 @@ const RECEIPT: ScreenView = {
     { etiqueta: 'Estudiante', valor: 'A nombre del representante' },
     { etiqueta: 'Concepto', valor: 'Pensión del mes actual' },
     { etiqueta: 'Monto', valor: '$145,00' },
+    { etiqueta: 'Titular de la cuenta', valor: 'Carlos Andrés Mena' },
     { etiqueta: 'Banco', valor: 'Banco Austral', senal: 'banco-nuevo' },
     { etiqueta: 'Número de cuenta', valor: '2200418877', senal: 'cuenta-pdf' },
   ],
@@ -144,33 +149,23 @@ const STORY: Story<ScreenNode> = {
     view: BANKING,
     verdict: 'Caíste en la estafa',
     outcome:
-      'Transferiste a la cuenta nueva. La cuenta de correo de la secretaría estaba comprometida: el dinero no llegó a la escuela, y la pensión sigue debiéndose.',
+      'Transferiste a la cuenta nueva. El correo venía de una cuenta de Gmail, no del correo del colegio: el dinero no llegó a la escuela, y la pensión sigue debiéndose.',
   },
   e_llama: {
     kind: 'good',
     view: SCHOOL,
     verdict: 'No caíste · llamaste al número que ya tenías',
     outcome:
-      'La secretaria no sabía de ningún cambio de banco: su correo había sido hackeado. Evitaste transferir, y al avisar, evitaste que otros padres también lo hicieran.',
+      'La secretaria no sabía de ningún cambio de banco: alguien escribía a los padres desde un Gmail haciéndose pasar por la secretaría. Evitaste transferir, y al avisar, evitaste que otros padres también lo hicieran.',
   },
   // Aquí responder no es tibio, es el fallo: la cuenta desde la que llegó el
-  // correo es la que está en manos del atacante, así que contesta él.
+  // correo es del atacante, así que contesta él.
   e_responder: {
     kind: 'bad',
     view: EMAIL,
     verdict: 'Preguntaste por el canal equivocado',
     outcome:
-      'Preguntaste por el mismo hilo, y te contestaron que sí: quien contesta es el atacante, desde la cuenta que controla. Verificar por el mismo canal no verifica nada.',
-  },
-  // Y marcar como spam tampoco es la buena reacción de siempre: la dirección
-  // es la real del colegio, y el filtro se llevaría por delante los avisos
-  // legítimos que vengan después.
-  e_spam: {
-    kind: 'partial',
-    view: EMAIL,
-    verdict: 'No caíste, pero castigaste la dirección real',
-    outcome:
-      'No transferiste, y eso es lo importante. Pero la dirección es la auténtica del colegio: el filtro va a esconder también las circulares que sí necesitas.',
+      'Preguntaste por el mismo hilo, y te contestaron que sí: quien contesta es el atacante, desde la cuenta falsa que controla. Verificar por el mismo canal no verifica nada.',
   },
 }
 
@@ -205,10 +200,10 @@ const INSTRUCTION = (
 
 const CLUE = (
   <p>
-    Aquí no hay nada raro que descubrir en el correo. Puedes abrir el comprobante adjunto y mirarlo.
-    Lo que se decide es otra cosa: si haces la transferencia, si preguntas por donde llegó el
-    mensaje, si respondes con la barra del cliente o si confirmas el cambio con el teléfono oficial
-    del colegio, sin depender de ese correo.
+    Compara la dirección del remitente con la que publica el colegio en su sitio. Puedes abrir el
+    comprobante adjunto y mirarlo. Lo que se decide: si haces la transferencia, si preguntas por
+    donde llegó el mensaje, si respondes con la barra del cliente o si confirmas el cambio con el
+    teléfono oficial del colegio, sin depender de ese correo.
   </p>
 )
 
@@ -217,13 +212,13 @@ const SIGNALS: Signal[] = [
     's0',
     'n4',
     'cuenta-pdf',
-    'El comprobante tiene todo correcto, y aun así <b>solo repite el número de cuenta nuevo</b>. Un adjunto no confirma nada: lo escribió quien mandó el correo.',
+    'El comprobante pone la cuenta a nombre de <b>Carlos Andrés Mena</b>, una persona, no el colegio. Un adjunto no confirma nada: lo escribió quien mandó el correo.',
   ),
   createSignal(
     's1',
     'n1',
     'remitente',
-    'El hilo es <b>real</b> y la dirección también: la cuenta de la secretaría estaba hackeada. Todo lo que sueles mirar salía bien.',
+    'El remitente es <b>@gmail.com</b>, una cuenta gratuita. El colegio escribe desde <b>unidadsanrafael.edu.ec</b>, y en el mismo hilo antes lo hacía así.',
   ),
   createSignal(
     's2',
@@ -248,6 +243,12 @@ const SIGNALS: Signal[] = [
     'n3',
     'telefono',
     'El teléfono del colegio <b>ya lo tenías</b>, en su sitio oficial. Un número que no salió del correo sospechoso convierte la duda en respuesta.',
+  ),
+  createSignal(
+    's6',
+    'n1',
+    'presion',
+    'Te pide <b>no llamar al colegio</b> y transferir hoy: justo lo que impediría descubrir el engaño.',
   ),
 ]
 

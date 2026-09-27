@@ -13,12 +13,12 @@ import lotteryPrizeImg from '../../assets/escenarios/phishing/premio-loteria.web
 // Anzuelo no técnico (sin dominio casi idéntico ni clon difícil de distinguir): la señal decisiva
 // no está en la pantalla, se responde con "¿yo jugué?", de ahí la dificultad 1.
 
-const FAKE_URL = 'http://loteria-pacifico-premios.online/reclamo'
+const FAKE_URL = 'http://reclama-tu-premio-ya.online/loteria'
 
 const EMAIL: ScreenView = {
   kind: 'mail',
   from: 'Lotería del Pacífico · Premios',
-  address: 'notificaciones@loteria-pacifico-premios.online',
+  address: 'premios.loteriapacifico@hotmail.com',
   senalDireccion: 'remitente',
   label: 'Externo',
   senalEtiqueta: 'externo',
@@ -178,7 +178,7 @@ const SIGNALS: Signal[] = [
     pantalla: 'n1',
     targetId: 'remitente',
     texto:
-      '<b>loteria-pacifico-premios.online</b> es un dominio comprado para esta campaña. Una lotería real siempre escribe desde el mismo sitio.',
+      '<b>@hotmail.com</b> es un correo gratuito que cualquiera abre. Una lotería real escribe desde su propio sitio, no desde una cuenta personal.',
   },
   {
     id: 'cuenta',
@@ -226,6 +226,11 @@ function LotteryPrize() {
           { targetId: 'saludo', texto: '¿Participaste en algún sorteo? Revisa cómo te saluda el correo.' },
           { targetId: 'pago', texto: 'Mira si te piden pagar antes de recibir el premio.' },
           { targetId: 'remitente', texto: 'Comprueba quién envía el correo antes de actuar.' },
+          {
+            targetId: 'e_spam',
+            texto:
+              '¿Ya viste suficientes señales? No hace falta abrir el enlace: con el botón Spam reportas el correo y tu buzón aprende a bloquear a ese remitente.',
+          },
         ],
       }}
       pista={CLUE}

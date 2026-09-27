@@ -130,7 +130,7 @@ const ACTIONS: EmailAction[] = [
 
 const SUBJECT = "Factura electrónica pendiente de validación";
 const SENDER_NAME = "SRI · Facturación Electrónica";
-const ADDRESS = "notificaciones@sri-facturacion-ec.com";
+const ADDRESS = "sri.notificaciones.ec@gmail.com";
 
 // Cada señal apunta a su data-signal en una de las dos pantallas; si esa
 // pantalla no es la que llevó al final, el recorrido igual muestra el texto sin resaltar.
@@ -142,7 +142,7 @@ const SIGNALS: Signal[] = [
     pantalla: "n1",
     targetId: "remitente",
     texto:
-      'El remitente es <b>sri-facturacion-ec.com</b>, la del SRI es <b>sri.gob.ec</b>. Cualquiera puede comprar un dominio que lleve "sri" adentro.',
+      "El remitente es <b>@gmail.com</b>, un correo gratuito. El SRI escribe desde <b>sri.gob.ec</b>, nunca desde una cuenta personal.",
   },
   {
     id: "dominio-real",
@@ -163,7 +163,7 @@ const SIGNALS: Signal[] = [
     pantalla: "n1",
     targetId: "plazo",
     texto:
-      "<b>24 horas</b> y amenaza de multa. La prisa es parte del engaño: sin tiempo de comprobar, decides con miedo.",
+      "<b>24 horas</b> y una multa de <b>USD 1.200</b>. La prisa es parte del engaño: sin tiempo de comprobar, decides con miedo.",
   },
   {
     id: "conexion",
@@ -185,6 +185,13 @@ const SIGNALS: Signal[] = [
     targetId: "campo-clave",
     texto:
       'Pide tu <b>clave</b> del portal para "validar" una factura. Con ella, entran como si fueras tú.',
+  },
+  {
+    id: "enlace",
+    pantalla: "n1",
+    targetId: "enlace-visible",
+    texto:
+      'La dirección escrita en el correo lleva a <b>sri-facturas-pendientes.info</b>, no a <b>sri.gob.ec</b>. Llevar "sri" en el nombre no la hace del SRI.',
   },
 ];
 
@@ -227,7 +234,7 @@ const TABS: Record<string, TabConfig> = {
   },
   n2: {
     titulo: "Validación de comprobante",
-    url: "http://sri-facturacion-ec.com/validar-ruc", // NOSONAR: URL insegura intencional que el participante debe detectar.
+    url: "http://sri-facturas-pendientes.info/validar-ruc", // NOSONAR: URL insegura intencional que el participante debe detectar.
     segura: false,
     // Cerrarla devuelve al correo sin decidir nada: irse de una página que da
     // mala espina no es un veredicto todavía.
@@ -317,19 +324,30 @@ function EmailContent({
     >
       <p>Estimado(a) contribuyente:</p>
       <p>
-        Nuestro sistema detectó una <b>factura electrónica no validada</b>{" "}
-        asociada a su RUC. Si no completa la validación en las próximas{" "}
+        Nuestro sistema detecto una <b>factura electronica NO VALIDADA</b>{" "}
+        asociada a su RUC. Si no completa la validacion en las próximas{" "}
         <mark className={styles.marca} data-signal="plazo">
-          24 horas
+          24 HORAS
         </mark>
-        , su comprobante será anulado y se aplicará una multa administrativa.
+        , su comprobante sera anulado y se aplicara una{" "}
+        <b>multa de USD 1.200</b>.
       </p>
-      <p className={styles.fine}>Verifica el comprobante desde sri.gob.ec antes de usar un enlace recibido por correo.</p>
+      <p>
+        Ingrese a:{" "}
+        <HotspotLink
+          goto="n2"
+          label="Abrió la dirección escrita en el correo"
+          href="http://sri-facturas-pendientes.info/validar-ruc" // NOSONAR: URL insegura intencional que el participante debe detectar.
+          signalId="enlace-visible"
+        >
+          http://sri-facturas-pendientes.info/validar-ruc
+        </HotspotLink>
+      </p>
       <p>
         <HotspotLink
           goto="n2"
           label="Abrió el enlace para validar la factura"
-          href="http://sri-facturacion-ec.com/validar-ruc" // NOSONAR: URL insegura intencional que el participante debe detectar.
+          href="http://sri-facturas-pendientes.info/validar-ruc" // NOSONAR: URL insegura intencional que el participante debe detectar.
           className="cta"
         >
           Validar mi factura ahora

@@ -2,7 +2,6 @@ import { Lock, TriangleAlert, type LucideIcon } from "lucide-react";
 import {
   useCallback,
   useEffect,
-  useLayoutEffect,
   useRef,
   useState,
   type ReactNode,
@@ -311,24 +310,11 @@ function ScenarioStory({
     activeGuideStep && !engine.isEnding && toView.kind === "mail",
   );
 
-  useLayoutEffect(() => {
-    if (!guideVisible || !activeGuideStep) return;
-
-    const target = document
-      .getElementById("pantalla-escenario")
-      ?.querySelector<HTMLElement>(
-        `[data-signal="${activeGuideStep.targetId}"]`,
-      );
-    if (!target) return;
-
-    target.scrollIntoView({ behavior: "smooth", block: "center" });
-  }, [activeGuideStep, guideVisible]);
-
   const emailGuide =
     guideVisible && activeGuideStep && screenGuide ? (
       <aside
         aria-live="polite"
-        className="my-3 rounded-md border border-link/30 bg-link/5 px-3 py-2 text-base leading-relaxed text-body"
+        className="text-base leading-relaxed text-body"
       >
         <p className="font-semibold text-ink">
           Pista {guideStep + 1} de {screenGuide.pasos.length}

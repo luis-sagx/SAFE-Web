@@ -43,10 +43,10 @@ function renderScenario() {
 }
 
 describe('QuishingActualice', () => {
-  it('muestra el dominio del remitente con la sustitución de l por 1', () => {
+  it('muestra el dominio del remitente ajeno al del banco', () => {
     renderScenario()
 
-    expect(screen.getByText('de: notificaciones@bancodel1itoral.com')).toBeDefined()
+    expect(screen.getByText('de: banco.litoral.datos@gmail.com')).toBeDefined()
   })
 
   it('escanear el QR y enviar el formulario cuenta como caer en la trampa', () => {
@@ -77,7 +77,7 @@ describe('QuishingActualice', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Abrir Spam' }))
 
     expect(screen.getByRole('heading', { name: 'Spam' })).toBeDefined()
-    expect(screen.getByText('Actualice sus datos antes de que se limite su cuenta')).toBeDefined()
+    expect(screen.getByText('Actualice sus datos o su cuenta será bloqueada')).toBeDefined()
   })
 
   it('clicar fuera de los hotspots muestra aviso de zona sin interacción', () => {
