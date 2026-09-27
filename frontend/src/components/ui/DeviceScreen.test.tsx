@@ -91,3 +91,27 @@ describe('DeviceScreen, separadores de fecha', () => {
     expect(today.compareDocumentPosition(currentMessage) & Node.DOCUMENT_POSITION_FOLLOWING).toBeGreaterThan(0)
   })
 })
+
+describe('DeviceScreen, marcas de páginas y apps', () => {
+  const page = (app?: string): ScreenView => ({
+    kind: 'web',
+    app,
+    url: 'ejemplo.ec',
+    secure: true,
+    brand: 'Banca móvil',
+    title: 'Cuenta',
+    fields: [],
+    button: '',
+  })
+
+  it('oculta la marca redundante en apps y conserva la de sitios y navegador', () => {
+    const { rerender } = render(<DeviceScreen view={page('Banco')} />)
+    expect(screen.queryByText('Banca móvil')).toBeNull()
+
+    rerender(<DeviceScreen view={page()} />)
+    expect(screen.getByText('Banca móvil')).toBeDefined()
+
+    rerender(<DeviceScreen view={page('Navegador')} />)
+    expect(screen.getByText('Banca móvil')).toBeDefined()
+  })
+})

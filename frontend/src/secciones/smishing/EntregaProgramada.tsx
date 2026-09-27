@@ -4,6 +4,7 @@ import type { Context } from '../../components/ui/ContextoEscenario'
 import type { Story } from '../../hooks/useStoryEngine'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
 import type { Signal } from '../../components/ui/PanelVeredicto'
+import { APP_ACCENTS } from '../../components/ui/appAccents'
 
 // Cierra el módulo con la lección que falta a los seis fraudulentos: desconfiar de todo
 // también se paga. Este aviso no pide nada; el fallo (como en alerta-consumo) es devolver sin mirar.
@@ -45,6 +46,7 @@ const REPLIED_SMS: ScreenView = {
 const APP_HOME: ScreenView = {
   kind: 'web',
   app: 'EnvíaExpress',
+  appAccent: APP_ACCENTS.courier,
   url: 'enviaexpress.ec',
   secure: true,
   brand: 'Mis envíos',
@@ -67,7 +69,6 @@ const APP_HOME: ScreenView = {
       goto: 'e_devuelve',
       label: 'Devolvió el envío sin haber mirado el detalle',
     },
-    { texto: 'Mis direcciones', detalle: 'Domicilio y oficina' },
   ],
   fields: [],
   button: '',
@@ -79,6 +80,7 @@ const APP_HOME: ScreenView = {
 const APP_DETAIL: ScreenView = {
   kind: 'web',
   app: 'EnvíaExpress',
+  appAccent: APP_ACCENTS.courier,
   url: 'enviaexpress.ec',
   secure: true,
   brand: `Guía ${GUIDE}`,
@@ -100,12 +102,12 @@ const APPS: PhoneApp[] = [
   {
     Icono: Package,
     texto: 'EnvíaExpress',
-    color: '#d9480f',
+    color: APP_ACCENTS.courier,
     viewNode: 'n3',
     label: 'Abrió la app del courier',
   },
   { Icono: MessageSquareText, texto: 'Mensajes', color: '#2f9e44' },
-  { Icono: Wallet, texto: 'Banco', color: '#155e75', relleno: 'banco' },
+  { Icono: Wallet, texto: 'Banco', color: APP_ACCENTS.bank, relleno: 'banco' },
 ]
 
 const STORY: Story<ScreenNode> = {

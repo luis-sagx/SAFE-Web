@@ -4,6 +4,7 @@ import type { Context } from '../../components/ui/ContextoEscenario'
 import type { Story } from '../../hooks/useStoryEngine'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
 import type { Signal } from '../../components/ui/PanelVeredicto'
+import { APP_ACCENTS } from '../../components/ui/appAccents'
 
 const HISTORY = [
   {
@@ -56,6 +57,7 @@ const REPLIED_SMS: ScreenView = {
 const APP_HOME: ScreenView = {
   kind: 'web',
   app: 'Banco del Litoral',
+  appAccent: APP_ACCENTS.bank,
   url: 'bancolitoral.ec',
   secure: true,
   brand: 'Banca móvil',
@@ -87,6 +89,7 @@ const APP_HOME: ScreenView = {
 const APP_BANK: ScreenView = {
   kind: 'web',
   app: 'Banco del Litoral',
+  appAccent: APP_ACCENTS.bank,
   url: 'bancolitoral.ec',
   secure: true,
   brand: 'Movimientos · Tarjeta *4417',
@@ -108,7 +111,7 @@ const APPS: PhoneApp[] = [
   {
     Icono: Landmark,
     texto: 'Banco del Litoral',
-    color: '#0f3d6e',
+    color: APP_ACCENTS.bank,
     viewNode: 'n2',
     label: 'Abrió la app del banco',
   },

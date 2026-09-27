@@ -1,4 +1,4 @@
-import { Images, LayoutGrid, Phone, Wifi } from 'lucide-react'
+import { LayoutGrid, Phone, Wifi } from 'lucide-react'
 import ScenarioStory, { type PhoneApp, type ScreenNode } from '../../components/StoryEscenario'
 import type { Context } from '../../components/ui/ContextoEscenario'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
@@ -222,7 +222,6 @@ const APPS: PhoneApp[] = [
     viewNode: 'n6',
     label: 'Abrió la app de su proveedor de internet',
   },
-  { Icono: Images, texto: 'Galería', color: '#c2410c', relleno: 'galeria' },
 ]
 
 export const STORY: Story<ScreenNode> = {
