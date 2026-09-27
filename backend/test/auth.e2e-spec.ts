@@ -177,8 +177,7 @@ describe('Autenticación (e2e)', () => {
 
     // Dos cuentas de la misma persona parten sus corridas en el análisis.
     it('rechaza un correo ya registrado aunque cambie la capitalización', async () => {
-      const data = registrationData('duplicado');
-      await server().post('/api/auth/register').send(data).expect(201);
+      await registerConfirmedSession(app, 'duplicado');
 
       await server()
         .post('/api/auth/register')
@@ -191,8 +190,10 @@ describe('Autenticación (e2e)', () => {
 
     // El motivo por el que se pide la cédula: una persona, una cuenta.
     it('rechaza una cédula ya registrada aunque el correo sea otro', async () => {
-      const data = registrationData('cedula-unica');
-      await server().post('/api/auth/register').send(data).expect(201);
+      const { datos: data } = await registerConfirmedSession(
+        app,
+        'cedula-unica',
+      );
 
       await server()
         .post('/api/auth/register')
@@ -203,10 +204,42 @@ describe('Autenticación (e2e)', () => {
         .expect(409);
     });
 
+    // Un correo mal escrito no debe dejar la cédula ocupada para siempre.
+    it('un registro sin confirmar se reemplaza al volver a registrarse', async () => {
+      const data = registrationData('reemplazo');
+      await server().post('/api/auth/register').send(data).expect(201);
+
+      const corrected = registrationData('reemplazo-bien');
+      sendEmailConfirmation().mockClear();
+      await server()
+        .post('/api/auth/register')
+        .send({ ...corrected, cedula: data.cedula })
+        .expect(201);
+
+      const [email, , link] = sendEmailConfirmation().mock.calls[0] as [
+        string,
+        string,
+        string,
+      ];
+      expect(email).toBe(corrected.email);
+      await server()
+        .post('/api/auth/confirm-email')
+        .send({ token: tokenFromLink(link) })
+        .expect(200);
+
+      // El correo equivocado ya no es de nadie: se puede volver a usar.
+      await server()
+        .post('/api/auth/register')
+        .send({ ...registrationData('reemplazo-otra'), email: data.email })
+        .expect(201);
+    });
+
     // Distinguirlos diría si una persona concreta participó en el estudio.
     it('da el mismo error para correo repetido que para cédula repetida', async () => {
-      const data = registrationData('mismo-error');
-      await server().post('/api/auth/register').send(data).expect(201);
+      const { datos: data } = await registerConfirmedSession(
+        app,
+        'mismo-error',
+      );
 
       const byEmail = await server()
         .post('/api/auth/register')

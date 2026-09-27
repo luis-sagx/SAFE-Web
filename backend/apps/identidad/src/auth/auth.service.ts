@@ -176,7 +176,7 @@ export class AuthService {
     // cifrado y que `backfill-pii.mts` todavía no alcanzó: esas todavía
     // guardan el correo en claro, sin huella con la que compararlas por
     // `emailHash`.
-    const alreadyExists = await this.prisma.participant.findFirst({
+    const matches = await this.prisma.participant.findMany({
       where: {
         OR: [
           { emailHash },
@@ -184,12 +184,22 @@ export class AuthService {
           { cedulaHash: ecuadorianIdHash },
         ],
       },
-      select: { id: true },
+      select: { id: true, role: true, emailConfirmedAt: true },
     });
 
-    if (alreadyExists) {
+    // Un registro que nunca confirmó su correo no bloquea: si no, quien
+    // escribió mal su correo (o usó uno ajeno) dejaría esa cédula ocupada
+    // para siempre. Se puede borrar sin perder nada: sin confirmar nunca
+    // hubo sesión, así que tampoco corridas ni certificado.
+    const blocked = matches.some(
+      (match) => match.role !== 'PARTICIPANT' || match.emailConfirmedAt,
+    );
+
+    if (blocked) {
       throw new ConflictException(ALREADY_REGISTERED);
     }
+
+    const pendingIds = matches.map((match) => match.id);
 
     // El token viaja en claro solo por correo; en la base se guarda su hash
     // (mismo criterio que el de recuperación de clave, ver hashToken más
@@ -197,21 +207,35 @@ export class AuthService {
     const confirmationToken =
       randomBytes(RESET_TOKEN_BYTES).toString('base64url');
 
+    // bcrypt fuera de la transacción: tarda lo suyo a propósito y no debe
+    // mantenerla abierta.
+    const passwordHash = await hash(dto.password, BCRYPT_ROUNDS);
+
     try {
-      await this.prisma.participant.create({
-        data: {
-          nombre: encrypt(dto.nombre, this.piiKey),
-          apellido: encrypt(dto.apellido, this.piiKey),
-          email: encrypt(dto.email, this.piiKey),
-          emailHash,
-          cedulaHash: ecuadorianIdHash,
-          passwordHash: await hash(dto.password, BCRYPT_ROUNDS),
-          emailConfirmationTokenHash: hashToken(confirmationToken),
-          emailConfirmationExpiresAt: new Date(
-            Date.now() + EMAIL_CONFIRMATION_TTL_MS,
-          ),
-        },
-        select: SESSION_FIELDS,
+      await this.prisma.$transaction(async (tx) => {
+        // `emailConfirmedAt: null` otra vez: si una de esas cuentas se
+        // confirmó entre la búsqueda y aquí, no se borra y el create choca con
+        // el índice único (409 abajo).
+        if (pendingIds.length > 0) {
+          await tx.participant.deleteMany({
+            where: { id: { in: pendingIds }, emailConfirmedAt: null },
+          });
+        }
+        await tx.participant.create({
+          data: {
+            nombre: encrypt(dto.nombre, this.piiKey),
+            apellido: encrypt(dto.apellido, this.piiKey),
+            email: encrypt(dto.email, this.piiKey),
+            emailHash,
+            cedulaHash: ecuadorianIdHash,
+            passwordHash,
+            emailConfirmationTokenHash: hashToken(confirmationToken),
+            emailConfirmationExpiresAt: new Date(
+              Date.now() + EMAIL_CONFIRMATION_TTL_MS,
+            ),
+          },
+          select: { id: true },
+        });
       });
     } catch (error) {
       // Dos registros simultáneos pasan los dos la comprobación de arriba y
