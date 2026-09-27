@@ -7,6 +7,18 @@ vi.mock('../../context/AuthContext', async () => (await import('../../test/escen
 vi.mock('../../lib/api', async () => (await import('../../test/escenario')).offlineApi())
 
 describe('EntregaProgramada', () => {
+  it('deja tres opciones y aplica los acentos del courier y del banco', () => {
+    const phone = start(<ScheduledDelivery />)
+
+    fireEvent.click(within(phone).getByRole('button', { name: /EnvíaExpress/ }))
+    expect(phone.querySelectorAll('[class*="opciones"] li')).toHaveLength(3)
+    expect(within(phone).queryByRole('button', { name: /Mis direcciones/ })).toBeNull()
+    expect((phone.querySelector('[class*="phoneAppBar"]') as HTMLElement).style.backgroundColor).toBe('rgb(194, 65, 12)')
+
+    const bank = within(phone).getByRole('button', { name: /Banco/ })
+    expect((bank.querySelector('[class*="phoneDockIcono"]') as HTMLElement).style.background).toBe('rgb(15, 118, 110)')
+  })
+
   it('muestra la respuesta predeterminada como opción, sin activar el input', () => {
     const phone = start(<ScheduledDelivery />)
 

@@ -4,6 +4,7 @@ import type { Context } from '../../components/ui/ContextoEscenario'
 import type { Story } from '../../hooks/useStoryEngine'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
 import type { Signal } from '../../components/ui/PanelVeredicto'
+import { APP_ACCENTS } from '../../components/ui/appAccents'
 
 /// Mientras el formulario está abierto, los atacantes usan el usuario y la
 /// clave que acabas de escribir para entrar a tu banca de verdad, y el banco
@@ -88,7 +89,6 @@ const BROWSER: ScreenView = {
       goto: 'e_verifica',
       label: 'Entró al sitio oficial del MIES desde sus sitios frecuentes',
     },
-    { texto: 'sri.gob.ec', detalle: 'Servicio de Rentas Internas' },
   ],
   fields: [],
   button: '',
@@ -125,7 +125,7 @@ const APPS: PhoneApp[] = [
     label: 'Abrió el navegador para comprobarlo por su cuenta',
   },
   { Icono: MessageSquareText, texto: 'Mensajes', color: '#2f9e44' },
-  { Icono: Wallet, texto: 'Banco', color: '#155e75', relleno: 'banco' },
+  { Icono: Wallet, texto: 'Banco', color: APP_ACCENTS.bank, relleno: 'banco' },
 ]
 
 const STORY: Story<ScreenNode> = {

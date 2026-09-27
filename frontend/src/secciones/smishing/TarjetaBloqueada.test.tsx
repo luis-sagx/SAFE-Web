@@ -10,6 +10,17 @@ vi.mock('../../context/AuthContext', async () => (await import('../../test/escen
 vi.mock('../../lib/api', async () => (await import('../../test/escenario')).offlineApi())
 
 describe('TarjetaBloqueada', () => {
+  it('deja tres opciones bancarias y tres apps en el dock', () => {
+    const phone = start(<BlockedCard />)
+
+    const dock = phone.querySelector('[aria-label="Apps del teléfono"]')
+    expect(dock?.querySelectorAll('button')).toHaveLength(3)
+    fireEvent.click(within(phone).getByRole('button', { name: /Banco/ }))
+    expect(phone.querySelectorAll('[class*="opciones"] li')).toHaveLength(3)
+    expect(within(phone).queryByRole('button', { name: /Transferir/ })).toBeNull()
+    expect((phone.querySelector('[class*="phoneAppBar"]') as HTMLElement).style.backgroundColor).toBe('rgb(15, 118, 110)')
+  })
+
   it('el campo no se escribe solo: la frase se elige entre las que ofrece el hilo', () => {
     const phone = start(<BlockedCard />)
 
@@ -106,6 +117,7 @@ describe('TarjetaBloqueada', () => {
     expect(within(phone).getByLabelText('Llamada en curso')).toBeDefined()
 
     fireEvent.click(within(phone).getByRole('button', { name: /Banco/ }))
+    expect(phone.querySelectorAll('[class*="opciones"] li')).toHaveLength(3)
     fireEvent.click(within(phone).getByRole('button', { name: /Mis tarjetas/ }))
 
     // Se ve el mismo estado de siempre, pero la corrida sigue abierta.

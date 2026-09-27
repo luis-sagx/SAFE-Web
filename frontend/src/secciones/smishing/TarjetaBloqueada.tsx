@@ -1,10 +1,11 @@
-import { Compass, MessageSquareText, Phone, Wallet } from 'lucide-react'
+import { MessageSquareText, Phone, Wallet } from 'lucide-react'
 import ScenarioStory, { type PhoneApp, type ScreenNode } from '../../components/StoryEscenario'
 import type { Context } from '../../components/ui/ContextoEscenario'
 import type { Story } from '../../hooks/useStoryEngine'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
 import type { Signal } from '../../components/ui/PanelVeredicto'
 import { IDENTITY_FAKE } from '../../lib/identidadFicticia'
+import { APP_ACCENTS } from '../../components/ui/appAccents'
 
 // La trampa es un número de teléfono, no un enlace: marcarlo mete en una llamada donde el
 // engaño se escucha, no se lee. Puente natural hacia el módulo de vishing.
@@ -146,13 +147,13 @@ const CODE_SMS: ScreenView = {
 const BANK_HOME: ScreenView = {
   kind: 'web',
   app: 'Banco',
+  appAccent: APP_ACCENTS.bank,
   url: 'inicio',
   secure: true,
   brand: 'Banco del Litoral · Banca móvil',
   title: `Tarjeta ${IDENTITY_FAKE.tarjeta}`,
   subtitle: 'Cupo disponible $1.240,00',
   opciones: [
-    { texto: 'Transferir', detalle: 'A cuentas propias o de terceros' },
     {
       texto: 'Mis tarjetas',
       detalle: 'Estado, bloqueos e intentos rechazados',
@@ -175,7 +176,6 @@ const BANK_HOME: ScreenView = {
 const BANK_HOME_DURING_CALL: ScreenView = {
   ...BANK_HOME,
   opciones: [
-    { texto: 'Transferir', detalle: 'A cuentas propias o de terceros' },
     {
       texto: 'Mis tarjetas',
       detalle: 'Estado, bloqueos e intentos rechazados',
@@ -197,6 +197,7 @@ const BANK_HOME_DURING_CALL: ScreenView = {
 const APP_BANK: ScreenView = {
   kind: 'web',
   app: 'Banco',
+  appAccent: APP_ACCENTS.bank,
   url: 'inicio',
   secure: true,
   brand: 'Banco del Litoral · Banca móvil',
@@ -221,7 +222,7 @@ const APPS: PhoneApp[] = [
   {
     Icono: Wallet,
     texto: 'Banco',
-    color: '#155e75',
+    color: APP_ACCENTS.bank,
     viewNode: 'n5',
     // Con la llamada en curso, comprobar no puede cerrar el escenario: abre la variante que no termina nada.
     viewNodeEnLlamada: 'n5c',
@@ -230,7 +231,6 @@ const APPS: PhoneApp[] = [
   { Icono: MessageSquareText, texto: 'Mensajes', color: '#2f9e44', hilo: 'sms' },
   // Sin `hilo`, ambos iconos devolverían a lo último visto en vez de a lo suyo.
   { Icono: Phone, texto: 'Teléfono', color: '#495057', hilo: 'call' },
-  { Icono: Compass, texto: 'Navegador', color: '#1971c2', relleno: 'navegador' },
 ]
 
 export const STORY: Story<ScreenNode> = {
