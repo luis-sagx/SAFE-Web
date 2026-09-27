@@ -17,6 +17,8 @@ describe('EntregaProgramada', () => {
 
     const bank = within(phone).getByRole('button', { name: /Banco/ })
     expect((bank.querySelector('[class*="phoneDockIcono"]') as HTMLElement).style.background).toBe('rgb(15, 118, 110)')
+    fireEvent.click(bank)
+    expect((phone.querySelector('[class*="phoneAppBar"]') as HTMLElement).style.backgroundColor).toBe('rgb(15, 118, 110)')
   })
 
   it('muestra la respuesta predeterminada como opción, sin activar el input', () => {

@@ -597,7 +597,10 @@ function ScenarioStory({
         <div className={styles.phoneApp}>
           {appOpen && !engine.isEnding ? (
             <>
-              <div className={styles.phoneAppBar}>
+              <div
+                className={styles.phoneAppBar}
+                style={appOpen.color ? { backgroundColor: appOpen.color } : undefined}
+              >
                 <button
                   type="button"
                   className={`${styles.hotspot} ${styles.phoneAppVolver}`}
