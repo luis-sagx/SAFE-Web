@@ -267,7 +267,7 @@ export const CONTEXT: Context = {
   ahora: (
     <>
       <strong>Esta semana</strong>, la que habías acordado para transferir, llega una respuesta
-      dentro de ese mismo hilo y desde la dirección de siempre.
+      dentro de ese mismo hilo que dice venir de la secretaría.
     </>
   ),
 }
