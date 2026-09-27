@@ -51,6 +51,8 @@ export type ScreenView =
       // Nombre de app cuando la pantalla es una app del teléfono, no una
       // página del navegador (sin URL ni candado que buscar). Solo en celular.
       app?: string
+      // Acento de la cabecera para una app del teléfono; no aplica al navegador.
+      appAccent?: string
       secure: boolean
       // Archivo local: sin candado ni advertencia (no es una conexión).
       local?: boolean
