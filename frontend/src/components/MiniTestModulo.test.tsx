@@ -8,13 +8,13 @@ describe('ModuleQuiz', () => {
 
     expect(screen.getByText('Preguntas de refuerzo')).toBeDefined()
     expect(screen.getByText('Pregunta 1 de 2')).toBeDefined()
-    expect(screen.getByText(/dirección web sospechosa/)).toBeDefined()
+    expect(screen.getByText(/¿qué debes revisar para saber a qué sitio te lleva/)).toBeDefined()
   })
 
   it('cada módulo tiene sus propias preguntas, no las genéricas de otro', () => {
     render(<ModuleQuiz seccionId="fisico" onComplete={vi.fn()} />)
 
-    expect(screen.getByText(/memoria USB desconocida/)).toBeDefined()
+    expect(screen.getByText(/memoria USB que no reconoces/)).toBeDefined()
   })
 
   it('al elegir la opción incorrecta, avisa y deja reintentar sin avanzar', () => {
@@ -23,7 +23,7 @@ describe('ModuleQuiz', () => {
     fireEvent.click(screen.getByText(/empiece con https/))
     fireEvent.click(screen.getByRole('button', { name: 'Comprobar' }))
 
-    expect(screen.getByText(/No es esa/)).toBeDefined()
+    expect(screen.getByText(/Esa opción no parece correcta/)).toBeDefined()
     expect(screen.getByText('Pregunta 1 de 2')).toBeDefined()
   })
 
@@ -31,7 +31,7 @@ describe('ModuleQuiz', () => {
     const onComplete = vi.fn()
     render(<ModuleQuiz seccionId="phishing" onComplete={onComplete} />)
 
-    fireEvent.click(screen.getByText(/justo antes de la primera barra/))
+    fireEvent.click(screen.getByText(/nombre del sitio después de https/))
     fireEvent.click(screen.getByRole('button', { name: 'Comprobar' }))
     expect(screen.getByText(/Correcto/)).toBeDefined()
 
@@ -39,7 +39,7 @@ describe('ModuleQuiz', () => {
     expect(screen.getByText('Pregunta 2 de 2')).toBeDefined()
     expect(onComplete).not.toHaveBeenCalled()
 
-    fireEvent.click(screen.getByText(/Entro directo por mi app o el sitio oficial/))
+    fireEvent.click(screen.getByText(/Abro la aplicación o el sitio oficial/))
     fireEvent.click(screen.getByRole('button', { name: 'Comprobar' }))
     expect(screen.getByText(/Correcto/)).toBeDefined()
 
