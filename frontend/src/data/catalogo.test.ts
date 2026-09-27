@@ -103,14 +103,14 @@ describe('catálogo de escenarios', () => {
         version,
       })),
     ).toEqual([
-      { escenarioId: 'loteria-premiada', dificultad: 1, version: 10 },
-      { escenarioId: 'factura-sri', dificultad: 2, version: 13 },
-      { escenarioId: 'clave-caducada', dificultad: 2, version: 12 },
+      { escenarioId: 'loteria-premiada', dificultad: 1, version: 11 },
+      { escenarioId: 'factura-sri', dificultad: 2, version: 14 },
+      { escenarioId: 'clave-caducada', dificultad: 2, version: 13 },
       { escenarioId: 'rol-de-pagos', dificultad: 3, version: 12 },
-      { escenarioId: 'quishing-actualice', dificultad: 3, version: 12 },
-      { escenarioId: 'secuestro-hilo', dificultad: 3, version: 11 },
+      { escenarioId: 'quishing-actualice', dificultad: 3, version: 13 },
+      { escenarioId: 'secuestro-hilo', dificultad: 3, version: 12 },
       { escenarioId: 'aviso-filtracion', dificultad: 4, version: 13 },
-      { escenarioId: 'sesion-bogota', dificultad: 5, version: 11 },
+      { escenarioId: 'sesion-bogota', dificultad: 5, version: 12 },
     ])
   })
 

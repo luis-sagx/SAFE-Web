@@ -8,16 +8,16 @@ import { IDENTITY_FAKE } from '../../lib/identidadFicticia'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
 import type { Signal } from '../../components/ui/PanelVeredicto'
 
-const FAKE_URL = 'https://correo.andes-ec.net/owa/login'
+const FAKE_URL = 'https://renovar-clave-andes.weebly.com/owa/login'
 
 const EMAIL: ScreenView = {
   kind: 'mail',
   from: 'Soporte TI · Corporación Andes',
-  address: 'soporte-ti@andes-ec.net',
+  address: 'soporte.andes.ti@outlook.com',
   senalDireccion: 'remitente',
   label: 'Externo',
   senalEtiqueta: 'externo',
-  subject: 'Tu contraseña caduca hoy · acción requerida',
+  subject: 'URGENTE: su contraseña caduca hoy · acción requerida',
   date: 'hoy 16:05',
   marca: {
     nombre: 'Corporación Andes',
@@ -26,18 +26,17 @@ const EMAIL: ScreenView = {
     variante: 'corporativa',
   },
   body: `
-    <p><span data-signal="saludo">Hola,</span></p>
+    <p><span data-signal="saludo">Estimado usuario,</span></p>
     <p>
-      Tu contraseña de correo institucional <mark class="marca" data-signal="plazo">caduca hoy a las 18:00</mark>. Si no la renuevas,
-      perderás el acceso a tu buzón y tendrás que abrir un ticket con Sistemas para
-      recuperarlo.
+      Su contraseña de correo institucional caduca hoy. Si no la renueva,
+      <mark class="marca" data-signal="plazo">su cuenta será ELIMINADA en 2 horas</mark> junto con todos sus correos.
     </p>
-    <p class="fine">El correo institucional de Andes termina en @andes.com.ec.</p>
+    <p>Renueve aquí: <a href="${FAKE_URL}" data-signal="enlace" data-hotspot-goto="n2" data-hotspot-label="Pulsó la dirección escrita en el correo">${FAKE_URL}</a></p>
     <p><a class="cta" href="${FAKE_URL}" data-hotspot-goto="n2" data-hotspot-label="Pulsó &quot;Renovar mi contraseña ahora&quot; en el correo">Renovar mi contraseña ahora</a></p>
   `,
   footer: `
-    <p>Departamento de Tecnología · Corporación Andes<br />
-      Correo generado automáticamente por el servidor de identidad.</p>
+    <p>Atentamente,<br />
+      Soporte Técnico</p>
   `,
 }
 
@@ -109,7 +108,7 @@ const STORY: Story<ScreenNode> = {
     kind: 'bad',
     view: PAGE,
     verdict: 'Caíste en la trampa',
-    outcome: `La página era una copia alojada en andes-ec.net. Con tu contraseña ${IDENTITY_FAKE.clave} entraron a tu buzón y pidieron una transferencia a tu nombre.`,
+    outcome: `La página era una copia alojada en weebly.com. Con tu contraseña ${IDENTITY_FAKE.clave} entraron a tu buzón y pidieron una transferencia a tu nombre.`,
   },
 }
 
@@ -120,7 +119,7 @@ const SIGNALS: Signal[] = [
     id: 's1',
     targetId: 'remitente',
     pantalla: 'n1',
-    texto: 'El remitente termina en <b>andes-ec.net</b>, tu empresa es <b>andes.com.ec</b>. Son dos dueños distintos.',
+    texto: 'El remitente es <b>@outlook.com</b>, un correo gratuito que cualquiera abre. Tu empresa escribe desde <b>@andes.com.ec</b>.',
   },
   {
     id: 's2',
@@ -133,7 +132,7 @@ const SIGNALS: Signal[] = [
     id: 's3',
     targetId: 'plazo',
     pantalla: 'n1',
-    texto: 'Amenaza con <b>perder el acceso hoy mismo</b>: la prisa evita que preguntes en sistemas.',
+    texto: 'Amenaza con <b>ELIMINAR tu cuenta en 2 horas</b>: la prisa evita que preguntes en sistemas.',
   },
   {
     id: 's4',
@@ -145,7 +144,13 @@ const SIGNALS: Signal[] = [
     id: 's5',
     targetId: 'saludo',
     pantalla: 'n1',
-    texto: 'No te llama por tu nombre: <b>el mismo texto sirve para cualquiera</b> que lo reciba.',
+    texto: 'No te llama por tu nombre y firma sin nadie: <b>el mismo texto sirve para cualquiera</b> que lo reciba.',
+  },
+  {
+    id: 's7',
+    targetId: 'enlace',
+    pantalla: 'n1',
+    texto: 'El enlace lleva a <b>weebly.com</b>, un servicio gratuito de páginas web, no a <b>andes.com.ec</b>.',
   },
 ]
 /// La intranet es la vía de verificación que no pasa por el correo: abrirla por
@@ -190,7 +195,7 @@ const SIGNAL_REAL: Signal = {
   id: 's6',
   targetId: 'correo-real',
   pantalla: 'n3',
-  texto: 'Soporte TI real es <b>soporte.ti@andes.com.ec</b>. El del correo era <b>soporte-ti@andes-ec.net</b>, otro dominio.',
+  texto: 'Soporte TI real es <b>soporte.ti@andes.com.ec</b>. El del correo era <b>soporte.andes.ti@outlook.com</b>, un correo gratuito.',
 }
 
 const RULE =
