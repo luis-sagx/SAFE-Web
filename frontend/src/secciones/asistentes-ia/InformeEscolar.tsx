@@ -128,7 +128,7 @@ const STORY: Story<ScreenNode> = {
     ),
     verdict: 'El informe entero del estudiante quedó en un servicio externo',
     outcome:
-      'Un informe escolar también es un documento de identidad de un menor de edad. La IA no necesitaba la cédula ni el domicilio para mejorar la redacción.',
+      'La IA no necesitaba la cédula ni el domicilio para mejorar el informe.',
   },
   e_parcial: {
     kind: 'partial',
@@ -137,12 +137,12 @@ const STORY: Story<ScreenNode> = {
       signal(
         'dato-telefono',
         'e_parcial',
-        '<b>El teléfono de contacto</b> no prueba identidad, pero sí permite llegar hasta la familia. Ahí empieza un contacto no autorizado.',
+        '<b>El teléfono permite contactar a la familia</b>. Tampoco hacía falta compartirlo.',
       ),
     ],
     verdict: 'Quitaste lo peor, pero dejaste cómo llegar hasta él',
     outcome:
-      'Lo grave (cédula y domicilio) se quedó fuera. Pero el teléfono tampoco hacía falta para mejorar la redacción.',
+      'Dejaste fuera la cédula y el domicilio, pero compartiste un teléfono que no hacía falta.',
   },
   e_seguro: {
     kind: 'good',
@@ -151,12 +151,12 @@ const STORY: Story<ScreenNode> = {
       signal(
         'borrador-enviado',
         'e_seguro',
-        '<b>Solo pegaste el seguimiento académico</b>, lo que había que mejorar. No identifica a nadie ni sirve para contactar a la familia.',
+        '<b>Pegaste solo el seguimiento académico</b>. No identifica al estudiante ni contacta a su familia.',
       ),
     ],
     verdict: 'Informe mejorado sin entregar los datos de nadie',
     outcome:
-      'La IA devolvió el seguimiento mejor redactado y con tono más claro. El nombre y los datos de contacto los agregas tú al entregarlo a la institución.',
+      'La IA mejoró el seguimiento. Agrega el nombre y los datos de contacto al entregar el informe.',
   },
 }
 
@@ -164,21 +164,20 @@ const SIGNALS = [
   signal(
     'informe-en-juego',
     'n1',
-    '<b>El informe trae la cédula, el domicilio y el teléfono</b> del estudiante. Nada de eso cambia cómo se redacta su seguimiento.',
+    '<b>La ficha tiene la cédula, domicilio y teléfono</b>. No hacen falta para mejorar el seguimiento.',
   ),
 ]
 
 const RULE =
-  'Regla de oro: <b>un informe escolar también es un documento de identidad de un menor</b>. Antes de pegarlo en una IA, quítale la cédula, el domicilio y el teléfono.'
+  '<b>Antes de usar una IA, quita la cédula, domicilio y teléfono</b> del informe de un menor.'
 
-const SUMMARY = 'Le pides a una IA que mejore un informe escolar de un estudiante, con su cédula y su domicilio dentro.'
+const SUMMARY = 'Pides a una IA mejorar el informe escolar de un estudiante.'
 
 export const CONTEXT: Context = {
-  antes: 'Eres tutor de un curso y te pidieron mejorar la redacción de un informe de seguimiento antes de entregarlo a coordinación.',
+  antes: 'Te pidieron mejorar un informe escolar antes de entregarlo a coordinación.',
   ahora: (
     <>
-      <strong>Abres el asistente de IA</strong> en el computador. Al lado tienes la ficha del estudiante,
-      del sistema de la institución.
+      <strong>Abres el asistente de IA</strong>. Al lado está la ficha del estudiante.
     </>
   ),
 }
@@ -195,14 +194,12 @@ function SchoolReport() {
       documentoFuente={<BlocNotas titulo="Bloc de notas" texto={SOURCE_DOCUMENT} />}
       instruccion={
         <p className="text-lg leading-relaxed text-body">
-          Escribe (o pega) el contenido que le pedirías mejorar a la IA, y toca "Enviar" cuando el
-          informe quede como quieres.
+          Copia el seguimiento que quieres mejorar y toca "Enviar".
         </p>
       }
       pista={
         <p>
-          La IA puede mejorar el seguimiento académico sin saber la cédula del estudiante ni dónde vive.
-          Lo que decides es cuánto de la ficha le pegas.
+          La IA solo necesita el seguimiento, no la cédula ni el domicilio. Copia solo esa parte.
         </p>
       }
     />

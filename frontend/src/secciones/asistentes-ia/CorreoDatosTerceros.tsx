@@ -102,7 +102,7 @@ const STORY: Story<ScreenNode> = {
     ),
     verdict: 'Datos personales compartidos con la IA',
     outcome:
-      'Tu mensaje incluyó tres o más partes de un nombre, la cédula o el correo real de tu compañera. Bastaba con "una compañera", "el docente" y la materia.',
+      'Compartiste varios datos reales de tu compañera. Bastaba con decir "una compañera", "el docente" y la materia.',
   },
   e_parcial: {
     kind: 'partial',
@@ -111,12 +111,12 @@ const STORY: Story<ScreenNode> = {
       signal(
         'borrador-enviado',
         'e_parcial',
-        '<b>Quedaron los últimos dígitos de la cédula real</b>, no inventados: el dato sigue siendo identificable.',
+        '<b>Dejaste parte de la cédula real</b>. Aún permite identificarla.',
       ),
     ],
     verdict: 'Quedó algo identificable, aunque no el dato completo',
     outcome:
-      'Tu mensaje dejó parte de la cédula real de tu compañera, no inventada. Lo más seguro es no dejar ningún rastro: usa marcadores en vez del bloc de notas.',
+      'Dejaste parte de la cédula real. No copies esos datos, usa palabras como "compañera".',
   },
   e_seguro: {
     kind: 'good',
@@ -125,12 +125,12 @@ const STORY: Story<ScreenNode> = {
       signal(
         'borrador-enviado',
         'e_seguro',
-        '<b>Le diste a la IA solo el asunto, el destinatario y la materia</b>. Sin nombres completos, cédula ni correo reales.',
+        '<b>Compartiste solo el asunto, a quién va y la materia</b>. No diste datos reales.',
       ),
     ],
     verdict: 'Correo redactado sin compartir datos reales de nadie',
     outcome:
-      'Tu mensaje le dio a la IA lo necesario para redactar el texto, sin nombres, cédula ni correo reales. Esos datos los completas tú mismo, fuera de la conversación.',
+      'La IA tuvo lo necesario para redactar el correo. Agrega los datos reales después, fuera del chat.',
   },
 }
 
@@ -138,21 +138,20 @@ const SIGNALS = [
   signal(
     'datos-en-juego',
     'n1',
-    '<b>Tienes a la mano los nombres, la cédula y el correo</b> de tu compañera. No hacen falta para redactar el correo.',
+    '<b>Tienes el nombre, la cédula y el correo de tu compañera</b>. No hacen falta para redactar el correo.',
   ),
 ]
 
 const RULE =
-  'Regla de oro: <b>no escribas tres o más partes de un nombre, cédulas, correos ni teléfonos ajenos</b>. Si no hacen falta, no los pongas.'
+  '<b>No compartas datos personales de otras personas</b>, como nombres completos, cédulas, correos o teléfonos.'
 
-const SUMMARY = 'Le pides a una IA que redacte un correo a nombre de una compañera, con los datos de ella a la mano.'
+const SUMMARY = 'Pides a una IA redactar un correo para una compañera.'
 
 export const CONTEXT: Context = {
-  antes: 'Coordinas trámites de tus compañeros de clase y sueles usar una IA para que tus correos suenen más formales.',
+  antes: 'Ayudas a tus compañeros con trámites y usas una IA para redactar correos.',
   ahora: (
     <>
-      <strong>Abres el asistente de IA</strong> en el computador. Al lado tienes el mensaje que te mandó
-      tu compañera pidiéndote el favor.
+      <strong>Abres el asistente de IA</strong>. Al lado está el mensaje de tu compañera.
     </>
   ),
 }
@@ -169,14 +168,12 @@ function ThirdPartyDataEmail() {
       documentoFuente={<BlocNotas titulo="Bloc de notas" texto={SOURCE_DOCUMENT} />}
       instruccion={
         <p className="text-lg leading-relaxed text-body">
-          Escribe el mensaje que le mandarías a la IA para pedirle ayuda,puedes copiar del bloc de
-          notas, y toca "Enviar" cuando quede como quieres.
+          Escribe qué necesitas y copia solo lo necesario del bloc. Luego toca "Enviar".
         </p>
       }
       pista={
         <p>
-          La IA puede redactar el correo sin saber de quién habla. Lo que decides es qué copias del
-          mensaje de tu compañera y qué dejas afuera.
+          La IA puede redactar el correo sin saber quién es tu compañera. Decide qué datos dejar fuera.
         </p>
       }
     />

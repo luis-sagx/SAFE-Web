@@ -15,7 +15,7 @@ describe('ResumenDocumentoInterno', () => {
   it('el chat alterna: contesta la IA, y recién entonces se ve el campo para escribir', () => {
     const container = start(<InternalDocumentSummary />)
     expect(within(container).getByText('Hola, necesito resumir un informe del trabajo.')).toBeDefined()
-    expect(within(container).getByText(/Cuéntame de qué trata el informe/)).toBeDefined()
+    expect(within(container).getByText(/Dime de qué trata y para quién es el resumen/)).toBeDefined()
   })
 
   it('el bloc de notas incluye datos que identifican a la empresa y una pérdida confidencial', () => {

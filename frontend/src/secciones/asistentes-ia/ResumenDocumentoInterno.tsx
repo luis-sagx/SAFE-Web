@@ -81,7 +81,7 @@ const CHAT = withFreeTextComposer(
       { texto: 'Hola, necesito resumir un informe del trabajo.', mio: true },
       {
         texto:
-          'Con gusto. Cuéntame de qué trata el informe y qué extensión debe tener el resumen. Si me dices además para quién es,directivos, personal o clientes,, ajusto el tono.',
+          'Claro. Dime de qué trata y para quién es el resumen. Así usaré el tono adecuado.',
       },
     ],
     TIME,
@@ -116,7 +116,7 @@ const STORY: Story<ScreenNode> = {
     ),
     verdict: 'Información confidencial de la empresa compartida con la IA',
     outcome:
-      'Tu mensaje identificó a la empresa (nombre o RUC) y además reveló información interna. La IA solo necesitaba el tema general.',
+      'Compartiste el nombre o RUC de la empresa y datos internos. Bastaba con el tema general.',
   },
   e_seguro: {
     kind: 'good',
@@ -125,12 +125,12 @@ const STORY: Story<ScreenNode> = {
       signal(
         'borrador-enviado',
         'e_seguro',
-        '<b>Le pediste a la IA solo la forma del resumen</b>: para qué reunión es y qué debe mencionar, sin cifras reales.',
+        '<b>Pediste solo la estructura del resumen</b>, sin compartir cifras reales.',
       ),
     ],
     verdict: 'Resumen armado sin exponer datos de la empresa',
     outcome:
-      'Tu mensaje le pidió a la IA solo la estructura del resumen, no el contenido confidencial. Las cifras reales las agregas tú, fuera de la conversación.',
+      'La IA recibió solo la estructura. Agrega las cifras reales después, fuera del chat.',
   },
 }
 
@@ -138,21 +138,20 @@ const SIGNALS = [
   signal(
     'informe-en-juego',
     'n1',
-    '<b>El informe identifica a la empresa, su RUC y cifras sin publicar</b>. Contar de qué trata no obliga a copiarlo entero.',
+    '<b>El informe incluye el nombre, RUC y cifras privadas</b>. No copies todo para resumirlo.',
   ),
 ]
 
 const RULE =
-  'Regla de oro: <b>la información confidencial de tu empresa</b> (nombre, RUC, cifras sin publicar) no se escribe en una IA externa. Pide solo la forma, y completa tú los datos sensibles.'
+  '<b>No compartas con una IA externa el nombre, RUC ni cifras privadas</b> de tu empresa. Pide la estructura y agrega esos datos después.'
 
-const SUMMARY = 'Le pides a una IA que resuma un informe que identifica a una empresa y contiene cifras sin publicar.'
+const SUMMARY = 'Pides a una IA resumir un informe interno de la empresa.'
 
 export const CONTEXT: Context = {
-  antes: 'Te pidieron preparar un resumen ejecutivo del informe financiero interno para la reunión de gerencia.',
+  antes: 'Te pidieron resumir un informe financiero interno para gerencia.',
   ahora: (
     <>
-      <strong>Abres el asistente de IA</strong> en el computador. Al lado tienes el informe abierto, con
-      las cifras que todavía no se han publicado.
+      <strong>Abres el asistente de IA</strong>. Al lado está el informe con cifras privadas.
     </>
   ),
 }
@@ -169,8 +168,7 @@ function InternalDocumentSummary() {
       documentoFuente={<BlocNotas titulo="Bloc de notas" texto={SOURCE_DOCUMENT} />}
       instruccion={
         <p className="text-lg leading-relaxed text-body">
-          Escribe el mensaje que le mandarías a la IA para pedirle ayuda,puedes copiar del informe, y
-          toca "Enviar" cuando quede como quieres.
+          Escribe qué resumen necesitas y copia solo lo necesario del informe. Luego toca "Enviar".
         </p>
       }
     />

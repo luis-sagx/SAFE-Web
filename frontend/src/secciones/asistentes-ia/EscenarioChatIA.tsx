@@ -54,14 +54,11 @@ function AIChatScenario({
               porqué, y la gente entraba sin saber qué se le estaba poniendo
               a prueba. */}
           <p className="text-lg leading-relaxed text-body">
-            Aquí no hay nadie tratando de engañarte: el asistente de IA hace exactamente lo que le
-            pides. Lo que se pone a prueba es qué le compartes — cada escenario te da un documento o
-            una conversación con datos de otra persona, y tú decides qué copiar y qué dejar fuera
-            antes de pedirle ayuda.
+            La IA hará lo que le pidas. Revisa qué copias de los documentos o imágenes antes de enviarlos.
           </p>
           {instruction ?? (
             <p className="text-lg leading-relaxed text-body">
-              Escribe tu mensaje y toca "Enviar", o toca una de las respuestas del chat.
+              Escribe tu mensaje y toca "Enviar", o elige una respuesta del chat.
             </p>
           )}
         </div>

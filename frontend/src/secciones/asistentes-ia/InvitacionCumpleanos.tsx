@@ -76,7 +76,7 @@ const STORY: Story<ScreenNode> = {
     ],
     verdict: 'Subiste caras de niños sin permiso de sus papás',
     outcome:
-      'La foto del aula muestra a 12 compañeros de Sofía; esa decisión no era tuya. Para una invitación bastaba el dibujo o la decoración.',
+      'La foto muestra a 12 compañeros. No puedes decidir por sus familias. Usa el dibujo o la decoración.',
   },
   e_foto_hija: {
     kind: 'bad',
@@ -84,7 +84,7 @@ const STORY: Story<ScreenNode> = {
     senales: [signal('foto-hija', 'e_foto_hija', FACE_OF_DAUGHTER)],
     verdict: 'Subiste la cara de tu hija a un servicio externo',
     outcome:
-      'Era tu hija, pero la foto muestra su cara, uniforme y escuela: suficiente para reconocerla y ubicarla. Una invitación no necesitaba nada de eso.',
+      'La foto permite reconocer y ubicar a tu hija. La invitación no necesita mostrarla.',
   },
   e_sin_caras: {
     kind: 'good',
@@ -96,7 +96,7 @@ const STORY: Story<ScreenNode> = {
     ],
     verdict: 'Armaste la invitación sin subir ninguna cara',
     outcome:
-      'No subiste las fotos de Sofía ni de su aula. El dibujo y la decoración bastaron, sin que ninguna cara saliera del computador.',
+      'Usaste el dibujo y la decoración. No compartiste fotos de niños.',
   },
 }
 
@@ -104,21 +104,20 @@ const SIGNALS = [
   signal(
     'imagenes-pedidas',
     'n1',
-    '<b>La IA pide imágenes, no caras</b>. En tu galería, el dibujo y la decoración no muestran a nadie.',
+    '<b>La IA pide imágenes, no caras</b>. El dibujo y la decoración no muestran a nadie.',
   ),
 ]
 
 const RULE =
-  'Regla de oro: <b>la cara de un menor no se sube a una IA externa</b>; no puede dar su permiso. Si salen otros niños, la decisión ni siquiera es tuya.'
+  '<b>No subas a una IA externa fotos de menores</b>. Si salen otros niños, pide permiso a sus familias.'
 
-const SUMMARY = 'Le pides a una IA la invitación del cumpleaños de tu hija, con fotos de ella y de su aula en la galería.'
+const SUMMARY = 'Pides a una IA crear una invitación para tu hija con imágenes de la galería.'
 
 export const CONTEXT: Context = {
-  antes: `Es de noche y estás organizando el cumpleaños de tu hija ${DAUGHTER}. Viste que las IA convierten fotos en caricaturas.`,
+  antes: `Organizas el cumpleaños de tu hija ${DAUGHTER} y quieres una invitación hecha con IA.`,
   ahora: (
     <>
-      <strong>Abres el asistente de IA</strong> en el computador. Al lado tienes la galería con las fotos
-      que pasaste del celular.
+      <strong>Abres el asistente de IA</strong>. Al lado está la galería de imágenes de tu celular.
     </>
   ),
 }
@@ -135,9 +134,9 @@ function BirthdayInvitation() {
       documentoFuente={<PhotoGallery fotos={PHOTOS} />}
       instruccion={
         <p className="text-lg leading-relaxed text-body">
-          Arrastra al chat las imágenes que usarías, o toca el clip{' '}
-          <Paperclip aria-label="clip" className="inline size-5 align-text-bottom" strokeWidth={2} /> para
-          adjuntarlas todas y descarta con la X las que no quieras. Luego toca "Enviar".
+          Arrastra al chat las imágenes que usarías o toca el clip{' '}
+          <Paperclip aria-label="clip" className="inline size-5 align-text-bottom" strokeWidth={2} />
+          para adjuntarlas. Quita las que no quieras con la X y toca "Enviar".
         </p>
       }
     />
