@@ -3,6 +3,7 @@ import ScenarioStory, { type PhoneApp, type ScreenNode } from '../../components/
 import type { Context } from '../../components/ui/ContextoEscenario'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
 import type { Signal } from '../../components/ui/PanelVeredicto'
+import { APP_ACCENTS } from '../../components/ui/appAccents'
 import type { Story } from '../../hooks/useStoryEngine'
 
 // La suplantación explota la jerarquía, no la tecnología: a la gerente no se
@@ -207,6 +208,7 @@ const CALL_MANAGER: ScreenView = {
 const STORE: ScreenView = {
   kind: 'web',
   app: 'Tienda',
+  appAccent: APP_ACCENTS.store,
   url: 'tienda',
   secure: true,
   brand: 'Tarjetas de regalo',
@@ -230,6 +232,7 @@ const STORE: ScreenView = {
 const CODES: ScreenView = {
   kind: 'web',
   app: 'Tienda',
+  appAccent: APP_ACCENTS.store,
   url: 'tienda',
   secure: true,
   brand: 'Compra realizada',
@@ -263,7 +266,7 @@ const APPS: PhoneApp[] = [
   {
     Icono: ShoppingBag,
     texto: 'Tienda',
-    color: '#7048e8',
+    color: APP_ACCENTS.store,
     viewNode: 'n5',
     label: 'Abrió la tienda para comprar las tarjetas',
   },
