@@ -1,8 +1,8 @@
-import type { ScreenNode } from '../../components/StoryEscenario'
-import type { Context } from '../../components/ui/ContextoEscenario'
-import BlocNotas from '../../components/ui/BlocNotas'
-import type { Story } from '../../hooks/useStoryEngine'
-import AIChatScenario from './EscenarioChatIA'
+import type { ScreenNode } from "../../components/StoryEscenario";
+import type { Context } from "../../components/ui/ContextoEscenario";
+import BlocNotas from "../../components/ui/BlocNotas";
+import type { Story } from "../../hooks/useStoryEngine";
+import AIChatScenario from "./EscenarioChatIA";
 import {
   createAIChat,
   withFreeTextComposer,
@@ -14,7 +14,7 @@ import {
   signal,
   type SendResult,
   type SensitiveDatum,
-} from './chatIA'
+} from "./chatIA";
 
 /** Informe escolar = documento pedagógico que además es, sin querer, un documento de identidad de un
  *  menor de edad, pegado entero (copiar/pegar sin leer), mismo patrón que la hoja de vida que reemplaza
@@ -33,155 +33,191 @@ import {
  *  grave,sirve para llegar a la familia, no para suplantar al estudiante, así que solo baja a "parcial".
  *  El nombre no se evalúa: un informe sin nombre no sirve para nada. */
 
-const TIME = '08:55'
+const TIME = "08:55";
 
-const STUDENT_NAME = 'Emilio Torres'
+const STUDENT_NAME = "Emilio Torres";
 // Imposible por construcción: tercer dígito 9, que el Registro Civil no asigna (ver identidadFicticia).
-const ECUADORIAN_ID = '1799999965'
-const BIRTH = '14/06/2015'
-const ADDRESS = 'Cdla. La Alborada, Mz 14 Villa 7'
-const CONTACT_PHONE = '099 000 0072'
+const ECUADORIAN_ID = "1799999965";
+const BIRTH = "14/06/2015";
+const ADDRESS = "Cdla. La Alborada, Mz 14 Villa 7";
+const CONTACT_PHONE = "099 000 0072";
 
 const PROGRESS =
-  'Seguimiento del segundo parcial: mejoró la participación en clase y el trabajo en equipo; todavía le cuesta entregar las tareas a tiempo. Se recomienda reforzar hábitos de organización en casa.'
+  "Seguimiento del segundo parcial: mejoró la participación en clase y el trabajo en equipo; todavía le cuesta entregar las tareas a tiempo. Se recomienda reforzar hábitos de organización en casa.";
 
 // El paquete que prueba identidad: cualquiera de los dos, solo, ya es fuga completa.
 const IDENTITY_POINTS: SensitiveDatum[] = [
-  { id: 'dato-cedula', tipo: 'numero', etiqueta: 'la cédula real del estudiante', valor: ECUADORIAN_ID },
+  {
+    id: "dato-cedula",
+    tipo: "numero",
+    etiqueta: "la cédula real del estudiante",
+    valor: ECUADORIAN_ID,
+  },
   // Basta la ciudadela o la manzana y villa: cualquiera ubica la casa de un menor.
   {
-    id: 'dato-direccion',
-    tipo: 'patron',
-    etiqueta: 'el domicilio real del estudiante',
+    id: "dato-direccion",
+    tipo: "patron",
+    etiqueta: "el domicilio real del estudiante",
     patron: /alborada|\b(mz|manzana)\.?\s*14\b|\bvilla\s*7\b/,
   },
-]
+];
 // Menos grave: sirve para llegar a la familia, no para suplantar al estudiante ante un trámite.
 const PHONE_POINT: SensitiveDatum = {
-  id: 'dato-telefono',
-  tipo: 'numero',
-  etiqueta: 'el teléfono real de contacto del estudiante',
+  id: "dato-telefono",
+  tipo: "numero",
+  etiqueta: "el teléfono real de contacto del estudiante",
   valor: CONTACT_PHONE,
-}
+};
 
 // Lo que había que mejorar: el seguimiento académico. Sin nada de eso la IA no tiene qué redactar.
-const CONTENT_ROOTS = ['particip', 'tarea', 'equipo', 'organiz', 'habito', 'entreg', 'reforz', 'parcial', 'conducta', 'comport', 'rendimiento', 'aprend', 'atencion', 'puntual', 'calificac']
+const CONTENT_ROOTS = [
+  "particip",
+  "tarea",
+  "equipo",
+  "organiz",
+  "habito",
+  "entreg",
+  "reforz",
+  "parcial",
+  "conducta",
+  "comport",
+  "rendimiento",
+  "aprend",
+  "atencion",
+  "puntual",
+  "calificac",
+];
 
 function onEnviar(texto: string): SendResult {
-  const identityLevel = worstLevel(evaluateData(texto, IDENTITY_POINTS))
-  const phoneLevel = evaluateDatum(texto, PHONE_POINT).nivel
-  if (identityLevel === 'seguro' && phoneLevel === 'seguro' && !mentionsAny(texto, CONTENT_ROOTS)) {
-    return { repregunta: 'No veo el contenido del informe. Pégame el seguimiento del estudiante que quieres mejorar.' }
+  const identityLevel = worstLevel(evaluateData(texto, IDENTITY_POINTS));
+  const phoneLevel = evaluateDatum(texto, PHONE_POINT).nivel;
+  if (
+    identityLevel === "seguro" &&
+    phoneLevel === "seguro" &&
+    !mentionsAny(texto, CONTENT_ROOTS)
+  ) {
+    return {
+      repregunta:
+        "No veo el contenido del informe. Pégame el seguimiento del estudiante que quieres mejorar.",
+    };
   }
   const goto =
-    identityLevel === 'fuga'
-      ? 'e_fuga'
-      : identityLevel === 'parcial' || phoneLevel !== 'seguro'
-        ? 'e_parcial'
-        : 'e_seguro'
-  return { goto, label: 'Escribió su propio mensaje para pedirle ayuda a la IA' }
+    identityLevel === "fuga"
+      ? "e_fuga"
+      : identityLevel === "parcial" || phoneLevel !== "seguro"
+        ? "e_parcial"
+        : "e_seguro";
+  return {
+    goto,
+    label: "Escribió su propio mensaje para pedirle ayuda a la IA",
+  };
 }
 
-const MARKED_POINTS: SensitiveDatum[] = [...IDENTITY_POINTS, PHONE_POINT]
+const MARKED_POINTS: SensitiveDatum[] = [...IDENTITY_POINTS, PHONE_POINT];
 
 // Va en el computador: un informe escolar se arma con la ficha del estudiante abierta al lado, de un
 // copiar y pegar.
 const CHAT = withFreeTextComposer(
   createAIChat(
-    'Asistente de escritura · servicio externo',
+    "Asistente de escritura · servicio externo",
     [
-      { texto: 'Hola, ayúdame a mejorar la redacción de un informe de seguimiento de un estudiante.', mio: true },
       {
         texto:
-          'Con gusto. Pégame el contenido que quieres mejorar y te lo devuelvo con mejor redacción y un tono más claro para la familia.',
+          "Hola, ayúdame a mejorar la redacción de un informe de seguimiento de un estudiante.",
+        mio: true,
+      },
+      {
+        texto:
+          "Con gusto. Pégame el contenido que quieres mejorar y te lo devuelvo con mejor redacción y un tono más claro para la familia.",
       },
     ],
     TIME,
     [],
-    { titulo: 'Asistente IA', url: 'https://chat.asistente-ia.com/nuevo' },
+    { titulo: "Asistente IA", url: "https://chat.asistente-ia.com/nuevo" },
   ),
   {
-    placeholder: 'Escribe (o pega) el contenido que quieres mejorar…',
+    placeholder: "Escribe (o pega) el contenido que quieres mejorar…",
     hora: TIME,
     respuestaIA:
-      'Aquí tienes el informe mejorado, con mejor redacción y un tono más claro para la familia.',
+      "Aquí tienes el informe mejorado, con mejor redacción y un tono más claro para la familia.",
     onEnviar,
     segmentar: (texto) => splitKnownData(texto, MARKED_POINTS),
   },
-)
+);
 
 // La ficha del estudiante, tal como está en el sistema de la institución, con los datos reales que el
 // informe no necesitaba para mejorar la redacción.
-const SOURCE_DOCUMENT = `Ficha del estudiante, uso interno.\n\nNombre: ${STUDENT_NAME}\nCédula: ${ECUADORIAN_ID}\nFecha de nacimiento: ${BIRTH}\nDomicilio: ${ADDRESS}\nTeléfono de contacto: ${CONTACT_PHONE}\n\n${PROGRESS}`
+const SOURCE_DOCUMENT = `Ficha del estudiante, uso interno.\n\nNombre: ${STUDENT_NAME}\nCédula: ${ECUADORIAN_ID}\nFecha de nacimiento: ${BIRTH}\nDomicilio: ${ADDRESS}\nTeléfono de contacto: ${CONTACT_PHONE}\n\n${PROGRESS}`;
 
 const STORY: Story<ScreenNode> = {
-  n1: { kind: 'scene', view: CHAT },
+  n1: { kind: "scene", view: CHAT },
   e_fuga: {
-    kind: 'bad',
+    kind: "bad",
     view: CHAT,
     senales: IDENTITY_POINTS.map((dato) =>
       signal(
         dato.id,
-        'e_fuga',
+        "e_fuga",
         `<b>${dato.etiqueta}</b> identifica al estudiante fuera de la institución. No mejora en nada la redacción.`,
       ),
     ),
-    verdict: 'El informe entero del estudiante quedó en un servicio externo',
+    verdict: "El informe entero del estudiante quedó en un servicio externo",
     outcome:
-      'Un informe escolar también es un documento de identidad de un menor de edad. La IA no necesitaba la cédula ni el domicilio para mejorar la redacción.',
+      "La IA no necesitaba la cédula ni el domicilio para mejorar el informe.",
   },
   e_parcial: {
-    kind: 'partial',
+    kind: "partial",
     view: CHAT,
     senales: [
       signal(
-        'dato-telefono',
-        'e_parcial',
-        '<b>El teléfono de contacto</b> no prueba identidad, pero sí permite llegar hasta la familia. Ahí empieza un contacto no autorizado.',
+        "dato-telefono",
+        "e_parcial",
+        "<b>El teléfono permite contactar a la familia</b>. Tampoco hacía falta compartirlo.",
       ),
     ],
-    verdict: 'Quitaste lo peor, pero dejaste cómo llegar hasta él',
+    verdict: "Quitaste lo peor, pero dejaste cómo llegar hasta él",
     outcome:
-      'Lo grave (cédula y domicilio) se quedó fuera. Pero el teléfono tampoco hacía falta para mejorar la redacción.',
+      "Dejaste fuera la cédula y el domicilio, pero compartiste un teléfono que no hacía falta.",
   },
   e_seguro: {
-    kind: 'good',
+    kind: "good",
     view: CHAT,
     senales: [
       signal(
-        'borrador-enviado',
-        'e_seguro',
-        '<b>Solo pegaste el seguimiento académico</b>, lo que había que mejorar. No identifica a nadie ni sirve para contactar a la familia.',
+        "borrador-enviado",
+        "e_seguro",
+        "<b>Pegaste solo el seguimiento académico</b>. No identifica al estudiante ni contacta a su familia.",
       ),
     ],
-    verdict: 'Informe mejorado sin entregar los datos de nadie',
+    verdict: "Informe mejorado sin entregar los datos de nadie",
     outcome:
-      'La IA devolvió el seguimiento mejor redactado y con tono más claro. El nombre y los datos de contacto los agregas tú al entregarlo a la institución.',
+      "La IA mejoró el seguimiento. Agrega el nombre y los datos de contacto al entregar el informe.",
   },
-}
+};
 
 const SIGNALS = [
   signal(
-    'informe-en-juego',
-    'n1',
-    '<b>El informe trae la cédula, el domicilio y el teléfono</b> del estudiante. Nada de eso cambia cómo se redacta su seguimiento.',
+    "informe-en-juego",
+    "n1",
+    "<b>La ficha tiene la cédula, domicilio y teléfono</b>. No hacen falta para mejorar el seguimiento.",
   ),
-]
+];
 
 const RULE =
-  'Regla de oro: <b>un informe escolar también es un documento de identidad de un menor</b>. Antes de pegarlo en una IA, quítale la cédula, el domicilio y el teléfono.'
+  "<b>Antes de usar una IA, quita la cédula, domicilio y teléfono</b> del informe de un menor.";
 
-const SUMMARY = 'Le pides a una IA que mejore un informe escolar de un estudiante, con su cédula y su domicilio dentro.'
+const SUMMARY = "Pides a una IA mejorar el informe escolar de un estudiante.";
 
 export const CONTEXT: Context = {
-  antes: 'Eres tutor de un curso y te pidieron mejorar la redacción de un informe de seguimiento antes de entregarlo a coordinación.',
+  antes:
+    "Eres tutor de un curso y te pidieron mejorar la redacción de un informe de seguimiento antes de entregarlo a coordinación.",
   ahora: (
     <>
-      <strong>Abres el asistente de IA</strong> en el computador. Al lado tienes la ficha del estudiante,
-      del sistema de la institución.
+      <strong>Abres el asistente de IA</strong> en el computador. Al lado tienes
+      la ficha del estudiante, del sistema de la institución.
     </>
   ),
-}
+};
 
 function SchoolReport() {
   return (
@@ -192,21 +228,22 @@ function SchoolReport() {
       story={STORY}
       senales={SIGNALS}
       rule={RULE}
-      documentoFuente={<BlocNotas titulo="Bloc de notas" texto={SOURCE_DOCUMENT} />}
+      documentoFuente={
+        <BlocNotas titulo="Bloc de notas" texto={SOURCE_DOCUMENT} />
+      }
       instruccion={
         <p className="text-lg leading-relaxed text-body">
-          Escribe (o pega) el contenido que le pedirías mejorar a la IA, y toca "Enviar" cuando el
-          informe quede como quieres.
+          Copia el seguimiento que quieres mejorar y toca "Enviar".
         </p>
       }
       pista={
         <p>
-          La IA puede mejorar el seguimiento académico sin saber la cédula del estudiante ni dónde vive.
-          Lo que decides es cuánto de la ficha le pegas.
+          La IA solo necesita el seguimiento, no la cédula ni el domicilio.
+          Copia solo esa parte.
         </p>
       }
     />
-  )
+  );
 }
 
-export default SchoolReport
+export default SchoolReport;

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { CheckCircle2, RotateCcw } from 'lucide-react'
 import Ticket from './Boleto'
 import { TRAMA_FONDO } from './TramaFondo'
 
@@ -16,170 +17,170 @@ interface Question {
 const PREGUNTAS_POR_MODULO: Record<string, Question[]> = {
   phishing: [
     {
-      pregunta: '¿Qué manda de verdad en una dirección web sospechosa?',
+      pregunta: 'En un enlace que empieza con https://, ¿qué debes revisar para saber a qué sitio te lleva?',
       opciones: [
-        'El nombre que está justo antes de la primera barra (/)',
-        'El nombre del banco, si aparece en cualquier parte del texto',
-        'Que la página se vea idéntica a la oficial',
+        'El nombre del sitio después de https:// y antes de la siguiente barra (/)',
+        'El nombre del banco, aunque aparezca en medio del enlace',
+        'Que la página se vea igual a la del banco',
         'Que el enlace empiece con https://',
       ],
       correcta: 0,
-      explicacion: 'Todo lo que va antes de esa barra puede escribirlo el atacante, incluido el nombre de tu banco.',
+      explicacion: 'El nombre del sitio va después de https://. El nombre de un banco en otra parte del enlace puede engañar.',
     },
     {
-      pregunta: 'Te llega un correo urgente pidiendo confirmar tu clave con un enlace. ¿Qué haces?',
+      pregunta: 'Un correo te apura para confirmar tu clave con un enlace. ¿Qué haces?',
       opciones: [
-        'Respondo el correo preguntando si es real',
-        'Entro directo por mi app o el sitio oficial, sin usar ese enlace',
-        'Hago clic rápido antes de que expire',
-        'Reenvío el correo a un compañero para que decida',
+        'Respondo para preguntar si el correo es real',
+        'Abro la aplicación o el sitio oficial por mi cuenta',
+        'Abro el enlace antes de que venza',
+        'Reenvío el correo para que otra persona decida',
       ],
       correcta: 1,
-      explicacion: 'Entrar por tu propio camino, no por el enlace que te dieron, es lo que no depende de confiar en quien escribió el correo.',
+      explicacion: 'Al entrar por tu cuenta, no dependes del enlace del correo.',
     },
   ],
   smishing: [
     {
-      pregunta: "Te llega un SMS de 'tu banco' con un enlace para verificar un cobro. ¿Qué es lo más seguro?",
+      pregunta: 'Recibes un mensaje de texto que dice ser de tu banco. Incluye un enlace para revisar un cobro. ¿Qué haces?',
       opciones: [
-        'Tocar el enlace para ver de qué cobro se trata',
-        "Responder 'STOP' al número",
-        'Abrir la app oficial del banco por mi cuenta, no el enlace del SMS',
-        'Reenviarlo a otro número para confirmar',
+        'Abro el enlace para revisar el cobro',
+        'Respondo «STOP» al número',
+        'Abro por mi cuenta la aplicación oficial del banco',
+        'Reenvío el mensaje para que alguien lo confirme',
       ],
       correcta: 2,
-      explicacion: 'La app oficial ya tiene tus movimientos reales; el enlace del SMS no hace falta para nada.',
+      explicacion: 'La aplicación oficial muestra tus cobros. No necesitas abrir el enlace del mensaje.',
     },
     {
-      pregunta: '¿Cuál de estas es más probable que sea smishing?',
+      pregunta: '¿Cuál de estos mensajes parece un engaño por mensaje de texto?',
       opciones: [
-        'Un mensaje de una app que ya tienes instalada, con tu nombre completo',
-        'Un SMS de un número desconocido con un enlace acortado y mucha urgencia',
-        'Un mensaje que llega a la misma hora que uno real',
-        'Un mensaje sin faltas de ortografía',
+        'Un aviso de una aplicación que ya usas y que incluye tu nombre',
+        'Un mensaje de un número desconocido con un enlace corto y mucha prisa',
+        'Un mensaje que llega a la misma hora que uno verdadero',
+        'Un mensaje bien escrito, sin errores',
       ],
       correcta: 1,
-      explicacion: 'Número desconocido + enlace acortado + prisa es justo la combinación que usa el smishing.',
+      explicacion: 'Un número desconocido, un enlace corto y la presión por actuar son señales de alerta.',
     },
   ],
   vishing: [
     {
-      pregunta: 'En una llamada, alguien dice ser del banco y te pide el código que te llegó por SMS. ¿Qué haces?',
+      pregunta: 'Alguien que dice ser del banco te pide por teléfono el código que recibiste por mensaje. ¿Qué haces?',
       opciones: [
-        'Se lo dicto si me convence con datos reales',
-        'Cuelgo y llamo al mismo número que me llamó',
-        'Se lo doy si suena apurado de verdad',
-        'No lo doy: ese código es solo mío, ni el banco lo necesita',
+        'Se lo doy si demuestra que conoce mis datos',
+        'Cuelgo y devuelvo la llamada al mismo número',
+        'Se lo doy si dice que es urgente',
+        'No comparto el código con nadie',
       ],
       correcta: 3,
-      explicacion: 'Un código de un solo uso es la última puerta; ningún banco lo necesita para nada por teléfono.',
+      explicacion: 'Ese código sirve para confirmar acciones en tu cuenta. No lo compartas por teléfono.',
     },
     {
-      pregunta: '¿Qué hace confiable de verdad una llamada que dice ser de tu banco?',
+      pregunta: '¿Cómo puedes confirmar que una llamada sí es de tu banco?',
       opciones: [
-        'Que tenga tu nombre y número de cuenta',
-        'Que llame desde un número que reconoces',
-        'Que la verifiques tú mismo llamando al número oficial que ya conocías',
-        'Que no te pida nada raro al inicio',
+        'Que la persona sepa mi nombre y número de cuenta',
+        'Que reconozca el número que aparece en pantalla',
+        'Llamando al número oficial que ya conozco',
+        'Que al principio no me pida nada extraño',
       ],
       correcta: 2,
-      explicacion: 'Verificar por tu propio canal es lo único que no se puede falsificar desde el otro lado de la llamada.',
+      explicacion: 'Si tú llamas al número oficial, puedes confirmar quién te contactó.',
     },
   ],
   suplantacion: [
     {
-      pregunta: "Un contacto conocido te escribe desde 'otro número nuevo' pidiendo dinero urgente. ¿Qué haces?",
+      pregunta: 'Un conocido te escribe desde un número nuevo y te pide dinero con urgencia. ¿Qué haces?',
       opciones: [
-        'Le mando el dinero porque lo conozco',
-        'Confirmo por una llamada o canal distinto antes de mandar nada',
-        'Le pido que me llame para reconocer la voz',
-        'Ignoro el mensaje sin avisarle a nadie',
+        'Le envío el dinero porque reconozco su nombre',
+        'Le llamo al número que ya conozco antes de enviar dinero',
+        'Le pido que me llame desde el número nuevo',
+        'No respondo ni aviso a nadie',
       ],
       correcta: 1,
-      explicacion: 'Confirmar por un canal aparte es lo que descubre si de verdad es tu contacto o alguien que le robó la cuenta.',
+      explicacion: 'Al llamarle al número que ya conoces, confirmas que sí es esa persona.',
     },
     {
-      pregunta: '¿Cuál es la señal más fuerte de que un perfil está clonado?',
+      pregunta: '¿Qué señal puede indicar que alguien está copiando el perfil de un conocido?',
       opciones: [
         'Tiene pocas publicaciones',
-        'Usa una foto de perfil distinta a la que recuerdas',
-        'Tiene pocos amigos en común',
-        'Te contacta por primera vez pidiendo algo urgente y con prisa',
+        'Tiene una foto distinta a la que recuerdas',
+        'Tiene pocos contactos conocidos en común',
+        'Te escribe por primera vez para pedir algo urgente',
       ],
       correcta: 3,
-      explicacion: 'Un contacto de verdad casi nunca abre la conversación pidiendo dinero con prisa.',
+      explicacion: 'Una petición urgente de alguien que recién te escribe merece confirmación por otro medio.',
     },
   ],
   estafa: [
     {
-      pregunta: "Te ofrecen algo 'a mitad de precio' con pago urgente por transferencia. ¿Qué haces?",
+      pregunta: 'Te ofrecen algo muy barato y te piden pagar rápido por transferencia. ¿Qué haces?',
       opciones: [
-        'Pago rápido antes de que se acabe la oferta',
-        'Pido una foto del producto como garantía',
-        'Desconfío de la urgencia y busco el precio real en otro lado',
-        'Pago la mitad primero y el resto después',
+        'Pago rápido antes de que termine la oferta',
+        'Pido una foto del producto y pago',
+        'Busco el precio en otros lugares y reviso la oferta',
+        'Envío una parte del dinero primero',
       ],
       correcta: 2,
-      explicacion: 'Un precio y una prisa así de exagerados son la combinación clásica de una estafa de compra.',
+      explicacion: 'Compara el precio y revisa la oferta antes de enviar dinero.',
     },
     {
-      pregunta: '¿Qué hace más segura una compra en línea?',
+      pregunta: '¿Qué opción ayuda a protegerte al comprar por internet?',
       opciones: [
-        'Que el vendedor tenga muchas fotos',
-        'Pagar por un medio que protege al comprador, no una transferencia directa',
-        'Que el precio sea el más bajo que encontraste',
-        'Que respondan rápido a los mensajes',
+        'Que la publicación tenga muchas fotos',
+        'Pagar con un método que proteja al comprador',
+        'Elegir el precio más bajo',
+        'Que el vendedor responda rápido',
       ],
       correcta: 1,
-      explicacion: 'Una transferencia directa no se puede reversar; un medio con protección al comprador sí da margen si algo sale mal.',
+      explicacion: 'Un método con protección puede ayudarte si la compra sale mal.',
     },
   ],
   fisico: [
     {
-      pregunta: 'Encuentras una memoria USB desconocida en la oficina. ¿Qué haces?',
+      pregunta: 'Encuentras una memoria USB que no reconoces en tu trabajo. ¿Qué haces?',
       opciones: [
-        'La conecto para ver de quién es',
-        'La guardo por si es útil',
-        'La dejo donde estaba y no digo nada',
-        'No la conecto a ningún equipo; la entrego a quien corresponda',
+        'La conecto a la computadora para ver qué tiene',
+        'Me la llevo por si me sirve',
+        'La dejo ahí y no aviso',
+        'No la conecto y aviso a la persona encargada',
       ],
       correcta: 3,
-      explicacion: 'Una USB desconocida puede estar preparada para infectar el primer equipo donde se conecte.',
+      explicacion: 'Una memoria desconocida podría dañar la computadora. Avísale a la persona encargada.',
     },
     {
-      pregunta: '¿Cuál es el mayor riesgo de una clave anotada pegada al monitor?',
+      pregunta: '¿Qué riesgo tiene dejar tu clave escrita junto a la computadora?',
       opciones: [
-        'Que se vea desordenado',
-        'Que cualquiera que pase por el puesto la pueda leer y usar',
-        'Que se despegue el papel',
-        'Que otra persona la copie mal',
+        'Que el espacio se vea desordenado',
+        'Que otra persona la lea y entre a tu cuenta',
+        'Que el papel se caiga',
+        'Que alguien la copie con un error',
       ],
       correcta: 1,
-      explicacion: 'Una clave a la vista deja de ser un secreto para cualquiera que pase por ahí, no solo para quien la escribió.',
+      explicacion: 'Si otra persona ve la clave, podría usarla para entrar a tu cuenta.',
     },
   ],
   'asistentes-ia': [
     {
-      pregunta: 'Vas a pegar un correo o documento en un asistente de IA para que te ayude. ¿Qué deberías revisar antes?',
+      pregunta: 'Antes de copiar un correo o documento en una IA, ¿qué debes revisar?',
       opciones: [
-        'Que no tenga datos personales o confidenciales que no deban salir de la empresa',
+        'Que no incluya datos personales o información privada del trabajo',
         'Que el documento sea corto',
-        'Que el asistente sea gratuito',
-        'Que el documento tenga buena redacción',
+        'Que la herramienta sea gratis',
+        'Que el texto esté bien escrito',
       ],
       correcta: 0,
-      explicacion: 'Lo que le pegas a un asistente sale de tu control apenas lo envías, sin importar qué tan útil sea la herramienta.',
+      explicacion: 'Al enviar información a una IA, ya no controlas cómo se guarda o se usa.',
     },
     {
-      pregunta: "¿Por qué un asistente de IA puede ser un riesgo aunque no sea 'un atacante'?",
+      pregunta: '¿Por qué debes cuidar lo que compartes con una IA?',
       opciones: [
-        'Porque puede tardar en responder',
-        'Porque lo que le compartes puede guardarse o usarse fuera de tu control',
-        'Porque da respuestas muy largas',
-        'Porque necesita internet para funcionar',
+        'Porque puede demorarse en responder',
+        'Porque podría guardar o usar lo que le envías',
+        'Porque a veces responde con mucho texto',
+        'Porque necesita internet',
       ],
       correcta: 1,
-      explicacion: 'El riesgo no es que la IA "ataque": es que un dato confidencial ya salió de donde debía quedarse.',
+      explicacion: 'La información que compartes podría quedar fuera de tu control.',
     },
   ],
 }
@@ -190,26 +191,26 @@ const PREGUNTAS_POR_MODULO: Record<string, Question[]> = {
 // están arriba), pero un módulo nuevo no debe tumbar la pantalla.
 const PREGUNTAS_POR_DEFECTO: Question[] = [
   {
-    pregunta: '¿Qué deberías hacer si algo te genera duda, como lo que viste en este módulo?',
+    pregunta: 'Si un mensaje te causa dudas, ¿qué conviene hacer?',
     opciones: [
-      'Actuar rápido para no perder la oportunidad',
-      'Verificarlo por un canal que tú mismo conoces, no el que te dieron',
-      'Hacer clic para ver de qué se trata',
-      'Ignorarlo, ya se resolverá solo',
+      'Actuar rápido para no perder la oferta',
+      'Confirmar por un medio que ya conozco',
+      'Abrir el enlace para saber de qué se trata',
+      'Ignorarlo y esperar que se resuelva',
     ],
     correcta: 1,
-    explicacion: 'Comprobar por tu propio canal es lo único que no depende de confiar en quien te escribe.',
+    explicacion: 'Al confirmar por un medio conocido, no dependes de los datos del mensaje.',
   },
   {
-    pregunta: '¿Cuál de estas es casi siempre una señal de alerta?',
+    pregunta: '¿Qué puede ser una señal de alerta en un mensaje?',
     opciones: [
-      'Que venga de un número o correo conocido',
-      'Que el mensaje tenga tu nombre completo',
-      'Que te presionen a decidir ya mismo, sin tiempo para pensar',
-      'Que te escriban en horario de oficina',
+      'Que llegue de un número o correo conocido',
+      'Que incluya tu nombre completo',
+      'Que te apuren para decidir sin darte tiempo',
+      'Que llegue durante el horario de trabajo',
     ],
     correcta: 2,
-    explicacion: 'La prisa es la herramienta favorita del engaño: no te deja parar a verificar.',
+    explicacion: 'La prisa puede impedirte revisar si el mensaje es verdadero.',
   },
 ]
 
@@ -293,10 +294,22 @@ function ModuleQuiz({ seccionId, onComplete }: Readonly<ModuleQuizProps>) {
           </div>
 
           {resultado === 'correcta' && (
-            <p className="mt-4 text-base font-medium text-success-ink">¡Correcto! {pregunta.explicacion}</p>
+            <div role="status" className="mt-5 flex gap-3 rounded-lg border border-success-ink/40 bg-success/10 p-4 text-ink" data-testid="feedback-correcto">
+              <CheckCircle2 aria-hidden="true" className="mt-0.5 size-6 shrink-0 text-success-ink" strokeWidth={2.5} />
+              <div>
+                <h2 className="text-base font-semibold text-success-ink">¡Respuesta correcta!</h2>
+                <p className="mt-1 text-sm leading-relaxed">{pregunta.explicacion}</p>
+              </div>
+            </div>
           )}
           {resultado === 'incorrecta' && (
-            <p className="mt-4 text-base font-medium text-danger">No es esa. Vuelve a intentarlo.</p>
+            <div role="alert" className="mt-5 flex gap-3 rounded-lg border border-danger/40 bg-danger/10 p-4 text-ink" data-testid="feedback-incorrecto">
+              <RotateCcw aria-hidden="true" className="mt-0.5 size-6 shrink-0 text-danger" strokeWidth={2.5} />
+              <div>
+                <h2 className="text-base font-semibold text-danger">Revisa tu respuesta</h2>
+                <p className="mt-1 text-sm leading-relaxed">Piensa en las señales de la situación y elige otra opción.</p>
+              </div>
+            </div>
           )}
 
           {resultado === 'correcta' ? (

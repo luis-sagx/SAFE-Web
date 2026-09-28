@@ -17,10 +17,10 @@ describe('AIChatScenario (marco común de asistentes-ia)', () => {
     start(<SchoolReport />)
 
     expect(
-      screen.getByText(/Aquí no hay nadie tratando de engañarte/),
+      screen.getByText(/La IA hará lo que le pidas/),
     ).toBeDefined()
     // La instrucción propia del escenario se conserva, no se reemplaza.
-    expect(screen.getByText(/toca "Enviar" cuando el/)).toBeDefined()
+    expect(screen.getByText(/Copia el seguimiento que quieres mejorar/)).toBeDefined()
   })
 
   it('sin instrucción propia, usa el texto por defecto además del encuadre general', () => {
@@ -42,9 +42,9 @@ describe('AIChatScenario (marco común de asistentes-ia)', () => {
       />,
     )
 
-    expect(screen.getByText(/Aquí no hay nadie tratando de engañarte/)).toBeDefined()
+    expect(screen.getByText(/La IA hará lo que le pidas/)).toBeDefined()
     expect(
-      screen.getByText('Escribe tu mensaje y toca "Enviar", o toca una de las respuestas del chat.'),
+      screen.getByText('Escribe tu mensaje y toca "Enviar", o elige una respuesta del chat.'),
     ).toBeDefined()
   })
 })
