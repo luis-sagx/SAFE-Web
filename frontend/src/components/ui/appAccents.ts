@@ -4,4 +4,5 @@ export const APP_ACCENTS = {
   operator: '#c2255c',
   courier: '#c2410c',
   social: '#0369a1',
+  store: '#7048e8',
 } as const
