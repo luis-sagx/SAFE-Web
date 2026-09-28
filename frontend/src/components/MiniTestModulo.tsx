@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { CheckCircle2, RotateCcw } from 'lucide-react'
+import { CheckCircle2, RotateCcw, XCircle } from 'lucide-react'
 import Ticket from './Boleto'
 import { TRAMA_FONDO } from './TramaFondo'
 
@@ -221,30 +221,104 @@ interface ModuleQuizProps {
 
 // Dos preguntas antes de la pantalla de "siguiente módulo" (issue #230): sin
 // botón de cerrar a propósito, es la condición para avanzar, no un aviso que
-// se pueda saltar.
+// se pueda saltar. Hay que responder las dos antes de saber el resultado: no
+// se corrige pregunta por pregunta, se comprueban las dos juntas al final y,
+// si falla alguna, la única salida es repetir la prueba completa.
 function ModuleQuiz({ seccionId, onComplete }: Readonly<ModuleQuizProps>) {
   const preguntas = PREGUNTAS_POR_MODULO[seccionId] ?? PREGUNTAS_POR_DEFECTO
 
   const [paso, setPaso] = useState(0)
+  const [respuestas, setRespuestas] = useState<Array<number | null>>(() => Array(preguntas.length).fill(null))
   const [elegida, setElegida] = useState<number | null>(null)
-  const [resultado, setResultado] = useState<'correcta' | 'incorrecta' | null>(null)
+  const [finalizado, setFinalizado] = useState(false)
 
   const pregunta = preguntas[paso]!
   const esUltima = paso === preguntas.length - 1
+  const aprobado = finalizado && respuestas.every((respuesta, index) => respuesta === preguntas[index]!.correcta)
 
-  function comprobar() {
+  function avanzar() {
     if (elegida === null) return
-    setResultado(elegida === pregunta.correcta ? 'correcta' : 'incorrecta')
+    setRespuestas((previas) => previas.map((respuesta, index) => (index === paso ? elegida : respuesta)))
+    if (esUltima) {
+      setFinalizado(true)
+    } else {
+      setPaso((p) => p + 1)
+      setElegida(null)
+    }
   }
 
-  function siguiente() {
-    if (esUltima) {
-      onComplete()
-      return
-    }
-    setPaso((p) => p + 1)
+  function repetir() {
+    setPaso(0)
+    setRespuestas(Array(preguntas.length).fill(null))
     setElegida(null)
-    setResultado(null)
+    setFinalizado(false)
+  }
+
+  if (finalizado) {
+    return (
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="titulo-minitest"
+        className={`fixed inset-0 z-50 flex flex-col items-center justify-center overflow-y-auto bg-canvas px-6 py-10 ${TRAMA_FONDO}`}
+      >
+        <p id="titulo-minitest" className="mb-4 text-center font-display text-2xl uppercase tracking-[0.01em] text-ink sm:text-3xl">
+          {aprobado ? '¡Respondiste bien!' : 'Revisa tus respuestas'}
+        </p>
+
+        <Ticket className="w-full max-w-md">
+          <div className="px-6 py-8">
+            <div className="grid gap-4">
+              {preguntas.map((preguntaRevisada, index) => {
+                const correcta = respuestas[index] === preguntaRevisada.correcta
+                return (
+                  <div
+                    key={preguntaRevisada.pregunta}
+                    role={correcta ? 'status' : 'alert'}
+                    data-testid={correcta ? 'feedback-correcto' : 'feedback-incorrecto'}
+                    className={`flex gap-3 rounded-lg border p-4 text-ink ${
+                      correcta ? 'border-success-ink/40 bg-success/10' : 'border-danger/40 bg-danger/10'
+                    }`}
+                  >
+                    {correcta ? (
+                      <CheckCircle2 aria-hidden="true" className="mt-0.5 size-6 shrink-0 text-success-ink" strokeWidth={2.5} />
+                    ) : (
+                      <XCircle aria-hidden="true" className="mt-0.5 size-6 shrink-0 text-danger" strokeWidth={2.5} />
+                    )}
+                    <div>
+                      <h2 className={`text-base font-semibold ${correcta ? 'text-success-ink' : 'text-danger'}`}>
+                        {correcta ? '¡Respuesta correcta!' : 'Respuesta incorrecta'}
+                      </h2>
+                      <p className="mt-1 text-sm leading-relaxed">{preguntaRevisada.pregunta}</p>
+                      <p className="mt-1 text-sm leading-relaxed">{preguntaRevisada.explicacion}</p>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+
+            {aprobado ? (
+              <button
+                type="button"
+                onClick={onComplete}
+                className="mt-5 flex min-h-11 w-full items-center justify-center rounded-md bg-primary px-4 py-3 text-lg font-medium text-on-primary transition hover:bg-primary-active focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link"
+              >
+                Continuar
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={repetir}
+                className="mt-5 flex min-h-11 w-full items-center justify-center gap-2 rounded-md bg-primary px-4 py-3 text-lg font-medium text-on-primary transition hover:bg-primary-active focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link"
+              >
+                <RotateCcw aria-hidden="true" className="size-5" strokeWidth={2.5} />
+                Repetir prueba
+              </button>
+            )}
+          </div>
+        </Ticket>
+      </div>
+    )
   }
 
   return (
@@ -282,54 +356,21 @@ function ModuleQuiz({ seccionId, onComplete }: Readonly<ModuleQuizProps>) {
                   name="opcion"
                   className="size-4 shrink-0"
                   checked={elegida === index}
-                  disabled={resultado === 'correcta'}
-                  onChange={() => {
-                    setElegida(index)
-                    setResultado(null)
-                  }}
+                  onChange={() => setElegida(index)}
                 />
                 {opcion}
               </label>
             ))}
           </div>
 
-          {resultado === 'correcta' && (
-            <div role="status" className="mt-5 flex gap-3 rounded-lg border border-success-ink/40 bg-success/10 p-4 text-ink" data-testid="feedback-correcto">
-              <CheckCircle2 aria-hidden="true" className="mt-0.5 size-6 shrink-0 text-success-ink" strokeWidth={2.5} />
-              <div>
-                <h2 className="text-base font-semibold text-success-ink">¡Respuesta correcta!</h2>
-                <p className="mt-1 text-sm leading-relaxed">{pregunta.explicacion}</p>
-              </div>
-            </div>
-          )}
-          {resultado === 'incorrecta' && (
-            <div role="alert" className="mt-5 flex gap-3 rounded-lg border border-danger/40 bg-danger/10 p-4 text-ink" data-testid="feedback-incorrecto">
-              <RotateCcw aria-hidden="true" className="mt-0.5 size-6 shrink-0 text-danger" strokeWidth={2.5} />
-              <div>
-                <h2 className="text-base font-semibold text-danger">Revisa tu respuesta</h2>
-                <p className="mt-1 text-sm leading-relaxed">Piensa en las señales de la situación y elige otra opción.</p>
-              </div>
-            </div>
-          )}
-
-          {resultado === 'correcta' ? (
-            <button
-              type="button"
-              onClick={siguiente}
-              className="mt-5 flex min-h-11 w-full items-center justify-center rounded-md bg-primary px-4 py-3 text-lg font-medium text-on-primary transition hover:bg-primary-active focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link"
-            >
-              {esUltima ? 'Continuar' : 'Siguiente pregunta'}
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={comprobar}
-              disabled={elegida === null}
-              className="mt-5 flex min-h-11 w-full items-center justify-center rounded-md bg-primary px-4 py-3 text-lg font-medium text-on-primary transition hover:bg-primary-active focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link disabled:cursor-default disabled:opacity-50"
-            >
-              Comprobar
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={avanzar}
+            disabled={elegida === null}
+            className="mt-5 flex min-h-11 w-full items-center justify-center rounded-md bg-primary px-4 py-3 text-lg font-medium text-on-primary transition hover:bg-primary-active focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link disabled:cursor-default disabled:opacity-50"
+          >
+            {esUltima ? 'Comprobar respuestas' : 'Siguiente pregunta'}
+          </button>
         </div>
       </Ticket>
     </div>

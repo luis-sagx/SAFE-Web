@@ -17,44 +17,69 @@ describe('ModuleQuiz', () => {
     expect(screen.getByText(/memoria USB que no reconoces/)).toBeDefined()
   })
 
-  it('al elegir la opción incorrecta, avisa y deja reintentar sin avanzar', () => {
+  it('no deja avanzar sin elegir una opción primero', () => {
+    render(<ModuleQuiz seccionId="phishing" onComplete={vi.fn()} />)
+
+    expect((screen.getByRole('button', { name: 'Siguiente pregunta' }) as HTMLButtonElement).disabled).toBe(true)
+  })
+
+  it('al elegir una opción y avanzar, pasa a la segunda pregunta sin mostrar si acertó o no', () => {
     render(<ModuleQuiz seccionId="phishing" onComplete={vi.fn()} />)
 
     fireEvent.click(screen.getByText(/empiece con https/))
-    fireEvent.click(screen.getByRole('button', { name: 'Comprobar' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Siguiente pregunta' }))
 
-    expect(screen.getByRole('alert').textContent).toMatch(/Revisa tu respuesta/)
-    expect(screen.getByRole('heading', { name: 'Revisa tu respuesta' })).toBeDefined()
-    expect(screen.getByText('Pregunta 1 de 2')).toBeDefined()
-    expect(screen.getByRole('button', { name: 'Comprobar' })).toBeDefined()
-    expect((screen.getByLabelText('El nombre del sitio después de https:// y antes de la siguiente barra (/)') as HTMLInputElement).checked).toBe(false)
+    expect(screen.getByText('Pregunta 2 de 2')).toBeDefined()
+    expect(screen.queryByRole('status')).toBeNull()
+    expect(screen.queryByRole('alert')).toBeNull()
   })
 
-  it('al acertar las dos preguntas, llama a onComplete', () => {
+  it('al fallar una o las dos preguntas, muestra el resultado y un botón para repetir la prueba, sin llamar a onComplete', () => {
+    const onComplete = vi.fn()
+    render(<ModuleQuiz seccionId="phishing" onComplete={onComplete} />)
+
+    fireEvent.click(screen.getByText(/empiece con https/)) // incorrecta
+    fireEvent.click(screen.getByRole('button', { name: 'Siguiente pregunta' }))
+
+    fireEvent.click(screen.getByText(/Abro la aplicación o el sitio oficial/)) // correcta
+    fireEvent.click(screen.getByRole('button', { name: 'Comprobar respuestas' }))
+
+    expect(screen.getAllByTestId('feedback-incorrecto')).toHaveLength(1)
+    expect(screen.getAllByTestId('feedback-correcto')).toHaveLength(1)
+    expect(screen.getByRole('button', { name: 'Repetir prueba' })).toBeDefined()
+    expect(screen.queryByRole('button', { name: 'Continuar' })).toBeNull()
+    expect(onComplete).not.toHaveBeenCalled()
+  })
+
+  it('"Repetir prueba" reinicia el cuestionario desde la primera pregunta', () => {
+    render(<ModuleQuiz seccionId="phishing" onComplete={vi.fn()} />)
+
+    fireEvent.click(screen.getByText(/empiece con https/))
+    fireEvent.click(screen.getByRole('button', { name: 'Siguiente pregunta' }))
+    fireEvent.click(screen.getByText(/Abro la aplicación o el sitio oficial/))
+    fireEvent.click(screen.getByRole('button', { name: 'Comprobar respuestas' }))
+
+    fireEvent.click(screen.getByRole('button', { name: 'Repetir prueba' }))
+
+    expect(screen.getByText('Pregunta 1 de 2')).toBeDefined()
+    expect((screen.getByRole('button', { name: 'Siguiente pregunta' }) as HTMLButtonElement).disabled).toBe(true)
+  })
+
+  it('al acertar las dos preguntas, muestra el resultado con un botón "Continuar" que llama a onComplete', () => {
     const onComplete = vi.fn()
     render(<ModuleQuiz seccionId="phishing" onComplete={onComplete} />)
 
     fireEvent.click(screen.getByText(/nombre del sitio después de https/))
-    fireEvent.click(screen.getByRole('button', { name: 'Comprobar' }))
-    expect(screen.getByRole('status').textContent).toMatch(/¡Respuesta correcta!/)
-    expect(screen.getByRole('heading', { name: '¡Respuesta correcta!' })).toBeDefined()
-
     fireEvent.click(screen.getByRole('button', { name: 'Siguiente pregunta' }))
-    expect(screen.getByText('Pregunta 2 de 2')).toBeDefined()
-    expect(onComplete).not.toHaveBeenCalled()
-
     fireEvent.click(screen.getByText(/Abro la aplicación o el sitio oficial/))
-    fireEvent.click(screen.getByRole('button', { name: 'Comprobar' }))
-    expect(screen.getByRole('heading', { name: '¡Respuesta correcta!' })).toBeDefined()
+    fireEvent.click(screen.getByRole('button', { name: 'Comprobar respuestas' }))
+
+    expect(screen.getAllByTestId('feedback-correcto')).toHaveLength(2)
+    expect(screen.queryByRole('button', { name: 'Repetir prueba' })).toBeNull()
+    expect(onComplete).not.toHaveBeenCalled()
 
     fireEvent.click(screen.getByRole('button', { name: 'Continuar' }))
     expect(onComplete).toHaveBeenCalledTimes(1)
-  })
-
-  it('no deja comprobar sin elegir una opción primero', () => {
-    render(<ModuleQuiz seccionId="phishing" onComplete={vi.fn()} />)
-
-    expect((screen.getByRole('button', { name: 'Comprobar' }) as HTMLButtonElement).disabled).toBe(true)
   })
 
   it('sin preguntas definidas para el módulo, no rompe: usa un set por defecto', () => {
