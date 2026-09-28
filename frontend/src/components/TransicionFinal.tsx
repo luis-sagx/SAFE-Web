@@ -1,6 +1,7 @@
 import { Trophy } from 'lucide-react'
 import { useEffect, useRef } from 'react'
 import { Link } from 'react-router'
+import Confeti from './Confeti'
 import Ticket from './Boleto'
 import CertificateButton from './CertificadoBoton'
 import { TRAMA_FONDO } from './TramaFondo'
@@ -62,6 +63,10 @@ function FinalTransition({ totalModulos, onClose }: FinalTransitionProps) {
       aria-labelledby="titulo-transicion-final"
       className={`fixed inset-0 z-50 flex flex-col items-center justify-center overflow-y-auto bg-canvas px-6 py-10 ${TRAMA_FONDO}`}
     >
+      {/* El cierre de todo el entrenamiento merece más piezas y más duración
+          que aprobar un módulo cualquiera (ver Confeti en TransicionModulo.tsx). */}
+      <Confeti piezas={160} duracionMs={3500} />
+
       <button
         type="button"
         onClick={onClose}

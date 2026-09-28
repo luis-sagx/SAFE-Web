@@ -1,6 +1,7 @@
 import { Rocket } from 'lucide-react'
 import { useEffect, useRef } from 'react'
 import { Link } from 'react-router'
+import Confeti from './Confeti'
 import Ticket from './Boleto'
 import { TRAMA_FONDO } from './TramaFondo'
 import type { Section } from '../data/catalogo'
@@ -45,6 +46,8 @@ function ModuleTransition({ seccion: section, aprobados, total, siguiente: next,
       aria-labelledby="titulo-transicion"
       className={`fixed inset-0 z-50 flex flex-col items-center justify-center overflow-y-auto bg-canvas px-6 py-10 ${TRAMA_FONDO}`}
     >
+      <Confeti />
+
       <button
         type="button"
         onClick={onClose}
