@@ -811,7 +811,7 @@ function Admin() {
     <div className="min-h-screen bg-canvas">
       <AppHeader etiqueta="Administración" />
 
-      <main className="mx-auto max-w-7xl px-6 py-12">
+      <main className="mx-auto max-w-7xl p-6">
         <div
           className="mt-8 flex gap-1 border-b border-hairline pb-3"
           role="tablist"
