@@ -34,7 +34,7 @@ describe('ModuleQuiz', () => {
     expect(screen.queryByRole('alert')).toBeNull()
   })
 
-  it('al fallar una o las dos preguntas, muestra el resultado y un botón para repetir la prueba, sin llamar a onComplete', () => {
+  it('al fallar una de las dos preguntas, muestra "1/2 correctas" y un botón para repetir la prueba, sin llamar a onComplete', () => {
     const onComplete = vi.fn()
     render(<ModuleQuiz seccionId="phishing" onComplete={onComplete} />)
 
@@ -44,11 +44,24 @@ describe('ModuleQuiz', () => {
     fireEvent.click(screen.getByText(/Abro la aplicación o el sitio oficial/)) // correcta
     fireEvent.click(screen.getByRole('button', { name: 'Comprobar respuestas' }))
 
-    expect(screen.getAllByTestId('feedback-incorrecto')).toHaveLength(1)
-    expect(screen.getAllByTestId('feedback-correcto')).toHaveLength(1)
+    expect(screen.getByTestId('feedback-incorrecto')).toBeDefined()
+    expect(screen.getByText('1/2 correctas')).toBeDefined()
+    expect(screen.queryByTestId('feedback-correcto')).toBeNull()
     expect(screen.getByRole('button', { name: 'Repetir prueba' })).toBeDefined()
     expect(screen.queryByRole('button', { name: 'Continuar' })).toBeNull()
     expect(onComplete).not.toHaveBeenCalled()
+  })
+
+  it('al fallar las dos preguntas, muestra "0/2 correctas"', () => {
+    render(<ModuleQuiz seccionId="phishing" onComplete={vi.fn()} />)
+
+    fireEvent.click(screen.getByText(/empiece con https/)) // incorrecta
+    fireEvent.click(screen.getByRole('button', { name: 'Siguiente pregunta' }))
+    fireEvent.click(screen.getByText(/Abro el enlace antes de que venza/)) // incorrecta
+    fireEvent.click(screen.getByRole('button', { name: 'Comprobar respuestas' }))
+
+    expect(screen.getByText('0/2 correctas')).toBeDefined()
+    expect(screen.getByRole('button', { name: 'Repetir prueba' })).toBeDefined()
   })
 
   it('"Repetir prueba" reinicia el cuestionario desde la primera pregunta', () => {
@@ -74,7 +87,8 @@ describe('ModuleQuiz', () => {
     fireEvent.click(screen.getByText(/Abro la aplicación o el sitio oficial/))
     fireEvent.click(screen.getByRole('button', { name: 'Comprobar respuestas' }))
 
-    expect(screen.getAllByTestId('feedback-correcto')).toHaveLength(2)
+    expect(screen.getByTestId('feedback-correcto')).toBeDefined()
+    expect(screen.getByText('2/2 correctas')).toBeDefined()
     expect(screen.queryByRole('button', { name: 'Repetir prueba' })).toBeNull()
     expect(onComplete).not.toHaveBeenCalled()
 

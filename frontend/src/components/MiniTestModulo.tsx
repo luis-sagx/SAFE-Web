@@ -234,7 +234,8 @@ function ModuleQuiz({ seccionId, onComplete }: Readonly<ModuleQuizProps>) {
 
   const pregunta = preguntas[paso]!
   const esUltima = paso === preguntas.length - 1
-  const aprobado = finalizado && respuestas.every((respuesta, index) => respuesta === preguntas[index]!.correcta)
+  const correctas = respuestas.filter((respuesta, index) => respuesta === preguntas[index]!.correcta).length
+  const aprobado = finalizado && correctas === preguntas.length
 
   function avanzar() {
     if (elegida === null) return
@@ -268,33 +269,26 @@ function ModuleQuiz({ seccionId, onComplete }: Readonly<ModuleQuizProps>) {
 
         <Ticket className="w-full max-w-md">
           <div className="px-6 py-8">
-            <div className="grid gap-4">
-              {preguntas.map((preguntaRevisada, index) => {
-                const correcta = respuestas[index] === preguntaRevisada.correcta
-                return (
-                  <div
-                    key={preguntaRevisada.pregunta}
-                    role={correcta ? 'status' : 'alert'}
-                    data-testid={correcta ? 'feedback-correcto' : 'feedback-incorrecto'}
-                    className={`flex gap-3 rounded-lg border p-4 text-ink ${
-                      correcta ? 'border-success-ink/40 bg-success/10' : 'border-danger/40 bg-danger/10'
-                    }`}
-                  >
-                    {correcta ? (
-                      <CheckCircle2 aria-hidden="true" className="mt-0.5 size-6 shrink-0 text-success-ink" strokeWidth={2.5} />
-                    ) : (
-                      <XCircle aria-hidden="true" className="mt-0.5 size-6 shrink-0 text-danger" strokeWidth={2.5} />
-                    )}
-                    <div>
-                      <h2 className={`text-base font-semibold ${correcta ? 'text-success-ink' : 'text-danger'}`}>
-                        {correcta ? '¡Respuesta correcta!' : 'Respuesta incorrecta'}
-                      </h2>
-                      <p className="mt-1 text-sm leading-relaxed">{preguntaRevisada.pregunta}</p>
-                      <p className="mt-1 text-sm leading-relaxed">{preguntaRevisada.explicacion}</p>
-                    </div>
-                  </div>
-                )
-              })}
+            <div
+              role={aprobado ? 'status' : 'alert'}
+              data-testid={aprobado ? 'feedback-correcto' : 'feedback-incorrecto'}
+              className={`flex gap-3 rounded-lg border p-4 text-ink ${
+                aprobado ? 'border-success-ink/40 bg-success/10' : 'border-danger/40 bg-danger/10'
+              }`}
+            >
+              {aprobado ? (
+                <CheckCircle2 aria-hidden="true" className="mt-0.5 size-6 shrink-0 text-success-ink" strokeWidth={2.5} />
+              ) : (
+                <XCircle aria-hidden="true" className="mt-0.5 size-6 shrink-0 text-danger" strokeWidth={2.5} />
+              )}
+              <div>
+                <h2 className={`text-base font-semibold ${aprobado ? 'text-success-ink' : 'text-danger'}`}>
+                  {aprobado ? '¡Respuesta correcta!' : 'Respuesta incorrecta'}
+                </h2>
+                <p className="mt-1 text-sm leading-relaxed tabular-nums">
+                  {correctas}/{preguntas.length} correctas
+                </p>
+              </div>
             </div>
 
             {aprobado ? (
