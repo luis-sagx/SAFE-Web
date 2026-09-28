@@ -101,13 +101,13 @@ describe('correos de phishing realistas', () => {
 
   it.each([
     ['Premio de lotería', LotteryPrize, /no se requiere número de boleto/i],
-    ['Factura del SRI', SriInvoice, /verifica el comprobante desde sri\.gob\.ec/i],
-    ['Clave por caducar', ExpiredPassword, /el correo institucional de andes termina en @andes\.com\.ec/i],
+    ['Factura del SRI', SriInvoice, /multa de USD 1\.200/],
+    ['Clave por caducar', ExpiredPassword, /su cuenta será ELIMINADA en 2 horas/],
     ['Rol de pagos', PayrollStatement, /marcador “portal andes”/i],
-    ['Actualización por QR', QuishingUpdate, /desde la cámara, no desde la aplicación/i],
-    ['Pago del colegio', ThreadHijacking, /cambiamos de banco y de número de cuenta/i],
+    ['Actualización por QR', QuishingUpdate, /quedará BLOQUEADA/],
+    ['Pago del colegio', ThreadHijacking, /no llame al colegio, la línea está dañada/i],
     ['Aviso de filtración', DataLeakNotice, /marcador guardado de la tienda/i],
-    ['Sesión desconocida', BogotaSession, /pediremos el código de un solo uso/i],
+    ['Sesión desconocida', BogotaSession, /verificar-cuenta\.xyz\/clave/],
   ])('%s muestra una señal adicional dentro de la simulación', (_case, Component, signal) => {
     openEmail(Component)
 

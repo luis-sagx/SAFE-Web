@@ -19,7 +19,7 @@ import {
   Wifi,
   type LucideIcon,
 } from 'lucide-react'
-import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
 import { formatDate, formatTime, useSystemClock } from '../../hooks/useRelojDelSistema'
 import { useAuth } from '../../context/AuthContext'
 import styles from './DeviceScreen.module.css'
@@ -123,6 +123,8 @@ export function MailToolbar({ acciones: actions }: { acciones: EmailAction[] }) 
           aria-label={title}
           data-hotspot-goto={goto}
           data-hotspot-label={decisionLabel}
+          // Permite que la guía de ESC-01 y el repaso apunten a una acción de la barra.
+          data-signal={goto}
         >
           <Icon aria-hidden className={styles.mailToolbarIcon} strokeWidth={1.75} />
           <span aria-hidden className={styles.mailToolbarTexto}>
@@ -475,6 +477,68 @@ export function EmailBody({
   const [selectedFolder, setFolderSelected] = useState('Recibidos')
   const activeFolder = forcedFolder ?? selectedFolder
   const secondaryFolder = folders?.find((folder) => folder.nombre === activeFolder)
+  const bodyRef = useRef<HTMLDivElement>(null)
+  const guideRef = useRef<HTMLDivElement>(null)
+
+  // El globo se ancla al elemento señalado para que la explicación quede
+  // pegada a la pista, no a varios párrafos de distancia.
+  useLayoutEffect(() => {
+    const container = bodyRef.current
+    const bubble = guideRef.current
+    if (!container || !bubble || !guideTargetId) return
+    // Se busca en todo el panel: la barra de acciones queda fuera de .mailbody.
+    const target = (container.closest('[data-guia-target]') ?? container).querySelector<HTMLElement>(
+      `[data-signal="${guideTargetId}"]`,
+    )
+    if (!target) return
+    target.classList.add('senal-resaltada', 'guide-focus')
+
+    const place = () => {
+      const box = container.getBoundingClientRect()
+      const spot = target.getBoundingClientRect()
+      // Sin medidas (jsdom, contenedor oculto) se deja el globo donde está.
+      if (!box.width || !spot.width) return undefined
+      const gutter = 12
+      const gap = 14
+      const width = Math.min(container.clientWidth - gutter * 2, 360)
+      bubble.style.width = `${width}px`
+      const top = spot.top - box.top + container.scrollTop
+      const center = spot.left - box.left + container.scrollLeft + spot.width / 2
+      const left = Math.min(
+        Math.max(center - width / 2, gutter),
+        container.clientWidth - width - gutter,
+      )
+      const height = bubble.offsetHeight
+      const above = top - height - gap >= 0
+      const bubbleTop = above ? top - height - gap : top + spot.height + gap
+      bubble.style.left = `${left}px`
+      bubble.style.top = `${bubbleTop}px`
+      bubble.style.setProperty('--arrow-left', `${Math.min(Math.max(center - left, 18), width - 18)}px`)
+      bubble.dataset.placement = above ? 'above' : 'below'
+      return { start: Math.min(top, bubbleTop), end: Math.max(top + spot.height, bubbleTop + height) }
+    }
+
+    const range = place()
+    if (range) {
+      const span = range.end - range.start
+      const view = container.clientHeight
+      const scrollTop = span > view ? range.start - 12 : range.start - (view - span) / 2
+      container.scrollTo?.({ top: Math.max(0, scrollTop), behavior: 'smooth' })
+    }
+
+    const observer =
+      typeof ResizeObserver === 'undefined' ? undefined : new ResizeObserver(() => place())
+    observer?.observe(container)
+    // Los hijos crecen cuando carga una imagen (el banner de ESC-01 está sobre
+    // el pago): sin esto el globo quedaba apuntando a donde estaba antes.
+    for (const child of container.children) observer?.observe(child)
+    window.addEventListener('resize', place)
+    return () => {
+      observer?.disconnect()
+      window.removeEventListener('resize', place)
+      target.classList.remove('senal-resaltada', 'guide-focus')
+    }
+  }, [guideTargetId])
 
   const header = (
     name: string,
@@ -517,7 +581,7 @@ export function EmailBody({
           <>
             {actions && <MailToolbar acciones={actions} />}
 
-            <div className={styles.mailbody}>
+            <div ref={bodyRef} className={styles.mailbody}>
               <h1 className={styles.subject}>{subject}</h1>
 
               {header(
@@ -532,7 +596,11 @@ export function EmailBody({
                 sender.senalDireccion,
               )}
 
-              {guide}
+              {guide && (
+                <div ref={guideRef} className={styles.guideBubble}>
+                  {guide}
+                </div>
+              )}
 
               {brand && <EmailBrandIdentity marca={brand} />}
 

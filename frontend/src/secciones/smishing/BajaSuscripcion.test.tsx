@@ -10,6 +10,19 @@ vi.mock('../../context/AuthContext', async () => (await import('../../test/escen
 vi.mock('../../lib/api', async () => (await import('../../test/escenario')).offlineApi())
 
 describe('BajaSuscripcion', () => {
+  it('conserva tres opciones útiles y aplica el acento de cada app', () => {
+    const phone = start(<SubscriptionCancellation />)
+
+    fireEvent.click(within(phone).getByRole('button', { name: /Mi Operadora/ }))
+    expect(phone.querySelectorAll('[class*="opciones"] li')).toHaveLength(3)
+    expect(within(phone).queryByRole('button', { name: /Consumo de datos/ })).toBeNull()
+    expect((phone.querySelector('[class*="phoneAppBar"]') as HTMLElement).style.backgroundColor).toBe('rgb(194, 37, 92)')
+
+    fireEvent.click(within(phone).getByRole('button', { name: /Banco/ }))
+    const bank = within(phone).getByRole('button', { name: /Banco/ })
+    expect((bank.querySelector('[class*="phoneDockIcono"]') as HTMLElement).style.background).toBe('rgb(15, 118, 110)')
+  })
+
   it('el campo no se escribe solo: la frase se elige entre las que ofrece el hilo', () => {
     const phone = start(<SubscriptionCancellation />)
 

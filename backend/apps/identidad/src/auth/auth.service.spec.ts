@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import type { ConfigService } from '@nestjs/config';
 import type { JwtService } from '@nestjs/jwt';
-import { hash } from 'bcryptjs';
+import { hash } from 'bcrypt';
 import { AuthService } from './auth.service';
 import type { PrismaService } from '../prisma/prisma.service';
 import { encrypt } from '../pii/pii';
@@ -59,8 +59,12 @@ function service(
   jwt: JwtService = jwtFake(),
   mail: ReturnType<typeof fakeMail> = fakeMail(),
 ) {
+  // `$transaction` corre el callback con el mismo cliente falso: alcanza
+  // para ver qué se borra y qué se crea, sin simular el rollback.
+  const client: Record<string, unknown> = { participant: prisma };
+  client.$transaction = (fn: (tx: unknown) => Promise<unknown>) => fn(client);
   return new AuthService(
-    { participant: prisma } as unknown as PrismaService,
+    client as unknown as PrismaService,
     jwt,
     fakeConfig(),
     mail,
@@ -100,7 +104,7 @@ describe('AuthService.register', () => {
   it('cifra nombre, apellido y correo, y guarda la huella del correo', async () => {
     let createdData: Record<string, unknown> | undefined;
     const auth = service({
-      findFirst: () => Promise.resolve(null),
+      findMany: () => Promise.resolve([]),
       create: ({ data }: { data: Record<string, unknown> }) => {
         createdData = data;
         return Promise.resolve(participantRow({ ...data, seq: 1 }));
@@ -121,7 +125,7 @@ describe('AuthService.register', () => {
     const sendEmailConfirmation = jest.fn().mockResolvedValue(true);
     const auth = service(
       {
-        findFirst: () => Promise.resolve(null),
+        findMany: () => Promise.resolve([]),
         create: ({ data }: { data: Record<string, unknown> }) => {
           createdData = data;
           return Promise.resolve(participantRow(data));
@@ -147,7 +151,14 @@ describe('AuthService.register', () => {
 
   it('rechaza un correo o cédula ya registrados con el mismo mensaje', async () => {
     const auth = service({
-      findFirst: () => Promise.resolve({ id: 'ya-existe' }),
+      findMany: () =>
+        Promise.resolve([
+          {
+            id: 'ya-existe',
+            role: 'PARTICIPANT',
+            emailConfirmedAt: new Date(),
+          },
+        ]),
     });
 
     await expect(auth.register(registrationDto())).rejects.toBeInstanceOf(
@@ -157,9 +168,58 @@ describe('AuthService.register', () => {
 
   // Dos registros simultáneos pasan los dos la comprobación previa: solo uno
   // gana el índice único, y el segundo debe recibir el mismo 409, no un 500.
+  it('reemplaza un registro previo que nunca confirmó su correo', async () => {
+    let deletedWhere: Record<string, unknown> | undefined;
+    let created = false;
+    const auth = service({
+      findMany: () =>
+        Promise.resolve([
+          { id: 'pendiente', role: 'PARTICIPANT', emailConfirmedAt: null },
+        ]),
+      deleteMany: ({ where }: { where: Record<string, unknown> }) => {
+        deletedWhere = where;
+        return Promise.resolve({ count: 1 });
+      },
+      create: () => {
+        created = true;
+        return Promise.resolve({ id: 'nuevo' });
+      },
+    });
+
+    await auth.register(registrationDto());
+
+    expect(deletedWhere).toEqual({
+      id: { in: ['pendiente'] },
+      emailConfirmedAt: null,
+    });
+    expect(created).toBe(true);
+  });
+
+  it('no reemplaza si alguna coincidencia ya confirmó o no es participante', async () => {
+    for (const match of [
+      { id: 'a', role: 'PARTICIPANT', emailConfirmedAt: new Date() },
+      { id: 'b', role: 'TRAINER', emailConfirmedAt: null },
+    ]) {
+      const deleteMany = jest.fn();
+      const auth = service({
+        findMany: () =>
+          Promise.resolve([
+            { id: 'pendiente', role: 'PARTICIPANT', emailConfirmedAt: null },
+            match,
+          ]),
+        deleteMany,
+      });
+
+      await expect(auth.register(registrationDto())).rejects.toBeInstanceOf(
+        ConflictException,
+      );
+      expect(deleteMany).not.toHaveBeenCalled();
+    }
+  });
+
   it('convierte una colisión de índice único (P2002) en el mismo 409', async () => {
     const auth = service({
-      findFirst: () => Promise.resolve(null),
+      findMany: () => Promise.resolve([]),
       create: () =>
         Promise.reject(Object.assign(new Error('unique'), { code: 'P2002' })),
     });
@@ -172,7 +232,7 @@ describe('AuthService.register', () => {
   it('un error que no es una colisión de índice se propaga tal cual', async () => {
     const failure = new Error('la base no respondió');
     const auth = service({
-      findFirst: () => Promise.resolve(null),
+      findMany: () => Promise.resolve([]),
       create: () => Promise.reject(failure),
     });
 
@@ -189,7 +249,7 @@ describe('AuthService.login', () => {
           passwordHash: '$2b$12$hash-de-prueba',
         }),
     });
-    // `bcryptjs.compare` real contra un hash inventado siempre da falso; se
+    // `bcrypt.compare` real contra un hash inventado siempre da falso; se
     // prueba aparte con un hash de verdad más abajo.
     await expect(
       auth.login({ email: 'ana@correo.com', password: 'lo-que-sea' }),
@@ -205,7 +265,7 @@ describe('AuthService.login', () => {
   });
 
   it('una cuenta desactivada no entra, aunque la contraseña sea correcta', async () => {
-    // bcryptjs real: se genera un hash de verdad para que `compare` de
+    // bcrypt real: se genera un hash de verdad para que `compare` de
     // adentro del servicio lo acepte.
     const passwordHash = await hash('ClaveSegura123!', 4);
     const auth = service({
@@ -581,11 +641,38 @@ describe('AuthService.confirmEmail', () => {
       },
     });
 
-    await auth.confirmEmail('token-cualquiera');
+    const session = await auth.confirmEmail('token-cualquiera');
 
     expect(updateData?.emailConfirmedAt).toBeInstanceOf(Date);
     expect(updateData?.emailConfirmationTokenHash).toBeNull();
     expect(updateData?.emailConfirmationExpiresAt).toBeNull();
+    expect(session.accessToken).toEqual(expect.any(String));
+    expect(session.refreshToken).toEqual(expect.any(String));
+    expect(session.participant.email).toBe('ana@correo.com');
+    expect(session.participant).not.toHaveProperty('seq');
+  });
+
+  it('con una cuenta desactivada, confirma el correo pero no arma sesión', async () => {
+    let updateData: Record<string, unknown> | undefined;
+    const auth = service({
+      findFirst: () =>
+        Promise.resolve(
+          participantRow({
+            emailConfirmationExpiresAt: new Date(Date.now() + 60_000),
+            emailConfirmedAt: null,
+            disabledAt: new Date(),
+          }),
+        ),
+      update: ({ data }: { data: Record<string, unknown> }) => {
+        updateData = data;
+        return Promise.resolve(participantRow());
+      },
+    });
+
+    await expect(auth.confirmEmail('token-cualquiera')).rejects.toBeInstanceOf(
+      ForbiddenException,
+    );
+    expect(updateData?.emailConfirmedAt).toBeInstanceOf(Date);
   });
 });
 

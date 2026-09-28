@@ -4,11 +4,16 @@ on:
   workflow_dispatch:
     inputs:
       perfil:
-        description: Perfil de carga autorizado para el entorno de pruebas
+        description: Perfil de tests/carga/aula.js (spike = inicio de clase, estres = punto de quiebre)
         required: true
-        default: extendida
+        default: spike
         type: choice
-        options: [extendida]
+        options: [smoke, spike, carga, estres, soak]
+      cuentas:
+        description: Cuentas creadas con tests/carga/seed_accounts.py en el entorno de pruebas
+        required: true
+        default: '100'
+        type: string
       confirmacion:
         description: Escribe EJECUTAR-CARGA para confirmar que no es producción
         required: true
@@ -29,8 +34,12 @@ jobs:
     # Este entorno debe configurarse en GitHub con revisores requeridos y la
     # variable LOAD_TEST_URL apuntando exclusivamente al entorno de pruebas.
     environment: load-test
+    # soak dura 1 h; el resto, menos de 25 min.
+    timeout-minutes: 90
     env:
       BASE_URL: ${{ vars.LOAD_TEST_URL }}
+      PROFILE: ${{ inputs.perfil }}
+      ACCOUNTS: ${{ inputs.cuentas }}
     steps:
       - uses: actions/checkout@v4
       - name: Comprobar destino autorizado
@@ -43,12 +52,12 @@ jobs:
       - name: Ejecutar k6
         run: |
           docker run --rm \
-            -e BASE_URL \
+            -e BASE_URL -e PROFILE -e ACCOUNTS \
             --user "$(id -u):$(id -g)" \
             -v "$PWD:/work" -w /work \
             grafana/k6:2.1.0 run \
             --summary-export /work/k6-stress-summary.json \
-            tests/carga/nominal.js
+            tests/carga/aula.js
       - uses: actions/upload-artifact@v4
         if: always()
         with:

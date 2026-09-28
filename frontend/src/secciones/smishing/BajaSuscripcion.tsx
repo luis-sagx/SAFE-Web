@@ -4,6 +4,7 @@ import type { Context } from '../../components/ui/ContextoEscenario'
 import type { Story } from '../../hooks/useStoryEngine'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
 import type { Signal as ScenarioSignal } from '../../components/ui/PanelVeredicto'
+import { APP_ACCENTS } from '../../components/ui/appAccents'
 
 // Puerta de entrada del módulo (dificultad 1): único escenario sin enlace ni formulario.
 // Lo único que el mensaje quiere es una respuesta, contestar no es la salida, es la puerta.
@@ -54,6 +55,7 @@ const CLAIM_SMS = withResponse('Yo no contraté nada, dejen de cobrarme.')
 const OPERATOR_START: ScreenView = {
   kind: 'web',
   app: 'Mi Operadora',
+  appAccent: APP_ACCENTS.operator,
   url: 'inicio',
   secure: true,
   brand: 'Mi Operadora',
@@ -67,7 +69,6 @@ const OPERATOR_START: ScreenView = {
       goto: 'e_verifica',
       label: 'Revisó sus paquetes y suscripciones en la app de la operadora',
     },
-    { texto: 'Consumo de datos', detalle: '1,2 GB de 3 GB usados este mes' },
     {
       texto: 'Bloquear mensajes de números cortos',
       detalle: 'No volverás a recibir SMS de servicios',
@@ -83,6 +84,7 @@ const OPERATOR_START: ScreenView = {
 const OPERATOR: ScreenView = {
   kind: 'web',
   app: 'Mi Operadora',
+  appAccent: APP_ACCENTS.operator,
   url: 'inicio',
   secure: true,
   brand: 'Mi Operadora',
@@ -103,12 +105,12 @@ const APPS: PhoneApp[] = [
   {
     Icono: Signal,
     texto: 'Mi Operadora',
-    color: '#c2255c',
+    color: APP_ACCENTS.operator,
     viewNode: 'n4',
     label: 'Abrió la app de la operadora para comprobar el cobro',
   },
   { Icono: MessageSquareText, texto: 'Mensajes', color: '#2f9e44' },
-  { Icono: Wallet, texto: 'Banco', color: '#155e75', relleno: 'banco' },
+  { Icono: Wallet, texto: 'Banco', color: APP_ACCENTS.bank, relleno: 'banco' },
 ]
 
 const STORY: Story<ScreenNode> = {

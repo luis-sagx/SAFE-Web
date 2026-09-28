@@ -309,14 +309,13 @@ describe('AccionesFinal', () => {
     render(<BrowserRouter><FinalActions escenarioId="phishing/sesion-bogota" outcome="CORRECTO" /></BrowserRouter>)
 
     await screen.findByText('Pregunta 1 de 2')
-    fireEvent.click(screen.getByText(/justo antes de la primera barra/))
-    fireEvent.click(screen.getByRole('button', { name: 'Comprobar' }))
+    fireEvent.click(screen.getByText(/El nombre del sitio después de https/))
     fireEvent.click(screen.getByRole('button', { name: 'Siguiente pregunta' }))
 
     await screen.findByText('Pregunta 2 de 2')
-    fireEvent.click(screen.getByText(/Entro directo por mi app o el sitio oficial/))
-    fireEvent.click(screen.getByRole('button', { name: 'Comprobar' }))
-    fireEvent.click(screen.getByRole('button', { name: 'Continuar' }))
+    fireEvent.click(screen.getByText(/Abro la aplicación o el sitio oficial por mi cuenta/))
+    fireEvent.click(screen.getByRole('button', { name: 'Comprobar respuestas' }))
+    fireEvent.click(await screen.findByRole('button', { name: 'Continuar' }))
 
     expect(await screen.findByText('Aprobaste Phishing')).toBeDefined()
     expect(screen.getByRole('link', { name: 'Ir a Smishing →' })).toBeDefined()
@@ -335,13 +334,12 @@ describe('AccionesFinal', () => {
     render(<BrowserRouter><FinalActions escenarioId="phishing/sesion-bogota" outcome="CORRECTO" /></BrowserRouter>)
 
     await screen.findByText('Pregunta 1 de 2')
-    fireEvent.click(screen.getByText(/justo antes de la primera barra/))
-    fireEvent.click(screen.getByRole('button', { name: 'Comprobar' }))
+    fireEvent.click(screen.getByText(/El nombre del sitio después de https/))
     fireEvent.click(screen.getByRole('button', { name: 'Siguiente pregunta' }))
     await screen.findByText('Pregunta 2 de 2')
-    fireEvent.click(screen.getByText(/Entro directo por mi app o el sitio oficial/))
-    fireEvent.click(screen.getByRole('button', { name: 'Comprobar' }))
-    fireEvent.click(screen.getByRole('button', { name: 'Continuar' }))
+    fireEvent.click(screen.getByText(/Abro la aplicación o el sitio oficial por mi cuenta/))
+    fireEvent.click(screen.getByRole('button', { name: 'Comprobar respuestas' }))
+    fireEvent.click(await screen.findByRole('button', { name: 'Continuar' }))
 
     await screen.findByRole('dialog')
     fireEvent.click(screen.getByRole('button', { name: 'Seguir aquí' }))

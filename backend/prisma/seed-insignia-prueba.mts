@@ -10,7 +10,7 @@
 import 'dotenv/config';
 import { randomUUID } from 'node:crypto';
 import { PrismaPg } from '@prisma/adapter-pg';
-import { hash } from 'bcryptjs';
+import { hash } from 'bcrypt';
 import { PrismaClient as IdentidadClient } from '../generated/identidad/client.js';
 import { PrismaClient as EntrenamientoClient } from '../generated/entrenamiento/client.js';
 import { encrypt, hashEmail } from '../apps/identidad/src/pii/pii.ts';

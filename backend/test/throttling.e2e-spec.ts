@@ -40,7 +40,7 @@ describe('Límite de peticiones (e2e)', () => {
     await app.close();
   });
 
-  it('corta el sexto intento de login del mismo origen', async () => {
+  it('corta el sexto intento de login a la misma cuenta', async () => {
     const attempt = () =>
       server()
         .post('/api/auth/login')
@@ -63,21 +63,32 @@ describe('Límite de peticiones (e2e)', () => {
     );
   });
 
-  // El límite es por IP, no un cubo global. Depende de `trust proxy` (app.setup):
-  // sin él Express ignora X-Forwarded-For y todo cae en el mismo cubo, con lo
-  // que un atacante bloquearía el login de todos.
-  it('aísla el límite por IP de X-Forwarded-For', async () => {
+  // Un aula sale por una sola IP pública (NAT): el límite de login es por
+  // cuenta, así que 30 personas pueden entrar en el mismo minuto.
+  it('no bloquea a cuentas distintas que salen por la misma IP', async () => {
+    const login = (email: string) =>
+      server()
+        .post('/api/auth/login')
+        .set('X-Forwarded-For', '203.0.113.10')
+        .send({ email, password: 'adivinando' });
+
+    for (let i = 0; i < 10; i++) {
+      expect((await login(`alumno${i}@ejemplo.ec`)).status).toBe(401);
+    }
+  });
+
+  // Cambiar de IP no reinicia el cubo: la fuerza bruta contra una cuenta
+  // sigue cortada aunque venga repartida desde varias.
+  it('mantiene el límite de una cuenta aunque cambie la IP', async () => {
     const login = (ip: string) =>
       server()
         .post('/api/auth/login')
         .set('X-Forwarded-For', ip)
-        .send({ email: 'otro@ejemplo.ec', password: 'adivinando' });
+        .send({ email: 'victima@ejemplo.ec', password: 'adivinando' });
 
-    // Agota el cubo de una IP.
-    for (let i = 0; i < 6; i++) await login('203.0.113.10');
+    for (let i = 0; i < 5; i++) await login(`203.0.113.${20 + i}`);
 
-    // Otra IP sigue teniendo sus intentos: 401 (credenciales), no 429 (límite).
-    expect((await login('203.0.113.20')).status).toBe(401);
+    expect((await login('203.0.113.99')).status).toBe(429);
   });
 
   // Docker consulta el health check cada 30 s con su propia sonda.
@@ -87,9 +98,9 @@ describe('Límite de peticiones (e2e)', () => {
     }
   });
 
-  // Mismo límite que login (issue #256): sin esto, alguien podría probar
-  // muchos correos por minuto buscando cuáles existen.
-  it('corta el sexto intento de forgot-password del mismo origen', async () => {
+  // Mismo límite que login (issue #256). Probar muchos correos distintos
+  // buscando cuáles existen lo corta el techo por IP de nginx, no Nest.
+  it('corta el sexto intento de forgot-password al mismo correo', async () => {
     const attempt = () =>
       server()
         .post('/api/auth/forgot-password')

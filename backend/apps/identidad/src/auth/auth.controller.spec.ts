@@ -219,20 +219,25 @@ describe('AuthController.resetPassword', () => {
 });
 
 describe('AuthController.confirmEmail', () => {
-  it('delega en el servicio con el token del dto', async () => {
+  it('confirma con el token del dto, pone la cookie del refresh y devuelve la sesión', async () => {
     let receivedToken: string | undefined;
     const service = {
       confirmEmail: (token: string) => {
         receivedToken = token;
-        return Promise.resolve(undefined);
+        return Promise.resolve(SESSION);
       },
     } as unknown as AuthService;
+    const { res, calls } = fakeResponse();
 
     const controller = new AuthController(service);
-    const result = await controller.confirmEmail({ token: 'un-token' });
+    const result = await controller.confirmEmail({ token: 'un-token' }, res);
 
     expect(receivedToken).toBe('un-token');
-    expect(result).toBeUndefined();
+    expect(calls.cookieValue).toBe(SESSION.refreshToken);
+    expect(result).toEqual({
+      accessToken: SESSION.accessToken,
+      participant: SESSION.participant,
+    });
   });
 });
 

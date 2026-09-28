@@ -1,4 +1,4 @@
-import { Images, MessageCircle, Phone, ShoppingBag } from 'lucide-react'
+import { MessageCircle, Phone, ShoppingBag } from 'lucide-react'
 import ScenarioStory, { type PhoneApp, type ScreenNode } from '../../components/StoryEscenario'
 import type { Context } from '../../components/ui/ContextoEscenario'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
@@ -267,7 +267,6 @@ const APPS: PhoneApp[] = [
     viewNode: 'n5',
     label: 'Abrió la tienda para comprar las tarjetas',
   },
-  { Icono: Images, texto: 'Galería', color: '#c2410c', relleno: 'galeria' },
 ]
 
 export const STORY: Story<ScreenNode> = {

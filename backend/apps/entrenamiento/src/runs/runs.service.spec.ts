@@ -1,4 +1,6 @@
+import { generateKeyPairSync } from 'node:crypto';
 import { ConflictException, NotFoundException } from '@nestjs/common';
+import type { ConfigService } from '@nestjs/config';
 import type { JwtService } from '@nestjs/jwt';
 import type { JwtPayload } from '@comun';
 import { RunsService } from './runs.service';
@@ -17,6 +19,14 @@ function jwtFake() {
   } as unknown as JwtService;
   return { jwt, latestPayload: () => latestPayload };
 }
+
+/// Clave real (el constructor la valida), aunque la firma sea simulada.
+const ATTESTATION_KEY = generateKeyPairSync('ec', { namedCurve: 'P-256' })
+  .privateKey.export({ type: 'pkcs8', format: 'pem' })
+  .toString();
+const config = {
+  getOrThrow: () => Buffer.from(ATTESTATION_KEY).toString('base64'),
+} as unknown as ConfigService;
 
 interface MockRun {
   scenarioId: string;
@@ -58,7 +68,7 @@ function serviceWith(runs: MockRun[], jwt?: JwtService, latestReset?: Date) {
     },
   } as unknown as PrismaService;
 
-  return new RunsService(prisma, jwt ?? jwtFake().jwt);
+  return new RunsService(prisma, jwt ?? jwtFake().jwt, config);
 }
 
 function runFixture(overrides: Record<string, unknown> = {}) {
@@ -202,6 +212,7 @@ describe('RunsService.progreso', () => {
     const service = new RunsService(
       { moduleReset: { create } } as unknown as PrismaService,
       jwtFake().jwt,
+      config,
     );
 
     await service.restart('p1', 'phishing');

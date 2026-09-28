@@ -1,4 +1,4 @@
-import { Images, MessageCircle, MessageSquareText, Phone } from 'lucide-react'
+import { MessageCircle, MessageSquareText, Phone } from 'lucide-react'
 import ScenarioStory, { type PhoneApp, type ScreenNode } from '../../components/StoryEscenario'
 import type { Context } from '../../components/ui/ContextoEscenario'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
@@ -162,7 +162,6 @@ const APPS: PhoneApp[] = [
     viewNode: 'n4',
     label: 'Abrió la agenda para llamar por su cuenta',
   },
-  { Icono: Images, texto: 'Galería', color: '#c2410c', relleno: 'galeria' },
 ]
 
 export const STORY: Story<ScreenNode> = {

@@ -1,4 +1,4 @@
-import { useContext, useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { toast } from "sonner";
 import FinalActions from "./AccionesFinal";
 import { ViewedReviewContext } from "./repasoVisto";
@@ -37,6 +37,23 @@ interface VerdictPanelProps {
 }
 
 const HIGHLIGHTED_CLASS = "senal-resaltada";
+
+function renderOutcome(outcome: string): ReactNode[] {
+  const parts: ReactNode[] = [];
+  const boldPattern = /<b>(.*?)<\/b>/gs;
+  let lastIndex = 0;
+
+  for (const match of outcome.matchAll(boldPattern)) {
+    const matchIndex = match.index;
+    if (matchIndex > lastIndex) parts.push(outcome.slice(lastIndex, matchIndex));
+    parts.push(<b key={matchIndex}>{match[1]}</b>);
+    lastIndex = matchIndex + match[0].length;
+  }
+
+  parts.push(outcome.slice(lastIndex));
+  return parts;
+}
+
 function VerdictPanel({
   escenarioId: scenarioId,
   node,
@@ -191,7 +208,11 @@ function VerdictPanel({
         </span>
         {node.verdict}
       </p>
-      <p className="mt-2 text-base leading-relaxed text-body">{node.outcome}</p>
+      <p
+        className="mt-2 text-base leading-relaxed text-body"
+      >
+        {renderOutcome(node.outcome ?? "")}
+      </p>
 
       <ApprovalLabel node={node} />
 

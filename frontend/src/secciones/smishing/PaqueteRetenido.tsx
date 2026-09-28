@@ -4,6 +4,7 @@ import type { Context } from '../../components/ui/ContextoEscenario'
 import type { Story } from '../../hooks/useStoryEngine'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
 import type { Signal } from '../../components/ui/PanelVeredicto'
+import { APP_ACCENTS } from '../../components/ui/appAccents'
 
 const LINK =
   '<a href="http://envia-express.info/pago" data-hotspot-goto="n2" data-hotspot-label="Abrió el enlace del mensaje">http://envia-express.info/pago</a>' // NOSONAR: URL insegura intencional que el participante debe detectar.
@@ -143,7 +144,7 @@ const APPS: PhoneApp[] = [
     viewNode: 'n3',
     label: 'Abrió la app del courier',
   },
-  { Icono: Wallet, texto: 'Banco', color: '#155e75', relleno: 'banco' },
+  { Icono: Wallet, texto: 'Banco', color: APP_ACCENTS.bank, relleno: 'banco' },
 ]
 
 const STORY: Story<ScreenNode> = {

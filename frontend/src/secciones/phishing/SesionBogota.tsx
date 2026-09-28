@@ -109,18 +109,16 @@ const ACTIONS: EmailAction[] = [
 
 const SUBJECT = "Alerta de seguridad: nuevo inicio de sesión";
 const SENDER_NAME = "Banco del Litoral · Seguridad";
-const ADDRESS = "alertas@bancodellitoral.com.ec";
+const ADDRESS = "alertas@bancodellitoral-seguridad.net";
 
 /// El mensaje tal como lo muestran las carpetas cuando una acción de la barra
 /// lo mueve de bandeja. Lo pinta `carpetasCorreo`, compartido por todos los
 /// escenarios de correo.
 const MESSAGE = { nombre: SENDER_NAME, direccion: ADDRESS, asunto: SUBJECT };
 
-// s2 anclada a la URL de n2 (la página falsa), no al remitente: el
-// remitente muestra un dominio limpio (bancodellitoral.com.ec), que es
-// justo lo que dice s4 sobre lo impecable del correo, el truco del dominio
-// está en la página, no en el mensaje. s3 anclada al campo de n3 (el OTP),
-// no al de n2 (la contraseña).
+// La redacción es limpia (s4), pero el remitente (s6), el cuerpo (s5) y la
+// barra de la página (s2) delatan el dominio falso. s3 anclada al campo de
+// n3 (el OTP), no al de n2 (la contraseña).
 const SIGNALS: Signal[] = [
   {
     id: "s1",
@@ -134,7 +132,7 @@ const SIGNALS: Signal[] = [
     targetId: "url-falsa",
     pantalla: "n2",
     texto:
-      "El dueño del sitio es lo de justo antes de la primera barra: <b>seguridad-alertas.com</b>. El nombre del banco va pegado como adorno.",
+      "El dueño del sitio es lo de justo antes de la primera barra: <b>verificar-cuenta.xyz</b>. El nombre del banco va pegado como adorno.",
   },
   {
     id: "s3",
@@ -147,6 +145,20 @@ const SIGNALS: Signal[] = [
     id: "s4",
     texto:
       "El correo está impecable, sin errores de redacción. Buscar faltas de ortografía no te habría salvado.",
+  },
+  {
+    id: "s5",
+    targetId: "enlace-visible",
+    pantalla: "n1",
+    texto:
+      "El propio correo escribe la dirección, y termina en <b>verificar-cuenta.xyz</b>. Ese es el dueño del sitio, no el banco.",
+  },
+  {
+    id: "s6",
+    targetId: "remitente",
+    pantalla: "n1",
+    texto:
+      "El remitente es <b>bancodellitoral-seguridad.net</b>. El banco escribe desde <b>bancodellitoral.com.ec</b>: un guion y un .net lo cambian de dueño.",
   },
 ];
 
@@ -170,7 +182,7 @@ export const CONTEXT: Context = {
   ),
 };
 
-const FAKE = "bancodellitoral.com.ec.seguridad-alertas.com";
+const FAKE = "bancodellitoral.com.ec.verificar-cuenta.xyz";
 
 // n3 lleva `mismaPestana: true`: pasar de la página de clave al OTP es el
 // mismo sitio avanzando un paso, no una pestaña nueva (spec §2.2 y §5).
@@ -241,7 +253,17 @@ function EmailContent({
       <p>
         Si fue usted, puede ignorar este mensaje. Si no, actúe de inmediato:
       </p>
-      <p className={styles.fine}>Para completar la verificación, le pediremos el código de un solo uso que reciba.</p>
+      <p>
+        Ingrese en:{" "}
+        <HotspotLink
+          goto="n2"
+          label="Abrió la dirección escrita en el correo"
+          href={`https://${FAKE}/clave`}
+          signalId="enlace-visible"
+        >
+          {`https://${FAKE}/clave`}
+        </HotspotLink>
+      </p>
       <p>
         <HotspotLink
           goto="n2"

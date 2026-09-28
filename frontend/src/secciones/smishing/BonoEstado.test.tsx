@@ -52,6 +52,19 @@ function start() {
 }
 
 describe("BonoEstado", () => {
+  it("deja tres sitios frecuentes y conserva la ruta oficial de verificación", () => {
+    const container = start();
+    const phone = container.querySelector("#pantalla-escenario") as HTMLElement;
+
+    fireEvent.click(within(phone).getByRole("button", { name: /Navegador/ }));
+    expect(phone.querySelectorAll('[class*="opciones"] li')).toHaveLength(3);
+    expect(within(phone).queryByRole("button", { name: /sri\.gob\.ec/ })).toBeNull();
+    expect(within(phone).getByRole("button", { name: /inclusion\.gob\.ec/ })).toBeDefined();
+
+    const bank = within(phone).getByRole("button", { name: /Banco/ });
+    expect((bank.querySelector('[class*="phoneDockIcono"]') as HTMLElement).style.background).toBe("rgb(15, 118, 110)");
+  });
+
   it("se decide tocando el propio teléfono, sin lista de opciones", () => {
     const container = start();
     const phone = container.querySelector("#pantalla-escenario") as HTMLElement;

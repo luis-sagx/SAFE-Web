@@ -1,5 +1,16 @@
-import { ArrowDownLeft, ArrowUpRight, Image as ImageIcon, Search } from 'lucide-react'
+import {
+  ArrowDownLeft,
+  ArrowUpRight,
+  Building2,
+  Coffee,
+  Flower2,
+  Image as ImageIcon,
+  Mountain,
+  Search,
+  UserRound,
+} from 'lucide-react'
 import styles from './DeviceScreen.module.css'
+import { APP_ACCENTS } from './appAccents'
 
 // Las tres apps de relleno que sobrevivieron a la poda del dock (issue #187):
 // cada una tiene su propio layout, con la pinta de la app real que dice ser,
@@ -21,6 +32,15 @@ const MOVIMIENTOS = [
 
 const SITIOS_FRECUENTES = ['Correo', 'Noticias', 'Clima', 'Mapas']
 
+const FOTOS = [
+  { nombre: 'Parque', Icono: Mountain },
+  { nombre: 'Café', Icono: Coffee },
+  { nombre: 'Familia', Icono: UserRound },
+  { nombre: 'Flores', Icono: Flower2 },
+  { nombre: 'Ciudad', Icono: Building2 },
+  { nombre: 'Montañas', Icono: ImageIcon },
+] as const
+
 interface AppRellenoProps {
   tipo: RellenoTipo
   // Color del dock: solo el banco lo reutiliza, en la tarjeta de saldo, para
@@ -32,11 +52,28 @@ interface AppRellenoProps {
 function AppBanco({ color }: { color?: string }) {
   return (
     <div className={styles.appBanco}>
-      <div className={styles.appBancoSaldo} style={color ? { background: color } : undefined}>
+      <div className={styles.appBancoCuenta}>
+        <span className={styles.appBancoCuentaIcono} aria-hidden>
+          <Building2 className={styles.appBancoCuentaGlifo} strokeWidth={1.8} />
+        </span>
+        <span className={styles.appBancoCuentaTexto}>
+          <span className={styles.appBancoCuentaNombre}>Cuenta de ahorros</span>
+          <span className={styles.appBancoCuentaNumero}>•••• 2841</span>
+        </span>
+        <span className={styles.appBancoCuentaEstado}>Activa</span>
+      </div>
+      <div
+        className={styles.appBancoSaldo}
+        style={{ backgroundColor: color ?? APP_ACCENTS.bank }}
+      >
         <span className={styles.appBancoSaldoEtiqueta}>Saldo disponible</span>
         <span className={styles.appBancoSaldoValor}>$312,45</span>
+        <span className={styles.appBancoSaldoDetalle}>Actualizado hoy</span>
       </div>
-      <p className={styles.appBancoSeccion}>Movimientos recientes</p>
+      <div className={styles.appBancoSeccionFila}>
+        <p className={styles.appBancoSeccion}>Movimientos recientes</p>
+        <span className={styles.appBancoVerTodos}>Ver todos</span>
+      </div>
       <ul className={styles.appBancoLista}>
         {MOVIMIENTOS.map((mov) => (
           <li key={mov.id} className={styles.appBancoItem}>
@@ -87,11 +124,26 @@ function AppNavegador() {
 function AppGaleria() {
   return (
     <div className={styles.appGaleria}>
-      <p className={styles.appGaleriaTexto}>248 elementos</p>
+      <div className={styles.appGaleriaEncabezado}>
+        <div>
+          <p className={styles.appGaleriaTitulo}>Recuerdos</p>
+          <p className={styles.appGaleriaTexto}>248 elementos</p>
+        </div>
+        <span className={styles.appGaleriaAccion}>Seleccionar</span>
+      </div>
+      <div className={styles.appGaleriaFiltro} aria-hidden>
+        <span className={styles.appGaleriaFiltroActivo}>Recientes</span>
+        <span>Álbumes</span>
+      </div>
       <div className={styles.appGaleriaGrid}>
-        {Array.from({ length: 6 }, (_, i) => (
-          <span key={i} className={styles.appGaleriaFoto} aria-hidden>
-            <ImageIcon className={styles.appGaleriaGlifo} strokeWidth={1.5} />
+        {FOTOS.map(({ nombre, Icono }, index) => (
+          <span
+            key={nombre}
+            className={`${styles.appGaleriaFoto} ${styles[`appGaleriaFoto${index + 1}`]}`}
+            aria-hidden
+          >
+            <Icono className={styles.appGaleriaGlifo} strokeWidth={1.5} />
+            <span className={styles.appGaleriaFotoNombre}>{nombre}</span>
           </span>
         ))}
       </div>

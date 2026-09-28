@@ -1,15 +1,6 @@
 # Despliegue completo en el servidor propio: base de datos, los dos
 # microservicios y el frontend, que además hace de gateway.
-#
-#   cp .env.example .env    # y rellenar los secretos
-#   docker compose up -d --build
-#
-# Las opciones de seguridad siguen el OWASP Docker Security Cheat Sheet:
-# ningún contenedor privilegiado, sin escalada de privilegios y con límites de
-# recursos para que un fallo no tumbe el servidor entero.
 
-# Nombre fijo: sin esto las imágenes se llaman según el directorio y el escaneo
-# del pipeline no las encuentra.
 name: safe-web
 
 services:
@@ -35,7 +26,7 @@ services:
       # lo ejecuta solo al inicializar el volumen por primera vez.
       - ./db-init:/docker-entrypoint-initdb.d:ro
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}']
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -57,7 +48,11 @@ services:
     restart: unless-stopped
     environment:
       IDENTIDAD_DATABASE_URL: postgresql://identidad:${IDENTIDAD_DB_PASSWORD}@db:5432/${POSTGRES_DB}?schema=identidad
-      JWT_SECRET: "${JWT_SECRET:?falta JWT_SECRET en .env, generar con openssl rand -base64 48}"
+      # Firma sesiones con su privada; verifica atestaciones con la pública
+      # de `entrenamiento`. No recibe la privada de `entrenamiento`.
+      IDENTIDAD_JWT_PRIVATE_KEY: "${IDENTIDAD_JWT_PRIVATE_KEY:?falta IDENTIDAD_JWT_PRIVATE_KEY en .env, generar con scripts/generate-jwt-keys.sh}"
+      IDENTIDAD_JWT_PUBLIC_KEY: "${IDENTIDAD_JWT_PUBLIC_KEY:?falta IDENTIDAD_JWT_PUBLIC_KEY en .env, generar con scripts/generate-jwt-keys.sh}"
+      ENTRENAMIENTO_JWT_PUBLIC_KEY: "${ENTRENAMIENTO_JWT_PUBLIC_KEY:?falta ENTRENAMIENTO_JWT_PUBLIC_KEY en .env, generar con scripts/generate-jwt-keys.sh}"
       # Solo este servicio lo recibe: es el único que ve una cédula.
       CEDULA_PEPPER: "${CEDULA_PEPPER:?falta CEDULA_PEPPER en .env, generar con openssl rand -base64 48}"
       # Cifrado en reposo de nombre, apellido y correo (issue #95).
@@ -90,10 +85,6 @@ services:
           memory: 512M
     # Sin `ports:`: solo se alcanza a través de Nginx, en /api/auth/.
 
-  # Los datos del estudio. No tiene ninguna tabla con datos personales ni
-  # credenciales para alcanzarlos: por eso el CSV que exporta no puede
-  # filtrarlos. Comparte con `identidad` únicamente el JWT_SECRET, para
-  # verificar tokens sin llamarlo por red.
   entrenamiento:
     build:
       context: ./backend
@@ -102,8 +93,10 @@ services:
     restart: unless-stopped
     environment:
       ENTRENAMIENTO_DATABASE_URL: postgresql://entrenamiento:${ENTRENAMIENTO_DB_PASSWORD}@db:5432/${POSTGRES_DB}?schema=entrenamiento
-      JWT_SECRET: "${JWT_SECRET:?falta JWT_SECRET en .env, generar con openssl rand -base64 48}"
-      # Sin efecto real: este servicio nunca firma tokens, solo verifica. Se
+      IDENTIDAD_JWT_PUBLIC_KEY: "${IDENTIDAD_JWT_PUBLIC_KEY:?falta IDENTIDAD_JWT_PUBLIC_KEY en .env, generar con scripts/generate-jwt-keys.sh}"
+      # Firma la atestación del certificado; `identidad` tiene la pública.
+      ENTRENAMIENTO_JWT_PRIVATE_KEY: "${ENTRENAMIENTO_JWT_PRIVATE_KEY:?falta ENTRENAMIENTO_JWT_PRIVATE_KEY en .env, generar con scripts/generate-jwt-keys.sh}"
+      # Sin efecto real: este servicio nunca firma sesiones, solo las verifica. Se
       # fija igual que en `identidad` por si algún día un endpoint propio
       # necesitara emitir uno.
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-15m}
@@ -128,7 +121,7 @@ services:
     build: ./frontend
     restart: unless-stopped
     ports:
-      - '${WEB_PORT:-80}:8080'
+      - "${WEB_PORT:-80}:8080"
     depends_on:
       identidad:
         condition: service_healthy

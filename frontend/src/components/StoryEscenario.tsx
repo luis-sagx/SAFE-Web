@@ -2,7 +2,6 @@ import { Lock, TriangleAlert, type LucideIcon } from "lucide-react";
 import {
   useCallback,
   useEffect,
-  useLayoutEffect,
   useRef,
   useState,
   type ReactNode,
@@ -311,24 +310,11 @@ function ScenarioStory({
     activeGuideStep && !engine.isEnding && toView.kind === "mail",
   );
 
-  useLayoutEffect(() => {
-    if (!guideVisible || !activeGuideStep) return;
-
-    const target = document
-      .getElementById("pantalla-escenario")
-      ?.querySelector<HTMLElement>(
-        `[data-signal="${activeGuideStep.targetId}"]`,
-      );
-    if (!target) return;
-
-    target.scrollIntoView({ behavior: "smooth", block: "center" });
-  }, [activeGuideStep, guideVisible]);
-
   const emailGuide =
     guideVisible && activeGuideStep && screenGuide ? (
       <aside
         aria-live="polite"
-        className="my-3 rounded-md border border-link/30 bg-link/5 px-3 py-2 text-base leading-relaxed text-body"
+        className="text-base leading-relaxed text-body"
       >
         <p className="font-semibold text-ink">
           Pista {guideStep + 1} de {screenGuide.pasos.length}
@@ -611,7 +597,10 @@ function ScenarioStory({
         <div className={styles.phoneApp}>
           {appOpen && !engine.isEnding ? (
             <>
-              <div className={styles.phoneAppBar}>
+              <div
+                className={styles.phoneAppBar}
+                style={appOpen.color ? { backgroundColor: appOpen.color } : undefined}
+              >
                 <button
                   type="button"
                   className={`${styles.hotspot} ${styles.phoneAppVolver}`}
@@ -661,7 +650,14 @@ function ScenarioStory({
                 (toView.app ? (
                   // Una app no tiene barra de direcciones: no hay dominio que
                   // comprobar porque no se llegó por un enlace.
-                  <div className={styles.phoneAppBar}>
+                  <div
+                    className={styles.phoneAppBar}
+                    style={
+                      toView.appAccent
+                        ? { backgroundColor: toView.appAccent }
+                        : undefined
+                    }
+                  >
                     {/* Salir es a veces la decisión (colgar una llamada). */}
                     {viewedAppNode ? (
                       <button

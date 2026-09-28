@@ -69,7 +69,7 @@ const STORY: Story<StoryNode> = {
   e_datos: {
     kind: "bad",
     verdict: "Caíste en la trampa",
-    outcome: `Entregaste tu cédula ${IDENTITY_FAKE.cedula} y tu clave ${IDENTITY_FAKE.clave} en litoral-actualiza.web.app, un sitio que no es del banco. Entraron a tu cuenta esa misma noche.`,
+    outcome: `Entregaste tu cédula ${IDENTITY_FAKE.cedula} y tu clave ${IDENTITY_FAKE.clave} en actualiza-tus-datos-litoral.site, un sitio que no es del banco. Entraron a tu cuenta esa misma noche.`,
   },
   // Absorbe el antiguo final "vista previa antes de escanear": un QR no tiene
   // href, así que no existe una vista previa real, escanear ya abre la
@@ -138,9 +138,9 @@ const ACTIONS: EmailAction[] = [
   },
 ];
 
-const SUBJECT = "Actualice sus datos antes de que se limite su cuenta";
+const SUBJECT = "Actualice sus datos o su cuenta será bloqueada";
 const SENDER_NAME = "Banco del Litoral · Actualización de datos";
-const ADDRESS = "notificaciones@bancodel1itoral.com";
+const ADDRESS = "banco.litoral.datos@gmail.com";
 
 /// El mensaje tal como lo muestran las carpetas cuando una acción de la barra
 /// lo mueve de bandeja. Lo pinta `carpetasCorreo`, compartido por todos los
@@ -158,7 +158,7 @@ const SIGNALS: Signal[] = [
     "s2",
     "n1",
     "remitente",
-    "El dominio escribe <b>bancodel1itoral.com</b> con el número <b>1</b> en lugar de la letra <b>l</b>. Es una imitación.",
+    'El remitente es <b>@gmail.com</b>, un correo gratuito. El banco escribe desde <b>bancodellitoral.com.ec</b>, nunca desde una cuenta personal.',
   ),
   createSignal(
     "s3",
@@ -170,7 +170,7 @@ const SIGNALS: Signal[] = [
     "s4",
     "n1",
     "plazo",
-    "Mete <b>prisa</b> con 72 horas, para que actúes antes de comprobar con el banco.",
+    "Amenaza con <b>bloquear tu cuenta</b> en 72 horas, para que actúes antes de comprobar con el banco.",
   ),
 ];
 
@@ -211,7 +211,7 @@ const TABS: Record<string, TabConfig> = {
   },
   n2: {
     titulo: "Actualización de datos",
-    url: "http://litoral-actualiza.web.app/actualizar", // NOSONAR: URL insegura intencional que el participante debe detectar.
+    url: "http://actualiza-tus-datos-litoral.site/actualizar", // NOSONAR: URL insegura intencional que el participante debe detectar.
     segura: false,
     cierra: "n1",
   },
@@ -269,9 +269,9 @@ function EmailContent({
       <p>Estimado(a) cliente:</p>
       <p>
         Según nuestra política de actualización de datos, necesitamos que
-        confirme su información antes de{" "}
+        confirme su información en{" "}
         <mark className={styles.marca} data-signal="plazo">
-          72 horas
+          72 horas o su cuenta quedará BLOQUEADA
         </mark>
         . Escanee el siguiente código con la cámara de su celular para
         continuar:
@@ -286,7 +286,6 @@ function EmailContent({
           <span dangerouslySetInnerHTML={{ __html: QR_SVG }} />
         </HotspotButton>
       </div>
-      <p className={styles.fine}>Escanee desde la cámara, no desde la aplicación.</p>
     </EmailBody>
   );
 }

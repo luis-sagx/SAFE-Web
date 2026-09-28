@@ -2,6 +2,7 @@ import { Compass, MessageSquareText, Wallet } from 'lucide-react'
 import ScenarioStory, { type PhoneApp, type ScreenNode } from '../../components/StoryEscenario'
 import type { Context } from '../../components/ui/ContextoEscenario'
 import type { Story } from '../../hooks/useStoryEngine'
+import { APP_ACCENTS } from '../../components/ui/appAccents'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
 import type { Signal } from '../../components/ui/PanelVeredicto'
 
@@ -116,6 +117,7 @@ const THREAD_BANK: ScreenView = {
 const BANK_HOME: ScreenView = {
   kind: 'web',
   app: 'Banco',
+  appAccent: APP_ACCENTS.bank,
   url: 'inicio',
   secure: true,
   brand: 'Banco del Litoral · Banca móvil',
@@ -151,6 +153,7 @@ const BANK_HOME: ScreenView = {
 const APP_BANK: ScreenView = {
   kind: 'web',
   app: 'Banco',
+  appAccent: APP_ACCENTS.bank,
   url: 'inicio',
   secure: true,
   brand: 'Banco del Litoral · Banca móvil',
@@ -175,7 +178,7 @@ const APPS: PhoneApp[] = [
   {
     Icono: Wallet,
     texto: 'Banco',
-    color: '#155e75',
+    color: APP_ACCENTS.bank,
     viewNode: 'n4',
     label: 'Abrió la app del banco para comprobar el intento de acceso',
   },

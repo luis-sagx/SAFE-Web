@@ -1,4 +1,4 @@
-import { Compass, MessageSquareText, Phone, Wallet } from "lucide-react";
+import { Compass, MessageSquareText, Phone } from "lucide-react";
 import ScenarioStory, {
   type PhoneApp,
   type ScreenNode,
@@ -202,7 +202,6 @@ const APPS: PhoneApp[] = [
     viewNode: "n4",
     label: "Abrió el navegador para comprobar por su cuenta",
   },
-  { Icono: Wallet, texto: "Banco", color: "#155e75", relleno: "banco" },
 ];
 
 const NOTIFICATION_CODE = {

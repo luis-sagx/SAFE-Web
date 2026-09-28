@@ -1,64 +1,40 @@
-import { useEffect, useState } from 'react'
-import { Link, useSearchParams } from 'react-router'
+import { useState } from 'react'
+import { Link, useNavigate, useSearchParams } from 'react-router'
 import AuthLayout from '../components/AuthLayout'
-import { ApiError, confirmEmail } from '../lib/api'
+import { useAuth } from '../context/AuthContext'
+import { ApiError } from '../lib/api'
 
-type Estado = 'confirmando' | 'listo' | 'error'
-
-// Confirmar un correo NO es idempotente (a diferencia de verificar un
-// certificado, ver Verificar.tsx): el backend borra el token la primera vez
-// que se usa. Con <StrictMode> el efecto de abajo corre dos veces en
-// desarrollo, y en producción el mismo enlace puede abrirse dos veces (un
-// cliente de correo que precarga el link para la vista previa, y luego el
-// usuario lo abre de nuevo). Sin compartir la petición, la segunda llamada
-// llega con el token ya borrado y el backend responde 401 aunque la cuenta
-// ya haya quedado confirmada por la primera.
-//
-// Un Map a nivel de módulo (fuera del componente, así sobrevive a que
-// StrictMode desmonte y vuelva a montar) recuerda la promesa en curso por
-// token y la reutiliza en vez de disparar una segunda petición HTTP.
-const confirmacionesEnVuelo = new Map<string, Promise<null>>()
-
-function confirmarUnaVez(token: string): Promise<null> {
-  let promise = confirmacionesEnVuelo.get(token)
-  if (!promise) {
-    promise = confirmEmail(token).finally(() => {
-      confirmacionesEnVuelo.delete(token)
-    })
-    confirmacionesEnVuelo.set(token, promise)
-  }
-  return promise
-}
-
+// Confirmar NO ocurre al cargar la página, sino al pulsar el botón: el backend
+// gasta el token en el primer uso y, además, abre sesión. Los escáneres de
+// enlaces de algunos correos (Outlook, antivirus) abren el link por su cuenta
+// y ejecutan el JavaScript; si la página confirmara sola, gastarían el token
+// (y se quedarían con la sesión) antes de que la persona haga clic.
 function ConfirmarCorreo() {
   const [searchParams] = useSearchParams()
   const token = searchParams.get('token')
+  const { confirmEmail } = useAuth()
+  const navigate = useNavigate()
 
-  const [estado, setEstado] = useState<Estado>('confirmando')
+  const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
 
-  useEffect(() => {
+  async function handleConfirm() {
     if (!token) return
-    let cancelled = false
+    setSubmitting(true)
+    setError('')
 
-    confirmarUnaVez(token)
-      .then(() => {
-        if (!cancelled) setEstado('listo')
-      })
-      .catch((confirmError) => {
-        if (cancelled) return
-        setError(
-          confirmError instanceof ApiError
-            ? confirmError.message
-            : 'No se pudo conectar con el servidor.',
-        )
-        setEstado('error')
-      })
-
-    return () => {
-      cancelled = true
+    try {
+      const profile = await confirmEmail(token)
+      navigate(profile.role === 'ADMIN' ? '/admin' : '/dashboard', { replace: true })
+    } catch (confirmError) {
+      setError(
+        confirmError instanceof ApiError
+          ? confirmError.message
+          : 'No se pudo conectar con el servidor.',
+      )
+      setSubmitting(false)
     }
-  }, [token])
+  }
 
   if (!token) {
     return (
@@ -77,32 +53,22 @@ function ConfirmarCorreo() {
     )
   }
 
-  if (estado === 'confirmando') {
+  if (!error) {
     return (
       <AuthLayout
         folio="CONFIRMAR CORREO"
-        titulo="Confirmando…"
-        subtitulo=""
+        titulo="Confirma tu correo"
+        subtitulo="Un clic y entras a tu cuenta."
         pie={null}
       >
-        <p className="mt-6 text-base text-body">Un momento.</p>
-      </AuthLayout>
-    )
-  }
-
-  if (estado === 'listo') {
-    return (
-      <AuthLayout
-        folio="CONFIRMAR CORREO"
-        titulo="Listo"
-        subtitulo="Confirmamos tu correo."
-        pie={null}
-      >
-        <p className="mt-6 text-base text-body">
-          <Link to="/login" className="font-medium text-link underline">
-            Ir a iniciar sesión
-          </Link>
-        </p>
+        <button
+          type="button"
+          onClick={() => void handleConfirm()}
+          disabled={submitting}
+          className="mt-6 h-11 w-full rounded-md bg-primary text-sm font-medium text-on-primary transition hover:bg-primary-active disabled:opacity-60"
+        >
+          {submitting ? 'Entrando…' : 'Confirmar y entrar'}
+        </button>
       </AuthLayout>
     )
   }

@@ -17,6 +17,8 @@ interface AuthValue {
   /** ADMIN gestiona cuentas y ve resultados; no hace escenarios. */
   isAdmin: boolean
   login: (email: string, password: string) => Promise<Participant>
+  /** Confirma el correo con el token del enlace y deja la sesión iniciada. */
+  confirmEmail: (token: string) => Promise<Participant>
   register: (credentials: Credentials) => Promise<{ email: string }>
   logout: () => void
   /** true: la bienvenida no vuelve a aparecer sola. false: reactivarla. */
@@ -100,13 +102,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
-  const login = useCallback(async (email: string, password: string) => {
-    const session = await api.login(email, password)
+  const startSession = useCallback((session: api.Session) => {
     api.setToken(session.accessToken)
     setParticipant(session.participant)
     setOnboardingDismissed(false)
     return session.participant
   }, [])
+
+  const login = useCallback(
+    async (email: string, password: string) => startSession(await api.login(email, password)),
+    [startSession],
+  )
+
+  const confirmEmail = useCallback(
+    async (token: string) => startSession(await api.confirmEmail(token)),
+    [startSession],
+  )
 
   // Ya no arma sesión: el registro exige confirmar el correo antes de poder
   // entrar. Quien llama (Registro.tsx) decide qué mostrar con el correo que
@@ -139,6 +150,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isAuthenticated: Boolean(participant),
       isAdmin: participant?.role === 'ADMIN',
       login,
+      confirmEmail,
       register,
       logout,
       marcarOnboardingVisto: markOnboardingAsSeen,
@@ -149,7 +161,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       correoSimulado: `${getSimulatedUser(participant)}@${SIMULATED_DOMAIN}`,
       usuarioSimulado: getSimulatedUser(participant),
     }),
-    [participant, loading, login, register, logout, markOnboardingAsSeen, onboardingDismissed],
+    [participant, loading, login, confirmEmail, register, logout, markOnboardingAsSeen, onboardingDismissed],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

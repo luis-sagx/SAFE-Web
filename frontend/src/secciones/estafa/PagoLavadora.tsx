@@ -2,6 +2,7 @@ import { Images, MessageCircle, ShoppingBag, Wallet } from 'lucide-react'
 import ScenarioStory, { type PhoneApp, type ScreenNode } from '../../components/StoryEscenario'
 import type { Context } from '../../components/ui/ContextoEscenario'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
+import { APP_ACCENTS } from '../../components/ui/appAccents'
 import type { Signal } from '../../components/ui/PanelVeredicto'
 import type { Story } from '../../hooks/useStoryEngine'
 import { ACCOUNT_FAKE, IDENTITY_FAKE } from '../../lib/identidadFicticia'
@@ -64,6 +65,7 @@ const WAIT: ScreenView = {
 const BANK: ScreenView = {
   kind: 'web',
   app: IDENTITY_FAKE.banco,
+  appAccent: APP_ACCENTS.bank,
   url: 'bancolitoral.ec',
   secure: true,
   brand: 'Banca móvil',
@@ -94,6 +96,7 @@ const BANK: ScreenView = {
 const TRANSACTIONS: ScreenView = {
   kind: 'web',
   app: IDENTITY_FAKE.banco,
+  appAccent: APP_ACCENTS.bank,
   url: 'bancolitoral.ec',
   secure: true,
   brand: 'Movimientos',

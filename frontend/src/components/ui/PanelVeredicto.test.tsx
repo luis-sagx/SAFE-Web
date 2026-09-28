@@ -29,6 +29,68 @@ describe("PanelVeredicto", () => {
     useSoundMock.mockReturnValue({ activado: true, setActivado: vi.fn() });
   });
 
+  it("muestra en negrita el énfasis del resultado sin exponer etiquetas HTML", () => {
+    render(
+      <MemoryRouter>
+        <VerdictPanel
+          escenarioId="smishing/entrega-programada"
+          node={{
+            kind: "good",
+            verdict: "Acertaste · el aviso era legítimo",
+            outcome:
+              "<b>El envío era el que esperabas</b>, salía a reparto al día siguiente y no había ningún valor pendiente.",
+          }}
+          senales={[]}
+          regla="Comprueba por otro canal."
+          contenedorId="pantalla-escenario"
+        />
+      </MemoryRouter>,
+    );
+
+    const emphasizedOutcome = screen.getByText("El envío era el que esperabas");
+    expect(emphasizedOutcome.tagName).toBe("B");
+    expect(screen.queryByText(/<\/?b>/)).toBeNull();
+  });
+
+  it("muestra varios fragmentos en negrita y deja otras etiquetas como texto", () => {
+    render(
+      <MemoryRouter>
+        <VerdictPanel
+          escenarioId="smishing/entrega-programada"
+          node={{
+            kind: "good",
+            verdict: "Acertaste",
+            outcome: "<b>Primer énfasis</b> y <b>segundo énfasis</b>; <i>texto literal</i>.",
+          }}
+          senales={[]}
+          regla="Comprueba por otro canal."
+          contenedorId="pantalla-escenario"
+        />
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByText("Primer énfasis").tagName).toBe("B");
+    expect(screen.getByText("segundo énfasis").tagName).toBe("B");
+    expect(screen.getByText(/<i>texto literal<\/i>/)).toBeDefined();
+    expect(screen.queryByText("texto literal")).toBeNull();
+  });
+
+  it("muestra outcomes sin marcado como texto normal", () => {
+    render(
+      <MemoryRouter>
+        <VerdictPanel
+          escenarioId="phishing/prueba"
+          node={{ kind: "good", verdict: "Acertaste", outcome: "Todo claro." }}
+          senales={[]}
+          regla="Comprueba por otro canal."
+          contenedorId="pantalla-escenario"
+        />
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByText("Todo claro.").tagName).toBe("P");
+  });
+
   it("separa el repaso de señales con un fondo propio y conserva compacto el veredicto", () => {
     render(
       <MemoryRouter>

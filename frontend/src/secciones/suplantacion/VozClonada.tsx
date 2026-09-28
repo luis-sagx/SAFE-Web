@@ -1,7 +1,8 @@
-import { Contact, Images, Phone, Wallet } from 'lucide-react'
+import { Contact, Phone, Wallet } from 'lucide-react'
 import ScenarioStory, { type PhoneApp, type ScreenNode } from '../../components/StoryEscenario'
 import type { Context } from '../../components/ui/ContextoEscenario'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
+import { APP_ACCENTS } from '../../components/ui/appAccents'
 import type { Signal } from '../../components/ui/PanelVeredicto'
 import type { Story } from '../../hooks/useStoryEngine'
 import { ACCOUNT_FAKE } from '../../lib/identidadFicticia'
@@ -174,6 +175,7 @@ const CALL_DAUGHTER: ScreenView = {
 const BANK: ScreenView = {
   kind: 'web',
   app: 'Banco del Litoral',
+  appAccent: APP_ACCENTS.bank,
   url: 'bancolitoral.ec',
   secure: true,
   brand: 'Banca móvil',
@@ -197,6 +199,7 @@ const BANK: ScreenView = {
 const TRANSFER: ScreenView = {
   kind: 'web',
   app: 'Banco del Litoral',
+  appAccent: APP_ACCENTS.bank,
   url: 'bancolitoral.ec',
   secure: true,
   brand: 'Transferir a terceros',
@@ -228,11 +231,10 @@ const APPS: PhoneApp[] = [
   {
     Icono: Wallet,
     texto: 'Banco del Litoral',
-    color: '#155e75',
+    color: APP_ACCENTS.bank,
     viewNode: 'n5',
     label: 'Abrió la app del banco durante la llamada',
   },
-  { Icono: Images, texto: 'Galería', color: '#c2410c', relleno: 'galeria' },
 ]
 
 export const STORY: Story<ScreenNode> = {
