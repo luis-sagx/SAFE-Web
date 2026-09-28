@@ -14,7 +14,7 @@ El mini test usa términos y explicaciones que pueden ser difíciles de entender
 - Hacer explícito el feedback de respuesta incorrecta sin revelar la respuesta correcta ni impedir el reintento.
 - Presentar aciertos y errores del mini test en estados visuales claros y accesibles.
 - Resumir el contexto, las instrucciones y los textos laterales de los cuatro escenarios de IA, conservando la información necesaria para decidir.
-- Acortar el material principal de los paneles de referencia de IA sin quitar datos que definen las decisiones del ejercicio.
+- Acortar descripciones de la galería de IA; conservar intacto el contenido de los blocs de notas, como pidió el usuario.
 - Quitar guiones usados como separadores en las redacciones de los escenarios de IA; usar comas o paréntesis.
 - Actualizar pruebas que dependan del texto que cambie.
 
@@ -57,13 +57,13 @@ Commits: `669322f` (`copy(ia): acortar textos de apoyo`) y `8d1147e` (`copy(ia):
 
 ### IA-2: Condensar el contenido de los paneles de referencia
 
-- [x] Acortar el bloc de notas de correo, la ficha escolar y el informe interno sin quitar ninguno de los datos que el ejercicio mide.
+- [x] Conservar sin cambios el bloc de notas de correo, la ficha escolar y el informe interno, como pidió el usuario.
 - [x] Reducir las descripciones de la galería sin borrar quién aparece ni qué opciones no muestran personas.
 - [x] Verificar que las decisiones y funciones de evaluación siguen distinguiendo fuga alta, parcial y segura.
 - [x] Actualizar pruebas afectadas y ejecutar los checks funcionales aplicables.
 
 Ruta: delegada. Evidencia del disparador: las fuentes visibles están en cuatro escenarios independientes, comparten patrones de evaluación y pruebas; la columna derecha confirma que el contenido principal no quedó resumido en IA-1.
-Checks: cuatro suites enfocadas, 49/49. No hubo asserts de prueba dependientes del copy que requirieran cambios.
+Checks: cuatro suites enfocadas, 49/49. No hubo asserts de prueba dependientes del copy que requirieran cambios. Los blocs de notas conservan su redacción original.
 
 ### RF-2: Mejorar la presentación visual del feedback
 
@@ -79,9 +79,9 @@ Commit: `8499654` (`ui(quiz): mejorar feedback visual de respuestas`). Checks po
 
 - Exploración: `codegraph_explore` no reconoció el índice del proyecto; se hizo fallback a `rg` y lectura local. El mapeo encontró las preguntas en `frontend/src/components/MiniTestModulo.tsx` y los textos laterales en cuatro archivos de escenario más `EscenarioChatIA.tsx`.
 - Estado RF-1: implementado y verificado; los índices correctos y el flujo de reintento/navegación no cambiaron.
-- IA-2, alcance aclarado: el material largo visible a la derecha está en los blocs de notas y la galería. Se acortó conservando los datos que definen las decisiones: en correo, nombre/cédula/correo y cambio de horario en Redes; en ficha escolar, los datos de identidad/contacto y el seguimiento como único contenido necesario; en informe interno, nombre/RUC, pérdida de $340.000 y recorte reservado del 15%; en galería, fotos de Sofía y 12 compañeros, además del dibujo y la decoración sin personas.
+- IA-2, alcance corregido por el usuario: los blocs de notas de correo, ficha escolar e informe interno quedan exactamente como estaban; solo se acortan las descripciones de la galería, sin quitar quién aparece ni qué opciones no muestran personas.
 - RF-2: el acierto ahora muestra un panel verde con icono, título y explicación; el error muestra un panel rojo con icono, título y una instrucción para volver a intentar. La opción correcta no se revela al fallar.
-- Verificación final: `pnpm typecheck`, `pnpm lint` (warnings existentes), `pnpm test` (119 archivos, 884 aprobadas, 4 omitidas) y `pnpm build` pasan.
+- Verificación final: `pnpm typecheck`, `pnpm lint` (warnings existentes), `pnpm test` (119 archivos, 884 aprobadas, 4 omitidas) y `pnpm build` pasan. Tras un fallo posterior, se restauró el contexto exacto de `InvitacionCumpleanos` desde la clave de audio existente; narración focalizada y suite completa volvieron a pasar.
 - Estado del mirror Engram: pendiente; la integración de memoria no está disponible en esta sesión.
 - Estado del árbol al iniciar: había un cambio previo en `backend/apps/identidad/src/certificados/pdf.ts`; se conserva intacto y fuera de los commits de esta tarea.
 - Siguiente paso: pedir al usuario la estrategia de cadena requerida por el umbral y crear el commit de IA-2/documentación; luego sincronizar el mirror Engram si la integración está disponible.

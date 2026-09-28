@@ -114,10 +114,11 @@ const RULE =
 const SUMMARY = 'Pides a una IA crear una invitación para tu hija con imágenes de la galería.'
 
 export const CONTEXT: Context = {
-  antes: `Organizas el cumpleaños de tu hija ${DAUGHTER} y quieres una invitación hecha con IA.`,
+  antes: `Es de noche y estás organizando el cumpleaños de tu hija ${DAUGHTER}. Viste que las IA convierten fotos en caricaturas.`,
   ahora: (
     <>
-      <strong>Abres el asistente de IA</strong>. Al lado está la galería de imágenes de tu celular.
+      <strong>Abres el asistente de IA</strong> en el computador. Al lado tienes la galería con las fotos
+      que pasaste del celular.
     </>
   ),
 }
