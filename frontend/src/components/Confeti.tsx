@@ -29,6 +29,15 @@ const DURACION_POR_DEFECTO_MS = 2500
 // (o, como en las pruebas, no hay hoja de estilos real cargada).
 const COLORES_DE_RESPALDO = ['#006837', '#16a34a']
 
+// Math.random() no es apto para nada sensible (tokens, contraseñas), pero
+// tampoco hace falta aquí: es solo la posición/velocidad/color de una pieza
+// de confeti decorativa. Se usa `crypto.getRandomValues` de todos modos, sin
+// costo real, para no dejar el hotspot de seguridad que marca cada uso de
+// Math.random() y que alguien tenga que revisar y descartar a mano.
+function azar(): number {
+  return crypto.getRandomValues(new Uint32Array(1))[0]! / 2 ** 32
+}
+
 function coloresDelTema(): string[] {
   const estilos = getComputedStyle(document.documentElement)
   const colores = [
@@ -68,15 +77,15 @@ function Confeti({ piezas = PIEZAS_POR_DEFECTO, duracionMs = DURACION_POR_DEFECT
     window.addEventListener('resize', ajustarTamano)
 
     const particulas: Particula[] = Array.from({ length: piezas }, () => ({
-      x: Math.random() * canvas!.width,
-      y: -20 - Math.random() * canvas!.height * 0.5,
-      vx: (Math.random() - 0.5) * 4,
-      vy: 2 + Math.random() * 3,
-      color: colores[Math.floor(Math.random() * colores.length)]!,
-      ancho: 6 + Math.random() * 6,
-      alto: 3 + Math.random() * 4,
-      rotacion: Math.random() * Math.PI * 2,
-      velocidadRotacion: (Math.random() - 0.5) * 0.3,
+      x: azar() * canvas!.width,
+      y: -20 - azar() * canvas!.height * 0.5,
+      vx: (azar() - 0.5) * 4,
+      vy: 2 + azar() * 3,
+      color: colores[Math.floor(azar() * colores.length)]!,
+      ancho: 6 + azar() * 6,
+      alto: 3 + azar() * 4,
+      rotacion: azar() * Math.PI * 2,
+      velocidadRotacion: (azar() - 0.5) * 0.3,
     }))
 
     let animId: number
