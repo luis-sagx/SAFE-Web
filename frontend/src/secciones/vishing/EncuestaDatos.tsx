@@ -1,4 +1,4 @@
-import { Landmark, Phone } from "lucide-react";
+import { Images, Landmark, Phone } from "lucide-react";
 import ScenarioStory, {
   type PhoneApp,
   type ScreenNode,
@@ -202,6 +202,8 @@ const APPS: PhoneApp[] = [
     viewNode: "n5",
     label: "Abrió la app del banco durante la llamada",
   },
+  // Relleno: con solo dos apps en el dock la que decide se distinguía a simple vista.
+  { Icono: Images, texto: "Galería", color: "#c2410c", relleno: "galeria" },
 ];
 
 export const STORY: Story<ScreenNode> = {
