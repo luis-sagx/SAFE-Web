@@ -518,6 +518,16 @@ function ScenarioStory({
       return;
     }
 
+    // Si una respuesta del chat abre otra app, el retorno declarado por esa
+    // pantalla es el hilo que quedó después de enviar, aunque no se haya visto.
+    const destinationView = story[target.dataset.hotspotGoto ?? ""]?.view;
+    if (toView.kind === "sms" && destinationView?.kind === "web") {
+      const returnNode = destinationView.cerrarGoto;
+      if (returnNode && story[returnNode]?.view.kind === "sms") {
+        setThreads((previous) => ({ ...previous, sms: returnNode }));
+      }
+    }
+
     // No puede dejarse al efecto que limpia pestanaMirada al cambiar de nodo:
     // si el destino es el nodo actual, el nodo no cambia y ese efecto no corre.
     setAppOpen(undefined);
