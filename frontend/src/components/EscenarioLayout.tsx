@@ -56,7 +56,7 @@ const FRAME_DESKTOP =
   "sm:max-h-[min(88vh,60rem)] sm:w-[96vw] sm:max-w-[68.75rem] sm:rounded-lg sm:border-[3px] sm:border-control sm:shadow-[0_30px_70px_rgba(0,0,0,0.22)] lg:h-full lg:max-h-[60rem] lg:w-[calc(100vw-28.75rem)] lg:min-w-[35rem] lg:max-w-[75rem] lg:flex-none lg:self-center xl:w-[calc(100vw-33.75rem)]";
 
 const FRAME_SCENE =
-  "[container-type:size] h-[min(80vw,28rem)] min-h-0 flex-none bg-[#1c1917] sm:h-auto sm:min-h-0 sm:max-h-[min(88vh,60rem)] sm:w-[96vw] sm:max-w-[68.75rem] sm:flex-1 sm:rounded-xl sm:border-2 sm:border-control sm:shadow-[0_30px_70px_rgba(0,0,0,0.22)] lg:h-[min(62vh,38rem)] lg:max-h-[38rem] lg:w-[calc(100vw-28.75rem)] lg:max-w-[75rem] lg:flex-none lg:self-center xl:w-[calc(100vw-33.75rem)]";
+  "[container-type:size] h-[min(80vw,28rem)] min-h-0 flex-none bg-[#1c1917] sm:h-[min(50vh,30rem)] sm:min-h-0 sm:max-h-[min(88vh,60rem)] sm:w-[96vw] sm:max-w-[68.75rem] sm:flex-1 sm:rounded-xl sm:border-2 sm:border-control sm:shadow-[0_30px_70px_rgba(0,0,0,0.22)] lg:h-[min(62vh,38rem)] lg:max-h-[38rem] lg:w-[calc(100vw-28.75rem)] lg:max-w-[75rem] lg:flex-none lg:self-center xl:w-[calc(100vw-33.75rem)]";
 
 function ScenarioLayout({
   escenarioId: scenarioId,
