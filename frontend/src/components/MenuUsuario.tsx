@@ -1,7 +1,9 @@
-import { ChevronDown, House, LogOut, Route } from 'lucide-react'
+import { ArrowLeft, ChevronDown, ChevronRight, House, LogOut, Route } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { Link } from 'react-router'
 import { useAuth } from '../context/AuthContext'
+import { useTheme } from '../context/ThemeContext'
+import { THEME_OPTIONS } from '../data/opcionesTema'
 import SoundSelector from './SelectorSonido'
 import ThemeSelector from './SelectorTema'
 
@@ -9,25 +11,46 @@ import ThemeSelector from './SelectorTema'
 // panel y admin, sin forma de cerrar sesión a mitad de un escenario.
 function UserMenu() {
   const { displayName, initials: accountInitials, roleLabel, isAdmin, logout } = useAuth()
+  const { preferencia: preference } = useTheme()
   const [open, setOpen] = useState(false)
+  const [showThemes, setShowThemes] = useState(false)
   const buttonRef = useRef<HTMLButtonElement>(null)
+  const appearanceRef = useRef<HTMLButtonElement>(null)
+  const backRef = useRef<HTMLButtonElement>(null)
 
   const name = displayName || (isAdmin ? 'Administrador' : 'Participante')
   const initials = accountInitials || name.slice(0, 1).toUpperCase()
+  const currentTheme = THEME_OPTIONS.find((option) => option.valor === preference) ?? THEME_OPTIONS[0]!
+  const CurrentThemeIcon = currentTheme.Icono
+
+  function closeMenu() {
+    setOpen(false)
+    setShowThemes(false)
+  }
+
+  function returnToMain() {
+    setShowThemes(false)
+    queueMicrotask(() => appearanceRef.current?.focus())
+  }
+
+  function openThemes() {
+    setShowThemes(true)
+    queueMicrotask(() => backRef.current?.focus())
+  }
 
   const itemClassName =
-    'flex w-full items-center gap-2.5 px-3 py-2.5 text-left text-sm font-medium text-ink transition hover:bg-canvas-soft focus-visible:bg-canvas-soft focus-visible:outline-none'
+    'flex min-h-11 w-full items-center gap-3 px-4 py-2.5 text-left text-base font-medium text-ink transition hover:bg-canvas-soft focus-visible:bg-canvas-soft focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-link'
 
   return (
     // onBlur cubre clic-fuera y tabulador sin escuchar en document.
     <div
       className="relative"
       onBlur={(event) => {
-        if (!event.currentTarget.contains(event.relatedTarget)) setOpen(false)
+        if (!event.currentTarget.contains(event.relatedTarget)) closeMenu()
       }}
       onKeyDown={(event) => {
         if (event.key === 'Escape' && open) {
-          setOpen(false)
+          closeMenu()
           buttonRef.current?.focus()
         }
       }}
@@ -37,8 +60,11 @@ function UserMenu() {
         type="button"
         aria-haspopup="menu"
         aria-expanded={open}
-        onClick={() => setOpen((previous) => !previous)}
-        className="flex h-9 items-center gap-2 rounded-md border border-transparent pl-1 pr-1.5 text-sm font-medium text-ink transition hover:bg-surface-strong focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link sm:pr-2"
+        onClick={() => {
+          if (open) closeMenu()
+          else setOpen(true)
+        }}
+        className="flex h-11 items-center gap-2 rounded-md border border-transparent pl-1 pr-1.5 text-sm font-medium text-ink transition hover:bg-surface-strong focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link sm:pr-2"
       >
         <span
           aria-hidden
@@ -54,47 +80,64 @@ function UserMenu() {
         <div
           role="menu"
           aria-label="Tu cuenta"
-          className="absolute right-0 top-full z-50 mt-2 w-56 overflow-hidden rounded-lg border border-hairline-strong bg-surface py-1 shadow-card"
+          className="absolute right-0 top-full z-50 mt-2 w-64 max-w-[calc(100vw-1.5rem)] overflow-hidden rounded-lg border border-hairline-strong bg-surface py-1 shadow-card"
         >
-          <div className="border-b border-hairline px-3 py-2.5">
-            <p className="truncate text-sm font-semibold text-ink">{name}</p>
-            <p className="text-xs text-muted">{isAdmin ? 'Administrador' : roleLabel}</p>
-          </div>
+          {showThemes ? (
+            <>
+              <button ref={backRef} role="menuitem" type="button" onClick={returnToMain} className={itemClassName}>
+                <ArrowLeft aria-hidden className="size-4 shrink-0 text-muted" strokeWidth={1.75} />
+                Volver
+              </button>
+              <p className="border-t border-hairline px-4 pt-3 pb-1 text-sm font-semibold text-ink">
+                Apariencia
+              </p>
+              <ThemeSelector onSelect={returnToMain} />
+            </>
+          ) : (
+            <>
+              <div className="border-b border-hairline px-4 py-3">
+                <p className="truncate text-base font-semibold text-ink">{name}</p>
+                <p className="text-sm text-muted">{isAdmin ? 'Administrador' : roleLabel}</p>
+              </div>
 
-          <div className="border-b border-hairline py-1.5">
-            <p className="px-3 pb-1 text-xs font-medium text-muted">Tema</p>
-            <ThemeSelector />
-          </div>
+              <div className="py-1">
+                <Link role="menuitem" to="/" onClick={closeMenu} className={itemClassName}>
+                  <House aria-hidden className="size-4 shrink-0 text-muted" strokeWidth={1.75} />
+                  Inicio
+                </Link>
+                {!isAdmin && (
+                  <Link role="menuitem" to="/recorrido" onClick={closeMenu} className={itemClassName}>
+                    <Route aria-hidden className="size-4 shrink-0 text-muted" strokeWidth={1.75} />
+                    Tu recorrido
+                  </Link>
+                )}
+              </div>
 
-          <div className="border-b border-hairline py-1.5">
-            <SoundSelector />
-          </div>
+              <div className="border-t border-hairline py-1">
+                <button
+                  ref={appearanceRef}
+                  role="menuitem"
+                  type="button"
+                  aria-label={`Apariencia: ${currentTheme.etiqueta}`}
+                  onClick={openThemes}
+                  className={itemClassName}
+                >
+                  <CurrentThemeIcon aria-hidden className="size-4 shrink-0 text-muted" strokeWidth={1.75} />
+                  <span className="flex-1">Apariencia</span>
+                  <span className="text-sm font-normal text-muted">{currentTheme.etiqueta}</span>
+                  <ChevronRight aria-hidden className="size-4 shrink-0 text-muted" strokeWidth={1.75} />
+                </button>
+                <SoundSelector />
+              </div>
 
-          <Link role="menuitem" to="/" onClick={() => setOpen(false)} className={itemClassName}>
-            <House aria-hidden className="size-4 text-muted" strokeWidth={1.75} />
-            Inicio
-          </Link>
-
-          {!isAdmin && (
-            <Link
-              role="menuitem"
-              to="/recorrido"
-              onClick={() => setOpen(false)}
-              className={itemClassName}
-            >
-              <Route aria-hidden className="size-4 text-muted" strokeWidth={1.75} />
-              Tu recorrido
-            </Link>
+              <div className="border-t border-hairline py-1">
+                <button role="menuitem" type="button" onClick={logout} className={itemClassName}>
+                  <LogOut aria-hidden className="size-4 shrink-0 text-muted" strokeWidth={1.75} />
+                  Cerrar sesión
+                </button>
+              </div>
+            </>
           )}
-
-          {/* Borde arriba: separa la salida del resto de opciones, no es una
-              más de la lista. */}
-          <div className="mt-1 border-t border-hairline pt-1">
-            <button role="menuitem" type="button" onClick={logout} className={itemClassName}>
-              <LogOut aria-hidden className="size-4 text-muted" strokeWidth={1.75} />
-              Cerrar sesión
-            </button>
-          </div>
         </div>
       )}
     </div>
