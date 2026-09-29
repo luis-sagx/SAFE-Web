@@ -53,11 +53,10 @@ COPY --from=build /app/generated ./dist/generated
 COPY --from=build /app/generated ./generated
 COPY prisma ./prisma
 COPY prisma.identidad.config.ts prisma.entrenamiento.config.ts ./
-# seed.mts y backfill-pii.mts importan el cifrado PII desde el fuente .ts (Node
-# 24 lo ejecuta sin compilar). Sin este archivo, `docker compose exec identidad
-# node prisma/seed.mts` falla con ERR_MODULE_NOT_FOUND. Solo depende de
-# node:crypto.
+# Los scripts de prisma/ importan estos módulos .ts con Node 24. Deben estar
+# presentes también en la imagen final para ejecutar la reconciliación.
 COPY apps/identidad/src/pii/pii.ts ./apps/identidad/src/pii/pii.ts
+COPY apps/identidad/src/pii/email-hash-reconciliation.ts ./apps/identidad/src/pii/email-hash-reconciliation.ts
 
 # OWASP Docker Security: el proceso nunca corre como root.
 USER node
