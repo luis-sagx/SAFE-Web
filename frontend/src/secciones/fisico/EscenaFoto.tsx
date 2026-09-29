@@ -1,3 +1,4 @@
+import { useState, type CSSProperties } from 'react'
 import styles from './fisico.module.css'
 
 export interface SceneZone {
@@ -24,29 +25,44 @@ interface PhotoSceneProps {
 
 /** Fotografía del mundo real: no imita ninguna app ni fuerza una proporción. */
 export function PhotoScene({ src, alt, zonas: zones = [], progreso: progress }: Readonly<PhotoSceneProps>) {
+  const [photoRatio, setPhotoRatio] = useState(16 / 9)
+
   return (
-    <div className="relative w-full lg:h-full lg:w-fit lg:max-w-full lg:flex-none">
-      <img src={src} alt={alt} className={`${styles.escenaFoto} h-auto w-full lg:h-full lg:w-auto lg:max-w-full`} />
-      {zones.map((zone) => (
-        <span
-          key={zone.id}
-          id={zone.id}
-          data-signal={zone.id}
-          className={styles.zonaSenal}
-          style={{ left: zone.x, top: zone.y, width: zone.ancho, height: zone.alto }}
+    <div className="flex h-full w-full items-center justify-center">
+      <div
+        className={styles.escenaFotoSuperficie}
+        style={{ '--photo-ratio': photoRatio } as CSSProperties}
+      >
+        <img
+          src={src}
+          alt={alt}
+          className={styles.escenaFoto}
+          onLoad={(event) => {
+            const { naturalWidth, naturalHeight } = event.currentTarget
+            if (naturalWidth && naturalHeight) setPhotoRatio(naturalWidth / naturalHeight)
+          }}
         />
-      ))}
-      {progress && (
-        <div className={styles.progresoAviso}>
-          <p className={styles.progresoTexto}>{progress.texto}</p>
-          <div className={styles.progresoBarra}>
-            <div
-              className={styles.progresoRelleno}
-              style={{ animationDuration: `${progress.ms}ms` }}
-            />
+        {zones.map((zone) => (
+          <span
+            key={zone.id}
+            id={zone.id}
+            data-signal={zone.id}
+            className={styles.zonaSenal}
+            style={{ left: zone.x, top: zone.y, width: zone.ancho, height: zone.alto }}
+          />
+        ))}
+        {progress && (
+          <div className={styles.progresoAviso}>
+            <p className={styles.progresoTexto}>{progress.texto}</p>
+            <div className={styles.progresoBarra}>
+              <div
+                className={styles.progresoRelleno}
+                style={{ animationDuration: `${progress.ms}ms` }}
+              />
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   )
 }
