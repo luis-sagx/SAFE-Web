@@ -1,6 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { ThemeProvider } from '../context/ThemeContext'
 import UserMenu from './MenuUsuario'
 
 const { useAuthMock, logoutMock } = vi.hoisted(() => ({
@@ -99,6 +100,39 @@ describe('MenuUsuario', () => {
     fireEvent.click(screen.getByRole('menuitem', { name: 'Tu recorrido' }))
 
     expect(screen.queryByRole('menu')).toBeNull()
+  })
+
+  it('muestra las opciones de tema solo al abrir Apariencia y permite volver a la navegación', async () => {
+    localStorage.removeItem('tema')
+    render(
+      <ThemeProvider>
+        <MemoryRouter>
+          <UserMenu />
+        </MemoryRouter>
+      </ThemeProvider>,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: /María/ }))
+    expect(screen.getByRole('menuitem', { name: 'Inicio' })).toBeDefined()
+    expect(screen.queryByRole('radio', { name: 'Oscuro' })).toBeNull()
+
+    const appearance = screen.getByRole('menuitem', { name: /Apariencia/ })
+    appearance.focus()
+    fireEvent.click(appearance)
+    await Promise.resolve()
+    expect(screen.getByRole('menuitem', { name: 'Volver' })).toBe(document.activeElement)
+    expect(screen.queryByRole('menuitem', { name: 'Inicio' })).toBeNull()
+    expect(screen.getByRole('radio', { name: 'Oscuro' })).toBeDefined()
+
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Volver' }))
+    expect(screen.getByRole('menuitem', { name: 'Inicio' })).toBeDefined()
+    expect(screen.queryByRole('radio', { name: 'Oscuro' })).toBeNull()
+
+    fireEvent.click(screen.getByRole('menuitem', { name: /Apariencia/ }))
+    fireEvent.click(screen.getByRole('radio', { name: 'Oscuro' }))
+    await Promise.resolve()
+    expect(screen.getByRole('menuitem', { name: 'Apariencia: Oscuro' })).toBe(document.activeElement)
+    expect(document.documentElement.dataset.tema).toBe('oscuro')
   })
 
   // El supervisor no juega escenarios: no tiene recorrido que consultar, y su

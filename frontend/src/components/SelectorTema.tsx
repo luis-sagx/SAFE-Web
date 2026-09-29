@@ -29,7 +29,7 @@ function ThemeSelector({ onSelect }: Readonly<ThemeSelectorProps>) {
               setPreference(value)
               onSelect?.()
             }}
-            className="flex w-full items-center gap-2.5 px-3 py-2.5 text-left text-sm font-medium text-ink transition hover:bg-canvas-soft focus-visible:bg-canvas-soft focus-visible:outline-none"
+            className="flex min-h-11 w-full items-center gap-3 px-4 py-2.5 text-left text-base font-medium text-ink transition hover:bg-canvas-soft focus-visible:bg-canvas-soft focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-link"
           >
             <Icon aria-hidden className="size-4 shrink-0 text-muted" strokeWidth={1.75} />
             <span className="flex-1">{label}</span>

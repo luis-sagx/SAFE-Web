@@ -56,7 +56,7 @@ const FRAME_DESKTOP =
   "sm:max-h-[min(88vh,60rem)] sm:w-[96vw] sm:max-w-[68.75rem] sm:rounded-lg sm:border-[3px] sm:border-control sm:shadow-[0_30px_70px_rgba(0,0,0,0.22)] lg:h-full lg:max-h-[60rem] lg:w-[calc(100vw-28.75rem)] lg:min-w-[35rem] lg:max-w-[75rem] lg:flex-none lg:self-center xl:w-[calc(100vw-33.75rem)]";
 
 const FRAME_SCENE =
-  "sm:max-h-[min(88vh,60rem)] sm:w-[96vw] sm:max-w-[68.75rem] sm:rounded-xl sm:border-2 sm:border-control sm:shadow-[0_30px_70px_rgba(0,0,0,0.22)] lg:h-[min(62vh,38rem)] lg:max-h-[38rem] lg:w-fit lg:max-w-full lg:flex-none lg:self-center";
+  "[container-type:size] h-[min(56vw,20rem)] min-h-0 flex-none bg-[#1c1917] sm:h-[min(56vw,24rem)] sm:w-full sm:max-w-[46rem] sm:rounded-xl sm:border-2 sm:border-control sm:shadow-[0_30px_70px_rgba(0,0,0,0.22)] lg:w-[calc(100vw-28.75rem)] lg:self-start xl:w-[calc(100vw-33.75rem)]";
 
 function ScenarioLayout({
   escenarioId: scenarioId,
@@ -263,17 +263,16 @@ function ScenarioLayout({
   }
 
   return (
-    // Desde 640px la página no se desplaza, solo el interior del dispositivo. Por debajo
-    // sí, a propósito: en celular, 844px repartidos entre barra/dispositivo/decisión
-    // dejaban al correo unas tres líneas visibles dentro de una caja a desplazar por dentro.
-    <div className={"relative flex min-h-dvh flex-col bg-canvas-soft sm:h-dvh sm:overflow-hidden"}>
+    // Las escenas fotográficas comparten el scroll de la página con la decisión y el
+    // repaso; los dispositivos conservan su espacio fijo y su desplazamiento propio.
+    <div className={`relative flex min-h-dvh flex-col bg-canvas-soft ${device === "escena" ? "" : "sm:h-dvh sm:overflow-hidden"}`}>
       {/* El resumen dejó de vivir en el header: ya hay suficiente que leer ahí. Sigue
           disponible en el diálogo "Ver contexto y mis datos". */}
       <AppHeader atras={exit}>{location}</AppHeader>
 
       {/* Apilado hasta 1024px; lado a lado arriba de eso, porque a 900px de alto apilar
           un dispositivo creíble y un bloque de opciones largo aplasta al dispositivo. */}
-      <main className="flex min-h-0 flex-1 flex-col items-center sm:gap-4 sm:px-4 sm:py-4 lg:flex-row lg:items-stretch lg:justify-center lg:gap-8 lg:py-6 [@media(max-height:940px)]:sm:py-2 [@media(max-height:940px)]:lg:py-3">
+      <main className={`flex min-h-0 flex-1 flex-col items-center sm:gap-4 sm:px-4 sm:py-4 lg:flex-row lg:items-stretch lg:justify-center lg:gap-8 lg:py-6 [@media(max-height:940px)]:sm:py-2 [@media(max-height:940px)]:lg:py-3 ${device === "escena" ? "lg:items-start" : ""}`}>
         <div
           ref={sceneRef}
           // Fijo a propósito: el recorrido de señales ubica el elemento a resaltar con
@@ -283,7 +282,7 @@ function ScenarioLayout({
           aria-label={`${scenario.titulo}: pantalla simulada`}
           // relative: el aviso de fin se posiciona contra este marco. min-h solo para
           // celular: sin él el marco se comprimía y la pantalla dejaba de leerse.
-          className={`relative flex min-h-[34rem] w-full flex-1 overflow-hidden focus:outline-none sm:min-h-0 ${
+          className={`relative flex w-full flex-1 overflow-hidden focus:outline-none ${device === "escena" ? "" : "min-h-[34rem] sm:min-h-0"} ${
             device === "escena"
               ? FRAME_SCENE
               : device === "escritorio"
@@ -296,14 +295,14 @@ function ScenarioLayout({
         </div>
 
         {!hideDecision && (
-          /* En celular va debajo y se desplaza con la página; de 640 a 1024 sigue apilado
-              pero es el bloque el que se desplaza (máx. media pantalla). Al costado, todo el alto.
+          /* En escenas fotográficas la decisión y el repaso siguen el scroll de la página.
+              En otros dispositivos, de 640 a 1024 se desplaza este bloque por dentro.
               El ancho fijo (28.75rem) recién entra en lg: antes, de 640 a 1024, el marco del
               dispositivo en los escenarios de escritorio mide casi toda la pantalla, y esta
               columna angosta se veía descuadrada pegada a la izquierda debajo de algo tan
               ancho (issue #225). Ancho completo mientras siga apilada, angosta recién cuando
               pasa a ir al costado. */
-          <div className="w-full shrink-0 border-t border-hairline bg-canvas px-4 py-4 sm:max-h-[45%] sm:overflow-y-auto sm:border-0 sm:bg-transparent sm:px-0 sm:py-0 lg:w-[23.75rem] lg:max-h-full lg:self-center xl:w-[28.75rem]">
+          <div className={`w-full shrink-0 border-t border-hairline bg-canvas px-4 py-4 sm:border-0 sm:bg-transparent sm:px-0 sm:py-0 lg:w-[23.75rem] xl:w-[28.75rem] ${device === "escena" ? "lg:self-start" : "sm:max-h-[45%] sm:overflow-y-auto lg:max-h-full lg:self-center"}`}>
             {/* La historia queda a un clic, en un diálogo, porque se consulta poco. Con
                 aspecto de enlace (sigue siendo <button>) para no competir en peso con
                 "¿Qué haces?" y desviar la atención de lo único que hay que hacer aquí. */}
