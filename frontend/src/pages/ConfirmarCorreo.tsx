@@ -25,7 +25,7 @@ function ConfirmarCorreo() {
 
     try {
       const profile = await confirmEmail(token)
-      navigate(profile.role === 'ADMIN' ? '/admin' : '/dashboard', { replace: true })
+      void navigate(profile.role === 'ADMIN' ? '/admin' : '/dashboard', { replace: true })
     } catch (confirmError) {
       setError(
         confirmError instanceof ApiError

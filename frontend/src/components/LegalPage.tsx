@@ -78,7 +78,7 @@ function BackLink() {
       onClick={(event) => {
         if (!hasHistory) return;
         event.preventDefault();
-        navigate(-1);
+        void navigate(-1);
       }}
       className="mb-6 inline-flex min-h-11 items-center text-base font-medium text-link underline"
     >

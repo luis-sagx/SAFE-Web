@@ -110,7 +110,7 @@ function Welcome() {
       // Informativo: si falla el guardado, solo vuelve a aparecer la próxima vez.
     } finally {
       // replace: no debe quedar en el historial o "atrás" la reabriría.
-      navigate(destination, { replace: true });
+      void navigate(destination, { replace: true });
     }
   }
 
