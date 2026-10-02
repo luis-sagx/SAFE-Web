@@ -41,7 +41,7 @@ jobs:
       PROFILE: ${{ inputs.perfil }}
       ACCOUNTS: ${{ inputs.cuentas }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Comprobar destino autorizado
         run: |
           test -n "$BASE_URL"
@@ -58,7 +58,7 @@ jobs:
             grafana/k6:2.1.0 run \
             --summary-export /work/k6-stress-summary.json \
             tests/carga/aula.js
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:
           name: k6-stress-summary

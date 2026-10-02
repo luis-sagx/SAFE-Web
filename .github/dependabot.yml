@@ -1,0 +1,11 @@
+# Mantiene al día los SHA fijados de las acciones; sin esto quedan congelados
+# en versiones con fallos o runtimes obsoletos.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    groups:
+      acciones:
+        patterns: ['*']

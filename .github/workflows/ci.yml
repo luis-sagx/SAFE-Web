@@ -5,10 +5,18 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  # Aparecen vulnerabilidades nuevas sin que cambie el código: solo corre
+  # `auditoria`. Lunes 06:00 en Ecuador.
+  schedule:
+    - cron: '0 11 * * 1'
 
+# `main` exige PR con checks en verde y rama al día, así que lo que llega a
+# `main` ya se probó tal cual. En `push` solo se repite lo que alimenta el
+# análisis de Sonar de la rama principal.
 concurrency:
   group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  # Cancelar en `main` dejaría a Sonar sin analizar algunos merges.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read
@@ -19,38 +27,49 @@ env:
 jobs:
   frontend:
     name: Frontend (lint + pruebas + build)
+    if: github.event_name != 'schedule'
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     defaults:
       run:
         working-directory: frontend
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       # La acción corre en la raíz del repo, donde no hay package.json.
-      - uses: pnpm/action-setup@f40ffcd9367d9f12939873eb1018b921a783ffaa # v4
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
         with:
           package_json_file: frontend/package.json
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
           cache-dependency-path: frontend/pnpm-lock.yaml
       - run: pnpm install --frozen-lockfile
       - run: pnpm lint
-      - run: pnpm test
+      # Con cobertura: Sonar la reutiliza en lugar de correr las pruebas otra vez.
+      - run: pnpm test:cov
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: cobertura-frontend
+          path: frontend/coverage/lcov.info
+          if-no-files-found: error
+          retention-days: 1
       - run: pnpm build
 
   backend:
     name: Backend (lint + pruebas unitarias)
+    if: github.event_name != 'schedule'
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     defaults:
       run:
         working-directory: backend
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-      - uses: pnpm/action-setup@f40ffcd9367d9f12939873eb1018b921a783ffaa # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
         with:
           package_json_file: backend/package.json
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
@@ -63,11 +82,19 @@ jobs:
       # `lint:ci` no lleva --fix: en CI un error no se arregla, se reporta.
       - run: pnpm lint:ci
       - run: pnpm build
-      - run: pnpm test
+      - run: pnpm test:cov
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: cobertura-backend
+          path: backend/coverage/lcov.info
+          if-no-files-found: error
+          retention-days: 1
 
   backend-e2e:
     name: Backend (end-to-end con Postgres)
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     defaults:
       run:
         working-directory: backend
@@ -102,11 +129,11 @@ jobs:
       # app arranque. Ningún test e2e de este job llama a Cartesia de verdad.
       CARTESIA_API_KEY: sk_dummy_solo_para_que_arranque_en_ci
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-      - uses: pnpm/action-setup@f40ffcd9367d9f12939873eb1018b921a783ffaa # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
         with:
           package_json_file: backend/package.json
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
@@ -133,7 +160,9 @@ jobs:
 
   auditoria:
     name: Auditoría de dependencias (${{ matrix.proyecto }})
+    if: github.event_name != 'push'
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     strategy:
       fail-fast: false
       matrix:
@@ -142,11 +171,11 @@ jobs:
       run:
         working-directory: ${{ matrix.proyecto }}
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-      - uses: pnpm/action-setup@f40ffcd9367d9f12939873eb1018b921a783ffaa # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
         with:
           package_json_file: ${{ matrix.proyecto }}/package.json
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
@@ -179,9 +208,10 @@ jobs:
     # que este job es informativo y nunca debe hacer fallar el CI.
     if: github.event_name == 'pull_request'
     continue-on-error: true
+    timeout-minutes: 10
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-      - uses: actions/dependency-review-action@2031cfc080254a8a887f58cffee85186f0e49e48 # v4.9.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
         continue-on-error: true
         with:
           fail-on-severity: high
@@ -190,18 +220,20 @@ jobs:
   sonar:
     name: SonarQube Cloud (SAST + cobertura)
     runs-on: ubuntu-latest
-    needs: [frontend, backend, backend-e2e]
+    timeout-minutes: 20
+    # Solo para descargar la cobertura que ya generaron esos jobs.
+    needs: [frontend, backend]
     # Los secretos no se exponen a PRs desde forks. Esos PRs mantienen los
     # demás controles del CI; el análisis completo corre tras integrarse.
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
         with:
           package_json_file: frontend/package.json
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
@@ -210,33 +242,34 @@ jobs:
             backend/pnpm-lock.yaml
       - run: pnpm --dir frontend install --frozen-lockfile
       - run: pnpm --dir backend install --frozen-lockfile
-      - run: rm -rf frontend/coverage backend/coverage
-      - run: pnpm --dir frontend test:cov
-      - name: Debug frontend coverage
-        if: always()
-        run: |
-          echo "=== Frontend coverage report ==="
-          ls -lh frontend/coverage/lcov.info || echo "lcov.info not found!"
-          echo "=== Total files in coverage ==="
-          grep "^SF:" frontend/coverage/lcov.info | wc -l
-          echo "=== Source files (first 30) ==="
-          grep "^SF:src/" frontend/coverage/lcov.info | head -30
-          echo "=== Coverage summary ==="
-          grep "^end_of_record" frontend/coverage/lcov.info | wc -l
+      # Sin pruebas aquí: el análisis de tipos solo necesita dependencias y el
+      # cliente de Prisma generado.
       - run: pnpm --dir backend prisma:generate
-      - run: pnpm --dir backend test:cov
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: cobertura-frontend
+          path: frontend/coverage
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: cobertura-backend
+          path: backend/coverage
       - name: Análisis y Quality Gate
-        uses: SonarSource/sonarqube-scan-action@v7
+        uses: SonarSource/sonarqube-scan-action@d209202bc7d53ff1cc128f7f907dac145c9d6ae9 # v8.3.0
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
+          # El gate bloquea en el PR, donde todavía se puede corregir. En
+          # `main` el código ya entró: el análisis se publica y el estado del
+          # gate se consulta en SonarCloud, sin dejar el CI en rojo.
           args: >
-            -Dsonar.qualitygate.wait=true
+            -Dsonar.qualitygate.wait=${{ github.event_name == 'pull_request' }}
             -Dsonar.qualitygate.timeout=300
 
   docker:
     name: Imágenes Docker (build + arranque + escaneo)
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     needs: [frontend, backend, backend-e2e]
     env:
       POSTGRES_USER: ci
@@ -260,7 +293,7 @@ jobs:
       # y ese endpoint devuelve 500 — no rompe nada más del smoke test.
       CARTESIA_API_KEY: sk_car_dummy_solo_para_que_arranque_en_ci
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       # docker compose exige las claves para interpolar el archivo, incluso
       # para `build`. Nuevas en cada corrida.
@@ -342,7 +375,7 @@ jobs:
       # de "No files were found" solo tapaba el fallo real de un paso anterior.
       - name: Publicar resumen de k6
         if: always() && steps.k6.outcome != 'skipped'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: k6-nominal-summary
           path: k6-nominal-summary.json
@@ -396,3 +429,16 @@ jobs:
 
       - if: always()
         run: docker compose down -v
+
+  # Único check requerido por la regla de `main`. Un job omitido por `if`
+  # cuenta como éxito para GitHub: requerir `sonar` o `docker` directamente
+  # dejaría pasar un PR cuando se omiten porque falló un job anterior.
+  ci-ok:
+    name: ci-ok
+    if: always()
+    needs: [frontend, backend, backend-e2e, auditoria, sonar, docker]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
+        run: exit 1
