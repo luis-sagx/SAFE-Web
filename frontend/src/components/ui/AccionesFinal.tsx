@@ -111,7 +111,7 @@ function FinalActions({ escenarioId: scenarioId, outcome, autoFocus }: FinalActi
       return
     }
     let cancelled = false
-    Promise.allSettled(otherSections.map((s) => fetchProgress(s.id))).then((results) => {
+    void Promise.allSettled(otherSections.map((s) => fetchProgress(s.id))).then((results) => {
       if (cancelled) return
       setAllModulesApproved(results.every((r) => r.status === 'fulfilled' && r.value.aprobado))
     })

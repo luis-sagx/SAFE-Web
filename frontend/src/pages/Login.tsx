@@ -42,7 +42,7 @@ function Login() {
 
     try {
       const profile = await login(email, password)
-      navigate(profile.role === 'ADMIN' ? '/admin' : '/dashboard')
+      void navigate(profile.role === 'ADMIN' ? '/admin' : '/dashboard')
     } catch (submitError) {
       setError((submitError as Error).message)
     } finally {

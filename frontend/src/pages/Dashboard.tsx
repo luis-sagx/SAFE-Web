@@ -54,7 +54,7 @@ function Dashboard() {
     let cancelled = false;
 
     // allSettled: un módulo sin umbral aún responde 404, y con Promise.all ese rechazo vaciaba el progreso de todos.
-    Promise.allSettled(SECTIONS_ACTIVE.map((s) => fetchProgress(s.id))).then(
+    void Promise.allSettled(SECTIONS_ACTIVE.map((s) => fetchProgress(s.id))).then(
       (results) => {
         if (cancelled) return;
         const loaded = results

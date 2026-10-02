@@ -185,7 +185,7 @@ function Registration() {
         cedula: normalizedEcuadorianId,
         password,
       });
-      navigate("/revisa-tu-correo", { state: { email: confirmedEmail } });
+      void navigate("/revisa-tu-correo", { state: { email: confirmedEmail } });
     } catch (submitError) {
       setError((submitError as Error).message);
     } finally {
