@@ -7,10 +7,9 @@ cambia de un equipo a otro y en muchos ni siquiera hay una en español, así que
 dos participantes habrían oído estímulos distintos y sus corridas no serían
 comparables. Con el MP3 la llamada suena igual para todo el mundo.
 
-Usa las voces neuronales de Edge, que son las únicas gratuitas con acento
-ecuatoriano (es-EC). El tono importa tanto como el texto: media estafa
-telefónica está en la confianza con la que hablan, y una voz robótica avisa de
-que algo es falso mucho antes de que el participante escuche lo que dice.
+Los diálogos de vishing se pueden generar con Cartesia; las llamadas y notas
+de voz de otros módulos siguen usando Edge TTS. Sin configuración de Cartesia,
+el generador conserva los audios Edge actuales.
 
 El nombre de cada archivo es el hash de la voz y la frase, y el índice que
 consume el frontend (src/data/voces.ts) va indexado por la frase entera: si
@@ -23,20 +22,45 @@ Uso, desde frontend/ (con un entorno que tenga edge-tts instalado):
       | python3 scripts/voces.py -
 
 También acepta la ruta de un JSON con la misma lista de {escenario, texto}.
+
+Para generar vishing con Cartesia, configura CARTESIA_API_KEY y los tres ID de
+voz CARTESIA_VOICE_MALE, CARTESIA_VOICE_FEMALE y
+CARTESIA_VOICE_IVR. Puedes elegirlos en Cartesia (GET /voices); no son
+claves y no se incluyen en la aplicación. Define los tres juntos para evitar
+un lote con proveedores mezclados. La voz bancaria se comparte entre escenas.
+La síntesis usa sonic-3.6, locale es-MX y speed 1.1. Ejecuta el lote solo
+cuando esté autorizada la conexión a Cartesia.
 """
 
 import asyncio
 import hashlib
 import json
+import os
 import re
 import sys
 from pathlib import Path
+from urllib.request import Request, urlopen
 
 import edge_tts
 
 RAIZ = Path(__file__).resolve().parent.parent
 AUDIOS = RAIZ / "public" / "voz"
 INDICE = RAIZ / "src" / "data" / "voces.ts"
+CARTESIA_MODEL = "sonic-3.6"
+CARTESIA_SPEED = 1.1
+CARTESIA_LOCALE = "es-MX"
+CARTESIA_VERSION = "2026-08-14"
+CARTESIA_ROLES = {
+    "AntifraudeBanco": "MALE",
+    "BancoConfirma": "MALE",
+    "TarjetaBloqueada": "MALE",
+    "DevolucionSri": "FEMALE",
+    "EncuestaDatos": "FEMALE",
+    "EntregaCourier": "MALE",
+    "LlamadaPerdida": "IVR",
+    "PremioSorteo": "FEMALE",
+    "SoporteTecnico": "MALE",
+}
 
 # Cada voz con su ritmo. Las neuronales leen bien pero leen: a velocidad y tono
 # de fábrica suenan a locutor de contestador, y una llamada que suena a máquina
@@ -119,6 +143,26 @@ def nombre(voz: tuple[str, str, str], texto: str) -> str:
     return huella[:12] + ".mp3"
 
 
+def cartesia_voices() -> dict[str, str]:
+    voices = {role: os.getenv(f"CARTESIA_VOICE_{role}", "").strip()
+              for role in ("MALE", "FEMALE", "IVR")}
+    if not any(voices.values()):
+        return {}
+    if not all(voices.values()):
+        raise ValueError("configura las tres voces CARTESIA_VOICE_* juntas")
+    if not os.getenv("CARTESIA_API_KEY", "").strip():
+        raise ValueError("falta CARTESIA_API_KEY para generar vishing")
+    return voices
+
+
+def cartesia_name(voice_id: str, text: str) -> str:
+    identity = f"cartesia:{CARTESIA_MODEL}:{voice_id}:{CARTESIA_SPEED}:{CARTESIA_LOCALE}"
+    digest = hashlib.sha1(
+        f"{identity}\n{text}".encode("utf-8"), usedforsecurity=False
+    ).hexdigest()
+    return digest[:12] + ".mp3"
+
+
 def ruta_audio_segura(nombre_archivo: str) -> Path:
     """Resuelve un audio y garantiza que permanezca dentro de public/voz."""
     base = AUDIOS.resolve()
@@ -149,6 +193,31 @@ async def sintetizar(texto: str, voz: tuple[str, str, str], destino: Path) -> No
     )
 
 
+async def synthesize_cartesia(text: str, voice_id: str, destination: Path) -> None:
+    payload = json.dumps({
+        "model_id": CARTESIA_MODEL,
+        "transcript": text,
+        "voice": voice_id,
+        "locale": CARTESIA_LOCALE,
+        "output_format": {"container": "mp3", "sample_rate": 44100, "bit_rate": 128000},
+        "generation_config": {"speed": CARTESIA_SPEED},
+    }).encode("utf-8")
+    request = Request(
+        "https://api.cartesia.ai/tts/bytes", data=payload, method="POST",
+        headers={
+            "Authorization": f"Bearer {os.environ['CARTESIA_API_KEY']}",
+            "Cartesia-Version": CARTESIA_VERSION,
+            "Content-Type": "application/json",
+        },
+    )
+
+    with urlopen(request, timeout=30) as response:
+        audio = response.read()
+    if not audio:
+        raise ValueError("Cartesia devolvió un audio vacío")
+    destination.write_bytes(audio)
+
+
 async def main() -> int:
     if len(sys.argv) != 2:
         print(__doc__)
@@ -171,6 +240,12 @@ async def main() -> int:
             return 1
         lineas = json.loads(entrada.read_text(encoding="utf-8"))
 
+    try:
+        cartesia = cartesia_voices()
+    except ValueError as error:
+        print(f"configuración no válida: {error}", file=sys.stderr)
+        return 1
+
     AUDIOS.mkdir(parents=True, exist_ok=True)
 
     indice = {}
@@ -180,14 +255,28 @@ async def main() -> int:
         voz = VOZ_POR_ROL.get(linea.get("rol") or "") or VOZ_POR_ESCENARIO.get(
             linea["escenario"], VOZ_POR_DEFECTO
         )
-        archivo = ruta_audio_segura(nombre(voz, texto))
+        role = CARTESIA_ROLES.get(linea["escenario"])
+        voice_id = cartesia.get(role) if role else None
+        archivo = ruta_audio_segura(
+            cartesia_name(voice_id, texto) if voice_id else nombre(voz, texto)
+        )
         indice[texto] = f"/voz/{archivo.name}"
         vivos.add(archivo.name)
         if archivo.exists():
             print(f"[{i}/{len(lineas)}] ya estaba: {archivo.name}")
             continue
-        print(f"[{i}/{len(lineas)}] {voz[0]} {voz[1]}: {texto[:45]}…")
-        await sintetizar(texto, voz, archivo)
+        print(f"[{i}/{len(lineas)}] {role if voice_id else voz[0]}: {texto[:45]}…")
+        temporal = archivo.with_suffix(".mp3.part")
+        try:
+            if voice_id:
+                await synthesize_cartesia(texto, voice_id, temporal)
+            else:
+                await sintetizar(texto, voz, temporal)
+            temporal.replace(archivo)
+        except Exception as error:
+            temporal.unlink(missing_ok=True)
+            print(f"no se pudo generar {archivo.name}: {error}", file=sys.stderr)
+            return 1
 
     # Los audios de frases que ya no dice nadie,o que se grabaron con otra
     # voz, se borran: si no, la carpeta se llena de tomas viejas que nadie sabe
