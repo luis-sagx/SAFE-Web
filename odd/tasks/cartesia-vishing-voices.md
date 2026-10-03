@@ -21,7 +21,7 @@ Diálogos de escenarios de vishing y la llamada puente `TarjetaBloqueada`, que c
 ## Tareas
 
 - [x] **T1 — Generador Cartesia.** Adaptar la generación de diálogos vishing y `TarjetaBloqueada`, con voces por personaje, ritmo más ágil, nombres de archivo versionados por modelo/voz/ritmo/texto y manejo seguro de fallos. Mantener el flujo Edge TTS de las demás notas de voz. Prueba RED/GREEN del generador con `urlopen` simulado; verificar que el índice apunta a los nuevos MP3. Ruta delegada directa; disparadores de mapeo, preparación y escritor.
-- [ ] **T2 — Generar y escuchar MP3.** Ejecutar el lote Cartesia para vishing solo tras autorización remota explícita; comprobar cobertura de todos los diálogos, revisar duración y calidad por personaje, ejecutar checks frontend y registrar archivos resultantes. Ruta delegada directa por múltiples archivos generados. Bloqueada hasta contar con autorización para destino, operación y credencial/sesión.
+- [ ] **T2 — Generar y escuchar MP3.** Ejecutar el lote Cartesia para vishing solo tras autorización remota explícita; comprobar cobertura de todos los diálogos, revisar duración y calidad por personaje, ejecutar checks frontend y registrar archivos resultantes. Ruta delegada directa por múltiples archivos generados. Bloqueada hasta que el usuario indique una ubicación de credencial existente autorizada.
 
 ## Criterios de aceptación
 
@@ -35,9 +35,9 @@ Diálogos de escenarios de vishing y la llamada puente `TarjetaBloqueada`, que c
 - Rama: `feat/cartesia-vishing-voices`, creada desde `main` limpio.
 - T1: RED observado (0 solicitudes Cartesia en la prueba), luego GREEN (3 solicitudes para llamadas bancarias con la misma voz; una nota externa conservó Edge). Prueba `python3 -m unittest discover -s frontend/scripts -p 'test_*.py' -v`: 1/1. Checks frontend: `pnpm typecheck`, `pnpm lint`, `pnpm test` (899 aprobadas, 4 omitidas), `pnpm build`; `git diff --check`: correctos. La ejecución real y la evaluación auditiva quedan para T2.
 - T1 commit: `7285dd8` (`feat(vishing): preparar voces Cartesia más ágiles`). Evaluación RDD: `disabled/unmanaged`, comando `gentle-ai` no disponible; sin revisión nativa.
-- T2 pendiente de autorización remota. MP3 e índice real sin modificar.
+- T2: el usuario autorizó consultar voces y generar MP3 en `api.cartesia.ai` usando `CARTESIA_API_KEY` de `frontend/.env`, pero ese archivo no existe y la variable no está en el entorno. No se inspeccionaron otras credenciales ni se llamó a Cartesia. Preflight local: 41 frases objetivo (379,6 s en audios Edge; ~160 palabras/minuto) y 14 de otros módulos. Los 55 MP3 actuales son válidos y tienen ruta. MP3 e índice real sin modificar. Se solicitó ubicación alternativa de la clave.
 - Espejo Engram pendiente: no se expusieron herramientas `mem_context`, `mem_search`, `mem_get_observation` ni escritura Engram.
 
 ## Siguiente paso
 
-Solicitar autorización explícita para consultar voces y generar los MP3 mediante `api.cartesia.ai` usando la credencial que indique el usuario. Después ejecutar T2, escuchar muestras, verificar el frontend y registrar el commit de la segunda unidad.
+Esperar la ubicación de credencial autorizada; después consultar voces y generar los MP3 mediante `api.cartesia.ai`, verificar el frontend y registrar el commit de la segunda unidad.
