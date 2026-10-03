@@ -16,7 +16,7 @@ Diálogos de escenarios de vishing y la llamada puente `TarjetaBloqueada`, que c
 - Ruta: delegada directa. Evidencia: el generador, el catálogo de diálogos, el índice de audio y los MP3 implican más de cuatro archivos; la implementación toca varios archivos no triviales.
 - TDD: habilitado por `superpowers:test-driven-development` en esta sesión. Runner para el generador: `python3 -m unittest` (biblioteca estándar); verificación de frontend: `pnpm typecheck && pnpm lint && pnpm test && pnpm build` desde `frontend/`.
 - RDD: `gentle-ai` no está instalado; estado `disabled/unmanaged`. Engram no está disponible en las herramientas de esta sesión; espejo `odd/cartesia-vishing-voices/tasks` pendiente.
-- Estrategia de entrega: `ask-on-risk`. Pronóstico: ~220 líneas autorales; MP3 generados excluidos. Contar líneas efectivas de commits antes del siguiente commit.
+- Estrategia de entrega: `ask-on-risk`. Pronóstico: ~220 líneas autorales; MP3 generados excluidos. Acumulado: 237 líneas autorales en T1 (230 adiciones, 7 eliminaciones); por debajo del umbral aproximado de 400. Sin slices ni PR.
 
 ## Tareas
 
@@ -34,10 +34,10 @@ Diálogos de escenarios de vishing y la llamada puente `TarjetaBloqueada`, que c
 
 - Rama: `feat/cartesia-vishing-voices`, creada desde `main` limpio.
 - T1: RED observado (0 solicitudes Cartesia en la prueba), luego GREEN (3 solicitudes para llamadas bancarias con la misma voz; una nota externa conservó Edge). Prueba `python3 -m unittest discover -s frontend/scripts -p 'test_*.py' -v`: 1/1. Checks frontend: `pnpm typecheck`, `pnpm lint`, `pnpm test` (899 aprobadas, 4 omitidas), `pnpm build`; `git diff --check`: correctos. La ejecución real y la evaluación auditiva quedan para T2.
-- T1 commit: pendiente de crear y registrar.
+- T1 commit: `7285dd8` (`feat(vishing): preparar voces Cartesia más ágiles`). Evaluación RDD: `disabled/unmanaged`, comando `gentle-ai` no disponible; sin revisión nativa.
 - T2 pendiente de autorización remota. MP3 e índice real sin modificar.
 - Espejo Engram pendiente: no se expusieron herramientas `mem_context`, `mem_search`, `mem_get_observation` ni escritura Engram.
 
 ## Siguiente paso
 
-Confirmar checks y crear el commit de T1. Después solicitar la autorización remota que falte para T2.
+Solicitar autorización explícita para consultar voces y generar los MP3 mediante `api.cartesia.ai` usando la credencial que indique el usuario. Después ejecutar T2, escuchar muestras, verificar el frontend y registrar el commit de la segunda unidad.
