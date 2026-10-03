@@ -7,9 +7,9 @@ cambia de un equipo a otro y en muchos ni siquiera hay una en español, así que
 dos participantes habrían oído estímulos distintos y sus corridas no serían
 comparables. Con el MP3 la llamada suena igual para todo el mundo.
 
-Los diálogos de vishing se pueden generar con Cartesia; las llamadas y notas
-de voz de otros módulos siguen usando Edge TTS. Sin configuración de Cartesia,
-el generador conserva los audios Edge actuales.
+Los diálogos de vishing se generan con Cartesia; las llamadas y notas de voz
+de otros módulos siguen usando Edge TTS. Para regenerar vishing se necesita
+CARTESIA_API_KEY; sin ella el generador falla antes de tocar los audios.
 
 El nombre de cada archivo es el hash de la voz y la frase, y el índice que
 consume el frontend (src/data/voces.ts) va indexado por la frase entera: si
@@ -18,16 +18,15 @@ se queda muda y el test lo dice, en vez de seguir sonando con el texto viejo.
 
 Uso, desde frontend/ (con un entorno que tenga edge-tts instalado):
 
-    VITE_VOCES=1 npx vitest run --reporter=verbose src/secciones/voces \\
+    VITE_VOCES=1 pnpm exec vitest run --reporter=verbose src/secciones/voces \\
       | python3 scripts/voces.py -
 
 También acepta la ruta de un JSON con la misma lista de {escenario, texto}.
 
-Para generar vishing con Cartesia, configura CARTESIA_API_KEY y los tres ID de
-voz CARTESIA_VOICE_MALE, CARTESIA_VOICE_FEMALE y
-CARTESIA_VOICE_IVR. Puedes elegirlos en Cartesia (GET /voices); no son
-claves y no se incluyen en la aplicación. Define los tres juntos para evitar
-un lote con proveedores mezclados. La voz bancaria se comparte entre escenas.
+Para generar vishing, configura CARTESIA_API_KEY. Los ID públicos de voz
+predeterminados son Cesar (MALE), Fernanda (FEMALE) y Sofía (IVR); se pueden
+reemplazar con CARTESIA_VOICE_MALE, CARTESIA_VOICE_FEMALE y
+CARTESIA_VOICE_IVR. La voz bancaria se comparte entre escenas.
 La síntesis usa sonic-3.6, locale es-MX y speed 1.1. Ejecuta el lote solo
 cuando esté autorizada la conexión a Cartesia.
 """
@@ -60,6 +59,11 @@ CARTESIA_ROLES = {
     "LlamadaPerdida": "IVR",
     "PremioSorteo": "FEMALE",
     "SoporteTecnico": "MALE",
+}
+DEFAULT_CARTESIA_VOICES = {
+    "MALE": "4b5112be-c461-44a2-a66b-0dd7f98db4a0",
+    "FEMALE": "b4b8e2af-6139-466e-a93a-30c20d2e1fc5",
+    "IVR": "4663e61a-a9c2-40e1-94c5-c461ed9d3d31",
 }
 
 # Cada voz con su ritmo. Las neuronales leen bien pero leen: a velocidad y tono
@@ -144,15 +148,12 @@ def nombre(voz: tuple[str, str, str], texto: str) -> str:
 
 
 def cartesia_voices() -> dict[str, str]:
-    voices = {role: os.getenv(f"CARTESIA_VOICE_{role}", "").strip()
-              for role in ("MALE", "FEMALE", "IVR")}
-    if not any(voices.values()):
-        return {}
-    if not all(voices.values()):
-        raise ValueError("configura las tres voces CARTESIA_VOICE_* juntas")
     if not os.getenv("CARTESIA_API_KEY", "").strip():
         raise ValueError("falta CARTESIA_API_KEY para generar vishing")
-    return voices
+    return {
+        role: os.getenv(f"CARTESIA_VOICE_{role}", "").strip() or voice_id
+        for role, voice_id in DEFAULT_CARTESIA_VOICES.items()
+    }
 
 
 def cartesia_name(voice_id: str, text: str) -> str:
@@ -241,7 +242,9 @@ async def main() -> int:
         lineas = json.loads(entrada.read_text(encoding="utf-8"))
 
     try:
-        cartesia = cartesia_voices()
+        cartesia = cartesia_voices() if any(
+            line["escenario"] in CARTESIA_ROLES for line in lineas
+        ) else {}
     except ValueError as error:
         print(f"configuración no válida: {error}", file=sys.stderr)
         return 1

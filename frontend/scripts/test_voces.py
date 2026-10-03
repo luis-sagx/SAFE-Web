@@ -1,11 +1,13 @@
 """Pruebas locales del generador de audios estáticos."""
 
 import asyncio
+import contextlib
+import io
 import json
 import tempfile
 import unittest
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import AsyncMock, patch
 
 from frontend.scripts import voces
 
@@ -22,6 +24,64 @@ class FakeResponse:
 
 
 class VoiceGeneratorTests(unittest.TestCase):
+    def test_vishing_usa_voces_cartesia_predeterminadas_sin_ids_en_entorno(self):
+        requests = []
+
+        def fake_urlopen(request, timeout):
+            requests.append(request)
+            return FakeResponse()
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "lineas.json"
+            source.write_text(json.dumps([
+                {"escenario": "AntifraudeBanco", "texto": "Banco seguro."},
+                {"escenario": "DevolucionSri", "texto": "Devolución pendiente."},
+                {"escenario": "LlamadaPerdida", "texto": "Espere en línea."},
+            ]), encoding="utf-8")
+            with patch.multiple(voces, RAIZ=root, AUDIOS=root / "public" / "voz",
+                                INDICE=root / "voces.ts"), \
+                 patch("sys.argv", ["voces.py", str(source)]), \
+                 patch.dict("os.environ", {"CARTESIA_API_KEY": "clave-de-prueba"}, clear=True), \
+                 patch.object(voces, "sintetizar", AsyncMock(side_effect=RuntimeError("se eligió Edge"))), \
+                 patch.object(voces, "urlopen", side_effect=fake_urlopen):
+                self.assertEqual(asyncio.run(voces.main()), 0)
+
+            self.assertEqual(
+                [json.loads(request.data)["voice"] for request in requests],
+                [
+                    "4b5112be-c461-44a2-a66b-0dd7f98db4a0",
+                    "b4b8e2af-6139-466e-a93a-30c20d2e1fc5",
+                    "4663e61a-a9c2-40e1-94c5-c461ed9d3d31",
+                ],
+            )
+            self.assertEqual(len(list((root / "public" / "voz").glob("*.mp3"))), 3)
+
+    def test_sin_clave_cartesia_falla_antes_de_tocar_indice_y_audios(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "lineas.json"
+            source.write_text(json.dumps([
+                {"escenario": "AntifraudeBanco", "texto": "Banco seguro."},
+            ]), encoding="utf-8")
+            audio = root / "public" / "voz" / "original.mp3"
+            audio.parent.mkdir(parents=True)
+            audio.write_bytes(b"audio-anterior")
+            index = root / "voces.ts"
+            index.write_text("indice anterior", encoding="utf-8")
+            errors = io.StringIO()
+            with patch.multiple(voces, RAIZ=root, AUDIOS=audio.parent, INDICE=index), \
+                 patch("sys.argv", ["voces.py", str(source)]), \
+                 patch.dict("os.environ", {}, clear=True), \
+                 patch.object(voces, "sintetizar", AsyncMock(side_effect=RuntimeError("se eligió Edge"))), \
+                 contextlib.redirect_stderr(errors):
+                self.assertEqual(asyncio.run(voces.main()), 1)
+
+            self.assertIn("falta CARTESIA_API_KEY", errors.getvalue())
+            self.assertEqual(audio.read_bytes(), b"audio-anterior")
+            self.assertEqual(index.read_text(encoding="utf-8"), "indice anterior")
+            self.assertEqual([path.name for path in audio.parent.iterdir()], ["original.mp3"])
+
     def test_llamadas_bancarias_comparten_voz_cartesia_y_nota_externa_conserva_edge(self):
         requests = []
 
