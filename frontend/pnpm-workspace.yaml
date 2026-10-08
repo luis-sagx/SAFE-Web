@@ -13,3 +13,6 @@ overrides:
   # A la izquierda va el rango vulnerable, no un pin: cuando postcss suba el
   # suyo, este override deja de tener efecto y se puede borrar.
   nanoid@<3.3.17: '^3.3.17'
+  # Corrige la denegación de servicio en mapas de código indexados
+  # (GHSA-68fv-2mgg-jv7q) sin cambiar las dependencias directas.
+  source-map-js@<1.2.2: '^1.2.2'

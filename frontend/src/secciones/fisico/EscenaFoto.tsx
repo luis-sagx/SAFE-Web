@@ -1,4 +1,5 @@
-import { useState, type CSSProperties } from 'react'
+import { useContext, useState, type CSSProperties } from 'react'
+import { SceneRatioContext } from '../../components/sceneRatioContext'
 import styles from './fisico.module.css'
 
 export interface SceneZone {
@@ -26,6 +27,7 @@ interface PhotoSceneProps {
 /** Fotografía del mundo real: no imita ninguna app ni fuerza una proporción. */
 export function PhotoScene({ src, alt, zonas: zones = [], progreso: progress }: Readonly<PhotoSceneProps>) {
   const [photoRatio, setPhotoRatio] = useState(16 / 9)
+  const reportRatio = useContext(SceneRatioContext)
 
   return (
     <div className="flex h-full w-full items-center justify-center">
@@ -39,7 +41,11 @@ export function PhotoScene({ src, alt, zonas: zones = [], progreso: progress }: 
           className={styles.escenaFoto}
           onLoad={(event) => {
             const { naturalWidth, naturalHeight } = event.currentTarget
-            if (naturalWidth && naturalHeight) setPhotoRatio(naturalWidth / naturalHeight)
+            if (naturalWidth && naturalHeight) {
+              const ratio = naturalWidth / naturalHeight
+              setPhotoRatio(ratio)
+              reportRatio?.(ratio)
+            }
           }}
         />
         {zones.map((zone) => (

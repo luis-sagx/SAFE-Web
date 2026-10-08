@@ -1,5 +1,5 @@
 import { Info } from "lucide-react";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { Link } from "react-router";
 import AppHeader, { BACK_CLASS } from "./AppHeader";
 import ScenarioEndNotice from "./ui/AvisoFinEscenario";
@@ -10,6 +10,7 @@ import { useAuth } from "../context/AuthContext";
 import { getSectionScenarios, getScenario, getSection } from "../data/catalogo";
 import IdentityCard, { type IdentityData } from "./ui/TarjetaIdentidad";
 import { ViewedReviewContext } from "./ui/repasoVisto";
+import { SceneRatioContext } from "./sceneRatioContext";
 
 interface ScenarioLayoutProps {
   /** Misma clave que recibe useScenarioRun, p. ej. 'estafa/saldo-contable'. */
@@ -56,7 +57,7 @@ const FRAME_DESKTOP =
   "sm:max-h-[min(88vh,60rem)] sm:w-[96vw] sm:max-w-[68.75rem] sm:rounded-lg sm:border-[3px] sm:border-control sm:shadow-[0_30px_70px_rgba(0,0,0,0.22)] lg:h-full lg:max-h-[60rem] lg:w-[calc(100vw-28.75rem)] lg:min-w-[35rem] lg:max-w-[75rem] lg:flex-none lg:self-center xl:w-[calc(100vw-33.75rem)]";
 
 const FRAME_SCENE =
-  "[container-type:size] h-[min(56vw,20rem)] min-h-0 flex-none bg-[#1c1917] sm:h-[min(56vw,24rem)] sm:w-full sm:max-w-[46rem] sm:rounded-xl sm:border-2 sm:border-control sm:shadow-[0_30px_70px_rgba(0,0,0,0.22)] lg:w-[calc(100vw-28.75rem)] lg:self-start xl:w-[calc(100vw-33.75rem)]";
+  "[container-type:size] h-[min(56vw,20rem)] min-h-0 flex-none bg-[#1c1917] sm:h-[min(56vw,24rem)] sm:w-full sm:max-w-[46rem] sm:rounded-xl sm:border-2 sm:border-control sm:shadow-[0_30px_70px_rgba(0,0,0,0.22)] lg:h-[min(76dvh,48rem,calc((100vw-28.75rem)/var(--scene-ratio)),calc(75rem/var(--scene-ratio)))] lg:w-auto lg:max-w-[75rem] lg:self-center xl:h-[min(76dvh,48rem,calc((100vw-33.75rem)/var(--scene-ratio)),calc(75rem/var(--scene-ratio)))]";
 
 function ScenarioLayout({
   escenarioId: scenarioId,
@@ -90,6 +91,7 @@ function ScenarioLayout({
     ? `${simulatedUser}@${emailDomain}`
     : simulatedEmail;
   const [phase, setPhase] = useState<"briefing" | "escenario">("briefing");
+  const [sceneRatio, setSceneRatio] = useState(16 / 9);
   // Lo enciende PanelVeredicto al llegar al cierre del repaso. Se apaga al
   // reiniciar (cuando `resultado` vuelve a quedar sin valor), para que el
   // siguiente intento vuelva a exigir ver las señales antes de salir sin más.
@@ -272,7 +274,7 @@ function ScenarioLayout({
 
       {/* Apilado hasta 1024px; lado a lado arriba de eso, porque a 900px de alto apilar
           un dispositivo creíble y un bloque de opciones largo aplasta al dispositivo. */}
-      <main className={`flex min-h-0 flex-1 flex-col items-center sm:gap-4 sm:px-4 sm:py-4 lg:flex-row lg:items-stretch lg:justify-center lg:gap-8 lg:py-6 [@media(max-height:940px)]:sm:py-2 [@media(max-height:940px)]:lg:py-3 ${device === "escena" ? "lg:items-start" : ""}`}>
+      <main className={`flex min-h-0 flex-1 flex-col items-center sm:gap-4 sm:px-4 sm:py-4 lg:flex-row lg:items-stretch lg:justify-center lg:gap-8 lg:py-6 [@media(max-height:940px)]:sm:py-2 [@media(max-height:940px)]:lg:py-3 ${device === "escena" ? "lg:items-center" : ""}`}>
         <div
           ref={sceneRef}
           // Fijo a propósito: el recorrido de señales ubica el elemento a resaltar con
@@ -280,6 +282,7 @@ function ScenarioLayout({
           id="pantalla-escenario"
           tabIndex={-1}
           aria-label={`${scenario.titulo}: pantalla simulada`}
+          style={device === "escena" ? { aspectRatio: sceneRatio, '--scene-ratio': sceneRatio } as CSSProperties : undefined}
           // relative: el aviso de fin se posiciona contra este marco. min-h solo para
           // celular: sin él el marco se comprimía y la pantalla dejaba de leerse.
           className={`relative flex w-full flex-1 overflow-hidden focus:outline-none ${device === "escena" ? "" : "min-h-[34rem] sm:min-h-0"} ${
@@ -290,7 +293,7 @@ function ScenarioLayout({
                 : FRAME_PHONE
           }`}
         >
-          {screen}
+          <SceneRatioContext.Provider value={setSceneRatio}>{screen}</SceneRatioContext.Provider>
           <ScenarioEndNotice resultado={result} />
         </div>
 
@@ -302,7 +305,7 @@ function ScenarioLayout({
               columna angosta se veía descuadrada pegada a la izquierda debajo de algo tan
               ancho (issue #225). Ancho completo mientras siga apilada, angosta recién cuando
               pasa a ir al costado. */
-          <div className={`w-full shrink-0 border-t border-hairline bg-canvas px-4 py-4 sm:border-0 sm:bg-transparent sm:px-0 sm:py-0 lg:w-[23.75rem] xl:w-[28.75rem] ${device === "escena" ? "lg:self-start" : "sm:max-h-[45%] sm:overflow-y-auto lg:max-h-full lg:self-center"}`}>
+          <div className={`w-full shrink-0 border-t border-hairline bg-canvas px-4 py-4 sm:border-0 sm:bg-transparent sm:px-0 sm:py-0 lg:w-[23.75rem] xl:w-[28.75rem] ${device === "escena" ? "lg:self-center" : "sm:max-h-[45%] sm:overflow-y-auto lg:max-h-full lg:self-center"}`}>
             {/* La historia queda a un clic, en un diálogo, porque se consulta poco. Con
                 aspecto de enlace (sigue siendo <button>) para no competir en peso con
                 "¿Qué haces?" y desviar la atención de lo único que hay que hacer aquí. */}
