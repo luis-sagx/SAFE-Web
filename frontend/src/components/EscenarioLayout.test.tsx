@@ -5,6 +5,7 @@ import { describe, expect, it, vi } from 'vitest'
 import ScenarioLayout from './EscenarioLayout'
 import { ViewedReviewContext } from './ui/repasoVisto'
 import type { ScenarioResult } from '../hooks/useScenarioRun'
+import { PhotoScene } from '../secciones/fisico/EscenaFoto'
 
 vi.mock('../context/AuthContext', async () => (await import('../test/escenario')).mockAuth())
 
@@ -56,5 +57,38 @@ describe('EscenarioLayout · salida', () => {
 
     expect(screen.getByRole('link', { name: '← Salir' }).getAttribute('href')).toBe('/seccion/fisico')
     expect(screen.queryByRole('button', { name: /Salir/ })).toBeNull()
+  })
+})
+
+describe('EscenarioLayout · escena fotográfica', () => {
+  it.each([
+    { width: 1024, height: 1024, ratio: 1 },
+    { width: 1672, height: 941, ratio: 1672 / 941 },
+  ])('adapta el marco a una foto de $width × $height', ({ width, height, ratio }) => {
+    render(
+      <MemoryRouter>
+        <ScenarioLayout
+          escenarioId="fisico/trampa-usb"
+          resumen="Resumen"
+          contexto={{ antes: 'antes', ahora: 'ahora' }}
+          pantalla={<PhotoScene src="/foto.webp" alt="Foto de prueba" />}
+          decision={<p>Decisión</p>}
+          onEmpezar={vi.fn()}
+          dispositivo="escena"
+        />
+      </MemoryRouter>,
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'Empezar' }))
+
+    const photo = screen.getByRole('img', { name: 'Foto de prueba' })
+    Object.defineProperties(photo, {
+      naturalWidth: { value: width },
+      naturalHeight: { value: height },
+    })
+    fireEvent.load(photo)
+
+    const frame = document.getElementById('pantalla-escenario') as HTMLElement
+    expect(Number.parseFloat(frame.style.aspectRatio)).toBeCloseTo(ratio)
+    expect(Number(frame.style.getPropertyValue('--scene-ratio'))).toBeCloseTo(ratio)
   })
 })
