@@ -14,7 +14,7 @@ Estimación inicial: menos de 100 líneas autoradas en las configuraciones y loc
 
 ## Tareas
 
-- [ ] T1 — Actualizar solo las resoluciones transitivas vulnerables en frontend y backend, regenerar lockfiles y verificar auditoría y funcionamiento. Ruta: delegated direct; disparadores: mapeo de cuatro archivos y escritor para dos configuraciones más dos lockfiles no triviales. Cerrar con commit Conventional Commit en esta misma rama, con evidencia de versiones resueltas y checks.
+- [x] T1 — Actualizar solo las resoluciones transitivas vulnerables en frontend y backend, regenerar lockfiles y verificar auditoría y funcionamiento. Ruta: delegated direct; disparadores: mapeo de cuatro archivos y escritor para dos configuraciones más dos lockfiles no triviales. Commit de trabajo `5ce061b` (`fix(deps): actualizar transitivas vulnerables`).
 
 ## Criterios de aceptación
 
@@ -30,4 +30,4 @@ Estimación inicial: menos de 100 líneas autoradas en las configuraciones y loc
 - GREEN: pnpm 11.9.0 regeneró ambos lockfiles; `pnpm install --frozen-lockfile` pasó en frontend y backend. La auditoría de producción pasó en ambos: frontend sin vulnerabilidades conocidas; backend con cinco moderadas, ninguna alta/crítica. Los lockfiles resuelven `source-map-js@1.2.2` en ambos y `proxy-addr@2.0.8` en backend.
 - Checks funcionales: frontend `pnpm typecheck`, `pnpm lint`, `pnpm build` y `pnpm test:cov` pasaron; 122 archivos, 901 pruebas aprobadas y 4 omitidas. Backend `pnpm prisma:generate`, `pnpm lint:ci`, `pnpm build` y `pnpm test:cov` pasaron; 29 suites y 223 pruebas aprobadas. Ambos proyectos generaron artefactos de cobertura. `git diff --check` pasó.
 - Primera corrida simultánea de `pnpm test:cov` en ambos proyectos: frontend falló en cinco pruebas por timeout de 5 segundos; todas pasaron al repetir la suite frontend sin la carga paralela. No se modificaron pruebas ni timeouts. Lint de frontend conserva advertencias existentes; jsdom reporta APIs de media/canvas no implementadas. No se ejecutó backend e2e local porque requiere Postgres y su limpieza de datos; CI lo ejecuta en una base aislada.
-- Siguiente paso: cerrar T1 con commit en la misma rama y observar los checks de la PR cuando el usuario publique la rama.
+- Siguiente paso: publicar esta rama con autorización remota explícita y observar los checks de la PR. La copia Engram sigue pendiente; no hubo revisión RDD porque está desactivado/no gestionado.
