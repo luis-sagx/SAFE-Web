@@ -28,3 +28,7 @@ overrides:
   # servicio (GHSA-wc9g-mqfw-jrwm, GHSA-qfvm-cv95-jqjf, GHSA-535w-7cp7-47q4).
   # 2.3.0 los corrige a todos.
   multer: '>=2.3.0'
+  # Limita los reemplazos a las versiones vulnerables para que las
+  # dependencias padre puedan adoptar sus propias correcciones después.
+  source-map-js@<1.2.2: '^1.2.2' # GHSA-68fv-2mgg-jv7q
+  proxy-addr@<2.0.8: '^2.0.8' # GHSA-jqcg-44mw-7w3h
