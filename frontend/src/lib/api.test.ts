@@ -11,6 +11,9 @@ import {
   fetchAssessmentStatus,
   fetchQuestionnaire,
   fetchAssessmentResults,
+  fetchSusStatus,
+  submitSusSurvey,
+  fetchSusResults,
   submitAssessment,
   forgotPassword,
   getToken,
@@ -76,6 +79,30 @@ describe('api', () => {
     expect(init.method).toBe('GET')
     expect(init.body).toBeUndefined()
     expect(init.headers).toEqual({ Authorization: 'Bearer sesion-estudio' })
+  })
+
+  it('consulta el estado SUS con la sesión y envía respuestas sin datos personales', async () => {
+    setToken('sesion-estudio')
+    const saved = { version: 1, available: true, completed: false }
+    const fetchMock = mockFetch({ json: () => Promise.resolve(saved) })
+
+    expect(await fetchSusStatus()).toEqual(saved)
+    expect(await submitSusSurvey({ version: 1, answers: Array(10).fill(4) })).toEqual(saved)
+
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+    const statusCall = fetchMock.mock.calls[0] as [string, RequestInit]
+    const submitCall = fetchMock.mock.calls[1] as [string, RequestInit]
+    expect(statusCall[0]).toBe('/api/sus/status')
+    expect(submitCall[0]).toBe('/api/sus')
+    expect(JSON.parse(submitCall[1].body as string)).toEqual({ version: 1, answers: Array(10).fill(4) })
+    expect(submitCall[1].headers).toEqual({ 'Content-Type': 'application/json', Authorization: 'Bearer sesion-estudio' })
+  })
+
+  it('consulta resultados SUS por seudónimo, respuestas y puntaje', async () => {
+    const rows = [{ pseudonym: 'P007', version: 1, answers: Array(10).fill(3), score: 50 }]
+    const fetchMock = mockFetch({ json: () => Promise.resolve(rows) })
+    expect(await fetchSusResults()).toEqual(rows)
+    expect((fetchMock.mock.calls[0] as [string, RequestInit])[0]).toBe('/api/sus/results')
   })
 
   it('envía las respuestas a entrenamiento sin identidad ni consentimiento adicional', async () => {

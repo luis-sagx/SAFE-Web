@@ -11,6 +11,7 @@ import {
   UserX,
 } from "lucide-react";
 import AssessmentResults from "../components/AssessmentResults";
+import SusResults from "../components/SusResults";
 import AppHeader from "../components/AppHeader";
 import ConfirmDialog, { type Confirmation } from "../components/ConfirmDialog";
 import Modal from "../components/Modal";
@@ -30,7 +31,7 @@ import {
 } from "../lib/api";
 import { downloadCsv, resultsToCsv } from "../lib/resultsCsv";
 
-type Tab = "participantes" | "testers" | "resultados" | "evaluaciones";
+type Tab = "participantes" | "testers" | "resultados" | "evaluaciones" | "sus";
 
 function fullName(p: AdminParticipant): string {
   const parts = [p.nombre, p.apellido].filter(Boolean);
@@ -801,6 +802,8 @@ function Admin() {
     content = <Participants />;
   } else if (tab === "evaluaciones") {
     content = <AssessmentResults />;
+  } else if (tab === "sus") {
+    content = <SusResults />;
   } else if (tab === "testers") {
     content = <Testers />;
   }
@@ -838,6 +841,7 @@ function Admin() {
             Participantes
           </button>
           <button type="button" role="tab" aria-selected={tab === "evaluaciones"} onClick={() => setTab("evaluaciones")} className={tabClassName(tab === "evaluaciones")}>Evaluaciones</button>
+          <button type="button" role="tab" aria-selected={tab === "sus"} onClick={() => setTab("sus")} className={tabClassName(tab === "sus")}>Encuesta SUS</button>
           <button
             type="button"
             role="tab"

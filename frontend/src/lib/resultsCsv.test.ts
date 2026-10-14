@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import { SCENARIOS } from '../data/catalogo'
-import type { RunResult } from './api'
-import { assessmentResultsToCsv, downloadCsv, resultsToCsv } from './resultsCsv'
+import type { RunResult, SusResult } from './api'
+import { assessmentResultsToCsv, downloadCsv, resultsToCsv, susResultsToCsv } from './resultsCsv'
 
 const scenario = SCENARIOS[0] ?? expect.unreachable('El catálogo no tiene escenarios')
 
@@ -82,5 +82,15 @@ describe('assessmentResultsToCsv', () => {
     const csv = assessmentResultsToCsv([{ pseudonym: '=P002', version: 1, baselineMissing: true, pretest: null, posttest: null, improvement: null }])
     expect(csv).toContain("'=P002,1,sin_medicion_inicial_final_pendiente")
     expect(csv).not.toContain(',0,')
+  })
+})
+
+describe('susResultsToCsv', () => {
+  it('exporta puntaje y respuestas SUS con seudónimo, sin identidad', () => {
+    const csv = susResultsToCsv([{ pseudonym: 'P001', version: 1, answers: [1, 2, 3, 4, 5, 1, 2, 3, 4, 5], score: 50 } satisfies SusResult])
+    const [header, row] = csv.split('\r\n')
+    expect(header).toBe('﻿seudonimo,version,puntaje_sus,sus_p1,sus_p2,sus_p3,sus_p4,sus_p5,sus_p6,sus_p7,sus_p8,sus_p9,sus_p10')
+    expect(row).toBe('P001,1,50,1,2,3,4,5,1,2,3,4,5')
+    expect(csv).not.toMatch(/participantId|nombre|correo|email/)
   })
 })

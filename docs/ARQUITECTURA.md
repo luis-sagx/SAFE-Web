@@ -356,6 +356,9 @@ a `identidad`, `/api/runs/*` a `entrenamiento`.
 | `GET` | `/api/assessments/status` | entrenamiento | JWT + rol `PARTICIPANT` | Obligatoriedad inicial, disponibilidad final y ausencia de medición inicial. |
 | `POST` | `/api/assessments` | entrenamiento | JWT + rol `PARTICIPANT` | Valida y registra fase, versión, demografía y 21 respuestas; calcula puntaje en servidor. |
 | `GET` | `/api/assessments/results` | entrenamiento | JWT + rol `SUPERVISOR` | Evaluaciones emparejadas por seudónimo y diferencia de puntajes, para exportar CSV en administración. |
+| `GET` | `/api/sus/status` | entrenamiento | JWT + rol `PARTICIPANT` | Versión, disponibilidad al terminar los escenarios y estado de entrega de la encuesta SUS. |
+| `POST` | `/api/sus` | entrenamiento | JWT + rol `PARTICIPANT` | Valida diez respuestas 1–5, calcula el puntaje SUS estándar y registra una entrega única por versión. |
+| `GET` | `/api/sus/results` | entrenamiento | JWT + rol `SUPERVISOR` | Respuestas y puntaje SUS por seudónimo para consulta y exportación administrativa. |
 | `GET` | `/api/runs/atestacion` | entrenamiento | JWT | Certificado (§11): `200` con `{ atestacion }` si todos los módulos de `UMBRALES` están aprobados, `409` con `{ faltan }` si no. |
 | `POST` | `/api/certificados` | identidad | JWT | Body `{ atestacion }`. Canjea la atestación y emite (o actualiza) el certificado. → `{ codigo, emitidoAt, modulos, horas }`. |
 | `POST` | `/api/certificados/pdf` | identidad | JWT | Body `{ atestacion }`. → `application/pdf`. `POST` y no `GET`: la atestación es un JWT y en la query string acabaría en los logs de nginx. |
@@ -516,6 +519,11 @@ pertenecen a `entrenamiento`; los datos de acceso permanecen en `identidad`:
   tenían corridas al incorporar la encuesta. Conserva `participantId` y
   `participantSeq` para permitir su evaluación final sin inventar una
   medición inicial. No se amplía con entrenamiento posterior.
+- `backend/prisma/entrenamiento/schema.prisma` → **`SusResponse`**: una
+  respuesta SUS por participante y versión, con diez valores de 1 a 5 y un
+  puntaje de 0 a 100 calculado por el servidor. Guarda el UUID opaco y el
+  número de seudónimo que llegan del JWT; no contiene datos personales ni
+  tiene una llave foránea a `identidad`.
 
 **No hay llave foránea entre ellas y no debe haberla.** `participantId` es un
 uuid opaco: el servicio que lo guarda no tiene la tabla que lo resolvería.
@@ -655,6 +663,22 @@ inicial inexistente se distinguen de un puntaje cero. No se exportan
 `participantId`, nombres, correos, cédulas, fechas de alta ni orden de registro
 de cuentas. `entrenamiento` no consulta `identidad` para obtener ninguno de
 estos datos.
+
+### 7.3 Encuesta de usabilidad SUS
+
+La encuesta SUS versión 1 se habilita cuando existe al menos una corrida de
+cada uno de los 52 escenarios publicados. La disponibilidad depende del
+recorrido, no de la aprobación de módulos ni de completar la evaluación final.
+Se permite una entrega por participante y versión. El servidor valida las diez
+respuestas enteras entre 1 y 5 y calcula el puntaje SUS: resta 1 a las
+respuestas impares, resta cada respuesta par de 5, suma las contribuciones y
+multiplica por 2,5. El estado y la versión se consultan en `/api/sus/status`;
+el cliente almacena las afirmaciones versionadas junto al formulario.
+
+Los resultados administrativos contienen únicamente seudónimo, versión,
+respuestas y puntaje. El participante se obtiene del JWT y el puntaje se
+calcula en `entrenamiento`; el cuerpo no puede elegir otra identidad ni enviar
+su propio puntaje.
 
 ---
 

@@ -478,6 +478,24 @@ export interface AssessmentResult {
   improvement: number | null
 }
 
+export interface SusStatus {
+  version: number
+  available: boolean
+  completed: boolean
+}
+
+export interface SusPayload {
+  version: number
+  answers: number[]
+}
+
+export interface SusResult {
+  pseudonym: string
+  version: number
+  answers: number[]
+  score: number
+}
+
 export function fetchAssessmentStatus(): Promise<AssessmentStatus> {
   return request<AssessmentStatus>('/assessments/status')
 }
@@ -492,4 +510,16 @@ export function submitAssessment(payload: AssessmentPayload): Promise<Assessment
 
 export function fetchAssessmentResults(): Promise<AssessmentResult[]> {
   return request<AssessmentResult[]>('/assessments/results')
+}
+
+export function fetchSusStatus(): Promise<SusStatus> {
+  return request<SusStatus>('/sus/status')
+}
+
+export function submitSusSurvey(payload: SusPayload): Promise<SusStatus> {
+  return request<SusStatus>('/sus', { method: 'POST', body: payload })
+}
+
+export function fetchSusResults(): Promise<SusResult[]> {
+  return request<SusResult[]>('/sus/results')
 }
