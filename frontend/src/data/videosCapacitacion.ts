@@ -51,7 +51,7 @@ const MODULE_DESCRIPTIONS: Record<string, string> = {
 // el provisional solo queda en los módulos hasta grabar los suyos.
 const GENERAL_URL = 'https://youtu.be/xN-O2gGRQEU'
 
-const PHISHING_URL = 'https://youtu.be/6SxLDCPSSIc'
+const PHISHING_URL = 'https://youtu.be/fQwaj4hSK2k'
 
 export const TRAINING_VIDEOS: TrainingVideo[] = [
   {

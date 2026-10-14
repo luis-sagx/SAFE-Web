@@ -24,7 +24,7 @@ describe('catálogo de videos de capacitación', () => {
     const moduleVideos = TRAINING_VIDEOS.filter((video) => video.sectionId)
 
     expect(moduleVideos.find((video) => video.sectionId === 'phishing')?.youtubeUrl).toBe(
-      'https://youtu.be/6SxLDCPSSIc',
+      'https://youtu.be/fQwaj4hSK2k',
     )
     expect(
       moduleVideos
