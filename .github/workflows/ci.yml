@@ -350,6 +350,13 @@ jobs:
             -H 'Content-Type: application/json' \
             -d '{"email":"ci@ejemplo.ec","password":"Clave-Larga-123!"}' \
             | python3 -c 'import json,sys; print(json.load(sys.stdin)["accessToken"])')
+
+          # La evaluación inicial es obligatoria antes de registrar corridas.
+          curl -fsS -X POST http://localhost:8080/api/assessments \
+            -H "Authorization: Bearer $token" -H 'Content-Type: application/json' \
+            -d '{"phase":"PRE","version":1,"ageRange":"18 - 29 años","gender":"Prefiero no decirlo","answers":[3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3]}' \
+            > /dev/null
+
           curl -fsS -X POST http://localhost:8080/api/runs \
             -H "Authorization: Bearer $token" -H 'Content-Type: application/json' \
             -d '{"scenarioId":"phishing/factura-sri","version":1,"outcome":"CORRECTO","score":100,"endingId":"e_verifica","durationMs":1000,"startedAt":"2026-08-01T10:00:00.000Z","decisions":[]}' \
