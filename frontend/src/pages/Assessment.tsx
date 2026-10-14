@@ -79,7 +79,7 @@ function AssessmentForm({ phase }: { phase: 'PRE' | 'POST' }) {
   return (
     <main className="mx-auto max-w-3xl space-y-6 px-4 py-12 sm:px-6">
       <h1 className="text-3xl font-semibold tracking-tight text-ink">{phase === 'PRE' ? 'Evaluación inicial' : 'Evaluación final'}</h1>
-      <p className="text-base leading-relaxed text-body">{phase === 'PRE' ? 'Antes de empezar, responde qué harías en estas situaciones.' : 'Terminaste los escenarios. Responde qué harías ahora en estas situaciones, independientemente de tus resultados en el entrenamiento.'} Elige una respuesta por pregunta. Si tienes dudas, puedes indicar «No estoy seguro/a».</p>
+      <p className="text-base leading-relaxed text-body">{phase === 'PRE' ? 'Antes de empezar, responde qué harías en estas situaciones.' : 'Gracias por completar los escenarios. Para cerrar tu participación en el estudio, responde qué harías ahora en estas situaciones.'} Elige una respuesta por pregunta. Si tienes dudas, puedes indicar «No estoy seguro/a».</p>
       <p className="text-base leading-relaxed text-body">Tus respuestas se guardan con un identificador confidencial, sin incluir tu nombre, correo ni cédula. Usamos el mismo identificador para comparar ambas evaluaciones. No mostraremos respuestas correctas ni puntajes durante esta encuesta.</p>
       <p className="text-sm text-body">Las respuestas se guardan al enviar la evaluación. Si sales antes de enviarla, tendrás que responderla nuevamente.</p>
       <form onSubmit={(event) => void submit(event)} className="space-y-6">

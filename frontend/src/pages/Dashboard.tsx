@@ -99,6 +99,17 @@ function Dashboard() {
       <AppHeader />
 
       <main className="mx-auto max-w-7xl px-6 py-12">
+        {assessmentStatus?.posttestAvailable && !assessmentStatus.posttestCompleted && (
+          <section className="mb-8 rounded-lg border border-primary/30 bg-surface p-6 sm:p-8" aria-labelledby="final-assessment-title">
+            <p className="text-sm font-semibold uppercase tracking-wide text-primary">Último paso del estudio</p>
+            <h2 id="final-assessment-title" className="mt-2 text-2xl font-semibold tracking-tight text-ink sm:text-3xl">Completa tu evaluación final</h2>
+            <p className="mt-3 max-w-prose text-base leading-relaxed text-body">Gracias por completar los escenarios. Para cerrar tu participación en el estudio, responde la evaluación final. Tus respuestas nos ayudan a conocer qué cambió con el entrenamiento.</p>
+            <Link to="/evaluacion-final" className="mt-6 inline-flex min-h-11 w-full items-center justify-center gap-3 rounded-md bg-primary px-5 py-3 text-center text-base font-semibold text-on-primary hover:bg-primary-active focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary sm:w-auto">
+              <span>Responder evaluación final</span>
+              <ArrowRight aria-hidden className="size-5 shrink-0" />
+            </Link>
+          </section>
+        )}
         {/* Regla del curso, no promesa: antes decía que ninguna respuesta te deja mal y el resultado decía lo contrario. */}
         <p className="max-w-prose text-lg leading-relaxed text-body">
           Elige un tipo de engaño y enfréntate a una situación como las de todos
@@ -106,13 +117,6 @@ function Dashboard() {
           momento.
         </p>
 
-        {assessmentStatus?.posttestAvailable && !assessmentStatus.posttestCompleted && (
-          <section className="mt-6 rounded-lg border border-hairline-strong bg-surface p-5" aria-labelledby="final-assessment-title">
-            <h2 id="final-assessment-title" className="text-xl font-semibold text-ink">Evaluación final disponible</h2>
-            <p className="mt-2 text-base text-body">Terminaste todos los escenarios, aunque algunos no estén aprobados. Responde la evaluación final para registrar tu nivel después del entrenamiento.</p>
-            <Link to="/evaluacion-final" className="mt-3 inline-block min-h-11 py-2 font-medium text-link underline">Responder evaluación final</Link>
-          </section>
-        )}
         {assessmentStatus?.posttestCompleted && <p role="status" className="mt-6 text-body">Tu evaluación final ya está guardada. Gracias por participar.</p>}
         {assessmentError && <div className="mt-6"><p role="alert" className="text-danger">No pudimos comprobar si tu evaluación final está disponible.</p><button className="min-h-11 text-link underline" onClick={() => { setAssessmentError(false); setAssessmentRetry((value) => value + 1); }}>Reintentar evaluación</button></div>}
 
