@@ -3,7 +3,7 @@ import LegalPage, { type LegalSection } from "../components/LegalPage";
 import { DEGREE, INSTITUTION, PROJECT_TITLE } from "../data/project";
 
 // Fecha fija de la versión vigente: se cambia a mano al editar el texto.
-const LAST_UPDATED = "25 de septiembre de 2026";
+const LAST_UPDATED = "14 de octubre de 2026";
 
 const SECTIONS: LegalSection[] = [
   {
@@ -72,6 +72,28 @@ const SECTIONS: LegalSection[] = [
         </ul>
         <p className="mt-3">
           El equipo puede desactivar una cuenta que incumpla estas reglas.
+        </p>
+      </>
+    ),
+  },
+  {
+    id: "evaluaciones",
+    title: "Evaluaciones del estudio",
+    body: (
+      <>
+        <p>
+          Antes de la bienvenida y del entrenamiento debes responder la
+          evaluación inicial. Al terminar todos los escenarios, hayas aprobado
+          o no los módulos, se habilita la evaluación final con las mismas
+          preguntas. Estas evaluaciones permiten estudiar si mejora el
+          reconocimiento de amenazas y no cambian los requisitos de aprobación
+          para obtener el certificado.
+        </p>
+        <p className="mt-3">
+          Si ya habías entrenado antes de incorporar estas evaluaciones,
+          conservas tu avance y puedes responder la final sin medición inicial.
+          La aceptación de la política de datos al registrarte incluye el
+          tratamiento de tus respuestas para el estudio.
         </p>
       </>
     ),

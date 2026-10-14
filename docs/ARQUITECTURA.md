@@ -19,8 +19,8 @@ Documentos relacionados:
 Una aplicación web donde un participante **se registra con su nombre, apellido,
 correo y cédula**, juega **escenarios simulados de fraude** que registran cada
 decisión, y el supervisor consulta esos resultados —**identificados solo por un
-seudónimo**— para compararlos con un pre-test y un post-test aplicados aparte en
-Moodle.
+seudónimo**— junto con una evaluación inicial y una final de reconocimiento de
+amenazas, aplicadas dentro de la plataforma.
 
 De ahí salen las tres restricciones que gobiernan todo lo demás:
 
@@ -49,7 +49,7 @@ servidor propio mediante contenedores.
                     │  web · Nginx :8080 │   SPA + gateway
                     └─────────┬──────────┘
                     ┌─────────┴─────────┐
-              /api/auth/*          /api/runs/*
+              /api/auth/*          /api/runs/* y /api/assessments/*
                     │                   │
              ┌──────▼──────┐    ┌───────▼────────┐
              │  identidad  │    │  entrenamiento │
@@ -79,15 +79,16 @@ Decisiones estructurales que **no** se cambian sin actualizar este documento:
 - **`identidad`** es el único que conoce nombre, apellido, correo y contraseña.
 - **`entrenamiento`** conoce `participantId` (un uuid opaco) y `participantSeq`
   (el seudónimo del análisis). Los dos llegan **dentro del JWT**, no de una
-  consulta.
+  consulta. Guarda también el rango de edad, género y respuestas de las
+  evaluaciones con ese identificador, separados de los datos de acceso.
 
-Consecuencia: `GET /api/runs/resultados` **no puede** filtrar un dato
-personal. No hay tabla que consultar, no hay llave foránea que seguir, y el
+Consecuencia: `GET /api/runs/resultados` **no puede** filtrar nombre, correo
+o cédula. No hay tabla que consultar, no hay llave foránea que seguir, y el
 rol de Postgres del servicio recibe `permission denied for schema identidad`
 si lo intenta con SQL crudo. Antes esto lo sostenía un `select` bien escrito
 más una prueba unitaria; ahora lo sostiene la arquitectura, y hay un paso de
 CI que lo verifica contra la base real. Esta separación estructural es la
-garantía de anonimato del dato de análisis; no depende de un borrado
+garantía de separación del dato de análisis; no depende de un borrado
 posterior sobre `identidad`.
 
 ### 2.2 Lo que este corte cuesta
@@ -351,6 +352,10 @@ a `identidad`, `/api/runs/*` a `entrenamiento`.
 | `GET` | `/api/runs/me` | entrenamiento | JWT | Corridas del participante autenticado. |
 | `GET` | `/api/runs/progreso/:modulo` | entrenamiento | JWT | Gating: progreso del participante en un módulo. |
 | `GET` | `/api/runs/resultados` | entrenamiento | JWT + rol `SUPERVISOR` | Todas las corridas, seudonimizadas (JSON, se ve dentro de la app, no se descarga). |
+| `GET` | `/api/assessments/questionnaire` | entrenamiento | JWT + rol `PARTICIPANT` | Misma encuesta versionada para ambas fases, sin clave de respuestas. |
+| `GET` | `/api/assessments/status` | entrenamiento | JWT + rol `PARTICIPANT` | Obligatoriedad inicial, disponibilidad final y ausencia de medición inicial. |
+| `POST` | `/api/assessments` | entrenamiento | JWT + rol `PARTICIPANT` | Valida y registra fase, versión, demografía y 21 respuestas; calcula puntaje en servidor. |
+| `GET` | `/api/assessments/results` | entrenamiento | JWT + rol `SUPERVISOR` | Evaluaciones emparejadas por seudónimo y diferencia de puntajes, para exportar CSV en administración. |
 | `GET` | `/api/runs/atestacion` | entrenamiento | JWT | Certificado (§11): `200` con `{ atestacion }` si todos los módulos de `UMBRALES` están aprobados, `409` con `{ faltan }` si no. |
 | `POST` | `/api/certificados` | identidad | JWT | Body `{ atestacion }`. Canjea la atestación y emite (o actualiza) el certificado. → `{ codigo, emitidoAt, modulos, horas }`. |
 | `POST` | `/api/certificados/pdf` | identidad | JWT | Body `{ atestacion }`. → `application/pdf`. `POST` y no `GET`: la atestación es un JWT y en la query string acabaría en los logs de nginx. |
@@ -480,8 +485,8 @@ Reglas del API que no se relajan:
 
 ## 6. Modelo de datos
 
-Un schema de Prisma por servicio. `identidad` tiene dos tablas, `entrenamiento`
-una:
+Un schema de Prisma por servicio. Las evaluaciones y corridas del estudio
+pertenecen a `entrenamiento`; los datos de acceso permanecen en `identidad`:
 
 - `backend/prisma/identidad/schema.prisma` → **`Participant`**: `seq`
   (autoincremental, del que se deriva el seudónimo), `nombre`, `apellido`,
@@ -498,6 +503,19 @@ una:
   escenario terminado, con `participantId`, `participantSeq`, `scenarioId`,
   `version`, `outcome`, `score`, `endingId`, `durationMs`, `startedAt`,
   `finishedAt` y `decisions` (JSONB).
+- `backend/prisma/entrenamiento/schema.prisma` → **`Assessment`**: una entrega
+  por participante, versión y fase (`PRE` o `POST`), con `participantId`,
+  `participantSeq`, `ageRange`, `gender`, las 21 respuestas (`answers`),
+  `score`, `consentVersion`, `consentAccepted` y `submittedAt`. El servidor
+  valida las opciones y calcula el puntaje; no acepta un puntaje del cliente.
+  Los campos de consentimiento conservan constancias históricas y son
+  opcionales para compatibilidad: nuevas entregas los guardan como `null`,
+  sin inventar una nueva aceptación.
+- `backend/prisma/entrenamiento/schema.prisma` →
+  **`AssessmentBaselineExemption`**: instantánea de participantes que ya
+  tenían corridas al incorporar la encuesta. Conserva `participantId` y
+  `participantSeq` para permitir su evaluación final sin inventar una
+  medición inicial. No se amplía con entrenamiento posterior.
 
 **No hay llave foránea entre ellas y no debe haberla.** `participantId` es un
 uuid opaco: el servicio que lo guarda no tiene la tabla que lo resolvería.
@@ -533,7 +551,8 @@ nombre, apellido,  ───▶   Participant                  ScenarioRun
 correo, cédula            nombre, apellido, email      participantSeq ──▶ resultados
                           cedulaHash (HMAC)                                 P001
                           seq ──────────── JWT ───────▶ scenarioId, outcome…
-                                                       (sin PII, y sin acceso
+                                                       (sin datos de identidad,
+                                                        sin acceso
                                                         posible a ella)
 ```
 
@@ -570,13 +589,15 @@ Cómo se trata:
 
 Reglas que **no se negocian**:
 
-1. **Los resultados nunca incluyen datos personales.** Ya no es una regla de
+1. **Los resultados nunca incluyen datos de identidad.** Ya no es una regla de
    disciplina: el servicio que sirve `GET /api/runs/resultados` vive en otro
    schema, con otro rol de Postgres, y no tiene ninguna tabla con datos
    personales ni permiso para alcanzarlos. Hay una prueba unitaria, una e2e y
    un paso de CI que lo verifican contra la base real. Es esta separación
-   estructural —no un borrado posterior— la que garantiza el anonimato del
-   dato de análisis.
+   estructural —no un borrado posterior— la que separa el dato de análisis
+   de nombre, correo y cédula. Las evaluaciones incorporan rango de edad y
+   género para el estudio; siguen siendo datos seudonimizados, no datos
+   anónimos por el solo hecho de sustituir el nombre.
 2. **El seudónimo se deriva de `seq`, no se guarda.** El participante nunca lo
    ve; es solo la llave con la que el supervisor cruza estos resultados con
    las respuestas del pre-test y post-test.
@@ -600,11 +621,40 @@ El consentimiento informado debe decir explícitamente:
 - que se recogen **nombre, apellido, correo y cédula** para dar acceso;
 - que **la cédula no se almacena**: se guarda solo un código derivado del que no
   se puede reconstruir, y su único fin es evitar registros duplicados;
-- que los datos usados para el análisis se tratan de forma **anonimizada**
+- que los datos usados para el análisis se tratan de forma **seudonimizada**
   (el seudónimo `P001`, nunca nombre, correo ni cédula).
+- que las evaluaciones recogen rango de edad, género y 21 respuestas para
+  comparar el reconocimiento de amenazas, incluidas en la aceptación de la
+  política de datos y los términos durante el registro;
+- que el equipo puede exportar en CSV esos datos y los puntajes con seudónimo,
+  sin datos de identidad, y que las publicaciones presentan datos agregados.
 
-Los pre-test y post-test se aplican **fuera** de la plataforma (Moodle). La
-plataforma no envía nada a Moodle ni consume su API.
+### 7.2 Evaluación inicial y final
+
+La evaluación inicial requiere cuenta confirmada y sesión autenticada. Se
+responde **antes de la bienvenida**, porque esta ya presenta pautas de
+prevención, y antes de iniciar escenarios. El bloqueo se verifica también
+en el servidor al registrar corridas; no depende solo de la navegación.
+
+La evaluación final se habilita al terminar los 52 escenarios de los siete
+módulos, **sin exigir aprobación**. Usa las mismas 21 preguntas y versión
+que la inicial. Ambas entregas son únicas por fase y versión. Esto no cambia
+los umbrales ni los requisitos del certificado.
+
+Quienes tenían corridas antes de incorporar la encuesta conservan su avance.
+Pueden responder la final, pero quedan identificados como **sin medición
+inicial** y excluidos de la comparación individual pre/post. La exención se
+determina con la instantánea de migración, no con la presencia de cualquier
+corrida nueva.
+
+El análisis y la exportación administrativa usan el mismo seudónimo derivado
+de `participantSeq` para emparejar ambas fases. El CSV incluye rango de edad,
+género, respuestas y puntajes de cada fase; calcula la diferencia final menos
+inicial solo si existen ambas. Una evaluación final pendiente o una medición
+inicial inexistente se distinguen de un puntaje cero. No se exportan
+`participantId`, nombres, correos, cédulas, fechas de alta ni orden de registro
+de cuentas. `entrenamiento` no consulta `identidad` para obtener ninguno de
+estos datos.
 
 ---
 
@@ -622,6 +672,20 @@ docker compose exec identidad node prisma/seed.mts --email tu.correo@espe.edu.ec
 
 El `seed` solo crea la cuenta de supervisor e imprime su contraseña una vez.
 Los participantes se registran solos desde la plataforma.
+
+Al incorporar las evaluaciones, detener el servicio antiguo de
+`entrenamiento` antes de aplicar su migración y mantenerlo detenido hasta
+arrancar la versión nueva. La migración toma una instantánea de quienes
+ya tienen `ScenarioRun` para marcar su ausencia de medición inicial. Si la
+versión antigua registra nuevas corridas entre esa instantánea y el cambio
+de versión, esas personas entrenarían sin evaluación inicial y quedarían
+fuera de la exención. No levantar `docker-compose.yml` y
+`docker-compose.db.yml` simultáneamente: comparten `pgdata`.
+
+Para el ajuste que elimina la casilla adicional de la encuesta, aplicar
+`20261014100000_assessment_optional_consent` y desplegar el backend compatible
+antes del frontend que omite esos campos. La migración conserva constancias
+históricas y el CHECK que rechaza `consentAccepted = false`.
 
 Los dos servicios de aplicación salen de **una sola imagen**: comparten
 dependencias y `libs/comun`, así que construirlas por separado duplicaría el
@@ -811,14 +875,14 @@ Antes de escribir código en este repositorio:
 | Tema | Decisión | Por qué |
 |---|---|---|
 | Framework frontend | React + Vite + TypeScript `strict` | Los tipos atrapan errores de contrato entre el frontend y el API antes de ejecutar; en un instrumento de investigación un dato mal formado es un dato perdido. |
-| Acceso | Registro con nombre, apellido, correo y cédula | Un código asignado confunde al público no técnico. La cédula da una cuenta por persona sin almacenarse (§7.1), y la separación de §7 mantiene el anonimato del análisis. |
+| Acceso | Registro con nombre, apellido, correo y cédula | Un código asignado confunde al público no técnico. La cédula da una cuenta por persona sin almacenarse (§7.1), y la separación de §7 mantiene los datos de identidad fuera del análisis. |
 | Estado global | Context API | Solo hay un estado compartido (la sesión). Redux sería sobreingeniería. |
 | Backend | Dos microservicios cortados por sensibilidad del dato | Hace que la regla de privacidad del estudio deje de depender de la disciplina al escribir consultas y pase a ser una imposibilidad técnica (§2.1). |
 | Comunicación entre servicios | Ninguna: todo lo que necesitan viaja en el JWT | Evita acoplamiento en tiempo de ejecución y una cadena de fallos donde un servicio caído tumba al otro. |
 | Firma de los JWT | ES256, un par de claves por servicio | Con un secreto compartido, un servicio comprometido podía emitir sesiones del otro (§5.1). |
 | Base de datos | Un Postgres, un schema y un rol por servicio | Dos contenedores de base complicarían la operación de una sesión presencial sin añadir aislamiento que los roles no den ya. |
 | Contenido de escenarios | En el repositorio, no en la base | No es dato del estudio ni varía por usuario. |
-| Pre/post-test | Moodle, fuera de la plataforma | Ya resuelto y validado; construirlo dentro no aportaría al objetivo. |
+| Pre/post-test | Dentro de la plataforma, en entrenamiento | Permite exigir medición inicial antes de enseñar y emparejar ambas fases con el mismo seudónimo sin consultar identidad. |
 | Analítica dentro de la app | Fuera de alcance | El análisis se hace sobre los resultados que el supervisor consulta en `/api/runs/resultados`. |
 | Multi-idioma | Fuera de alcance | El estudio es en Ecuador, en español. |
 | Certificado | Atestación firmada por el cliente, sin servicio propio | Un tercer microservicio (`certificados` :3003) que llamara a `entrenamiento` violaría §2. La atestación es la misma regla que ya rige el JWT: lo que cruza entre servicios, viaja por el cliente. |

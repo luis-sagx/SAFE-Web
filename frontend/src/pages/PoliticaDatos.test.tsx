@@ -80,6 +80,6 @@ describe('PoliticaDatos', () => {
     vi.useFakeTimers()
     vi.setSystemTime(new Date('2030-01-01T12:00:00Z'))
     renderPolicy()
-    expect(screen.getByText('Última actualización: 25 de septiembre de 2026')).toBeDefined()
+    expect(screen.getByText('Última actualización: 14 de octubre de 2026')).toBeDefined()
   })
 })

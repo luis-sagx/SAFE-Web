@@ -3,13 +3,14 @@ import { MemoryRouter } from 'react-router'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import Dashboard from './Dashboard'
 
-const { fetchProgressMock } = vi.hoisted(() => ({
+const { fetchProgressMock, assessmentStatusMock } = vi.hoisted(() => ({
   fetchProgressMock: vi.fn(),
+  assessmentStatusMock: vi.fn(),
 }))
 
 vi.mock('../lib/api', async () => {
   const current = await vi.importActual<typeof import('../lib/api')>('../lib/api')
-  return { ...current, fetchProgress: fetchProgressMock }
+  return { ...current, fetchProgress: fetchProgressMock, fetchAssessmentStatus: assessmentStatusMock }
 })
 
 vi.mock('../context/AuthContext', async () => (await import('../test/escenario')).mockAuth())
@@ -25,6 +26,15 @@ function renderDashboard() {
 describe('Dashboard', () => {
   beforeEach(() => {
     fetchProgressMock.mockReset()
+    assessmentStatusMock.mockReset().mockResolvedValue({ pretestRequired: false, baselineMissing: false, pretestCompleted: true, posttestAvailable: false, posttestCompleted: false })
+  })
+
+  it('ofrece evaluación final con todos los escenarios terminados aunque no aprobados', async () => {
+    fetchProgressMock.mockResolvedValue({ modulo: 'phishing', escenarios: [], aprobados: 0, requeridos: 6, aprobado: false })
+    assessmentStatusMock.mockResolvedValue({ pretestRequired: false, baselineMissing: true, pretestCompleted: false, posttestAvailable: true, posttestCompleted: false })
+    renderDashboard()
+    expect(await screen.findByRole('link', { name: 'Responder evaluación final' })).toBeDefined()
+    expect(screen.queryByRole('button', { name: 'Descargar certificado' })).toBeNull()
   })
 
   // El recorrido propio vive en el menú de cuenta del header, que es el mismo

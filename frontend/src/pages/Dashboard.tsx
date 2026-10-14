@@ -1,5 +1,6 @@
 import { ArrowRight } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useAuth } from "../context/AuthContext";
 import AppHeader from "../components/AppHeader";
 import ProgressBar from "../components/BarraProgreso";
 import Ticket, { Insignia, Notches, Sello } from "../components/Boleto";
@@ -7,7 +8,7 @@ import CertificateButton from "../components/CertificadoBoton";
 import { TRAMA_FONDO } from "../components/TramaFondo";
 import { Link } from "react-router";
 import { getSectionScenarios, SECTIONS } from "../data/catalogo";
-import { fetchProgress, type Progress } from "../lib/api";
+import { fetchAssessmentStatus, fetchProgress, type AssessmentStatus, type Progress } from "../lib/api";
 
 // Solo secciones con escenarios tienen gating; las demás muestran "Pronto" sin pedir progreso.
 const SECTIONS_ACTIVE = SECTIONS.filter(
@@ -46,6 +47,19 @@ function calculateOverallProgress(progressByModule: Record<string, Progress>) {
 const folio = (index: number) => `MOD-${String(index + 1).padStart(2, "0")}`;
 
 function Dashboard() {
+  const { participant } = useAuth();
+  const [assessmentStatus, setAssessmentStatus] = useState<AssessmentStatus | null>(null);
+  const [assessmentError, setAssessmentError] = useState(false);
+  const [assessmentRetry, setAssessmentRetry] = useState(0);
+  useEffect(() => {
+    if (participant?.role !== 'PARTICIPANT') return;
+    let cancelled = false;
+    fetchAssessmentStatus().then(
+      (status) => { if (!cancelled) setAssessmentStatus(status); },
+      () => { if (!cancelled) setAssessmentError(true); },
+    );
+    return () => { cancelled = true; };
+  }, [participant?.id, participant?.role, assessmentRetry]);
   const [progressByModule, setProgressByModule] = useState<
     Record<string, Progress>
   >({});
@@ -85,12 +99,26 @@ function Dashboard() {
       <AppHeader />
 
       <main className="mx-auto max-w-7xl px-6 py-12">
+        {assessmentStatus?.posttestAvailable && !assessmentStatus.posttestCompleted && (
+          <section className="mb-8 rounded-lg border border-primary/30 bg-surface p-6 sm:p-8" aria-labelledby="final-assessment-title">
+            <p className="text-sm font-semibold uppercase tracking-wide text-primary">Último paso del estudio</p>
+            <h2 id="final-assessment-title" className="mt-2 text-2xl font-semibold tracking-tight text-ink sm:text-3xl">Completa tu evaluación final</h2>
+            <p className="mt-3 max-w-prose text-base leading-relaxed text-body">Gracias por completar los escenarios. Para cerrar tu participación en el estudio, responde la evaluación final. Tus respuestas nos ayudan a conocer qué cambió con el entrenamiento.</p>
+            <Link to="/evaluacion-final" className="mt-6 inline-flex min-h-11 w-full items-center justify-center gap-3 rounded-md bg-primary px-5 py-3 text-center text-base font-semibold text-on-primary hover:bg-primary-active focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary sm:w-auto">
+              <span>Responder evaluación final</span>
+              <ArrowRight aria-hidden className="size-5 shrink-0" />
+            </Link>
+          </section>
+        )}
         {/* Regla del curso, no promesa: antes decía que ninguna respuesta te deja mal y el resultado decía lo contrario. */}
         <p className="max-w-prose text-lg leading-relaxed text-body">
           Elige un tipo de engaño y enfréntate a una situación como las de todos
           los días. Puedes fallar y reiniciar el módulo completo en cualquier
           momento.
         </p>
+
+        {assessmentStatus?.posttestCompleted && <p role="status" className="mt-6 text-body">Tu evaluación final ya está guardada. Gracias por participar.</p>}
+        {assessmentError && <div className="mt-6"><p role="alert" className="text-danger">No pudimos comprobar si tu evaluación final está disponible.</p><button className="min-h-11 text-link underline" onClick={() => { setAssessmentError(false); setAssessmentRetry((value) => value + 1); }}>Reintentar evaluación</button></div>}
 
         {/* Una tira de siete boletos perforada, no siete tarjetas sueltas: los módulos se recorren
             en orden, comparten el mismo papel y el talón guarda lo que te llevas (el certificado). */}

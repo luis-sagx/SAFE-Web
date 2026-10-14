@@ -5,7 +5,7 @@ import { CONTACTS, DEGREE, INSTITUTION, PROJECT_TITLE } from "../data/project";
 
 // Fecha fija de la versión vigente: se cambia a mano al editar el texto.
 // Nunca `new Date()`: la política no cambia sola cada día.
-const LAST_UPDATED = "25 de septiembre de 2026";
+const LAST_UPDATED = "14 de octubre de 2026";
 
 interface DataItem {
   data: string;
@@ -44,6 +44,13 @@ const COLLECTED_DATA: DataItem[] = [
       "Tu avance, la aprobación de cada módulo y el análisis del estudio.",
     storage:
       "Escenario jugado, decisiones tomadas, final alcanzado, puntaje, tiempo empleado y fechas. Se guardan con un seudónimo, separados de tus datos personales.",
+  },
+  {
+    data: "Evaluaciones inicial y final",
+    purpose:
+      "Comparar tu reconocimiento de amenazas antes y después del entrenamiento, como parte del estudio académico.",
+    storage:
+      "Rango de edad, género, respuestas a 21 preguntas y puntajes. Ambas evaluaciones se guardan con el mismo seudónimo, separadas de tu nombre, correo y cédula.",
   },
   {
     data: "Datos de la cuenta",
@@ -183,12 +190,12 @@ const SECTIONS: LegalSection[] = [
       <>
         <p>
           Recogemos solo lo necesario para darte acceso, registrar tu
-          entrenamiento y emitir tu certificado:
+          entrenamiento, realizar las evaluaciones del estudio y emitir tu certificado:
         </p>
         <DataList items={COLLECTED_DATA} />
         <p className="mt-4">
           <strong>No recogemos</strong> tu ubicación, contactos, fotografías,
-          datos bancarios, datos de salud ni ningún otro dato sensible. Tampoco
+          datos bancarios ni datos de salud. Tampoco
           usamos herramientas de analítica, rastreo ni publicidad de terceros.
         </p>
         <p className="mt-3">
@@ -238,6 +245,27 @@ const SECTIONS: LegalSection[] = [
         <p>
           Para el estudio, tus resultados se identifican con un seudónimo (por
           ejemplo, "P001"), nunca con tu nombre, correo o cédula.
+        </p>
+        <p className="mt-3">
+          La aceptación de esta política al registrarte incluye el tratamiento
+          de tu rango de edad, género y respuestas para el estudio. No
+          pedimos tu fecha de nacimiento. Puedes seleccionar "Prefiero no
+          decirlo" en género.
+        </p>
+        <p className="mt-3">
+          La evaluación inicial se responde después de acceder a tu cuenta y
+          antes de la bienvenida y del entrenamiento. Al terminar todos los
+          escenarios, hayas aprobado o no, respondes las mismas 21 preguntas
+          en la evaluación final. Si ya habías entrenado antes de incorporar
+          las evaluaciones, conservas tu avance y puedes hacer la final sin
+          medición inicial; ese resultado no se usa para calcular una mejora
+          individual.
+        </p>
+        <p className="mt-3">
+          El equipo puede exportar en CSV el rango de edad, género, respuestas
+          y puntajes con seudónimo para el análisis. La diferencia entre los
+          puntajes solo se calcula cuando están disponibles ambas
+          evaluaciones; no se incluyen nombres, correos ni cédulas.
         </p>
         <p className="mt-3">
           Lo que se publique en el Trabajo de Integración Curricular serán
@@ -433,6 +461,10 @@ export default function DataPolicy() {
           </li>
           <li>
             Tu cédula no se guarda, y tu nombre y correo se almacenan cifrados.
+          </li>
+          <li>
+            Las evaluaciones recogen rango de edad, género y respuestas para
+            comparar el reconocimiento de amenazas antes y después de entrenar.
           </li>
           <li>
             Tus resultados se analizan con un seudónimo, nunca con tu nombre.

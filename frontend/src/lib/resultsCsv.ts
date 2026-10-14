@@ -1,5 +1,5 @@
 import { getScenario, getSection } from '../data/catalogo'
-import type { RunResult } from './api'
+import type { AssessmentResult, RunResult } from './api'
 
 /// Una fila por corrida (formato "largo"): es lo que esperan R, SPSS o pandas
 /// para el análisis estadístico. Solo sale el seudónimo, nunca identidad.
@@ -60,4 +60,21 @@ export function downloadCsv(filename: string, csv: string): void {
   link.download = filename
   link.click()
   URL.revokeObjectURL(url)
+}
+
+
+/** Respuestas 1–4 según el orden del cuestionario; puntajes en aciertos (0–21). */
+export function assessmentResultsToCsv(rows: AssessmentResult[]): string {
+  const header = ['seudonimo', 'version', 'estado', 'pre_edad', 'pre_genero', 'post_edad', 'post_genero', 'pre_puntaje', 'post_puntaje', 'diferencia',
+    ...Array.from({ length: 21 }, (_, index) => `pre_p${index + 1}`),
+    ...Array.from({ length: 21 }, (_, index) => `post_p${index + 1}`)]
+  const lines = rows.map((row) => {
+    const state = row.baselineMissing
+      ? (row.posttest ? 'sin_medicion_inicial' : 'sin_medicion_inicial_final_pendiente')
+      : (row.pretest && row.posttest ? 'par_completo' : row.pretest ? 'final_pendiente' : 'inicial_pendiente')
+    return [row.pseudonym, row.version, state, row.pretest?.ageRange ?? '', row.pretest?.gender ?? '', row.posttest?.ageRange ?? '', row.posttest?.gender ?? '', row.pretest?.score ?? '', row.posttest?.score ?? '', row.pretest && row.posttest ? row.improvement ?? '' : '',
+      ...Array.from({ length: 21 }, (_, index) => row.pretest?.answers[index] === undefined ? '' : row.pretest.answers[index]! + 1),
+      ...Array.from({ length: 21 }, (_, index) => row.posttest?.answers[index] === undefined ? '' : row.posttest.answers[index]! + 1)].map(cell).join(',')
+  })
+  return '﻿' + [header.join(','), ...lines].join('\r\n') + '\r\n'
 }

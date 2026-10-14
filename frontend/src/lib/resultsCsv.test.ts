@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import { SCENARIOS } from '../data/catalogo'
 import type { RunResult } from './api'
-import { downloadCsv, resultsToCsv } from './resultsCsv'
+import { assessmentResultsToCsv, downloadCsv, resultsToCsv } from './resultsCsv'
 
 const scenario = SCENARIOS[0] ?? expect.unreachable('El catálogo no tiene escenarios')
 
@@ -59,5 +59,28 @@ describe('downloadCsv', () => {
     expect(revoke).toHaveBeenCalledWith('blob:csv')
     click.mockRestore()
     vi.unstubAllGlobals()
+  })
+})
+
+
+describe('assessmentResultsToCsv', () => {
+  it('exporta el par por seudónimo sin identidad, con respuestas numeradas de 1 a 4', () => {
+    const csv = assessmentResultsToCsv([{ pseudonym: 'P001', version: 1, baselineMissing: false, pretest: { ageRange: '18 - 29 años', gender: 'Femenino', answers: Array(21).fill(0), score: 10 }, posttest: { ageRange: '18 - 29 años', gender: 'Femenino', answers: Array(21).fill(2), score: 18 }, improvement: 8 }])
+    const [header, row] = csv.split('\r\n')
+    expect(header).toContain('pre_puntaje,post_puntaje,diferencia')
+    expect(row).toContain('P001,1,par_completo,18 - 29 años,Femenino,18 - 29 años,Femenino,10,18,8,1,1,1')
+    expect(row?.endsWith(',3,3,3')).toBe(true)
+    expect(csv).not.toMatch(/participantId|nombre|correo|email/)
+    expect(csv.startsWith('﻿')).toBe(true)
+  })
+  it.each([0, -3])('mantiene diferencia %s y puntaje cero sin confundirlos con datos faltantes', (difference) => {
+    const csv = assessmentResultsToCsv([{ pseudonym: 'P003', version: 1, baselineMissing: false, pretest: { ageRange: '45 - 65 años', gender: 'Masculino', answers: Array(21).fill(0), score: difference === 0 ? 0 : 3 }, posttest: { ageRange: '45 - 65 años', gender: 'Masculino', answers: Array(21).fill(0), score: 0 }, improvement: difference }])
+    expect(csv.split('\r\n')[1]?.split(',').slice(7, 10)).toEqual([difference === 0 ? '0' : '3', '0', String(difference)])
+  })
+
+  it('marca sin medición inicial y final pendiente sin inventar mejora y neutraliza fórmulas', () => {
+    const csv = assessmentResultsToCsv([{ pseudonym: '=P002', version: 1, baselineMissing: true, pretest: null, posttest: null, improvement: null }])
+    expect(csv).toContain("'=P002,1,sin_medicion_inicial_final_pendiente")
+    expect(csv).not.toContain(',0,')
   })
 })

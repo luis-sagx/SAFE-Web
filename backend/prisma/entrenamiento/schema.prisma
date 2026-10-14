@@ -72,3 +72,32 @@ model ModuleReset {
 
   @@index([participantId, module, createdAt(sort: Desc)])
 }
+
+/// Instantánea al incorporar la encuesta: no se amplía con corridas futuras.
+model AssessmentBaselineExemption {
+  participantId String @id
+  participantSeq Int
+}
+
+enum AssessmentPhase {
+  PRE
+  POST
+}
+
+model Assessment {
+  id String @id @default(uuid())
+  participantId String
+  participantSeq Int
+  version Int
+  phase AssessmentPhase
+  ageRange String
+  gender String
+  answers Int[]
+  score Int
+  /// Constancias históricas; las nuevas entregas usan la aceptación del registro.
+  consentVersion String?
+  consentAccepted Boolean?
+  submittedAt DateTime @default(now())
+
+  @@unique([participantId, version, phase])
+}
