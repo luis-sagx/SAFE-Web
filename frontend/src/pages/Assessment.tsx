@@ -13,8 +13,8 @@ function RadioGroup({ name, title, options, value, onChange, disabled }: {
       <p id={`${name}-title`} className="mb-4 break-words text-lg font-semibold text-ink">{title}</p>
       <div className="space-y-2">
         {options.map((option, index) => (
-          <label key={option} className="flex min-h-11 cursor-pointer items-center gap-3 rounded-md border border-control px-3 py-2 text-base text-body focus-within:outline-2 focus-within:outline-ink">
-            <input type="radio" name={name} value={index} checked={value === index} onChange={() => onChange(index)} required className="size-4 shrink-0 accent-primary" />
+          <label key={option} className="flex min-h-11 cursor-pointer items-center gap-3 rounded-md border border-control px-3 py-2 text-base text-body focus-within:outline-2 focus-within:outline-primary">
+            <input type="radio" name={name} value={index} checked={value === index} onChange={() => onChange(index)} required className="size-4 shrink-0 appearance-none rounded-full border border-primary bg-clip-content p-[3px] checked:bg-primary focus:outline-none" />
             {option}
           </label>
         ))}
