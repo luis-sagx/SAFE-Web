@@ -8,7 +8,7 @@ import CertificateButton from "../components/CertificadoBoton";
 import { TRAMA_FONDO } from "../components/TramaFondo";
 import { Link } from "react-router";
 import { getSectionScenarios, SECTIONS } from "../data/catalogo";
-import { fetchAssessmentStatus, fetchProgress, type AssessmentStatus, type Progress } from "../lib/api";
+import { fetchAssessmentStatus, fetchProgress, fetchSusStatus, type AssessmentStatus, type Progress, type SusStatus } from "../lib/api";
 
 // Solo secciones con escenarios tienen gating; las demás muestran "Pronto" sin pedir progreso.
 const SECTIONS_ACTIVE = SECTIONS.filter(
@@ -51,6 +51,7 @@ function Dashboard() {
   const [assessmentStatus, setAssessmentStatus] = useState<AssessmentStatus | null>(null);
   const [assessmentError, setAssessmentError] = useState(false);
   const [assessmentRetry, setAssessmentRetry] = useState(0);
+  const [susStatus, setSusStatus] = useState<SusStatus | null>(null);
   useEffect(() => {
     if (participant?.role !== 'PARTICIPANT') return;
     let cancelled = false;
@@ -60,6 +61,15 @@ function Dashboard() {
     );
     return () => { cancelled = true; };
   }, [participant?.id, participant?.role, assessmentRetry]);
+  useEffect(() => {
+    if (participant?.role !== 'PARTICIPANT') return;
+    let cancelled = false;
+    fetchSusStatus().then(
+      (status) => { if (!cancelled) setSusStatus(status); },
+      () => { if (!cancelled) setSusStatus(null); },
+    );
+    return () => { cancelled = true; };
+  }, [participant?.id, participant?.role]);
   const [progressByModule, setProgressByModule] = useState<
     Record<string, Progress>
   >({});
@@ -88,7 +98,6 @@ function Dashboard() {
   const global = calculateOverallProgress(progressByModule);
   const complete =
     global.modulos > 0 && global.modulosAprobados === global.modulos;
-
   // Primer módulo sin aprobar, solo entre los que ya respondieron: evita marcar "empieza aquí" antes de tiempo.
   const entry = SECTIONS_ACTIVE.find(
     (s) => progressByModule[s.id] && !progressByModule[s.id]?.aprobado,
@@ -126,28 +135,30 @@ function Dashboard() {
           className="mt-8 overflow-hidden"
           talon={
             <div className="px-6 py-5">
-              {/* Deshabilitado hasta completar el entrenamiento: antes no hay experiencia completa que valorar; sigue
-                  visible para que se sepa que existe. */}
-              {complete ? (
+              {/* La encuesta se habilita cuando se intentaron todos los escenarios, aunque no se aprueben los módulos. */}
+              {susStatus?.completed ? (
+                <>
+                  <p role="status" className="text-base leading-relaxed text-body">Gracias por responder la encuesta de usabilidad.</p>
+                  {complete && <CertificateButton />}
+                </>
+              ) : susStatus?.available ? (
                 <>
                   <p className="text-base leading-relaxed text-body">
-                    Terminaste los {global.modulos} módulos. ¿Qué te pareció el
+                    Recorriste todos los escenarios. ¿Qué te pareció el
                     entrenamiento?{" "}
-                    <a
-                      href="https://forms.gle/jdqLTpKyPH2eYzBk7"
-                      target="_blank"
-                      rel="noopener noreferrer"
+                    <Link
+                      to="/encuesta-sus"
                       className="font-medium text-link underline"
                     >
                       Cuéntanos tu opinión
-                    </a>
+                    </Link>
                   </p>
-                  {/* Aparece solo cuando coincide con lo que THRESHOLDS del servidor exige, nunca un número fijo aquí. */}
-                  <CertificateButton />
+                  {/* El certificado sigue sujeto al umbral que confirmó el servidor. */}
+                  {complete && <CertificateButton />}
                 </>
               ) : (
                 <p className="text-base leading-relaxed text-body">
-                  {`Completa las ${global.modulos || SECTIONS_ACTIVE.length} secciones y se habilitará un formulario para valorar tu opinión.`}
+                  Recorre todos los escenarios para habilitar la encuesta de satisfacción.
                 </p>
               )}
             </div>

@@ -11,6 +11,7 @@ const api = vi.hoisted(() => ({
   fetchParticipants: vi.fn(),
   fetchResults: vi.fn(),
   fetchAssessmentResults: vi.fn(),
+  fetchSusResults: vi.fn(),
   fetchTrainers: vi.fn(),
   resetParticipantPassword: vi.fn(),
   resetTrainerPassword: vi.fn(),
@@ -68,6 +69,7 @@ beforeEach(() => {
   api.fetchTrainers.mockResolvedValue([])
   api.fetchResults.mockResolvedValue([])
   api.fetchAssessmentResults.mockResolvedValue([])
+  api.fetchSusResults.mockResolvedValue([])
 })
 
 describe('Admin · participantes', () => {
@@ -216,5 +218,21 @@ describe('Admin · evaluaciones', () => {
     expect(screen.queryByText('ana@example.com')).toBeNull()
     fireEvent.click(screen.getByRole('button', { name: 'Exportar evaluaciones CSV' }))
     expect(csv.downloadCsv).toHaveBeenCalledWith(expect.stringContaining('evaluaciones'), expect.stringContaining('P007,1,sin_medicion_inicial'))
+  })
+})
+
+describe('Admin · encuesta SUS', () => {
+  it('muestra respuestas y puntaje por seudónimo, y exporta la encuesta', async () => {
+    api.fetchSusResults.mockResolvedValue([{ pseudonym: 'P009', version: 1, answers: [5, 1, 4, 2, 5, 1, 4, 2, 5, 1], score: 82.5 }])
+    await renderAdmin()
+    await openTab('Encuesta SUS')
+    expect(screen.getByText('P009')).toBeDefined()
+    expect(screen.getByText('82.5')).toBeDefined()
+    expect(screen.getByRole('columnheader', { name: 'P10' })).toBeDefined()
+    expect(screen.getAllByRole('cell')).toHaveLength(13)
+    expect(screen.queryByText('Ana Paz')).toBeNull()
+    expect(screen.queryByText('ana@example.com')).toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: 'Exportar encuesta SUS CSV' }))
+    expect(csv.downloadCsv).toHaveBeenCalledWith(expect.stringContaining('sus'), expect.stringContaining('P009,1,82.5'))
   })
 })

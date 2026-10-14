@@ -101,3 +101,21 @@ model Assessment {
 
   @@unique([participantId, version, phase])
 }
+
+/// Respuesta de usabilidad: solo métricas SUS y el seudónimo derivable.
+model SusResponse {
+  id String @id @default(uuid())
+
+  /// uuid opaco tomado del JWT, sin llave foránea a identidad.
+  participantId String
+  /// Número de orden para construir el seudónimo administrativo.
+  participantSeq Int
+
+  version     Int
+  answers     Int[]
+  score       Float
+  submittedAt DateTime @default(now())
+
+  @@unique([participantId, version])
+  @@index([version, participantSeq])
+}

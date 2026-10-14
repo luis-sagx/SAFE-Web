@@ -1,16 +1,18 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { getSectionScenarios } from '../data/catalogo'
 import Dashboard from './Dashboard'
 
-const { fetchProgressMock, assessmentStatusMock } = vi.hoisted(() => ({
+const { fetchProgressMock, assessmentStatusMock, susStatusMock } = vi.hoisted(() => ({
   fetchProgressMock: vi.fn(),
   assessmentStatusMock: vi.fn(),
+  susStatusMock: vi.fn(),
 }))
 
 vi.mock('../lib/api', async () => {
   const current = await vi.importActual<typeof import('../lib/api')>('../lib/api')
-  return { ...current, fetchProgress: fetchProgressMock, fetchAssessmentStatus: assessmentStatusMock }
+  return { ...current, fetchProgress: fetchProgressMock, fetchAssessmentStatus: assessmentStatusMock, fetchSusStatus: susStatusMock }
 })
 
 vi.mock('../context/AuthContext', async () => (await import('../test/escenario')).mockAuth())
@@ -23,30 +25,58 @@ function renderDashboard() {
   )
 }
 
+function progressFor(module: string, aprobado: boolean) {
+  return {
+    modulo: module,
+    escenarios: getSectionScenarios(module).map(({ id }) => ({ id })),
+    aprobados: aprobado ? 6 : 0,
+    requeridos: 6,
+    aprobado,
+  }
+}
+
 describe('Dashboard', () => {
   beforeEach(() => {
     fetchProgressMock.mockReset()
     assessmentStatusMock.mockReset().mockResolvedValue({ pretestRequired: false, baselineMissing: false, pretestCompleted: true, posttestAvailable: false, posttestCompleted: false })
+    susStatusMock.mockReset().mockResolvedValue({ version: 1, available: true, completed: false })
   })
 
-  it('ofrece evaluación final con todos los escenarios terminados aunque no aprobados', async () => {
-    fetchProgressMock.mockResolvedValue({ modulo: 'phishing', escenarios: [], aprobados: 0, requeridos: 6, aprobado: false })
+  it('ofrece la encuesta de satisfacción al intentar todos los escenarios aunque no apruebe', async () => {
+    fetchProgressMock.mockImplementation((module: string) => Promise.resolve(progressFor(module, false)))
     assessmentStatusMock.mockResolvedValue({ pretestRequired: false, baselineMissing: true, pretestCompleted: false, posttestAvailable: true, posttestCompleted: false })
     renderDashboard()
-    expect(await screen.findByRole('link', { name: 'Responder evaluación final' })).toBeDefined()
+    const link = await screen.findByRole('link', { name: 'Cuéntanos tu opinión' })
+    expect(link.getAttribute('href')).toBe('/encuesta-sus')
+    expect(link.getAttribute('target')).toBeNull()
     expect(screen.queryByRole('button', { name: 'Descargar certificado' })).toBeNull()
+  })
+
+  it('confía en la disponibilidad SUS aunque el progreso de módulos no contenga todos los escenarios', async () => {
+    fetchProgressMock.mockImplementation((module: string) => Promise.resolve({
+      ...progressFor(module, false),
+      escenarios: [],
+    }))
+
+    renderDashboard()
+
+    const link = await screen.findByRole('link', { name: 'Cuéntanos tu opinión' })
+    expect(link.getAttribute('href')).toBe('/encuesta-sus')
+    expect(screen.queryByRole('button', { name: 'Descargar certificado' })).toBeNull()
+  })
+
+  it('muestra agradecimiento cuando ya respondió la encuesta SUS', async () => {
+    fetchProgressMock.mockImplementation((module: string) => Promise.resolve(progressFor(module, false)))
+    susStatusMock.mockResolvedValue({ version: 1, available: true, completed: true })
+    renderDashboard()
+    expect(await screen.findByText('Gracias por responder la encuesta de usabilidad.')).toBeDefined()
+    expect(screen.queryByRole('link', { name: 'Cuéntanos tu opinión' })).toBeNull()
   })
 
   // El recorrido propio vive en el menú de cuenta del header, que es el mismo
   // en todas las pantallas: se llega a él desde cualquier punto, no solo aquí.
   it('siempre ofrece el enlace al recorrido propio', async () => {
-    fetchProgressMock.mockResolvedValue({
-      modulo: 'phishing',
-      escenarios: [],
-      aprobados: 0,
-      requeridos: 6,
-      aprobado: false,
-    })
+    fetchProgressMock.mockResolvedValue(progressFor('phishing', false))
 
     renderDashboard()
 
@@ -55,13 +85,8 @@ describe('Dashboard', () => {
   })
 
   it('sin aprobar todos los módulos, no ofrece el certificado', async () => {
-    fetchProgressMock.mockResolvedValue({
-      modulo: 'phishing',
-      escenarios: [],
-      aprobados: 5,
-      requeridos: 6,
-      aprobado: false,
-    })
+    fetchProgressMock.mockResolvedValue(progressFor('phishing', false))
+    susStatusMock.mockResolvedValue({ version: 1, available: false, completed: false })
 
     renderDashboard()
 
@@ -71,7 +96,7 @@ describe('Dashboard', () => {
     await screen.findByText('Tu avance')
     expect(screen.queryByRole('button', { name: 'Descargar certificado' })).toBeNull()
     // Sigue visible en el pie, solo que sin ser un enlace todavía.
-    expect(screen.getByText(/Completa las .* secciones/)).toBeDefined()
+    expect(screen.getByText(/Recorre todos los escenarios/)).toBeDefined()
     expect(screen.queryByRole('link', { name: 'Cuéntanos tu opinión' })).toBeNull()
   })
 
@@ -80,15 +105,7 @@ describe('Dashboard', () => {
   // declara (una condición que aquí se simula aprobando los de todas las
   // secciones activas).
   it('con todos los módulos aprobados, ofrece descargar el certificado', async () => {
-    fetchProgressMock.mockImplementation((module: string) =>
-      Promise.resolve({
-        modulo: module,
-        escenarios: [],
-        aprobados: 6,
-        requeridos: 6,
-        aprobado: true,
-      }),
-    )
+    fetchProgressMock.mockImplementation((module: string) => Promise.resolve(progressFor(module, true)))
 
     renderDashboard()
 

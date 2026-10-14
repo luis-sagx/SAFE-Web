@@ -24,6 +24,7 @@ import Registration from './pages/Registro'
 import RevisaTuCorreo from './pages/RevisaTuCorreo'
 import ResetPassword from './pages/RestablecerPassword'
 import Section from './pages/Seccion'
+import SusSurvey from './pages/SusSurvey'
 import VerifyCertificate from './pages/Verificar'
 import { useAuth } from './context/AuthContext'
 
@@ -62,6 +63,7 @@ function App() {
           <Route element={<RequireAuth />}>
             <Route path="/evaluacion-inicial" element={<Assessment phase="PRE" />} />
             <Route path="/evaluacion-final" element={<Assessment phase="POST" />} />
+            <Route path="/encuesta-sus" element={<SusSurvey />} />
             <Route path="/bienvenida" element={<Welcome />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/recorrido" element={<TrainingHistory />} />

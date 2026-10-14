@@ -1,5 +1,5 @@
 import { getScenario, getSection } from '../data/catalogo'
-import type { AssessmentResult, RunResult } from './api'
+import type { AssessmentResult, RunResult, SusResult } from './api'
 
 /// Una fila por corrida (formato "largo"): es lo que esperan R, SPSS o pandas
 /// para el análisis estadístico. Solo sale el seudónimo, nunca identidad.
@@ -76,5 +76,12 @@ export function assessmentResultsToCsv(rows: AssessmentResult[]): string {
       ...Array.from({ length: 21 }, (_, index) => row.pretest?.answers[index] === undefined ? '' : row.pretest.answers[index]! + 1),
       ...Array.from({ length: 21 }, (_, index) => row.posttest?.answers[index] === undefined ? '' : row.posttest.answers[index]! + 1)].map(cell).join(',')
   })
+  return '﻿' + [header.join(','), ...lines].join('\r\n') + '\r\n'
+}
+
+/** Respuestas SUS en escala original de 1 a 5, vinculadas solo al seudónimo. */
+export function susResultsToCsv(rows: SusResult[]): string {
+  const header = ['seudonimo', 'version', 'puntaje_sus', ...Array.from({ length: 10 }, (_, index) => `sus_p${index + 1}`)]
+  const lines = rows.map((row) => [row.pseudonym, row.version, row.score, ...row.answers].map(cell).join(','))
   return '﻿' + [header.join(','), ...lines].join('\r\n') + '\r\n'
 }

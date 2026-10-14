@@ -9,6 +9,7 @@ import {
 } from '@comun';
 import { PrismaModule } from './prisma/prisma.module';
 import { AssessmentsModule } from './assessments/assessments.module';
+import { SusModule } from './sus/sus.module';
 import { RunsModule } from './runs/runs.module';
 
 @Module({
@@ -26,6 +27,7 @@ import { RunsModule } from './runs/runs.module';
     PrismaModule,
     RunsModule,
     AssessmentsModule,
+    SusModule,
   ],
   controllers: [HealthController],
   providers: [{ provide: APP_GUARD, useClass: ParticipantThrottlerGuard }],
