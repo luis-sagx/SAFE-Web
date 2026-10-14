@@ -5,14 +5,15 @@ import App from './App'
 import { AuthProvider } from './context/AuthContext'
 import { setToken } from './lib/api'
 
-const { fetchMeMock, fetchProgressMock } = vi.hoisted(() => ({
+const { fetchMeMock, fetchProgressMock, fetchAssessmentStatusMock } = vi.hoisted(() => ({
   fetchMeMock: vi.fn(),
   fetchProgressMock: vi.fn(),
+  fetchAssessmentStatusMock: vi.fn(),
 }))
 
 vi.mock('./lib/api', async () => {
   const current = await vi.importActual<typeof import('./lib/api')>('./lib/api')
-  return { ...current, fetchMe: fetchMeMock, fetchProgress: fetchProgressMock }
+  return { ...current, fetchMe: fetchMeMock, fetchProgress: fetchProgressMock, fetchAssessmentStatus: fetchAssessmentStatusMock }
 })
 
 vi.mock('./secciones/phishing/RolDePagos', () => ({
@@ -38,6 +39,7 @@ describe('App', () => {
   beforeEach(() => {
     fetchMeMock.mockReset()
     fetchProgressMock.mockReset()
+    fetchAssessmentStatusMock.mockReset().mockResolvedValue({ pretestRequired: false, baselineMissing: false, pretestCompleted: true, posttestAvailable: false, posttestCompleted: false })
   })
 
   it('muestra la portada pública en la raíz sin requerir sesión', () => {

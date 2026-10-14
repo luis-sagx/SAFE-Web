@@ -438,3 +438,60 @@ export function verifyCertificate(code: string): Promise<CertificateVerification
 export function fetchGreetingAudio(): Promise<Blob> {
   return requestBlob('/narracion/saludo', { method: 'GET' })
 }
+
+export interface AssessmentStatus {
+  pretestRequired: boolean
+  baselineMissing: boolean
+  pretestCompleted: boolean
+  posttestAvailable: boolean
+  posttestCompleted: boolean
+}
+
+export interface Questionnaire {
+  version: number
+  ageRanges: string[]
+  genders: string[]
+  questions: { id: number; prompt: string; options: string[] }[]
+}
+
+export interface AssessmentPayload {
+  phase: 'PRE' | 'POST'
+  version: number
+  ageRange: string
+  gender: string
+  answers: number[]
+  consentAccepted: true
+  consentVersion: '2026-10-14'
+}
+
+export interface AssessmentResponse {
+  ageRange: string
+  gender: string
+  answers: number[]
+  score: number
+}
+
+export interface AssessmentResult {
+  pseudonym: string
+  version: number
+  baselineMissing: boolean
+  pretest: AssessmentResponse | null
+  posttest: AssessmentResponse | null
+  improvement: number | null
+}
+
+export function fetchAssessmentStatus(): Promise<AssessmentStatus> {
+  return request<AssessmentStatus>('/assessments/status')
+}
+
+export function fetchQuestionnaire(): Promise<Questionnaire> {
+  return request<Questionnaire>('/assessments/questionnaire')
+}
+
+export function submitAssessment(payload: AssessmentPayload): Promise<AssessmentStatus> {
+  return request<AssessmentStatus>('/assessments', { method: 'POST', body: payload })
+}
+
+export function fetchAssessmentResults(): Promise<AssessmentResult[]> {
+  return request<AssessmentResult[]>('/assessments/results')
+}

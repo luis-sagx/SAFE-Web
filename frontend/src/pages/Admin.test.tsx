@@ -10,6 +10,7 @@ const api = vi.hoisted(() => ({
   deleteParticipant: vi.fn(),
   fetchParticipants: vi.fn(),
   fetchResults: vi.fn(),
+  fetchAssessmentResults: vi.fn(),
   fetchTrainers: vi.fn(),
   resetParticipantPassword: vi.fn(),
   resetTrainerPassword: vi.fn(),
@@ -66,6 +67,7 @@ beforeEach(() => {
   api.fetchParticipants.mockResolvedValue([ANA])
   api.fetchTrainers.mockResolvedValue([])
   api.fetchResults.mockResolvedValue([])
+  api.fetchAssessmentResults.mockResolvedValue([])
 })
 
 describe('Admin · participantes', () => {
@@ -200,5 +202,19 @@ describe('Admin · resultados', () => {
 
     fireEvent.change(screen.getByLabelText('Módulo'), { target: { value: 'vishing' } })
     expect(screen.getByText('No hay corridas en este módulo.')).toBeDefined()
+  })
+})
+
+
+describe('Admin · evaluaciones', () => {
+  it('exporta pares y pendientes sin mostrar nombres ni correos en la pestaña', async () => {
+    api.fetchAssessmentResults.mockResolvedValue([{ pseudonym: 'P007', version: 1, baselineMissing: true, pretest: null, posttest: { ageRange: '30 - 44 años', gender: 'Masculino', answers: Array(21).fill(1), score: 12 }, improvement: null }])
+    await renderAdmin()
+    await openTab('Evaluaciones')
+    expect(screen.getByText('P007')).toBeDefined()
+    expect(screen.queryByText('Ana Paz')).toBeNull()
+    expect(screen.queryByText('ana@example.com')).toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: 'Exportar evaluaciones CSV' }))
+    expect(csv.downloadCsv).toHaveBeenCalledWith(expect.stringContaining('evaluaciones'), expect.stringContaining('P007,1,sin_medicion_inicial'))
   })
 })

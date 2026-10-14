@@ -6,14 +6,16 @@ import { AuthProvider, useAuth } from '../context/AuthContext'
 import { setToken } from '../lib/api'
 import RequireAuth from './RequireAuth'
 
-const { fetchMeMock, patchMeMock } = vi.hoisted(() => ({
+const { fetchMeMock, patchMeMock, fetchAssessmentStatusMock, loginMock } = vi.hoisted(() => ({
   fetchMeMock: vi.fn(),
   patchMeMock: vi.fn(),
+  fetchAssessmentStatusMock: vi.fn(),
+  loginMock: vi.fn(),
 }))
 
 vi.mock('../lib/api', async () => {
   const current = await vi.importActual<typeof import('../lib/api')>('../lib/api')
-  return { ...current, fetchMe: fetchMeMock, patchMe: patchMeMock }
+  return { ...current, fetchMe: fetchMeMock, patchMe: patchMeMock, fetchAssessmentStatus: fetchAssessmentStatusMock, login: loginMock }
 })
 
 function participant(overrides: Record<string, unknown> = {}) {
@@ -28,15 +30,22 @@ function participant(overrides: Record<string, unknown> = {}) {
   }
 }
 
+function SwitchAccount() {
+  const { login } = useAuth()
+  return <button onClick={() => void login('otra@example.com', 'clave')}>Cambiar cuenta</button>
+}
+
 function renderRoute(initial: string) {
   return render(
     <MemoryRouter initialEntries={[initial]}>
       <AuthProvider>
+        <SwitchAccount />
         <Routes>
           <Route path="/login" element={<p>Pantalla de acceso</p>} />
           <Route element={<RequireAuth />}>
             <Route path="/dashboard" element={<p>Zona del participante</p>} />
             <Route path="/bienvenida" element={<p>Pantalla de bienvenida</p>} />
+            <Route path="/evaluacion-inicial" element={<p>Evaluación inicial</p>} />
           </Route>
         </Routes>
       </AuthProvider>
@@ -66,6 +75,7 @@ function renderWelcomeWithContinue() {
   return render(
     <MemoryRouter initialEntries={['/bienvenida']}>
       <AuthProvider>
+        <SwitchAccount />
         <Routes>
           <Route path="/login" element={<p>Pantalla de acceso</p>} />
           <Route element={<RequireAuth />}>
@@ -82,9 +92,43 @@ describe('RequireAuth', () => {
   beforeEach(() => {
     localStorage.clear()
     fetchMeMock.mockReset()
+    fetchAssessmentStatusMock.mockReset()
+    fetchAssessmentStatusMock.mockResolvedValue({ pretestRequired: false, baselineMissing: false, pretestCompleted: true, posttestAvailable: false, posttestCompleted: false })
   })
 
-  it('manda al acceso cuando no hay sesión', async () => {
+  it('exige la evaluación inicial antes de la bienvenida incluso con enlace directo', async () => {
+    setToken('token')
+    fetchMeMock.mockResolvedValue(participant({ onboardingVisto: false }))
+    fetchAssessmentStatusMock.mockResolvedValue({ pretestRequired: true, baselineMissing: false, pretestCompleted: false, posttestAvailable: false, posttestCompleted: false })
+    renderRoute('/dashboard')
+    expect(await screen.findByText('Evaluación inicial')).toBeDefined()
+    expect(screen.queryByText('Pantalla de bienvenida')).toBeNull()
+  })
+
+  it('un fallo al consultar la evaluación bloquea el entrenamiento y permite reintentar', async () => {
+    setToken('token')
+    fetchMeMock.mockResolvedValue(participant())
+    fetchAssessmentStatusMock.mockRejectedValueOnce(new Error('Sin conexión'))
+    renderRoute('/dashboard')
+    expect(await screen.findByRole('alert')).toBeDefined()
+    expect(screen.queryByText('Zona del participante')).toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: 'Reintentar' }))
+    expect(await screen.findByText('Zona del participante')).toBeDefined()
+  })
+
+  it('bloquea al cambiar de cuenta en la misma ruta hasta comprobar su evaluación', async () => {
+    setToken('token')
+    fetchMeMock.mockResolvedValue(participant())
+    loginMock.mockResolvedValue({ accessToken: 'token2', participant: participant({ id: 'p2' }) })
+    renderRoute('/dashboard')
+    await screen.findByText('Zona del participante')
+    fetchAssessmentStatusMock.mockReturnValueOnce(new Promise(() => {}))
+    fireEvent.click(screen.getByRole('button', { name: 'Cambiar cuenta' }))
+    await waitFor(() => expect(screen.queryByText('Zona del participante')).toBeNull())
+    expect(screen.getByText('Cargando…')).toBeDefined()
+  })
+
+  it('manda al acceso cuando no hay sesión'  , async () => {
     renderRoute('/dashboard')
 
     expect(await screen.findByText('Pantalla de acceso')).toBeDefined()

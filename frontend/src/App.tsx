@@ -8,6 +8,7 @@ import RequireAuth from './components/RequireAuth'
 import RequireSupervisor from './components/RequireSupervisor'
 import { SCENARIOS, getScenarioPath } from './data/catalogo'
 import Admin from './pages/Admin'
+import Assessment from './pages/Assessment'
 import Welcome from './pages/Bienvenida'
 import ConfirmarCorreo from './pages/ConfirmarCorreo'
 import BadgePreview from './pages/InsigniaPreview'
@@ -59,6 +60,8 @@ function App() {
           </Route>
 
           <Route element={<RequireAuth />}>
+            <Route path="/evaluacion-inicial" element={<Assessment phase="PRE" />} />
+            <Route path="/evaluacion-final" element={<Assessment phase="POST" />} />
             <Route path="/bienvenida" element={<Welcome />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/recorrido" element={<TrainingHistory />} />

@@ -10,6 +10,7 @@ import {
   UserCheck,
   UserX,
 } from "lucide-react";
+import AssessmentResults from "../components/AssessmentResults";
 import AppHeader from "../components/AppHeader";
 import ConfirmDialog, { type Confirmation } from "../components/ConfirmDialog";
 import Modal from "../components/Modal";
@@ -29,7 +30,7 @@ import {
 } from "../lib/api";
 import { downloadCsv, resultsToCsv } from "../lib/resultsCsv";
 
-type Tab = "participantes" | "testers" | "resultados";
+type Tab = "participantes" | "testers" | "resultados" | "evaluaciones";
 
 function fullName(p: AdminParticipant): string {
   const parts = [p.nombre, p.apellido].filter(Boolean);
@@ -798,6 +799,8 @@ function Admin() {
   let content = <Results />;
   if (tab === "participantes") {
     content = <Participants />;
+  } else if (tab === "evaluaciones") {
+    content = <AssessmentResults />;
   } else if (tab === "testers") {
     content = <Testers />;
   }
@@ -813,7 +816,7 @@ function Admin() {
 
       <main className="mx-auto max-w-7xl p-6">
         <div
-          className="mt-8 flex gap-1 border-b border-hairline pb-3"
+          className="mt-8 flex flex-wrap gap-1 border-b border-hairline pb-3"
           role="tablist"
         >
           <button
@@ -834,6 +837,7 @@ function Admin() {
           >
             Participantes
           </button>
+          <button type="button" role="tab" aria-selected={tab === "evaluaciones"} onClick={() => setTab("evaluaciones")} className={tabClassName(tab === "evaluaciones")}>Evaluaciones</button>
           <button
             type="button"
             role="tab"

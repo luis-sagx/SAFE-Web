@@ -1,5 +1,6 @@
 import { ArrowRight } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useAuth } from "../context/AuthContext";
 import AppHeader from "../components/AppHeader";
 import ProgressBar from "../components/BarraProgreso";
 import Ticket, { Insignia, Notches, Sello } from "../components/Boleto";
@@ -7,7 +8,7 @@ import CertificateButton from "../components/CertificadoBoton";
 import { TRAMA_FONDO } from "../components/TramaFondo";
 import { Link } from "react-router";
 import { getSectionScenarios, SECTIONS } from "../data/catalogo";
-import { fetchProgress, type Progress } from "../lib/api";
+import { fetchAssessmentStatus, fetchProgress, type AssessmentStatus, type Progress } from "../lib/api";
 
 // Solo secciones con escenarios tienen gating; las demás muestran "Pronto" sin pedir progreso.
 const SECTIONS_ACTIVE = SECTIONS.filter(
@@ -46,6 +47,19 @@ function calculateOverallProgress(progressByModule: Record<string, Progress>) {
 const folio = (index: number) => `MOD-${String(index + 1).padStart(2, "0")}`;
 
 function Dashboard() {
+  const { participant } = useAuth();
+  const [assessmentStatus, setAssessmentStatus] = useState<AssessmentStatus | null>(null);
+  const [assessmentError, setAssessmentError] = useState(false);
+  const [assessmentRetry, setAssessmentRetry] = useState(0);
+  useEffect(() => {
+    if (participant?.role !== 'PARTICIPANT') return;
+    let cancelled = false;
+    fetchAssessmentStatus().then(
+      (status) => { if (!cancelled) setAssessmentStatus(status); },
+      () => { if (!cancelled) setAssessmentError(true); },
+    );
+    return () => { cancelled = true; };
+  }, [participant?.id, participant?.role, assessmentRetry]);
   const [progressByModule, setProgressByModule] = useState<
     Record<string, Progress>
   >({});
@@ -91,6 +105,16 @@ function Dashboard() {
           los días. Puedes fallar y reiniciar el módulo completo en cualquier
           momento.
         </p>
+
+        {assessmentStatus?.posttestAvailable && !assessmentStatus.posttestCompleted && (
+          <section className="mt-6 rounded-lg border border-hairline-strong bg-surface p-5" aria-labelledby="final-assessment-title">
+            <h2 id="final-assessment-title" className="text-xl font-semibold text-ink">Evaluación final disponible</h2>
+            <p className="mt-2 text-base text-body">Terminaste todos los escenarios, aunque algunos no estén aprobados. Responde la evaluación final para registrar tu nivel después del entrenamiento.</p>
+            <Link to="/evaluacion-final" className="mt-3 inline-block min-h-11 py-2 font-medium text-link underline">Responder evaluación final</Link>
+          </section>
+        )}
+        {assessmentStatus?.posttestCompleted && <p role="status" className="mt-6 text-body">Tu evaluación final ya está guardada. Gracias por participar.</p>}
+        {assessmentError && <div className="mt-6"><p role="alert" className="text-danger">No pudimos comprobar si tu evaluación final está disponible.</p><button className="min-h-11 text-link underline" onClick={() => { setAssessmentError(false); setAssessmentRetry((value) => value + 1); }}>Reintentar evaluación</button></div>}
 
         {/* Una tira de siete boletos perforada, no siete tarjetas sueltas: los módulos se recorren
             en orden, comparten el mismo papel y el talón guarda lo que te llevas (el certificado). */}
