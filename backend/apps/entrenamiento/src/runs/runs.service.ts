@@ -48,7 +48,26 @@ export class RunsService {
     this.attestationKey = readPemKey(config, 'ENTRENAMIENTO_JWT_PRIVATE_KEY');
   }
 
-  create(participant: JwtPayload, dto: CreateRunDto) {
+  async create(participant: JwtPayload, dto: CreateRunDto) {
+    const [baseline, exemption] = await Promise.all([
+      this.prisma.assessment.findUnique({
+        where: {
+          participantId_version_phase: {
+            participantId: participant.sub,
+            version: 1,
+            phase: 'PRE',
+          },
+        },
+      }),
+      this.prisma.assessmentBaselineExemption.findUnique({
+        where: { participantId: participant.sub },
+      }),
+    ]);
+    if (!baseline && !exemption) {
+      throw new ConflictException(
+        'Completa la evaluación inicial antes de comenzar el entrenamiento.',
+      );
+    }
     return this.prisma.scenarioRun.create({
       data: {
         participantId: participant.sub,

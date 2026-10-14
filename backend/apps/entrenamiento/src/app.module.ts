@@ -8,6 +8,7 @@ import {
   ParticipantThrottlerGuard,
 } from '@comun';
 import { PrismaModule } from './prisma/prisma.module';
+import { AssessmentsModule } from './assessments/assessments.module';
 import { RunsModule } from './runs/runs.module';
 
 @Module({
@@ -24,6 +25,7 @@ import { RunsModule } from './runs/runs.module';
     AuthJwtModule,
     PrismaModule,
     RunsModule,
+    AssessmentsModule,
   ],
   controllers: [HealthController],
   providers: [{ provide: APP_GUARD, useClass: ParticipantThrottlerGuard }],

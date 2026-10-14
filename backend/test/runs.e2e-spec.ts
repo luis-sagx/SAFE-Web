@@ -22,12 +22,30 @@ describe('Corridas (e2e)', () => {
 
   const server = () => request(app.getHttpServer() as App);
 
+  async function completePretest(accessToken: string) {
+    await server()
+      .post('/api/assessments')
+      .set('Authorization', `Bearer ${accessToken}`)
+      .send({
+        phase: 'PRE',
+        version: 1,
+        ageRange: '18 - 29 años',
+        gender: 'Prefiero no decirlo',
+        answers: Array.from({ length: 21 }, () => 3),
+        consentAccepted: true,
+        consentVersion: '2026-10-14',
+      })
+      .expect(201);
+  }
+
   beforeAll(async () => {
     ({ app, prisma, token } = await createTestApp());
     await cleanDatabase(prisma);
 
     mariaToken = await token({ sub: 'maria', seq: 7 });
     otherToken = await token({ sub: 'otro', seq: 8 });
+    await completePretest(mariaToken);
+    await completePretest(otherToken);
   });
 
   afterAll(async () => {
@@ -219,6 +237,8 @@ describe('Corridas (e2e)', () => {
     it('usa el último intento de cada escenario y no mezcla a otro participante', async () => {
       const ownToken = await token({ sub: 'progreso-3', seq: 52 });
       const other = await token({ sub: 'progreso-3-otro', seq: 53 });
+      await completePretest(ownToken);
+      await completePretest(other);
 
       // Repite el mismo escenario: la corrida más reciente es la que cuenta.
       await server()
