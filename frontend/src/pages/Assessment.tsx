@@ -69,7 +69,7 @@ function AssessmentForm({ phase }: { phase: 'PRE' | 'POST' }) {
         ageRange: questionnaire.ageRanges[ageIndex]!, gender: questionnaire.genders[genderIndex]!,
         answers: questionnaire.questions.map((question) => answers[question.id]!),
       })
-      navigate(phase === 'PRE' ? '/bienvenida' : '/dashboard', { replace: true })
+      await navigate(phase === 'PRE' ? '/bienvenida' : '/dashboard', { replace: true })
     } catch (failure) {
       setError(failure instanceof Error ? failure.message : 'No pudimos guardar tu evaluación. Reintenta.')
       setSubmitting(false)

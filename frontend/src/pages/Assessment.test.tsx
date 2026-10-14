@@ -3,7 +3,21 @@ import { MemoryRouter, Route, Routes } from 'react-router'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import Assessment from './Assessment'
 
-const { status, questionnaire, submit } = vi.hoisted(() => ({ status: vi.fn(), questionnaire: vi.fn(), submit: vi.fn() }))
+const { status, questionnaire, submit, navigationFailure } = vi.hoisted(() => ({ status: vi.fn(), questionnaire: vi.fn(), submit: vi.fn(), navigationFailure: vi.fn() }))
+vi.mock('react-router', async () => {
+  const router = await vi.importActual<typeof import('react-router')>('react-router')
+  return { ...router, useNavigate: () => {
+    const navigate = router.useNavigate()
+    return (...args: Parameters<typeof navigate>) => {
+      const failure: Error | undefined = navigationFailure()
+      if (!failure) return navigate(...args)
+      const rejected = Promise.reject(failure)
+      // La prueba observa el error en la interfaz, sin emitir un rechazo global.
+      void rejected.catch(() => {})
+      return rejected
+    }
+  } }
+})
 vi.mock('../lib/api', async () => ({
   ...await vi.importActual<typeof import('../lib/api')>('../lib/api'),
   fetchAssessmentStatus: status, fetchQuestionnaire: questionnaire, submitAssessment: submit,
@@ -25,6 +39,7 @@ describe('Assessment', () => {
     status.mockReset().mockResolvedValue(initial)
     questionnaire.mockReset().mockResolvedValue(survey)
     submit.mockReset().mockResolvedValue({ ...initial, pretestRequired: false, pretestCompleted: true })
+    navigationFailure.mockReset()
   })
   it('exige todas las respuestas y envía sin pedir otra aceptación', async () => {
     mount()
@@ -45,6 +60,18 @@ describe('Assessment', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Enviar evaluación' }))
     expect(await screen.findByRole('alert')).toBeDefined()
     expect((screen.getByLabelText('18 - 29 años') as HTMLInputElement).checked).toBe(true)
+    fireEvent.click(screen.getByRole('button', { name: 'Enviar evaluación' }))
+    expect(await screen.findByText('Bienvenida')).toBeDefined()
+  })
+  it('recupera el formulario si falla la navegación después de guardar', async () => {
+    navigationFailure.mockReturnValueOnce(new Error('No se pudo abrir la siguiente página.'))
+    mount()
+    await fill()
+    fireEvent.click(screen.getByRole('button', { name: 'Enviar evaluación' }))
+    expect((await screen.findByRole('alert')).textContent).toBe('No se pudo abrir la siguiente página.')
+    expect((screen.getByLabelText('18 - 29 años') as HTMLInputElement).checked).toBe(true)
+    expect((within(screen.getByRole('group', { name: '1. Situación 1' })).getByLabelText('Consultar') as HTMLInputElement).checked).toBe(true)
+    expect((screen.getByRole('button', { name: 'Enviar evaluación' }) as HTMLButtonElement).disabled).toBe(false)
     fireEvent.click(screen.getByRole('button', { name: 'Enviar evaluación' }))
     expect(await screen.findByText('Bienvenida')).toBeDefined()
   })

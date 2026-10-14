@@ -8,6 +8,10 @@ import {
   fetchAttestation,
   fetchGreetingAudio,
   fetchMe,
+  fetchAssessmentStatus,
+  fetchQuestionnaire,
+  fetchAssessmentResults,
+  submitAssessment,
   forgotPassword,
   getToken,
   login,
@@ -55,6 +59,37 @@ describe('api', () => {
 
     const [, init] = fetchMock.mock.calls[0] as [string, RequestInit]
     expect((init.headers as Record<string, string>).Authorization).toBe('Bearer t0ken')
+  })
+
+  it.each([
+    ['estado', fetchAssessmentStatus, '/api/assessments/status', { pretestRequired: true, baselineMissing: false, pretestCompleted: false, posttestAvailable: false, posttestCompleted: false }],
+    ['cuestionario', fetchQuestionnaire, '/api/assessments/questionnaire', { version: 1, ageRanges: ['18 - 29 años'], genders: ['Prefiero no decirlo'], questions: [{ id: 1, prompt: '¿Qué harías?', options: ['Verificar', 'No estoy seguro/a.'] }] }],
+    ['resultados', fetchAssessmentResults, '/api/assessments/results', [{ pseudonym: 'P007', version: 1, baselineMissing: true, pretest: null, posttest: null, improvement: null }]],
+  ] as const)('consulta %s en entrenamiento con la sesión y sin enviar datos personales', async (_name, load, url, response) => {
+    setToken('sesion-estudio')
+    const fetchMock = mockFetch({ json: () => Promise.resolve(response) })
+
+    expect(await load()).toEqual(response)
+
+    const [requestedUrl, init] = fetchMock.mock.calls[0] as [string, RequestInit]
+    expect(requestedUrl).toBe(url)
+    expect(init.method).toBe('GET')
+    expect(init.body).toBeUndefined()
+    expect(init.headers).toEqual({ Authorization: 'Bearer sesion-estudio' })
+  })
+
+  it('envía las respuestas a entrenamiento sin identidad ni consentimiento adicional', async () => {
+    setToken('sesion-estudio')
+    const saved = { pretestRequired: false, baselineMissing: false, pretestCompleted: true, posttestAvailable: false, posttestCompleted: false }
+    const fetchMock = mockFetch({ json: () => Promise.resolve(saved) })
+
+    expect(await submitAssessment({ phase: 'PRE', version: 1, ageRange: '18 - 29 años', gender: 'Prefiero no decirlo', answers: Array(21).fill(2) })).toEqual(saved)
+
+    const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit]
+    expect(url).toBe('/api/assessments')
+    expect(init.method).toBe('POST')
+    expect(init.headers).toEqual({ 'Content-Type': 'application/json', Authorization: 'Bearer sesion-estudio' })
+    expect(JSON.parse(init.body as string)).toEqual({ phase: 'PRE', version: 1, ageRange: '18 - 29 años', gender: 'Prefiero no decirlo', answers: Array(21).fill(2) })
   })
 
   it('no manda token en login', async () => {
