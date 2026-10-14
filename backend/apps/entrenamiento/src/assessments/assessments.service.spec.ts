@@ -19,8 +19,6 @@ const dto = {
   ageRange: '18 - 29 años',
   gender: 'Femenino',
   answers: correct,
-  consentAccepted: true,
-  consentVersion: '2026-10-14',
 };
 function fixture({
   prior = false,
@@ -129,14 +127,35 @@ describe('Evaluaciones del estudio', () => {
       participantId: 'private-id',
       participantSeq: 7,
       score: 21,
-      consentAccepted: true,
-      consentVersion: '2026-10-14',
+      consentAccepted: null,
+      consentVersion: null,
     });
     expect(status).toMatchObject({
       pretestCompleted: true,
       pretestRequired: false,
     });
     expect(status).not.toHaveProperty('score');
+  });
+  it('acepta respuestas sin nueva constancia de consentimiento', async () => {
+    expect(
+      await validate(Object.assign(new CreateAssessmentDto(), dto)),
+    ).toEqual([]);
+  });
+  it('conserva la constancia válida de clientes anteriores', async () => {
+    const legacy = {
+      ...dto,
+      consentAccepted: true,
+      consentVersion: '2026-10-14',
+    };
+    expect(
+      await validate(Object.assign(new CreateAssessmentDto(), legacy)),
+    ).toEqual([]);
+    const { service, rows } = fixture();
+    await service.create(participant, legacy);
+    expect(rows[0]).toMatchObject({
+      consentAccepted: true,
+      consentVersion: '2026-10-14',
+    });
   });
   it('exporta pares con cambio y sin identificador interno', async () => {
     const [row] = await fixture({ phases: ['PRE', 'POST'] }).service.results();

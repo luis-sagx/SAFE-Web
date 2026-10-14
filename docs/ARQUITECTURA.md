@@ -354,7 +354,7 @@ a `identidad`, `/api/runs/*` a `entrenamiento`.
 | `GET` | `/api/runs/resultados` | entrenamiento | JWT + rol `SUPERVISOR` | Todas las corridas, seudonimizadas (JSON, se ve dentro de la app, no se descarga). |
 | `GET` | `/api/assessments/questionnaire` | entrenamiento | JWT + rol `PARTICIPANT` | Misma encuesta versionada para ambas fases, sin clave de respuestas. |
 | `GET` | `/api/assessments/status` | entrenamiento | JWT + rol `PARTICIPANT` | Obligatoriedad inicial, disponibilidad final y ausencia de medición inicial. |
-| `POST` | `/api/assessments` | entrenamiento | JWT + rol `PARTICIPANT` | Valida y registra fase, versión, demografía, 21 respuestas y consentimiento; calcula puntaje en servidor. |
+| `POST` | `/api/assessments` | entrenamiento | JWT + rol `PARTICIPANT` | Valida y registra fase, versión, demografía y 21 respuestas; calcula puntaje en servidor. |
 | `GET` | `/api/assessments/results` | entrenamiento | JWT + rol `SUPERVISOR` | Evaluaciones emparejadas por seudónimo y diferencia de puntajes, para exportar CSV en administración. |
 | `GET` | `/api/runs/atestacion` | entrenamiento | JWT | Certificado (§11): `200` con `{ atestacion }` si todos los módulos de `UMBRALES` están aprobados, `409` con `{ faltan }` si no. |
 | `POST` | `/api/certificados` | identidad | JWT | Body `{ atestacion }`. Canjea la atestación y emite (o actualiza) el certificado. → `{ codigo, emitidoAt, modulos, horas }`. |
@@ -508,6 +508,9 @@ pertenecen a `entrenamiento`; los datos de acceso permanecen en `identidad`:
   `participantSeq`, `ageRange`, `gender`, las 21 respuestas (`answers`),
   `score`, `consentVersion`, `consentAccepted` y `submittedAt`. El servidor
   valida las opciones y calcula el puntaje; no acepta un puntaje del cliente.
+  Los campos de consentimiento conservan constancias históricas y son
+  opcionales para compatibilidad: nuevas entregas los guardan como `null`,
+  sin inventar una nueva aceptación.
 - `backend/prisma/entrenamiento/schema.prisma` →
   **`AssessmentBaselineExemption`**: instantánea de participantes que ya
   tenían corridas al incorporar la encuesta. Conserva `participantId` y
@@ -621,8 +624,8 @@ El consentimiento informado debe decir explícitamente:
 - que los datos usados para el análisis se tratan de forma **seudonimizada**
   (el seudónimo `P001`, nunca nombre, correo ni cédula).
 - que las evaluaciones recogen rango de edad, género y 21 respuestas para
-  comparar el reconocimiento de amenazas, con aceptación explícita antes de
-  enviarlas y constancia de la versión de consentimiento;
+  comparar el reconocimiento de amenazas, incluidas en la aceptación de la
+  política de datos y los términos durante el registro;
 - que el equipo puede exportar en CSV esos datos y los puntajes con seudónimo,
   sin datos de identidad, y que las publicaciones presentan datos agregados.
 
@@ -678,6 +681,11 @@ versión antigua registra nuevas corridas entre esa instantánea y el cambio
 de versión, esas personas entrenarían sin evaluación inicial y quedarían
 fuera de la exención. No levantar `docker-compose.yml` y
 `docker-compose.db.yml` simultáneamente: comparten `pgdata`.
+
+Para el ajuste que elimina la casilla adicional de la encuesta, aplicar
+`20261014100000_assessment_optional_consent` y desplegar el backend compatible
+antes del frontend que omite esos campos. La migración conserva constancias
+históricas y el CHECK que rechaza `consentAccepted = false`.
 
 Los dos servicios de aplicación salen de **una sola imagen**: comparten
 dependencias y `libs/comun`, así que construirlas por separado duplicaría el

@@ -92,8 +92,8 @@ const SECTIONS: LegalSection[] = [
         <p className="mt-3">
           Si ya habías entrenado antes de incorporar estas evaluaciones,
           conservas tu avance y puedes responder la final sin medición inicial.
-          Antes de enviar tus respuestas te pedimos aceptar su tratamiento
-          conforme a la política de datos.
+          La aceptación de la política de datos al registrarte incluye el
+          tratamiento de tus respuestas para el estudio.
         </p>
       </>
     ),

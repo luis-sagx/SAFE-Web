@@ -65,8 +65,8 @@ export class AssessmentsService {
           gender: dto.gender,
           answers: dto.answers,
           score: scoreAssessment(dto.answers),
-          consentAccepted: dto.consentAccepted,
-          consentVersion: dto.consentVersion,
+          consentAccepted: dto.consentAccepted ?? null,
+          consentVersion: dto.consentVersion ?? null,
         },
       });
     } catch (error) {

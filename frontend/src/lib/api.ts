@@ -460,8 +460,6 @@ export interface AssessmentPayload {
   ageRange: string
   gender: string
   answers: number[]
-  consentAccepted: true
-  consentVersion: '2026-10-14'
 }
 
 export interface AssessmentResponse {

@@ -1,5 +1,5 @@
 import { useEffect, useState, type SyntheticEvent } from 'react'
-import { Link, Navigate, useNavigate } from 'react-router'
+import { Navigate, useNavigate } from 'react-router'
 import { useAuth } from '../context/AuthContext'
 import LoadingScreen from '../components/PantallaCarga'
 import { fetchAssessmentStatus, fetchQuestionnaire, submitAssessment, type AssessmentStatus, type Questionnaire } from '../lib/api'
@@ -9,8 +9,8 @@ function RadioGroup({ name, title, options, value, onChange, disabled }: {
   onChange: (value: number) => void; disabled: boolean
 }) {
   return (
-    <fieldset className="rounded-lg border border-hairline-strong bg-surface p-5" disabled={disabled}>
-      <legend className="px-2 text-lg font-semibold text-ink">{title}</legend>
+    <fieldset aria-labelledby={`${name}-title`} className="min-w-0 rounded-lg border border-hairline-strong bg-surface p-5" disabled={disabled}>
+      <p id={`${name}-title`} className="mb-4 break-words text-lg font-semibold text-ink">{title}</p>
       <div className="space-y-2">
         {options.map((option, index) => (
           <label key={option} className="flex min-h-11 cursor-pointer items-center gap-3 rounded-md border border-control px-3 py-2 text-base text-body focus-within:outline-2 focus-within:outline-ink">
@@ -37,7 +37,6 @@ function AssessmentForm({ phase }: { phase: 'PRE' | 'POST' }) {
   const [ageIndex, setAgeIndex] = useState<number>()
   const [genderIndex, setGenderIndex] = useState<number>()
   const [answers, setAnswers] = useState<Record<number, number>>({})
-  const [consent, setConsent] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
 
@@ -57,7 +56,7 @@ function AssessmentForm({ phase }: { phase: 'PRE' | 'POST' }) {
   const { status, questionnaire } = loaded
   if (phase === 'PRE' && !status.pretestRequired) return <Navigate to="/dashboard" replace />
   if (phase === 'POST' && (!status.posttestAvailable || status.posttestCompleted)) return <Navigate to="/dashboard" replace />
-  const ready = ageIndex !== undefined && genderIndex !== undefined && consent && questionnaire.questions.every((question) => answers[question.id] !== undefined)
+  const ready = ageIndex !== undefined && genderIndex !== undefined && questionnaire.questions.every((question) => answers[question.id] !== undefined)
 
   async function submit(event: SyntheticEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -69,7 +68,6 @@ function AssessmentForm({ phase }: { phase: 'PRE' | 'POST' }) {
         phase, version: questionnaire.version,
         ageRange: questionnaire.ageRanges[ageIndex]!, gender: questionnaire.genders[genderIndex]!,
         answers: questionnaire.questions.map((question) => answers[question.id]!),
-        consentAccepted: true, consentVersion: '2026-10-14',
       })
       navigate(phase === 'PRE' ? '/bienvenida' : '/dashboard', { replace: true })
     } catch (failure) {
@@ -83,16 +81,11 @@ function AssessmentForm({ phase }: { phase: 'PRE' | 'POST' }) {
       <h1 className="text-3xl font-semibold tracking-tight text-ink">{phase === 'PRE' ? 'Evaluación inicial' : 'Evaluación final'}</h1>
       <p className="text-base leading-relaxed text-body">{phase === 'PRE' ? 'Antes de empezar, responde qué harías en estas situaciones.' : 'Terminaste los escenarios. Responde qué harías ahora en estas situaciones, independientemente de tus resultados en el entrenamiento.'} Elige una respuesta por pregunta. Si tienes dudas, puedes indicar «No estoy seguro/a».</p>
       <p className="text-base leading-relaxed text-body">Tus respuestas se guardan con un identificador confidencial, sin incluir tu nombre, correo ni cédula. Usamos el mismo identificador para comparar ambas evaluaciones. No mostraremos respuestas correctas ni puntajes durante esta encuesta.</p>
-      {status.baselineMissing && <p className="text-base text-body">Como ya habías usado el entrenamiento, tu evaluación final quedará sin medición inicial y no se incluirá en la comparación de mejora.</p>}
       <p className="text-sm text-body">Las respuestas se guardan al enviar la evaluación. Si sales antes de enviarla, tendrás que responderla nuevamente.</p>
       <form onSubmit={(event) => void submit(event)} className="space-y-6">
         <RadioGroup name="ageRange" title="Rango de edad" options={questionnaire.ageRanges} value={ageIndex} onChange={setAgeIndex} disabled={submitting} />
         <RadioGroup name="gender" title="Género" options={questionnaire.genders} value={genderIndex} onChange={setGenderIndex} disabled={submitting} />
         {questionnaire.questions.map((question) => <RadioGroup key={question.id} name={`question-${question.id}`} title={`${question.id}. ${question.prompt}`} options={question.options} value={answers[question.id]} onChange={(value) => setAnswers((previous) => ({ ...previous, [question.id]: value }))} disabled={submitting} />)}
-        <label className="flex min-h-11 items-start gap-3 text-base text-body">
-          <input className="mt-1 size-4 shrink-0 accent-primary" type="checkbox" required checked={consent} disabled={submitting} onChange={(event) => setConsent(event.target.checked)} />
-          <span>Acepto el tratamiento de mis respuestas, rango de edad y género para el estudio según la <Link to="/politica-de-datos" target="_blank" rel="noopener noreferrer" className="text-link underline">política de datos</Link>.</span>
-        </label>
         <p role="status" className="text-sm text-body">{Object.keys(answers).length} de {questionnaire.questions.length} preguntas respondidas. Todos los campos son obligatorios.</p>
         {error && <p role="alert" className="text-danger">{error}</p>}
         <button type="submit" disabled={!ready || submitting} className="min-h-11 rounded-md bg-primary px-5 text-base font-medium text-on-primary hover:bg-primary-active disabled:opacity-60">{submitting ? 'Guardando…' : 'Enviar evaluación'}</button>

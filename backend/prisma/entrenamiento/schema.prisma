@@ -94,8 +94,9 @@ model Assessment {
   gender String
   answers Int[]
   score Int
-  consentVersion String
-  consentAccepted Boolean
+  /// Constancias históricas; las nuevas entregas usan la aceptación del registro.
+  consentVersion String?
+  consentAccepted Boolean?
   submittedAt DateTime @default(now())
 
   @@unique([participantId, version, phase])

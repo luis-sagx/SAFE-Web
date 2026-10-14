@@ -50,7 +50,7 @@ const COLLECTED_DATA: DataItem[] = [
     purpose:
       "Comparar tu reconocimiento de amenazas antes y después del entrenamiento, como parte del estudio académico.",
     storage:
-      "Rango de edad, género, respuestas a 21 preguntas, puntajes y constancia de consentimiento. Ambas evaluaciones se guardan con el mismo seudónimo, separadas de tu nombre, correo y cédula.",
+      "Rango de edad, género, respuestas a 21 preguntas y puntajes. Ambas evaluaciones se guardan con el mismo seudónimo, separadas de tu nombre, correo y cédula.",
   },
   {
     data: "Datos de la cuenta",
@@ -247,8 +247,8 @@ const SECTIONS: LegalSection[] = [
           ejemplo, "P001"), nunca con tu nombre, correo o cédula.
         </p>
         <p className="mt-3">
-          Antes de enviar una evaluación te pedimos aceptar el tratamiento de
-          tu rango de edad, género y respuestas conforme a esta política. No
+          La aceptación de esta política al registrarte incluye el tratamiento
+          de tu rango de edad, género y respuestas para el estudio. No
           pedimos tu fecha de nacimiento. Puedes seleccionar "Prefiero no
           decirlo" en género.
         </p>

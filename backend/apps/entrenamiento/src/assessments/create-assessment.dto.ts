@@ -5,6 +5,7 @@ import {
   IsArray,
   IsIn,
   IsInt,
+  IsOptional,
   Max,
   Min,
 } from 'class-validator';
@@ -45,12 +46,14 @@ export class CreateAssessmentDto {
     message: 'Selecciona una respuesta válida en cada pregunta.',
   })
   answers: number[];
+  @IsOptional()
   @Equals(true, {
     message: 'Debes aceptar el consentimiento de la encuesta para enviarla.',
   })
-  consentAccepted: boolean;
+  consentAccepted?: boolean;
+  @IsOptional()
   @Equals(CONSENT_VERSION, {
     message: 'Actualiza la página para leer el consentimiento vigente.',
   })
-  consentVersion: string;
+  consentVersion?: string;
 }

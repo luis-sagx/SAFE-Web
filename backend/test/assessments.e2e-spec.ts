@@ -18,8 +18,6 @@ describe('Encuesta del estudio (e2e)', () => {
     ageRange: '18 - 29 años',
     gender: 'Femenino',
     answers: [1, 2, 0, 2, 0, 1, 0, 2, 1, 2, 0, 2, 1, 2, 0, 1, 2, 1, 2, 1, 0],
-    consentAccepted: true,
-    consentVersion: '2026-10-14',
   };
   const server = () => request(env.app.getHttpServer() as App);
   beforeAll(async () => {
@@ -89,13 +87,33 @@ describe('Encuesta del estudio (e2e)', () => {
     expect(rows[0]).toMatchObject({
       participantSeq: 77,
       score: 21,
-      consentVersion: '2026-10-14',
+      consentVersion: null,
+      consentAccepted: null,
     });
     await server()
       .post('/api/runs')
       .set('Authorization', `Bearer ${access}`)
       .send(run())
       .expect(201);
+  });
+  it('conserva constancias válidas enviadas por clientes anteriores', async () => {
+    const legacyConsent = await env.token({ sub: 'legacy-consent', seq: 79 });
+    await server()
+      .post('/api/assessments')
+      .set('Authorization', `Bearer ${legacyConsent}`)
+      .send({ ...body, consentAccepted: true, consentVersion: '2026-10-14' })
+      .expect(201);
+    expect(
+      await env.prisma.assessment.findFirst({
+        where: { participantId: 'legacy-consent' },
+      }),
+    ).toMatchObject({
+      consentAccepted: true,
+      consentVersion: '2026-10-14',
+    });
+    await env.prisma.assessment.deleteMany({
+      where: { participantId: 'legacy-consent' },
+    });
   });
   it('exige terminar cohortes y acepta final aunque todos los resultados sean incorrectos', async () => {
     await server()
