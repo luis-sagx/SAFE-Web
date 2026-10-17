@@ -26,7 +26,7 @@ El usuario aprobó implementar los cuatro ajustes analizados: decisiones visible
 ## Tareas y aceptación
 
 - [x] **T1 — Opciones y entrada al módulo smishing.** Ruta delegada, disparadores de preparación/mapeo/escritor. Citación muestra su respuesta; Bono ofrece enlace/verificación/salida; Baja permite consultar suscripciones desde acción explícita o dock, sin menú intermedio, reclamo redundante ni bloqueo distractor. Salir sin comprobar sigue parcial. Regresiones de interacción y versiones 3→4 en los tres guiones. Checks observados; commit `b4c98b2`.
-- [x] **T2 — Guiones bancarios y voces coherentes.** Ruta delegada, disparadores de preparación/escritor. Textos, avisos, señales y versiones 1→2 en ambos escenarios; frase breve «Recuerde que el banco no pide claves por teléfono». Alternativa propia de llamar intacta. Tres MP3 generados, índice actualizado, cobertura y checks verdes. Commit de unidad a continuación.
+- [x] **T2 — Guiones bancarios y voces coherentes.** Ruta delegada, disparadores de preparación/escritor. Textos, avisos, señales y versiones 1→2 en ambos escenarios; frase breve «Recuerde que el banco no pide claves por teléfono». Alternativa propia de llamar intacta. Tres MP3 generados, índice actualizado, cobertura y checks verdes. Commit de unidad `bdc33f2`.
 
 ## Progreso y evidencia
 
@@ -42,8 +42,9 @@ El usuario aprobó implementar los cuatro ajustes analizados: decisiones visible
 - T2 generación: intento inicial dentro del sandbox falló por DNS sin crear archivos; la primera escalación del trabajador quedó pendiente y se abortó al interrumpir, sin rechazo automático. El padre ejecutó el script acotado con acceso de red autorizado y obtuvo exit 0: tres POST de síntesis Cartesia, 51 audios reutilizados y cuatro obsoletos retirados. Sin otros servicios ni síntesis adicional.
 - T2 audio: índice y directorio coinciden en 54 rutas/MP3, todos válidos con ffprobe (frames y duración positiva). Los 51 conservados tienen SHA256 idéntico. Nuevos: `93d0a4bf0a5f.mp3` (6,269 s), `6769db55af06.mp3` (10,266 s), `8c77bc8395c8.mp3` (4,833 s). Retirados: `659ab712bb76`, `785874029e35`, `bfe41c859d42`, `e437854f63a4`.
 - T2 verificación final: typecheck, lint, suite completa, build y diff-check exit 0; 126 archivos, 935 pruebas aprobadas y 4 omitidas. Cobertura de voces RED por tres faltantes → GREEN tras generación. Advertencias preexistentes de lint/jsdom conservadas; sin fallos pendientes. Logs `/tmp/safe-t2-final-*.log`. Sin comprobación visual en navegador ni escucha subjetiva; integridad técnica de audio comprobada.
+- T2 commit `bdc33f2` (`fix(vishing): moderar guiones bancarios y sincronizar sus voces`). Acumulado de commits hasta esta unidad: 301 líneas autorales, excluidos MP3 e índice generado. Estrategia `ask-on-risk` sin umbral de cadena alcanzado. RDD permanece `disabled/unmanaged`; no hubo revisión nativa ni autorización fabricada. Ambas tareas terminadas y sus comprobaciones observadas.
 - Espejo Engram guardado y leído completo: observación #28, tema `odd/scenario-options-and-bank-dialogue/tasks`, proyecto `safe-web`. Advertencia de posibles coincidencias con documentos SUS de otra función; no hay conflicto del archivo local con su espejo.
 
 ## Siguiente paso
 
-Registrar commit T2, guardar su identidad y sincronizar el espejo completo. Implementación y comprobaciones terminadas; no push ni PR. La escucha subjetiva de los nuevos audios queda a criterio del usuario, sin declararla realizada.
+Implementación y comprobaciones terminadas en la rama local `fix/scenario-options-and-bank-dialogue`, sin push ni PR. El usuario puede probar los escenarios y escuchar las voces; cualquier publicación o PR sigue siendo su decisión. Sin tareas de implementación pendientes.
