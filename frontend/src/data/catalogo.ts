@@ -401,6 +401,20 @@ const BASE: BaseScenario[] = [
     Component: lazy(() => import("../secciones/vishing/DevolucionSri")),
   },
   {
+    // La pareja de tarjeta-bloqueada, al revés: allí el SMS empujaba a llamar;
+    // aquí la llamada empuja a leer un SMS que sí es del banco.
+    seccionId: "vishing",
+    escenarioId: "antifraude-banco",
+    titulo: "Aviso de consumo por teléfono",
+    descripcion:
+      "Quien llama dice ser del banco y quiere anular un consumo que no reconoces.",
+    version: 2,
+    naturaleza: "fraude",
+    dificultad: 4,
+    espeja: "vishing/banco-confirma",
+    Component: lazy(() => import("../secciones/vishing/AntifraudeBanco")),
+  },
+  {
     // No pide dinero ni códigos: pide permiso. Toda la estafa cabe en un botón
     // que dice "Permitir", y por eso el escenario obliga a pasar por la
     // pantalla que lo explica.
@@ -414,20 +428,6 @@ const BASE: BaseScenario[] = [
     dificultad: 3,
     espeja: "vishing/banco-confirma",
     Component: lazy(() => import("../secciones/vishing/SoporteTecnico")),
-  },
-  {
-    // La pareja de tarjeta-bloqueada, al revés: allí el SMS empujaba a llamar;
-    // aquí la llamada empuja a leer un SMS que sí es del banco.
-    seccionId: "vishing",
-    escenarioId: "antifraude-banco",
-    titulo: "Aviso de consumo por teléfono",
-    descripcion:
-      "Quien llama dice ser del banco y quiere anular un consumo que no reconoces.",
-    version: 2,
-    naturaleza: "fraude",
-    dificultad: 4,
-    espeja: "vishing/banco-confirma",
-    Component: lazy(() => import("../secciones/vishing/AntifraudeBanco")),
   },
   {
     // El segundo legítimo, y el que da sentido al módulo: mismo consumo y mismo
