@@ -243,7 +243,7 @@ const BASE: BaseScenario[] = [
     titulo: "Cobro de una suscripción",
     descripcion:
       "Un SMS cobra un servicio que nunca pediste y ofrece cancelarlo respondiendo.",
-    version: 4,
+    version: 5,
     naturaleza: "fraude",
     dificultad: 1,
     espeja: "smishing/alerta-consumo",
