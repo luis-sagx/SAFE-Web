@@ -401,20 +401,6 @@ const BASE: BaseScenario[] = [
     Component: lazy(() => import("../secciones/vishing/DevolucionSri")),
   },
   {
-    // La pareja de tarjeta-bloqueada, al revés: allí el SMS empujaba a llamar;
-    // aquí la llamada empuja a leer un SMS que sí es del banco.
-    seccionId: "vishing",
-    escenarioId: "antifraude-banco",
-    titulo: "Aviso de consumo por teléfono",
-    descripcion:
-      "Quien llama dice ser del banco y quiere anular un consumo que no reconoces.",
-    version: 3,
-    naturaleza: "fraude",
-    dificultad: 4,
-    espeja: "vishing/banco-confirma",
-    Component: lazy(() => import("../secciones/vishing/AntifraudeBanco")),
-  },
-  {
     // No pide dinero ni códigos: pide permiso. Toda la estafa cabe en un botón
     // que dice "Permitir", y por eso el escenario obliga a pasar por la
     // pantalla que lo explica.
@@ -428,6 +414,20 @@ const BASE: BaseScenario[] = [
     dificultad: 3,
     espeja: "vishing/banco-confirma",
     Component: lazy(() => import("../secciones/vishing/SoporteTecnico")),
+  },
+  {
+    // La pareja de tarjeta-bloqueada, al revés: allí el SMS empujaba a llamar;
+    // aquí la llamada empuja a leer un SMS que sí es del banco.
+    seccionId: "vishing",
+    escenarioId: "antifraude-banco",
+    titulo: "Aviso de consumo por teléfono",
+    descripcion:
+      "Quien llama dice ser del banco y quiere anular un consumo que no reconoces.",
+    version: 3,
+    naturaleza: "fraude",
+    dificultad: 4,
+    espeja: "vishing/banco-confirma",
+    Component: lazy(() => import("../secciones/vishing/AntifraudeBanco")),
   },
   {
     // El segundo legítimo, y el que da sentido al módulo: mismo consumo y mismo
@@ -842,8 +842,25 @@ export function getSection(sectionId: string | undefined): Section | undefined {
   return SECTIONS.find((section) => section.id === sectionId);
 }
 
+// La secuencia pedagógica no depende de cómo se agrupe el registro.
+const VISHING_SCENARIO_ORDER = new Map<string, number>([
+  ['premio-sorteo', 0],
+  ['llamada-perdida', 1],
+  ['entrega-courier', 2],
+  ['devolucion-sri', 3],
+  ['antifraude-banco', 4],
+  ['soporte-tecnico', 5],
+  ['banco-confirma', 6],
+  ['encuesta-datos', 7],
+]);
+
 export function getSectionScenarios(sectionId: string): Scenario[] {
-  return SCENARIOS.filter((scenario) => scenario.seccionId === sectionId);
+  const scenarios = SCENARIOS.filter((scenario) => scenario.seccionId === sectionId);
+  if (sectionId !== 'vishing') return scenarios;
+  return scenarios.sort((left, right) =>
+    (VISHING_SCENARIO_ORDER.get(left.escenarioId) ?? VISHING_SCENARIO_ORDER.size)
+    - (VISHING_SCENARIO_ORDER.get(right.escenarioId) ?? VISHING_SCENARIO_ORDER.size),
+  );
 }
 
 export function getScenario(id: string): Scenario | undefined {
