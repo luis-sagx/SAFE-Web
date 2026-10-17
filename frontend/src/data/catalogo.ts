@@ -408,7 +408,7 @@ const BASE: BaseScenario[] = [
     titulo: "Aviso de consumo por teléfono",
     descripcion:
       "Quien llama dice ser del banco y quiere anular un consumo que no reconoces.",
-    version: 2,
+    version: 3,
     naturaleza: "fraude",
     dificultad: 4,
     espeja: "vishing/banco-confirma",

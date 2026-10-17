@@ -34,7 +34,7 @@ vi.mock('../../lib/api', async () => {
   return { ...current, createRun: vi.fn().mockResolvedValue(undefined) }
 })
 
-function onCall() {
+function onCall(response = /No, yo no hice esa compra/) {
   const { container } = render(
     <MemoryRouter>
       <BankFraudPrevention />
@@ -48,7 +48,7 @@ function onCall() {
   // lado (issue #250); en jsdom no hay audio de verdad, así que se simula
   // que terminó de hablar.
   terminarDeHablar(phone)
-  fireEvent.click(within(phone).getByRole('button', { name: /No, yo no hice esa compra/ }))
+  fireEvent.click(within(phone).getByRole('button', { name: response }))
   return phone
 }
 
@@ -76,6 +76,18 @@ describe('AntifraudeBanco', () => {
     terminarDeHablar(phone)
     fireEvent.click(within(phone).getByRole('button', { name: /Ya me llegó/ }))
     expect(screen.getByText('Caíste en la trampa')).toBeDefined()
+  })
+
+  it.each([
+    ['negar el consumo', /No, yo no hice esa compra/],
+    ['preguntar por la identidad', /¿Y cómo sé yo que usted es del banco/],
+  ])('negarse a compartir el código después de %s termina la llamada con acierto', (_, response) => {
+    const phone = onCall(response)
+
+    terminarDeHablar(phone)
+    fireEvent.click(within(phone).getByRole('button', { name: /No puedo compartir ese código/ }))
+
+    expect(screen.getByText('No caíste · colgaste')).toBeDefined()
   })
 
   it('comprobar los movimientos en la app es el acierto', () => {

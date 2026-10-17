@@ -97,9 +97,9 @@ function askingCode(
         label: "Dictó por teléfono el código que le llegó",
       },
       {
-        texto: "Deme un momento, voy a mirar el mensaje.",
-        goto: "n4",
-        label: "Fue a leer el mensaje antes de contestar",
+        texto: "No puedo compartir ese código. Voy a colgar y consultar con el banco.",
+        goto: "e_cuelga",
+        label: "Se negó a compartir el código y colgó para consultar con el banco",
       },
     ],
     colgarGoto: "e_cuelga",
