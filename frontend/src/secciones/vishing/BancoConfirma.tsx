@@ -30,17 +30,12 @@ const INCOMING: ScreenView = {
 const OPENING = [
   {
     texto:
-      'Buenas noches, le llamo del monitoreo antifraude del Banco del Litoral. No le voy a pedir claves, códigos ni datos suyos en toda la llamada.',
+      'Buenas noches, le llamo del área de monitoreo del Banco del Litoral. Recuerde que el banco no pide claves por teléfono.',
     senal: 'no-pide',
   },
   {
-    texto: `Tenemos retenido un consumo de ochocientos noventa dólares en una tienda de Guayaquil con su tarjeta terminada en ${IDENTITY_FAKE.tarjeta}. Solo necesito que me diga si fue usted.`,
+    texto: `Tenemos pendiente de confirmación un consumo de ochocientos noventa dólares en una tienda de Guayaquil, con su tarjeta terminada en ${IDENTITY_FAKE.tarjeta}. ¿Reconoce esa compra?`,
     senal: 'retenido',
-  },
-  {
-    texto:
-      'Y si prefiere no seguir por aquí, cuelgue y llámenos al número del reverso de su tarjeta: la gestión queda igual de abierta y le atiende cualquier compañero.',
-    senal: 'invita',
   },
 ]
 
@@ -74,7 +69,7 @@ const BLOCK: ScreenView = {
     },
     {
       texto:
-        'Le va a llegar un mensaje con un código de constancia. Ese código no me lo dé a mí ni a nadie que le llame, ni siquiera diciendo que es del banco: es solo su comprobante.',
+        'Le llegará un mensaje con un código de constancia. Consérvelo, no debe compartirlo.',
       senal: 'no-lo-de',
     },
   ],
@@ -213,20 +208,20 @@ export const STORY: Story<ScreenNode> = {
     view: CALL,
     verdict: 'Acertaste · colgaste y llamaste tú',
     outcome:
-      'Colgaste y marcaste tú el número del reverso: era el mismo banco y rechazaron el consumo. Esta respuesta funciona siempre, sin depender de si adivinas quién llama.',
+      'Colgaste y marcaste tú el número del reverso: el banco rechazó el consumo. Lo gestionaste por un canal que elegiste tú, sin depender de adivinar quién llamaba.',
   },
   e_confirma: {
     kind: 'good',
     view: BLOCK,
     verdict: 'Acertaste · la llamada era legítima',
     outcome:
-      'Era tu banco: no te pidieron claves ni códigos, y el consumo quedó rechazado. Solo hacía falta decir que esa compra no era tuya.',
+      'En este caso la llamada era del banco y el consumo quedó rechazado. Respondiste sobre la compra sin entregar claves ni códigos.',
   },
   e_dicta: {
     kind: 'bad',
     view: BLOCK,
     verdict: 'Llamada legítima, reacción peligrosa',
-    outcome: `La llamada era real, pero dictaste el código igual, y eso nunca debe pasar. Hoy no perdiste nada por ser tu banco; la próxima vez que alguien lo pida, no lo será.`,
+    outcome: 'La llamada era real, pero compartiste un código que debías conservar. Aquí no perdiste dinero; en otra llamada, compartir un código podría autorizar una operación sin que lo adviertas.',
     score: 0,
   },
   e_app: {
@@ -234,7 +229,7 @@ export const STORY: Story<ScreenNode> = {
     view: HELD,
     verdict: 'Acertaste · lo resolviste en tu canal',
     outcome:
-      'En la app estaba el mismo consumo retenido: lo rechazaste ahí y la tarjeta quedó bloqueada. Comprobar en tu propio canal confirma la llamada y resuelve el problema a la vez.',
+      'En la app estaba el mismo consumo retenido: lo rechazaste ahí y la tarjeta quedó bloqueada. Lo resolviste en tu propio canal, sin depender de quién estaba al otro lado de la llamada.',
   },
 }
 
@@ -244,28 +239,21 @@ const SIGNALS: Signal[] = [
     targetId: 'no-pide',
     pantalla: 'n2',
     texto:
-      '<b>No te piden nada.</b> Ni claves ni códigos: solo un sí o un no sobre algo que ya saben.',
-  },
-  {
-    id: 's2',
-    targetId: 'invita',
-    pantalla: 'n2',
-    texto:
-      '<b>Te invitan a colgar y llamar tú.</b> A un estafador eso no le conviene; a tu banco le da igual.',
+      '<b>No te piden claves.</b> Te preguntan si reconoces la compra. Esa advertencia, por sí sola, no identifica a quien llama.',
   },
   {
     id: 's3',
     targetId: 'retenido',
     pantalla: 'n2',
     texto:
-      '<b>El consumo está retenido, no cobrado.</b> El fraude apura diciendo que "ya se hizo"; tu banco detiene y pregunta.',
+      '<b>Dicen que el consumo está pendiente de confirmación.</b> Puedes comprobar su estado en la app del banco.',
   },
   {
     id: 's4',
     targetId: 'no-lo-de',
     pantalla: 'n3',
     texto:
-      '<b>Te piden no dictar el código a nadie</b>, ni a quien diga ser del banco. Un estafador nunca diría eso.',
+      '<b>El código no se comparte.</b> Conservarlo evita entregarlo a otra persona; que quien llama lo recuerde no prueba su identidad.',
   },
   {
     id: 's5',
@@ -279,12 +267,12 @@ const SIGNALS: Signal[] = [
     targetId: 'consta',
     pantalla: 'e_app',
     texto:
-      'El consumo <b>consta en la app</b>. Si lo que te cuentan por teléfono aparece igual en tu canal, la llamada era real.',
+      'El consumo <b>consta en la app</b>. Consultarlo en tu propio canal permite comprobar la operación y resolverla sin confiar en quien llama.',
   },
 ]
 
 const RULE =
-  'Regla de oro: <b>tu banco informa y pregunta, nunca te pide nada</b>. Ni en una llamada real se dicta el código que llega por mensaje.'
+  'Regla de oro: <b>no compartas claves ni códigos por teléfono</b>. Comprueba cualquier consumo dudoso desde la app o el número de tu tarjeta.'
 
 const SUMMARY = 'El banco llama para preguntarte si un consumo de $890 es tuyo.'
 

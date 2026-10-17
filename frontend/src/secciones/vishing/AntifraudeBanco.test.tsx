@@ -59,7 +59,7 @@ describe('AntifraudeBanco', () => {
     const phone = onCall()
 
     fireEvent.click(within(phone).getByRole('button', { name: /Mensajes/ }))
-    expect(within(phone).getByText(/nunca le pedirá este código/)).toBeDefined()
+    expect(within(phone).getByRole('region', { name: 'Mensajes de texto' })).toBeDefined()
 
     fireEvent.click(within(phone).getByRole('button', { name: /Teléfono/ }))
     // La transcripción se revela recién cuando termina de sonar cada frase

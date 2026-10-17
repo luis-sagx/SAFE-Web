@@ -423,7 +423,7 @@ const BASE: BaseScenario[] = [
     titulo: "Aviso de consumo por teléfono",
     descripcion:
       "Quien llama dice ser del banco y quiere anular un consumo que no reconoces.",
-    version: 1,
+    version: 2,
     naturaleza: "fraude",
     dificultad: 4,
     espeja: "vishing/banco-confirma",
@@ -438,7 +438,7 @@ const BASE: BaseScenario[] = [
     titulo: "Consumo retenido",
     descripcion:
       "El banco pregunta si una compra grande hecha con tu tarjeta es tuya.",
-    version: 1,
+    version: 2,
     naturaleza: "legitimo",
     dificultad: 4,
     espeja: "vishing/antifraude-banco",
