@@ -10,10 +10,19 @@ vi.mock('../../context/AuthContext', async () => (await import('../../test/escen
 vi.mock('../../lib/api', async () => (await import('../../test/escenario')).offlineApi())
 
 describe('BajaSuscripcion', () => {
-  it('ofrece comprobar el cobro y muestra las suscripciones sin explorar menús', () => {
+  it.each(['acción visible', 'dock'])('abrir Mi Operadora desde %s espera a que elijas suscripciones', (entry) => {
     const phone = start(<SubscriptionCancellation />)
 
-    fireEvent.click(screen.getByRole('button', { name: /Revisar el cobro en Mi Operadora/ }))
+    fireEvent.click(entry === 'dock'
+      ? within(phone).getByRole('button', { name: /Mi Operadora/ })
+      : screen.getByRole('button', { name: /Revisar el cobro en Mi Operadora/ }))
+
+    expect(within(phone).getByRole('button', { name: /Paquetes y suscripciones/ })).toBeDefined()
+    expect(within(phone).getByRole('button', { name: /Bloquear mensajes de números cortos/ })).toBeDefined()
+    expect(screen.queryByText('No caíste · lo comprobaste con tu operadora')).toBeNull()
+    expect(screen.getByText('¿Qué haces?')).toBeDefined()
+
+    fireEvent.click(within(phone).getByRole('button', { name: /Paquetes y suscripciones/ }))
 
     expect(within(phone).getByText('Suscripciones activas')).toBeDefined()
     expect(within(phone).getByText('Ninguna')).toBeDefined()
@@ -59,13 +68,14 @@ describe('BajaSuscripcion', () => {
     expect(clock()).toBe('07:53')
   })
 
-  it('abrir Mi Operadora desde el teléfono consulta las suscripciones', () => {
+  it('bloquear mensajes sin consultar las suscripciones termina en parcial', () => {
     const phone = start(<SubscriptionCancellation />)
 
     fireEvent.click(within(phone).getByRole('button', { name: /Mi Operadora/ }))
 
-    expect(within(phone).getByText('Suscripciones activas')).toBeDefined()
-    expect(within(phone).getByText('Ninguna')).toBeDefined()
-    expect(screen.getByText('No caíste · lo comprobaste con tu operadora')).toBeDefined()
+    fireEvent.click(within(phone).getByRole('button', { name: /Bloquear mensajes de números cortos/ }))
+
+    expect(screen.getByText('Te tapaste el oído, pero no comprobaste nada')).toBeDefined()
+    expect(screen.queryByText('No caíste · lo comprobaste con tu operadora')).toBeNull()
   })
 })

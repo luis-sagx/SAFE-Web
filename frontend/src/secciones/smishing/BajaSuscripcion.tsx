@@ -42,6 +42,34 @@ function withResponse(text: string): Extract<ScreenView, { kind: 'sms' }> {
 
 const CANCELLATION_SMS = withResponse('BAJA')
 
+// Abrir la app orienta; comprobar el cobro exige elegir qué revisar.
+const OPERATOR_START: ScreenView = {
+  kind: 'web',
+  app: 'Mi Operadora',
+  appAccent: APP_ACCENTS.operator,
+  url: 'inicio',
+  secure: true,
+  brand: 'Mi Operadora',
+  title: 'Línea 09 8 123 4567',
+  subtitle: 'Prepago · Saldo $4,80',
+  opciones: [
+    {
+      texto: 'Paquetes y suscripciones',
+      detalle: 'Lo que tienes contratado y sus cargos',
+      goto: 'e_verifica',
+      label: 'Revisó sus paquetes y suscripciones en la app de la operadora',
+    },
+    {
+      texto: 'Bloquear mensajes de números cortos',
+      detalle: 'No volverás a recibir SMS de servicios',
+      goto: 'e_bloquea',
+      label: 'Bloqueó los números cortos sin comprobar antes si el cobro existía',
+    },
+  ],
+  fields: [],
+  button: '',
+}
+
 // El acierto tiene que enseñarse, no solo contarse: la pantalla que lo prueba es la que cierra.
 const OPERATOR: ScreenView = {
   kind: 'web',
@@ -68,7 +96,7 @@ const APPS: PhoneApp[] = [
     Icono: Signal,
     texto: 'Mi Operadora',
     color: APP_ACCENTS.operator,
-    goto: 'e_verifica',
+    goto: 'n4',
     label: 'Abrió la app de la operadora para comprobar el cobro',
   },
   { Icono: MessageSquareText, texto: 'Mensajes', color: '#2f9e44' },
@@ -80,10 +108,11 @@ const STORY: Story<ScreenNode> = {
     view: SMS,
     choices: [
       { label: 'Responder BAJA al mensaje', goto: 'e_responde' },
-      { label: 'Revisar el cobro en Mi Operadora', goto: 'e_verifica' },
+      { label: 'Revisar el cobro en Mi Operadora', goto: 'n4' },
       { label: 'Salir del mensaje sin responder', goto: 'e_ignora' },
     ],
   },
+  n4: { kind: 'scene', view: OPERATOR_START },
   e_responde: {
     kind: 'bad',
     view: CANCELLATION_SMS,
@@ -97,6 +126,13 @@ const STORY: Story<ScreenNode> = {
     verdict: 'No contestaste, pero quedaste con la duda',
     outcome:
       'Saliste sin responder, que es lo que evita el daño. Pero te quedaste con la duda de si ese cobro existía.',
+  },
+  e_bloquea: {
+    kind: 'partial',
+    view: OPERATOR_START,
+    verdict: 'Te tapaste el oído, pero no comprobaste nada',
+    outcome:
+      '<b>No contestar</b> fue lo que impidió el daño. Pero sigues sin saber si el cargo de $2,99 existía: el bloqueo silencia el mensaje, no el cobro.',
   },
   e_verifica: {
     kind: 'good',
