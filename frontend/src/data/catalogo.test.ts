@@ -132,6 +132,37 @@ describe('catálogo de escenarios', () => {
     expect(vishing.filter((e) => e.naturaleza === 'legitimo')).toHaveLength(2)
   })
 
+  it('mantiene el recorrido de vishing independientemente del registro sin mutarlo ni ordenar otros módulos', () => {
+    const original = [...SCENARIOS]
+    SCENARIOS.reverse()
+    const registration = [...SCENARIOS]
+    try {
+      expect(getSectionScenarios('vishing').map(({ escenarioId }) => escenarioId)).toEqual([
+        'premio-sorteo', 'llamada-perdida', 'entrega-courier', 'devolucion-sri',
+        'antifraude-banco', 'soporte-tecnico', 'banco-confirma', 'encuesta-datos',
+      ])
+      for (const { id } of SECTIONS.filter(({ id }) => id !== 'vishing')) {
+        expect(getSectionScenarios(id)).toEqual(registration.filter(({ seccionId }) => seccionId === id))
+      }
+      expect(SCENARIOS).toEqual(registration)
+    } finally {
+      SCENARIOS.splice(0, SCENARIOS.length, ...original)
+    }
+  })
+
+  it('conserva al final los escenarios de vishing aún no incluidos en el recorrido', () => {
+    const original = [...SCENARIOS]
+    const future = { ...original[0]!, id: 'vishing/future-scenario', seccionId: 'vishing', escenarioId: 'future-scenario' }
+    const later = { ...future, id: 'vishing/later-scenario', escenarioId: 'later-scenario' }
+    SCENARIOS.unshift(future)
+    SCENARIOS.push(later)
+    try {
+      expect(getSectionScenarios('vishing').slice(-2)).toEqual([future, later])
+    } finally {
+      SCENARIOS.splice(0, SCENARIOS.length, ...original)
+    }
+  })
+
   // Y suplantación. Sus dos legítimos son de tipos distintos a propósito: uno
   // es el mismo mensaje de un fraude siendo verdad, y el otro pone al
   // participante del lado de quien está siendo suplantado.

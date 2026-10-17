@@ -1,4 +1,4 @@
-import { renderHook } from '@testing-library/react'
+import { renderHook, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { useNextScenario } from './useSiguienteEscenario'
 
@@ -70,6 +70,20 @@ describe('useNextScenario', () => {
     // Después de salida-segura, el siguiente en orden del catálogo es trampa-usb
     expect(result.current.ruta).toBe('/seccion/fisico/trampa-usb')
     expect(result.current.cargando).toBe(false)
+  })
+
+  it.each([
+    ['devolucion-sri', 'antifraude-banco'],
+    ['antifraude-banco', 'soporte-tecnico'],
+    ['soporte-tecnico', 'banco-confirma'],
+    ['banco-confirma', 'encuesta-datos'],
+  ])('después de %s continúa por %s, separando las llamadas bancarias', async (current, next) => {
+    fetchProgressMock.mockRejectedValue(new Error('sin red'))
+
+    const { result } = renderHook(() => useNextScenario(`vishing/${current}`))
+
+    await waitFor(() => expect(result.current.cargando).toBe(false))
+    expect(result.current.ruta).toBe(`/seccion/vishing/${next}`)
   })
 
   it('usa la sección si el fetch falla y ya no hay siguiente en el catálogo', async () => {

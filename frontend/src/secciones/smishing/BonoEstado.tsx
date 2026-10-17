@@ -129,7 +129,15 @@ const APPS: PhoneApp[] = [
 ]
 
 const STORY: Story<ScreenNode> = {
-  n1: { kind: 'scene', view: SMS },
+  n1: {
+    kind: 'scene',
+    view: SMS,
+    choices: [
+      { label: 'Abrir el enlace del mensaje', goto: 'n2' },
+      { label: 'Consultar el bono por mi cuenta', goto: 'n3' },
+      { label: 'Salir del mensaje sin responder', goto: 'e_ignora' },
+    ],
+  },
   n2: {
     kind: 'scene',
     view: PAGE,

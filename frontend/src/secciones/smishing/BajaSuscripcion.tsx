@@ -1,4 +1,4 @@
-import { MessageSquareText, Signal, Wallet } from 'lucide-react'
+import { MessageSquareText, Signal } from 'lucide-react'
 import ScenarioStory, { type PhoneApp, type ScreenNode } from '../../components/StoryEscenario'
 import type { Context } from '../../components/ui/ContextoEscenario'
 import type { Story } from '../../hooks/useStoryEngine'
@@ -17,15 +17,8 @@ const SMS: Extract<ScreenView, { kind: 'sms' }> = {
   sub: 'Número corto · SMS',
   senalRemitente: 'remitente',
   msgs: [{ text: TEXT, time: '07:52', senal: 'mensaje' }],
-  // Las dos son respuestas, y las dos pierden: lo que confirma la línea no es lo
-  // que escribes sino que escribas. Una salida buena en el composer enseñaría lo contrario.
   respuestas: [
     { texto: 'BAJA', goto: 'e_responde', label: 'Escogió responder BAJA, como pedía el mensaje' },
-    {
-      texto: 'Yo no contraté nada, dejen de cobrarme.',
-      goto: 'e_reclama',
-      label: 'Contestó reclamando que nunca contrató la suscripción',
-    },
   ],
   // Salir del hilo es dejarlo pasar: no entrega nada, pero tampoco comprueba
   // si el cobro existe.
@@ -48,10 +41,8 @@ function withResponse(text: string): Extract<ScreenView, { kind: 'sms' }> {
 }
 
 const CANCELLATION_SMS = withResponse('BAJA')
-const CLAIM_SMS = withResponse('Yo no contraté nada, dejen de cobrarme.')
 
-// Abrir la app todavía no es haber comprobado nada: se puede mirar las suscripciones
-// o bloquear los números a ciegas, que es el gesto precipitado que este escenario mide.
+// Abrir la app orienta; comprobar el cobro exige elegir qué revisar.
 const OPERATOR_START: ScreenView = {
   kind: 'web',
   app: 'Mi Operadora',
@@ -62,7 +53,6 @@ const OPERATOR_START: ScreenView = {
   title: 'Línea 09 8 123 4567',
   subtitle: 'Prepago · Saldo $4,80',
   opciones: [
-    { texto: 'Recargar saldo', detalle: 'Con tarjeta o en puntos autorizados' },
     {
       texto: 'Paquetes y suscripciones',
       detalle: 'Lo que tienes contratado y sus cargos',
@@ -106,15 +96,22 @@ const APPS: PhoneApp[] = [
     Icono: Signal,
     texto: 'Mi Operadora',
     color: APP_ACCENTS.operator,
-    viewNode: 'n4',
+    goto: 'n4',
     label: 'Abrió la app de la operadora para comprobar el cobro',
   },
   { Icono: MessageSquareText, texto: 'Mensajes', color: '#2f9e44' },
-  { Icono: Wallet, texto: 'Banco', color: APP_ACCENTS.bank, relleno: 'banco' },
 ]
 
 const STORY: Story<ScreenNode> = {
-  n1: { kind: 'scene', view: SMS },
+  n1: {
+    kind: 'scene',
+    view: SMS,
+    choices: [
+      { label: 'Responder BAJA al mensaje', goto: 'e_responde' },
+      { label: 'Revisar el cobro en Mi Operadora', goto: 'n4' },
+      { label: 'Salir del mensaje sin responder', goto: 'e_ignora' },
+    ],
+  },
   n4: { kind: 'scene', view: OPERATOR_START },
   e_responde: {
     kind: 'bad',
@@ -123,12 +120,12 @@ const STORY: Story<ScreenNode> = {
     outcome:
       'No había ninguna suscripción: el mensaje solo buscaba que contestaras. Tu número pasó a una lista que se revende, y el "BAJA" se cobró como mensaje de tarificación adicional.',
   },
-  e_reclama: {
-    kind: 'bad',
-    view: CLAIM_SMS,
-    verdict: 'Caíste en la trampa',
+  e_ignora: {
+    kind: 'partial',
+    view: SMS,
+    verdict: 'No contestaste, pero quedaste con la duda',
     outcome:
-      'Reclamar también es contestar, y eso era todo lo que buscaban. Tu número pasó a la lista que se revende, y el cobro que reclamabas nunca existió.',
+      'Saliste sin responder, que es lo que evita el daño. Pero te quedaste con la duda de si ese cobro existía.',
   },
   e_bloquea: {
     kind: 'partial',
@@ -136,13 +133,6 @@ const STORY: Story<ScreenNode> = {
     verdict: 'Te tapaste el oído, pero no comprobaste nada',
     outcome:
       '<b>No contestar</b> fue lo que impidió el daño. Pero sigues sin saber si el cargo de $2,99 existía: el bloqueo silencia el mensaje, no el cobro.',
-  },
-  e_ignora: {
-    kind: 'partial',
-    view: SMS,
-    verdict: 'No contestaste, pero quedaste con la duda',
-    outcome:
-      'Saliste sin responder, que es lo que evita el daño. Pero te quedaste con la duda de si ese cobro existía.',
   },
   e_verifica: {
     kind: 'good',

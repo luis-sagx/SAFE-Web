@@ -243,7 +243,7 @@ const BASE: BaseScenario[] = [
     titulo: "Cobro de una suscripción",
     descripcion:
       "Un SMS cobra un servicio que nunca pediste y ofrece cancelarlo respondiendo.",
-    version: 3,
+    version: 5,
     naturaleza: "fraude",
     dificultad: 1,
     espeja: "smishing/alerta-consumo",
@@ -255,7 +255,7 @@ const BASE: BaseScenario[] = [
     titulo: "Bono preseleccionado",
     descripcion:
       "Un SMS anuncia una ayuda económica y pide registrar la cuenta antes de un plazo.",
-    version: 3,
+    version: 4,
     naturaleza: "fraude",
     dificultad: 2,
     espeja: "smishing/alerta-consumo",
@@ -296,7 +296,7 @@ const BASE: BaseScenario[] = [
     titulo: "Citación de tránsito",
     descripcion:
       "Un SMS amenaza con duplicar una multa si no pagas desde el enlace enviado.",
-    version: 3,
+    version: 4,
     naturaleza: "fraude",
     dificultad: 3,
     espeja: "smishing/alerta-consumo",
@@ -423,7 +423,7 @@ const BASE: BaseScenario[] = [
     titulo: "Aviso de consumo por teléfono",
     descripcion:
       "Quien llama dice ser del banco y quiere anular un consumo que no reconoces.",
-    version: 1,
+    version: 3,
     naturaleza: "fraude",
     dificultad: 4,
     espeja: "vishing/banco-confirma",
@@ -438,7 +438,7 @@ const BASE: BaseScenario[] = [
     titulo: "Consumo retenido",
     descripcion:
       "El banco pregunta si una compra grande hecha con tu tarjeta es tuya.",
-    version: 1,
+    version: 2,
     naturaleza: "legitimo",
     dificultad: 4,
     espeja: "vishing/antifraude-banco",
@@ -842,8 +842,25 @@ export function getSection(sectionId: string | undefined): Section | undefined {
   return SECTIONS.find((section) => section.id === sectionId);
 }
 
+// La secuencia pedagógica no depende de cómo se agrupe el registro.
+const VISHING_SCENARIO_ORDER = new Map<string, number>([
+  ['premio-sorteo', 0],
+  ['llamada-perdida', 1],
+  ['entrega-courier', 2],
+  ['devolucion-sri', 3],
+  ['antifraude-banco', 4],
+  ['soporte-tecnico', 5],
+  ['banco-confirma', 6],
+  ['encuesta-datos', 7],
+]);
+
 export function getSectionScenarios(sectionId: string): Scenario[] {
-  return SCENARIOS.filter((scenario) => scenario.seccionId === sectionId);
+  const scenarios = SCENARIOS.filter((scenario) => scenario.seccionId === sectionId);
+  if (sectionId !== 'vishing') return scenarios;
+  return scenarios.sort((left, right) =>
+    (VISHING_SCENARIO_ORDER.get(left.escenarioId) ?? VISHING_SCENARIO_ORDER.size)
+    - (VISHING_SCENARIO_ORDER.get(right.escenarioId) ?? VISHING_SCENARIO_ORDER.size),
+  );
 }
 
 export function getScenario(id: string): Scenario | undefined {

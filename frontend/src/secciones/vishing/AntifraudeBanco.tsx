@@ -97,9 +97,9 @@ function askingCode(
         label: "Dictó por teléfono el código que le llegó",
       },
       {
-        texto: "Deme un momento, voy a mirar el mensaje.",
-        goto: "n4",
-        label: "Fue a leer el mensaje antes de contestar",
+        texto: "No puedo compartir ese código. Voy a colgar y consultar con el banco.",
+        goto: "e_cuelga",
+        label: "Se negó a compartir el código y colgó para consultar con el banco",
       },
     ],
     colgarGoto: "e_cuelga",
@@ -111,7 +111,7 @@ const NOTIFICATION_CODE = {
   app: "Mensajes",
   remitente: "BancoLitoral",
   hora: "21:07",
-  texto: `Su código de autorización es ${CODE}. Vence en 5 minutos. El Banco del Litoral nunca le pedirá este código por teléfono ni por mensaje: si alguien se lo pide, cuelgue.`,
+  texto: `Banco del Litoral: su código de autorización es ${CODE}. Válido por 5 minutos. No lo comparta.`,
   goto: "n4",
   label: "Abrió la notificación del código que envió el banco",
 };
@@ -142,7 +142,7 @@ const MESSAGE: ScreenView = {
       time: "08:41",
     },
     {
-      text: `Su código de autorización es <b>${CODE}</b>. Vence en 5 minutos. El Banco del Litoral nunca le pedirá este código por teléfono ni por mensaje: si alguien se lo pide, cuelgue.`,
+      text: `Banco del Litoral: su código de autorización es <b>${CODE}</b>. Válido por 5 minutos. No lo comparta.`,
       time: "21:07",
       senal: "texto-codigo",
     },
@@ -288,7 +288,7 @@ const SIGNALS: Signal[] = [
     targetId: "texto-codigo",
     pantalla: "n4",
     texto:
-      "El mensaje <b>es auténtico y lo advierte él mismo</b>: nunca piden ese código por teléfono.",
+      "El mensaje <b>contiene un código de autorización y dice que no lo compartas</b>. Que sea del banco no hace legítima la solicitud de quien llama.",
   },
   {
     id: "s5",
