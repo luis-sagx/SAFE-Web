@@ -21,8 +21,13 @@ const SMS: ScreenView = {
   sub: 'Remitente sin verificar · SMS',
   senalRemitente: 'remitente',
   msgs: [FIRST_SMS],
-  composerGoto: 'n1b',
-  composerLabel: 'Respondió el mensaje preguntando qué placa tiene la multa',
+  respuestas: [
+    {
+      texto: '¿Cuál es la placa?',
+      goto: 'n1b',
+      label: 'Respondió el mensaje preguntando qué placa tiene la multa',
+    },
+  ],
   // Salir del hilo es el gesto real de "lo dejo pasar" (issue #251): sin él,
   // no actuar no tendría forma de expresarse en la pantalla.
   volverGoto: 'e_ignora',
@@ -31,7 +36,7 @@ const SMS: ScreenView = {
 
 const REPLIED_SMS: ScreenView = {
   ...SMS,
-  composerGoto: undefined,
+  respuestas: undefined,
   // Del hilo respondido se vuelve al hilo original, no directo a "ignoré
   // todo": aquí ya hubo una respuesta, así que salir es volver a mirar el
   // mensaje, no el mismo gesto de no haber contestado nunca.

@@ -52,6 +52,18 @@ function start() {
 }
 
 describe("BonoEstado", () => {
+  it.each([
+    ['Abrir el enlace del mensaje', 'Acreditación del bono de $180'],
+    ['Consultar el bono por mi cuenta', 'Nueva pestaña'],
+    ['Salir del mensaje sin responder', 'No caíste, pero te quedaste con la duda'],
+  ])('la acción visible "%s" lleva al camino elegido', (action, destination) => {
+    start();
+
+    fireEvent.click(screen.getByRole('button', { name: new RegExp(action) }));
+
+    expect(screen.getByText(destination)).toBeDefined();
+  });
+
   it("deja tres sitios frecuentes y conserva la ruta oficial de verificación", () => {
     const container = start();
     const phone = container.querySelector("#pantalla-escenario") as HTMLElement;

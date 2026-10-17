@@ -243,7 +243,7 @@ const BASE: BaseScenario[] = [
     titulo: "Cobro de una suscripción",
     descripcion:
       "Un SMS cobra un servicio que nunca pediste y ofrece cancelarlo respondiendo.",
-    version: 3,
+    version: 4,
     naturaleza: "fraude",
     dificultad: 1,
     espeja: "smishing/alerta-consumo",
@@ -255,7 +255,7 @@ const BASE: BaseScenario[] = [
     titulo: "Bono preseleccionado",
     descripcion:
       "Un SMS anuncia una ayuda económica y pide registrar la cuenta antes de un plazo.",
-    version: 3,
+    version: 4,
     naturaleza: "fraude",
     dificultad: 2,
     espeja: "smishing/alerta-consumo",
@@ -296,7 +296,7 @@ const BASE: BaseScenario[] = [
     titulo: "Citación de tránsito",
     descripcion:
       "Un SMS amenaza con duplicar una multa si no pagas desde el enlace enviado.",
-    version: 3,
+    version: 4,
     naturaleza: "fraude",
     dificultad: 3,
     espeja: "smishing/alerta-consumo",
