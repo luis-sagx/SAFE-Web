@@ -3,6 +3,7 @@ import { Prisma } from '../../../../generated/entrenamiento/client';
 import type { SusResponse } from '../../../../generated/entrenamiento/client';
 import { pseudonym } from '@comun';
 import type { JwtPayload } from '@comun';
+import { ASSESSMENT_VERSION } from '../assessments/questionnaire';
 import { ASSESSMENT_SCENARIOS } from '../assessments/scenario-cohort';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateSusResponseDto } from './create-sus-response.dto';
@@ -13,7 +14,7 @@ export class SusService {
   constructor(private readonly prisma: PrismaService) {}
 
   async status(participantId: string) {
-    const [response, runs] = await Promise.all([
+    const [response, runs, posttest] = await Promise.all([
       this.prisma.susResponse.findUnique({
         where: {
           participantId_version: {
@@ -28,12 +29,23 @@ export class SusService {
         select: { scenarioId: true },
         distinct: ['scenarioId'],
       }),
+      this.prisma.assessment.findUnique({
+        where: {
+          participantId_version_phase: {
+            participantId,
+            version: ASSESSMENT_VERSION,
+            phase: 'POST',
+          },
+        },
+        select: { id: true },
+      }),
     ]);
     const attempted = new Set(runs.map((run) => run.scenarioId));
 
     return {
       version: SUS_VERSION,
-      available: ASSESSMENT_SCENARIOS.every((id) => attempted.has(id)),
+      available:
+        !!posttest && ASSESSMENT_SCENARIOS.every((id) => attempted.has(id)),
       completed: !!response,
     };
   }
@@ -42,7 +54,7 @@ export class SusService {
     const status = await this.status(participant.sub);
     if (!status.available) {
       throw new ConflictException(
-        'Completa todos los escenarios antes de responder la encuesta.',
+        'Completa todos los escenarios y la evaluación final antes de responder la encuesta.',
       );
     }
     if (status.completed) {

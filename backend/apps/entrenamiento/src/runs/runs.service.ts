@@ -13,6 +13,8 @@ import {
 } from '@comun';
 import { Prisma } from '../../../../generated/entrenamiento/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { ASSESSMENT_VERSION } from '../assessments/questionnaire';
+import { SUS_VERSION } from '../sus/sus-survey';
 import { CreateRunDto } from './dto/create-run.dto';
 import { calculateProgress, TOTALS, THRESHOLDS } from './progreso';
 
@@ -153,9 +155,30 @@ export class RunsService {
   /// falta para mostrarlo, no solo que la petición "funcionó".
   async attestation(participant: JwtPayload): Promise<{ atestacion: string }> {
     const modules = Object.keys(THRESHOLDS);
-    const progressByModule = await Promise.all(
-      modules.map((module) => this.progress(participant.sub, module)),
-    );
+    const [progressByModule, posttest, susResponse] = await Promise.all([
+      Promise.all(
+        modules.map((module) => this.progress(participant.sub, module)),
+      ),
+      this.prisma.assessment.findUnique({
+        where: {
+          participantId_version_phase: {
+            participantId: participant.sub,
+            version: ASSESSMENT_VERSION,
+            phase: 'POST',
+          },
+        },
+        select: { id: true },
+      }),
+      this.prisma.susResponse.findUnique({
+        where: {
+          participantId_version: {
+            participantId: participant.sub,
+            version: SUS_VERSION,
+          },
+        },
+        select: { id: true },
+      }),
+    ]);
 
     const missing = progressByModule
       .filter((p) => !p.aprobado)
@@ -166,6 +189,12 @@ export class RunsService {
         message: 'Todavía no apruebas todos los módulos.',
         faltan: missing,
       });
+    }
+
+    if (!posttest || !susResponse) {
+      throw new ConflictException(
+        'Completa la evaluación final y la encuesta de usabilidad antes de solicitar el certificado.',
+      );
     }
 
     const payload: AttestationPayload = {

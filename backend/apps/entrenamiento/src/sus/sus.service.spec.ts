@@ -15,7 +15,11 @@ const participant: JwtPayload = {
 };
 const answers = [3, 2, 4, 1, 5, 1, 4, 2, 5, 1];
 
-function fixture({ ids = [] as string[], existing = false } = {}) {
+function fixture({
+  ids = [] as string[],
+  existing = false,
+  posttest = true,
+} = {}) {
   const rows: Array<Record<string, unknown>> = existing
     ? [
         {
@@ -40,12 +44,15 @@ function fixture({ ids = [] as string[], existing = false } = {}) {
       findMany: () =>
         Promise.resolve(ids.map((scenarioId) => ({ scenarioId }))),
     },
+    assessment: {
+      findUnique: () => Promise.resolve(posttest ? { id: 'posttest' } : null),
+    },
   } as unknown as PrismaService;
   return { service: new SusService(prisma), rows };
 }
 
 describe('Encuesta SUS', () => {
-  it('habilita la encuesta al intentar todos los escenarios sin depender de aprobación o postest', async () => {
+  it('habilita la encuesta al completar el postest e intentar todos los escenarios', async () => {
     expect(
       await fixture({ ids: [...ASSESSMENT_SCENARIOS] }).service.status(
         participant.sub,
@@ -58,6 +65,15 @@ describe('Encuesta SUS', () => {
       await fixture({ ids: ASSESSMENT_SCENARIOS.slice(0, -1) }).service.status(
         participant.sub,
       ),
+    ).toEqual({ version: SUS_VERSION, available: false, completed: false });
+  });
+
+  it('mantiene la encuesta pendiente hasta completar el postest', async () => {
+    expect(
+      await fixture({
+        ids: [...ASSESSMENT_SCENARIOS],
+        posttest: false,
+      }).service.status(participant.sub),
     ).toEqual({ version: SUS_VERSION, available: false, completed: false });
   });
 
