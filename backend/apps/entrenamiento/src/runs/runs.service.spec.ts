@@ -37,7 +37,12 @@ interface MockRun {
 /// `progreso()`: sin esto, dos módulos distintos en la misma lista de corridas
 /// se contarían entre sí y el test no distinguiría "aprobado" de "no
 /// aprobado" por módulo.
-function serviceWith(runs: MockRun[], jwt?: JwtService, latestReset?: Date) {
+function serviceWith(
+  runs: MockRun[],
+  jwt?: JwtService,
+  latestReset?: Date,
+  gates: { posttest?: boolean; susResponse?: boolean } = {},
+) {
   const prisma = {
     scenarioRun: {
       findMany: ({
@@ -65,6 +70,14 @@ function serviceWith(runs: MockRun[], jwt?: JwtService, latestReset?: Date) {
       findFirst: () =>
         Promise.resolve(latestReset ? { createdAt: latestReset } : null),
       create: () => Promise.resolve({ createdAt: new Date() }),
+    },
+    assessment: {
+      findUnique: () =>
+        Promise.resolve(gates.posttest === false ? null : { id: 'posttest' }),
+    },
+    susResponse: {
+      findUnique: () =>
+        Promise.resolve(gates.susResponse === false ? null : { id: 'sus' }),
     },
   } as unknown as PrismaService;
 
@@ -280,6 +293,22 @@ describe('RunsService.atestacion', () => {
       message: 'Todavía no apruebas todos los módulos.',
       faltan: [first],
     });
+  });
+
+  it('rechaza la atestación si falta el posttest o la encuesta SUS', async () => {
+    const runs = Object.keys(THRESHOLDS).flatMap((module) => approvedRuns(module));
+
+    await expect(
+      serviceWith(runs, undefined, undefined, { posttest: false }).attestation(
+        PARTICIPANT,
+      ),
+    ).rejects.toThrow('Completa la evaluación final y la encuesta de usabilidad');
+
+    await expect(
+      serviceWith(runs, undefined, undefined, { susResponse: false }).attestation(
+        PARTICIPANT,
+      ),
+    ).rejects.toThrow('Completa la evaluación final y la encuesta de usabilidad');
   });
 });
 
