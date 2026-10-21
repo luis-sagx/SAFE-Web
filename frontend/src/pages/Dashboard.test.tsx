@@ -42,35 +42,38 @@ describe('Dashboard', () => {
     susStatusMock.mockReset().mockResolvedValue({ version: 1, available: true, completed: false })
   })
 
-  it('ofrece la encuesta de satisfacción al intentar todos los escenarios aunque no apruebe', async () => {
+  it('espera a que se complete la evaluación final antes de ofrecer SUS', async () => {
     fetchProgressMock.mockImplementation((module: string) => Promise.resolve(progressFor(module, false)))
     assessmentStatusMock.mockResolvedValue({ pretestRequired: false, baselineMissing: true, pretestCompleted: false, posttestAvailable: true, posttestCompleted: false })
     renderDashboard()
-    const link = await screen.findByRole('link', { name: 'Cuéntanos tu opinión' })
-    expect(link.getAttribute('href')).toBe('/encuesta-sus')
-    expect(link.getAttribute('target')).toBeNull()
+    const link = await screen.findByRole('link', { name: 'Responder evaluación final' })
+    expect(link.getAttribute('href')).toBe('/evaluacion-final')
+    expect(screen.queryByRole('link', { name: 'Responder encuesta de usabilidad' })).toBeNull()
     expect(screen.queryByRole('button', { name: 'Descargar certificado' })).toBeNull()
   })
 
-  it('confía en la disponibilidad SUS aunque el progreso de módulos no contenga todos los escenarios', async () => {
+  it('ofrece SUS tras el posttest aunque el progreso local esté incompleto', async () => {
     fetchProgressMock.mockImplementation((module: string) => Promise.resolve({
       ...progressFor(module, false),
       escenarios: [],
     }))
+    assessmentStatusMock.mockResolvedValue({ pretestRequired: false, baselineMissing: false, pretestCompleted: true, posttestAvailable: true, posttestCompleted: true })
 
     renderDashboard()
 
-    const link = await screen.findByRole('link', { name: 'Cuéntanos tu opinión' })
+    const link = await screen.findByRole('link', { name: 'Responder encuesta de usabilidad' })
     expect(link.getAttribute('href')).toBe('/encuesta-sus')
     expect(screen.queryByRole('button', { name: 'Descargar certificado' })).toBeNull()
   })
 
   it('muestra agradecimiento cuando ya respondió la encuesta SUS', async () => {
-    fetchProgressMock.mockImplementation((module: string) => Promise.resolve(progressFor(module, false)))
+    fetchProgressMock.mockImplementation((module: string) => Promise.resolve(progressFor(module, true)))
+    assessmentStatusMock.mockResolvedValue({ pretestRequired: false, baselineMissing: false, pretestCompleted: true, posttestAvailable: true, posttestCompleted: true })
     susStatusMock.mockResolvedValue({ version: 1, available: true, completed: true })
     renderDashboard()
-    expect(await screen.findByText('Gracias por responder la encuesta de usabilidad.')).toBeDefined()
-    expect(screen.queryByRole('link', { name: 'Cuéntanos tu opinión' })).toBeNull()
+    expect(await screen.findByText('Tu evaluación final y la encuesta de usabilidad ya están guardadas.')).toBeDefined()
+    expect(screen.queryByRole('link', { name: 'Responder encuesta de usabilidad' })).toBeNull()
+    expect(await screen.findByRole('button', { name: 'Descargar certificado' })).toBeDefined()
   })
 
   // El recorrido propio vive en el menú de cuenta del header, que es el mismo
@@ -86,7 +89,8 @@ describe('Dashboard', () => {
 
   it('sin aprobar todos los módulos, no ofrece el certificado', async () => {
     fetchProgressMock.mockResolvedValue(progressFor('phishing', false))
-    susStatusMock.mockResolvedValue({ version: 1, available: false, completed: false })
+    assessmentStatusMock.mockResolvedValue({ pretestRequired: false, baselineMissing: false, pretestCompleted: true, posttestAvailable: true, posttestCompleted: true })
+    susStatusMock.mockResolvedValue({ version: 1, available: true, completed: true })
 
     renderDashboard()
 
@@ -95,23 +99,35 @@ describe('Dashboard', () => {
     // los números entre varios `<span>`.
     await screen.findByText('Tu avance')
     expect(screen.queryByRole('button', { name: 'Descargar certificado' })).toBeNull()
-    // Sigue visible en el pie, solo que sin ser un enlace todavía.
-    expect(screen.getByText(/Recorre todos los escenarios/)).toBeDefined()
-    expect(screen.queryByRole('link', { name: 'Cuéntanos tu opinión' })).toBeNull()
+    expect(screen.getByText('Tu evaluación final ya está guardada.')).toBeDefined()
+    expect(screen.getByText('Tu evaluación final y la encuesta de usabilidad ya están guardadas.')).toBeDefined()
+    expect(screen.queryByRole('link', { name: 'Responder encuesta de usabilidad' })).toBeNull()
   })
 
   // El botón no depende de un número escrito en el componente: aparece
   // exactamente cuando el servidor ya dio por aprobados todos los módulos que
   // declara (una condición que aquí se simula aprobando los de todas las
   // secciones activas).
-  it('con todos los módulos aprobados, ofrece descargar el certificado', async () => {
+  it('con todos los módulos aprobados pero sin posttest, mantiene pendiente el certificado', async () => {
     fetchProgressMock.mockImplementation((module: string) => Promise.resolve(progressFor(module, true)))
+    assessmentStatusMock.mockResolvedValue({ pretestRequired: false, baselineMissing: false, pretestCompleted: true, posttestAvailable: true, posttestCompleted: false })
 
     renderDashboard()
 
     await screen.findByText('Tu avance')
+    expect(screen.queryByRole('button', { name: 'Descargar certificado' })).toBeNull()
+    expect(await screen.findByRole('link', { name: 'Responder evaluación final' })).toBeDefined()
+    expect(screen.queryByRole('link', { name: 'Responder encuesta de usabilidad' })).toBeNull()
+  })
+
+  it('con módulos, posttest y SUS completados, ofrece descargar el certificado', async () => {
+    fetchProgressMock.mockImplementation((module: string) => Promise.resolve(progressFor(module, true)))
+    assessmentStatusMock.mockResolvedValue({ pretestRequired: false, baselineMissing: false, pretestCompleted: true, posttestAvailable: true, posttestCompleted: true })
+    susStatusMock.mockResolvedValue({ version: 1, available: true, completed: true })
+
+    renderDashboard()
+
     expect(await screen.findByRole('button', { name: 'Descargar certificado' })).toBeDefined()
-    expect(screen.getByRole('link', { name: 'Cuéntanos tu opinión' })).toBeDefined()
   })
 
   // El sonido de logro ("modulo-completo-sonado") ya no vive aquí: se movió a

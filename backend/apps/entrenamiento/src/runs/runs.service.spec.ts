@@ -296,19 +296,25 @@ describe('RunsService.atestacion', () => {
   });
 
   it('rechaza la atestación si falta el posttest o la encuesta SUS', async () => {
-    const runs = Object.keys(THRESHOLDS).flatMap((module) => approvedRuns(module));
+    const runs = Object.keys(THRESHOLDS).flatMap((module) =>
+      approvedRuns(module),
+    );
 
     await expect(
       serviceWith(runs, undefined, undefined, { posttest: false }).attestation(
         PARTICIPANT,
       ),
-    ).rejects.toThrow('Completa la evaluación final y la encuesta de usabilidad');
+    ).rejects.toThrow(
+      'Completa la evaluación final y la encuesta de usabilidad',
+    );
 
     await expect(
-      serviceWith(runs, undefined, undefined, { susResponse: false }).attestation(
-        PARTICIPANT,
-      ),
-    ).rejects.toThrow('Completa la evaluación final y la encuesta de usabilidad');
+      serviceWith(runs, undefined, undefined, {
+        susResponse: false,
+      }).attestation(PARTICIPANT),
+    ).rejects.toThrow(
+      'Completa la evaluación final y la encuesta de usabilidad',
+    );
   });
 });
 
