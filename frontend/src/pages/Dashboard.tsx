@@ -126,44 +126,34 @@ function Dashboard() {
           momento.
         </p>
 
-        {assessmentStatus?.posttestCompleted && <p role="status" className="mt-6 text-body">Tu evaluación final ya está guardada. Gracias por participar.</p>}
+        {assessmentStatus?.posttestCompleted && <p role="status" className="mt-6 text-body">Tu evaluación final ya está guardada.</p>}
         {assessmentError && <div className="mt-6"><p role="alert" className="text-danger">No pudimos comprobar si tu evaluación final está disponible.</p><button className="min-h-11 text-link underline" onClick={() => { setAssessmentError(false); setAssessmentRetry((value) => value + 1); }}>Reintentar evaluación</button></div>}
+
+        {assessmentStatus?.posttestCompleted && susStatus?.available && (
+          <section className="mb-8 rounded-lg border border-primary/30 bg-surface p-6 sm:p-8" aria-labelledby="sus-survey-title">
+            <p className="text-sm font-semibold uppercase tracking-wide text-primary">Último paso del estudio</p>
+            {susStatus.completed ? (
+              <>
+                <h2 id="sus-survey-title" className="mt-2 text-2xl font-semibold tracking-tight text-ink sm:text-3xl">Gracias por completar el estudio</h2>
+                <p role="status" className="mt-3 max-w-prose text-base leading-relaxed text-body">Tu evaluación final y la encuesta de usabilidad ya están guardadas.</p>
+                {complete && <CertificateButton />}
+              </>
+            ) : (
+              <>
+                <h2 id="sus-survey-title" className="mt-2 text-2xl font-semibold tracking-tight text-ink sm:text-3xl">Cuéntanos cómo fue tu experiencia</h2>
+                <p className="mt-3 max-w-prose text-base leading-relaxed text-body">Ya completaste la evaluación final. Responde la encuesta de usabilidad para terminar tu participación en el estudio.</p>
+                <Link to="/encuesta-sus" className="mt-6 inline-flex min-h-11 w-full items-center justify-center gap-3 rounded-md bg-primary px-5 py-3 text-center text-base font-semibold text-on-primary hover:bg-primary-active focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary sm:w-auto">
+                  <span>Responder encuesta de usabilidad</span>
+                  <ArrowRight aria-hidden className="size-5 shrink-0" />
+                </Link>
+              </>
+            )}
+          </section>
+        )}
 
         {/* Una tira de siete boletos perforada, no siete tarjetas sueltas: los módulos se recorren
             en orden, comparten el mismo papel y el talón guarda lo que te llevas (el certificado). */}
-        <Ticket
-          className="mt-8 overflow-hidden"
-          talon={
-            <div className="px-6 py-5">
-              {/* La encuesta se habilita cuando se intentaron todos los escenarios, aunque no se aprueben los módulos. */}
-              {susStatus?.completed ? (
-                <>
-                  <p role="status" className="text-base leading-relaxed text-body">Gracias por responder la encuesta de usabilidad.</p>
-                  {complete && <CertificateButton />}
-                </>
-              ) : susStatus?.available ? (
-                <>
-                  <p className="text-base leading-relaxed text-body">
-                    Recorriste todos los escenarios. ¿Qué te pareció el
-                    entrenamiento?{" "}
-                    <Link
-                      to="/encuesta-sus"
-                      className="font-medium text-link underline"
-                    >
-                      Cuéntanos tu opinión
-                    </Link>
-                  </p>
-                  {/* El certificado sigue sujeto al umbral que confirmó el servidor. */}
-                  {complete && <CertificateButton />}
-                </>
-              ) : (
-                <p className="text-base leading-relaxed text-body">
-                  Recorre todos los escenarios para habilitar la encuesta de satisfacción.
-                </p>
-              )}
-            </div>
-          }
-        >
+        <Ticket className="mt-8 overflow-hidden">
           {global.total > 0 && (
             <section
               aria-labelledby="titulo-global"
