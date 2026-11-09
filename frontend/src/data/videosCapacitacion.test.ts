@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { SECTIONS } from './catalogo'
-import { getYouTubeId, TRAINING_VIDEOS } from './videosCapacitacion'
+import { getModuleVideoUrl, getYouTubeId, TRAINING_VIDEOS } from './videosCapacitacion'
 
 describe('catálogo de videos de capacitación', () => {
   it('incluye el video general y uno para cada módulo en el orden del curso', () => {
@@ -40,6 +40,10 @@ describe('catálogo de videos de capacitación', () => {
     for (const video of TRAINING_VIDEOS) {
       expect(video.youtubeUrl && getYouTubeId(video.youtubeUrl)).toBeTruthy()
     }
+  })
+
+  it('un módulo sin video grabado queda como próximo', () => {
+    expect(getModuleVideoUrl('modulo-sin-video')).toBeNull()
   })
 
   it.each([

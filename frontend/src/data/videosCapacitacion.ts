@@ -59,6 +59,11 @@ const MODULE_URLS: Record<string, string> = {
   'asistentes-ia': 'https://youtu.be/4kOlEheYMNY',
 }
 
+// Un módulo nuevo entra sin video hasta grabarlo: null muestra "se publica pronto".
+export function getModuleVideoUrl(sectionId: string): string | null {
+  return MODULE_URLS[sectionId] ?? null
+}
+
 export const TRAINING_VIDEOS: TrainingVideo[] = [
   {
     id: 'general',
@@ -72,6 +77,6 @@ export const TRAINING_VIDEOS: TrainingVideo[] = [
     sectionId: section.id,
     title: section.titulo,
     description: MODULE_DESCRIPTIONS[section.id] ?? section.descripcion,
-    youtubeUrl: MODULE_URLS[section.id] ?? null,
+    youtubeUrl: getModuleVideoUrl(section.id),
   })),
 ]
