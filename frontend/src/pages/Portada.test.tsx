@@ -27,15 +27,15 @@ describe('Portada', () => {
     useAuthMock.mockReturnValue({ isAuthenticated: false, isAdmin: false })
   })
 
-  it('presenta la promesa, las señales del ejemplo y los dos videos publicados', () => {
+  it('presenta la promesa, las señales del ejemplo y todos los videos publicados', () => {
     renderPage()
 
     expect(screen.getByRole('heading', { level: 1 })).toBeDefined()
     expect(screen.getByText(/engaños simulados/i)).toBeDefined()
     expect(screen.getByText('Ningún premio necesita tu clave')).toBeDefined()
-    // Solo el general y phishing publican reproductor; los demás módulos
-    // muestran que su video se publica pronto.
-    expect(screen.getAllByRole('button', { name: /^Reproducir / })).toHaveLength(2)
+    // El general y los siete módulos ya tienen reproductor.
+    expect(screen.getAllByRole('button', { name: /^Reproducir / })).toHaveLength(8)
+    expect(screen.queryByText('Este video se publica pronto.')).toBeNull()
   })
 
   it('las señales están en el documento aunque nadie raspe el boleto', () => {

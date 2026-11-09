@@ -20,17 +20,26 @@ describe('catálogo de videos de capacitación', () => {
     )
   })
 
-  it('publica el video de phishing y mantiene los demás módulos como próximos', () => {
-    const moduleVideos = TRAINING_VIDEOS.filter((video) => video.sectionId)
-
-    expect(moduleVideos.find((video) => video.sectionId === 'phishing')?.youtubeUrl).toBe(
-      'https://youtu.be/fQwaj4hSK2k',
+  it('publica un video válido de YouTube para cada módulo', () => {
+    const urls = Object.fromEntries(
+      TRAINING_VIDEOS.filter((video) => video.sectionId).map((video) => [
+        video.sectionId,
+        video.youtubeUrl,
+      ]),
     )
-    expect(
-      moduleVideos
-        .filter((video) => video.sectionId !== 'phishing')
-        .every((video) => video.youtubeUrl === null),
-    ).toBe(true)
+
+    expect(urls).toEqual({
+      phishing: 'https://youtu.be/fQwaj4hSK2k',
+      smishing: 'https://youtu.be/nCR5Y_s-8yI',
+      vishing: 'https://youtu.be/KVbLpJkYgcE',
+      suplantacion: 'https://youtu.be/t--XkxE_UCc',
+      estafa: 'https://youtu.be/lc1kgtKNVSk',
+      fisico: 'https://youtu.be/d7RWul7r-00',
+      'asistentes-ia': 'https://youtu.be/4kOlEheYMNY',
+    })
+    for (const video of TRAINING_VIDEOS) {
+      expect(video.youtubeUrl && getYouTubeId(video.youtubeUrl)).toBeTruthy()
+    }
   })
 
   it.each([
