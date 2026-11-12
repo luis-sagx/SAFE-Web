@@ -1,8 +1,8 @@
 // Servicio de ENTRENAMIENTO: los datos del estudio.
 //
 // Este schema NO tiene ninguna tabla con datos personales, ninguna llave
-// foránea hacia el servicio de identidad, y su rol de base de datos no tiene
-// permiso sobre el schema `identidad`. Por eso `GET /api/runs/resultados` no
+// foránea hacia el servicio de identidad, y su rol no puede conectarse a la
+// base de `identidad`. Por eso `GET /api/runs/resultados` no
 // puede filtrar un nombre ni un correo aunque alguien escriba mal un `select`:
 // no es una regla de disciplina, es que no existe el camino.
 

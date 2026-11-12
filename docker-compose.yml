@@ -13,8 +13,10 @@ services:
     environment:
       POSTGRES_USER: "${POSTGRES_USER:?falta el archivo .env, copiar de .env.example}"
       POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:?falta POSTGRES_PASSWORD en .env}"
-      POSTGRES_DB: "${POSTGRES_DB:?falta POSTGRES_DB en .env}"
-      # Las lee el script de inicialización para crear un rol por servicio.
+      POSTGRES_DB: "${POSTGRES_DB:-postgres}"
+      # Una base y un rol por servicio. Los nombres se comparten con las URLs.
+      IDENTIDAD_DB_NAME: "${IDENTIDAD_DB_NAME:?falta IDENTIDAD_DB_NAME en .env}"
+      ENTRENAMIENTO_DB_NAME: "${ENTRENAMIENTO_DB_NAME:?falta ENTRENAMIENTO_DB_NAME en .env}"
       IDENTIDAD_DB_PASSWORD: "${IDENTIDAD_DB_PASSWORD:?falta IDENTIDAD_DB_PASSWORD en .env}"
       ENTRENAMIENTO_DB_PASSWORD: "${ENTRENAMIENTO_DB_PASSWORD:?falta ENTRENAMIENTO_DB_PASSWORD en .env}"
     volumes:
@@ -22,8 +24,8 @@ services:
       # los datos quedan en un subdirectorio y un futuro pg_upgrade no choca
       # contra el límite del punto de montaje.
       - pgdata:/var/lib/postgresql
-      # Crea un rol y un schema por servicio, sin permisos cruzados. Postgres
-      # lo ejecuta solo al inicializar el volumen por primera vez.
+      # Crea las dos bases y sus roles. Postgres lo ejecuta solo al inicializar
+      # PGDATA; en un volumen existente se invoca el mismo script tras respaldar.
       - ./db-init:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
@@ -38,8 +40,7 @@ services:
           memory: 512M
     # Sin `ports:`: la base solo es alcanzable desde la red interna de compose.
 
-  # Único servicio que conoce datos personales. Su rol de Postgres no tiene
-  # permiso sobre el schema `entrenamiento`, ni al revés.
+  # Único servicio que conoce datos personales. Su rol solo conecta a su base.
   identidad:
     build:
       context: ./backend
@@ -47,7 +48,7 @@ services:
         APP: identidad
     restart: unless-stopped
     environment:
-      IDENTIDAD_DATABASE_URL: postgresql://identidad:${IDENTIDAD_DB_PASSWORD}@db:5432/${POSTGRES_DB}?schema=identidad
+      IDENTIDAD_DATABASE_URL: postgresql://identidad:${IDENTIDAD_DB_PASSWORD}@db:5432/${IDENTIDAD_DB_NAME}?schema=identidad
       # Firma sesiones con su privada; verifica atestaciones con la pública
       # de `entrenamiento`. No recibe la privada de `entrenamiento`.
       IDENTIDAD_JWT_PRIVATE_KEY: "${IDENTIDAD_JWT_PRIVATE_KEY:?falta IDENTIDAD_JWT_PRIVATE_KEY en .env, generar con scripts/generate-jwt-keys.sh}"
@@ -92,7 +93,7 @@ services:
         APP: entrenamiento
     restart: unless-stopped
     environment:
-      ENTRENAMIENTO_DATABASE_URL: postgresql://entrenamiento:${ENTRENAMIENTO_DB_PASSWORD}@db:5432/${POSTGRES_DB}?schema=entrenamiento
+      ENTRENAMIENTO_DATABASE_URL: postgresql://entrenamiento:${ENTRENAMIENTO_DB_PASSWORD}@db:5432/${ENTRENAMIENTO_DB_NAME}?schema=entrenamiento
       IDENTIDAD_JWT_PUBLIC_KEY: "${IDENTIDAD_JWT_PUBLIC_KEY:?falta IDENTIDAD_JWT_PUBLIC_KEY en .env, generar con scripts/generate-jwt-keys.sh}"
       # Firma la atestación del certificado; `identidad` tiene la pública.
       ENTRENAMIENTO_JWT_PRIVATE_KEY: "${ENTRENAMIENTO_JWT_PRIVATE_KEY:?falta ENTRENAMIENTO_JWT_PRIVATE_KEY en .env, generar con scripts/generate-jwt-keys.sh}"

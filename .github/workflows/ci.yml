@@ -104,17 +104,19 @@ jobs:
         env:
           POSTGRES_USER: ci
           POSTGRES_PASSWORD: ci
-          POSTGRES_DB: ci_test
+          POSTGRES_DB: postgres
         ports:
           - 5432:5432
         options: >-
-          --health-cmd "pg_isready -U ci -d ci_test"
+          --health-cmd "pg_isready -U ci -d postgres"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 10
     env:
-      IDENTIDAD_DATABASE_URL: postgresql://identidad:ci@localhost:5432/ci_test?schema=identidad
-      ENTRENAMIENTO_DATABASE_URL: postgresql://entrenamiento:ci@localhost:5432/ci_test?schema=entrenamiento
+      IDENTIDAD_DB_NAME: safeweb_identidad
+      ENTRENAMIENTO_DB_NAME: safeweb_entrenamiento
+      IDENTIDAD_DATABASE_URL: postgresql://identidad:ci@localhost:5432/safeweb_identidad?schema=identidad
+      ENTRENAMIENTO_DATABASE_URL: postgresql://entrenamiento:ci@localhost:5432/safeweb_entrenamiento?schema=entrenamiento
       CEDULA_PEPPER: pepper-solo-para-pruebas-de-ci
       EMAIL_PEPPER: email-pepper-solo-para-pruebas-de-ci
       # 32 bytes en base64 de verdad: pii.ts exige ese largo exacto para
@@ -145,12 +147,14 @@ jobs:
         run: ../scripts/generate-jwt-keys.sh >> "$GITHUB_ENV"
       # El MISMO script que corre en producción, no una copia: si los permisos
       # entre servicios se aflojan ahí, las pruebas dejan de reflejarlo.
-      - name: Un rol y un schema por servicio
+      - name: Dos bases y un rol por servicio
         env:
           POSTGRES_USER: ci
-          POSTGRES_DB: ci_test
+          POSTGRES_DB: postgres
           PGHOST: localhost
           PGPASSWORD: ci
+          IDENTIDAD_DB_NAME: safeweb_identidad
+          ENTRENAMIENTO_DB_NAME: safeweb_entrenamiento
           IDENTIDAD_DB_PASSWORD: ci
           ENTRENAMIENTO_DB_PASSWORD: ci
         run: ../db-init/01-roles-y-schemas.sh
@@ -275,6 +279,8 @@ jobs:
       POSTGRES_USER: ci
       POSTGRES_PASSWORD: ci
       POSTGRES_DB: ci
+      IDENTIDAD_DB_NAME: safeweb_identidad
+      ENTRENAMIENTO_DB_NAME: safeweb_entrenamiento
       IDENTIDAD_DB_PASSWORD: ci-identidad
       ENTRENAMIENTO_DB_PASSWORD: ci-entrenamiento
       CEDULA_PEPPER: ci-pepper-solo-para-pruebas
@@ -318,6 +324,9 @@ jobs:
       # migraciones o si Nginx no levanta.
       - run: docker compose up -d --wait --wait-timeout 180
 
+      - name: El rol de entrenamiento no se conecta a la base de identidad
+        run: scripts/check-db-isolation.sh
+
       - name: API a través de Nginx
         run: curl -fsS http://localhost:8080/api/health | grep -q '"status":"ok"'
 
@@ -343,7 +352,7 @@ jobs:
           # base, mismo patrón que ya usa el paso de abajo para hablar con
           # Postgres a través del contenedor.
           docker compose exec -T -e PGPASSWORD=ci-identidad db \
-            psql -U identidad -d ci -h 127.0.0.1 \
+            psql -U identidad -d "$IDENTIDAD_DB_NAME" -h 127.0.0.1 \
             -c 'UPDATE identidad."Participant" SET "emailConfirmedAt" = now() WHERE email IS NOT NULL;'
 
           token=$(curl -fsS -X POST http://localhost:8080/api/auth/login \
@@ -387,20 +396,6 @@ jobs:
           name: k6-nominal-summary
           path: k6-nominal-summary.json
           if-no-files-found: error
-
-      # La garantía de privacidad del estudio, verificada contra la base real:
-      # el rol del servicio de entrenamiento no puede alcanzar los datos
-      # personales ni con SQL crudo. Si alguien afloja los permisos del
-      # db-init, esto falla.
-      - name: El servicio del estudio no alcanza los datos personales
-        run: |
-          if docker compose exec -T -e PGPASSWORD=ci-entrenamiento db \
-            psql -U entrenamiento -d ci -h 127.0.0.1 \
-            -c 'SELECT nombre FROM identidad."Participant";' 2>/dev/null; then
-            echo 'FALLO: el rol entrenamiento pudo leer identidad."Participant"'
-            exit 1
-          fi
-          echo 'OK: permiso denegado, como debe ser.'
 
       - name: Registros de los contenedores si algo falló
         if: failure()
