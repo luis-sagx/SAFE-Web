@@ -371,6 +371,19 @@ jobs:
             -d '{"scenarioId":"phishing/factura-sri","version":1,"outcome":"CORRECTO","score":100,"endingId":"e_verifica","durationMs":1000,"startedAt":"2026-08-01T10:00:00.000Z","decisions":[]}' \
             > /dev/null
 
+      - name: Respaldos separados restauran en sus bases
+        env:
+          BACKUP_DIR: ${{ runner.temp }}/safe-web-backups
+          BACKUP_REMOTE: ''
+        run: |
+          scripts/backup-db.sh
+          identidad=$(find "$BACKUP_DIR" -maxdepth 1 -type f -name 'safe-web-identidad-*.dump' -print -quit)
+          entrenamiento=$(find "$BACKUP_DIR" -maxdepth 1 -type f -name 'safe-web-entrenamiento-*.dump' -print -quit)
+          test -n "$identidad"
+          test -n "$entrenamiento"
+          scripts/verify-backup.sh identidad "$identidad"
+          scripts/verify-backup.sh entrenamiento "$entrenamiento"
+
       # Flujo nominal reproducible: la tasa mantiene cada servicio por debajo
       # de su límite de 120 solicitudes/minuto por IP y fija SLOs de error y
       # latencia mediante los thresholds del script.
