@@ -36,15 +36,27 @@ Hoy Compose configura una sola `POSTGRES_DB` y dos esquemas con roles separados.
 
 ## TDD y verificaciones
 
-- Estado efectivo TDD: activado por la skill de sesión `test-driven-development`; no existe otra configuración de proyecto/sesión observada. Runner: backend `pnpm test` (Jest); integración con PostgreSQL `pnpm test:e2e` (Jest con `test/jest-e2e.json`).
+- Estado efectivo TDD: activado por la skill de sesión `test-driven-development`; no existe otra configuración de proyecto/sesión observada. Runners: frontend `pnpm test:cov` (Vitest); backend `pnpm test:cov` (Jest); integración PostgreSQL `pnpm test:e2e` (Jest con `test/jest-e2e.json`).
 - Configuración/deploy permite checks automatizados: se adapta CI existente; seguir RED-GREEN-REFACTOR para scripts/helpers verificables y observar fallos/éxitos antes de cerrar cada tarea.
 - RDD: `gentle-ai` no está instalado/disponible en el entorno, por lo que no se pudo leer el switch ni evaluar candidatos. Mantener como no disponible; no inferir un nivel bajo.
-- Comprobaciones previstas una vez autorizadas: CI backend e2e con dos DBs, verificación de aislamiento por conexión, restauración de respaldos en PostgreSQL temporal, y checks de backend aplicables.
+- Comprobaciones PGDB-1 realizadas: aislamiento por conexión en PostgreSQL desechable (RED/GREEN), `bash -n` del bootstrap, `sh -n` del check y `git diff --check`.
+- Comprobaciones PGDB-2: RED observado con el respaldo antiguo: produjo solo `safe-web-20261111-230744.dump`, sin archivos por servicio; assertion terminó con código 1. GREEN en PostgreSQL standalone temporal, tmpfs y datos sintéticos: modo normal produjo y restauró ambos dumps; modo `--source` produjo y restauró ambos schemas. Conteos verificados: Identidad 2 participantes/1 certificado; Entrenamiento 3 corridas/1 reinicio. `sh -n scripts/backup-db.sh`, `sh -n scripts/verify-backup.sh` y `git diff --check` pasan. El harness se limpió al terminar. No se ejecutaron `pnpm test:e2e` ni el workflow CI completo; se agregó la restauración por servicio al job Docker smoke de CI.
+- Comprobaciones frontend: RED con paralelismo predeterminado (3–7 fallos reproducibles, mayormente timeouts de 5 s); los tres archivos más problemáticos pasan juntos (12/12). GREEN tras configurar `maxWorkers: 2`: `pnpm lint && pnpm test:cov && pnpm build` terminó con código 0; 127 archivos, 947 pruebas correctas, 4 omitidas y cobertura sobre todos los umbrales.
+- Comprobaciones backend: `pnpm install --frozen-lockfile`, `pnpm prisma:generate`, `pnpm lint:ci`, `pnpm build` y `pnpm test:cov` terminaron con código 0; Jest reportó 33 suites y 276 pruebas correctas.
+- Comprobaciones e2e: PostgreSQL 18 efímero y aislado; bootstrap de roles/bases y deploy de 13 migraciones de Identidad y 6 de Entrenamiento terminaron; `pnpm test:e2e` terminó con código 0 (6 suites, 110 pruebas).
+- Comprobaciones Docker del job: GREEN en Compose con proyecto, imágenes, puerto y volumen propios. Build de tres imágenes, healthchecks, aislamiento, smoke HTTP/SPA/registro/login/corrida, respaldo/restauración de ambas bases y k6 terminaron con código 0. k6: 63/63 checks, 0 % de requests fallidos, p95 22.48 ms. El trap retiró solo los recursos temporales; no se consultó el Compose/volumen activo ni AWS.
+- Auditorías: `pnpm audit --audit-level=high` terminó con código 0 en frontend y backend. Frontend: sin vulnerabilidades conocidas. Backend: 9 (2 bajas, 7 moderadas); ninguna supera el umbral `high`. Sonar y dependency-review quedan sin ejecutar porque requieren el contexto de GitHub.
+
+## Estrategia de entrega
+
+- Estrategia inicial: `ask-on-risk` (predeterminada). PGDB-1 acumuló 555 líneas editadas; el umbral ODD de ~400 se superó.
+- La pregunta de estrategia de cadena está pendiente: `stacked-to-main` o `feature-branch-chain`. No crear más commits hasta resolverla.
 
 ## Tareas
 
-- [ ] **PGDB-1 — Bootstrap y conexión por servicio.** Actualizar Compose, inicialización para volúmenes nuevos, procedimiento para volumen existente, variables, configuraciones de Prisma, comandos de migración y arranque por app. Incluir documentación operativa de instalación/corte. Ruta: delegated direct; evidencia: más de dos archivos no triviales y lectura preparatoria de configuración. El resultado y los checks están observados; marcar completa al registrar el commit de implementación.
-- [ ] **PGDB-2 — Respaldos, CI y recuperación.** Separar respaldos/restauración y sus verificaciones por base; adaptar CI para crear las dos bases y comprobar aislamiento; actualizar runbook de recuperación. Ruta: delegated direct; evidencia: más de dos archivos no triviales y cambios coordinados de scripts/CI/documentación.
+- [x] **PGDB-1 — Bootstrap y conexión por servicio.** Actualizar Compose, inicialización para volúmenes nuevos, procedimiento para volumen existente, variables, configuraciones de Prisma, comandos de migración y arranque por app. Incluir documentación operativa de instalación/corte. Ruta: delegated direct; evidencia: más de dos archivos no triviales y lectura preparatoria de configuración. Commit de implementación: `09c516a` (`feat(db): separar conexiones por servicio`).
+- [ ] **PGDB-2 — Respaldos, CI y recuperación.** Separar respaldos/restauración y sus verificaciones por base; adaptar CI para crear las dos bases y comprobar aislamiento; actualizar runbook de recuperación. Implementación y verificaciones locales listas; falta cerrar la unidad con commit porque la estrategia de ramas sigue sin respuesta. Ruta: delegated direct; evidencia: más de dos archivos no triviales y cambios coordinados de scripts/CI/documentación.
+- [ ] **PGDB-3 — Estabilizar pruebas frontend para CI.** Limitar los workers de Vitest para evitar que el suite exceda los timeouts de 5 s en entornos con paralelismo reportado mayor que la CPU disponible. Implementación y comando CI exacto verificados; queda cerrar la unidad con commit por la estrategia de ramas pendiente. Ruta: direct inline; evidencia: configuración en un archivo y RED/GREEN observado.
 
 ## Progreso y siguiente paso
 
@@ -55,4 +67,9 @@ Hoy Compose configura una sola `POSTGRES_DB` y dos esquemas con roles separados.
 - TDD: RED observado en PostgreSQL desechable antes del cambio: `FALLO: entrenamiento pudo conectarse a la base de identidad.` GREEN observado tras el cambio y una extensión simétrica del check: `OK: cada servicio solo puede conectarse a su propia base.` Exit 0. El contenedor, red y volumen anónimo desechables se retiraron; no se consultó ni modificó el Compose live.
 - Checks locales PGDB-1: `bash -n db-init/01-roles-y-schemas.sh`, `sh -n scripts/check-db-isolation.sh` y `git diff --check` pasaron. No se ejecutaron `pnpm test:e2e` ni el workflow completo; el job e2e de CI prepara dos bases para su ejecución.
 - RDD/gentle-ai no estaba disponible; no se inició revisión nativa.
-- Siguiente paso: implementar PGDB-2 (respaldos, transferencia/restauración y verificaciones por base), sin ejecutar corte remoto. Confirmar después los nombres definitivos de las bases en `.env` de EC2 antes del despliegue.
+- PGDB-1 se cerró en el work-unit commit `09c516a` (`feat(db): separar conexiones por servicio`).
+- PGDB-2 implementa archivos de respaldo separados por servicio, un modo `--source` para extraer los dos schemas de la base legacy, restauración verificable en un PostgreSQL efímero, rotación que conserva dumps fuente y anteriores, CI para verificar los dos destinos y runbook de corte/reversión sobre el mismo volumen persistente.
+- La validación PGDB-2 usó un contenedor PostgreSQL standalone con nombre de proyecto único, datos y credenciales ficticias, sin puertos ni volumen persistente. No consultó ni modificó el stack Compose mostrado por el usuario ni AWS.
+- Pipeline: la suite completa frontend falla bajo el paralelismo predeterminado en este entorno y pasa con `maxWorkers=2`; el runner informa 20 CPUs. La atribución a sobrecarga de workers es una inferencia, apoyada por las ejecuciones contrastadas.
+- El job Docker se simuló en un proyecto Compose aislado porque su `docker compose down -v` no debe ejecutarse contra el Compose activo. E2E se probó con PostgreSQL temporal aislado. Sonar y dependency-review dependen de GitHub y quedan pendientes hasta un PR.
+- Siguiente paso: PGDB-2 y PGDB-3 están implementados y verificados localmente; faltan commits de cierre hasta que el usuario elija `stacked-to-main` o `feature-branch-chain`. El estado de GitHub Actions solo se confirma abriendo el PR. El corte EC2 requiere autorización operativa futura y no se ejecutó.
