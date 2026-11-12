@@ -29,21 +29,21 @@ flowchart TB
 
         subgraph pg["db · PostgreSQL (sin puerto host)"]
             direction LR
-            SCH_ID[("schema identidad<br/>rol: identidad")]
-            SCH_ENT[("schema entrenamiento<br/>rol: entrenamiento")]
+            DB_ID[("base safeweb_identidad<br/>schema identidad<br/>rol: identidad")]
+            DB_ENT[("base safeweb_entrenamiento<br/>schema entrenamiento<br/>rol: entrenamiento")]
         end
     end
 
     U -- HTTPS --> WEB
     WEB -- "/api/auth/*" --> ID_API
     WEB -- "/api/runs/*" --> ENT_API
-    ID_API -- "SQL (rol identidad)" --> SCH_ID
-    ENT_API -- "SQL (rol entrenamiento)" --> SCH_ENT
+    ID_API -- "SQL (rol identidad)" --> DB_ID
+    ENT_API -- "SQL (rol entrenamiento)" --> DB_ENT
 
     ID_API -. "access token { sub, seq, role, typ:access }<br/>NO llamada de red" .-> ENT_API
 
-    style SCH_ID fill:#fce4e4,stroke:#c0392b
-    style SCH_ENT fill:#e4f3e4,stroke:#2e7d32
+    style DB_ID fill:#fce4e4,stroke:#c0392b
+    style DB_ENT fill:#e4f3e4,stroke:#2e7d32
 ```
 
 **Qué hace cada microservicio**
@@ -67,8 +67,8 @@ Reglas que el diagrama no puede mostrar por sí solo (ver ARQUITECTURA.md §2):
 
 - `db`, `identidad` y `entrenamiento` **no publican puertos al host**; solo
   `web` es alcanzable desde afuera.
-- El rol `entrenamiento` no tiene permiso sobre el schema `identidad`, ni al
-  revés. `permission denied for schema identidad` si se intenta.
+- El rol `entrenamiento` no puede conectarse a la base `identidad`, ni al
+  revés. PostgreSQL rechaza la conexión antes de ejecutar consultas.
 - No hay llamada `identidad → entrenamiento` ni viceversa: la línea punteada
   es el JWT viajando *a través del navegador*, no una llamada de red directa.
 
@@ -96,8 +96,9 @@ flowchart LR
 
 Una sola imagen de backend sirve a los dos servicios (`ARG APP` decide qué
 migraciones y qué `main.js` arrancan). `db-init/01-roles-y-schemas.sh` crea
-los roles y schemas solo la primera vez que se inicializa el volumen
-`pgdata`.
+dos bases, los roles y schemas solo la primera vez que se inicializa el volumen
+`pgdata`; para un volumen existente se invoca tras respaldar y revisar los
+nombres destino, sin borrar ni transferir datos.
 
 ---
 
@@ -161,7 +162,7 @@ sequenceDiagram
 
 ## 4. Diagrama entidad-relación
 
-Un schema de Postgres por servicio, **una tabla por schema**, sin llave
+Una base lógica y un schema de Postgres por servicio, **una tabla por schema**, sin llave
 foránea entre ellas — a propósito (ver ARQUITECTURA.md §2.1 y §6).
 
 Código en **DBML** (dbdiagram.io) — pegar en https://dbdiagram.io/d para
@@ -171,7 +172,7 @@ debe haberla.
 ```dbml
 Project safe_web {
   database_type: 'PostgreSQL'
-  note: 'Un Postgres, dos schemas, dos roles. Sin FK entre ellos: el puente es el JWT, no SQL.'
+  note: 'Un Postgres, dos bases lógicas con un schema y rol cada una. Sin FK entre ellas: el puente es el JWT, no SQL.'
 }
 
 Enum identidad.role_enum {
@@ -198,7 +199,7 @@ Table identidad.Participant {
   disabledAt          timestamp [note: 'nullable, cuenta desactivada por supervisor']
   createdAt           timestamp [not null, default: `now()`]
 
-  Note: 'Único dueño de datos personales. Rol de Postgres "identidad", sin permiso sobre el schema entrenamiento. El anonimato del dato de análisis lo da la separación estructural, no un borrado posterior sobre esta tabla.'
+  Note: 'Único dueño de datos personales. El rol de Postgres "identidad" accede a su base lógica. El anonimato del dato de análisis lo da la separación estructural, no un borrado posterior sobre esta tabla.'
 }
 
 Table entrenamiento.ScenarioRun {
@@ -220,7 +221,7 @@ Table entrenamiento.ScenarioRun {
     scenarioId [name: 'idx_scenario']
   }
 
-  Note: 'Datos del estudio. Rol de Postgres "entrenamiento", sin permiso sobre el schema identidad. Cero columnas de PII.'
+  Note: 'Datos del estudio. El rol de Postgres "entrenamiento" accede a su base lógica. Cero columnas de PII.'
 }
 
 // Deliberadamente NO existe:
@@ -229,8 +230,8 @@ Table entrenamiento.ScenarioRun {
 ```
 
 **Por qué no hay FK:** `entrenamiento` guarda `participantId` como uuid
-opaco copiado del JWT. El servicio no tiene la tabla `Participant`, no tiene
-permiso sobre su schema, y por lo tanto **no puede** resolver ni filtrar un
+opaco copiado del JWT. El servicio no tiene la tabla `Participant`, no puede
+conectarse a la base de identidad y por lo tanto **no puede** resolver ni filtrar un
 dato personal — ni por error. El anonimato del dato de análisis lo da esta
 separación, continua desde el primer registro; no depende de un borrado
 posterior sobre `Participant`.
@@ -238,6 +239,6 @@ posterior sobre `Participant`.
 | | `identidad.Participant` | `entrenamiento.ScenarioRun` |
 |---|---|---|
 | Motor | PostgreSQL, schema `identidad` | PostgreSQL, schema `entrenamiento` |
-| Rol de Postgres | `identidad` (sin acceso a `entrenamiento`) | `entrenamiento` (sin acceso a `identidad`) |
+| Rol de Postgres | `identidad` (solo conecta a su base) | `entrenamiento` (solo conecta a su base) |
 | Filas | 1 por participante | 1 por escenario terminado |
 | PII | sí | no, nunca |

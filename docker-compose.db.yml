@@ -14,9 +14,15 @@ services:
     environment:
       POSTGRES_USER: "${POSTGRES_USER:?falta el archivo .env, copiar de .env.example}"
       POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:?falta POSTGRES_PASSWORD en .env}"
-      POSTGRES_DB: "${POSTGRES_DB:?falta POSTGRES_DB en .env}"
+      POSTGRES_DB: "${POSTGRES_DB:-postgres}"
+      IDENTIDAD_DB_NAME: "${IDENTIDAD_DB_NAME:?falta IDENTIDAD_DB_NAME en .env}"
+      ENTRENAMIENTO_DB_NAME: "${ENTRENAMIENTO_DB_NAME:?falta ENTRENAMIENTO_DB_NAME en .env}"
       IDENTIDAD_DB_PASSWORD: "${IDENTIDAD_DB_PASSWORD:?falta IDENTIDAD_DB_PASSWORD en .env}"
       ENTRENAMIENTO_DB_PASSWORD: "${ENTRENAMIENTO_DB_PASSWORD:?falta ENTRENAMIENTO_DB_PASSWORD en .env}"
+      # Solo desarrollo local: el script crea bases sombra preasignadas para
+      # `prisma migrate dev`; producción no recibe estos nombres.
+      IDENTIDAD_SHADOW_DB_NAME: "${IDENTIDAD_SHADOW_DB_NAME:-safeweb_identidad_shadow}"
+      ENTRENAMIENTO_SHADOW_DB_NAME: "${ENTRENAMIENTO_SHADOW_DB_NAME:-safeweb_entrenamiento_shadow}"
     ports:
       - "${DB_PORT:-5432}:5432"
     volumes:
