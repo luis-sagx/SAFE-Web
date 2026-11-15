@@ -9,5 +9,6 @@ export default defineConfig({
   datasource: {
     // Ver la nota en prisma.identidad.config.ts.
     url: process.env.ENTRENAMIENTO_DATABASE_URL as string,
+    shadowDatabaseUrl: process.env.ENTRENAMIENTO_SHADOW_DATABASE_URL,
   },
 });

@@ -10,8 +10,8 @@ export class PrismaService
   constructor() {
     // Prisma 7 exige un driver adapter: la URL ya no se lee del schema.
     //
-    // Esta conexión usa el rol `entrenamiento`, que no tiene permiso sobre el
-    // schema `identidad`. Es lo que hace que la exportación del estudio no
+    // Esta conexión usa el rol `entrenamiento`, que no puede conectarse a la
+    // base `identidad`. Es lo que hace que la exportación del estudio no
     // pueda filtrar un dato personal ni con SQL crudo.
     //
     // El schema va como segundo argumento y no como `?schema=` en la URL: el

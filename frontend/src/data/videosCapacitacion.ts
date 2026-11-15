@@ -47,11 +47,22 @@ const MODULE_DESCRIPTIONS: Record<string, string> = {
   'asistentes-ia': 'Qué puede inventar un asistente de IA y qué nunca deberías pegarle.',
 }
 
-// Intro oficial de SAFE-Web. El video general ya tiene su URL definitiva;
-// el provisional solo queda en los módulos hasta grabar los suyos.
 const GENERAL_URL = 'https://youtu.be/xN-O2gGRQEU'
 
-const PHISHING_URL = 'https://youtu.be/fQwaj4hSK2k'
+const MODULE_URLS: Record<string, string> = {
+  phishing: 'https://youtu.be/fQwaj4hSK2k',
+  smishing: 'https://youtu.be/nCR5Y_s-8yI',
+  vishing: 'https://youtu.be/KVbLpJkYgcE',
+  suplantacion: 'https://youtu.be/t--XkxE_UCc',
+  estafa: 'https://youtu.be/lc1kgtKNVSk',
+  fisico: 'https://youtu.be/d7RWul7r-00',
+  'asistentes-ia': 'https://youtu.be/4kOlEheYMNY',
+}
+
+// Un módulo nuevo entra sin video hasta grabarlo: null muestra "se publica pronto".
+export function getModuleVideoUrl(sectionId: string): string | null {
+  return MODULE_URLS[sectionId] ?? null
+}
 
 export const TRAINING_VIDEOS: TrainingVideo[] = [
   {
@@ -66,6 +77,6 @@ export const TRAINING_VIDEOS: TrainingVideo[] = [
     sectionId: section.id,
     title: section.titulo,
     description: MODULE_DESCRIPTIONS[section.id] ?? section.descripcion,
-    youtubeUrl: section.id === 'phishing' ? PHISHING_URL : null,
+    youtubeUrl: getModuleVideoUrl(section.id),
   })),
 ]

@@ -76,7 +76,7 @@ ENV APP=${APP}
 # Cada servicio aplica SOLO sus migraciones, con su propia URL y su propio rol
 # de Postgres: el contenedor queda consistente con su esquema sin un paso
 # manual que se pueda olvidar en el servidor propio, y ninguno puede tocar el
-# schema del otro.
+# base lógica del otro.
 #
 # Se invoca el binario de prisma directamente y no `pnpm prisma`: la imagen no
 # trae pnpm, y el contenedor debe poder levantar en un servidor sin salida a

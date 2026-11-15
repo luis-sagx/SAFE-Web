@@ -26,8 +26,10 @@ overrides:
   fast-uri: '>=3.1.6'
   # @nestjs/platform-express trae multer 2.2.0, con tres CVE de denegación de
   # servicio (GHSA-wc9g-mqfw-jrwm, GHSA-qfvm-cv95-jqjf, GHSA-535w-7cp7-47q4).
-  # 2.3.0 los corrige a todos.
-  multer: '>=2.3.0'
+  # 2.3.0 los corrige a todos; 2.5.0 corrige además GHSA-q7qp-rjg7-q26m.
+  multer: '>=2.5.0'
+  # express 5.2 trae body-parser 2.3.0 (GHSA-27r3-jxmh-p828).
+  body-parser@<2.4.0: '^2.4.0'
   # Limita los reemplazos a las versiones vulnerables para que las
   # dependencias padre puedan adoptar sus propias correcciones después.
   source-map-js@<1.2.2: '^1.2.2' # GHSA-68fv-2mgg-jv7q

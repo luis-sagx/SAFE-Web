@@ -29,7 +29,7 @@ Público: ecuatorianos no técnicos. Todo lo que ven está en **español**.
 | `backend/apps/identidad` | :3001 — registro, login, JWT, admin de cuentas, certificados. Tiene los datos personales. |
 | `backend/apps/entrenamiento` | :3002 — corridas del estudio, solo con seudónimo. No puede leer datos personales. |
 | `backend/libs/comun` | Solo lo que ambos servicios necesitan (guards JWT, decoradores, pipes). Alias `@comun`. |
-| `backend/prisma/{identidad,entrenamiento}` | Un schema y un rol de Postgres por servicio. |
+| `backend/prisma/{identidad,entrenamiento}` | Un schema, una base lógica y un rol de Postgres por servicio. |
 | `docs/` | `ARQUITECTURA.md` (normativo), `DESIGN.md` (tokens y estilo), specs y planes. |
 
 Los servicios no se llaman entre sí: lo que ambos necesitan viaja en el JWT.

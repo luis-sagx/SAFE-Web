@@ -59,8 +59,10 @@ servidor propio mediante contenedores.
                     │                   │
              ┌──────▼───────────────────▼────────┐
              │  db · PostgreSQL (sin puerto host)│
-             │   schema identidad     ← rol propio
-             │   schema entrenamiento ← rol propio
+             │   safeweb_identidad              │
+             │     schema identidad ← rol propio│
+             │   safeweb_entrenamiento          │
+             │     schema entrenamiento        │
              └───────────────────────────────────┘
 ```
 
@@ -71,7 +73,7 @@ Decisiones estructurales que **no** se cambian sin actualizar este documento:
 | Frontend y servicios comparten origen; Nginx enruta por prefijo | Elimina CORS en producción y evita exponer los servicios directamente. |
 | `db`, `identidad` y `entrenamiento` no publican puertos al host | Solo `web` es alcanzable desde afuera. Reduce la superficie expuesta del servidor propio. |
 | Los dos servicios **no se llaman entre sí** | El JWT lleva todo lo que ambos necesitan. Si `identidad` cae, las corridas en curso se siguen registrando. |
-| Un schema y un **rol de Postgres por servicio**, sin permisos cruzados | Es lo que convierte la regla de privacidad en una imposibilidad técnica (§2.1). |
+| Una base lógica y un **rol de Postgres por servicio**, sin permisos cruzados | Es lo que convierte la regla de privacidad en una imposibilidad técnica (§2.1). |
 | El catálogo de escenarios vive en el frontend, no en la base | El contenido no es dato sensible ni cambia por usuario; meterlo en la base agregaría una capa sin beneficio. |
 
 ### 2.1 El corte es por sensibilidad del dato
@@ -84,8 +86,8 @@ Decisiones estructurales que **no** se cambian sin actualizar este documento:
 
 Consecuencia: `GET /api/runs/resultados` **no puede** filtrar nombre, correo
 o cédula. No hay tabla que consultar, no hay llave foránea que seguir, y el
-rol de Postgres del servicio recibe `permission denied for schema identidad`
-si lo intenta con SQL crudo. Antes esto lo sostenía un `select` bien escrito
+rol de Postgres de `entrenamiento` recibe `permission denied` al intentar
+conectarse a la base de `identidad`, incluso con SQL crudo. Antes esto lo sostenía un `select` bien escrito
 más una prueba unitaria; ahora lo sostiene la arquitectura, y hay un paso de
 CI que lo verifica contra la base real. Esta separación estructural es la
 garantía de separación del dato de análisis; no depende de un borrado
@@ -152,7 +154,7 @@ safe-web/
 │   ├── nest-cli.json         # modo monorepo
 │   └── Dockerfile            # una imagen, ARG APP decide cuál arranca
 │
-├── db-init/                  # ← un rol y un schema por servicio
+├── db-init/                  # ← bases, roles y schemas por servicio
 ├── docs/
 ├── .github/workflows/ci.yml
 ├── docker-compose.yml
@@ -536,9 +538,14 @@ Cambios de esquema: siempre por migración (`pnpm prisma:migrate`), nunca
 editando la base a mano. Las migraciones se versionan en el repositorio y cada
 contenedor aplica **solo las suyas** al arrancar.
 
-Los schemas de Postgres los crea `db-init/01-roles-y-schemas.sh` la primera vez
-que se inicializa el volumen; las migraciones asumen que ya existen. Cambiar los
-roles después obliga a recrear el volumen (`docker compose down -v`).
+`db-init/01-roles-y-schemas.sh` crea las bases `safeweb_identidad` y
+`safeweb_entrenamiento`, sus roles y los schemas `identidad` y `entrenamiento`.
+En una instalación nueva, Postgres ejecuta el script al inicializar el volumen.
+En un volumen ya inicializado, el entrypoint no vuelve a ejecutarlo: primero se
+respalda y luego se invoca manualmente, como se indica en §7. El helper no
+migra ni copia datos y se detiene si una base destino ya contiene objetos o
+tiene un propietario incompatible. Nunca recrear el volumen para cambiar la
+configuración.
 
 **El schema se pasa al driver adapter, no en la URL.** El CLI de Prisma honra
 `?schema=`, pero `PrismaPg` no: se queda en `public` y toda consulta falla con
@@ -725,17 +732,21 @@ Sheet), ya aplicada en `docker-compose.yml` y en los `Dockerfile`:
   privilegiada de Nginx (puerto 8080);
 - límites de memoria por servicio;
 - solo `web` publica puertos al host;
-- un rol de Postgres por servicio, sin permisos sobre el schema del otro.
+- una base y un rol de Postgres por servicio; cada rol solo tiene `CONNECT` a su
+  base. Ningún servicio recibe la URL del otro.
 
 Pendiente al desplegar de verdad: **TLS delante de `web`** (reverse proxy con
 Let's Encrypt).
 
 ### Respaldos
 
-`scripts/backup-db.sh` hace un `pg_dump` de los schemas `identidad` y
-`entrenamiento`, conserva 14 días en el servidor y, con `BACKUP_REMOTE`, copia
-cada respaldo fuera con `rclone` (conviene un remoto `crypt`). Se programa con
-cron:
+`scripts/backup-db.sh` genera dos archivos independientes: uno con prefijo
+`safe-web-identidad-` para la base y schema de Identidad y otro con prefijo
+`safe-web-entrenamiento-` para Entrenamiento. Sin argumentos respalda las dos
+bases de servicio actuales. `--source` respalda por separado los mismos schemas de la
+base compartida antigua, con prefijos `safe-web-source-identidad-` y
+`safe-web-source-entrenamiento-`, antes de crear o importar los destinos. Se
+programa con cron para el modo normal:
 
 ```bash
 0 3 * * * BACKUP_REMOTE=cifrado:safe-web /ruta/safe-web/scripts/backup-db.sh >> /var/log/safe-web-backup.log 2>&1
@@ -743,18 +754,99 @@ cron:
 
 - **Nunca se copia el volumen `pgdata` en caliente**: sale corrupto. Siempre
   `pg_dump`.
+- **Los archivos de la base antigua no se reemplazan ni se eliminan** al crear
+  los nuevos respaldos. La retención de 14 días solo limpia los dumps regulares
+  de servicio; los prefijos `safe-web-source-` y los dumps combinados anteriores
+  quedan preservados. `BACKUP_REMOTE`, cuando se configura, copia ambos dumps.
+- **Un par de dumps no es un snapshot atómico entre bases.** Para migrar o
+  recuperar ambas bases con una instantánea coherente, detener `identidad` y
+  `entrenamiento` antes de capturar los dos archivos y mantenerlos detenidos
+  hasta terminar importación y validación.
 - **Las claves van aparte.** Sin `PII_ENCRYPTION_KEY`, `EMAIL_PEPPER` y
   `CEDULA_PEPPER` el dump no sirve (nombres y correos ilegibles, ninguna
   cédula vuelve a coincidir). Se guardan en un gestor de contraseñas, nunca
   junto al dump.
-- **Prueba mensual**: `scripts/verify-backup.sh <archivo.dump>` lo restaura en
-  un Postgres desechable en memoria, con el mismo `db-init`, y cuenta filas.
+- **Prueba mensual**: ejecutar `scripts/verify-backup.sh identidad "$IDENTIDAD_DUMP"`
+  y `scripts/verify-backup.sh entrenamiento "$ENTRENAMIENTO_DUMP"` para
+  verificar cada archivo. Cada ejecución restaura solo una base en un
+  PostgreSQL desechable sobre `tmpfs`, con credenciales de prueba, y consulta
+  las tablas de ese servicio. No usa el Compose ni el volumen real.
 
-Restaurar de verdad (servidor nuevo o volumen perdido), con el mismo `.env`:
+#### Preparar el volumen actual para las dos bases
+
+La instancia de EC2 conserva el mismo contenedor PostgreSQL y el mismo volumen
+`pgdata`. El entrypoint no ejecuta `db-init` sobre ese volumen ya inicializado.
+Actualizar el checkout y las variables de nombres/roles, pero mantener
+`POSTGRES_DB` con el nombre de la base antigua durante la preparación. Detener
+ambos servicios para que los dos archivos compartan el mismo corte de
+escrituras; crear y verificar los dumps del origen antes de tocar los destinos:
 
 ```bash
-docker compose up -d db                   # volumen nuevo: db-init crea roles y schemas
-docker compose exec -T db sh -c 'pg_restore -U "$POSTGRES_USER" -d "$POSTGRES_DB" --clean --if-exists' < respaldo.dump
+docker compose stop identidad entrenamiento
+docker compose up -d db
+scripts/backup-db.sh --source
+```
+
+Si alguno falla, no continuar ni borrar el dump anterior. En la misma sesión
+de shell, seleccionar el par más reciente con la misma marca de tiempo y
+verificar ambos archivos:
+
+```bash
+BACKUP_DIR=/var/backups/safe-web
+IDENTIDAD_DUMP=$(find "$BACKUP_DIR" -maxdepth 1 -type f -name 'safe-web-source-identidad-*.dump' -printf '%T@ %p\n' | sort -nr | head -n 1 | cut -d ' ' -f 2-)
+test -n "$IDENTIDAD_DUMP"
+marca=${IDENTIDAD_DUMP##*safe-web-source-identidad-}
+ENTRENAMIENTO_DUMP="$BACKUP_DIR/safe-web-source-entrenamiento-$marca"
+test -r "$ENTRENAMIENTO_DUMP"
+scripts/verify-backup.sh identidad "$IDENTIDAD_DUMP"
+scripts/verify-backup.sh entrenamiento "$ENTRENAMIENTO_DUMP"
+```
+
+Con ambos respaldos verificados, ejecutar el helper; crea solo destinos
+ausentes y aplica permisos, sin copiar, migrar ni borrar datos:
+
+```bash
+docker compose exec -T db sh /docker-entrypoint-initdb.d/01-roles-y-schemas.sh
+```
+
+Restaurar cada dump solo en su base destino vacía. `--clean` afecta los objetos
+del destino que contiene el dump; nunca se ejecuta sobre la base antigua:
+
+```bash
+docker compose exec -T db sh -c 'pg_restore -U "$POSTGRES_USER" -d "$IDENTIDAD_DB_NAME" --clean --if-exists --exit-on-error' < "$IDENTIDAD_DUMP"
+docker compose exec -T db sh -c 'pg_restore -U "$POSTGRES_USER" -d "$ENTRENAMIENTO_DB_NAME" --clean --if-exists --exit-on-error' < "$ENTRENAMIENTO_DUMP"
+```
+
+Los comandos operativos corren como administrador dentro del contenedor. No
+entregar ambas URLs a ningún servicio. Antes del arranque, comparar conteos de
+tablas, filas de `_prisma_migrations`, propietarios de schemas y permisos.
+Después de validar los dos destinos, reactivar los servicios y confirmar que
+estén saludables:
+
+```bash
+docker compose up -d identidad entrenamiento
+docker compose ps
+```
+
+Mantener intactos los dumps y la base antigua durante el período de reversión.
+
+Si la validación falla antes de aceptar escrituras nuevas en los destinos, se
+puede volver a la versión anterior y reotorgar `CONNECT` a los roles en la base
+origen; conservar los destinos para investigar. Después de que los servicios
+escriban en las bases nuevas, no cambiar a la base antigua sin reconciliar esos
+cambios. La transferencia es un corte operativo; no se ejecuta desde este
+runbook de implementación local.
+
+En desarrollo local, `docker-compose.db.yml` crea además dos bases sombra
+preasignadas, propiedad de cada rol. `migrate dev` las usa sin otorgar
+`CREATEDB` a los roles de servicio. El Compose de despliegue no crea sombras;
+`migrate deploy` no las necesita.
+
+#### Restaurar en un servidor nuevo o volumen perdido
+
+```bash
+docker compose up -d db                   # volumen nuevo: db-init crea las dos bases
+# restaurar cada respaldo en su base según el procedimiento de PGDB-2
 docker compose up -d                      # migrate deploy ve las migraciones ya aplicadas
 ```
 
@@ -767,12 +859,11 @@ una sesión de pruebas con usuarios.
 
 Dos pasos que existen por la arquitectura de microservicios y no deben quitarse:
 
-- **Los roles de Postgres se crean con `db-init/01-roles-y-schemas.sh`**, el
-  mismo script que corre en producción, no una copia. Si los permisos se
-  aflojan ahí, las pruebas dejan de reflejarlo.
-- **Un paso comprueba que el rol `entrenamiento` recibe `permission denied` al
-  leer `identidad."Participant"`.** Es la verificación directa de la regla de
-  privacidad del estudio contra una base real.
+- **Los roles y bases se crean con `db-init/01-roles-y-schemas.sh`**, el mismo
+  script que corre en producción, no una copia. Si los permisos se aflojan ahí,
+  las pruebas dejan de reflejarlo.
+- **Un paso comprueba que el rol `entrenamiento` no puede conectarse a la base
+  `identidad`.** Es la verificación directa del aislamiento contra PostgreSQL.
 
 ### Pruebas de carga
 
@@ -904,7 +995,7 @@ Antes de escribir código en este repositorio:
 | Backend | Dos microservicios cortados por sensibilidad del dato | Hace que la regla de privacidad del estudio deje de depender de la disciplina al escribir consultas y pase a ser una imposibilidad técnica (§2.1). |
 | Comunicación entre servicios | Ninguna: todo lo que necesitan viaja en el JWT | Evita acoplamiento en tiempo de ejecución y una cadena de fallos donde un servicio caído tumba al otro. |
 | Firma de los JWT | ES256, un par de claves por servicio | Con un secreto compartido, un servicio comprometido podía emitir sesiones del otro (§5.1). |
-| Base de datos | Un Postgres, un schema y un rol por servicio | Dos contenedores de base complicarían la operación de una sesión presencial sin añadir aislamiento que los roles no den ya. |
+| Base de datos | Un Postgres, dos bases lógicas, un schema y un rol por servicio | Dos contenedores complicarían la operación presencial; dos bases lógicas refuerzan el aislamiento sin duplicar el servicio. |
 | Contenido de escenarios | En el repositorio, no en la base | No es dato del estudio ni varía por usuario. |
 | Pre/post-test | Dentro de la plataforma, en entrenamiento | Permite exigir medición inicial antes de enseñar y emparejar ambas fases con el mismo seudónimo sin consultar identidad. |
 | Analítica dentro de la app | Fuera de alcance | El análisis se hace sobre los resultados que el supervisor consulta en `/api/runs/resultados`. |

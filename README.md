@@ -18,7 +18,7 @@ aparte.
 |---|---|
 | `frontend/` | SPA React + Vite + TypeScript. Los escenarios, el catálogo y el gateway Nginx. |
 | `backend/` | Dos microservicios NestJS + Prisma: `identidad` y `entrenamiento`. |
-| `db-init/` | Un rol y un schema de Postgres por servicio, sin permisos cruzados. |
+| `db-init/` | Dos bases lógicas y un rol por servicio, sin permisos cruzados. |
 | `docs/` | Arquitectura, justificación de tecnologías y diseño de escenarios. |
 
 ### Los dos servicios
