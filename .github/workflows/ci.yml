@@ -227,9 +227,12 @@ jobs:
     timeout-minutes: 20
     # Solo para descargar la cobertura que ya generaron esos jobs.
     needs: [frontend, backend]
-    # Los secretos no se exponen a PRs desde forks. Esos PRs mantienen los
-    # demás controles del CI; el análisis completo corre tras integrarse.
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    # En PRs desde forks o Dependabot puede faltar SONAR_TOKEN. Esos PRs
+    # mantienen los demás controles del CI; el análisis completo corre tras integrarse.
+    if: >-
+      github.event_name != 'pull_request' ||
+      (github.event.pull_request.head.repo.full_name == github.repository &&
+       github.actor != 'dependabot[bot]')
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
