@@ -34,10 +34,10 @@ Pronóstico: ~250 líneas editadas. Estrategia de entrega: `ask-on-risk` (predet
 - Rama: `feat/certificados-admin-revocation` (creada desde `main`).
 - Mapeo previo: `frontend/src/pages/Admin.tsx` gestiona participantes y usa `ConfirmDialog`; `frontend/src/lib/api.ts` centraliza las llamadas; `PATCH /admin/certificados/:id/revocar` ya existe y exige rol administrativo. No había ruta para incluir el estado del certificado.
 - Aprobación del diseño: usuario eligió integrar la acción en la lista de participantes el 2026-11-16.
-- Commit de unidad: pendiente.
+- Commit de unidad: `5b1a00d` (`feat(admin): revocar certificados desde participantes`).
 - Espejo Engram: pendiente; `engram save` no pudo abrir `/home/luissagnay/.engram/.instance-id.lock` porque el sistema de archivos está en solo lectura.
 - Checks observados: frontend typecheck exit 0; frontend lint exit 0 con avisos preexistentes en escenarios/componentes ajenos al diff; frontend build exit 0. Backend lint: primer intento reportó solo formato Prettier en `admin.service.ts`; tras corregirlo, `pnpm --dir backend lint:ci` exit 0. Backend build exit 0; Corepack mostró un aviso de intento fallido de consultar el registro npm antes de continuar con la versión local. `git diff --check` exit 0. Pruebas no ejecutadas.
 
 ## Próximo paso
 
-Crear el commit de unidad y añadir su identidad a esta evidencia; sincronizar Engram si vuelve a estar disponible.
+Sincronizar el espejo Engram si vuelve a estar disponible; no hacer push ni crear PR sin solicitud explícita.
