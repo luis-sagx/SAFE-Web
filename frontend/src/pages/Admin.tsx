@@ -6,6 +6,8 @@ import {
   Loader2,
   Plus,
   Copy,
+  ShieldCheck,
+  ShieldX,
   Trash2,
   UserCheck,
   UserX,
@@ -24,6 +26,7 @@ import {
   fetchParticipants,
   fetchResults,
   fetchTrainers,
+  revokeCertificate,
   resetParticipantPassword,
   resetTrainerPassword,
   type AdminParticipant,
@@ -124,7 +127,11 @@ function Participants() {
       Icono: p.activo ? UserX : UserCheck,
       accion: async () => {
         const updated = await changeParticipantStatus(p.id, !p.activo);
-        setList((prev) => prev.map((x) => (x.id === p.id ? updated : x)));
+        setList((prev) =>
+          prev.map((x) =>
+            x.id === p.id ? { ...updated, certificado: x.certificado } : x,
+          ),
+        );
       },
     });
 
@@ -152,6 +159,34 @@ function Participants() {
         setList((prev) => prev.filter((x) => x.id !== p.id));
       },
     });
+
+  const revoke = (p: AdminParticipant) => {
+    if (!p.certificado || p.certificado.revocadoAt) return;
+    const certificateId = p.certificado.id;
+    setConfirmation({
+      titulo: "¿Revocar este certificado?",
+      mensaje: `El certificado de ${fullName(p)} dejará de ser válido y no podrá descargarse.`,
+      etiqueta: "Sí, revocar",
+      Icono: ShieldX,
+      peligro: true,
+      accion: async () => {
+        await revokeCertificate(certificateId);
+        setList((prev) =>
+          prev.map((participant) =>
+            participant.id === p.id && participant.certificado
+              ? {
+                  ...participant,
+                  certificado: {
+                    ...participant.certificado,
+                    revocadoAt: new Date().toISOString(),
+                  },
+                }
+              : participant,
+          ),
+        );
+      },
+    });
+  };
 
   if (loading) {
     return (
@@ -185,12 +220,13 @@ function Participants() {
         </p>
       ) : (
         <div className="overflow-x-auto rounded-lg border border-hairline-strong">
-          <table className="w-full min-w-[720px] border-collapse text-left text-sm">
+          <table className="w-full min-w-[900px] border-collapse text-left text-sm">
             <thead>
               <tr className="border-b border-hairline bg-canvas-soft text-muted">
                 <th className="px-4 py-3 font-semibold">Nombre</th>
                 <th className="px-4 py-3 font-semibold">Correo</th>
                 <th className="px-4 py-3 font-semibold">Estado</th>
+                <th className="px-4 py-3 font-semibold">Certificado</th>
                 <th className="px-4 py-3 text-right font-semibold">Acciones</th>
               </tr>
             </thead>
@@ -206,6 +242,35 @@ function Participants() {
                   </td>
                   <td className="px-4 py-3">
                     <StatusPill active={p.activo} />
+                  </td>
+                  <td className="px-4 py-3">
+                    {!p.certificado ? (
+                      <span className="text-muted">Sin certificado</span>
+                    ) : p.certificado.revocadoAt ? (
+                      <span className="inline-flex items-center gap-1.5 text-muted">
+                        <ShieldX aria-hidden className="size-4" />
+                        Revocado
+                      </span>
+                    ) : (
+                      <div className="flex items-center gap-3">
+                        <div>
+                          <span className="inline-flex items-center gap-1.5 text-success-ink">
+                            <ShieldCheck aria-hidden className="size-4" />
+                            Vigente
+                          </span>
+                          <p className="text-xs text-muted">
+                            Emitido el {date(p.certificado.emitidoAt)}
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => revoke(p)}
+                          className="rounded-md border border-danger/30 bg-surface px-2.5 py-1 text-xs font-medium text-danger transition hover:bg-danger/10"
+                        >
+                          Revocar
+                        </button>
+                      </div>
+                    )}
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-end gap-2">

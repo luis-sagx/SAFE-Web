@@ -319,6 +319,13 @@ export interface AdminParticipant {
   apellido: string | null
   email: string | null
   activo: boolean
+  certificado?: AdminCertificateStatus | null
+}
+
+export interface AdminCertificateStatus {
+  id: string
+  emitidoAt: string
+  revocadoAt: string | null
 }
 
 /** Una corrida del estudio, seudonimizada. Sin ningún dato personal. */
@@ -356,6 +363,10 @@ export function resetParticipantPassword(id: string): Promise<{ password: string
 
 export function deleteParticipant(id: string): Promise<null> {
   return request<null>(`/admin/participantes/${id}`, { method: 'DELETE' })
+}
+
+export function revokeCertificate(id: string): Promise<null> {
+  return request<null>(`/admin/certificados/${id}/revocar`, { method: 'PATCH' })
 }
 
 export function fetchResults(): Promise<RunResult[]> {

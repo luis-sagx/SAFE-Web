@@ -27,6 +27,13 @@ export interface AdminParticipant {
   apellido: string | null;
   email: string | null;
   activo: boolean;
+  certificado: AdminCertificateStatus | null;
+}
+
+export interface AdminCertificateStatus {
+  id: string;
+  emitidoAt: string;
+  revocadoAt: string | null;
 }
 
 /// Lo que el supervisor ve de cada cuenta. Sin `cedulaHash` ni `passwordHash`:
@@ -52,6 +59,13 @@ interface AdminRow {
   disabledAt: Date | null;
 }
 
+interface AdminCertificateRow {
+  id: string;
+  participantId: string;
+  emitidoAt: Date;
+  revocadoAt: Date | null;
+}
+
 /// El supervisor sí necesita ver el nombre y el correo reales para poder
 /// gestionar cuentas (a quién reactivar, a quién resetearle la contraseña):
 /// se descifran aquí, el único punto por el que pasa la lista de camino a
@@ -63,6 +77,7 @@ function toView(p: AdminRow, piiKey: string): AdminParticipant {
     apellido: decryptOptional(p.apellido, piiKey),
     email: decryptOptional(p.email, piiKey),
     activo: p.disabledAt === null,
+    certificado: null,
   };
 }
 
@@ -154,7 +169,38 @@ export class AdminService {
       where: { role: 'PARTICIPANT' },
       select: ADMIN_FIELDS,
     });
-    return rows.map((p) => toView(p, this.piiKey)).sort(byName);
+    const certificates: AdminCertificateRow[] = rows.length
+      ? await this.prisma.certificate.findMany({
+          where: { participantId: { in: rows.map((p) => p.id) } },
+          select: {
+            id: true,
+            participantId: true,
+            emitidoAt: true,
+            revocadoAt: true,
+          },
+        })
+      : [];
+    const certificateByParticipant = new Map(
+      certificates.map((certificate) => [
+        certificate.participantId,
+        certificate,
+      ]),
+    );
+
+    return rows
+      .map((p) => {
+        const participant = toView(p, this.piiKey);
+        const certificate = certificateByParticipant.get(p.id);
+        if (certificate) {
+          participant.certificado = {
+            id: certificate.id,
+            emitidoAt: certificate.emitidoAt.toISOString(),
+            revocadoAt: certificate.revocadoAt?.toISOString() ?? null,
+          };
+        }
+        return participant;
+      })
+      .sort(byName);
   }
 
   /// Busca una cuenta del rol pedido. Devolver el mismo 404 para "no existe"
