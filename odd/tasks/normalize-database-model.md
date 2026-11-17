@@ -95,6 +95,7 @@ El usuario autorizó investigar y corregir los fallos reportados en backend `pnp
 - Commit NDB-CI-3: `4dad73e` (`ci(db): aplicar corte en base e2e limpia`).
 - Commit NDB-CI-4: `e64def8` (`test(auth): preservar registros pendientes en e2e`).
 - Commit NDB-CI-6: `14a5762` (`ci(docker): confirmar cuenta en esquema normalizado`).
+- Commit NDB-CI-8: `9f60b75` (`fix(ci): contar participantes tras restaurar respaldo`).
 - NDB-CI-5 verificación remota del SHA `9225dd3`: la mantenibilidad ya cumple; `new_coverage` falla con 71,4 % frente al mínimo 80 %. Métricas: 6 líneas y 8 condiciones cubribles, sin líneas descubiertas y 4 condiciones descubiertas, todas en `auth.service.ts`. Pruebas locales posteriores cubren perfiles nulos; falta una corrida remota nueva.
 - NDB-CI-6 causa corroborada por inspección local: `.github/workflows/ci.yml` ejecutaba `UPDATE identidad."Participant" ...`, pero el corte elimina esa tabla. La API pública indica que ese job step falló; su log exacto no está disponible sin autenticación.
 - NDB-CI-8 causa corregida y verificada localmente: el verificador de respaldo consulta `StudyParticipant`; PostgreSQL 18 temporal restauró un respaldo normalizado con 1 participante y 1 certificado.

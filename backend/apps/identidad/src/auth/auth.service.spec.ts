@@ -628,7 +628,12 @@ describe('AuthService.forgotPassword', () => {
         findMany: () =>
           Promise.resolve([
             participantRow({ id: 'cuenta-a' }),
-            participantRow({ id: 'cuenta-b' }),
+            {
+              id: 'cuenta-b',
+              role: { code: 'PARTICIPANT' },
+              profile: null,
+              disabledAt: null,
+            },
           ]),
         update: (args: {
           where: { id: string };
@@ -663,6 +668,11 @@ describe('AuthService.forgotPassword', () => {
       new Set(updates.map(({ data }) => data.passwordResetTokenHash)).size,
     ).toBe(2);
     expect(sendPasswordReset).toHaveBeenCalledTimes(2);
+    expect(sendPasswordReset).toHaveBeenCalledWith(
+      'ana@correo.com',
+      '',
+      expect.stringContaining('/restablecer-password?token='),
+    );
   });
 
   it('una cuenta desactivada no recibe el correo, aunque exista', async () => {
@@ -880,7 +890,12 @@ describe('AuthService.resendConfirmation', () => {
         findMany: () =>
           Promise.resolve([
             participantRow({ id: 'cuenta-a', emailConfirmedAt: null }),
-            participantRow({ id: 'cuenta-b', emailConfirmedAt: null }),
+            {
+              id: 'cuenta-b',
+              role: { code: 'PARTICIPANT' },
+              profile: null,
+              emailConfirmedAt: null,
+            },
           ]),
         update: (args: {
           where: { id: string };
@@ -915,6 +930,11 @@ describe('AuthService.resendConfirmation', () => {
       new Set(updates.map(({ data }) => data.emailConfirmationTokenHash)).size,
     ).toBe(2);
     expect(sendEmailConfirmation).toHaveBeenCalledTimes(2);
+    expect(sendEmailConfirmation).toHaveBeenCalledWith(
+      'ana@correo.com',
+      '',
+      expect.stringContaining('/confirmar-correo?token='),
+    );
   });
 
   it('filtra por role: PARTICIPANT, para que un TRAINER/ADMIN no reciba reenvíos', async () => {
