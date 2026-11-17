@@ -123,7 +123,7 @@ export class AdminService {
     const passwordHash = await hash(password, BCRYPT_ROUNDS);
     await this.prisma.$transaction(async (transaction) => {
       await transaction.$queryRaw`
-        SELECT pg_advisory_xact_lock(hashtextextended(${emailHash}, 0))
+        SELECT pg_advisory_xact_lock(hashtextextended(${emailHash}, 0))::text
       `;
       const existing = await transaction.account.findFirst({
         where: { profile: { is: { OR: [{ emailHash }, { email }] } } },

@@ -5,12 +5,17 @@ import { AdminService } from './admin.service';
 describe('AdminService con el esquema normalizado', () => {
   it('crea testers como cuentas con perfil cifrado y sin secuencia de estudio', async () => {
     let createdData: Record<string, unknown> | undefined;
+    let lockSql = '';
+    const queryRaw = jest.fn((strings: TemplateStringsArray) => {
+      lockSql = strings.join('');
+      return Promise.resolve([]);
+    });
     const create = jest.fn(({ data }: { data: Record<string, unknown> }) => {
       createdData = data;
       return Promise.resolve({ id: 'trainer-1' });
     });
     const transaction = {
-      $queryRaw: jest.fn().mockResolvedValue([]),
+      $queryRaw: queryRaw,
       account: { findFirst: jest.fn().mockResolvedValue(null), create },
     };
     const prisma = {
@@ -45,5 +50,6 @@ describe('AdminService con el esquema normalizado', () => {
     }
     expect(typeof accountData.profile.create.emailHash).toBe('string');
     expect(createdData).not.toHaveProperty('studyParticipant');
+    expect(lockSql).toContain('::text');
   });
 });

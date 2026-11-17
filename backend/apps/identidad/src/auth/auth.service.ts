@@ -209,7 +209,7 @@ export class AuthService {
         // El índice ya no es único para conservar correos legacy repetidos;
         // este bloqueo serializa las altas nuevas con la misma huella.
         await tx.$queryRaw`
-          SELECT pg_advisory_xact_lock(hashtextextended(${emailHash}, 0))
+          SELECT pg_advisory_xact_lock(hashtextextended(${emailHash}, 0))::text
         `;
         const currentMatches = await tx.account.findMany({
           where: registrationLookup,
