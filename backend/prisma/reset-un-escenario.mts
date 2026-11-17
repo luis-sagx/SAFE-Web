@@ -17,12 +17,16 @@ const SCENARIO_ID = 'asistentes-ia/historial-cliente';
 
 function secret(name: string): string {
   const value = process.env[name];
-  if (!value) throw new Error(`Falta ${name} en el entorno (ver .env.example).`);
+  if (!value)
+    throw new Error(`Falta ${name} en el entorno (ver .env.example).`);
   return value;
 }
 
 const identidad = new IdentidadClient({
-  adapter: new PrismaPg({ connectionString: process.env.IDENTIDAD_DATABASE_URL }, { schema: 'identidad' }),
+  adapter: new PrismaPg(
+    { connectionString: process.env.IDENTIDAD_DATABASE_URL },
+    { schema: 'identidad' },
+  ),
 });
 const entrenamiento = new EntrenamientoClient({
   adapter: new PrismaPg(
@@ -33,8 +37,13 @@ const entrenamiento = new EntrenamientoClient({
 
 async function main() {
   const emailHash = hashEmail(EMAIL, secret('EMAIL_PEPPER'));
-  const participant = await identidad.participant.findFirst({ where: { emailHash } });
-  if (!participant) throw new Error(`No existe ${EMAIL}; corre primero prisma/seed-insignia-prueba.mts`);
+  const participant = await identidad.account.findFirst({
+    where: { profile: { is: { emailHash } }, role: { code: 'PARTICIPANT' } },
+  });
+  if (!participant)
+    throw new Error(
+      `No existe ${EMAIL}; corre primero prisma/seed-insignia-prueba.mts`,
+    );
 
   const { count } = await entrenamiento.scenarioRun.deleteMany({
     where: { participantId: participant.id, scenarioId: SCENARIO_ID },

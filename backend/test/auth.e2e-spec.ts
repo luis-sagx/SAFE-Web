@@ -84,9 +84,10 @@ describe('Autenticación (e2e)', () => {
         expect.stringContaining('/confirmar-correo?token='),
       );
 
-      const saved = await prisma.participant.findFirst({
+      const saved = await prisma.account.findFirst({
         orderBy: { createdAt: 'desc' },
         take: 1,
+        include: { profile: true },
       });
       expect(saved?.emailConfirmedAt).toBeNull();
     });
@@ -115,13 +116,14 @@ describe('Autenticación (e2e)', () => {
 
       // Registro fresco: en este archivo no hay registros concurrentes, así
       // que la fila más reciente es la que se acaba de crear.
-      const saved = await prisma.participant.findFirst({
+      const saved = await prisma.account.findFirst({
         orderBy: { createdAt: 'desc' },
         take: 1,
+        include: { profile: true },
       });
 
-      expect(saved?.cedulaHash).toEqual(expect.any(String));
-      expect(saved?.cedulaHash).not.toContain(data.cedula);
+      expect(saved?.profile?.cedulaHash).toEqual(expect.any(String));
+      expect(saved?.profile?.cedulaHash).not.toContain(data.cedula);
       expect(JSON.stringify(saved)).not.toContain(data.cedula);
     });
 
@@ -132,16 +134,17 @@ describe('Autenticación (e2e)', () => {
       const data = registrationData('cifrado');
       await server().post('/api/auth/register').send(data).expect(201);
 
-      const saved = await prisma.participant.findFirst({
+      const saved = await prisma.account.findFirst({
         orderBy: { createdAt: 'desc' },
         take: 1,
+        include: { profile: true },
       });
 
-      expect(saved?.nombre).toMatch(/^v1:/);
-      expect(saved?.apellido).toMatch(/^v1:/);
-      expect(saved?.email).toMatch(/^v1:/);
-      expect(saved?.nombre).not.toBe(data.nombre);
-      expect(saved?.email).not.toBe(data.email);
+      expect(saved?.profile?.nombre).toMatch(/^v1:/);
+      expect(saved?.profile?.apellido).toMatch(/^v1:/);
+      expect(saved?.profile?.email).toMatch(/^v1:/);
+      expect(saved?.profile?.nombre).not.toBe(data.nombre);
+      expect(saved?.profile?.email).not.toBe(data.email);
       expect(JSON.stringify(saved)).not.toContain(data.email);
     });
 
@@ -167,12 +170,13 @@ describe('Autenticación (e2e)', () => {
         expect.any(String),
       );
 
-      const saved = await prisma.participant.findFirst({
+      const saved = await prisma.account.findFirst({
         orderBy: { createdAt: 'desc' },
         take: 1,
+        include: { profile: true },
       });
 
-      expect(saved?.cedulaHash).toEqual(expect.any(String));
+      expect(saved?.profile?.cedulaHash).toEqual(expect.any(String));
     });
 
     // Dos cuentas de la misma persona parten sus corridas en el análisis.
@@ -548,7 +552,7 @@ describe('Autenticación (e2e)', () => {
         .expect(200);
       const cookie = getRefreshCookie(loginRes);
 
-      await prisma.participant.update({
+      await prisma.account.update({
         where: { id: session.participant.id },
         data: { disabledAt: new Date() },
       });

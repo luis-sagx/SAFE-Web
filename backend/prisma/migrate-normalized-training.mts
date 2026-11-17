@@ -6,7 +6,7 @@
 import 'dotenv/config';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { Prisma, PrismaClient } from '../generated/entrenamiento/client.js';
-import { QUESTIONNAIRE } from '../apps/entrenamiento/src/assessments/questionnaire.ts';
+import questionnaire from '../apps/entrenamiento/src/assessments/questionnaire.v1.json' with { type: 'json' };
 import { SUS_VERSION } from '../apps/entrenamiento/src/sus/sus-survey.ts';
 import {
   expandLegacyAnswers,
@@ -38,7 +38,7 @@ function connectionString(): string {
 }
 
 const assessmentQuestionIds = new Map([
-  [QUESTIONNAIRE.version, QUESTIONNAIRE.questions.map((question) => question.id)],
+  [questionnaire.version, questionnaire.items.map((_, index) => index + 1)],
 ]);
 const susQuestionIds = new Map([[SUS_VERSION, Array.from({ length: 10 }, (_, i) => i + 1)]]);
 

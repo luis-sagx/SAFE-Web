@@ -9,10 +9,11 @@ import { AssessmentsController } from './assessments.controller';
 import { AssessmentsService } from './assessments.service';
 import type { CreateAssessmentDto } from './create-assessment.dto';
 
-interface StoredAssessment extends CreateAssessmentDto {
+interface StoredAssessment extends Omit<CreateAssessmentDto, 'answers'> {
   participantId: string;
   participantSeq: number;
   score: number;
+  answerRows: { questionId: number; answer: number }[];
 }
 
 // La base es la única frontera externa: rutas, DTO, guardias y puntuación son reales.
@@ -56,14 +57,22 @@ describe('Contrato HTTP de las evaluaciones', () => {
                         row.participantId === where.participantId),
                   ),
                 ),
-              create: ({ data }: { data: StoredAssessment }) => {
-                rows.push(data);
-                return Promise.resolve(data);
+              create: ({
+                data,
+              }: {
+                data: Omit<StoredAssessment, 'answerRows'> & {
+                  answerRows: {
+                    create: { questionId: number; answer: number }[];
+                  };
+                };
+              }) => {
+                const stored = {
+                  ...data,
+                  answerRows: data.answerRows.create,
+                };
+                rows.push(stored);
+                return Promise.resolve(stored);
               },
-            },
-            assessmentBaselineExemption: {
-              findUnique: () => Promise.resolve(null),
-              findMany: () => Promise.resolve([]),
             },
             scenarioRun: { findMany: () => Promise.resolve([]) },
           },

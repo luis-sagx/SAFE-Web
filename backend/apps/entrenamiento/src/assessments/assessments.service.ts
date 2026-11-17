@@ -58,7 +58,6 @@ export class AssessmentsService {
           phase: dto.phase,
           ageRange: dto.ageRange,
           gender: dto.gender,
-          answers: dto.answers,
           answerRows: {
             create: dto.answers.map((answer, index) => ({
               questionId: index + 1,
@@ -88,7 +87,8 @@ export class AssessmentsService {
       include: { answerRows: true },
     });
     const participants = new Map<string, number>();
-    for (const row of assessments) participants.set(row.participantId, row.participantSeq);
+    for (const row of assessments)
+      participants.set(row.participantId, row.participantSeq);
     const byParticipant = new Map<string, typeof assessments>();
     for (const row of assessments) {
       const rows = byParticipant.get(row.participantId) ?? [];
@@ -100,12 +100,10 @@ export class AssessmentsService {
         ? {
             ageRange: row.ageRange,
             gender: row.gender,
-            answers: row.answerRows?.length
-              ? row.answerRows
-                  .slice()
-                  .sort((left, right) => left.questionId - right.questionId)
-                  .map((answer) => answer.answer)
-              : row.answers,
+            answers: row.answerRows
+              .slice()
+              .sort((left, right) => left.questionId - right.questionId)
+              .map((answer) => answer.answer),
             score: row.score,
           }
         : null;

@@ -26,6 +26,7 @@ function fixture({
           participantId: participant.sub,
           participantSeq: participant.seq,
           version: SUS_VERSION,
+          answerRows: [],
           answers,
           score: 85,
         },
@@ -94,7 +95,6 @@ describe('Encuesta SUS', () => {
       participantId: 'private-id',
       participantSeq: 7,
       version: SUS_VERSION,
-      answers,
       score: 85,
       answerRows: {
         create: answers.map((answer, index) => ({
@@ -103,6 +103,7 @@ describe('Encuesta SUS', () => {
         })),
       },
     });
+    expect(rows[0]).not.toHaveProperty('answers');
     expect(status).toEqual({
       version: SUS_VERSION,
       available: true,
@@ -145,6 +146,26 @@ describe('Encuesta SUS', () => {
     ]);
     expect(JSON.stringify(results)).not.toContain('private-id');
     expect(JSON.stringify(results)).not.toContain('participantSeq');
+  });
+
+  it('no usa el arreglo legacy cuando no hay filas relacionales', async () => {
+    const row = {
+      participantId: 'private-id',
+      participantSeq: 7,
+      version: SUS_VERSION,
+      answers,
+      answerRows: [],
+      score: 85,
+    };
+    const { service } = fixture();
+    const prisma = (service as unknown as { prisma: PrismaService }).prisma;
+    jest
+      .spyOn(prisma.susResponse, 'findMany')
+      .mockResolvedValue([row] as never);
+
+    const [result] = await service.results();
+
+    expect(result.answers).toEqual([]);
   });
 });
 

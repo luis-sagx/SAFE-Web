@@ -38,13 +38,13 @@ export class NarracionService {
   }
 
   async saludo(participant: JwtPayload): Promise<Buffer> {
-    const person = await this.prisma.participant.findUnique({
+    const person = await this.prisma.account.findUnique({
       where: { id: participant.sub },
-      select: { nombre: true },
+      select: { profile: { select: { nombre: true } } },
     });
 
     const nombre = primerNombre(
-      decryptOptional(person?.nombre ?? null, this.piiKey),
+      decryptOptional(person?.profile?.nombre ?? null, this.piiKey),
     );
 
     const cached = this.cache.get(nombre);

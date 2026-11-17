@@ -20,8 +20,32 @@ function row(overrides: Record<string, unknown> = {}) {
 /// son texto plano sin el prefijo "v1:", así que `decryptOptional()` los
 /// deja pasar tal cual sin necesitar la clave real.
 function service(prisma: Partial<Record<string, unknown>>) {
+  const normalize = (value: unknown): unknown => {
+    if (Array.isArray(value)) return value.map(normalize);
+    if (!value || typeof value !== 'object') return value;
+    const result = value as Record<string, unknown>;
+    if ('nombre' in result || 'apellido' in result || 'email' in result) {
+      const { nombre, apellido, email, ...account } = result;
+      return { ...account, profile: { nombre, apellido, email } };
+    }
+    return value;
+  };
+  const delegate = Object.fromEntries(
+    Object.entries(prisma).map(([name, operation]) => [
+      name,
+      typeof operation === 'function'
+        ? async (...args: unknown[]) => {
+            const invoke = operation as (...values: unknown[]) => unknown;
+            return normalize(await invoke(...args));
+          }
+        : operation,
+    ]),
+  );
   return new AdminService(
-    { participant: prisma } as unknown as PrismaService,
+    {
+      account: delegate,
+      certificate: { findMany: () => Promise.resolve([]) },
+    } as unknown as PrismaService,
     {
       getOrThrow: (name: string) =>
         name === 'PII_ENCRYPTION_KEY'
@@ -46,7 +70,7 @@ describe('AdminService.listar', () => {
 
     const list = await admin.list();
 
-    expect(whereReceived).toEqual({ role: 'PARTICIPANT' });
+    expect(whereReceived).toEqual({ role: { code: 'PARTICIPANT' } });
     expect(list[0]).toMatchObject({ id: 'p1', activo: true });
     // Ni seudónimo ni fecha de alta: junto al nombre enlazarían a la persona
     // con sus resultados.
@@ -166,7 +190,7 @@ describe('AdminService.resetPassword', () => {
 
     await admin.resetPassword('t1', 'TRAINER');
 
-    expect(whereReceived).toEqual({ id: 't1', role: 'TRAINER' });
+    expect(whereReceived).toEqual({ id: 't1', role: { code: 'TRAINER' } });
   });
 
   it('da 404 si la cuenta no es del rol pedido', async () => {
@@ -217,11 +241,13 @@ describe('AdminService.formadores', () => {
     });
 
     expect(result.password).toHaveLength(12);
-    expect(created).toMatchObject({ role: 'TRAINER' });
-    expect(created?.nombre).toMatch(/^v1:/);
-    expect(created?.apellido).toMatch(/^v1:/);
-    expect(created?.email).toMatch(/^v1:/);
-    expect(created?.emailHash).toBeDefined();
+    expect(created).toMatchObject({ role: { connect: { code: 'TRAINER' } } });
+    const profile = (created?.profile as { create: Record<string, unknown> })
+      .create;
+    expect(profile.nombre).toMatch(/^v1:/);
+    expect(profile.apellido).toMatch(/^v1:/);
+    expect(profile.email).toMatch(/^v1:/);
+    expect(profile.emailHash).toBeDefined();
     expect(created?.passwordHash).not.toBe(result.password);
   });
 
@@ -250,7 +276,7 @@ describe('AdminService.formadores', () => {
 
     const trainers = await admin.listTrainers();
 
-    expect(whereReceived).toEqual({ role: 'TRAINER' });
+    expect(whereReceived).toEqual({ role: { code: 'TRAINER' } });
     expect(trainers[0]).toMatchObject({ id: 'p1', activo: true });
   });
 
@@ -266,6 +292,6 @@ describe('AdminService.formadores', () => {
 
     await admin.changeTrainerStatus('t1', false);
 
-    expect(whereReceived).toEqual({ id: 't1', role: 'TRAINER' });
+    expect(whereReceived).toEqual({ id: 't1', role: { code: 'TRAINER' } });
   });
 });

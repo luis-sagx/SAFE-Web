@@ -22,9 +22,9 @@ function fakeConfig(): ConfigService {
 
 function fakePrisma(nombre: string | null): PrismaService {
   return {
-    participant: {
+    account: {
       findUnique: () =>
-        Promise.resolve(nombre === undefined ? null : { nombre }),
+        Promise.resolve(nombre === undefined ? null : { profile: { nombre } }),
     },
   } as unknown as PrismaService;
 }

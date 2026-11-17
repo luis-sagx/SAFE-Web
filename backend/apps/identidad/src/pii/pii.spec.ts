@@ -5,6 +5,7 @@ import {
   encrypt,
   hashEmail,
   migratePiiField,
+  migratePiiProfile,
 } from './pii';
 
 // Clave de 32 bytes real (openssl rand -base64 32), fija para que las pruebas
@@ -88,6 +89,21 @@ describe('pii: migración segura de campos', () => {
     const encrypted = encrypt('Ana', PASSWORD);
     const tampered = `${encrypted.slice(0, -4)}AAAA`;
     expect(() => migratePiiField(tampered, PASSWORD)).toThrow();
+  });
+
+  it('migra perfiles mixtos y calcula la huella del correo normalizado', () => {
+    const encryptedSurname = encrypt('Pérez', PASSWORD);
+    const encryptedEmail = encrypt(' Ana@Correo.com ', PASSWORD);
+    const profile = migratePiiProfile(
+      { nombre: 'Ana', apellido: encryptedSurname, email: encryptedEmail },
+      PASSWORD,
+      'pepper',
+    );
+
+    expect(decrypt(profile.nombre, PASSWORD)).toBe('Ana');
+    expect(profile.apellido).toBe(encryptedSurname);
+    expect(profile.email).toBe(encryptedEmail);
+    expect(profile.emailHash).toBe(hashEmail('ana@correo.com', 'pepper'));
   });
 });
 

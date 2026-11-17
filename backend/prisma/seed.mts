@@ -56,8 +56,8 @@ async function main() {
   // `OR` con `email` por si la cuenta se creó antes del cifrado (issue #95)
   // y `backfill-pii.mts` todavía no la alcanzó: esas filas no tienen huella
   // todavía, solo el correo en claro.
-  const existing = await prisma.participant.findFirst({
-    where: { OR: [{ emailHash }, { email }] },
+  const existing = await prisma.account.findFirst({
+    where: { profile: { is: { OR: [{ emailHash }, { email }] } } },
   });
 
   // Solo se imprime una contraseña que quedó guardada de verdad.
@@ -73,20 +73,24 @@ Para generar una nueva:  pnpm seed -- --email ${email} --reset
   const passwordHash = await hash(password, 12);
 
   if (existing) {
-    await prisma.participant.update({
+    await prisma.account.update({
       where: { id: existing.id },
       data: { passwordHash },
     });
   } else {
-    await prisma.participant.create({
+    await prisma.account.create({
       data: {
-        email: encrypt(email, piiKey),
-        emailHash,
-        nombre: encrypt('Supervisor', piiKey),
-        apellido: encrypt('del estudio', piiKey),
+        role: { connect: { code: 'ADMIN' } },
+        profile: {
+          create: {
+            email: encrypt(email, piiKey),
+            emailHash,
+            nombre: encrypt('Supervisor', piiKey),
+            apellido: encrypt('del estudio', piiKey),
+          },
+        },
         // Sin cédula: no es participante, gestiona el estudio.
         passwordHash,
-        role: 'ADMIN',
       },
     });
   }

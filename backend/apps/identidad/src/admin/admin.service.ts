@@ -45,17 +45,17 @@ export interface AdminCertificateStatus {
 /// pestañas separadas y nunca juntos.
 const ADMIN_FIELDS = {
   id: true,
-  nombre: true,
-  apellido: true,
-  email: true,
+  profile: { select: { nombre: true, apellido: true, email: true } },
   disabledAt: true,
 } as const;
 
 interface AdminRow {
   id: string;
-  nombre: string | null;
-  apellido: string | null;
-  email: string | null;
+  profile: {
+    nombre: string | null;
+    apellido: string | null;
+    email: string | null;
+  } | null;
   disabledAt: Date | null;
 }
 
@@ -73,9 +73,9 @@ interface AdminCertificateRow {
 function toView(p: AdminRow, piiKey: string): AdminParticipant {
   return {
     id: p.id,
-    nombre: decryptOptional(p.nombre, piiKey),
-    apellido: decryptOptional(p.apellido, piiKey),
-    email: decryptOptional(p.email, piiKey),
+    nombre: decryptOptional(p.profile?.nombre ?? null, piiKey),
+    apellido: decryptOptional(p.profile?.apellido ?? null, piiKey),
+    email: decryptOptional(p.profile?.email ?? null, piiKey),
     activo: p.disabledAt === null,
     certificado: null,
   };
@@ -119,8 +119,8 @@ export class AdminService {
   }): Promise<{ password: string }> {
     const email = dto.email.toLowerCase();
     const emailHash = hashEmail(email, this.emailPepper);
-    const existing = await this.prisma.participant.findFirst({
-      where: { OR: [{ emailHash }, { email }] },
+    const existing = await this.prisma.account.findFirst({
+      where: { profile: { is: { OR: [{ emailHash }, { email }] } } },
       select: { id: true },
     });
     if (existing) {
@@ -128,22 +128,26 @@ export class AdminService {
     }
 
     const password = generatePassword();
-    await this.prisma.participant.create({
+    await this.prisma.account.create({
       data: {
-        nombre: encrypt(dto.nombre, this.piiKey),
-        apellido: encrypt(dto.apellido, this.piiKey),
-        email: encrypt(email, this.piiKey),
-        emailHash,
+        role: { connect: { code: 'TRAINER' } },
         passwordHash: await hash(password, BCRYPT_ROUNDS),
-        role: 'TRAINER',
+        profile: {
+          create: {
+            nombre: encrypt(dto.nombre, this.piiKey),
+            apellido: encrypt(dto.apellido, this.piiKey),
+            email: encrypt(email, this.piiKey),
+            emailHash,
+          },
+        },
       },
     });
     return { password };
   }
 
   async listTrainers(): Promise<AdminParticipant[]> {
-    const rows = await this.prisma.participant.findMany({
-      where: { role: 'TRAINER' },
+    const rows = await this.prisma.account.findMany({
+      where: { role: { code: 'TRAINER' } },
       select: ADMIN_FIELDS,
     });
     return rows.map((trainer) => toView(trainer, this.piiKey)).sort(byName);
@@ -154,7 +158,7 @@ export class AdminService {
     active: boolean,
   ): Promise<AdminParticipant> {
     await this.account(id, 'TRAINER');
-    const updated = await this.prisma.participant.update({
+    const updated = await this.prisma.account.update({
       where: { id },
       data: { disabledAt: active ? null : new Date() },
       select: ADMIN_FIELDS,
@@ -165,8 +169,8 @@ export class AdminService {
   /// Solo participantes. Un supervisor no aparece en la lista ni puede ser
   /// gestionado por otro: las cuentas de supervisor se crean por script.
   async list(): Promise<AdminParticipant[]> {
-    const rows = await this.prisma.participant.findMany({
-      where: { role: 'PARTICIPANT' },
+    const rows = await this.prisma.account.findMany({
+      where: { role: { code: 'PARTICIPANT' } },
       select: ADMIN_FIELDS,
     });
     const certificates: AdminCertificateRow[] = rows.length
@@ -210,8 +214,8 @@ export class AdminService {
     id: string,
     role: ManagedRole = 'PARTICIPANT',
   ): Promise<AdminRow> {
-    const p = await this.prisma.participant.findFirst({
-      where: { id, role },
+    const p = await this.prisma.account.findFirst({
+      where: { id, role: { code: role } },
       select: ADMIN_FIELDS,
     });
     if (!p) {
@@ -222,7 +226,7 @@ export class AdminService {
 
   async changeStatus(id: string, active: boolean): Promise<AdminParticipant> {
     await this.account(id);
-    const p = await this.prisma.participant.update({
+    const p = await this.prisma.account.update({
       where: { id },
       data: { disabledAt: active ? null : new Date() },
       select: ADMIN_FIELDS,
@@ -239,7 +243,7 @@ export class AdminService {
   ): Promise<{ password: string }> {
     await this.account(id, role);
     const password = generatePassword();
-    await this.prisma.participant.update({
+    await this.prisma.account.update({
       where: { id },
       data: {
         passwordHash: await hash(password, BCRYPT_ROUNDS),
@@ -255,13 +259,13 @@ export class AdminService {
   /// servicio, ya seudonimizadas, sin llave hacia aquí. Es la anonimización de
   /// una sola persona.
   async delete(id: string): Promise<void> {
-    const p = await this.prisma.participant.findFirst({
-      where: { id, role: 'PARTICIPANT' },
+    const p = await this.prisma.account.findFirst({
+      where: { id, role: { code: 'PARTICIPANT' } },
       select: { id: true },
     });
     if (!p) {
       throw new NotFoundException('No existe ese participante.');
     }
-    await this.prisma.participant.delete({ where: { id } });
+    await this.prisma.account.delete({ where: { id } });
   }
 }

@@ -27,6 +27,10 @@ function validAttestation(
   };
 }
 
+function moduleRows(modules: string[]) {
+  return modules.map((module, position) => ({ module, position }));
+}
+
 function jwtReturning(payload: unknown) {
   return {
     verifyAsync: () => Promise.resolve(payload),
@@ -69,8 +73,28 @@ function service(
   jwt: JwtService,
   mail: MailService = fakeMail().mail,
 ) {
+  const legacyParticipant = prisma.participant as
+    | {
+        findUnique?: (
+          ...args: unknown[]
+        ) => Promise<Record<string, unknown> | null>;
+      }
+    | undefined;
+  const account = legacyParticipant?.findUnique
+    ? {
+        findUnique: async (...args: unknown[]) => {
+          const person = await legacyParticipant.findUnique?.(...args);
+          if (!person || 'profile' in person) return person;
+          const { nombre, apellido, email } = person;
+          return { profile: { nombre, apellido, email } };
+        },
+      }
+    : undefined;
   return new CertificatesService(
-    prisma as unknown as PrismaService,
+    {
+      ...prisma,
+      account: account ?? { findUnique: () => Promise.resolve(null) },
+    } as unknown as PrismaService,
     jwt,
     fakeConfig(),
     mail,
@@ -125,6 +149,10 @@ describe('CertificadosService.emitir · el canje de la atestación', () => {
             createdData = data;
             return Promise.resolve({
               ...(data as object),
+              modules: validAttestation().modulos.map((module, position) => ({
+                module,
+                position,
+              })),
               emitidoAt: new Date('2026-09-04T00:00:00.000Z'),
             });
           },
@@ -138,6 +166,15 @@ describe('CertificadosService.emitir · el canje de la atestación', () => {
     expect(result.horas).toBe(4);
     expect(result.modulos).toEqual(validAttestation().modulos);
     expect((createdData as { calificacion: number }).calificacion).toBe(30);
+    expect(createdData).not.toHaveProperty('modulos');
+    expect(createdData).toMatchObject({
+      modules: {
+        create: validAttestation().modulos.map((module, position) => ({
+          module,
+          position,
+        })),
+      },
+    });
     expect((createdData as { participantId: string }).participantId).toBe(
       PARTICIPANT.sub,
     );
@@ -170,6 +207,7 @@ describe('CertificadosService.emitir · el canje de la atestación', () => {
             Promise.resolve({
               id: 'cert-1',
               ...(data as object),
+              modules: moduleRows(validAttestation().modulos),
               emitidoAt: new Date('2026-09-04T00:00:00.000Z'),
               certificadoEnviadoAt: null,
             }),
@@ -218,6 +256,7 @@ describe('CertificadosService.emitir · el canje de la atestación', () => {
             Promise.resolve({
               id: 'cert-1',
               ...(data as object),
+              modules: moduleRows(validAttestation().modulos),
               emitidoAt: new Date('2026-09-04T00:00:00.000Z'),
               certificadoEnviadoAt: null,
             }),
@@ -247,7 +286,7 @@ describe('CertificadosService.emitir · el canje de la atestación', () => {
             Promise.resolve({
               id: 'cert-1',
               participantId: PARTICIPANT.sub,
-              modulos: validAttestation().modulos,
+              modules: moduleRows(validAttestation().modulos),
               calificacion: validAttestation().calificacion,
               horas: 4,
               codigo: 'SW-AAAA-BBBB',
@@ -299,7 +338,7 @@ describe('CertificadosService.emitir · el canje de la atestación', () => {
             }
             return Promise.resolve({
               codigo: 'SW-SEGUNDO-OK',
-              modulos: validAttestation().modulos,
+              modules: moduleRows(validAttestation().modulos),
               horas: 4,
               emitidoAt: new Date('2026-09-04T00:00:00.000Z'),
             });
@@ -346,7 +385,7 @@ describe('CertificadosService.emitir · el canje de la atestación', () => {
       id: 'c1',
       participantId: PARTICIPANT.sub,
       codigo: 'SW-AAAA-BBBB',
-      modulos: validAttestation().modulos,
+      modules: moduleRows(validAttestation().modulos),
       horas: 4,
       calificacion: 30,
       emitidoAt: new Date('2026-09-01T00:00:00.000Z'),
@@ -386,7 +425,10 @@ describe('CertificadosService.emitir · el canje de la atestación', () => {
       id: 'c1',
       participantId: PARTICIPANT.sub,
       codigo: 'SW-AAAA-BBBB',
-      modulos: ['phishing', 'smishing'],
+      modules: [
+        { module: 'phishing', position: 0 },
+        { module: 'smishing', position: 1 },
+      ],
       horas: 4,
       calificacion: 12,
       emitidoAt: new Date('2026-09-01T00:00:00.000Z'),
@@ -399,7 +441,14 @@ describe('CertificadosService.emitir · el canje de la atestación', () => {
           findUnique: () => Promise.resolve(existing),
           update: ({ data }: { data: unknown }) => {
             updatedData = data;
-            return Promise.resolve({ ...existing, ...(data as object) });
+            return Promise.resolve({
+              ...existing,
+              ...(data as object),
+              modules: validAttestation().modulos.map((module, position) => ({
+                module,
+                position,
+              })),
+            });
           },
         },
       },
@@ -409,9 +458,17 @@ describe('CertificadosService.emitir · el canje de la atestación', () => {
     const result = await svc.issue(PARTICIPANT, 'token');
 
     expect(result.codigo).toBe('SW-AAAA-BBBB');
-    expect((updatedData as { modulos: string[] }).modulos).toEqual(
-      validAttestation().modulos,
-    );
+    expect(result.modulos).toEqual(validAttestation().modulos);
+    expect(updatedData).not.toHaveProperty('modulos');
+    expect(updatedData).toMatchObject({
+      modules: {
+        deleteMany: {},
+        create: validAttestation().modulos.map((module, position) => ({
+          module,
+          position,
+        })),
+      },
+    });
     expect((updatedData as { calificacion: number }).calificacion).toBe(30);
   });
 
@@ -423,7 +480,7 @@ describe('CertificadosService.emitir · el canje de la atestación', () => {
       id: 'c1',
       participantId: PARTICIPANT.sub,
       codigo: 'SW-AAAA-BBBB',
-      modulos: ['phishing', 'smishing'],
+      modules: moduleRows(['phishing', 'smishing']),
       horas: 4,
       calificacion: 12,
       emitidoAt: new Date('2026-09-01T00:00:00.000Z'),
@@ -444,6 +501,7 @@ describe('CertificadosService.emitir · el canje de la atestación', () => {
             return Promise.resolve({
               ...existing,
               ...(data as object),
+              modules: moduleRows(validAttestation().modulos),
             });
           },
         },
@@ -483,7 +541,7 @@ describe('CertificadosService.verificar', () => {
           findUnique: () =>
             Promise.resolve({
               codigo: 'SW-AAAA-BBBB',
-              modulos: ['phishing'],
+              modules: moduleRows(['phishing']),
               horas: 4,
               calificacion: 6,
               emitidoAt: new Date('2026-09-01T00:00:00.000Z'),
@@ -501,6 +559,33 @@ describe('CertificadosService.verificar', () => {
     expect(result.valido).toBe(true);
   });
 
+  it('reconstruye los módulos desde CertificateModule respetando position', async () => {
+    const svc = service(
+      {
+        certificate: {
+          findUnique: () =>
+            Promise.resolve({
+              codigo: 'SW-AAAA-BBBB',
+              modules: [
+                { module: 'smishing', position: 1 },
+                { module: 'phishing', position: 0 },
+              ],
+              horas: 4,
+              calificacion: 6,
+              emitidoAt: new Date('2026-09-01T00:00:00.000Z'),
+              revocadoAt: null,
+            }),
+        },
+      },
+      jwtReturning(validAttestation()),
+    );
+
+    await expect(svc.verify('SW-AAAA-BBBB')).resolves.toMatchObject({
+      valido: true,
+      modulos: ['phishing', 'smishing'],
+    });
+  });
+
   // Un código inexistente responde igual, en forma, que uno revocado: ninguno
   // de los dos debe servir de oráculo sobre cuántos certificados existen.
   it('responde igual para un código inexistente que para uno revocado', async () => {
@@ -514,7 +599,7 @@ describe('CertificadosService.verificar', () => {
           findUnique: () =>
             Promise.resolve({
               codigo: 'SW-AAAA-BBBB',
-              modulos: ['phishing'],
+              modules: moduleRows(['phishing']),
               horas: 4,
               emitidoAt: new Date(),
               revocadoAt: new Date(),
@@ -535,7 +620,7 @@ describe('CertificadosService.verificar', () => {
 describe('CertificatesService.generatePdf', () => {
   const EXISTING_CERTIFICATE = {
     codigo: 'SW-AAAA-BBBB',
-    modulos: ['phishing'],
+    modules: moduleRows(['phishing']),
     horas: 4,
     calificacion: 6,
     emitidoAt: new Date('2026-09-01T00:00:00.000Z'),

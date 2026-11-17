@@ -20,21 +20,15 @@ const dto = {
   gender: 'Femenino',
   answers: correct,
 };
-function fixture({
-  prior = false,
-  ids = [] as string[],
-  phases = [] as string[],
-} = {}) {
+function fixture({ ids = [] as string[], phases = [] as string[] } = {}) {
   const rows = phases.map((phase) => ({
     ...dto,
     phase,
     participantId: participant.sub,
     participantSeq: 7,
+    answerRows: [],
     score: phase === 'PRE' ? 10 : 20,
   }));
-  const exempt = prior
-    ? [{ participantId: participant.sub, participantSeq: 7 }]
-    : [];
   const prisma = {
     assessment: {
       findMany: () => Promise.resolve(rows),
@@ -42,10 +36,6 @@ function fixture({
         rows.push(data);
         return Promise.resolve(data);
       },
-    },
-    assessmentBaselineExemption: {
-      findUnique: () => Promise.resolve(exempt[0] ?? null),
-      findMany: () => Promise.resolve(exempt),
     },
     scenarioRun: {
       findMany: () =>
@@ -72,10 +62,9 @@ describe('Evaluaciones del estudio', () => {
       posttestAvailable: false,
     });
   });
-  it('no permite omitir la inicial aunque exista una excepción histórica', async () => {
+  it('no permite omitir la inicial aunque se hayan jugado todos los escenarios', async () => {
     expect(
       await fixture({
-        prior: true,
         ids: [...ASSESSMENT_SCENARIOS],
       }).service.status(participant.sub),
     ).toMatchObject({
@@ -104,8 +93,10 @@ describe('Evaluaciones del estudio', () => {
       ).posttestAvailable,
     ).toBe(false);
   });
-  it('permite completar PRE aunque exista una excepción antigua sin persistir', async () => {
-    await expect(fixture({ prior: true }).service.create(participant, dto)).resolves.toMatchObject({
+  it('permite enviar PRE cuando todavía no hay una evaluación', async () => {
+    await expect(
+      fixture().service.create(participant, dto),
+    ).resolves.toMatchObject({
       pretestCompleted: true,
     });
   });
@@ -136,6 +127,7 @@ describe('Evaluaciones del estudio', () => {
         })),
       },
     });
+    expect(rows[0]).not.toHaveProperty('answers');
     expect(status).toMatchObject({
       pretestCompleted: true,
       pretestRequired: false,
@@ -165,16 +157,16 @@ describe('Evaluaciones del estudio', () => {
   });
   it('exporta pares con cambio y sin identificador interno', async () => {
     const { service, rows } = fixture({ phases: ['PRE', 'POST'] });
-    rows[0]!.answerRows = correct.map((answer, index) => ({
+    rows[0].answerRows = correct.map((answer, index) => ({
       questionId: index + 1,
       answer,
     }));
-    rows[1]!.answerRows = correct.map((answer, index) => ({
+    rows[1].answerRows = correct.map((answer, index) => ({
       questionId: index + 1,
       answer,
     }));
-    rows[0]!.answers = [];
-    rows[1]!.answers = [];
+    rows[0].answers = [];
+    rows[1].answers = [];
     const [row] = await service.results();
     expect(row).toMatchObject({
       pseudonym: 'P007',
@@ -186,7 +178,6 @@ describe('Evaluaciones del estudio', () => {
   });
   it('mantiene sin comparación los finales sin inicial y pendientes migrados', async () => {
     const [row] = await fixture({
-      prior: true,
       phases: ['POST'],
     }).service.results();
     expect(row).toMatchObject({
@@ -194,7 +185,18 @@ describe('Evaluaciones del estudio', () => {
       pretest: null,
       improvement: null,
     });
-    expect(await fixture({ prior: true }).service.results()).toEqual([]);
+    expect(await fixture().service.results()).toEqual([]);
+  });
+  it('no usa el arreglo legacy cuando no hay filas relacionales', async () => {
+    const { service, rows } = fixture({ phases: ['PRE'] });
+    const row = rows[0] as (typeof rows)[number] & {
+      answerRows: { questionId: number; answer: number }[];
+    };
+    row.answerRows = [];
+
+    const [result] = await service.results();
+
+    expect(result.pretest?.answers).toEqual([]);
   });
   it.each([
     { answers: [] },

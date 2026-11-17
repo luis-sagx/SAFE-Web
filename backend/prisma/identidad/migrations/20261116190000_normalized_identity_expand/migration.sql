@@ -8,7 +8,8 @@ ALTER TYPE "Role" RENAME TO "LegacyRole";
 CREATE TABLE "Role" (
     "id" TEXT NOT NULL,
     "code" TEXT NOT NULL,
-    CONSTRAINT "Role_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "Role_pkey" PRIMARY KEY ("id"),
+    CONSTRAINT "Role_code_check" CHECK ("code" IN ('PARTICIPANT', 'ADMIN', 'TRAINER'))
 );
 CREATE UNIQUE INDEX "Role_code_key" ON "Role"("code");
 
@@ -54,7 +55,8 @@ ALTER TABLE "AccountProfile" ADD CONSTRAINT "AccountProfile_accountId_fkey"
 CREATE TABLE "StudyParticipant" (
     "accountId" TEXT NOT NULL,
     "seq" SERIAL NOT NULL,
-    CONSTRAINT "StudyParticipant_pkey" PRIMARY KEY ("accountId")
+    CONSTRAINT "StudyParticipant_pkey" PRIMARY KEY ("accountId"),
+    CONSTRAINT "StudyParticipant_seq_check" CHECK ("seq" > 0)
 );
 CREATE UNIQUE INDEX "StudyParticipant_seq_key" ON "StudyParticipant"("seq");
 ALTER TABLE "StudyParticipant" ADD CONSTRAINT "StudyParticipant_accountId_fkey"
@@ -64,7 +66,8 @@ CREATE TABLE "CertificateModule" (
     "certificateId" TEXT NOT NULL,
     "module" TEXT NOT NULL,
     "position" INTEGER NOT NULL,
-    CONSTRAINT "CertificateModule_pkey" PRIMARY KEY ("certificateId", "module")
+    CONSTRAINT "CertificateModule_pkey" PRIMARY KEY ("certificateId", "module"),
+    CONSTRAINT "CertificateModule_position_check" CHECK ("position" >= 0)
 );
 CREATE UNIQUE INDEX "CertificateModule_certificateId_position_key"
     ON "CertificateModule"("certificateId", "position");

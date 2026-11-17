@@ -51,21 +51,16 @@ export class RunsService {
   }
 
   async create(participant: JwtPayload, dto: CreateRunDto) {
-    const [baseline, exemption] = await Promise.all([
-      this.prisma.assessment.findUnique({
-        where: {
-          participantId_version_phase: {
-            participantId: participant.sub,
-            version: 1,
-            phase: 'PRE',
-          },
+    const baseline = await this.prisma.assessment.findUnique({
+      where: {
+        participantId_version_phase: {
+          participantId: participant.sub,
+          version: 1,
+          phase: 'PRE',
         },
-      }),
-      this.prisma.assessmentBaselineExemption.findUnique({
-        where: { participantId: participant.sub },
-      }),
-    ]);
-    if (!baseline && !exemption) {
+      },
+    });
+    if (!baseline) {
       throw new ConflictException(
         'Completa la evaluación inicial antes de comenzar el entrenamiento.',
       );

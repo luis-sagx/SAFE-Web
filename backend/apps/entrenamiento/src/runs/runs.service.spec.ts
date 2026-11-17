@@ -319,11 +319,13 @@ describe('RunsService.atestacion', () => {
 });
 
 describe('RunsService evaluación inicial', () => {
-  it('impide registrar entrenamiento antes de la medición inicial', async () => {
+  it('impide registrar entrenamiento sin PRE aunque exista una exención histórica', async () => {
     const prisma = {
       scenarioRun: { create: () => Promise.resolve({ id: 'run' }) },
       assessment: { findUnique: () => Promise.resolve(null) },
-      assessmentBaselineExemption: { findUnique: () => Promise.resolve(null) },
+      assessmentBaselineExemption: {
+        findUnique: () => Promise.resolve({ participantId: PARTICIPANT.sub }),
+      },
     } as unknown as PrismaService;
     const service = new RunsService(prisma, jwtFake().jwt, config);
     await expect(

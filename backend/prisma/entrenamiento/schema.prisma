@@ -30,7 +30,7 @@ model ScenarioRun {
 
   /// uuid opaco tomado del JWT. Sin llave foránea a propósito: este servicio
   /// no conoce la tabla Participant y no debe poder resolverla.
-  participantId String
+  participantId  String
   /// Número de orden del que se deriva el seudónimo del análisis (P001).
   /// También viene del JWT, para no tener que consultar a `identidad`.
   participantSeq Int
@@ -65,18 +65,12 @@ model ScenarioRun {
 
 /// Un reinicio explícito inicia una ronda nueva sin borrar las corridas del estudio.
 model ModuleReset {
-  id String @id @default(uuid())
+  id            String   @id @default(uuid())
   participantId String
-  module String
-  createdAt DateTime @default(now())
+  module        String
+  createdAt     DateTime @default(now())
 
   @@index([participantId, module, createdAt(sort: Desc)])
-}
-
-/// Instantánea al incorporar la encuesta: no se amplía con corridas futuras.
-model AssessmentBaselineExemption {
-  participantId String @id
-  participantSeq Int
 }
 
 enum AssessmentPhase {
@@ -85,19 +79,18 @@ enum AssessmentPhase {
 }
 
 model Assessment {
-  id String @id @default(uuid())
-  participantId String
-  participantSeq Int
-  version Int
-  phase AssessmentPhase
-  ageRange String
-  gender String
-  answers Int[]
-  score Int
+  id              String          @id @default(uuid())
+  participantId   String
+  participantSeq  Int
+  version         Int
+  phase           AssessmentPhase
+  ageRange        String
+  gender          String
+  score           Int
   /// Constancias históricas; las nuevas entregas usan la aceptación del registro.
-  consentVersion String?
+  consentVersion  String?
   consentAccepted Boolean?
-  submittedAt DateTime @default(now())
+  submittedAt     DateTime        @default(now())
 
   answerRows AssessmentAnswer[]
 
@@ -122,12 +115,11 @@ model SusResponse {
   id String @id @default(uuid())
 
   /// uuid opaco tomado del JWT, sin llave foránea a identidad.
-  participantId String
+  participantId  String
   /// Número de orden para construir el seudónimo administrativo.
   participantSeq Int
 
   version     Int
-  answers     Int[]
   score       Float
   submittedAt DateTime @default(now())
 

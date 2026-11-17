@@ -59,9 +59,35 @@ function service(
   jwt: JwtService = jwtFake(),
   mail: ReturnType<typeof fakeMail> = fakeMail(),
 ) {
+  const normalize = (value: unknown): unknown => {
+    if (Array.isArray(value)) return value.map(normalize);
+    if (!value || typeof value !== 'object') return value;
+    const row = value as Record<string, unknown>;
+    if ('role' in row && typeof row.role === 'string') {
+      const { nombre, apellido, email, seq, role, ...account } = row;
+      return {
+        ...account,
+        role: { code: role },
+        profile: { nombre, apellido, email },
+        studyParticipant: typeof seq === 'number' ? { seq } : null,
+      };
+    }
+    return value;
+  };
+  const delegate = Object.fromEntries(
+    Object.entries(prisma).map(([name, operation]) => [
+      name,
+      typeof operation === 'function'
+        ? async (...args: unknown[]) => {
+            const invoke = operation as (...values: unknown[]) => unknown;
+            return normalize(await invoke(...args));
+          }
+        : operation,
+    ]),
+  );
   // `$transaction` corre el callback con el mismo cliente falso: alcanza
   // para ver qué se borra y qué se crea, sin simular el rollback.
-  const client: Record<string, unknown> = { participant: prisma };
+  const client: Record<string, unknown> = { account: delegate };
   client.$transaction = (fn: (tx: unknown) => Promise<unknown>) => fn(client);
   return new AuthService(
     client as unknown as PrismaService,
@@ -113,11 +139,14 @@ describe('AuthService.register', () => {
 
     await auth.register(registrationDto());
 
-    expect(createdData?.nombre).toMatch(/^v1:/);
-    expect(createdData?.apellido).toMatch(/^v1:/);
-    expect(createdData?.email).toMatch(/^v1:/);
-    expect(createdData?.emailHash).toEqual(expect.any(String));
-    expect(createdData?.nombre).not.toBe('Ana');
+    const profile = (
+      createdData?.profile as { create: Record<string, unknown> }
+    ).create;
+    expect(profile.nombre).toMatch(/^v1:/);
+    expect(profile.apellido).toMatch(/^v1:/);
+    expect(profile.email).toMatch(/^v1:/);
+    expect(profile.emailHash).toEqual(expect.any(String));
+    expect(profile.nombre).not.toBe('Ana');
   });
 
   it('no arma sesión: crea la cuenta sin confirmar y manda el correo de confirmación', async () => {
@@ -750,7 +779,7 @@ describe('AuthService.resendConfirmation', () => {
 
     await auth.resendConfirmation('trainer@correo.com');
 
-    expect(whereClause?.role).toBe('PARTICIPANT');
+    expect(whereClause?.role).toEqual({ code: 'PARTICIPANT' });
     expect(sendEmailConfirmation).not.toHaveBeenCalled();
   });
 });

@@ -66,7 +66,6 @@ export class SusService {
           participantId: participant.sub,
           participantSeq: participant.seq,
           version: dto.version,
-          answers: dto.answers,
           answerRows: {
             create: dto.answers.map((answer, index) => ({
               questionId: index + 1,
@@ -97,12 +96,10 @@ export class SusService {
     return responses.map((response) => ({
       pseudonym: pseudonym(response.participantSeq),
       version: response.version,
-      answers: response.answerRows?.length
-        ? response.answerRows
-            .slice()
-            .sort((left, right) => left.questionId - right.questionId)
-            .map((answer) => answer.answer)
-        : response.answers,
+      answers: response.answerRows
+        .slice()
+        .sort((left, right) => left.questionId - right.questionId)
+        .map((answer) => answer.answer),
       score: response.score,
     }));
   }

@@ -49,9 +49,9 @@ describe('Gestión de cuentas por el supervisor (e2e)', () => {
       app,
       'supervisor',
     );
-    await prisma.participant.update({
+    await prisma.account.update({
       where: { id: session.participant.id },
-      data: { role: 'ADMIN' },
+      data: { role: { connect: { code: 'ADMIN' } } },
     });
     supervisorToken = await login(sup.email, sup.password);
   });
@@ -159,8 +159,8 @@ describe('Gestión de cuentas por el supervisor (e2e)', () => {
     });
 
     it('404 al intentar gestionar a un administrador (no es participante)', async () => {
-      const sup = await prisma.participant.findFirst({
-        where: { role: 'ADMIN' },
+      const sup = await prisma.account.findFirst({
+        where: { role: { code: 'ADMIN' } },
         select: { id: true },
       });
 
