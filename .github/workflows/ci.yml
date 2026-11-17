@@ -160,6 +160,7 @@ jobs:
         run: ../db-init/01-roles-y-schemas.sh
       - run: pnpm prisma:generate
       - run: pnpm prisma:deploy
+      - run: pnpm prisma:deploy-cutover
       - run: pnpm test:e2e
 
   auditoria:

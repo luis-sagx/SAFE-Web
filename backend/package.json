@@ -19,6 +19,7 @@
     "prisma:generate": "prisma generate --config prisma.identidad.config.ts && prisma generate --config prisma.entrenamiento.config.ts && mkdir -p dist && ln -sfn ../generated dist/generated",
     "prisma:migrate": "prisma migrate dev --config prisma.identidad.config.ts && prisma migrate dev --config prisma.entrenamiento.config.ts",
     "prisma:deploy": "prisma migrate deploy --config prisma.identidad.config.ts && prisma migrate deploy --config prisma.entrenamiento.config.ts",
+    "prisma:deploy-cutover": "prisma migrate deploy --config prisma.identidad.cutover.config.ts && prisma migrate deploy --config prisma.entrenamiento.cutover.config.ts",
     "seed": "node prisma/seed.mts"
   },
   "dependencies": {
