@@ -1,6 +1,5 @@
 import { ConflictException, Injectable } from '@nestjs/common';
 import { Prisma } from '../../../../generated/entrenamiento/client';
-import type { SusResponse } from '../../../../generated/entrenamiento/client';
 import { pseudonym } from '@comun';
 import type { JwtPayload } from '@comun';
 import { ASSESSMENT_VERSION } from '../assessments/questionnaire';
@@ -68,6 +67,12 @@ export class SusService {
           participantSeq: participant.seq,
           version: dto.version,
           answers: dto.answers,
+          answerRows: {
+            create: dto.answers.map((answer, index) => ({
+              questionId: index + 1,
+              answer,
+            })),
+          },
           score: scoreSus(dto.answers),
         },
       });
@@ -84,14 +89,20 @@ export class SusService {
   }
 
   async results() {
-    const responses: SusResponse[] = await this.prisma.susResponse.findMany({
+    const responses = await this.prisma.susResponse.findMany({
       where: { version: SUS_VERSION },
       orderBy: { participantSeq: 'asc' },
+      include: { answerRows: true },
     });
     return responses.map((response) => ({
       pseudonym: pseudonym(response.participantSeq),
       version: response.version,
-      answers: response.answers,
+      answers: response.answerRows?.length
+        ? response.answerRows
+            .slice()
+            .sort((left, right) => left.questionId - right.questionId)
+            .map((answer) => answer.answer)
+        : response.answers,
       score: response.score,
     }));
   }

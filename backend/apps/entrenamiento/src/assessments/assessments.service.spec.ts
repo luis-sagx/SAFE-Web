@@ -72,16 +72,16 @@ describe('Evaluaciones del estudio', () => {
       posttestAvailable: false,
     });
   });
-  it('habilita final sin inicial solo para la instantánea anterior', async () => {
+  it('no permite omitir la inicial aunque exista una excepción histórica', async () => {
     expect(
       await fixture({
         prior: true,
         ids: [...ASSESSMENT_SCENARIOS],
       }).service.status(participant.sub),
     ).toMatchObject({
-      pretestRequired: false,
-      baselineMissing: true,
-      posttestAvailable: true,
+      pretestRequired: true,
+      baselineMissing: false,
+      posttestAvailable: false,
     });
   });
   it('no confunde 52 identificadores inventados con completar escenarios publicados', async () => {
@@ -104,10 +104,10 @@ describe('Evaluaciones del estudio', () => {
       ).posttestAvailable,
     ).toBe(false);
   });
-  it('rechaza inicial tardía en una cuenta migrada', async () => {
-    await expect(
-      fixture({ prior: true }).service.create(participant, dto),
-    ).rejects.toBeInstanceOf(ConflictException);
+  it('permite completar PRE aunque exista una excepción antigua sin persistir', async () => {
+    await expect(fixture({ prior: true }).service.create(participant, dto)).resolves.toMatchObject({
+      pretestCompleted: true,
+    });
   });
   it('rechaza final antes de terminar o segunda respuesta', async () => {
     await expect(
@@ -129,6 +129,12 @@ describe('Evaluaciones del estudio', () => {
       score: 21,
       consentAccepted: null,
       consentVersion: null,
+      answerRows: {
+        create: correct.map((answer, index) => ({
+          questionId: index + 1,
+          answer,
+        })),
+      },
     });
     expect(status).toMatchObject({
       pretestCompleted: true,
@@ -158,7 +164,18 @@ describe('Evaluaciones del estudio', () => {
     });
   });
   it('exporta pares con cambio y sin identificador interno', async () => {
-    const [row] = await fixture({ phases: ['PRE', 'POST'] }).service.results();
+    const { service, rows } = fixture({ phases: ['PRE', 'POST'] });
+    rows[0]!.answerRows = correct.map((answer, index) => ({
+      questionId: index + 1,
+      answer,
+    }));
+    rows[1]!.answerRows = correct.map((answer, index) => ({
+      questionId: index + 1,
+      answer,
+    }));
+    rows[0]!.answers = [];
+    rows[1]!.answers = [];
+    const [row] = await service.results();
     expect(row).toMatchObject({
       pseudonym: 'P007',
       improvement: 10,
@@ -177,9 +194,7 @@ describe('Evaluaciones del estudio', () => {
       pretest: null,
       improvement: null,
     });
-    expect(
-      (await fixture({ prior: true }).service.results())[0].posttest,
-    ).toBeNull();
+    expect(await fixture({ prior: true }).service.results()).toEqual([]);
   });
   it.each([
     { answers: [] },

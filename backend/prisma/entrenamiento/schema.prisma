@@ -114,6 +114,7 @@ model AssessmentAnswer {
   assessment Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
 
   @@id([assessmentId, questionId])
+  @@index([questionId])
 }
 
 /// Respuesta de usabilidad: solo métricas SUS y el seudónimo derivable.
@@ -145,4 +146,5 @@ model SusAnswer {
   susResponse SusResponse @relation(fields: [susResponseId], references: [id], onDelete: Cascade)
 
   @@id([susResponseId, questionId])
+  @@index([questionId])
 }

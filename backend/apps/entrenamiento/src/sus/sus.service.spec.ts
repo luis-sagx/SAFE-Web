@@ -96,6 +96,12 @@ describe('Encuesta SUS', () => {
       version: SUS_VERSION,
       answers,
       score: 85,
+      answerRows: {
+        create: answers.map((answer, index) => ({
+          questionId: index + 1,
+          answer,
+        })),
+      },
     });
     expect(status).toEqual({
       version: SUS_VERSION,
@@ -119,7 +125,11 @@ describe('Encuesta SUS', () => {
       participantId: 'private-id',
       participantSeq: 7,
       version: SUS_VERSION,
-      answers,
+      answers: [],
+      answerRows: answers.map((answer, index) => ({
+        questionId: index + 1,
+        answer,
+      })),
       score: 85,
       submittedAt: new Date('2026-10-14T12:00:00.000Z'),
     };
