@@ -25,7 +25,7 @@ Alternativas consideradas: ocultarlas siempre desde `accionesEnPantalla` (alcanc
 
 ## Tareas
 
-- [ ] **T1 — Mover las decisiones de smishing fuera del panel lateral.** Ruta: delegated direct. Disparadores: mapeo porque el comportamiento abarca ocho guiones y el componente compartido; escritor porque se cambiarán varios archivos no triviales. Cambiar `ScenarioStory` para permitir ubicar u ocultar sus opciones laterales; en BajaSuscripcion, mostrarlas como controles dentro de «No sé por dónde empezar»; en BonoEstado, no mostrarlas lateralmente. Conservar los controles telefónicos y las decisiones registradas. Registrar aquí checks y commit al cerrar.
+- [x] **T1 — Mover las decisiones de smishing fuera del panel lateral.** Ruta: delegated direct. Disparadores: mapeo porque el comportamiento abarca ocho guiones y el componente compartido; escritor porque se cambiarán varios archivos no triviales. `ScenarioStory` ahora admite ubicación explícita: BajaSuscripcion pone sus tres opciones en «No sé por dónde empezar» y BonoEstado no las muestra lateralmente. Se conservan controles telefónicos, etiquetas y destinos. Checks: typecheck, lint (exit 0, advertencias preexistentes), build y diff-check OK; pruebas omitidas por instrucción de sesión. Commit `3cb749e` (`fix(smishing): ocultar opciones laterales y mover ayuda`), 81 líneas autorales acumuladas.
 
 ## Criterios de aceptación
 
@@ -48,4 +48,5 @@ Alternativas consideradas: ocultarlas siempre desde `accionesEnPantalla` (alcanc
 - Mapeo delegado: seis escenarios ya actúan desde controles del teléfono; BajaSuscripcion y BonoEstado eran los únicos con `choices` que se renderizaban en el lateral.
 - Implementación T1 realizada por escritor delegado en `StoryEscenario.tsx`, `BajaSuscripcion.tsx` y `BonoEstado.tsx`; no se tocaron pruebas ni otros archivos de producto.
 - `pnpm typecheck` (frontend): OK. `pnpm lint`: exit 0; advertencias existentes de Fast Refresh y `react-hooks/exhaustive-deps`. `pnpm build`: OK (Vite transformó 2035 módulos). `git diff --check`: OK. Suite Vitest omitida por la instrucción de sesión, no por un fallo.
-- Próximo paso: registrar commit de unidad y actualizar este progreso; espejo Engram sigue pendiente por permisos de solo lectura.
+- Commit de unidad registrado: `3cb749e`. Evaluación RDD: `disabled/unmanaged`; sin revisión nativa. No hubo push ni PR.
+- Resultado: T1 completo. La función está implementada localmente en `fix/smishing-help-choices`; espejo Engram pendiente porque el directorio local de Engram es de solo lectura.
