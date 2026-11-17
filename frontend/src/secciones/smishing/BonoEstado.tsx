@@ -248,6 +248,7 @@ function GovernmentBenefit() {
       story={STORY}
       senales={SIGNALS}
       rule={RULE}
+      choicePlacement="hidden"
       restartLabel="↻ Repetir el escenario"
       accionesEnPantalla
       apps={APPS}

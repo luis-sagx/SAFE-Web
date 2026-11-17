@@ -52,16 +52,40 @@ function start() {
 }
 
 describe("BonoEstado", () => {
-  it.each([
-    ['Abrir el enlace del mensaje', 'Acreditación del bono de $180'],
-    ['Consultar el bono por mi cuenta', 'Nueva pestaña'],
-    ['Salir del mensaje sin responder', 'No caíste, pero te quedaste con la duda'],
-  ])('la acción visible "%s" lleva al camino elegido', (action, destination) => {
-    start();
+  it("abrir el enlace desde el SMS lleva a la página falsa", () => {
+    const container = start();
+    const phone = container.querySelector("#pantalla-escenario") as HTMLElement;
 
-    fireEvent.click(screen.getByRole('button', { name: new RegExp(action) }));
+    expect(screen.queryByRole("button", { name: /Abrir el enlace del mensaje/ })).toBeNull();
+    fireEvent.click(within(phone).getByText("bit.ly/bono-ec-2026"));
 
-    expect(screen.getByText(destination)).toBeDefined();
+    expect(within(phone).getByText("Acreditación del bono de $180")).toBeDefined();
+  });
+
+  it("consultar por cuenta propia requiere abrir el navegador y elegir el sitio oficial", () => {
+    const container = start();
+    const phone = container.querySelector("#pantalla-escenario") as HTMLElement;
+
+    expect(screen.queryByRole("button", { name: /Consultar el bono por mi cuenta/ })).toBeNull();
+    fireEvent.click(within(phone).getByRole("button", { name: /Navegador/ }));
+    expect(within(phone).getByText("Nueva pestaña")).toBeDefined();
+    fireEvent.click(
+      within(phone).getByRole("button", { name: /inclusion\.gob\.ec/ }),
+    );
+
+    expect(screen.getByText("No caíste · buscaste la fuente oficial")).toBeDefined();
+  });
+
+  it("salir del SMS desde el teléfono conserva el resultado parcial", () => {
+    const container = start();
+    const phone = container.querySelector("#pantalla-escenario") as HTMLElement;
+
+    expect(screen.queryByRole("button", { name: /Salir del mensaje sin responder/ })).toBeNull();
+    fireEvent.click(
+      within(phone).getByRole("button", { name: "Volver a la lista de mensajes" }),
+    );
+
+    expect(screen.getByText("No caíste, pero te quedaste con la duda")).toBeDefined();
   });
 
   it("deja tres sitios frecuentes y conserva la ruta oficial de verificación", () => {

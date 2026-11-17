@@ -12,18 +12,24 @@ vi.mock('../../lib/api', async () => (await import('../../test/escenario')).offl
 describe('BajaSuscripcion', () => {
   it('abrir Mi Operadora desde el dock espera a que elijas suscripciones', () => {
     const phone = start(<SubscriptionCancellation />)
+    const help = screen.getByText('No sé por dónde empezar').closest('details') as HTMLDetailsElement
 
-    expect(screen.queryByText('¿Qué haces?')).toBeNull()
-    expect(screen.queryByRole('button', { name: /Revisar el cobro en Mi Operadora/ })).toBeNull()
-    expect(screen.queryByRole('button', { name: /Responder BAJA al mensaje/ })).toBeNull()
-    expect(screen.queryByRole('button', { name: /Salir del mensaje sin responder/ })).toBeNull()
+    expect(screen.getByText('¿Qué haces?')).toBeDefined()
+    expect(help.open).toBe(false)
+    fireEvent.click(screen.getByText('No sé por dónde empezar'))
+    expect(help.open).toBe(true)
+    expect(within(help).getByRole('button', { name: /Revisar el cobro en Mi Operadora/ })).toBeDefined()
+    expect(within(help).getByRole('button', { name: /Responder BAJA al mensaje/ })).toBeDefined()
+    expect(within(help).getByRole('button', { name: /Salir del mensaje sin responder/ })).toBeDefined()
+    fireEvent.click(screen.getByText('No sé por dónde empezar'))
+    expect(help.open).toBe(false)
 
     fireEvent.click(within(phone).getByRole('button', { name: /Mi Operadora/ }))
 
     expect(within(phone).getByRole('button', { name: /Paquetes y suscripciones/ })).toBeDefined()
     expect(within(phone).getByRole('button', { name: /Bloquear mensajes de números cortos/ })).toBeDefined()
     expect(screen.queryByText('No caíste · lo comprobaste con tu operadora')).toBeNull()
-    expect(screen.queryByText('¿Qué haces?')).toBeNull()
+    expect(screen.getByText('¿Qué haces?')).toBeDefined()
 
     fireEvent.click(within(phone).getByRole('button', { name: /Paquetes y suscripciones/ }))
 
