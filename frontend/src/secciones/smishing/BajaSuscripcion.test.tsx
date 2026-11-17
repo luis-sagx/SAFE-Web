@@ -10,17 +10,20 @@ vi.mock('../../context/AuthContext', async () => (await import('../../test/escen
 vi.mock('../../lib/api', async () => (await import('../../test/escenario')).offlineApi())
 
 describe('BajaSuscripcion', () => {
-  it.each(['acción visible', 'dock'])('abrir Mi Operadora desde %s espera a que elijas suscripciones', (entry) => {
+  it('abrir Mi Operadora desde el dock espera a que elijas suscripciones', () => {
     const phone = start(<SubscriptionCancellation />)
 
-    fireEvent.click(entry === 'dock'
-      ? within(phone).getByRole('button', { name: /Mi Operadora/ })
-      : screen.getByRole('button', { name: /Revisar el cobro en Mi Operadora/ }))
+    expect(screen.queryByText('¿Qué haces?')).toBeNull()
+    expect(screen.queryByRole('button', { name: /Revisar el cobro en Mi Operadora/ })).toBeNull()
+    expect(screen.queryByRole('button', { name: /Responder BAJA al mensaje/ })).toBeNull()
+    expect(screen.queryByRole('button', { name: /Salir del mensaje sin responder/ })).toBeNull()
+
+    fireEvent.click(within(phone).getByRole('button', { name: /Mi Operadora/ }))
 
     expect(within(phone).getByRole('button', { name: /Paquetes y suscripciones/ })).toBeDefined()
     expect(within(phone).getByRole('button', { name: /Bloquear mensajes de números cortos/ })).toBeDefined()
     expect(screen.queryByText('No caíste · lo comprobaste con tu operadora')).toBeNull()
-    expect(screen.getByText('¿Qué haces?')).toBeDefined()
+    expect(screen.queryByText('¿Qué haces?')).toBeNull()
 
     fireEvent.click(within(phone).getByRole('button', { name: /Paquetes y suscripciones/ }))
 
@@ -29,10 +32,10 @@ describe('BajaSuscripcion', () => {
     expect(screen.getByText('No caíste · lo comprobaste con tu operadora')).toBeDefined()
   })
 
-  it('salir desde una acción visible conserva el resultado parcial', () => {
-    start(<SubscriptionCancellation />)
+  it('salir del hilo desde el teléfono conserva el resultado parcial', () => {
+    const phone = start(<SubscriptionCancellation />)
 
-    fireEvent.click(screen.getByRole('button', { name: /Salir del mensaje sin responder/ }))
+    fireEvent.click(within(phone).getByRole('button', { name: 'Volver a la lista de mensajes' }))
 
     expect(screen.getByText('No contestaste, pero quedaste con la duda')).toBeDefined()
   })
@@ -48,7 +51,7 @@ describe('BajaSuscripcion', () => {
   it('responder BAJA deja la burbuja enviada en el hilo y cierra en fallo', () => {
     const phone = start(<SubscriptionCancellation />)
 
-    fireEvent.click(screen.getByRole('button', { name: /Responder BAJA al mensaje/ }))
+    fireEvent.click(within(phone).getByRole('button', { name: 'BAJA' }))
 
     // Ya no es una burbuja para elegir: es un mensaje mandado dentro del hilo.
     expect(within(phone).queryByRole('button', { name: 'BAJA' })).toBeNull()

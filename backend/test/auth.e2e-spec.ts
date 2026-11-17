@@ -208,8 +208,8 @@ describe('Autenticación (e2e)', () => {
         .expect(409);
     });
 
-    // Un correo mal escrito no debe dejar la cédula ocupada para siempre.
-    it('un registro sin confirmar se reemplaza al volver a registrarse', async () => {
+    // Una cuenta pendiente se conserva; puede continuar por el correo original.
+    it('un registro sin confirmar conserva la cédula y permite reenviar la confirmación', async () => {
       const data = registrationData('reemplazo');
       await server().post('/api/auth/register').send(data).expect(201);
 
@@ -218,24 +218,23 @@ describe('Autenticación (e2e)', () => {
       await server()
         .post('/api/auth/register')
         .send({ ...corrected, cedula: data.cedula })
-        .expect(201);
+        .expect(409);
+
+      await server()
+        .post('/api/auth/resend-confirmation')
+        .send({ email: data.email })
+        .expect(204);
 
       const [email, , link] = sendEmailConfirmation().mock.calls[0] as [
         string,
         string,
         string,
       ];
-      expect(email).toBe(corrected.email);
+      expect(email).toBe(data.email);
       await server()
         .post('/api/auth/confirm-email')
         .send({ token: tokenFromLink(link) })
         .expect(200);
-
-      // El correo equivocado ya no es de nadie: se puede volver a usar.
-      await server()
-        .post('/api/auth/register')
-        .send({ ...registrationData('reemplazo-otra'), email: data.email })
-        .expect(201);
     });
 
     // Distinguirlos diría si una persona concreta participó en el estudio.

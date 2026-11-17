@@ -160,6 +160,7 @@ jobs:
         run: ../db-init/01-roles-y-schemas.sh
       - run: pnpm prisma:generate
       - run: pnpm prisma:deploy
+      - run: pnpm prisma:deploy-cutover
       - run: pnpm test:e2e
 
   auditoria:
@@ -356,7 +357,7 @@ jobs:
           # Postgres a través del contenedor.
           docker compose exec -T -e PGPASSWORD=ci-identidad db \
             psql -U identidad -d "$IDENTIDAD_DB_NAME" -h 127.0.0.1 \
-            -c 'UPDATE identidad."Participant" SET "emailConfirmedAt" = now() WHERE email IS NOT NULL;'
+            -c "UPDATE identidad.\"Account\" AS account SET \"emailConfirmedAt\" = now() FROM identidad.\"Role\" AS role WHERE account.\"roleId\" = role.\"id\" AND role.\"code\" = 'PARTICIPANT' AND account.\"emailConfirmedAt\" IS NULL;"
 
           token=$(curl -fsS -X POST http://localhost:8080/api/auth/login \
             -H 'Content-Type: application/json' \

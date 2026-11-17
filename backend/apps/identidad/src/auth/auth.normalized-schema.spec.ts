@@ -9,8 +9,13 @@ describe('AuthService con el esquema normalizado', () => {
   it('crea la cuenta, el perfil cifrado y el registro de estudio en una transacción', async () => {
     let createdAccount: Record<string, unknown> | undefined;
     let createdStudy: unknown;
+    let lockSql = '';
+    const queryRaw = jest.fn((strings: TemplateStringsArray) => {
+      lockSql = strings.join('');
+      return Promise.resolve([]);
+    });
     const tx = {
-      $queryRaw: jest.fn().mockResolvedValue([]),
+      $queryRaw: queryRaw,
       account: {
         findMany: jest.fn().mockResolvedValue([]),
         create: jest.fn(({ data }: { data: Record<string, unknown> }) => {
@@ -68,5 +73,6 @@ describe('AuthService con el esquema normalizado', () => {
     expect(accountData.studyParticipant.create).toEqual({});
     expect(createdStudy).toEqual({});
     expect(tx.account.create).toHaveBeenCalledTimes(1);
+    expect(lockSql).toContain('::text');
   });
 });

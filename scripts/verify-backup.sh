@@ -67,7 +67,7 @@ case "$service" in
   identidad)
     docker exec "$name" psql -v ON_ERROR_STOP=1 -U verify -d "$database" \
       -At -F ' ' -c "
-        SELECT 'participantes', count(*) FROM identidad.\"Participant\"
+        SELECT 'participantes', count(*) FROM identidad.\"StudyParticipant\"
         UNION ALL SELECT 'certificados', count(*) FROM identidad.\"Certificate\""
     ;;
   entrenamiento)

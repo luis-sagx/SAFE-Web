@@ -615,18 +615,35 @@ describe('AuthService.forgotPassword', () => {
       data: Record<string, unknown>;
     }> = [];
     const sendPasswordReset = jest.fn().mockResolvedValue(true);
+    let releaseFirstUpdate = () => {};
+    let signalSecondUpdate = () => {};
+    const firstUpdatePending = new Promise<void>((resolve) => {
+      releaseFirstUpdate = resolve;
+    });
+    const secondUpdateStarted = new Promise<void>((resolve) => {
+      signalSecondUpdate = resolve;
+    });
     const auth = service(
       {
         findMany: () =>
           Promise.resolve([
             participantRow({ id: 'cuenta-a' }),
-            participantRow({ id: 'cuenta-b' }),
+            {
+              id: 'cuenta-b',
+              role: { code: 'PARTICIPANT' },
+              profile: null,
+              disabledAt: null,
+            },
           ]),
         update: (args: {
           where: { id: string };
           data: Record<string, unknown>;
         }) => {
           updates.push(args);
+          if (args.where.id === 'cuenta-a') {
+            return firstUpdatePending.then(() => ({ id: args.where.id }));
+          }
+          signalSecondUpdate();
           return Promise.resolve({ id: args.where.id });
         },
       },
@@ -634,8 +651,15 @@ describe('AuthService.forgotPassword', () => {
       fakeMail({ sendPasswordReset }),
     );
 
-    await auth.forgotPassword('ana@correo.com');
+    const operation = auth.forgotPassword('ana@correo.com');
+    const concurrent = await Promise.race([
+      secondUpdateStarted.then(() => true),
+      new Promise<boolean>((resolve) => setTimeout(() => resolve(false), 50)),
+    ]);
+    releaseFirstUpdate();
+    await operation;
 
+    expect(concurrent).toBe(true);
     expect(updates.map(({ where }) => where.id)).toEqual([
       'cuenta-a',
       'cuenta-b',
@@ -644,6 +668,11 @@ describe('AuthService.forgotPassword', () => {
       new Set(updates.map(({ data }) => data.passwordResetTokenHash)).size,
     ).toBe(2);
     expect(sendPasswordReset).toHaveBeenCalledTimes(2);
+    expect(sendPasswordReset).toHaveBeenCalledWith(
+      'ana@correo.com',
+      '',
+      expect.stringContaining('/restablecer-password?token='),
+    );
   });
 
   it('una cuenta desactivada no recibe el correo, aunque exista', async () => {
@@ -848,18 +877,35 @@ describe('AuthService.resendConfirmation', () => {
       data: Record<string, unknown>;
     }> = [];
     const sendEmailConfirmation = jest.fn().mockResolvedValue(true);
+    let releaseFirstUpdate = () => {};
+    let signalSecondUpdate = () => {};
+    const firstUpdatePending = new Promise<void>((resolve) => {
+      releaseFirstUpdate = resolve;
+    });
+    const secondUpdateStarted = new Promise<void>((resolve) => {
+      signalSecondUpdate = resolve;
+    });
     const auth = service(
       {
         findMany: () =>
           Promise.resolve([
             participantRow({ id: 'cuenta-a', emailConfirmedAt: null }),
-            participantRow({ id: 'cuenta-b', emailConfirmedAt: null }),
+            {
+              id: 'cuenta-b',
+              role: { code: 'PARTICIPANT' },
+              profile: null,
+              emailConfirmedAt: null,
+            },
           ]),
         update: (args: {
           where: { id: string };
           data: Record<string, unknown>;
         }) => {
           updates.push(args);
+          if (args.where.id === 'cuenta-a') {
+            return firstUpdatePending.then(() => ({ id: args.where.id }));
+          }
+          signalSecondUpdate();
           return Promise.resolve({ id: args.where.id });
         },
       },
@@ -867,8 +913,15 @@ describe('AuthService.resendConfirmation', () => {
       fakeMail({ sendEmailConfirmation }),
     );
 
-    await auth.resendConfirmation('ana@correo.com');
+    const operation = auth.resendConfirmation('ana@correo.com');
+    const concurrent = await Promise.race([
+      secondUpdateStarted.then(() => true),
+      new Promise<boolean>((resolve) => setTimeout(() => resolve(false), 50)),
+    ]);
+    releaseFirstUpdate();
+    await operation;
 
+    expect(concurrent).toBe(true);
     expect(updates.map(({ where }) => where.id)).toEqual([
       'cuenta-a',
       'cuenta-b',
@@ -877,6 +930,11 @@ describe('AuthService.resendConfirmation', () => {
       new Set(updates.map(({ data }) => data.emailConfirmationTokenHash)).size,
     ).toBe(2);
     expect(sendEmailConfirmation).toHaveBeenCalledTimes(2);
+    expect(sendEmailConfirmation).toHaveBeenCalledWith(
+      'ana@correo.com',
+      '',
+      expect.stringContaining('/confirmar-correo?token='),
+    );
   });
 
   it('filtra por role: PARTICIPANT, para que un TRAINER/ADMIN no reciba reenvíos', async () => {
