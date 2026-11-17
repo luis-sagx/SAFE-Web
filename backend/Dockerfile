@@ -58,6 +58,8 @@ COPY prisma.identidad.config.ts prisma.entrenamiento.config.ts \
 # presentes también en la imagen final para ejecutar la reconciliación.
 COPY apps/identidad/src/pii/pii.ts ./apps/identidad/src/pii/pii.ts
 COPY apps/identidad/src/pii/email-hash-reconciliation.ts ./apps/identidad/src/pii/email-hash-reconciliation.ts
+COPY apps/entrenamiento/src/assessments/questionnaire.v1.json ./apps/entrenamiento/src/assessments/questionnaire.v1.json
+COPY apps/entrenamiento/src/sus/sus-survey.ts ./apps/entrenamiento/src/sus/sus-survey.ts
 
 # OWASP Docker Security: el proceso nunca corre como root.
 USER node
