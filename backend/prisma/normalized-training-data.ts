@@ -43,6 +43,7 @@ export interface AssessmentPhaseRecord {
 export function findParticipantsMissingBaseline(
   assessments: readonly AssessmentPhaseRecord[],
   participantIdsWithRuns: readonly string[],
+  legacyExemptionParticipantIds: readonly string[] = [],
 ): string[] {
   const baselineIds = new Set(
     assessments
@@ -53,7 +54,11 @@ export function findParticipantsMissingBaseline(
     ...participantIdsWithRuns,
     ...assessments.filter((row) => row.phase === 'POST').map((row) => row.participantId),
   ]);
+  const grandfatheredIds = new Set(legacyExemptionParticipantIds);
   return [...relevantIds]
-    .filter((participantId) => !baselineIds.has(participantId))
+    .filter(
+      (participantId) =>
+        !baselineIds.has(participantId) && !grandfatheredIds.has(participantId),
+    )
     .sort();
 }

@@ -1,8 +1,9 @@
 BEGIN;
 
 -- No se fabrican PRE históricos ni se convierten exenciones en respuestas.
--- El archivo conserva las exenciones, pero nunca evita el requisito de PRE.
--- El retiro solo se habilita cuando las filas relacionales cotejan cada array.
+-- Una exención legacy solo permite archivar su propio ID durante este corte;
+-- el runtime no consulta el archivo y las cuentas nuevas siguen requiriendo PRE.
+-- El retiro también exige que las filas relacionales cotejen cada array.
 DO $$
 BEGIN
   -- Debe mantenerse alineado con questionnaire.v1.json (versión 1, 21
@@ -44,6 +45,11 @@ BEGIN
         AND assessment."version" = 1
         AND assessment."phase" = 'PRE'
     )
+      AND NOT EXISTS (
+        SELECT 1
+        FROM "AssessmentBaselineExemption" exemption
+        WHERE exemption."participantId" = participant."participantId"
+      )
   ) THEN
     RAISE EXCEPTION 'No se puede retirar answers: hay corridas o POST sin evaluación PRE.'
       USING ERRCODE = '23514';

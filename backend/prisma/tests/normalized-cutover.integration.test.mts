@@ -141,7 +141,7 @@ test(
         `SET search_path TO "${schema}"`,
         '--file',
         resolve(
-          'prisma/identidad/migrations/20261116210000_normalized_identity_retire_legacy/migration.sql',
+          'prisma/identidad/cutover-migrations/20261116210000_normalized_identity_retire_legacy/migration.sql',
         ),
       ]);
       assert.notEqual(migration.status, 0);
@@ -167,7 +167,7 @@ test(
 );
 
 test(
-  'una exención archivada no evita PRE y el fallo conserva todas las filas',
+  'una exención no cubre una corrida sin PRE de otra persona',
   { skip: !guardTestUrl },
   () => {
     const schema = schemaName('training_guard');
@@ -181,7 +181,7 @@ test(
       CREATE TABLE "${schema}"."AssessmentAnswer" ("assessmentId" TEXT, "questionId" INTEGER, "answer" INTEGER);
       CREATE TABLE "${schema}"."SusResponse" ("id" TEXT, "version" INTEGER, "answers" INTEGER[]);
       CREATE TABLE "${schema}"."SusAnswer" ("susResponseId" TEXT, "questionId" INTEGER, "answer" INTEGER);
-      INSERT INTO "${schema}"."ScenarioRun" VALUES ('p-1');
+      INSERT INTO "${schema}"."ScenarioRun" VALUES ('p-unmatched');
     `;
     const created = runPsql(guardTestUrl!, ['--command', fixture]);
     assert.equal(created.status, 0, created.stderr);
@@ -192,7 +192,7 @@ test(
         `SET search_path TO "${schema}"`,
         '--file',
         resolve(
-          'prisma/entrenamiento/migrations/20261116211000_normalized_training_retire_legacy/migration.sql',
+          'prisma/entrenamiento/cutover-migrations/20261116211000_normalized_training_retire_legacy/migration.sql',
         ),
       ]);
       assert.notEqual(migration.status, 0);
@@ -223,7 +223,6 @@ test(
     const fixture = `
       CREATE SCHEMA "${schema}";
       CREATE TABLE "${schema}"."AssessmentBaselineExemption" ("participantId" TEXT PRIMARY KEY, "participantSeq" INTEGER NOT NULL);
-      INSERT INTO "${schema}"."AssessmentBaselineExemption" VALUES ('p-1', 1);
       CREATE TABLE "${schema}"."ScenarioRun" ("participantId" TEXT NOT NULL);
       CREATE TABLE "${schema}"."Assessment" (
         "id" TEXT PRIMARY KEY, "participantId" TEXT, "version" INTEGER,
@@ -248,14 +247,115 @@ test(
       const migration = applyMigration(
         guardTestUrl!,
         schema,
-        'prisma/entrenamiento/migrations/20261116211000_normalized_training_retire_legacy/migration.sql',
+        'prisma/entrenamiento/cutover-migrations/20261116211000_normalized_training_retire_legacy/migration.sql',
       );
       assert.notEqual(migration.status, 0);
       assert.match(migration.stderr, /hay corridas o POST sin evaluación PRE/);
 
       const preserved = runPsql(guardTestUrl!, [
         '--command',
-        `SELECT (SELECT COUNT(*) FROM "${schema}"."AssessmentBaselineExemption") = 1 AND (SELECT COUNT(*) FROM "${schema}"."Assessment") = 1 AND (SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = '${schema}' AND table_name = 'AssessmentBaselineExemptionArchive') = 0`,
+        `SELECT (SELECT COUNT(*) FROM "${schema}"."AssessmentBaselineExemption") = 0 AND (SELECT COUNT(*) FROM "${schema}"."Assessment") = 1 AND (SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = '${schema}' AND table_name = 'AssessmentBaselineExemptionArchive') = 0`,
+      ]);
+      assert.equal(preserved.status, 0, preserved.stderr);
+      assert.equal(preserved.stdout.trim(), 't');
+    } finally {
+      const dropped = runPsql(guardTestUrl!, [
+        '--command',
+        `DROP SCHEMA "${schema}" CASCADE`,
+      ]);
+      assert.equal(dropped.status, 0, dropped.stderr);
+    }
+  },
+);
+
+test(
+  'el corte archiva la exención legacy y solo la aplica a su propio participante',
+  { skip: !guardTestUrl },
+  () => {
+    const schema = schemaName('training_archived_exemption');
+    const fixture = `
+      CREATE SCHEMA "${schema}";
+      CREATE TABLE "${schema}"."AssessmentBaselineExemption" ("participantId" TEXT PRIMARY KEY, "participantSeq" INTEGER NOT NULL);
+      INSERT INTO "${schema}"."AssessmentBaselineExemption" VALUES ('p-exempt', 4);
+      CREATE TABLE "${schema}"."ScenarioRun" ("participantId" TEXT NOT NULL);
+      INSERT INTO "${schema}"."ScenarioRun" VALUES ('p-exempt');
+      CREATE TABLE "${schema}"."Assessment" (
+        "id" TEXT PRIMARY KEY, "participantId" TEXT, "version" INTEGER,
+        "phase" TEXT, "answers" INTEGER[],
+        CONSTRAINT "Assessment_answers_check" CHECK (TRUE)
+      );
+      CREATE TABLE "${schema}"."AssessmentAnswer" ("assessmentId" TEXT, "questionId" INTEGER, "answer" INTEGER);
+      CREATE TABLE "${schema}"."SusResponse" (
+        "id" TEXT PRIMARY KEY, "version" INTEGER, "answers" INTEGER[],
+        CONSTRAINT "SusResponse_answers_check" CHECK (TRUE)
+      );
+      CREATE TABLE "${schema}"."SusAnswer" ("susResponseId" TEXT, "questionId" INTEGER, "answer" INTEGER);
+    `;
+    const created = runPsql(guardTestUrl!, ['--command', fixture]);
+    assert.equal(created.status, 0, created.stderr);
+
+    try {
+      const migration = applyMigration(
+        guardTestUrl!,
+        schema,
+        'prisma/entrenamiento/cutover-migrations/20261116211000_normalized_training_retire_legacy/migration.sql',
+      );
+      assert.equal(migration.status, 0, migration.stderr);
+
+      const preserved = runPsql(guardTestUrl!, [
+        '--command',
+        `SELECT (SELECT COUNT(*) FROM "${schema}"."AssessmentBaselineExemptionArchive") = 1 AND (SELECT "participantId" FROM "${schema}"."AssessmentBaselineExemptionArchive") = 'p-exempt' AND NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = '${schema}' AND table_name = 'AssessmentBaselineExemption')`,
+      ]);
+      assert.equal(preserved.status, 0, preserved.stderr);
+      assert.equal(preserved.stdout.trim(), 't');
+    } finally {
+      const dropped = runPsql(guardTestUrl!, [
+        '--command',
+        `DROP SCHEMA "${schema}" CASCADE`,
+      ]);
+      assert.equal(dropped.status, 0, dropped.stderr);
+    }
+  },
+);
+
+test(
+  'el corte rechaza un faltante PRE que no coincide con una exención legacy',
+  { skip: !guardTestUrl },
+  () => {
+    const schema = schemaName('training_unmatched_exemption');
+    const fixture = `
+      CREATE SCHEMA "${schema}";
+      CREATE TABLE "${schema}"."AssessmentBaselineExemption" ("participantId" TEXT PRIMARY KEY, "participantSeq" INTEGER NOT NULL);
+      INSERT INTO "${schema}"."AssessmentBaselineExemption" VALUES ('p-exempt', 4);
+      CREATE TABLE "${schema}"."ScenarioRun" ("participantId" TEXT NOT NULL);
+      INSERT INTO "${schema}"."ScenarioRun" VALUES ('p-unmatched');
+      CREATE TABLE "${schema}"."Assessment" (
+        "id" TEXT PRIMARY KEY, "participantId" TEXT, "version" INTEGER,
+        "phase" TEXT, "answers" INTEGER[],
+        CONSTRAINT "Assessment_answers_check" CHECK (TRUE)
+      );
+      CREATE TABLE "${schema}"."AssessmentAnswer" ("assessmentId" TEXT, "questionId" INTEGER, "answer" INTEGER);
+      CREATE TABLE "${schema}"."SusResponse" (
+        "id" TEXT PRIMARY KEY, "version" INTEGER, "answers" INTEGER[],
+        CONSTRAINT "SusResponse_answers_check" CHECK (TRUE)
+      );
+      CREATE TABLE "${schema}"."SusAnswer" ("susResponseId" TEXT, "questionId" INTEGER, "answer" INTEGER);
+    `;
+    const created = runPsql(guardTestUrl!, ['--command', fixture]);
+    assert.equal(created.status, 0, created.stderr);
+
+    try {
+      const migration = applyMigration(
+        guardTestUrl!,
+        schema,
+        'prisma/entrenamiento/cutover-migrations/20261116211000_normalized_training_retire_legacy/migration.sql',
+      );
+      assert.notEqual(migration.status, 0);
+      assert.match(migration.stderr, /hay corridas o POST sin evaluación PRE/);
+
+      const preserved = runPsql(guardTestUrl!, [
+        '--command',
+        `SELECT (SELECT COUNT(*) FROM "${schema}"."AssessmentBaselineExemption") = 1 AND (SELECT COUNT(*) FROM "${schema}"."ScenarioRun") = 1 AND NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = '${schema}' AND table_name = 'AssessmentBaselineExemptionArchive')`,
       ]);
       assert.equal(preserved.status, 0, preserved.stderr);
       assert.equal(preserved.stdout.trim(), 't');
@@ -363,13 +463,13 @@ test(
       const identityMigration = applyMigration(
         guardTestUrl!,
         identitySchema,
-        'prisma/identidad/migrations/20261116210000_normalized_identity_retire_legacy/migration.sql',
+        'prisma/identidad/cutover-migrations/20261116210000_normalized_identity_retire_legacy/migration.sql',
       );
       assert.equal(identityMigration.status, 0, identityMigration.stderr);
       const trainingMigration = applyMigration(
         guardTestUrl!,
         trainingSchema,
-        'prisma/entrenamiento/migrations/20261116211000_normalized_training_retire_legacy/migration.sql',
+        'prisma/entrenamiento/cutover-migrations/20261116211000_normalized_training_retire_legacy/migration.sql',
       );
       assert.equal(trainingMigration.status, 0, trainingMigration.stderr);
 
@@ -450,7 +550,7 @@ test(
         const migration = applyMigration(
           guardTestUrl!,
           schema,
-          'prisma/entrenamiento/migrations/20261116211000_normalized_training_retire_legacy/migration.sql',
+          'prisma/entrenamiento/cutover-migrations/20261116211000_normalized_training_retire_legacy/migration.sql',
         );
         assert.notEqual(
           migration.status,

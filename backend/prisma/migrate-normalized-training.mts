@@ -119,8 +119,8 @@ async function migrate(): Promise<void> {
                   SELECT "id", "participantId", "version", "answers"
                   FROM "entrenamiento"."SusResponse"
                 `,
-                transaction.$queryRaw<{ count: bigint }[]>`
-                  SELECT COUNT(*) AS count
+                transaction.$queryRaw<{ participantId: string }[]>`
+                  SELECT "participantId"
                   FROM "entrenamiento"."AssessmentBaselineExemption"
                 `,
                 transaction.scenarioRun.findMany({
@@ -152,6 +152,7 @@ async function migrate(): Promise<void> {
             const missingBaseline = findParticipantsMissingBaseline(
               assessments,
               runs.map((run) => run.participantId),
+              exemptions.map(({ participantId }) => participantId),
             );
             return {
               assessments: assessments.length,
@@ -160,7 +161,7 @@ async function migrate(): Promise<void> {
               susAnswers: expectedSus.length,
               addedAssessmentAnswers: missingAssessments.length,
               addedSusAnswers: missingSus.length,
-              baselineExemptionsToArchive: Number(exemptions[0]?.count ?? 0),
+              baselineExemptionsToArchive: exemptions.length,
               participantsMissingBaseline: missingBaseline.length,
               cutoverSafe: missingBaseline.length === 0,
             };
@@ -177,8 +178,8 @@ async function migrate(): Promise<void> {
               SELECT "id", "participantId", "version", "answers"
               FROM "entrenamiento"."SusResponse"
             `,
-            prisma.$queryRaw<{ count: bigint }[]>`
-              SELECT COUNT(*) AS count
+            prisma.$queryRaw<{ participantId: string }[]>`
+              SELECT "participantId"
               FROM "entrenamiento"."AssessmentBaselineExemption"
             `,
             prisma.scenarioRun.findMany({
@@ -191,13 +192,14 @@ async function migrate(): Promise<void> {
           const missingBaseline = findParticipantsMissingBaseline(
             assessments,
             runs.map((run) => run.participantId),
+            exemptions.map(({ participantId }) => participantId),
           );
           return {
             assessments: assessments.length,
             susResponses: susResponses.length,
             assessmentAnswers: expectedAssessments.length,
             susAnswers: expectedSus.length,
-            baselineExemptionsToArchive: Number(exemptions[0]?.count ?? 0),
+            baselineExemptionsToArchive: exemptions.length,
             participantsMissingBaseline: missingBaseline.length,
             cutoverSafe: missingBaseline.length === 0,
           };

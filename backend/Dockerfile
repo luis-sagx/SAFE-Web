@@ -52,7 +52,8 @@ COPY --from=build /app/dist ./dist
 COPY --from=build /app/generated ./dist/generated
 COPY --from=build /app/generated ./generated
 COPY prisma ./prisma
-COPY prisma.identidad.config.ts prisma.entrenamiento.config.ts ./
+COPY prisma.identidad.config.ts prisma.entrenamiento.config.ts \
+  prisma.identidad.cutover.config.ts prisma.entrenamiento.cutover.config.ts ./
 # Los scripts de prisma/ importan estos módulos .ts con Node 24. Deben estar
 # presentes también en la imagen final para ejecutar la reconciliación.
 COPY apps/identidad/src/pii/pii.ts ./apps/identidad/src/pii/pii.ts
@@ -73,12 +74,6 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
 ARG APP
 ENV APP=${APP}
 
-# Cada servicio aplica SOLO sus migraciones, con su propia URL y su propio rol
-# de Postgres: el contenedor queda consistente con su esquema sin un paso
-# manual que se pueda olvidar en el servidor propio, y ninguno puede tocar el
-# base lógica del otro.
-#
-# Se invoca el binario de prisma directamente y no `pnpm prisma`: la imagen no
-# trae pnpm, y el contenedor debe poder levantar en un servidor sin salida a
-# internet.
-CMD ["sh", "-c", "node_modules/.bin/prisma migrate deploy --config prisma.${APP}.config.ts && node dist/apps/${APP}/src/main"]
+# El orquestador separa expansión, backfill y retiro del esquema legacy. Cada
+# instancia recibe solo la URL y el rol de su propia base.
+CMD ["node", "prisma/start-normalized.mts"]

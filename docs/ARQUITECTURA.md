@@ -713,33 +713,37 @@ docker compose exec identidad node prisma/seed.mts --email tu.correo@espe.edu.ec
 El `seed` solo crea la cuenta de supervisor e imprime su contraseña una vez.
 Los participantes se registran solos desde la plataforma.
 
-La normalización del modelo requiere un corte coordinado y **no se ejecuta al
-levantar Compose**. `migrate deploy` aplica solo las migraciones Prisma; no
-copia los registros a las tablas nuevas. Antes de desplegar esta versión:
+La normalización se organiza desde `backend/prisma/start-normalized.mts` por
+servicio: primero aplica las migraciones expansivas, luego valida y copia filas
+con el migrador idempotente, y solo ejecuta el retiro legacy cuando la copia y
+las guardas de PRE son seguras. El runtime no consulta las tablas de archivo.
+Un reinicio después del corte detecta la migración final aplicada y omite el
+backfill que lee tablas legacy. Antes de desplegar esta versión:
 
 1. Verificar una copia restaurable de las dos bases y ejecutar ambos
    migradores sin `--apply` para obtener su diagnóstico sin PII.
 2. Poner el gateway en mantenimiento, detener los dos servicios y todo otro
    escritor; tomar un respaldo final coherente.
-3. Aplicar las migraciones expansivas por servicio y ejecutar los migradores
-   explícitos `backend/prisma/migrate-normalized-identity.mts` y
-   `backend/prisma/migrate-normalized-training.mts` con los conteos observados.
-   Cada servicio escribe solo en su base; no existe transacción distribuida.
+3. Arrancar Compose: cada servicio aplica sus propias migraciones expansivas y
+   ejecuta diagnóstico, copia y corte usando solo su URL y rol. No existe una
+   transacción distribuida entre bases.
 4. Cotejar conteos, IDs, secuencias, hashes, fechas, certificados, orden de
-   módulos y respuestas. Las exenciones históricas se renombran a
-   `AssessmentBaselineExemptionArchive` para conservar sus filas; nunca cuentan
-   como evaluación PRE. Si hay corridas sin PRE real, detener el corte y
-   resolver esos registros sin fabricar evaluaciones.
+   módulos y respuestas. Una exención legacy solo permite validar el mismo
+   participante histórico durante el corte y se conserva en
+   `AssessmentBaselineExemptionArchive`; no se convierte en respuesta ni se
+   consulta en runtime. Un faltante PRE sin exención coincidente deja las
+   estructuras legacy intactas y permite iniciar el servicio con el esquema
+   expandido.
 5. Arrancar las imágenes nuevas todavía en mantenimiento, comprobar login de
    cuentas anteriores y flujos de estudio/certificado, y solo entonces abrir
    tráfico. Mantener respaldo y estructuras legado disponibles para recuperar
    antes de aceptar escrituras nuevas.
 
-Las tablas/campos legado se retiran en una migración posterior y separada,
-después de verificar el respaldo, cotejo y ausencia de dependencias históricas.
-El archivo `AssessmentBaselineExemptionArchive` conserva las cinco exenciones
-históricas sin influir en el acceso. Después del corte hay doce tablas de
-negocio y una tabla de archivo. No levantar
+Si Prisma ya registró una migración final fallida, el arranque se detiene y no
+la marca como revertida. Verificar primero el respaldo, la reversión
+transaccional y las tablas; luego seguir el procedimiento explícito en
+[`DB-CUTOVER.md`](DB-CUTOVER.md). Después del corte hay doce tablas de negocio
+y una tabla de archivo. No levantar
 `docker-compose.yml` y `docker-compose.db.yml` simultáneamente: comparten
 `pgdata`.
 
@@ -750,8 +754,8 @@ históricas y el CHECK que rechaza `consentAccepted = false`.
 
 Los dos servicios de aplicación salen de **una sola imagen**: comparten
 dependencias y `libs/comun`, así que construirlas por separado duplicaría el
-`pnpm install` sin ganar nada. El `ARG APP` decide qué migraciones se aplican y
-qué `main.js` arranca.
+`pnpm install` sin ganar nada. El `ARG APP` decide qué URL, configuración de
+migraciones y `main.js` usa cada contenedor.
 
 Configuración de seguridad de los contenedores (OWASP Docker Security Cheat
 Sheet), ya aplicada en `docker-compose.yml` y en los `Dockerfile`:

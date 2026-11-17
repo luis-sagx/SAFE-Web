@@ -11,9 +11,15 @@ import { PrismaPg } from '@prisma/adapter-pg';
 import { Prisma, PrismaClient } from '../generated/identidad/client.js';
 import { decrypt } from '../apps/identidad/src/pii/pii.ts';
 import {
+  type LegacyCertificateRow,
+  type LegacyParticipantRow,
   transformLegacyCertificate,
   transformLegacyParticipant,
 } from './identity-migration-transform.ts';
+import {
+  readLegacyIdentity,
+  type LegacyIdentityQuery,
+} from './identity-migration-source.mts';
 
 interface Options {
   apply: boolean;
@@ -44,8 +50,8 @@ function parseOptions(args: string[]): Options {
 }
 
 function prepareRows(
-  participants: Awaited<ReturnType<PrismaClient['participant']['findMany']>>,
-  certificates: Awaited<ReturnType<PrismaClient['certificate']['findMany']>>,
+  participants: LegacyParticipantRow[],
+  certificates: LegacyCertificateRow[],
   piiKey: string,
   emailPepper: string,
 ) {
@@ -66,14 +72,6 @@ function prepareRows(
     ),
     certificateModules,
   };
-}
-
-async function readLegacy(client: Prisma.TransactionClient | PrismaClient) {
-  const [participants, certificates] = await Promise.all([
-    client.participant.findMany({ orderBy: { id: 'asc' } }),
-    client.certificate.findMany({ orderBy: { id: 'asc' } }),
-  ]);
-  return { participants, certificates };
 }
 
 async function assertRoleCatalog(
@@ -103,7 +101,7 @@ function sameJson(left: unknown, right: unknown): boolean {
 
 async function assertAlreadyApplied(
   transaction: Prisma.TransactionClient,
-  source: Awaited<ReturnType<typeof readLegacy>>,
+  source: Awaited<ReturnType<typeof readLegacyIdentity>>,
   rows: ReturnType<typeof prepareRows>,
   piiKey: string,
 ): Promise<void> {
@@ -183,7 +181,8 @@ async function main(): Promise<void> {
     const result = await prisma.$transaction(
       async (transaction) => {
         await assertRoleCatalog(transaction);
-        const source = await readLegacy(transaction);
+        const query = transaction.$queryRaw.bind(transaction) as unknown as LegacyIdentityQuery;
+        const source = await readLegacyIdentity(query);
         if (
           options.apply &&
           source.participants.length !== options.expectedCount

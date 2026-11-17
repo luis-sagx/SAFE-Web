@@ -13,6 +13,7 @@
     "lint:ci": "eslint \"{apps,libs,test}/**/*.ts\"",
     "test": "jest",
     "test:e2e": "jest --config ./test/jest-e2e.json",
+    "test:cutover": "node --test prisma/tests/normalized-cutover.integration.test.mts prisma/tests/normalized-startup.test.mts prisma/tests/normalized-training-baseline.test.mts prisma/tests/identity-migration-source.test.mts",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "prisma:generate": "prisma generate --config prisma.identidad.config.ts && prisma generate --config prisma.entrenamiento.config.ts && mkdir -p dist && ln -sfn ../generated dist/generated",

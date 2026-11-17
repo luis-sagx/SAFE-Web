@@ -172,7 +172,7 @@ Si cualquier punto falla, deja los servicios parados y usa la reversión previa 
 
 ## 6. Volver a servicio y monitorear
 
-Solo tras aprobar los checks, inicia primero los servicios de API y espera sus healthchecks. Al arrancar, el Dockerfile ejecuta `prisma migrate deploy` contra la URL propia de cada servicio, por lo que aplicará migraciones pendientes sin resetear la base:
+Solo tras aprobar los checks, inicia primero los servicios de API y espera sus healthchecks. El Dockerfile usa `prisma/start-normalized.mts`, que coordina expansión, backfill idempotente y corte con la URL propia de cada servicio. Un registro de migración fallida detiene el arranque hasta su recuperación explícita; no se ejecuta un reset:
 
 ```sh
 docker compose up -d identidad entrenamiento
