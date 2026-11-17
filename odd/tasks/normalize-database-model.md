@@ -92,6 +92,7 @@ El usuario autorizó investigar y corregir los fallos reportados en backend `pnp
 - Commit NDB-CI-2: `21bd265` (`fix(identidad): serializar advisory locks sin void`).
 - Commit NDB-CI-3: `4dad73e` (`ci(db): aplicar corte en base e2e limpia`).
 - Commit NDB-CI-4: `e64def8` (`test(auth): preservar registros pendientes en e2e`).
+- Commit NDB-CI-6: `14a5762` (`ci(docker): confirmar cuenta en esquema normalizado`).
 - NDB-CI-5 verificación remota inicial: la API pública de SonarCloud informa 4 hallazgos nuevos y quality gate `ERROR`; el job Docker falla en `Registro y corrida contra la pila real`. Su log devuelve 403 sin autenticación; no se usó una sesión del entorno.
 - NDB-CI-6 causa corroborada por inspección local: `.github/workflows/ci.yml` ejecutaba `UPDATE identidad."Participant" ...`, pero el corte elimina esa tabla. La API pública indica que ese job step falló; su log exacto no está disponible sin autenticación.
 - Verificación fresca tras los cambios NDB-CI-5/6: `pnpm test` 37/302, `pnpm lint:ci`, `pnpm build`; `pnpm test:e2e` en PostgreSQL 18 aislado con expand + cutover, 6/6 suites y 110/110 pruebas. El SQL smoke en el mismo esquema actualiza exclusivamente el registro PARTICIPANT. `git diff --check` pasó.

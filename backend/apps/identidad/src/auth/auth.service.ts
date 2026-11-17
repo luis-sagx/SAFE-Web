@@ -415,25 +415,28 @@ export class AuthService {
       },
     });
 
-    for (const participant of participants) {
-      if (participant.disabledAt) continue;
+    await Promise.all(
+      participants
+        .filter((participant) => !participant.disabledAt)
+        .map(async (participant) => {
+          const token = randomBytes(RESET_TOKEN_BYTES).toString('base64url');
+          await this.prisma.account.update({
+            where: { id: participant.id },
+            data: {
+              passwordResetTokenHash: hashToken(token),
+              passwordResetExpiresAt: new Date(Date.now() + RESET_TOKEN_TTL_MS),
+            },
+          });
 
-      const token = randomBytes(RESET_TOKEN_BYTES).toString('base64url');
-      await this.prisma.account.update({
-        where: { id: participant.id },
-        data: {
-          passwordResetTokenHash: hashToken(token),
-          passwordResetExpiresAt: new Date(Date.now() + RESET_TOKEN_TTL_MS),
-        },
-      });
-
-      const name =
-        decryptOptional(participant.profile?.nombre ?? null, this.piiKey) ?? '';
-      const link = `${this.frontendOrigin}/restablecer-password?token=${token}`;
-      // El mismo correo puede pertenecer a varias cuentas históricas; cada
-      // token apunta a una sola cuenta y el endpoint sigue respondiendo igual.
-      await this.mail.sendPasswordReset(email, name, link);
-    }
+          const name =
+            decryptOptional(participant.profile?.nombre ?? null, this.piiKey) ??
+            '';
+          const link = `${this.frontendOrigin}/restablecer-password?token=${token}`;
+          // El mismo correo puede pertenecer a varias cuentas históricas; cada
+          // token apunta a una sola cuenta y el endpoint sigue respondiendo igual.
+          await this.mail.sendPasswordReset(email, name, link);
+        }),
+    );
   }
 
   /// Cambia la contraseña con un token de un solo uso. `RESET_LINK_INVALID`
@@ -539,25 +542,28 @@ export class AuthService {
       },
     });
 
-    for (const participant of participants) {
-      if (participant.emailConfirmedAt) continue;
+    await Promise.all(
+      participants
+        .filter((participant) => !participant.emailConfirmedAt)
+        .map(async (participant) => {
+          const token = randomBytes(RESET_TOKEN_BYTES).toString('base64url');
+          await this.prisma.account.update({
+            where: { id: participant.id },
+            data: {
+              emailConfirmationTokenHash: hashToken(token),
+              emailConfirmationExpiresAt: new Date(
+                Date.now() + EMAIL_CONFIRMATION_TTL_MS,
+              ),
+            },
+          });
 
-      const token = randomBytes(RESET_TOKEN_BYTES).toString('base64url');
-      await this.prisma.account.update({
-        where: { id: participant.id },
-        data: {
-          emailConfirmationTokenHash: hashToken(token),
-          emailConfirmationExpiresAt: new Date(
-            Date.now() + EMAIL_CONFIRMATION_TTL_MS,
-          ),
-        },
-      });
-
-      const name =
-        decryptOptional(participant.profile?.nombre ?? null, this.piiKey) ?? '';
-      const link = `${this.frontendOrigin}/confirmar-correo?token=${token}`;
-      await this.mail.sendEmailConfirmation(email, name, link);
-    }
+          const name =
+            decryptOptional(participant.profile?.nombre ?? null, this.piiKey) ??
+            '';
+          const link = `${this.frontendOrigin}/confirmar-correo?token=${token}`;
+          await this.mail.sendEmailConfirmation(email, name, link);
+        }),
+    );
   }
 
   private async session(participant: AccountWithSession) {

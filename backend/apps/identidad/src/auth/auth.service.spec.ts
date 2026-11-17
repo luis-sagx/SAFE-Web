@@ -615,6 +615,14 @@ describe('AuthService.forgotPassword', () => {
       data: Record<string, unknown>;
     }> = [];
     const sendPasswordReset = jest.fn().mockResolvedValue(true);
+    let releaseFirstUpdate = () => {};
+    let signalSecondUpdate = () => {};
+    const firstUpdatePending = new Promise<void>((resolve) => {
+      releaseFirstUpdate = resolve;
+    });
+    const secondUpdateStarted = new Promise<void>((resolve) => {
+      signalSecondUpdate = resolve;
+    });
     const auth = service(
       {
         findMany: () =>
@@ -627,6 +635,10 @@ describe('AuthService.forgotPassword', () => {
           data: Record<string, unknown>;
         }) => {
           updates.push(args);
+          if (args.where.id === 'cuenta-a') {
+            return firstUpdatePending.then(() => ({ id: args.where.id }));
+          }
+          signalSecondUpdate();
           return Promise.resolve({ id: args.where.id });
         },
       },
@@ -634,8 +646,15 @@ describe('AuthService.forgotPassword', () => {
       fakeMail({ sendPasswordReset }),
     );
 
-    await auth.forgotPassword('ana@correo.com');
+    const operation = auth.forgotPassword('ana@correo.com');
+    const concurrent = await Promise.race([
+      secondUpdateStarted.then(() => true),
+      new Promise<boolean>((resolve) => setTimeout(() => resolve(false), 50)),
+    ]);
+    releaseFirstUpdate();
+    await operation;
 
+    expect(concurrent).toBe(true);
     expect(updates.map(({ where }) => where.id)).toEqual([
       'cuenta-a',
       'cuenta-b',
@@ -848,6 +867,14 @@ describe('AuthService.resendConfirmation', () => {
       data: Record<string, unknown>;
     }> = [];
     const sendEmailConfirmation = jest.fn().mockResolvedValue(true);
+    let releaseFirstUpdate = () => {};
+    let signalSecondUpdate = () => {};
+    const firstUpdatePending = new Promise<void>((resolve) => {
+      releaseFirstUpdate = resolve;
+    });
+    const secondUpdateStarted = new Promise<void>((resolve) => {
+      signalSecondUpdate = resolve;
+    });
     const auth = service(
       {
         findMany: () =>
@@ -860,6 +887,10 @@ describe('AuthService.resendConfirmation', () => {
           data: Record<string, unknown>;
         }) => {
           updates.push(args);
+          if (args.where.id === 'cuenta-a') {
+            return firstUpdatePending.then(() => ({ id: args.where.id }));
+          }
+          signalSecondUpdate();
           return Promise.resolve({ id: args.where.id });
         },
       },
@@ -867,8 +898,15 @@ describe('AuthService.resendConfirmation', () => {
       fakeMail({ sendEmailConfirmation }),
     );
 
-    await auth.resendConfirmation('ana@correo.com');
+    const operation = auth.resendConfirmation('ana@correo.com');
+    const concurrent = await Promise.race([
+      secondUpdateStarted.then(() => true),
+      new Promise<boolean>((resolve) => setTimeout(() => resolve(false), 50)),
+    ]);
+    releaseFirstUpdate();
+    await operation;
 
+    expect(concurrent).toBe(true);
     expect(updates.map(({ where }) => where.id)).toEqual([
       'cuenta-a',
       'cuenta-b',
