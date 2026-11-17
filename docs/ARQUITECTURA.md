@@ -491,7 +491,8 @@ Reglas del API que no se relajan:
 ## 6. Modelo de datos
 
 Cada servicio mantiene su propia base lógica, schema Prisma y rol PostgreSQL.
-El modelo objetivo contiene doce tablas de negocio. El diagrama editable está
+El modelo objetivo contiene doce tablas de negocio y una tabla de archivo
+histórico de exenciones, sin uso en runtime. El diagrama editable está
 en [`ThesisDiagrams/06-data-model.puml`](ThesisDiagrams/06-data-model.puml).
 
 > **Estado de transición (16 de noviembre de 2026):** el código de esta rama
@@ -524,6 +525,7 @@ en [`ThesisDiagrams/06-data-model.puml`](ThesisDiagrams/06-data-model.puml).
 | `AssessmentAnswer` | (`assessmentId`, `questionId`) PK; `assessmentId` FK a `Assessment` con cascada; `answer` es la opción ordinal validada. `questionId` es el identificador estable de la pregunta en esa versión. |
 | `SusResponse` | `id` (PK), `participantId`, `participantSeq`, `version`, `score`, `submittedAt`. Única por participante y versión; índice por versión y seudónimo. Las respuestas viven en `SusAnswer`. |
 | `SusAnswer` | (`susResponseId`, `questionId`) PK; `susResponseId` FK a `SusResponse` con cascada; `answer` es una opción de 1 a 5. |
+| `AssessmentBaselineExemptionArchive` | `participantId` (PK) y `participantSeq`. Copia exacta de las exenciones históricas; tabla de archivo sin lectura ni escritura en runtime y sin efecto para el requisito PRE. |
 
 Las únicas relaciones FK son internas a cada base: `Role`–`Account`,
 `Account`–`AccountProfile`, `Account`–`StudyParticipant`, `Certificate`–
@@ -724,9 +726,10 @@ copia los registros a las tablas nuevas. Antes de desplegar esta versión:
    `backend/prisma/migrate-normalized-training.mts` con los conteos observados.
    Cada servicio escribe solo en su base; no existe transacción distribuida.
 4. Cotejar conteos, IDs, secuencias, hashes, fechas, certificados, orden de
-   módulos y respuestas. Si el diagnóstico de entrenamiento encuentra
-   exenciones o participantes históricos sin PRE, no retirar esas estructuras
-   ni habilitar el corte hasta resolver la decisión de retención.
+   módulos y respuestas. Las exenciones históricas se renombran a
+   `AssessmentBaselineExemptionArchive` para conservar sus filas; nunca cuentan
+   como evaluación PRE. Si hay corridas sin PRE real, detener el corte y
+   resolver esos registros sin fabricar evaluaciones.
 5. Arrancar las imágenes nuevas todavía en mantenimiento, comprobar login de
    cuentas anteriores y flujos de estudio/certificado, y solo entonces abrir
    tráfico. Mantener respaldo y estructuras legado disponibles para recuperar
@@ -734,7 +737,9 @@ copia los registros a las tablas nuevas. Antes de desplegar esta versión:
 
 Las tablas/campos legado se retiran en una migración posterior y separada,
 después de verificar el respaldo, cotejo y ausencia de dependencias históricas.
-Hasta entonces hay más de doce tablas físicas. No levantar
+El archivo `AssessmentBaselineExemptionArchive` conserva las cinco exenciones
+históricas sin influir en el acceso. Después del corte hay doce tablas de
+negocio y una tabla de archivo. No levantar
 `docker-compose.yml` y `docker-compose.db.yml` simultáneamente: comparten
 `pgdata`.
 

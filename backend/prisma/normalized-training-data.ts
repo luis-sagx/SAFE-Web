@@ -43,19 +43,17 @@ export interface AssessmentPhaseRecord {
 export function findParticipantsMissingBaseline(
   assessments: readonly AssessmentPhaseRecord[],
   participantIdsWithRuns: readonly string[],
-  exemptParticipantIds: readonly string[],
 ): string[] {
   const baselineIds = new Set(
     assessments
       .filter((row) => row.version === 1 && row.phase === 'PRE')
       .map((row) => row.participantId),
   );
-  const exemptIds = new Set(exemptParticipantIds);
   const relevantIds = new Set([
     ...participantIdsWithRuns,
     ...assessments.filter((row) => row.phase === 'POST').map((row) => row.participantId),
   ]);
   return [...relevantIds]
-    .filter((participantId) => !baselineIds.has(participantId) && !exemptIds.has(participantId))
+    .filter((participantId) => !baselineIds.has(participantId))
     .sort();
 }

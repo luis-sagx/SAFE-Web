@@ -33,16 +33,15 @@ describe('expandLegacyAnswers', () => {
 });
 
 describe('findParticipantsMissingBaseline', () => {
-  it('señala POST o corridas sin PRE, excepto las exenciones históricas', () => {
+  it('señala POST o corridas sin PRE aunque la persona tuviera una exención archivada', () => {
     expect(
       findParticipantsMissingBaseline(
         [
           { participantId: 'pre', version: 1, phase: 'PRE' },
           { participantId: 'post', version: 1, phase: 'POST' },
         ],
-        ['pre', 'missing-run', 'exempt'],
-        ['exempt'],
+        ['pre', 'missing-run', 'archived-exemption'],
       ),
-    ).toEqual(['missing-run', 'post']);
+    ).toEqual(['archived-exemption', 'missing-run', 'post']);
   });
 });

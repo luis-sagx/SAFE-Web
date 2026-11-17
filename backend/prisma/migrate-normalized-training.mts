@@ -44,6 +44,19 @@ const susQuestionIds = new Map([[SUS_VERSION, Array.from({ length: 10 }, (_, i) 
 
 type AssessmentAnswerRow = { assessmentId: string; questionId: number; answer: number };
 type SusAnswerRow = { susResponseId: string; questionId: number; answer: number };
+type LegacyAssessmentRow = {
+  id: string;
+  participantId: string;
+  version: number;
+  phase: 'PRE' | 'POST';
+  answers: number[];
+};
+type LegacySusResponseRow = {
+  id: string;
+  participantId: string;
+  version: number;
+  answers: number[];
+};
 
 function assessmentRows(
   rows: { id: string; version: number; answers: number[] }[],
@@ -98,15 +111,18 @@ async function migrate(): Promise<void> {
           async (transaction) => {
             const [assessments, susResponses, exemptions, runs, assessmentRowsInDb, susRowsInDb] =
               await Promise.all([
-                transaction.assessment.findMany({
-                  select: { id: true, participantId: true, version: true, phase: true, answers: true },
-                }),
-                transaction.susResponse.findMany({
-                  select: { id: true, participantId: true, version: true, answers: true },
-                }),
-                transaction.assessmentBaselineExemption.findMany({
-                  select: { participantId: true },
-                }),
+                transaction.$queryRaw<LegacyAssessmentRow[]>`
+                  SELECT "id", "participantId", "version", "phase"::text AS phase, "answers"
+                  FROM "entrenamiento"."Assessment"
+                `,
+                transaction.$queryRaw<LegacySusResponseRow[]>`
+                  SELECT "id", "participantId", "version", "answers"
+                  FROM "entrenamiento"."SusResponse"
+                `,
+                transaction.$queryRaw<{ count: bigint }[]>`
+                  SELECT COUNT(*) AS count
+                  FROM "entrenamiento"."AssessmentBaselineExemption"
+                `,
                 transaction.scenarioRun.findMany({
                   distinct: ['participantId'],
                   select: { participantId: true },
@@ -136,7 +152,6 @@ async function migrate(): Promise<void> {
             const missingBaseline = findParticipantsMissingBaseline(
               assessments,
               runs.map((run) => run.participantId),
-              exemptions.map((row) => row.participantId),
             );
             return {
               assessments: assessments.length,
@@ -145,22 +160,27 @@ async function migrate(): Promise<void> {
               susAnswers: expectedSus.length,
               addedAssessmentAnswers: missingAssessments.length,
               addedSusAnswers: missingSus.length,
-              baselineExemptions: exemptions.length,
+              baselineExemptionsToArchive: Number(exemptions[0]?.count ?? 0),
               participantsMissingBaseline: missingBaseline.length,
-              cutoverSafe: exemptions.length === 0 && missingBaseline.length === 0,
+              cutoverSafe: missingBaseline.length === 0,
             };
           },
           { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
         )
       : await (async () => {
           const [assessments, susResponses, exemptions, runs] = await Promise.all([
-            prisma.assessment.findMany({
-              select: { id: true, participantId: true, version: true, phase: true, answers: true },
-            }),
-            prisma.susResponse.findMany({
-              select: { id: true, participantId: true, version: true, answers: true },
-            }),
-            prisma.assessmentBaselineExemption.findMany({ select: { participantId: true } }),
+            prisma.$queryRaw<LegacyAssessmentRow[]>`
+              SELECT "id", "participantId", "version", "phase"::text AS phase, "answers"
+              FROM "entrenamiento"."Assessment"
+            `,
+            prisma.$queryRaw<LegacySusResponseRow[]>`
+              SELECT "id", "participantId", "version", "answers"
+              FROM "entrenamiento"."SusResponse"
+            `,
+            prisma.$queryRaw<{ count: bigint }[]>`
+              SELECT COUNT(*) AS count
+              FROM "entrenamiento"."AssessmentBaselineExemption"
+            `,
             prisma.scenarioRun.findMany({
               distinct: ['participantId'],
               select: { participantId: true },
@@ -171,16 +191,15 @@ async function migrate(): Promise<void> {
           const missingBaseline = findParticipantsMissingBaseline(
             assessments,
             runs.map((run) => run.participantId),
-            exemptions.map((row) => row.participantId),
           );
           return {
             assessments: assessments.length,
             susResponses: susResponses.length,
             assessmentAnswers: expectedAssessments.length,
             susAnswers: expectedSus.length,
-            baselineExemptions: exemptions.length,
+            baselineExemptionsToArchive: Number(exemptions[0]?.count ?? 0),
             participantsMissingBaseline: missingBaseline.length,
-            cutoverSafe: exemptions.length === 0 && missingBaseline.length === 0,
+            cutoverSafe: missingBaseline.length === 0,
           };
         })();
     console.log(JSON.stringify(result));

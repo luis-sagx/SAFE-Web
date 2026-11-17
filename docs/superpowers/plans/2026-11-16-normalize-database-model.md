@@ -1,7 +1,7 @@
 # Plan de implementación: normalizar el modelo de datos de SAFE-Web
 
 **Estado:** implementación de código y diagnóstico de datos completados en `plan/normalize-database-model`; la migración física sigue bloqueada por registros reales que requieren decisión. La base Compose no fue modificada.
-**Objetivo:** pasar a doce tablas de negocio preservando acceso a cuentas, cifrado, resultados, certificados y contratos públicos.
+**Objetivo:** pasar a doce tablas de negocio más un archivo histórico, preservando acceso a cuentas, cifrado, resultados, certificados y contratos públicos.
 **Arquitectura:** dos bases PostgreSQL y dos roles de servicio independientes. El backend adapta el almacenamiento nuevo a los DTO actuales. Migración por expansión, copia, cambio de aplicación y retirada diferida del almacenamiento antiguo.
 **Tecnologías:** PostgreSQL 18, Prisma 7, NestJS, React, TypeScript y pnpm del repositorio.
 **Especificación:** este documento incorpora el modelo y las decisiones aceptadas en la conversación; no requiere un documento de diseño separado.
@@ -18,8 +18,8 @@ Topología aplicada: exploración delegada y escritores acotados para las tareas
 
 ## 1. Decisiones y límites
 
-- Exactamente seis tablas de identidad y seis de entrenamiento; `_prisma_migrations` es infraestructura y no cuenta.
-- Credenciales y tokens en `Account`. Sin `Credential`, `CertificateEvent`, `AssessmentBaselineExemption` ni `ScenarioRunDecision` en el modelo final.
+- Seis tablas de negocio por servicio; el archivo histórico `AssessmentBaselineExemptionArchive` se conserva aparte y `_prisma_migrations` es infraestructura.
+- Credenciales y tokens en `Account`. Sin `Credential`, `CertificateEvent` ni `ScenarioRunDecision` en el modelo final de negocio.
 - `ModuleReset` ya existe y conserva cada reinicio. No sustituirlo por un estado único.
 - Introducir `AssessmentAnswer`, `SusAnswer`, `CertificateModule`, `Role`, `AccountProfile`, `StudyParticipant` y `Account`.
 - `ScenarioRun.decisions` continúa JSONB; catálogo y cuestionarios permanecen en código. No añadir un CMS ni permisos configurables.
@@ -163,8 +163,8 @@ Ruta delegada: escritor para entrenamiento. Archivos: `backend/prisma/entrenamie
 
 - [ ] Crear AssessmentAnswer/SusAnswer. Implementar `migrateNormalizedTraining({ dryRun: boolean }): Promise<MigrationReport>` con mapeo por versión, conservación de score y transacciones idempotentes.
 - [ ] Mantener API `answers[]`: insertar cabecera y respuestas atómicamente, reconstruir orden por cuestionario. Rechazar respuesta incompleta/extra/desconocida antes de persistir; probar entregas concurrentes y rollback sin cabecera huérfana.
-- [ ] Exigir PRE real para participantes nuevos; eliminar bypass de exención del código y mantener baselineMissing=false en el contrato. Detener despliegue si se detecta cohorte histórica incompatible no resuelta.
-- [ ] La integración PostgreSQL (6/6) y las pruebas e2e (6 suites/110 pruebas) verifican paridad, corte poblado y abortos seguros. En la copia real hay cinco exenciones, así que el intento de corte abortó conservando tablas, filas y arrays legacy.
+- [ ] Exigir PRE real para participantes nuevos; eliminar bypass de exención del código y mantener baselineMissing=false en el contrato. Detener despliegue si hay corridas históricas sin PRE; archivar las exenciones sin usarlas como bypass.
+- [ ] La integración PostgreSQL (6/6) y las pruebas e2e (6 suites/110 pruebas) verifican paridad, corte poblado y abortos seguros. En la copia real hay cinco exenciones que el corte debe conservar en `AssessmentBaselineExemptionArchive`.
 - [ ] Ejecutar commit de cierre de unidad de trabajo y registrar su identidad antes de marcar NDB-4 cerrada.
 
 ### T5 — Ensayar integración, contratos y arranque de contenedores
@@ -179,11 +179,11 @@ Ruta delegada: comprobaciones y correcciones funcionales en archivos afectados. 
 
 ### T6 — Retirada diferida y documentación final
 
-Ruta delegada: SQL y documentación. Archivos: migraciones nuevas de ambas bases, `docs/ARQUITECTURA.md`, AGENTS si el mapa deja de ser válido, README/guías operativas relevantes y nuevo PUML de doce tablas.
+Ruta delegada: SQL y documentación. Archivos: migraciones nuevas de ambas bases, `docs/ARQUITECTURA.md`, AGENTS si el mapa deja de ser válido, README/guías operativas relevantes y nuevo PUML de doce tablas de negocio más archivo histórico.
 
-- [ ] Las migraciones finales con timestamps `20261116210000` y `20261116211000` están implementadas con precondiciones y abortos seguros; los schemas Prisma finales contienen seis tablas por servicio (doce en total). No se aplicaron al Compose ni se retiraron estructuras legado de la copia real.
-- [ ] La documentación y el PUML reflejan el modelo de doce tablas y distinguen el objetivo de la expansión vigente.
-- [ ] Mantener NDB-6 abierto: la copia restaurada tiene problemas de paridad de identidad y cinco exenciones de entrenamiento. No eliminar ni reconciliar registros sin decisión autorizada; no ejecutar el corte en Compose. Falta commit de cierre de documentación/código.
+- [ ] Las migraciones finales con timestamps `20261116210000` y `20261116211000` están implementadas con precondiciones y abortos seguros; los schemas Prisma finales contienen seis tablas de negocio por servicio y un archivo histórico de entrenamiento.
+- [ ] La documentación y el PUML reflejan doce tablas de negocio más el archivo de exenciones y distinguen el objetivo de la expansión vigente.
+- [ ] NDB-6 conserva las cinco filas históricas en `AssessmentBaselineExemptionArchive`, sin permitir que satisfagan el requisito PRE; falta completar pruebas, validación y commit.
 
 ## 7. Comprobaciones de aceptación
 

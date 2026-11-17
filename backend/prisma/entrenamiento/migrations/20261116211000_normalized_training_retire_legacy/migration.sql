@@ -1,14 +1,10 @@
 BEGIN;
 
 -- No se fabrican PRE históricos ni se convierten exenciones en respuestas.
+-- El archivo conserva las exenciones, pero nunca evita el requisito de PRE.
 -- El retiro solo se habilita cuando las filas relacionales cotejan cada array.
 DO $$
 BEGIN
-  IF EXISTS (SELECT 1 FROM "AssessmentBaselineExemption") THEN
-    RAISE EXCEPTION 'No se puede retirar AssessmentBaselineExemption: requiere resolución de datos.'
-      USING ERRCODE = '23514';
-  END IF;
-
   -- Debe mantenerse alineado con questionnaire.v1.json (versión 1, 21
   -- respuestas de 0 a 3) y sus-survey.ts (versión 1, 10 respuestas de 1 a 5).
   IF EXISTS (
@@ -34,16 +30,22 @@ BEGIN
   END IF;
 
   IF EXISTS (
+    WITH participantsRequiringBaseline AS (
+      SELECT "participantId" FROM "ScenarioRun"
+      UNION
+      SELECT "participantId" FROM "Assessment" WHERE "phase" = 'POST'
+    )
     SELECT 1
-    FROM "ScenarioRun" run
+    FROM participantsRequiringBaseline participant
     WHERE NOT EXISTS (
       SELECT 1
       FROM "Assessment" assessment
-      WHERE assessment."participantId" = run."participantId"
+      WHERE assessment."participantId" = participant."participantId"
+        AND assessment."version" = 1
         AND assessment."phase" = 'PRE'
     )
   ) THEN
-    RAISE EXCEPTION 'No se puede retirar answers: hay corridas sin evaluación PRE.'
+    RAISE EXCEPTION 'No se puede retirar answers: hay corridas o POST sin evaluación PRE.'
       USING ERRCODE = '23514';
   END IF;
 
@@ -97,7 +99,11 @@ BEGIN
   ALTER TABLE "Assessment" DROP COLUMN "answers";
   ALTER TABLE "SusResponse" DROP CONSTRAINT "SusResponse_answers_check";
   ALTER TABLE "SusResponse" DROP COLUMN "answers";
-  DROP TABLE "AssessmentBaselineExemption";
+  ALTER TABLE "AssessmentBaselineExemption"
+    RENAME TO "AssessmentBaselineExemptionArchive";
+  ALTER TABLE "AssessmentBaselineExemptionArchive"
+    RENAME CONSTRAINT "AssessmentBaselineExemption_pkey"
+    TO "AssessmentBaselineExemptionArchive_pkey";
 END
 $$;
 

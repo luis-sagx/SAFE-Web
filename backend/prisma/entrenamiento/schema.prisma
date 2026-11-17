@@ -140,3 +140,10 @@ model SusAnswer {
   @@id([susResponseId, questionId])
   @@index([questionId])
 }
+
+/// Archivo histórico de las exenciones anteriores al requisito PRE.
+/// No participa en las reglas de acceso ni se escribe desde la aplicación.
+model AssessmentBaselineExemptionArchive {
+  participantId  String @id
+  participantSeq Int
+}

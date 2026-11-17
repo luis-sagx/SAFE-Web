@@ -46,7 +46,7 @@ function applyMigration(url: string, schema: string, file: string) {
 }
 
 test(
-  'el corte deja exactamente las doce tablas de negocio acordadas',
+  'el corte deja doce tablas de negocio y una tabla histórica de exenciones',
   { skip: !identityUrl || !trainingUrl },
   async () => {
     const identity = new IdentityClient({
@@ -98,6 +98,7 @@ test(
         [
           'Assessment',
           'AssessmentAnswer',
+          'AssessmentBaselineExemptionArchive',
           'ModuleReset',
           'ScenarioRun',
           'SusAnswer',
@@ -166,7 +167,7 @@ test(
 );
 
 test(
-  'la migración de entrenamiento conserva exenciones y arrays si hay filas sin resolver',
+  'una exención archivada no evita PRE y el fallo conserva todas las filas',
   { skip: !guardTestUrl },
   () => {
     const schema = schemaName('training_guard');
@@ -176,10 +177,11 @@ test(
       INSERT INTO "${schema}"."AssessmentBaselineExemption" VALUES
         ('p-1', 1), ('p-2', 2), ('p-3', 3), ('p-4', 4), ('p-5', 5);
       CREATE TABLE "${schema}"."ScenarioRun" ("participantId" TEXT NOT NULL);
-      CREATE TABLE "${schema}"."Assessment" ("id" TEXT, "participantId" TEXT, "phase" TEXT, "answers" INTEGER[]);
+      CREATE TABLE "${schema}"."Assessment" ("id" TEXT, "participantId" TEXT, "version" INTEGER, "phase" TEXT, "answers" INTEGER[]);
       CREATE TABLE "${schema}"."AssessmentAnswer" ("assessmentId" TEXT, "questionId" INTEGER, "answer" INTEGER);
-      CREATE TABLE "${schema}"."SusResponse" ("id" TEXT, "answers" INTEGER[]);
+      CREATE TABLE "${schema}"."SusResponse" ("id" TEXT, "version" INTEGER, "answers" INTEGER[]);
       CREATE TABLE "${schema}"."SusAnswer" ("susResponseId" TEXT, "questionId" INTEGER, "answer" INTEGER);
+      INSERT INTO "${schema}"."ScenarioRun" VALUES ('p-1');
     `;
     const created = runPsql(guardTestUrl!, ['--command', fixture]);
     assert.equal(created.status, 0, created.stderr);
@@ -194,11 +196,66 @@ test(
         ),
       ]);
       assert.notEqual(migration.status, 0);
-      assert.match(migration.stderr, /requiere resolución de datos/);
+      assert.match(migration.stderr, /hay corridas o POST sin evaluación PRE/);
 
       const preserved = runPsql(guardTestUrl!, [
         '--command',
-        `SELECT (SELECT COUNT(*) FROM "${schema}"."AssessmentBaselineExemption") = 5 AND (SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = '${schema}' AND table_name IN ('Assessment', 'SusResponse') AND column_name = 'answers') = 2`,
+        `SELECT (SELECT COUNT(*) FROM "${schema}"."AssessmentBaselineExemption") = 5 AND (SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = '${schema}' AND table_name = 'AssessmentBaselineExemptionArchive') = 0 AND (SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = '${schema}' AND table_name IN ('Assessment', 'SusResponse') AND column_name = 'answers') = 2`,
+      ]);
+      assert.equal(preserved.status, 0, preserved.stderr);
+      assert.equal(preserved.stdout.trim(), 't');
+    } finally {
+      const dropped = runPsql(guardTestUrl!, [
+        '--command',
+        `DROP SCHEMA "${schema}" CASCADE`,
+      ]);
+      assert.equal(dropped.status, 0, dropped.stderr);
+    }
+  },
+);
+
+test(
+  'el corte rechaza un POST sin PRE aunque no haya corridas',
+  { skip: !guardTestUrl },
+  () => {
+    const schema = schemaName('training_post_without_pre');
+    const answers = assessmentAnswers;
+    const fixture = `
+      CREATE SCHEMA "${schema}";
+      CREATE TABLE "${schema}"."AssessmentBaselineExemption" ("participantId" TEXT PRIMARY KEY, "participantSeq" INTEGER NOT NULL);
+      INSERT INTO "${schema}"."AssessmentBaselineExemption" VALUES ('p-1', 1);
+      CREATE TABLE "${schema}"."ScenarioRun" ("participantId" TEXT NOT NULL);
+      CREATE TABLE "${schema}"."Assessment" (
+        "id" TEXT PRIMARY KEY, "participantId" TEXT, "version" INTEGER,
+        "phase" TEXT, "answers" INTEGER[],
+        CONSTRAINT "Assessment_answers_check" CHECK (TRUE)
+      );
+      CREATE TABLE "${schema}"."AssessmentAnswer" ("assessmentId" TEXT, "questionId" INTEGER, "answer" INTEGER);
+      CREATE TABLE "${schema}"."SusResponse" (
+        "id" TEXT PRIMARY KEY, "version" INTEGER, "answers" INTEGER[],
+        CONSTRAINT "SusResponse_answers_check" CHECK (TRUE)
+      );
+      CREATE TABLE "${schema}"."SusAnswer" ("susResponseId" TEXT, "questionId" INTEGER, "answer" INTEGER);
+      INSERT INTO "${schema}"."Assessment" VALUES ('a-post', 'p-1', 1, 'POST', ARRAY[${answers.join(',')}]);
+      INSERT INTO "${schema}"."AssessmentAnswer"
+        SELECT 'a-post', answer.ordinality::INTEGER, answer.value
+        FROM unnest(ARRAY[${answers.join(',')}]) WITH ORDINALITY AS answer(value, ordinality);
+    `;
+    const created = runPsql(guardTestUrl!, ['--command', fixture]);
+    assert.equal(created.status, 0, created.stderr);
+
+    try {
+      const migration = applyMigration(
+        guardTestUrl!,
+        schema,
+        'prisma/entrenamiento/migrations/20261116211000_normalized_training_retire_legacy/migration.sql',
+      );
+      assert.notEqual(migration.status, 0);
+      assert.match(migration.stderr, /hay corridas o POST sin evaluación PRE/);
+
+      const preserved = runPsql(guardTestUrl!, [
+        '--command',
+        `SELECT (SELECT COUNT(*) FROM "${schema}"."AssessmentBaselineExemption") = 1 AND (SELECT COUNT(*) FROM "${schema}"."Assessment") = 1 AND (SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = '${schema}' AND table_name = 'AssessmentBaselineExemptionArchive') = 0`,
       ]);
       assert.equal(preserved.status, 0, preserved.stderr);
       assert.equal(preserved.stdout.trim(), 't');
@@ -266,7 +323,10 @@ test(
     const trainingFixture = `
       CREATE SCHEMA "${trainingSchema}";
       CREATE TABLE "${trainingSchema}"."ScenarioRun" ("participantId" TEXT NOT NULL);
+      CREATE TABLE "${trainingSchema}"."ModuleReset" ("id" TEXT PRIMARY KEY, "participantId" TEXT NOT NULL, "module" TEXT NOT NULL, "createdAt" TIMESTAMP NOT NULL);
       CREATE TABLE "${trainingSchema}"."AssessmentBaselineExemption" ("participantId" TEXT PRIMARY KEY, "participantSeq" INTEGER NOT NULL);
+      INSERT INTO "${trainingSchema}"."AssessmentBaselineExemption" VALUES
+        ('archived-1', 1), ('archived-2', 2), ('archived-3', 3), ('archived-4', 4), ('archived-5', 5);
       CREATE TABLE "${trainingSchema}"."Assessment" (
         "id" TEXT PRIMARY KEY, "participantId" TEXT NOT NULL, "version" INTEGER NOT NULL,
         "phase" TEXT NOT NULL, "answers" INTEGER[] NOT NULL,
@@ -322,7 +382,7 @@ test(
 
       const trainingPreserved = runPsql(guardTestUrl!, [
         '--command',
-        `SELECT (SELECT COUNT(*) FROM "${trainingSchema}"."AssessmentAnswer") = 21 AND (SELECT COUNT(*) FROM "${trainingSchema}"."SusAnswer") = 10 AND NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = '${trainingSchema}' AND table_name IN ('Assessment', 'SusResponse') AND column_name = 'answers') AND NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = '${trainingSchema}' AND table_name = 'AssessmentBaselineExemption')`,
+        `SELECT (SELECT string_agg(table_name, ',' ORDER BY table_name) FROM information_schema.tables WHERE table_schema = '${trainingSchema}' AND table_type = 'BASE TABLE') = 'Assessment,AssessmentAnswer,AssessmentBaselineExemptionArchive,ModuleReset,ScenarioRun,SusAnswer,SusResponse' AND (SELECT COUNT(*) FROM "${trainingSchema}"."AssessmentAnswer") = 21 AND (SELECT COUNT(*) FROM "${trainingSchema}"."SusAnswer") = 10 AND (SELECT COUNT(*) FROM "${trainingSchema}"."AssessmentBaselineExemptionArchive") = 5 AND (SELECT string_agg("participantId", ',' ORDER BY "participantSeq") FROM "${trainingSchema}"."AssessmentBaselineExemptionArchive") = 'archived-1,archived-2,archived-3,archived-4,archived-5' AND (SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = '${trainingSchema}' AND table_name = 'AssessmentBaselineExemptionArchive' AND column_name IN ('participantId', 'participantSeq')) = 2 AND NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = '${trainingSchema}' AND table_name = 'AssessmentBaselineExemptionArchive' AND column_name = 'createdAt') AND NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = '${trainingSchema}' AND table_name = 'AssessmentBaselineExemption') AND NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = '${trainingSchema}' AND table_name IN ('Assessment', 'SusResponse') AND column_name = 'answers')`,
       ]);
       assert.equal(trainingPreserved.status, 0, trainingPreserved.stderr);
       assert.equal(trainingPreserved.stdout.trim(), 't');
@@ -449,7 +509,7 @@ test(
           WHERE table_schema = 'entrenamiento'
             AND ((table_name = 'Assessment' AND column_name = 'answers')
               OR (table_name = 'SusResponse' AND column_name = 'answers')
-              OR table_name = 'AssessmentBaselineExemption')
+              )
         `,
           identity.$queryRaw<{ typeName: string }[]>`
           SELECT typname AS "typeName"
@@ -462,6 +522,16 @@ test(
       assert.deepEqual(legacyIdentityColumns, []);
       assert.deepEqual(legacyTrainingColumns, []);
       assert.deepEqual(legacyTypes, []);
+
+      const archiveTables = await training.$queryRaw<{ tableName: string }[]>`
+        SELECT table_name AS "tableName"
+        FROM information_schema.tables
+        WHERE table_schema = 'entrenamiento'
+          AND table_name = 'AssessmentBaselineExemptionArchive'
+      `;
+      assert.deepEqual(archiveTables, [
+        { tableName: 'AssessmentBaselineExemptionArchive' },
+      ]);
     } finally {
       await Promise.all([identity.$disconnect(), training.$disconnect()]);
     }

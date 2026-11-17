@@ -6,7 +6,7 @@ skinparam defaultFontName SansSerif
 skinparam defaultFontSize 13
 skinparam packageStyle rectangle
 hide circle
-title Modelo de datos objetivo por servicio (12 tablas)
+title Modelo de datos objetivo por servicio (12 tablas de negocio + archivo histórico)
 
 package "Base de identidad · schema identidad" as IdentityData {
   entity "Role" as Role {
@@ -146,6 +146,12 @@ package "Base de entrenamiento · schema entrenamiento" as TrainingData {
     answer : INT (1..5)
   }
 
+  entity "AssessmentBaselineExemptionArchive" as BaselineArchive {
+    * participantId : TEXT <<PK, sin FK>>
+    --
+    participantSeq : INT
+  }
+
   Assessment ||--o{ AssessmentAnswer : assessmentId
   Sus ||--o{ SusAnswer : susResponseId
 }
@@ -155,16 +161,18 @@ Account .. Run : participantId + seq
 Account .. Reset : participantId
 Account .. Assessment : participantId + seq
 Account .. Sus : participantId + seq
+Account .. BaselineArchive : participantId + seq históricos
 
 legend bottom
-  Modelo objetivo tras copia y cotejo; no representa que la migración ya se aplicó.
+  Modelo objetivo tras copia y cotejo: doce tablas de negocio más el archivo
+  histórico de exenciones; no representa que la migración ya se aplicó.
   Las líneas continuas son FK dentro de una misma base. Las discontinuas son
   correspondencias lógicas entre servicios: no existen FK ni permisos cruzados.
   AccountProfile.emailHash y cedulaHash son HMAC únicos opcionales; la PII está cifrada.
   Eliminar Account elimina Profile y StudyParticipant, pero conserva Certificate y datos de estudio.
   AssessmentAnswer.answer y SusAnswer.answer guardan respuestas por pregunta;
   answers[] se mantiene temporalmente durante expansión para comparar datos.
-  La tabla histórica AssessmentBaselineExemption también permanece en expansión;
-  su retirada requiere diagnóstico y corte coordinado.
+  Las exenciones se renombran y preservan en BaselineArchive. Es archivo sin
+  uso en runtime y nunca omite la evaluación PRE.
 endlegend
 @enduml
