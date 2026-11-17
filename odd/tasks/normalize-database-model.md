@@ -85,7 +85,8 @@ El usuario autorizó investigar y corregir los fallos reportados en backend `pnp
 - [x] **NDB-CI-4 — Alinear el e2e de registro pendiente con la preservación de cuentas.** La normalización conserva cuentas sin confirmar porque pueden ser datos legacy; el test esperaba reemplazarlas y contradecía `AuthService`. Ahora verifica que la cédula sigue reservada, el reenvío de confirmación funciona y la cuenta original confirma. Prueba focal 1/1 y suite e2e completa 6/6, 110/110.
 - `pnpm test:cov`: 127 archivos pasaron, 946 pruebas pasaron y 4 omitidas; cobertura líneas 94,07 %. La primera corrida posterior a editar Smishing tuvo un timeout del test de Lotería a 5 s; reproducido solo pasó en 0,95 s con 15 s, y la suite completa posterior pasó en 204,49 s.
 - Backend: pruebas focales de lock 2/2; `pnpm test` 37 suites/302 pruebas, `pnpm lint:ci` y `pnpm build` pasaron según ejecución del escritor. Tras el corte en la base temporal, el primer e2e pasó 5/6 suites y detectó el test de re-registro desactualizado; e2e focal 1/1 y suite completa 6/6, 110/110 tras actualizarlo. PostgreSQL 18 temporal aislado; Compose no se usó.
-- NDB-CI-1 a NDB-CI-4 implementadas y verificadas. Resta registrar los identificadores de commit en esta bitácora y cerrar cada unidad; espejo Engram pendiente por bloqueo de permisos en `/home/luissagnay/.engram/.instance-id.lock`.
+- NDB-CI-1 a NDB-CI-4 implementadas y verificadas; el espejo Engram queda pendiente porque el lock `/home/luissagnay/.engram/.instance-id.lock` no permite escritura.
 - Commit NDB-CI-1: `e86981b` (`test(smishing): actualizar pruebas del flujo inmersivo`).
 - Commit NDB-CI-2: `21bd265` (`fix(identidad): serializar advisory locks sin void`).
 - Commit NDB-CI-3: `4dad73e` (`ci(db): aplicar corte en base e2e limpia`).
+- Commit NDB-CI-4: `e64def8` (`test(auth): preservar registros pendientes en e2e`).
