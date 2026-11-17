@@ -18,13 +18,18 @@ datasource db {
   provider = "postgresql"
 }
 
-enum Role {
+// El enum se conserva durante la fase de expansión para la tabla Participant
+// legado. Luego de renombrar su tipo PostgreSQL, el catálogo Role puede ocupar
+// ese nombre sin cambiar los valores del enum heredado.
+enum LegacyRole {
   PARTICIPANT
   // Gestiona cuentas y ve los resultados seudonimizados dentro de la app. No
   // se llama ADMIN/ADMINISTRATOR a propósito: es el nombre que un atacante
   // busca primero.
   ADMIN
   TRAINER
+
+  @@map("LegacyRole")
 }
 
 model Participant {
@@ -83,7 +88,7 @@ model Participant {
   cedulaHash String? @unique
 
   passwordHash String
-  role         Role   @default(PARTICIPANT)
+  role         LegacyRole @default(PARTICIPANT)
 
   /// Hash SHA-256 del token de un solo uso para "¿olvidaste tu contraseña?"
   /// (issue #256): nunca se guarda el token en claro, igual que passwordHash
@@ -127,6 +132,64 @@ model Participant {
   disabledAt DateTime?
 
   createdAt DateTime @default(now())
+}
+
+/// Cuenta de autenticación nueva. `id` conserva el identificador de la fila
+/// Participant antigua para mantener JWT, certificados y referencias del
+/// estudio estables durante la migración.
+model Account {
+  id String @id @default(uuid())
+
+  roleId String
+  role   Role   @relation(fields: [roleId], references: [id], onDelete: Restrict)
+
+  passwordHash String
+
+  passwordResetTokenHash String? @unique
+  passwordResetExpiresAt DateTime?
+
+  emailConfirmedAt DateTime?
+  emailConfirmationTokenHash String? @unique
+  emailConfirmationExpiresAt DateTime?
+
+  tokenVersion Int @default(0)
+  onboardingVistoAt DateTime?
+  disabledAt DateTime?
+  createdAt DateTime @default(now())
+
+  profile           AccountProfile?
+  studyParticipant  StudyParticipant?
+}
+
+/// Catálogo cerrado por aplicación para los tres roles actuales. No modela
+/// permisos editables ni permite que una cuenta tenga varios roles.
+model Role {
+  id   String @id
+  code String @unique
+
+  accounts Account[]
+}
+
+/// Datos personales cifrados o derivados; los HMAC siguen siendo índices
+/// deterministas y el ciphertext se copia sin recifrar.
+model AccountProfile {
+  accountId String @id
+  nombre    String  @db.VarChar(255)
+  apellido  String  @db.VarChar(255)
+  email     String
+  emailHash String? @unique
+  cedulaHash String? @unique
+
+  account Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+}
+
+/// Solo cuentas PARTICIPANT tienen secuencia de estudio. `accountId` reutiliza
+/// el ID de Account/Participant y se propaga en el JWT como `sub`.
+model StudyParticipant {
+  accountId String @id
+  seq       Int    @unique @default(autoincrement())
+
+  account Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
 }
 
 /// Certificado de las 4 horas del entrenamiento. Se emite al canjear una
@@ -174,4 +237,19 @@ model Certificate {
   /// fallido, o certificado emitido antes de existir este campo). Evita
   /// reenviarlo en cada re-emisión idempotente de `emitir()`.
   certificadoEnviadoAt DateTime?
+
+  modules CertificateModule[]
+}
+
+/// Relación normalizada de los módulos que cubre el certificado. `position`
+/// permite reconstruir el arreglo histórico en su orden original.
+model CertificateModule {
+  certificateId String
+  module        String
+  position      Int
+
+  certificate Certificate @relation(fields: [certificateId], references: [id], onDelete: Cascade)
+
+  @@id([certificateId, module])
+  @@unique([certificateId, position])
 }
