@@ -185,7 +185,9 @@ function ScenarioStory({
   const helpClue = showHelpChoices ? (
     <>
       {clue}
-      <p className="font-medium text-ink">Puedes elegir una de estas opciones:</p>
+      <p className="font-medium text-ink my-2">
+        Puedes elegir una de estas opciones:
+      </p>
       <StoryChoices
         choices={engine.node.choices ?? []}
         onChoose={engine.choose}
@@ -333,10 +335,7 @@ function ScenarioStory({
 
   const emailGuide =
     guideVisible && activeGuideStep && screenGuide ? (
-      <aside
-        aria-live="polite"
-        className="text-base leading-relaxed text-body"
-      >
+      <aside aria-live="polite" className="text-base leading-relaxed text-body">
         <p className="font-semibold text-ink">
           Pista {guideStep + 1} de {screenGuide.pasos.length}
         </p>
@@ -630,7 +629,9 @@ function ScenarioStory({
             <>
               <div
                 className={styles.phoneAppBar}
-                style={appOpen.color ? { backgroundColor: appOpen.color } : undefined}
+                style={
+                  appOpen.color ? { backgroundColor: appOpen.color } : undefined
+                }
               >
                 <button
                   type="button"
