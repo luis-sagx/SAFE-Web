@@ -67,6 +67,8 @@ interface ScenarioStoryProps {
   identidad?: IdentityData[];
   ocultarDecision?: boolean;
   accionesEnPantalla?: boolean;
+  /** Ubica las opciones del nodo fuera de la ficción cuando sea necesario. */
+  choicePlacement?: "sidebar" | "help" | "hidden";
   apps?: PhoneApp[];
   // Documento de referencia fijo junto al dispositivo, antes de "¿Qué
   // haces?", issue #184. Se lee y se decide qué copiar antes de escribir,
@@ -169,12 +171,29 @@ function ScenarioStory({
   identidad: identity,
   ocultarDecision: hideDecision = false,
   accionesEnPantalla: screenActions = false,
+  choicePlacement = "sidebar",
   apps,
   panelReferencia: referencePanel,
   sinAvisoClicVacio: hideEmptyClickNotice = false,
   guiaEnPantalla: screenGuide,
 }: ScenarioStoryProps) {
   const engine = useStoryEngine(story, initialNode, scenarioId);
+  const showSideChoices =
+    choicePlacement === "sidebar" && Boolean(engine.node.choices);
+  const showHelpChoices =
+    choicePlacement === "help" && Boolean(engine.node.choices);
+  const helpClue = showHelpChoices ? (
+    <>
+      {clue}
+      <p className="font-medium text-ink">Puedes elegir una de estas opciones:</p>
+      <StoryChoices
+        choices={engine.node.choices ?? []}
+        onChoose={engine.choose}
+      />
+    </>
+  ) : (
+    clue
+  );
   const { usuarioSimulado: simulatedUser } = useAuth();
   const recipient = emailDomain ? `${simulatedUser}@${emailDomain}` : undefined;
 
@@ -516,7 +535,7 @@ function ScenarioStory({
       // Los controles del propio aparato (nota de voz, silenciar llamada) sí
       // responden sin decidir nada.
       const control = (event.target as HTMLElement).closest("[data-control]");
-      if (!engine.node.choices && !control) setClickedEmptySpace(true);
+      if (!showSideChoices && !control) setClickedEmptySpace(true);
       return;
     }
 
@@ -563,18 +582,18 @@ function ScenarioStory({
       const questionBlock = (
         <div className="grid gap-3">
           <p className="text-lg font-semibold text-ink">{question}</p>
-          {engine.node.choices && (
+          {showSideChoices && engine.node.choices && (
             <StoryChoices
               choices={engine.node.choices}
               onChoose={engine.choose}
             />
           )}
           <Instructions
-            pista={clue}
+            pista={helpClue}
             cuandoTermina={onFinished}
             fallo={!hideEmptyClickNotice && clickedEmptySpace}
           >
-            {engine.node.choices ? undefined : instruction}
+            {showSideChoices ? undefined : instruction}
           </Instructions>
         </div>
       );

@@ -194,8 +194,8 @@ function SubscriptionCancellation() {
       story={STORY}
       senales={SIGNALS}
       rule={RULE}
+      choicePlacement="help"
       restartLabel="↻ Repetir el escenario"
-      ocultarDecision
       accionesEnPantalla
       apps={APPS}
       instruccion={
