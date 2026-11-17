@@ -61,10 +61,12 @@ model AccountProfile {
   nombre     String  @db.VarChar(255)
   apellido   String  @db.VarChar(255)
   email      String
-  emailHash  String? @unique
+  emailHash  String?
   cedulaHash String? @unique
 
   account Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@index([emailHash])
 }
 
 /// Solo cuentas PARTICIPANT tienen secuencia de estudio. `accountId` reutiliza

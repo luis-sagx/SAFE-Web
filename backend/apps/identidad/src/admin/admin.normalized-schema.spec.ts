@@ -9,8 +9,15 @@ describe('AdminService con el esquema normalizado', () => {
       createdData = data;
       return Promise.resolve({ id: 'trainer-1' });
     });
-    const prisma = {
+    const transaction = {
+      $queryRaw: jest.fn().mockResolvedValue([]),
       account: { findFirst: jest.fn().mockResolvedValue(null), create },
+    };
+    const prisma = {
+      ...transaction,
+      $transaction: jest.fn((callback: (tx: typeof transaction) => unknown) =>
+        Promise.resolve(callback(transaction)),
+      ),
     } as unknown as PrismaService;
     const config = {
       getOrThrow: (key: string) =>

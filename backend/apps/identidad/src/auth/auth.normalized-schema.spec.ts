@@ -10,6 +10,7 @@ describe('AuthService con el esquema normalizado', () => {
     let createdAccount: Record<string, unknown> | undefined;
     let createdStudy: unknown;
     const tx = {
+      $queryRaw: jest.fn().mockResolvedValue([]),
       account: {
         findMany: jest.fn().mockResolvedValue([]),
         create: jest.fn(({ data }: { data: Record<string, unknown> }) => {

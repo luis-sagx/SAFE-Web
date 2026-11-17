@@ -11,7 +11,6 @@ import { PrismaPg } from '@prisma/adapter-pg';
 import { Prisma, PrismaClient } from '../generated/identidad/client.js';
 import { decrypt } from '../apps/identidad/src/pii/pii.ts';
 import {
-  assertUniqueNormalizedEmails,
   transformLegacyCertificate,
   transformLegacyParticipant,
 } from './identity-migration-transform.ts';
@@ -53,7 +52,6 @@ function prepareRows(
   const mappedParticipants = participants.map((row) =>
     transformLegacyParticipant(row, piiKey, emailPepper),
   );
-  assertUniqueNormalizedEmails(mappedParticipants);
 
   const mappedCertificates = certificates.map(transformLegacyCertificate);
   const certificateModules = mappedCertificates.flatMap((row) => row.modules);

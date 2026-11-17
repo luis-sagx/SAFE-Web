@@ -119,28 +119,34 @@ export class AdminService {
   }): Promise<{ password: string }> {
     const email = dto.email.toLowerCase();
     const emailHash = hashEmail(email, this.emailPepper);
-    const existing = await this.prisma.account.findFirst({
-      where: { profile: { is: { OR: [{ emailHash }, { email }] } } },
-      select: { id: true },
-    });
-    if (existing) {
-      throw new ConflictException('Ya existe una cuenta con ese correo.');
-    }
-
     const password = generatePassword();
-    await this.prisma.account.create({
-      data: {
-        role: { connect: { code: 'TRAINER' } },
-        passwordHash: await hash(password, BCRYPT_ROUNDS),
-        profile: {
-          create: {
-            nombre: encrypt(dto.nombre, this.piiKey),
-            apellido: encrypt(dto.apellido, this.piiKey),
-            email: encrypt(email, this.piiKey),
-            emailHash,
+    const passwordHash = await hash(password, BCRYPT_ROUNDS);
+    await this.prisma.$transaction(async (transaction) => {
+      await transaction.$queryRaw`
+        SELECT pg_advisory_xact_lock(hashtextextended(${emailHash}, 0))
+      `;
+      const existing = await transaction.account.findFirst({
+        where: { profile: { is: { OR: [{ emailHash }, { email }] } } },
+        select: { id: true },
+      });
+      if (existing) {
+        throw new ConflictException('Ya existe una cuenta con ese correo.');
+      }
+
+      await transaction.account.create({
+        data: {
+          role: { connect: { code: 'TRAINER' } },
+          passwordHash,
+          profile: {
+            create: {
+              nombre: encrypt(dto.nombre, this.piiKey),
+              apellido: encrypt(dto.apellido, this.piiKey),
+              email: encrypt(email, this.piiKey),
+              emailHash,
+            },
           },
         },
-      },
+      });
     });
     return { password };
   }

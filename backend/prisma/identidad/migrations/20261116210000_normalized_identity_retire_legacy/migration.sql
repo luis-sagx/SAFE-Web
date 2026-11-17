@@ -54,12 +54,11 @@ BEGIN
        OR account."disabledAt" IS DISTINCT FROM legacy."disabledAt"
        OR account."createdAt" IS DISTINCT FROM legacy."createdAt"
        OR profile."accountId" IS NULL
+       OR profile."emailHash" IS NULL
        OR profile."nombre" IS DISTINCT FROM legacy."nombre"
        OR profile."apellido" IS DISTINCT FROM legacy."apellido"
        OR profile."email" IS DISTINCT FROM legacy."email"
-       OR profile."emailHash" IS DISTINCT FROM legacy."emailHash"
        OR profile."cedulaHash" IS DISTINCT FROM legacy."cedulaHash"
-       OR legacy."emailHash" IS NULL
        OR legacy."nombre" NOT LIKE 'v1:%'
        OR legacy."apellido" NOT LIKE 'v1:%'
        OR legacy."email" NOT LIKE 'v1:%'

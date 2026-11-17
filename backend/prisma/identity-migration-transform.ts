@@ -67,12 +67,6 @@ export function transformLegacyParticipant(
 
   const normalizedEmail = decrypt(profile.email, piiKey).trim().toLowerCase();
   const normalizedEmailHash = hashEmail(normalizedEmail, emailPepper);
-  if (row.emailHash !== null && row.emailHash !== normalizedEmailHash) {
-    throw new Error(
-      'Hay huellas de correo que requieren reconciliación previa.',
-    );
-  }
-
   return {
     account: {
       id: row.id,
@@ -93,7 +87,7 @@ export function transformLegacyParticipant(
       nombre: profile.nombre,
       apellido: profile.apellido,
       email: profile.email,
-      emailHash: profile.emailHash,
+      emailHash: normalizedEmailHash,
       cedulaHash: row.cedulaHash,
     },
     normalizedEmailHash,
@@ -113,16 +107,4 @@ export function transformLegacyCertificate(row: LegacyCertificateRow) {
   });
 
   return { id: row.id, participantId: row.participantId, modules };
-}
-
-export function assertUniqueNormalizedEmails(
-  rows: readonly { normalizedEmailHash: string }[],
-): void {
-  const hashes = new Set<string>();
-  for (const row of rows) {
-    if (hashes.has(row.normalizedEmailHash)) {
-      throw new Error('Hay cuentas con correos normalizados duplicados.');
-    }
-    hashes.add(row.normalizedEmailHash);
-  }
 }

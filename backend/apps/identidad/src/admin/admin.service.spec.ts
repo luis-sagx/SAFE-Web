@@ -41,11 +41,14 @@ function service(prisma: Partial<Record<string, unknown>>) {
         : operation,
     ]),
   );
+  const client = {
+    account: delegate,
+    certificate: { findMany: () => Promise.resolve([]) },
+    $queryRaw: delegate.$queryRaw ?? (() => Promise.resolve([])),
+  } as Record<string, unknown>;
+  client.$transaction = (fn: (tx: unknown) => Promise<unknown>) => fn(client);
   return new AdminService(
-    {
-      account: delegate,
-      certificate: { findMany: () => Promise.resolve([]) },
-    } as unknown as PrismaService,
+    client as unknown as PrismaService,
     {
       getOrThrow: (name: string) =>
         name === 'PII_ENCRYPTION_KEY'
@@ -224,6 +227,32 @@ describe('AdminService.eliminar', () => {
 });
 
 describe('AdminService.formadores', () => {
+  it('bloquea por huella y comprueba unicidad antes de crear un TRAINER', async () => {
+    const events: string[] = [];
+    const admin = service({
+      $queryRaw: () => {
+        events.push('lock');
+        return Promise.resolve([]);
+      },
+      findFirst: () => {
+        events.push('lookup');
+        return Promise.resolve(null);
+      },
+      create: () => {
+        events.push('create');
+        return Promise.resolve(row());
+      },
+    });
+
+    await admin.createTrainer({
+      nombre: 'Lucía',
+      apellido: 'Mena',
+      email: 'lucia@espe.edu.ec',
+    });
+
+    expect(events).toEqual(['lock', 'lookup', 'create']);
+  });
+
   it('crea un TRAINER con datos protegidos y devuelve una contraseña inicial una sola vez', async () => {
     let created: Record<string, unknown> | undefined;
     const admin = service({

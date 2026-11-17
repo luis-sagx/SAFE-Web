@@ -1,6 +1,5 @@
 import { encrypt, hashEmail } from './pii';
 import {
-  assertUniqueNormalizedEmails,
   transformLegacyCertificate,
   transformLegacyParticipant,
 } from '../../../../prisma/identity-migration-transform';
@@ -139,33 +138,37 @@ describe('transformaciones de migración de identidad', () => {
     ).toThrow();
   });
 
-  it('rechaza una huella de correo que no corresponde al correo descifrado', () => {
-    expect(() =>
-      transformLegacyParticipant(
-        {
-          id: 'account-id',
-          seq: 1,
-          nombre: 'Ana',
-          apellido: 'Uno',
-          email: encrypt('ana@correo.com', PII_KEY),
-          emailHash: 'hash-obsoleto',
-          cedulaHash: null,
-          passwordHash: 'bcrypt-hash',
-          role: 'PARTICIPANT',
-          passwordResetTokenHash: null,
-          passwordResetExpiresAt: null,
-          emailConfirmedAt: new Date(),
-          emailConfirmationTokenHash: null,
-          emailConfirmationExpiresAt: null,
-          tokenVersion: 0,
-          onboardingVistoAt: null,
-          disabledAt: null,
-          createdAt: new Date(),
-        },
-        PII_KEY,
-        'email-pepper',
-      ),
-    ).toThrow();
+  it('recalcula la huella desde el correo descifrado sin alterar su ciphertext', () => {
+    const ciphertext = encrypt(' ANA@CORREO.COM ', PII_KEY);
+    const result = transformLegacyParticipant(
+      {
+        id: 'account-id',
+        seq: 1,
+        nombre: encrypt('Ana', PII_KEY),
+        apellido: encrypt('Uno', PII_KEY),
+        email: ciphertext,
+        emailHash: 'hash-obsoleto',
+        cedulaHash: null,
+        passwordHash: 'bcrypt-hash',
+        role: 'PARTICIPANT',
+        passwordResetTokenHash: null,
+        passwordResetExpiresAt: null,
+        emailConfirmedAt: new Date(),
+        emailConfirmationTokenHash: null,
+        emailConfirmationExpiresAt: null,
+        tokenVersion: 0,
+        onboardingVistoAt: null,
+        disabledAt: null,
+        createdAt: new Date(),
+      },
+      PII_KEY,
+      'email-pepper',
+    );
+
+    expect(result.profile.email).toBe(ciphertext);
+    expect(result.profile.emailHash).toBe(
+      hashEmail('ana@correo.com', 'email-pepper'),
+    );
   });
 
   it('rechaza ciphertext malformado antes de copiarlo', () => {
@@ -197,12 +200,37 @@ describe('transformaciones de migración de identidad', () => {
     ).toThrow();
   });
 
-  it('rechaza hashes de correo normalizado duplicados', () => {
-    expect(() =>
-      assertUniqueNormalizedEmails([
-        { normalizedEmailHash: 'same-hash' },
-        { normalizedEmailHash: 'same-hash' },
-      ]),
-    ).toThrow();
+  it('conserva dos cuentas aunque su correo normalizado produzca la misma huella', () => {
+    const makeRow = (id: string, email: string) =>
+      transformLegacyParticipant(
+        {
+          id,
+          seq: 1,
+          nombre: encrypt('Ana', PII_KEY),
+          apellido: encrypt('Uno', PII_KEY),
+          email: encrypt(email, PII_KEY),
+          emailHash: null,
+          cedulaHash: null,
+          passwordHash: `password-${id}`,
+          role: 'PARTICIPANT',
+          passwordResetTokenHash: null,
+          passwordResetExpiresAt: null,
+          emailConfirmedAt: new Date(),
+          emailConfirmationTokenHash: null,
+          emailConfirmationExpiresAt: null,
+          tokenVersion: 0,
+          onboardingVistoAt: null,
+          disabledAt: null,
+          createdAt: new Date(),
+        },
+        PII_KEY,
+        'email-pepper',
+      );
+    const first = makeRow('first', 'ana@correo.com');
+    const second = makeRow('second', ' ANA@CORREO.COM ');
+
+    expect(first.account.id).toBe('first');
+    expect(second.account.id).toBe('second');
+    expect(first.normalizedEmailHash).toBe(second.normalizedEmailHash);
   });
 });

@@ -88,6 +88,7 @@ function service(
   // `$transaction` corre el callback con el mismo cliente falso: alcanza
   // para ver qué se borra y qué se crea, sin simular el rollback.
   const client: Record<string, unknown> = { account: delegate };
+  client.$queryRaw = delegate.$queryRaw ?? (() => Promise.resolve([]));
   client.$transaction = (fn: (tx: unknown) => Promise<unknown>) => fn(client);
   return new AuthService(
     client as unknown as PrismaService,
@@ -178,6 +179,30 @@ describe('AuthService.register', () => {
     expect(linkArg).toContain('/confirmar-correo?token=');
   });
 
+  it('bloquea por huella y vuelve a comprobar antes de crear la cuenta', async () => {
+    const events: string[] = [];
+    let lookups = 0;
+    const auth = service({
+      findMany: () => {
+        lookups += 1;
+        events.push(`lookup-${lookups}`);
+        return Promise.resolve([]);
+      },
+      $queryRaw: () => {
+        events.push('lock');
+        return Promise.resolve([]);
+      },
+      create: () => {
+        events.push('create');
+        return Promise.resolve({ id: 'new-account' });
+      },
+    });
+
+    await auth.register(registrationDto());
+
+    expect(events).toEqual(['lookup-1', 'lock', 'lookup-2', 'create']);
+  });
+
   it('rechaza un correo o cédula ya registrados con el mismo mensaje', async () => {
     const auth = service({
       findMany: () =>
@@ -195,33 +220,21 @@ describe('AuthService.register', () => {
     );
   });
 
-  // Dos registros simultáneos pasan los dos la comprobación previa: solo uno
-  // gana el índice único, y el segundo debe recibir el mismo 409, no un 500.
-  it('reemplaza un registro previo que nunca confirmó su correo', async () => {
-    let deletedWhere: Record<string, unknown> | undefined;
-    let created = false;
+  // Las cuentas pendientes siguen ocupando el correo y la cédula, sin borrarse.
+  it('no borra una cuenta sin confirmar al registrar el mismo correo', async () => {
+    const deleteMany = jest.fn();
     const auth = service({
       findMany: () =>
         Promise.resolve([
           { id: 'pendiente', role: 'PARTICIPANT', emailConfirmedAt: null },
         ]),
-      deleteMany: ({ where }: { where: Record<string, unknown> }) => {
-        deletedWhere = where;
-        return Promise.resolve({ count: 1 });
-      },
-      create: () => {
-        created = true;
-        return Promise.resolve({ id: 'nuevo' });
-      },
+      deleteMany,
     });
 
-    await auth.register(registrationDto());
-
-    expect(deletedWhere).toEqual({
-      id: { in: ['pendiente'] },
-      emailConfirmedAt: null,
-    });
-    expect(created).toBe(true);
+    await expect(auth.register(registrationDto())).rejects.toBeInstanceOf(
+      ConflictException,
+    );
+    expect(deleteMany).not.toHaveBeenCalled();
   });
 
   it('no reemplaza si alguna coincidencia ya confirmó o no es participante', async () => {
@@ -272,11 +285,13 @@ describe('AuthService.register', () => {
 describe('AuthService.login', () => {
   it('con credenciales correctas, entrega una sesión con los datos descifrados', async () => {
     const auth = service({
-      findFirst: () =>
-        Promise.resolve({
-          ...participantRow(),
-          passwordHash: '$2b$12$hash-de-prueba',
-        }),
+      findMany: () =>
+        Promise.resolve([
+          {
+            ...participantRow(),
+            passwordHash: '$2b$12$hash-de-prueba',
+          },
+        ]),
     });
     // `bcrypt.compare` real contra un hash inventado siempre da falso; se
     // prueba aparte con un hash de verdad más abajo.
@@ -286,7 +301,7 @@ describe('AuthService.login', () => {
   });
 
   it('sin ninguna cuenta con ese correo, 401 con el mensaje genérico', async () => {
-    const auth = service({ findFirst: () => Promise.resolve(null) });
+    const auth = service({ findMany: () => Promise.resolve([]) });
 
     await expect(
       auth.login({ email: 'nadie@correo.com', password: 'x' }),
@@ -298,11 +313,13 @@ describe('AuthService.login', () => {
     // adentro del servicio lo acepte.
     const passwordHash = await hash('ClaveSegura123!', 4);
     const auth = service({
-      findFirst: () =>
-        Promise.resolve({
-          ...participantRow({ disabledAt: new Date() }),
-          passwordHash,
-        }),
+      findMany: () =>
+        Promise.resolve([
+          {
+            ...participantRow({ disabledAt: new Date() }),
+            passwordHash,
+          },
+        ]),
     });
 
     await expect(
@@ -316,7 +333,7 @@ describe('AuthService.login', () => {
   it('con todo correcto, entrega la sesión', async () => {
     const passwordHash = await hash('ClaveSegura123!', 4);
     const auth = service({
-      findFirst: () => Promise.resolve({ ...participantRow(), passwordHash }),
+      findMany: () => Promise.resolve([{ ...participantRow(), passwordHash }]),
     });
 
     const session = await auth.login({
@@ -328,14 +345,41 @@ describe('AuthService.login', () => {
     expect(session.accessToken).toEqual(expect.any(String));
   });
 
+  it('con correo repetido inicia sesión en la cuenta cuya contraseña coincide', async () => {
+    const firstPasswordHash = await hash('OtraClave123!', 4);
+    const matchingPasswordHash = await hash('ClaveSegura123!', 4);
+    const auth = service({
+      findMany: () =>
+        Promise.resolve([
+          {
+            ...participantRow({ id: 'otra-cuenta' }),
+            passwordHash: firstPasswordHash,
+          },
+          {
+            ...participantRow({ id: 'cuenta-correcta' }),
+            passwordHash: matchingPasswordHash,
+          },
+        ]),
+    });
+
+    const session = await auth.login({
+      email: 'ana@correo.com',
+      password: 'ClaveSegura123!',
+    });
+
+    expect(session.accessToken).toContain('cuenta-correcta');
+  });
+
   it('rechaza a un PARTICIPANT que no confirmó su correo', async () => {
     const passwordHash = await hash('ClaveSegura123!', 4);
     const auth = service({
-      findFirst: () =>
-        Promise.resolve({
-          ...participantRow({ emailConfirmedAt: null }),
-          passwordHash,
-        }),
+      findMany: () =>
+        Promise.resolve([
+          {
+            ...participantRow({ emailConfirmedAt: null }),
+            passwordHash,
+          },
+        ]),
     });
 
     await expect(
@@ -346,11 +390,13 @@ describe('AuthService.login', () => {
   it('una cuenta TRAINER o ADMIN sin emailConfirmedAt sí entra (no aplica el bloqueo)', async () => {
     const passwordHash = await hash('ClaveSegura123!', 4);
     const auth = service({
-      findFirst: () =>
-        Promise.resolve({
-          ...participantRow({ role: 'ADMIN', emailConfirmedAt: null }),
-          passwordHash,
-        }),
+      findMany: () =>
+        Promise.resolve([
+          {
+            ...participantRow({ role: 'ADMIN', emailConfirmedAt: null }),
+            passwordHash,
+          },
+        ]),
     });
 
     const session = await auth.login({
@@ -522,7 +568,7 @@ describe('AuthService.forgotPassword', () => {
   it('sin ninguna cuenta con ese correo, responde el mensaje genérico sin mandar correo', async () => {
     const sendPasswordReset = jest.fn();
     const auth = service(
-      { findFirst: () => Promise.resolve(null) },
+      { findMany: () => Promise.resolve([]) },
       jwtFake(),
       fakeMail({ sendPasswordReset }),
     );
@@ -538,7 +584,7 @@ describe('AuthService.forgotPassword', () => {
     let updateData: Record<string, unknown> | undefined;
     const auth = service(
       {
-        findFirst: () => Promise.resolve(participantRow()),
+        findMany: () => Promise.resolve([participantRow()]),
         update: ({ data }: { data: Record<string, unknown> }) => {
           updateData = data;
           return Promise.resolve(participantRow());
@@ -563,12 +609,49 @@ describe('AuthService.forgotPassword', () => {
     expect(linkArg).not.toContain(updateData?.passwordResetTokenHash as string);
   });
 
+  it('atiende todas las cuentas que comparten el correo con tokens independientes', async () => {
+    const updates: Array<{
+      where: { id: string };
+      data: Record<string, unknown>;
+    }> = [];
+    const sendPasswordReset = jest.fn().mockResolvedValue(true);
+    const auth = service(
+      {
+        findMany: () =>
+          Promise.resolve([
+            participantRow({ id: 'cuenta-a' }),
+            participantRow({ id: 'cuenta-b' }),
+          ]),
+        update: (args: {
+          where: { id: string };
+          data: Record<string, unknown>;
+        }) => {
+          updates.push(args);
+          return Promise.resolve({ id: args.where.id });
+        },
+      },
+      jwtFake(),
+      fakeMail({ sendPasswordReset }),
+    );
+
+    await auth.forgotPassword('ana@correo.com');
+
+    expect(updates.map(({ where }) => where.id)).toEqual([
+      'cuenta-a',
+      'cuenta-b',
+    ]);
+    expect(
+      new Set(updates.map(({ data }) => data.passwordResetTokenHash)).size,
+    ).toBe(2);
+    expect(sendPasswordReset).toHaveBeenCalledTimes(2);
+  });
+
   it('una cuenta desactivada no recibe el correo, aunque exista', async () => {
     const sendPasswordReset = jest.fn();
     const auth = service(
       {
-        findFirst: () =>
-          Promise.resolve(participantRow({ disabledAt: new Date() })),
+        findMany: () =>
+          Promise.resolve([participantRow({ disabledAt: new Date() })]),
       },
       jwtFake(),
       fakeMail({ sendPasswordReset }),
@@ -709,7 +792,7 @@ describe('AuthService.resendConfirmation', () => {
   it('sin ninguna cuenta con ese correo, responde el mensaje genérico sin mandar correo', async () => {
     const sendEmailConfirmation = jest.fn();
     const auth = service(
-      { findFirst: () => Promise.resolve(null) },
+      { findMany: () => Promise.resolve([]) },
       jwtFake(),
       fakeMail({ sendEmailConfirmation }),
     );
@@ -724,8 +807,8 @@ describe('AuthService.resendConfirmation', () => {
     const sendEmailConfirmation = jest.fn();
     const auth = service(
       {
-        findFirst: () =>
-          Promise.resolve(participantRow({ emailConfirmedAt: new Date() })),
+        findMany: () =>
+          Promise.resolve([participantRow({ emailConfirmedAt: new Date() })]),
       },
       jwtFake(),
       fakeMail({ sendEmailConfirmation }),
@@ -741,8 +824,8 @@ describe('AuthService.resendConfirmation', () => {
     let updateData: Record<string, unknown> | undefined;
     const auth = service(
       {
-        findFirst: () =>
-          Promise.resolve(participantRow({ emailConfirmedAt: null })),
+        findMany: () =>
+          Promise.resolve([participantRow({ emailConfirmedAt: null })]),
         update: ({ data }: { data: Record<string, unknown> }) => {
           updateData = data;
           return Promise.resolve(participantRow());
@@ -759,6 +842,43 @@ describe('AuthService.resendConfirmation', () => {
     expect(sendEmailConfirmation).toHaveBeenCalledTimes(1);
   });
 
+  it('reenvía confirmación por separado a todas las cuentas sin confirmar', async () => {
+    const updates: Array<{
+      where: { id: string };
+      data: Record<string, unknown>;
+    }> = [];
+    const sendEmailConfirmation = jest.fn().mockResolvedValue(true);
+    const auth = service(
+      {
+        findMany: () =>
+          Promise.resolve([
+            participantRow({ id: 'cuenta-a', emailConfirmedAt: null }),
+            participantRow({ id: 'cuenta-b', emailConfirmedAt: null }),
+          ]),
+        update: (args: {
+          where: { id: string };
+          data: Record<string, unknown>;
+        }) => {
+          updates.push(args);
+          return Promise.resolve({ id: args.where.id });
+        },
+      },
+      jwtFake(),
+      fakeMail({ sendEmailConfirmation }),
+    );
+
+    await auth.resendConfirmation('ana@correo.com');
+
+    expect(updates.map(({ where }) => where.id)).toEqual([
+      'cuenta-a',
+      'cuenta-b',
+    ]);
+    expect(
+      new Set(updates.map(({ data }) => data.emailConfirmationTokenHash)).size,
+    ).toBe(2);
+    expect(sendEmailConfirmation).toHaveBeenCalledTimes(2);
+  });
+
   it('filtra por role: PARTICIPANT, para que un TRAINER/ADMIN no reciba reenvíos', async () => {
     // TRAINER/ADMIN no nacen confirmados (createTrainer nunca setea
     // emailConfirmedAt), así que sin este filtro cualquiera que supiera su
@@ -768,9 +888,9 @@ describe('AuthService.resendConfirmation', () => {
     const sendEmailConfirmation = jest.fn();
     const auth = service(
       {
-        findFirst: ({ where }: { where: Record<string, unknown> }) => {
+        findMany: ({ where }: { where: Record<string, unknown> }) => {
           whereClause = where;
-          return Promise.resolve(null);
+          return Promise.resolve([]);
         },
       },
       jwtFake(),
