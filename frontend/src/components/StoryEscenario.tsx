@@ -65,6 +65,7 @@ interface ScenarioStoryProps {
   cuandoTermina?: ReactNode;
   pista?: ReactNode;
   identidad?: IdentityData[];
+  ocultarDecision?: boolean;
   accionesEnPantalla?: boolean;
   apps?: PhoneApp[];
   // Documento de referencia fijo junto al dispositivo, antes de "¿Qué
@@ -166,6 +167,7 @@ function ScenarioStory({
   cuandoTermina: onFinished,
   pista: clue,
   identidad: identity,
+  ocultarDecision: hideDecision = false,
   accionesEnPantalla: screenActions = false,
   apps,
   panelReferencia: referencePanel,
@@ -909,6 +911,7 @@ function ScenarioStory({
       }
       identidad={identity}
       decision={decision}
+      ocultarDecision={hideDecision && !engine.isEnding}
       resultado={engine.resultado}
       onEmpezar={restart}
       // El correo y la web se abren más en computador que en celular; el SMS

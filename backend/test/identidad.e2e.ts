@@ -57,7 +57,8 @@ export async function createTestApp(): Promise<{
 
 /// Cada suite arranca de cero: comparten la misma base.
 export async function cleanDatabase(prisma: PrismaService): Promise<void> {
-  await prisma.participant.deleteMany();
+  await prisma.certificate.deleteMany();
+  await prisma.account.deleteMany();
 }
 
 /// `res.body` es `any`: tipar las respuestas mueve el fallo al compilador.

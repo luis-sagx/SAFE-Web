@@ -1,0 +1,178 @@
+@startuml
+!pragma layout smetana
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 13
+skinparam packageStyle rectangle
+hide circle
+title Modelo de datos objetivo por servicio (12 tablas de negocio + archivo histórico)
+
+package "Base de identidad · schema identidad" as IdentityData {
+  entity "Role" as Role {
+    * id : TEXT <<PK>>
+    --
+    code : TEXT <<UQ>>
+  }
+
+  entity "Account" as Account {
+    * id : TEXT <<PK>>
+    --
+    roleId : TEXT <<FK Role.id, IDX>>
+    passwordHash : TEXT
+    passwordResetTokenHash : TEXT? <<UQ>>
+    passwordResetExpiresAt : TIMESTAMP?
+    emailConfirmedAt : TIMESTAMP?
+    emailConfirmationTokenHash : TEXT? <<UQ>>
+    emailConfirmationExpiresAt : TIMESTAMP?
+    tokenVersion : INT = 0
+    onboardingVistoAt : TIMESTAMP?
+    disabledAt : TIMESTAMP?
+    createdAt : TIMESTAMP = now()
+  }
+
+  entity "AccountProfile" as Profile {
+    * accountId : TEXT <<PK, FK Account.id>>
+    --
+    nombre : VARCHAR(255) cifrado
+    apellido : VARCHAR(255) cifrado
+    email : TEXT cifrado
+    emailHash : TEXT? <<UQ>>
+    cedulaHash : TEXT? <<UQ>>
+  }
+
+  entity "StudyParticipant" as StudyParticipant {
+    * accountId : TEXT <<PK, FK Account.id>>
+    --
+    seq : SERIAL <<UQ>>
+  }
+
+  entity "Certificate" as Certificate {
+    * id : TEXT <<PK>>
+    --
+    participantId : TEXT <<UQ, sin FK>>
+    codigo : TEXT <<UQ>>
+    horas : INT = 4
+    calificacion : INT = 0
+    emitidoAt : TIMESTAMP = now()
+    revocadoAt : TIMESTAMP?
+    certificadoEnviadoAt : TIMESTAMP?
+  }
+
+  entity "CertificateModule" as CertificateModule {
+    * certificateId : TEXT <<PK, FK Certificate.id>>
+    * module : TEXT <<PK>>
+    --
+    position : INT <<UQ por certificado>>
+  }
+
+  Role ||--o{ Account : roleId
+  Account ||--o| Profile : accountId
+  Account ||--o| StudyParticipant : accountId
+  Certificate ||--o{ CertificateModule : certificateId
+}
+
+package "Base de entrenamiento · schema entrenamiento" as TrainingData {
+  entity "ScenarioRun" as Run {
+    * id : TEXT <<PK>>
+    --
+    participantId : TEXT <<sin FK>>
+    participantSeq : INT
+    scenarioId : TEXT
+    version : INT = 1
+    outcome : RunOutcome
+    score : INT
+    endingId : TEXT
+    durationMs : INT
+    decisions : JSONB = []
+    startedAt : TIMESTAMP
+    finishedAt : TIMESTAMP = now()
+    --
+    IDX (participantId, scenarioId, finishedAt DESC)
+    IDX (scenarioId)
+  }
+
+  entity "ModuleReset" as Reset {
+    * id : TEXT <<PK>>
+    --
+    participantId : TEXT
+    module : TEXT
+    createdAt : TIMESTAMP = now()
+    --
+    IDX (participantId, module, createdAt DESC)
+  }
+
+  entity "Assessment" as Assessment {
+    * id : TEXT <<PK>>
+    --
+    participantId : TEXT
+    participantSeq : INT
+    version : INT
+    phase : AssessmentPhase
+    ageRange : TEXT
+    gender : TEXT
+    score : INT
+    consentVersion : TEXT?
+    consentAccepted : BOOLEAN?
+    submittedAt : TIMESTAMP = now()
+    --
+    UQ (participantId, version, phase)
+  }
+
+  entity "AssessmentAnswer" as AssessmentAnswer {
+    * assessmentId : TEXT <<PK, FK Assessment.id>>
+    * questionId : INT <<PK, IDX>>
+    --
+    answer : INT (0..3)
+  }
+
+  entity "SusResponse" as Sus {
+    * id : TEXT <<PK>>
+    --
+    participantId : TEXT
+    participantSeq : INT
+    version : INT
+    score : DOUBLE PRECISION
+    submittedAt : TIMESTAMP = now()
+    --
+    UQ (participantId, version)
+    IDX (version, participantSeq)
+  }
+
+  entity "SusAnswer" as SusAnswer {
+    * susResponseId : TEXT <<PK, FK SusResponse.id>>
+    * questionId : INT <<PK, IDX>>
+    --
+    answer : INT (1..5)
+  }
+
+  entity "AssessmentBaselineExemptionArchive" as BaselineArchive {
+    * participantId : TEXT <<PK, sin FK>>
+    --
+    participantSeq : INT
+  }
+
+  Assessment ||--o{ AssessmentAnswer : assessmentId
+  Sus ||--o{ SusAnswer : susResponseId
+}
+
+Account .. Certificate : participantId coincide
+Account .. Run : participantId + seq
+Account .. Reset : participantId
+Account .. Assessment : participantId + seq
+Account .. Sus : participantId + seq
+Account .. BaselineArchive : participantId + seq históricos
+
+legend bottom
+  Modelo objetivo tras copia y cotejo: doce tablas de negocio más el archivo
+  histórico de exenciones; no representa que la migración ya se aplicó.
+  Las líneas continuas son FK dentro de una misma base. Las discontinuas son
+  correspondencias lógicas entre servicios: no existen FK ni permisos cruzados.
+  AccountProfile.emailHash y cedulaHash son HMAC únicos opcionales; la PII está cifrada.
+  Eliminar Account elimina Profile y StudyParticipant, pero conserva Certificate y datos de estudio.
+  AssessmentAnswer.answer y SusAnswer.answer guardan respuestas por pregunta;
+  answers[] se mantiene temporalmente durante expansión para comparar datos.
+  Las exenciones se renombran y preservan en BaselineArchive. Es archivo sin
+  uso en runtime y nunca omite la evaluación PRE.
+endlegend
+@enduml

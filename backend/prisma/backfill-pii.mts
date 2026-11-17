@@ -1,9 +1,7 @@
 /**
  * Cifra en el sitio las cuentas creadas antes del cifrado (issue #95): toda
- * fila con `emailHash` nulo, porque esa es exactamente la marca de "no pasó
- * todavía por `register()` ni por el `seed.mts` ya actualizado", los dos
- * únicos lugares que escriben una fila nueva, y los dos ponen `emailHash` a
- * la vez que cifran. No hay urgencia en correrlo: mientras no corre, esas
+ * fila con `emailHash` nulo. Cada campo puede contener texto legado o ciphertext:
+ * el ciphertext se autentica y conserva sin cifrarlo de nuevo. Mientras no corre, esas
  * cuentas siguen totalmente funcionales (`auth.service.ts` cae a buscar por
  * el correo en claro, y `decrypt()` devuelve el texto plano tal cual al no
  * encontrar el prefijo "v1:"). Correrlo una vez es lo que termina de sacar
@@ -20,7 +18,7 @@ import { PrismaPg } from '@prisma/adapter-pg';
 // Extensión .js: Node lo ejecuta como ESM y la resolución la exige (es un
 // archivo generado, no fuente TypeScript, a diferencia de pii.ts, más abajo).
 import { PrismaClient } from '../generated/identidad/client.js';
-import { encrypt, hashEmail } from '../apps/identidad/src/pii/pii.ts';
+import { migratePiiProfile } from '../apps/identidad/src/pii/pii.ts';
 
 function secret(name: string): string {
   const value = process.env[name];
@@ -56,16 +54,9 @@ async function main() {
   console.log(`${rows.length} cuenta(s) por cifrar…`);
 
   for (const row of rows) {
-    // Sin `emailHash` significa sin cifrar todavía (register() y seed.mts
-    // ponen los dos a la vez): estos tres campos son texto plano seguro.
     await prisma.participant.update({
       where: { id: row.id },
-      data: {
-        nombre: encrypt(row.nombre, piiKey),
-        apellido: encrypt(row.apellido, piiKey),
-        email: encrypt(row.email, piiKey),
-        emailHash: hashEmail(row.email, emailPepper),
-      },
+      data: migratePiiProfile(row, piiKey, emailPepper),
     });
   }
 
@@ -73,8 +64,8 @@ async function main() {
 }
 
 main()
-  .catch((error) => {
-    console.error(error);
+  .catch(() => {
+    console.error('No se pudo completar la migración de datos personales.');
     process.exitCode = 1;
   })
   .finally(() => prisma.$disconnect());

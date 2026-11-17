@@ -71,6 +71,32 @@ export function decrypt(value: string, passwordBase64: string): string {
   ]).toString('utf8');
 }
 
+export function migratePiiField(value: string, passwordBase64: string): string {
+  if (value.startsWith(PREFIX)) {
+    decrypt(value, passwordBase64);
+    return value;
+  }
+
+  return encrypt(value, passwordBase64);
+}
+
+export function migratePiiProfile(
+  profile: { nombre: string; apellido: string; email: string },
+  passwordBase64: string,
+  emailPepper: string,
+): { nombre: string; apellido: string; email: string; emailHash: string } {
+  const normalizedEmail = decrypt(profile.email, passwordBase64)
+    .trim()
+    .toLowerCase();
+
+  return {
+    nombre: migratePiiField(profile.nombre, passwordBase64),
+    apellido: migratePiiField(profile.apellido, passwordBase64),
+    email: migratePiiField(profile.email, passwordBase64),
+    emailHash: hashEmail(normalizedEmail, emailPepper),
+  };
+}
+
 /// Nullable de un lado a otro sin forzar `decrypt('')` en el camino: los
 /// campos de la fila que consultan `select` a veces no vienen, y `null` no es
 /// texto cifrado ni texto plano, es "no hay nada que descifrar".

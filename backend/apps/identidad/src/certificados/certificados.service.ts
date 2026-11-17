@@ -47,6 +47,17 @@ export interface CertificateVerification {
   modulos?: string[];
 }
 
+type CertificateModuleRow = { module: string; position: number };
+type CertificateModules = {
+  modules: CertificateModuleRow[];
+};
+
+function moduleNames(certificate: CertificateModules): string[] {
+  return [...certificate.modules]
+    .sort((a, b) => a.position - b.position)
+    .map((item) => item.module);
+}
+
 @Injectable()
 export class CertificatesService {
   private readonly logger = new Logger(CertificatesService.name);
@@ -109,11 +120,12 @@ export class CertificatesService {
 
     const existing = await this.prisma.certificate.findUnique({
       where: { participantId: participant.sub },
+      include: { modules: { orderBy: { position: 'asc' } } },
     });
 
     if (
       existing &&
-      payload.modulos.length <= existing.modulos.length &&
+      payload.modulos.length <= moduleNames(existing).length &&
       payload.calificacion === existing.calificacion
     ) {
       // Sin cambios en el recorrido: igual se intenta el envío, por si la
@@ -126,13 +138,20 @@ export class CertificatesService {
       const updated = await this.prisma.certificate.update({
         where: { id: existing.id },
         data: {
-          modulos: payload.modulos,
+          modules: {
+            deleteMany: {},
+            create: payload.modulos.map((module, position) => ({
+              module,
+              position,
+            })),
+          },
           calificacion: payload.calificacion,
           emitidoAt: new Date(),
           // Issue #214: sin esto, `trySendingByEmail` seguía viendo la fecha
           // del primer envío y nunca mandaba el PDF con el recorrido nuevo.
           certificadoEnviadoAt: null,
         },
+        include: { modules: { orderBy: { position: 'asc' } } },
       });
       void this.trySendingByEmail(updated);
       return this.toPublic(updated);
@@ -144,10 +163,16 @@ export class CertificatesService {
           data: {
             participantId: participant.sub,
             codigo: generateCertificateCode(),
-            modulos: payload.modulos,
+            modules: {
+              create: payload.modulos.map((module, position) => ({
+                module,
+                position,
+              })),
+            },
             horas: CERTIFICATE_HOURS,
             calificacion: payload.calificacion,
           },
+          include: { modules: { orderBy: { position: 'asc' } } },
         });
         void this.trySendingByEmail(createdCertificate);
         return this.toPublic(createdCertificate);
@@ -168,7 +193,7 @@ export class CertificatesService {
     id: string;
     participantId: string;
     certificadoEnviadoAt: Date | null;
-    modulos: string[];
+    modules: CertificateModuleRow[];
     horas: number;
     calificacion: number;
     emitidoAt: Date;
@@ -181,18 +206,21 @@ export class CertificatesService {
     try {
       if (certificate.certificadoEnviadoAt) return;
 
-      const person = await this.prisma.participant.findUnique({
+      const person = await this.prisma.account.findUnique({
         where: { id: certificate.participantId },
-        select: { nombre: true, apellido: true, email: true },
+        select: {
+          profile: { select: { nombre: true, apellido: true, email: true } },
+        },
       });
 
-      const email = decryptOptional(person?.email ?? null, this.piiKey);
+      const profile = person?.profile;
+      const email = decryptOptional(profile?.email ?? null, this.piiKey);
       if (!email) return;
 
       const data: CertificateData = {
         nombreCompleto:
-          `${decryptOptional(person?.nombre ?? null, this.piiKey) ?? ''} ${decryptOptional(person?.apellido ?? null, this.piiKey) ?? ''}`.trim(),
-        modulos: certificate.modulos,
+          `${decryptOptional(profile?.nombre ?? null, this.piiKey) ?? ''} ${decryptOptional(profile?.apellido ?? null, this.piiKey) ?? ''}`.trim(),
+        modulos: moduleNames(certificate),
         horas: certificate.horas,
         calificacion: certificate.calificacion,
         emitidoAt: certificate.emitidoAt,
@@ -230,25 +258,26 @@ export class CertificatesService {
 
     const certificate = await this.prisma.certificate.findUnique({
       where: { participantId: participant.sub },
+      include: { modules: { orderBy: { position: 'asc' } } },
     });
 
     if (!certificate || certificate.revocadoAt) {
       throw new NotFoundException('No tienes un certificado vigente.');
     }
 
-    const person = await this.prisma.participant.findUnique({
+    const person = await this.prisma.account.findUnique({
       where: { id: participant.sub },
-      select: { nombre: true, apellido: true },
+      select: { profile: { select: { nombre: true, apellido: true } } },
     });
 
-    if (!person) {
+    if (!person?.profile) {
       throw new NotFoundException('No tienes un certificado vigente.');
     }
 
     return generateCertificatePdf({
       nombreCompleto:
-        `${decryptOptional(person.nombre, this.piiKey) ?? ''} ${decryptOptional(person.apellido, this.piiKey) ?? ''}`.trim(),
-      modulos: certificate.modulos,
+        `${decryptOptional(person.profile.nombre, this.piiKey) ?? ''} ${decryptOptional(person.profile.apellido, this.piiKey) ?? ''}`.trim(),
+      modulos: moduleNames(certificate),
       horas: certificate.horas,
       calificacion: certificate.calificacion,
       emitidoAt: certificate.emitidoAt,
@@ -268,6 +297,7 @@ export class CertificatesService {
   async verify(code: string): Promise<CertificateVerification> {
     const certificate = await this.prisma.certificate.findUnique({
       where: { codigo: code },
+      include: { modules: { orderBy: { position: 'asc' } } },
     });
 
     if (!certificate || certificate.revocadoAt) {
@@ -279,7 +309,7 @@ export class CertificatesService {
       emitidoAt: certificate.emitidoAt.toISOString(),
       horas: certificate.horas,
       calificacion: certificate.calificacion,
-      modulos: certificate.modulos,
+      modulos: moduleNames(certificate),
     };
   }
 
@@ -296,14 +326,14 @@ export class CertificatesService {
   private toPublic(certificate: {
     codigo: string;
     emitidoAt: Date;
-    modulos: string[];
+    modules: CertificateModuleRow[];
     horas: number;
     calificacion: number;
   }): PublicCertificate {
     return {
       codigo: certificate.codigo,
       emitidoAt: certificate.emitidoAt.toISOString(),
-      modulos: certificate.modulos,
+      modulos: moduleNames(certificate),
       horas: certificate.horas,
       calificacion: certificate.calificacion,
     };

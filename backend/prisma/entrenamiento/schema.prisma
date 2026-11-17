@@ -30,7 +30,7 @@ model ScenarioRun {
 
   /// uuid opaco tomado del JWT. Sin llave foránea a propósito: este servicio
   /// no conoce la tabla Participant y no debe poder resolverla.
-  participantId String
+  participantId  String
   /// Número de orden del que se deriva el seudónimo del análisis (P001).
   /// También viene del JWT, para no tener que consultar a `identidad`.
   participantSeq Int
@@ -65,18 +65,12 @@ model ScenarioRun {
 
 /// Un reinicio explícito inicia una ronda nueva sin borrar las corridas del estudio.
 model ModuleReset {
-  id String @id @default(uuid())
+  id            String   @id @default(uuid())
   participantId String
-  module String
-  createdAt DateTime @default(now())
+  module        String
+  createdAt     DateTime @default(now())
 
   @@index([participantId, module, createdAt(sort: Desc)])
-}
-
-/// Instantánea al incorporar la encuesta: no se amplía con corridas futuras.
-model AssessmentBaselineExemption {
-  participantId String @id
-  participantSeq Int
 }
 
 enum AssessmentPhase {
@@ -85,21 +79,35 @@ enum AssessmentPhase {
 }
 
 model Assessment {
-  id String @id @default(uuid())
-  participantId String
-  participantSeq Int
-  version Int
-  phase AssessmentPhase
-  ageRange String
-  gender String
-  answers Int[]
-  score Int
+  id              String          @id @default(uuid())
+  participantId   String
+  participantSeq  Int
+  version         Int
+  phase           AssessmentPhase
+  ageRange        String
+  gender          String
+  score           Int
   /// Constancias históricas; las nuevas entregas usan la aceptación del registro.
-  consentVersion String?
+  consentVersion  String?
   consentAccepted Boolean?
-  submittedAt DateTime @default(now())
+  submittedAt     DateTime        @default(now())
+
+  answerRows AssessmentAnswer[]
 
   @@unique([participantId, version, phase])
+}
+
+/// Una respuesta por pregunta. El arreglo legacy se conserva hasta el corte de
+/// aplicación, para que ambas estructuras puedan cotejarse durante la migración.
+model AssessmentAnswer {
+  assessmentId String
+  questionId   Int
+  answer       Int
+
+  assessment Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+
+  @@id([assessmentId, questionId])
+  @@index([questionId])
 }
 
 /// Respuesta de usabilidad: solo métricas SUS y el seudónimo derivable.
@@ -107,15 +115,35 @@ model SusResponse {
   id String @id @default(uuid())
 
   /// uuid opaco tomado del JWT, sin llave foránea a identidad.
-  participantId String
+  participantId  String
   /// Número de orden para construir el seudónimo administrativo.
   participantSeq Int
 
   version     Int
-  answers     Int[]
   score       Float
   submittedAt DateTime @default(now())
 
+  answerRows SusAnswer[]
+
   @@unique([participantId, version])
   @@index([version, participantSeq])
+}
+
+/// Una respuesta por pregunta SUS. Se conserva answers[] hasta validar el corte.
+model SusAnswer {
+  susResponseId String
+  questionId    Int
+  answer        Int
+
+  susResponse SusResponse @relation(fields: [susResponseId], references: [id], onDelete: Cascade)
+
+  @@id([susResponseId, questionId])
+  @@index([questionId])
+}
+
+/// Archivo histórico de las exenciones anteriores al requisito PRE.
+/// No participa en las reglas de acceso ni se escribe desde la aplicación.
+model AssessmentBaselineExemptionArchive {
+  participantId  String @id
+  participantSeq Int
 }

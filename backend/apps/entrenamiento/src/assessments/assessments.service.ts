@@ -2,7 +2,6 @@ import { ConflictException, Injectable } from '@nestjs/common';
 import { pseudonym } from '@comun';
 import type { JwtPayload } from '@comun';
 import { Prisma } from '../../../../generated/entrenamiento/client';
-import type { Assessment } from '../../../../generated/entrenamiento/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateAssessmentDto } from './create-assessment.dto';
 import { ASSESSMENT_VERSION, scoreAssessment } from './questionnaire';
@@ -13,12 +12,9 @@ export class AssessmentsService {
   constructor(private readonly prisma: PrismaService) {}
 
   async status(participantId: string) {
-    const [assessments, exemption, runs] = await Promise.all([
+    const [assessments, runs] = await Promise.all([
       this.prisma.assessment.findMany({
         where: { participantId, version: ASSESSMENT_VERSION },
-      }),
-      this.prisma.assessmentBaselineExemption.findUnique({
-        where: { participantId },
       }),
       this.prisma.scenarioRun.findMany({
         where: { participantId },
@@ -28,15 +24,14 @@ export class AssessmentsService {
     ]);
     const pretestCompleted = assessments.some((row) => row.phase === 'PRE');
     const posttestCompleted = assessments.some((row) => row.phase === 'POST');
-    const baselineMissing = !!exemption && !pretestCompleted;
     const attempted = new Set(runs.map((run) => run.scenarioId));
     return {
-      pretestRequired: !pretestCompleted && !exemption,
-      baselineMissing,
+      pretestRequired: !pretestCompleted,
+      baselineMissing: false,
       pretestCompleted,
       posttestAvailable:
         !posttestCompleted &&
-        (pretestCompleted || baselineMissing) &&
+        pretestCompleted &&
         ASSESSMENT_SCENARIOS.every((id) => attempted.has(id)),
       posttestCompleted,
     };
@@ -63,7 +58,12 @@ export class AssessmentsService {
           phase: dto.phase,
           ageRange: dto.ageRange,
           gender: dto.gender,
-          answers: dto.answers,
+          answerRows: {
+            create: dto.answers.map((answer, index) => ({
+              questionId: index + 1,
+              answer,
+            })),
+          },
           score: scoreAssessment(dto.answers),
           consentAccepted: dto.consentAccepted ?? null,
           consentVersion: dto.consentVersion ?? null,
@@ -82,29 +82,28 @@ export class AssessmentsService {
   }
 
   async results() {
-    const [assessments, exemptions] = await Promise.all([
-      this.prisma.assessment.findMany({
-        where: { version: ASSESSMENT_VERSION },
-      }),
-      this.prisma.assessmentBaselineExemption.findMany(),
-    ]);
-    const participants = new Map(
-      exemptions.map((row) => [row.participantId, row.participantSeq]),
-    );
+    const assessments = await this.prisma.assessment.findMany({
+      where: { version: ASSESSMENT_VERSION },
+      include: { answerRows: true },
+    });
+    const participants = new Map<string, number>();
     for (const row of assessments)
       participants.set(row.participantId, row.participantSeq);
-    const byParticipant = new Map<string, Assessment[]>();
+    const byParticipant = new Map<string, typeof assessments>();
     for (const row of assessments) {
       const rows = byParticipant.get(row.participantId) ?? [];
       rows.push(row);
       byParticipant.set(row.participantId, rows);
     }
-    const response = (row: Assessment | undefined) =>
+    const response = (row: (typeof assessments)[number] | undefined) =>
       row
         ? {
             ageRange: row.ageRange,
             gender: row.gender,
-            answers: row.answers,
+            answers: row.answerRows
+              .slice()
+              .sort((left, right) => left.questionId - right.questionId)
+              .map((answer) => answer.answer),
             score: row.score,
           }
         : null;

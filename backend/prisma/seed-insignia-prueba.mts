@@ -17,7 +17,8 @@ import { encrypt, hashEmail } from '../apps/identidad/src/pii/pii.ts';
 
 function secret(name: string): string {
   const value = process.env[name];
-  if (!value) throw new Error(`Falta ${name} en el entorno (ver .env.example).`);
+  if (!value)
+    throw new Error(`Falta ${name} en el entorno (ver .env.example).`);
   return value;
 }
 
@@ -25,7 +26,10 @@ const EMAIL = 'prueba.insignia@safeweb.test';
 const PASSWORD = 'Prueba1234!';
 
 const identidad = new IdentidadClient({
-  adapter: new PrismaPg({ connectionString: process.env.IDENTIDAD_DATABASE_URL }, { schema: 'identidad' }),
+  adapter: new PrismaPg(
+    { connectionString: process.env.IDENTIDAD_DATABASE_URL },
+    { schema: 'identidad' },
+  ),
 });
 
 const entrenamiento = new EntrenamientoClient({
@@ -110,27 +114,48 @@ async function main() {
   const piiKey = secret('PII_ENCRYPTION_KEY');
   const emailHash = hashEmail(EMAIL, emailPepper);
 
-  const existing = await identidad.participant.findFirst({ where: { emailHash } });
+  const existing = await identidad.account.findFirst({
+    where: { profile: { is: { emailHash } } },
+    include: { studyParticipant: true },
+  });
   if (existing) {
     // Limpia corridas previas para dejar el módulo en un estado predecible
     // si el script ya se corrió antes.
-    await entrenamiento.scenarioRun.deleteMany({ where: { participantId: existing.id } });
-    await entrenamiento.moduleReset.deleteMany({ where: { participantId: existing.id } });
+    await entrenamiento.scenarioRun.deleteMany({
+      where: { participantId: existing.id },
+    });
+    await entrenamiento.moduleReset.deleteMany({
+      where: { participantId: existing.id },
+    });
   }
 
   const passwordHash = await hash(PASSWORD, 12);
   const participant = existing
-    ? await identidad.participant.update({ where: { id: existing.id }, data: { passwordHash } })
-    : await identidad.participant.create({
+    ? await identidad.account.update({
+        where: { id: existing.id },
+        data: { passwordHash },
+        include: { studyParticipant: true },
+      })
+    : await identidad.account.create({
         data: {
-          email: encrypt(EMAIL, piiKey),
-          emailHash,
-          nombre: encrypt('Prueba', piiKey),
-          apellido: encrypt('Insignia', piiKey),
+          role: { connect: { code: 'PARTICIPANT' } },
+          profile: {
+            create: {
+              email: encrypt(EMAIL, piiKey),
+              emailHash,
+              nombre: encrypt('Prueba', piiKey),
+              apellido: encrypt('Insignia', piiKey),
+            },
+          },
+          studyParticipant: { create: {} },
           passwordHash,
-          role: 'PARTICIPANT',
         },
+        include: { studyParticipant: true },
       });
+
+  const participantSeq = participant.studyParticipant?.seq;
+  if (!participantSeq)
+    throw new Error('La cuenta de prueba no tiene secuencia de participante.');
 
   const now = new Date();
   const runs = Object.values(ESCENARIOS_POR_MODULO)
@@ -138,7 +163,7 @@ async function main() {
     .map((scenarioId) => ({
       id: randomUUID(),
       participantId: participant.id,
-      participantSeq: participant.seq,
+      participantSeq,
       scenarioId,
       outcome: 'CORRECTO' as const,
       score: 100,

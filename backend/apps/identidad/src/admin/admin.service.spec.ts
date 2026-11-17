@@ -20,8 +20,35 @@ function row(overrides: Record<string, unknown> = {}) {
 /// son texto plano sin el prefijo "v1:", así que `decryptOptional()` los
 /// deja pasar tal cual sin necesitar la clave real.
 function service(prisma: Partial<Record<string, unknown>>) {
+  const normalize = (value: unknown): unknown => {
+    if (Array.isArray(value)) return value.map(normalize);
+    if (!value || typeof value !== 'object') return value;
+    const result = value as Record<string, unknown>;
+    if ('nombre' in result || 'apellido' in result || 'email' in result) {
+      const { nombre, apellido, email, ...account } = result;
+      return { ...account, profile: { nombre, apellido, email } };
+    }
+    return value;
+  };
+  const delegate = Object.fromEntries(
+    Object.entries(prisma).map(([name, operation]) => [
+      name,
+      typeof operation === 'function'
+        ? async (...args: unknown[]) => {
+            const invoke = operation as (...values: unknown[]) => unknown;
+            return normalize(await invoke(...args));
+          }
+        : operation,
+    ]),
+  );
+  const client = {
+    account: delegate,
+    certificate: { findMany: () => Promise.resolve([]) },
+    $queryRaw: delegate.$queryRaw ?? (() => Promise.resolve([])),
+  } as Record<string, unknown>;
+  client.$transaction = (fn: (tx: unknown) => Promise<unknown>) => fn(client);
   return new AdminService(
-    { participant: prisma } as unknown as PrismaService,
+    client as unknown as PrismaService,
     {
       getOrThrow: (name: string) =>
         name === 'PII_ENCRYPTION_KEY'
@@ -46,7 +73,7 @@ describe('AdminService.listar', () => {
 
     const list = await admin.list();
 
-    expect(whereReceived).toEqual({ role: 'PARTICIPANT' });
+    expect(whereReceived).toEqual({ role: { code: 'PARTICIPANT' } });
     expect(list[0]).toMatchObject({ id: 'p1', activo: true });
     // Ni seudónimo ni fecha de alta: junto al nombre enlazarían a la persona
     // con sus resultados.
@@ -166,7 +193,7 @@ describe('AdminService.resetPassword', () => {
 
     await admin.resetPassword('t1', 'TRAINER');
 
-    expect(whereReceived).toEqual({ id: 't1', role: 'TRAINER' });
+    expect(whereReceived).toEqual({ id: 't1', role: { code: 'TRAINER' } });
   });
 
   it('da 404 si la cuenta no es del rol pedido', async () => {
@@ -200,6 +227,32 @@ describe('AdminService.eliminar', () => {
 });
 
 describe('AdminService.formadores', () => {
+  it('bloquea por huella y comprueba unicidad antes de crear un TRAINER', async () => {
+    const events: string[] = [];
+    const admin = service({
+      $queryRaw: () => {
+        events.push('lock');
+        return Promise.resolve([]);
+      },
+      findFirst: () => {
+        events.push('lookup');
+        return Promise.resolve(null);
+      },
+      create: () => {
+        events.push('create');
+        return Promise.resolve(row());
+      },
+    });
+
+    await admin.createTrainer({
+      nombre: 'Lucía',
+      apellido: 'Mena',
+      email: 'lucia@espe.edu.ec',
+    });
+
+    expect(events).toEqual(['lock', 'lookup', 'create']);
+  });
+
   it('crea un TRAINER con datos protegidos y devuelve una contraseña inicial una sola vez', async () => {
     let created: Record<string, unknown> | undefined;
     const admin = service({
@@ -217,11 +270,13 @@ describe('AdminService.formadores', () => {
     });
 
     expect(result.password).toHaveLength(12);
-    expect(created).toMatchObject({ role: 'TRAINER' });
-    expect(created?.nombre).toMatch(/^v1:/);
-    expect(created?.apellido).toMatch(/^v1:/);
-    expect(created?.email).toMatch(/^v1:/);
-    expect(created?.emailHash).toBeDefined();
+    expect(created).toMatchObject({ role: { connect: { code: 'TRAINER' } } });
+    const profile = (created?.profile as { create: Record<string, unknown> })
+      .create;
+    expect(profile.nombre).toMatch(/^v1:/);
+    expect(profile.apellido).toMatch(/^v1:/);
+    expect(profile.email).toMatch(/^v1:/);
+    expect(profile.emailHash).toBeDefined();
     expect(created?.passwordHash).not.toBe(result.password);
   });
 
@@ -250,7 +305,7 @@ describe('AdminService.formadores', () => {
 
     const trainers = await admin.listTrainers();
 
-    expect(whereReceived).toEqual({ role: 'TRAINER' });
+    expect(whereReceived).toEqual({ role: { code: 'TRAINER' } });
     expect(trainers[0]).toMatchObject({ id: 'p1', activo: true });
   });
 
@@ -266,6 +321,6 @@ describe('AdminService.formadores', () => {
 
     await admin.changeTrainerStatus('t1', false);
 
-    expect(whereReceived).toEqual({ id: 't1', role: 'TRAINER' });
+    expect(whereReceived).toEqual({ id: 't1', role: { code: 'TRAINER' } });
   });
 });

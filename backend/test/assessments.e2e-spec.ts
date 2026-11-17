@@ -162,28 +162,20 @@ describe('Encuesta del estudio (e2e)', () => {
     expect(res.text).not.toContain('participantId');
     expect(res.text).not.toContain('submittedAt');
   });
-  it('cuentas sin medición previa conservan recorrido sin fabricar baseline', async () => {
-    await env.prisma.assessmentBaselineExemption.create({
-      data: { participantId: 'legacy', participantSeq: 78 },
-    });
+  it('requiere la medición inicial antes de iniciar el recorrido', async () => {
     const legacy = await env.token({ sub: 'legacy', seq: 78 });
     await server()
       .post('/api/runs')
       .set('Authorization', `Bearer ${legacy}`)
       .send(run())
-      .expect(201);
-    await server()
-      .post('/api/assessments')
-      .set('Authorization', `Bearer ${legacy}`)
-      .send(body)
       .expect(409);
     const res = await server()
       .get('/api/assessments/status')
       .set('Authorization', `Bearer ${legacy}`)
       .expect(200);
     expect(responseBody<unknown>(res)).toMatchObject({
-      baselineMissing: true,
-      pretestRequired: false,
+      baselineMissing: false,
+      pretestRequired: true,
       posttestAvailable: false,
     });
   });

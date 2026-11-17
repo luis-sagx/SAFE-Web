@@ -97,8 +97,8 @@ posterior sobre `identidad`.
 
 Se declara para que no aparezca como sorpresa:
 
-1. **No hay `ON DELETE CASCADE`** de `Participant` a `ScenarioRun`. Para el
-   estudio es lo correcto —borrar la identidad no debe borrar el dato que la
+1. **No hay `ON DELETE CASCADE`** de `Account` a `ScenarioRun`. Para el
+   estudio es lo correcto —borrar la cuenta no debe borrar el dato que la
    persona aportó— pero deja de haber integridad referencial entre servicios.
 2. **Dos servicios que operar**: dos health checks, dos imágenes, dos juegos de
    migraciones.
@@ -490,49 +490,58 @@ Reglas del API que no se relajan:
 
 ## 6. Modelo de datos
 
-Un schema de Prisma por servicio. Las evaluaciones y corridas del estudio
-pertenecen a `entrenamiento`; los datos de acceso permanecen en `identidad`:
+Cada servicio mantiene su propia base lógica, schema Prisma y rol PostgreSQL.
+El modelo objetivo contiene doce tablas de negocio y una tabla de archivo
+histórico de exenciones, sin uso en runtime. El diagrama editable está
+en [`ThesisDiagrams/06-data-model.puml`](ThesisDiagrams/06-data-model.puml).
 
-- `backend/prisma/identidad/schema.prisma` → **`Participant`**: `seq`
-  (autoincremental, del que se deriva el seudónimo), `nombre`, `apellido`,
-  `email` (único, es el usuario de login), `cedulaHash` (único, nullable —solo
-  la cuenta de supervisor no tiene cédula—, §7.1), `passwordHash`, `role`,
-  `onboardingVistoAt`, `disabledAt`.
-- `backend/prisma/identidad/schema.prisma` → **`Certificate`**: `participantId`
-  (único: un certificado por persona), `codigo` (único, aleatorio, sin relación
-  con `seq`), `modulos` (los que cubría al emitirse o al último recorrido
-  mayor), `horas` (constante, guardada y no recalculada), `emitidoAt`,
-  `revocadoAt` (solo lo pone un supervisor, §11). Sin puntajes ni detalle por
-  escenario: eso vive en `entrenamiento`, donde debe quedarse.
-- `backend/prisma/entrenamiento/schema.prisma` → **`ScenarioRun`**: una fila por
-  escenario terminado, con `participantId`, `participantSeq`, `scenarioId`,
-  `version`, `outcome`, `score`, `endingId`, `durationMs`, `startedAt`,
-  `finishedAt` y `decisions` (JSONB).
-- `backend/prisma/entrenamiento/schema.prisma` → **`Assessment`**: una entrega
-  por participante, versión y fase (`PRE` o `POST`), con `participantId`,
-  `participantSeq`, `ageRange`, `gender`, las 21 respuestas (`answers`),
-  `score`, `consentVersion`, `consentAccepted` y `submittedAt`. El servidor
-  valida las opciones y calcula el puntaje; no acepta un puntaje del cliente.
-  Los campos de consentimiento conservan constancias históricas y son
-  opcionales para compatibilidad: nuevas entregas los guardan como `null`,
-  sin inventar una nueva aceptación.
-- `backend/prisma/entrenamiento/schema.prisma` →
-  **`AssessmentBaselineExemption`**: instantánea de participantes que ya
-  tenían corridas al incorporar la encuesta. Conserva `participantId` y
-  `participantSeq` para permitir su evaluación final sin inventar una
-  medición inicial. No se amplía con entrenamiento posterior.
-- `backend/prisma/entrenamiento/schema.prisma` → **`SusResponse`**: una
-  respuesta SUS por participante y versión, con diez valores de 1 a 5 y un
-  puntaje de 0 a 100 calculado por el servidor. Guarda el UUID opaco y el
-  número de seudónimo que llegan del JWT; no contiene datos personales ni
-  tiene una llave foránea a `identidad`.
+> **Estado de transición (16 de noviembre de 2026):** el código de esta rama
+> incorpora una fase de expansión y los servicios adaptados, pero la copia de
+> datos no se ha ejecutado en ninguna base ni se ha desplegado. Mientras dure
+> la transición, también existen las tablas y columnas legado (`Participant`,
+> `AssessmentBaselineExemption`, `Assessment.answers` y `SusResponse.answers`).
+> No ejecutar la versión nueva contra esas tablas vacías ni aplicar una fase
+> de retirada sin respaldo restaurable, diagnóstico, copia y cotejo. La
+> retirada solo puede ocurrir después de la ventana coordinada descrita en §8.
 
-**No hay llave foránea entre ellas y no debe haberla.** `participantId` es un
-uuid opaco: el servicio que lo guarda no tiene la tabla que lo resolvería.
+### 6.1 Identidad: cuenta y certificado
 
-`decisions` es JSONB a propósito: cada escenario produce una traza con forma
-distinta (secuencia de nodos, zonas tocadas, tiempos), y JSONB permite guardarlas
-sin una tabla por tipo de escenario.
+| Tabla | Atributos y propósito |
+|---|---|
+| `Account` | `id` (TEXT, PK; conserva el ID previo), `roleId` (FK a `Role`), `passwordHash`, hashes y vencimientos de recuperación/confirmación, `tokenVersion`, `onboardingVistoAt`, `disabledAt`, `createdAt`. Guarda autenticación, sesión y estado de la cuenta, no PII. |
+| `AccountProfile` | `accountId` (PK y FK a `Account`, `ON DELETE CASCADE`), `nombre`, `apellido`, `email` cifrados; `emailHash` y `cedulaHash` HMAC opcionales con índice único. Los campos personales se aíslan de credenciales y se descifran solo en identidad. |
+| `Role` | `id` (PK) y `code` único, limitado en la aplicación a `PARTICIPANT`, `ADMIN` y `TRAINER`. Es un catálogo, no un sistema configurable de permisos. Una fila de `Role` puede tener muchas cuentas. |
+| `StudyParticipant` | `accountId` (PK y FK a `Account`, `ON DELETE CASCADE`) y `seq` (secuencia autogenerada y única). Solo los participantes del estudio tienen fila; `seq` permite producir el seudónimo. |
+| `Certificate` | `id` (PK), `participantId` único sin FK a cuenta, `codigo` único, `horas`, `calificacion`, `emitidoAt`, `revocadoAt` y `certificadoEnviadoAt`. Conserva emisión y revocación en la misma entidad. El ID de participante puede quedar huérfano deliberadamente si se elimina la cuenta. |
+| `CertificateModule` | (`certificateId`, `module`) PK; `certificateId` FK a `Certificate` con cascada; `position` único por certificado para reconstruir el orden de `modulos`. |
+
+### 6.2 Entrenamiento: datos seudonimizados
+
+| Tabla | Atributos y propósito |
+|---|---|
+| `ScenarioRun` | `id` (PK), `participantId`, `participantSeq`, `scenarioId`, `version`, `outcome`, `score`, `endingId`, `durationMs`, `decisions` (JSONB), `startedAt`, `finishedAt`. Índices por participante/escenario/fecha de cierre y por escenario. Una fila representa una corrida y no referencia tablas de identidad. |
+| `ModuleReset` | `id` (PK), `participantId`, `module`, `createdAt`. Cada fila conserva un reinicio; índice por participante, módulo y fecha descendente. No borra corridas anteriores. |
+| `Assessment` | `id` (PK), `participantId`, `participantSeq`, `version`, `phase` (`PRE`/`POST`), `ageRange`, `gender`, `score`, `consentVersion?`, `consentAccepted?`, `submittedAt`. Única por participante, versión y fase. Las respuestas viven en `AssessmentAnswer`. |
+| `AssessmentAnswer` | (`assessmentId`, `questionId`) PK; `assessmentId` FK a `Assessment` con cascada; `answer` es la opción ordinal validada. `questionId` es el identificador estable de la pregunta en esa versión. |
+| `SusResponse` | `id` (PK), `participantId`, `participantSeq`, `version`, `score`, `submittedAt`. Única por participante y versión; índice por versión y seudónimo. Las respuestas viven en `SusAnswer`. |
+| `SusAnswer` | (`susResponseId`, `questionId`) PK; `susResponseId` FK a `SusResponse` con cascada; `answer` es una opción de 1 a 5. |
+| `AssessmentBaselineExemptionArchive` | `participantId` (PK) y `participantSeq`. Copia exacta de las exenciones históricas; tabla de archivo sin lectura ni escritura en runtime y sin efecto para el requisito PRE. |
+
+Las únicas relaciones FK son internas a cada base: `Role`–`Account`,
+`Account`–`AccountProfile`, `Account`–`StudyParticipant`, `Certificate`–
+`CertificateModule`, `Assessment`–`AssessmentAnswer` y `SusResponse`–
+`SusAnswer`. **No hay FK entre identidad y entrenamiento.** El `participantId`
+de entrenamiento es el mismo identificador opaco estable que identidad asignó;
+`participantSeq` también llega en el JWT. Sirve para emparejar resultados, pero
+el rol de entrenamiento no puede resolverlo a una persona. Borrar una cuenta
+elimina su perfil y fila de estudio, pero no elimina los resultados ni el
+certificado.
+
+`ScenarioRun.decisions` permanece JSONB porque las trazas varían por escenario.
+Los catálogos de escenarios y preguntas versionadas siguen en código. Los
+puntajes históricos se copian sin recalcular. `answers[]` sigue siendo la forma
+del contrato HTTP; el backend la mapea a respuestas por pregunta al guardar y
+reconstruye el arreglo canónico al leer.
 
 Cambios de esquema: siempre por migración (`pnpm prisma:migrate`), nunca
 editando la base a mano. Las migraciones se versionan en el repositorio y cada
@@ -562,9 +571,9 @@ confunde a un público no técnico. Eso obliga a una separación estricta entre
 
 ```
 REGISTRO                  identidad                    entrenamiento
-nombre, apellido,  ───▶   Participant                  ScenarioRun
-correo, cédula            nombre, apellido, email      participantSeq ──▶ resultados
-                          cedulaHash (HMAC)                                 P001
+nombre, apellido,  ───▶   Account + AccountProfile     ScenarioRun
+correo, cédula            PII cifrada + cedulaHash      participantSeq ──▶ resultados
+                          StudyParticipant.seq                              P001
                           seq ──────────── JWT ───────▶ scenarioId, outcome…
                                                        (sin datos de identidad,
                                                         sin acceso
@@ -704,14 +713,39 @@ docker compose exec identidad node prisma/seed.mts --email tu.correo@espe.edu.ec
 El `seed` solo crea la cuenta de supervisor e imprime su contraseña una vez.
 Los participantes se registran solos desde la plataforma.
 
-Al incorporar las evaluaciones, detener el servicio antiguo de
-`entrenamiento` antes de aplicar su migración y mantenerlo detenido hasta
-arrancar la versión nueva. La migración toma una instantánea de quienes
-ya tienen `ScenarioRun` para marcar su ausencia de medición inicial. Si la
-versión antigua registra nuevas corridas entre esa instantánea y el cambio
-de versión, esas personas entrenarían sin evaluación inicial y quedarían
-fuera de la exención. No levantar `docker-compose.yml` y
-`docker-compose.db.yml` simultáneamente: comparten `pgdata`.
+La normalización se organiza desde `backend/prisma/start-normalized.mts` por
+servicio: primero aplica las migraciones expansivas, luego valida y copia filas
+con el migrador idempotente, y solo ejecuta el retiro legacy cuando la copia y
+las guardas de PRE son seguras. El runtime no consulta las tablas de archivo.
+Un reinicio después del corte detecta la migración final aplicada y omite el
+backfill que lee tablas legacy. Antes de desplegar esta versión:
+
+1. Verificar una copia restaurable de las dos bases y ejecutar ambos
+   migradores sin `--apply` para obtener su diagnóstico sin PII.
+2. Poner el gateway en mantenimiento, detener los dos servicios y todo otro
+   escritor; tomar un respaldo final coherente.
+3. Arrancar Compose: cada servicio aplica sus propias migraciones expansivas y
+   ejecuta diagnóstico, copia y corte usando solo su URL y rol. No existe una
+   transacción distribuida entre bases.
+4. Cotejar conteos, IDs, secuencias, hashes, fechas, certificados, orden de
+   módulos y respuestas. Una exención legacy solo permite validar el mismo
+   participante histórico durante el corte y se conserva en
+   `AssessmentBaselineExemptionArchive`; no se convierte en respuesta ni se
+   consulta en runtime. Un faltante PRE sin exención coincidente deja las
+   estructuras legacy intactas y permite iniciar el servicio con el esquema
+   expandido.
+5. Arrancar las imágenes nuevas todavía en mantenimiento, comprobar login de
+   cuentas anteriores y flujos de estudio/certificado, y solo entonces abrir
+   tráfico. Mantener respaldo y estructuras legado disponibles para recuperar
+   antes de aceptar escrituras nuevas.
+
+Si Prisma ya registró una migración final fallida, el arranque se detiene y no
+la marca como revertida. Verificar primero el respaldo, la reversión
+transaccional y las tablas; luego seguir el procedimiento explícito en
+[`DB-CUTOVER.md`](DB-CUTOVER.md). Después del corte hay doce tablas de negocio
+y una tabla de archivo. No levantar
+`docker-compose.yml` y `docker-compose.db.yml` simultáneamente: comparten
+`pgdata`.
 
 Para el ajuste que elimina la casilla adicional de la encuesta, aplicar
 `20261014100000_assessment_optional_consent` y desplegar el backend compatible
@@ -720,8 +754,8 @@ históricas y el CHECK que rechaza `consentAccepted = false`.
 
 Los dos servicios de aplicación salen de **una sola imagen**: comparten
 dependencias y `libs/comun`, así que construirlas por separado duplicaría el
-`pnpm install` sin ganar nada. El `ARG APP` decide qué migraciones se aplican y
-qué `main.js` arranca.
+`pnpm install` sin ganar nada. El `ARG APP` decide qué URL, configuración de
+migraciones y `main.js` usa cada contenedor.
 
 Configuración de seguridad de los contenedores (OWASP Docker Security Cheat
 Sheet), ya aplicada en `docker-compose.yml` y en los `Dockerfile`:

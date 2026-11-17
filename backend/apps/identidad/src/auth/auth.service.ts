@@ -73,19 +73,21 @@ export interface Profile {
   onboardingVisto: boolean;
 }
 
-interface ParticipantWithOnboarding {
+interface AccountWithOnboarding {
   id: string;
-  nombre: string | null;
-  apellido: string | null;
-  email: string | null;
-  role: string;
+  profile: {
+    nombre: string | null;
+    apellido: string | null;
+    email: string | null;
+  } | null;
+  role: { code: string };
   onboardingVistoAt: Date | null;
 }
 
 /// `seq` y `tokenVersion` solo hacen falta para firmar los tokens de sesión,
 /// nunca salen en la respuesta (ver `session()` más abajo).
-type ParticipantWithSession = ParticipantWithOnboarding & {
-  seq: number;
+type AccountWithSession = AccountWithOnboarding & {
+  studyParticipant: { seq: number } | null;
   tokenVersion: number;
 };
 
@@ -94,17 +96,15 @@ type ParticipantWithSession = ParticipantWithOnboarding & {
 /// que no tiene por qué salir del servidor.
 const PROFILE_FIELDS = {
   id: true,
-  nombre: true,
-  apellido: true,
-  email: true,
-  role: true,
+  profile: { select: { nombre: true, apellido: true, email: true } },
+  role: { select: { code: true } },
   onboardingVistoAt: true,
 } as const;
 
 /// `seq` se necesita para firmar el token pero no se devuelve al cliente.
 const SESSION_FIELDS = {
   ...PROFILE_FIELDS,
-  seq: true,
+  studyParticipant: { select: { seq: true } },
   tokenVersion: true,
 } as const;
 
@@ -114,15 +114,15 @@ const SESSION_FIELDS = {
 /// Prisma es el texto cifrado (o, en una fila sin migrar, texto plano,
 /// `decryptOptional` reconoce cuál es cuál).
 function publicProfile(
-  participant: ParticipantWithOnboarding,
+  participant: AccountWithOnboarding,
   piiKey: string,
 ): Profile {
   return {
     id: participant.id,
-    nombre: decryptOptional(participant.nombre, piiKey),
-    apellido: decryptOptional(participant.apellido, piiKey),
-    email: decryptOptional(participant.email, piiKey),
-    role: participant.role,
+    nombre: decryptOptional(participant.profile?.nombre ?? null, piiKey),
+    apellido: decryptOptional(participant.profile?.apellido ?? null, piiKey),
+    email: decryptOptional(participant.profile?.email ?? null, piiKey),
+    role: participant.role.code,
     onboardingVisto: participant.onboardingVistoAt !== null,
   };
 }
@@ -176,30 +176,23 @@ export class AuthService {
     // cifrado y que `backfill-pii.mts` todavía no alcanzó: esas todavía
     // guardan el correo en claro, sin huella con la que compararlas por
     // `emailHash`.
-    const matches = await this.prisma.participant.findMany({
-      where: {
-        OR: [
-          { emailHash },
-          { email: dto.email },
-          { cedulaHash: ecuadorianIdHash },
-        ],
-      },
-      select: { id: true, role: true, emailConfirmedAt: true },
+    const registrationLookup = {
+      OR: [
+        { profile: { is: { emailHash } } },
+        { profile: { is: { email: dto.email } } },
+        { profile: { is: { cedulaHash: ecuadorianIdHash } } },
+      ],
+    };
+    const matches = await this.prisma.account.findMany({
+      where: registrationLookup,
+      select: { id: true },
     });
 
-    // Un registro que nunca confirmó su correo no bloquea: si no, quien
-    // escribió mal su correo (o usó uno ajeno) dejaría esa cédula ocupada
-    // para siempre. Se puede borrar sin perder nada: sin confirmar nunca
-    // hubo sesión, así que tampoco corridas ni certificado.
-    const blocked = matches.some(
-      (match) => match.role !== 'PARTICIPANT' || match.emailConfirmedAt,
-    );
-
-    if (blocked) {
+    // No se reemplaza ni borra una cuenta pendiente: puede ser una cuenta
+    // legacy que debemos conservar aunque todavía no haya confirmado correo.
+    if (matches.length > 0) {
       throw new ConflictException(ALREADY_REGISTERED);
     }
-
-    const pendingIds = matches.map((match) => match.id);
 
     // El token viaja en claro solo por correo; en la base se guarda su hash
     // (mismo criterio que el de recuperación de clave, ver hashToken más
@@ -213,34 +206,43 @@ export class AuthService {
 
     try {
       await this.prisma.$transaction(async (tx) => {
-        // `emailConfirmedAt: null` otra vez: si una de esas cuentas se
-        // confirmó entre la búsqueda y aquí, no se borra y el create choca con
-        // el índice único (409 abajo).
-        if (pendingIds.length > 0) {
-          await tx.participant.deleteMany({
-            where: { id: { in: pendingIds }, emailConfirmedAt: null },
-          });
+        // El índice ya no es único para conservar correos legacy repetidos;
+        // este bloqueo serializa las altas nuevas con la misma huella.
+        await tx.$queryRaw`
+          SELECT pg_advisory_xact_lock(hashtextextended(${emailHash}, 0))
+        `;
+        const currentMatches = await tx.account.findMany({
+          where: registrationLookup,
+          select: { id: true },
+        });
+        if (currentMatches.length > 0) {
+          throw new ConflictException(ALREADY_REGISTERED);
         }
-        await tx.participant.create({
+        await tx.account.create({
           data: {
-            nombre: encrypt(dto.nombre, this.piiKey),
-            apellido: encrypt(dto.apellido, this.piiKey),
-            email: encrypt(dto.email, this.piiKey),
-            emailHash,
-            cedulaHash: ecuadorianIdHash,
+            role: { connect: { code: 'PARTICIPANT' } },
             passwordHash,
             emailConfirmationTokenHash: hashToken(confirmationToken),
             emailConfirmationExpiresAt: new Date(
               Date.now() + EMAIL_CONFIRMATION_TTL_MS,
             ),
+            profile: {
+              create: {
+                nombre: encrypt(dto.nombre, this.piiKey),
+                apellido: encrypt(dto.apellido, this.piiKey),
+                email: encrypt(dto.email, this.piiKey),
+                emailHash,
+                cedulaHash: ecuadorianIdHash,
+              },
+            },
+            studyParticipant: { create: {} },
           },
           select: { id: true },
         });
       });
     } catch (error) {
-      // Dos registros simultáneos pasan los dos la comprobación de arriba y
-      // solo uno gana el índice único. Sin esto, el segundo recibe un 500 y
-      // el participante se queda fuera del estudio sin saber por qué.
+      // `cedulaHash` sigue siendo único; si dos registros simultáneos usan la
+      // misma cédula, el segundo recibe un 409 en vez de un error interno.
       if (isUniqueConstraintViolation(error)) {
         throw new ConflictException(ALREADY_REGISTERED);
       }
@@ -254,17 +256,17 @@ export class AuthService {
   }
 
   async login(dto: LoginDto) {
-    // `findFirst` con `OR` y no `findUnique` por `emailHash`: una cuenta
-    // creada antes del cifrado, que `backfill-pii.mts` todavía no alcanzó,
-    // no tiene huella todavía y solo se encuentra por el `email` en claro
-    // que aún conserva. Una vez migrada, esa segunda rama nunca vuelve a
-    // igualar nada ("email" pasa a guardar texto cifrado, no el correo), así
-    // que dejarla no tiene costo ni riesgo.
-    const participant = await this.prisma.participant.findFirst({
+    // La huella puede repetirse en datos legacy. Se comprueban todas las
+    // candidatas para que el correo junto con la contraseña identifique una.
+    const candidates = await this.prisma.account.findMany({
       where: {
         OR: [
-          { emailHash: hashEmail(dto.email, this.emailPepper) },
-          { email: dto.email },
+          {
+            profile: {
+              is: { emailHash: hashEmail(dto.email, this.emailPepper) },
+            },
+          },
+          { profile: { is: { email: dto.email } } },
         ],
       },
       // `select` explícito, no el registro entero: sin esto el passwordHash
@@ -277,16 +279,27 @@ export class AuthService {
       },
     });
 
-    const ok = await compare(
-      dto.password,
-      participant?.passwordHash ?? DECOY_HASH,
+    const matches = await Promise.all(
+      candidates.map(async (candidate) =>
+        (await compare(dto.password, candidate.passwordHash))
+          ? candidate
+          : null,
+      ),
     );
+    const authenticated = matches.filter(
+      (candidate): candidate is NonNullable<typeof candidate> =>
+        candidate !== null,
+    );
+    if (candidates.length === 0) {
+      await compare(dto.password, DECOY_HASH);
+    }
 
     // Un solo mensaje para correo inexistente y para contraseña incorrecta:
     // distinguirlos permitiría averiguar quién está registrado.
-    if (!participant || !ok) {
+    if (authenticated.length !== 1) {
       throw new UnauthorizedException('Correo o contraseña incorrectos.');
     }
+    const participant = authenticated[0];
 
     // La cuenta desactivada por un supervisor no entra. Se comprueba solo tras
     // validar la contraseña: sin credenciales correctas no se puede averiguar
@@ -297,7 +310,10 @@ export class AuthService {
       );
     }
 
-    if (participant.role === 'PARTICIPANT' && !participant.emailConfirmedAt) {
+    if (
+      participant.role.code === 'PARTICIPANT' &&
+      !participant.emailConfirmedAt
+    ) {
       throw new UnauthorizedException(EMAIL_NOT_CONFIRMED);
     }
 
@@ -305,7 +321,7 @@ export class AuthService {
   }
 
   async me(participantId: string) {
-    const participant = await this.prisma.participant.findUnique({
+    const participant = await this.prisma.account.findUnique({
       where: { id: participantId },
       select: { ...PROFILE_FIELDS, disabledAt: true },
     });
@@ -328,7 +344,7 @@ export class AuthService {
   /// `false` la borra (vuelve a aparecer en el siguiente inicio de sesión, y
   /// es lo que permite reactivarla desde el ícono ⓘ).
   async updateMe(participantId: string, dto: PatchMeDto) {
-    const participant = await this.prisma.participant.update({
+    const participant = await this.prisma.account.update({
       where: { id: participantId },
       data: { onboardingVistoAt: dto.onboardingVisto ? new Date() : null },
       select: PROFILE_FIELDS,
@@ -360,7 +376,7 @@ export class AuthService {
       throw new UnauthorizedException('Refresh token inválido o expirado.');
     }
 
-    const participant = await this.prisma.participant.findUnique({
+    const participant = await this.prisma.account.findUnique({
       where: { id: payload.sub },
       select: { ...SESSION_FIELDS, disabledAt: true },
     });
@@ -383,33 +399,41 @@ export class AuthService {
   /// más abajo, mismo principio): de lo contrario, este formulario serviría
   /// para averiguar qué correos están registrados en la plataforma.
   async forgotPassword(email: string): Promise<void> {
-    const participant = await this.prisma.participant.findFirst({
+    const participants = await this.prisma.account.findMany({
       where: {
-        OR: [{ emailHash: hashEmail(email, this.emailPepper) }, { email }],
+        OR: [
+          {
+            profile: { is: { emailHash: hashEmail(email, this.emailPepper) } },
+          },
+          { profile: { is: { email } } },
+        ],
       },
-      select: { id: true, nombre: true, disabledAt: true },
+      select: {
+        id: true,
+        profile: { select: { nombre: true } },
+        disabledAt: true,
+      },
     });
 
-    if (!participant || participant.disabledAt) {
-      return;
+    for (const participant of participants) {
+      if (participant.disabledAt) continue;
+
+      const token = randomBytes(RESET_TOKEN_BYTES).toString('base64url');
+      await this.prisma.account.update({
+        where: { id: participant.id },
+        data: {
+          passwordResetTokenHash: hashToken(token),
+          passwordResetExpiresAt: new Date(Date.now() + RESET_TOKEN_TTL_MS),
+        },
+      });
+
+      const name =
+        decryptOptional(participant.profile?.nombre ?? null, this.piiKey) ?? '';
+      const link = `${this.frontendOrigin}/restablecer-password?token=${token}`;
+      // El mismo correo puede pertenecer a varias cuentas históricas; cada
+      // token apunta a una sola cuenta y el endpoint sigue respondiendo igual.
+      await this.mail.sendPasswordReset(email, name, link);
     }
-
-    const token = randomBytes(RESET_TOKEN_BYTES).toString('base64url');
-
-    await this.prisma.participant.update({
-      where: { id: participant.id },
-      data: {
-        passwordResetTokenHash: hashToken(token),
-        passwordResetExpiresAt: new Date(Date.now() + RESET_TOKEN_TTL_MS),
-      },
-    });
-
-    const name = decryptOptional(participant.nombre, this.piiKey) ?? '';
-    const link = `${this.frontendOrigin}/restablecer-password?token=${token}`;
-    // Sin esperar a que la cadena de correo termine para responder: si
-    // Resend falla, `forgotPassword` igual resuelve, así el fallo de un
-    // proveedor externo no delata (por la demora o el error) que la cuenta sí existe.
-    await this.mail.sendPasswordReset(email, name, link);
   }
 
   /// Cambia la contraseña con un token de un solo uso. `RESET_LINK_INVALID`
@@ -417,7 +441,7 @@ export class AuthService {
   /// cuenta desactivada con el mismo mensaje: distinguirlos no le sirve a
   /// nadie legítimo y sí le sirve a quien está probando tokens al azar.
   async resetPassword(token: string, password: string): Promise<void> {
-    const participant = await this.prisma.participant.findFirst({
+    const participant = await this.prisma.account.findFirst({
       where: { passwordResetTokenHash: hashToken(token) },
       select: { id: true, disabledAt: true, passwordResetExpiresAt: true },
     });
@@ -431,7 +455,7 @@ export class AuthService {
       throw new UnauthorizedException(RESET_LINK_INVALID);
     }
 
-    await this.prisma.participant.update({
+    await this.prisma.account.update({
       where: { id: participant.id },
       data: {
         passwordHash: await hash(password, BCRYPT_ROUNDS),
@@ -452,7 +476,7 @@ export class AuthService {
   /// así a valer como credencial, igual que el de restablecer contraseña: un
   /// solo uso, con vencimiento, y solo su hash en la base.
   async confirmEmail(token: string) {
-    const participant = await this.prisma.participant.findFirst({
+    const participant = await this.prisma.account.findFirst({
       where: { emailConfirmationTokenHash: hashToken(token) },
       select: { id: true, emailConfirmationExpiresAt: true, disabledAt: true },
     });
@@ -465,7 +489,7 @@ export class AuthService {
       throw new UnauthorizedException(CONFIRMATION_LINK_INVALID);
     }
 
-    const confirmed = await this.prisma.participant.update({
+    const confirmed = await this.prisma.account.update({
       where: { id: participant.id },
       data: {
         emailConfirmedAt: new Date(),
@@ -498,40 +522,49 @@ export class AuthService {
   /// disparar un envío de "confirma tu cuenta" hacia esa persona desde este
   /// endpoint público.
   async resendConfirmation(email: string): Promise<void> {
-    const participant = await this.prisma.participant.findFirst({
+    const participants = await this.prisma.account.findMany({
       where: {
-        role: 'PARTICIPANT',
-        OR: [{ emailHash: hashEmail(email, this.emailPepper) }, { email }],
+        role: { code: 'PARTICIPANT' },
+        OR: [
+          {
+            profile: { is: { emailHash: hashEmail(email, this.emailPepper) } },
+          },
+          { profile: { is: { email } } },
+        ],
       },
-      select: { id: true, nombre: true, emailConfirmedAt: true },
+      select: {
+        id: true,
+        profile: { select: { nombre: true } },
+        emailConfirmedAt: true,
+      },
     });
 
-    if (!participant || participant.emailConfirmedAt) {
-      return;
+    for (const participant of participants) {
+      if (participant.emailConfirmedAt) continue;
+
+      const token = randomBytes(RESET_TOKEN_BYTES).toString('base64url');
+      await this.prisma.account.update({
+        where: { id: participant.id },
+        data: {
+          emailConfirmationTokenHash: hashToken(token),
+          emailConfirmationExpiresAt: new Date(
+            Date.now() + EMAIL_CONFIRMATION_TTL_MS,
+          ),
+        },
+      });
+
+      const name =
+        decryptOptional(participant.profile?.nombre ?? null, this.piiKey) ?? '';
+      const link = `${this.frontendOrigin}/confirmar-correo?token=${token}`;
+      await this.mail.sendEmailConfirmation(email, name, link);
     }
-
-    const token = randomBytes(RESET_TOKEN_BYTES).toString('base64url');
-
-    await this.prisma.participant.update({
-      where: { id: participant.id },
-      data: {
-        emailConfirmationTokenHash: hashToken(token),
-        emailConfirmationExpiresAt: new Date(
-          Date.now() + EMAIL_CONFIRMATION_TTL_MS,
-        ),
-      },
-    });
-
-    const name = decryptOptional(participant.nombre, this.piiKey) ?? '';
-    const link = `${this.frontendOrigin}/confirmar-correo?token=${token}`;
-    await this.mail.sendEmailConfirmation(email, name, link);
   }
 
-  private async session(participant: ParticipantWithSession) {
+  private async session(participant: AccountWithSession) {
     const payload: JwtPayload = {
       sub: participant.id,
-      seq: participant.seq,
-      role: participant.role,
+      seq: participant.studyParticipant?.seq ?? 0,
+      role: participant.role.code,
       typ: 'access',
     };
 

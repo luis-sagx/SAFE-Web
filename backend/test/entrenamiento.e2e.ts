@@ -58,8 +58,8 @@ export async function createTestApp(): Promise<TestEnvironment> {
 export async function cleanDatabase(prisma: PrismaService): Promise<void> {
   await prisma.scenarioRun.deleteMany();
   await prisma.moduleReset.deleteMany();
+  await prisma.susResponse.deleteMany();
   await prisma.assessment.deleteMany();
-  await prisma.assessmentBaselineExemption.deleteMany();
 }
 
 export interface RunBody {

@@ -18,115 +18,64 @@ datasource db {
   provider = "postgresql"
 }
 
-enum Role {
-  PARTICIPANT
-  // Gestiona cuentas y ve los resultados seudonimizados dentro de la app. No
-  // se llama ADMIN/ADMINISTRATOR a propósito: es el nombre que un atacante
-  // busca primero.
-  ADMIN
-  TRAINER
-}
-
-model Participant {
+/// Cuenta de autenticación nueva. `id` conserva el identificador de la fila
+/// Participant antigua para mantener JWT, certificados y referencias del
+/// estudio estables durante la migración.
+model Account {
   id String @id @default(uuid())
 
-  /// Número de orden de registro. De aquí se deriva el seudónimo del análisis
-  /// ("P001", "P002", …). Viaja en el JWT para que el servicio de
-  /// entrenamiento pueda etiquetar cada corrida sin consultar este servicio.
-  seq Int @unique @default(autoincrement())
-
-  // --- Datos personales: solo para el acceso. Nunca se exportan. ---
-  //
-  // Cifrados en reposo (issue #95, ver apps/identidad/src/pii/pii.ts): lo que
-  // vive en `nombre`, `apellido` y `email` es AES-256-GCM, no texto plano.
-  // La aplicación cifra al escribir y descifra al leer con
-  // PII_ENCRYPTION_KEY (.env); alguien que se lleve solo el volumen de
-  // Postgres (un backup, un dump) no puede leerlos.
-  //
-  // Una fila creada antes de este cambio, si todavía no pasó por
-  // `backfill-pii.mts`, guarda estos tres campos en texto plano: `descifrar()`
-  // lo reconoce por la falta del prefijo "v1:" y lo devuelve tal cual, así
-  // que sigue siendo legible mientras el backfill no ha corrido. Es
-  // deliberado, no un descuido: evita una ventana de login roto entre
-  // desplegar este cambio de esquema y correr el script.
-  /// El cifrado AES-GCM y su codificación caben holgadamente en 255 bytes
-  /// para los 50 caracteres que acepta `RegisterDto`.
-  nombre   String @db.VarChar(255)
-  apellido String @db.VarChar(255)
-  email    String
-
-  /// HMAC-SHA256(correo normalizado, EMAIL_PEPPER): el índice único para
-  /// encontrar la cuenta al iniciar sesión, ahora que `email` guarda texto
-  /// cifrado (con IV aleatorio, así que el mismo correo nunca cifra igual dos
-  /// veces y no podría servir de índice por sí solo). Mismo patrón que
-  /// `cedulaHash`, con su propio secreto: un pepper por tipo de dato, para
-  /// que la filtración de uno no arrastre al otro.
-  ///
-  /// Nullable en vez de exigirlo desde ya: una fila sin migrar todavía no
-  /// tiene huella, y `login()` cae a buscar por el `email` en claro de esas
-  /// filas mientras tanto (ver auth.service.ts). Se puede volver obligatorio
-  /// en una migración futura, una vez que `backfill-pii.mts` corrió en todos
-  /// los entornos.
-  emailHash String? @unique
-
-  /// HMAC-SHA256(cédula, CEDULA_PEPPER). La cédula EN CLARO NUNCA SE GUARDA:
-  /// no entra a la base, no sale en ninguna respuesta y no va a los logs.
-  ///
-  /// Su única función es garantizar una cuenta por persona. Se usa HMAC y no
-  /// un hash simple porque el espacio de cédulas son 10 dígitos y un SHA-256
-  /// sin secreto se invierte por fuerza bruta en segundos; el pepper es lo que
-  /// lo hace irreversible. Y no bcrypt, porque para servir de índice único
-  /// tiene que ser determinista.
-  ///
-  /// Nullable: la cuenta de supervisor (creada por `pnpm seed`) no tiene
-  /// cédula, no es participante del estudio.
-  cedulaHash String? @unique
+  roleId String
+  role   Role   @relation(fields: [roleId], references: [id], onDelete: Restrict)
 
   passwordHash String
-  role         Role   @default(PARTICIPANT)
 
-  /// Hash SHA-256 del token de un solo uso para "¿olvidaste tu contraseña?"
-  /// (issue #256): nunca se guarda el token en claro, igual que passwordHash
-  /// nunca guarda la contraseña. Se limpia (junto con `passwordResetExpiresAt`)
-  /// al usarse o al pedir uno nuevo, así que como máximo hay uno vigente.
-  passwordResetTokenHash String? @unique
-
-  /// Vence a los 30 minutos de pedirse (ver PASSWORD_RESET_EXPIRES_MS en
-  /// auth.service.ts). Null cuando no hay ningún restablecimiento pendiente.
+  passwordResetTokenHash String?   @unique
   passwordResetExpiresAt DateTime?
 
-  /// Null = pendiente de confirmar el correo. Con fecha = ya confirmó (o la
-  /// cuenta se creó antes de este cambio y la migración la marcó
-  /// confirmada). Solo aplica a PARTICIPANT: TRAINER/ADMIN nacen
-  /// confirmados, los da de alta alguien del equipo a mano.
-  emailConfirmedAt DateTime?
-
-  /// Hash SHA-256 del token de un solo uso para confirmar el correo, mismo
-  /// patrón que passwordResetTokenHash.
-  emailConfirmationTokenHash String? @unique
-
-  /// Vence a las 24 horas de pedirse (confirmar cuenta es menos urgente que
-  /// resetear una clave comprometida). Null cuando no hay ninguna
-  /// confirmación pendiente.
+  emailConfirmedAt           DateTime?
+  emailConfirmationTokenHash String?   @unique
   emailConfirmationExpiresAt DateTime?
 
-  /// Se incrementa al restablecer la contraseña. El refresh token lleva la
-  /// versión con la que se emitió; si no coincide con esta, `refreshSession`
-  /// lo rechaza, así un restablecimiento cierra las sesiones ya abiertas en
-  /// otros dispositivos sin necesitar una lista de tokens revocados.
-  tokenVersion Int @default(0)
-
-  /// Si ya vio la pantalla de bienvenida y no quiere que vuelva a aparecer.
-  /// Null = nunca la vio, o pidió verla de nuevo; con fecha = la vio y la
-  /// cerró marcando "no volver a mostrar".
+  tokenVersion      Int       @default(0)
   onboardingVistoAt DateTime?
+  disabledAt        DateTime?
+  createdAt         DateTime  @default(now())
 
-  /// Cuenta desactivada por un supervisor. Null = activa. Una cuenta desactivada
-  /// no puede iniciar sesión; un token ya emitido caduca por su cuenta (JWT
-  /// corto), no se revoca al instante entre servicios.
-  disabledAt DateTime?
+  profile          AccountProfile?
+  studyParticipant StudyParticipant?
+}
 
-  createdAt DateTime @default(now())
+/// Catálogo cerrado por aplicación para los tres roles actuales. No modela
+/// permisos editables ni permite que una cuenta tenga varios roles.
+model Role {
+  id   String @id
+  code String @unique
+
+  accounts Account[]
+}
+
+/// Datos personales cifrados o derivados; los HMAC siguen siendo índices
+/// deterministas y el ciphertext se copia sin recifrar.
+model AccountProfile {
+  accountId  String  @id
+  nombre     String  @db.VarChar(255)
+  apellido   String  @db.VarChar(255)
+  email      String
+  emailHash  String?
+  cedulaHash String? @unique
+
+  account Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@index([emailHash])
+}
+
+/// Solo cuentas PARTICIPANT tienen secuencia de estudio. `accountId` reutiliza
+/// el ID de Account/Participant y se propaga en el JWT como `sub`.
+model StudyParticipant {
+  accountId String @id
+  seq       Int    @unique @default(autoincrement())
+
+  account Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
 }
 
 /// Certificado de las 4 horas del entrenamiento. Se emite al canjear una
@@ -149,11 +98,6 @@ model Certificate {
   /// ambiguos (sin O/0, sin I/1).
   codigo String @unique
 
-  /// Los módulos que la atestación cubría al emitirse o al último recorrido
-  /// mayor. Es lo que evita que un certificado de cinco módulos y uno de seis
-  /// digan lo mismo el día que crezca UMBRALES.
-  modulos String[]
-
   /// Constante hoy (`HORAS_CERTIFICADO`), guardada y no recalculada: un
   /// certificado ya emitido no debe cambiar si el número cambia después.
   horas Int @default(4)
@@ -174,4 +118,19 @@ model Certificate {
   /// fallido, o certificado emitido antes de existir este campo). Evita
   /// reenviarlo en cada re-emisión idempotente de `emitir()`.
   certificadoEnviadoAt DateTime?
+
+  modules CertificateModule[]
+}
+
+/// Relación normalizada de los módulos que cubre el certificado. `position`
+/// permite reconstruir el arreglo histórico en su orden original.
+model CertificateModule {
+  certificateId String
+  module        String
+  position      Int
+
+  certificate Certificate @relation(fields: [certificateId], references: [id], onDelete: Cascade)
+
+  @@id([certificateId, module])
+  @@unique([certificateId, position])
 }
