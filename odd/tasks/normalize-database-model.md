@@ -88,3 +88,4 @@ El usuario autorizó investigar y corregir los fallos reportados en backend `pnp
 - NDB-CI-1 a NDB-CI-4 implementadas y verificadas. Resta registrar los identificadores de commit en esta bitácora y cerrar cada unidad; espejo Engram pendiente por bloqueo de permisos en `/home/luissagnay/.engram/.instance-id.lock`.
 - Commit NDB-CI-1: `e86981b` (`test(smishing): actualizar pruebas del flujo inmersivo`).
 - Commit NDB-CI-2: `21bd265` (`fix(identidad): serializar advisory locks sin void`).
+- Commit NDB-CI-3: `4dad73e` (`ci(db): aplicar corte en base e2e limpia`).
