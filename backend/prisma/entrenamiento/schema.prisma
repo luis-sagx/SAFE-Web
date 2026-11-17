@@ -99,7 +99,21 @@ model Assessment {
   consentAccepted Boolean?
   submittedAt DateTime @default(now())
 
+  answerRows AssessmentAnswer[]
+
   @@unique([participantId, version, phase])
+}
+
+/// Una respuesta por pregunta. El arreglo legacy se conserva hasta el corte de
+/// aplicación, para que ambas estructuras puedan cotejarse durante la migración.
+model AssessmentAnswer {
+  assessmentId String
+  questionId   Int
+  answer       Int
+
+  assessment Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+
+  @@id([assessmentId, questionId])
 }
 
 /// Respuesta de usabilidad: solo métricas SUS y el seudónimo derivable.
@@ -116,6 +130,19 @@ model SusResponse {
   score       Float
   submittedAt DateTime @default(now())
 
+  answerRows SusAnswer[]
+
   @@unique([participantId, version])
   @@index([version, participantSeq])
+}
+
+/// Una respuesta por pregunta SUS. Se conserva answers[] hasta validar el corte.
+model SusAnswer {
+  susResponseId String
+  questionId    Int
+  answer        Int
+
+  susResponse SusResponse @relation(fields: [susResponseId], references: [id], onDelete: Cascade)
+
+  @@id([susResponseId, questionId])
 }
