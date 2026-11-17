@@ -71,6 +71,15 @@ export function decrypt(value: string, passwordBase64: string): string {
   ]).toString('utf8');
 }
 
+export function migratePiiField(value: string, passwordBase64: string): string {
+  if (value.startsWith(PREFIX)) {
+    decrypt(value, passwordBase64);
+    return value;
+  }
+
+  return encrypt(value, passwordBase64);
+}
+
 /// Nullable de un lado a otro sin forzar `decrypt('')` en el camino: los
 /// campos de la fila que consultan `select` a veces no vienen, y `null` no es
 /// texto cifrado ni texto plano, es "no hay nada que descifrar".

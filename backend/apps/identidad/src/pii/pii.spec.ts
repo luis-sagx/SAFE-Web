@@ -4,6 +4,7 @@ import {
   decryptOptional,
   encrypt,
   hashEmail,
+  migratePiiField,
 } from './pii';
 
 // Clave de 32 bytes real (openssl rand -base64 32), fija para que las pruebas
@@ -68,6 +69,25 @@ describe('pii: decryptOptional', () => {
   it('descifra un valor no nulo normalmente', () => {
     const encryptedValue = encrypt('Ana', PASSWORD);
     expect(decryptOptional(encryptedValue, PASSWORD)).toBe('Ana');
+  });
+});
+
+describe('pii: migración segura de campos', () => {
+  it('cifra texto legado', () => {
+    const migrated = migratePiiField('Ana', PASSWORD);
+    expect(migrated).toMatch(/^v1:/);
+    expect(decrypt(migrated, PASSWORD)).toBe('Ana');
+  });
+
+  it('conserva bytes de ciphertext válido sin volver a cifrarlo', () => {
+    const encrypted = encrypt('Ana', PASSWORD);
+    expect(migratePiiField(encrypted, PASSWORD)).toBe(encrypted);
+  });
+
+  it('aborta si el campo parece cifrado pero no autentica', () => {
+    const encrypted = encrypt('Ana', PASSWORD);
+    const tampered = `${encrypted.slice(0, -4)}AAAA`;
+    expect(() => migratePiiField(tampered, PASSWORD)).toThrow();
   });
 });
 
