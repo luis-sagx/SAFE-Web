@@ -71,5 +71,5 @@ Se descartó construir filas y estilos en cada escenario, porque duplicaría mar
 - T1 completada y verificada en `044e69a`. La primera compilación falló por una clave duplicada agregada en el catálogo; se retiró la duplicación y `pnpm typecheck` final pasó.
 - T2 completada y verificada en `b50207a`. T1 + T2 suman 214 líneas authored y el forecast actualizado de la rama es de unas 314–354 líneas.
 - T3 completada y verificada en `a4dd538`; fuente y escenarios suman 64 líneas authored. Acumulado observado: 278 líneas.
-- Mirror Engram pendiente: el reintento de `engram save` se realizará con este documento completo actualizado; la escritura previa no pudo abrir `/home/luissagnay/.engram/.instance-id.lock` porque el filesystem estaba en solo lectura y la llamada tampoco pudo verificar actualizaciones por DNS bloqueado.
-- Siguiente paso: registrar el commit T3 y sincronizar el mirror completo de Engram.
+- Mirror Engram pendiente: una escritura completa después de T3 falló al abrir `/home/luissagnay/.engram/.instance-id.lock` porque el filesystem está en solo lectura; la consulta de actualización también falló por DNS bloqueado. No se pudo verificar el mirror. El agente padre sincronizará la copia cuando el acceso a Engram esté disponible.
+- Siguiente paso: sincronizar y leer de vuelta el mirror completo de Engram; T3 ya quedó registrada en `a4dd538` y `77d005c`.
