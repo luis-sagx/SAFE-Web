@@ -33,6 +33,21 @@ const NEXT_VIEW: Call = {
 }
 
 describe('CallScreen', () => {
+  // Un número sin contacto no tiene inicial: antes salía un "+" en el avatar.
+  it('un número desconocido muestra una silueta y no el "+" del número', () => {
+    const { container } = render(
+      <CallScreen view={{ ...VIEW, quien: '+593 4 373 8000', entrante: true }} />,
+    )
+    const avatar = container.querySelector('[class*="callAvatarGrande"]') as HTMLElement
+    expect(avatar.textContent).toBe('')
+    expect(avatar.querySelector('svg')).not.toBeNull()
+  })
+
+  it('un contacto con nombre conserva su inicial en el avatar', () => {
+    const { container } = render(<CallScreen view={{ ...VIEW, entrante: true }} />)
+    expect(container.querySelector('[class*="callAvatarGrande"]')?.textContent).toBe('A')
+  })
+
   // Issue #250: el orden original (transcripción y luego "Tú contestas") se
   // mantiene — lo que causaba el recorte era `overflow: hidden` sin scroll,
   // no el orden. Se prueba que el contenedor ya no recorta el contenido.

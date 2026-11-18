@@ -1,4 +1,4 @@
-import { ArrowLeft, Mic, MicOff, Phone, PhoneOff, RotateCcw } from 'lucide-react'
+import { ArrowLeft, Mic, MicOff, Phone, PhoneOff, RotateCcw, UserRound } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { VOICES } from '../../data/voces'
 import type { ScreenView } from './DeviceScreen'
@@ -175,7 +175,14 @@ function CallScreen({
     setPartial(line.texto.slice(0, Math.floor(line.texto.length * fraction)))
   }
 
-  const initial = view.quien.trim().charAt(0).toUpperCase()
+  // Un número sin contacto no tiene inicial: la silueta es lo que pone
+  // cualquier teléfono, y un "+" en el círculo se leía como un botón de añadir.
+  const firstChar = view.quien.trim().charAt(0)
+  const initial = /\p{L}/u.test(firstChar) ? (
+    firstChar.toUpperCase()
+  ) : (
+    <UserRound className={styles.callAvatarGlifo} strokeWidth={1.75} />
+  )
 
 
   if (view.entrante || view.marcando) {
@@ -206,8 +213,11 @@ function CallScreen({
       <section className={`${styles.call} ${styles.callEntrante}`} aria-label={labels.region}>
         <p className={styles.callEstado}>{labels.estado}</p>
         <div className={styles.callQuien} data-signal={view.senalQuien}>
-          <span className={`${styles.callAvatar} ${styles.callAvatarGrande}`} aria-hidden>
-            {initial}
+          <span
+            className={`${styles.callAvatarAnillo} ${view.entrante ? styles.callAvatarSonando : ''}`}
+            aria-hidden
+          >
+            <span className={`${styles.callAvatar} ${styles.callAvatarGrande}`}>{initial}</span>
           </span>
           <p className={styles.callNombre}>{view.quien}</p>
           <p className={styles.callNumero}>{view.numero}</p>
