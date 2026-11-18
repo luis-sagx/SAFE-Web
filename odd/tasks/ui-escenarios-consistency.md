@@ -63,13 +63,13 @@ Se descartó construir filas y estilos en cada escenario, porque duplicaría mar
   - Checks: revisé que `InfoRows` use `<dl>/<dt>/<dd>`, agrupe cada fila y apile etiqueta/valor en móvil antes de pasar a columnas desde `sm`; las dos vistas habilitan la variante y destacan respectivamente el perfil y el depósito. `pnpm typecheck` (código 0); `pnpm lint` (código 0, con advertencias preexistentes `only-export-components`/`exhaustive-deps`); `pnpm build` (código 0, Vite generó el build); `git diff --check` (código 0). No se añadieron ni ejecutaron pruebas automatizadas, según TDD OFF.
   - Cambios: `InfoRows.tsx` presenta los datos en una sola ficha de filas etiqueta/valor, con lectura responsiva y énfasis opcional mediante `bg-surface-strong`; `DeviceScreen` lo usa solo cuando `dataLayout: 'info-rows'`. PagoLavadora resalta literalmente “Interesada / Gabriela Ponce · cuenta desde 2019”; TareasPagadas resalta “Depósito de activación / $180,00 · no reembolsable en ningún caso” y deja retiro, cupo y empresa como filas subordinadas. No se modificaron los textos ni las decisiones.
   - Conteo authored de la unidad: 64 líneas (55 adiciones, 9 eliminaciones). Acumulado T1 + T2 + T3: 278 líneas; presupuesto no excedido.
-  - Commit: pendiente.
+  - Commit: `a4dd538` (`feat(ui): ordenar fichas informativas de escenarios`).
 
 ## Progreso y siguiente paso
 
 - Exploración: completada mediante CodeGraph y revisión de los commits `45386d8` y `4433bf1`; se confirmó el patrón compartido de acentos y opciones.
 - T1 completada y verificada en `044e69a`. La primera compilación falló por una clave duplicada agregada en el catálogo; se retiró la duplicación y `pnpm typecheck` final pasó.
 - T2 completada y verificada en `b50207a`. T1 + T2 suman 214 líneas authored y el forecast actualizado de la rama es de unas 314–354 líneas.
-- T3 implementada y verificada; fuente y escenarios suman 64 líneas authored. Acumulado observado: 278 líneas.
+- T3 completada y verificada en `a4dd538`; fuente y escenarios suman 64 líneas authored. Acumulado observado: 278 líneas.
 - Mirror Engram pendiente: el reintento de `engram save` se realizará con este documento completo actualizado; la escritura previa no pudo abrir `/home/luissagnay/.engram/.instance-id.lock` porque el filesystem estaba en solo lectura y la llamada tampoco pudo verificar actualizaciones por DNS bloqueado.
 - Siguiente paso: registrar el commit T3 y sincronizar el mirror completo de Engram.
