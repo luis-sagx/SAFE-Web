@@ -20,6 +20,21 @@ function countAlreadyRevealed(lines: Line[], heard: ReadonlySet<string>): number
   return i
 }
 
+const KEYS: [string, string][] = [
+  ['1', ''],
+  ['2', 'ABC'],
+  ['3', 'DEF'],
+  ['4', 'GHI'],
+  ['5', 'JKL'],
+  ['6', 'MNO'],
+  ['7', 'PQRS'],
+  ['8', 'TUV'],
+  ['9', 'WXYZ'],
+  ['*', ''],
+  ['0', '+'],
+  ['#', ''],
+]
+
 function clock(seconds: number) {
   const m = String(Math.floor(seconds / 60)).padStart(2, '0')
   const s = String(seconds % 60).padStart(2, '0')
@@ -185,29 +200,61 @@ function CallScreen({
   )
 
 
-  if (view.entrante || view.marcando) {
-    // Marcador y llamada entrante comparten pantalla; solo cambia qué significan los botones.
-    const labels = view.marcando
-      ? {
-          region: 'Marcador',
-          estado: 'Marcar',
-          no: 'Volver',
-          noAria: 'Salir del marcador sin llamar',
-          NoIcono: ArrowLeft,
-          claseNo: styles.callVolver,
-          si: 'Llamar',
-          siAria: 'Llamar a este número',
-        }
-      : {
-          region: 'Llamada entrante',
-          estado: 'Llamada entrante',
-          no: 'Rechazar',
-          noAria: 'Rechazar la llamada',
-          NoIcono: PhoneOff,
-          claseNo: styles.callRechazar,
-          si: 'Contestar',
-          siAria: 'Contestar la llamada',
-        }
+  // Marcar es teclear un número y pulsar el botón verde, no recibir una
+  // llamada: el número va arriba y el teclado debajo, como en el teléfono real.
+  if (view.marcando) {
+    return (
+      <section className={`${styles.call} ${styles.callMarcador}`} aria-label="Marcador">
+        <div className={styles.callMarcadorCabecera}>
+          <button
+            type="button"
+            className={styles.callMarcadorVolver}
+            aria-label="Salir del marcador sin llamar"
+            data-hotspot-goto={view.rechazarGoto}
+            data-hotspot-label={view.rechazarLabel}
+          >
+            <ArrowLeft aria-hidden className={styles.callMarcadorVolverIcono} strokeWidth={2} />
+          </button>
+          <p className={styles.callEstado}>Marcar</p>
+          <span className={styles.callMarcadorVolver} aria-hidden />
+        </div>
+        <div className={styles.callMarcadorNumero} data-signal={view.senalQuien}>
+          <p className={styles.callMarcadorDigitos}>{view.quien}</p>
+          {view.etiqueta && <span className={styles.callEtiqueta}>{view.etiqueta}</span>}
+        </div>
+        {/* Las teclas no hacen nada: el número ya está escrito, solo se decide si llamar. */}
+        <div className={styles.callTeclado}>
+          {KEYS.map(([digit, letters]) => (
+            <button key={digit} type="button" className={styles.callTecla} data-control="">
+              <span className={styles.callTeclaDigito}>{digit}</span>
+              <span className={styles.callTeclaLetras}>{letters}</span>
+            </button>
+          ))}
+        </div>
+        <button
+          type="button"
+          className={styles.callMarcadorLlamar}
+          aria-label="Llamar a este número"
+          data-hotspot-goto={view.contestarGoto}
+          data-hotspot-label={view.contestarLabel}
+        >
+          <Phone aria-hidden className={styles.callMarcadorLlamarIcono} strokeWidth={2} />
+        </button>
+      </section>
+    )
+  }
+
+  if (view.entrante) {
+    const labels = {
+      region: 'Llamada entrante',
+      estado: 'Llamada entrante',
+      no: 'Rechazar',
+      noAria: 'Rechazar la llamada',
+      NoIcono: PhoneOff,
+      claseNo: styles.callRechazar,
+      si: 'Contestar',
+      siAria: 'Contestar la llamada',
+    }
 
     return (
       <section className={`${styles.call} ${styles.callEntrante}`} aria-label={labels.region}>

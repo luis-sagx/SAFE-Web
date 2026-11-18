@@ -229,8 +229,8 @@ const APPS: PhoneApp[] = [
     label: 'Abrió la app del banco para comprobar el bloqueo',
   },
   { Icono: MessageSquareText, texto: 'Mensajes', color: '#2f9e44', hilo: 'sms' },
-  // Sin `hilo`, ambos iconos devolverían a lo último visto en vez de a lo suyo.
-  { Icono: Phone, texto: 'Teléfono', color: '#495057', hilo: 'call' },
+  // Sin llamada, el icono abre el marcador (n2); con una en curso, vuelve a ella.
+  { Icono: Phone, texto: 'Teléfono', color: '#495057', hilo: 'call', viewNodeSinLlamada: 'n2' },
 ]
 
 export const STORY: Story<ScreenNode> = {

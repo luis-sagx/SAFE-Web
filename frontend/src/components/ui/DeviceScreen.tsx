@@ -2,18 +2,26 @@ import {
   ArrowLeftRight,
   Bell,
   Bot,
+  Car,
   ChevronLeft,
   ChevronRight,
   CreditCard,
   FileText,
   Gauge,
   HandCoins,
+  Headset,
+  HeartPulse,
   ImageIcon,
+  KeyRound,
   Landmark,
   ListChecks,
   MapPin,
+  MessageSquareOff,
   MessageSquareText,
+  MonitorSmartphone,
+  NotebookPen,
   Package,
+  PackageSearch,
   Paperclip,
   PencilLine,
   ReceiptText,
@@ -24,6 +32,7 @@ import {
   Smartphone,
   TriangleAlert,
   Truck,
+  Undo2,
   UserRound,
   Voicemail,
   WalletCards,
@@ -41,6 +50,7 @@ import {
   type EmailFolder,
   type EmailBrand,
 } from './DesktopChrome'
+import InicioNavegador from './InicioNavegador'
 import VoiceNote from './NotaDeVoz'
 import CallScreen from './PantallaLlamada'
 import { PhotoScene, type SceneProgress, type SceneZone } from '../../secciones/fisico/EscenaFoto'
@@ -287,6 +297,16 @@ const MENU_ICONS: Record<string, LucideIcon | undefined> = {
   'Cotizar un envío': Package,
   'Buzón de voz': Voicemail,
   'Editar tu información': PencilLine,
+  'Bloquear mensajes de números cortos': MessageSquareOff,
+  'Ver el detalle del envío': PackageSearch,
+  'Devolver al remitente': Undo2,
+  'Mi cuenta': UserRound,
+  'Cambiar mi clave': KeyRound,
+  Soporte: Headset,
+  'AsistenciaMóvil · Control remoto': MonitorSmartphone,
+  'Asistencia Vial EC': Car,
+  'Asistente de notas': NotebookPen,
+  'Salud Asistida': HeartPulse,
 }
 
 // Sin botonGoto se pinta igual pero no responde (botón decorativo).
@@ -437,6 +457,11 @@ function DeviceScreen({
         <div dangerouslySetInnerHTML={{ __html: view.body }} />
       </EmailBody>
     )
+  }
+
+  // El navegador del teléfono abre en "Nueva pestaña", igual que su relleno.
+  if (view.kind === 'web' && view.app === 'Navegador' && view.opciones) {
+    return <InicioNavegador titulo={view.title} sitios={view.opciones} />
   }
 
   if (view.kind === 'web') {
