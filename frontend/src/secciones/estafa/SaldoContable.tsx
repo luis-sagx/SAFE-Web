@@ -1,4 +1,4 @@
-import { Images, MessageCircle, Package, Wallet } from 'lucide-react'
+import { MessageCircle, Package, Wallet } from 'lucide-react'
 import ScenarioStory, { type PhoneApp, type ScreenNode } from '../../components/StoryEscenario'
 import type { Context } from '../../components/ui/ContextoEscenario'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
@@ -184,6 +184,7 @@ const AFTER_VIEWING: ScreenView = {
 const COURIER: ScreenView = {
   kind: 'web',
   app: 'Envíos Andina',
+  appAccent: '#e8590c',
   url: 'enviosandina.ec',
   secure: true,
   brand: 'Nuevo envío',
@@ -220,7 +221,6 @@ const APPS: PhoneApp[] = [
     viewNode: 'n5',
     label: 'Abrió la app del courier para despachar',
   },
-  { Icono: Images, texto: 'Galería', color: '#c2410c', relleno: 'galeria' },
 ]
 
 export const STORY: Story<ScreenNode> = {

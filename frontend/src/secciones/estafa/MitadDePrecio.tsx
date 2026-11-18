@@ -1,4 +1,4 @@
-import { Images, MessageCircle, ShoppingBag, Wallet } from 'lucide-react'
+import { Bookmark, MessageCircle, Search, Share2, ShoppingBag, Wallet } from 'lucide-react'
 import ScenarioStory, { type PhoneApp, type ScreenNode } from '../../components/StoryEscenario'
 import type { Context } from '../../components/ui/ContextoEscenario'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
@@ -122,7 +122,8 @@ const PRESSES: ScreenView = {
 // El anuncio: todo lo que hace falta para dudar está aquí, a dos toques, mientras el chat mete prisa por otro lado.
 const AD: ScreenView = {
   kind: 'web',
-  app: 'Mercado Abierto',
+  app: 'Mercado',
+  appAccent: APP_ACCENTS.store,
   url: 'mercadoabierto.ec',
   secure: true,
   brand: 'Anuncio',
@@ -147,11 +148,12 @@ const AD: ScreenView = {
     {
       texto: 'Buscar el mismo modelo en la página',
       detalle: 'Ver a cuánto lo venden los demás',
+      icon: Search,
       goto: 'n7',
       label: 'Comparó el precio con otros anuncios del mismo modelo',
     },
-    { texto: 'Guardar en favoritos', detalle: 'Para verlo después' },
-    { texto: 'Compartir el anuncio', detalle: 'Mandárselo a alguien' },
+    { texto: 'Guardar en favoritos', detalle: 'Para verlo después', icon: Bookmark },
+    { texto: 'Compartir el anuncio', detalle: 'Mandárselo a alguien', icon: Share2 },
   ],
   cerrarGoto: 'n1',
   cerrarLabel: 'Volvió al chat desde el anuncio',
@@ -161,7 +163,8 @@ const AD: ScreenView = {
 
 const SEARCH: ScreenView = {
   kind: 'web',
-  app: 'Mercado Abierto',
+  app: 'Mercado',
+  appAccent: APP_ACCENTS.store,
   url: 'mercadoabierto.ec',
   secure: true,
   brand: 'Resultados',
@@ -212,8 +215,8 @@ const APPS: PhoneApp[] = [
   { Icono: MessageCircle, texto: 'Mensajes', color: '#2f9e44', hilo: 'sms' },
   {
     Icono: ShoppingBag,
-    texto: 'Mercado Abierto',
-    color: '#7048e8',
+    texto: 'Mercado',
+    color: APP_ACCENTS.store,
     viewNode: 'n6',
     label: 'Abrió el anuncio en la página de compraventa',
   },
@@ -224,7 +227,6 @@ const APPS: PhoneApp[] = [
     viewNode: 'n5',
     label: 'Abrió la app del banco para transferir',
   },
-  { Icono: Images, texto: 'Galería', color: '#c2410c', relleno: 'galeria' },
 ]
 
 export const STORY: Story<ScreenNode> = {

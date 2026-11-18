@@ -1,4 +1,4 @@
-import { Building2, Images, MessageCircle, Wallet } from 'lucide-react'
+import { Bookmark, Building2, MessageCircle, Search, Wallet } from 'lucide-react'
 import ScenarioStory, { type PhoneApp, type ScreenNode } from '../../components/StoryEscenario'
 import type { Context } from '../../components/ui/ContextoEscenario'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
@@ -123,6 +123,7 @@ const PRESSES: ScreenView = {
 const AD: ScreenView = {
   kind: 'web',
   app: 'Portal Inmobiliario',
+  appAccent: APP_ACCENTS.operator,
   url: 'portalinmobiliario.ec',
   secure: true,
   brand: 'Anuncio de arriendo',
@@ -139,11 +140,12 @@ const AD: ScreenView = {
     {
       texto: 'Buscar de dónde salieron las fotos',
       detalle: 'Búsqueda por imagen',
+      icon: Search,
       goto: 'n7',
       label: 'Buscó el origen de las fotos del anuncio',
     },
-    { texto: 'Guardar el anuncio', detalle: 'Para verlo después' },
-    { texto: 'Ver otros en el sector', detalle: '23 departamentos en La Floresta' },
+    { texto: 'Guardar el anuncio', detalle: 'Para verlo después', icon: Bookmark },
+    { texto: 'Ver otros en el sector', detalle: '23 departamentos en La Floresta', icon: Building2 },
   ],
   cerrarGoto: 'n1',
   cerrarLabel: 'Volvió al chat desde el anuncio',
@@ -225,7 +227,6 @@ const APPS: PhoneApp[] = [
     viewNode: 'n5',
     label: 'Abrió la app del banco para transferir',
   },
-  { Icono: Images, texto: 'Galería', color: '#c2410c', relleno: 'galeria' },
 ]
 
 export const STORY: Story<ScreenNode> = {

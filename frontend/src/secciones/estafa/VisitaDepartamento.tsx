@@ -1,4 +1,4 @@
-import { Building2, Images, MessageCircle, Wallet } from 'lucide-react'
+import { Bookmark, Building2, Clock3, FileText, MessageCircle, Wallet } from 'lucide-react'
 import ScenarioStory, { type PhoneApp, type ScreenNode } from '../../components/StoryEscenario'
 import type { Context } from '../../components/ui/ContextoEscenario'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
@@ -49,6 +49,7 @@ const CHAT: ScreenView = {
 const VISIT: ScreenView = {
   kind: 'web',
   app: 'Portal Inmobiliario',
+  appAccent: APP_ACCENTS.operator,
   url: 'portalinmobiliario.ec',
   secure: true,
   brand: 'Visita realizada',
@@ -68,11 +69,12 @@ const VISIT: ScreenView = {
     {
       texto: 'Comprobar la inmobiliaria en el registro',
       detalle: 'Ver si la compañía existe',
+      icon: Building2,
       goto: 'n4',
       label: 'Consultó el registro de compañías',
     },
-    { texto: 'Ver otras opciones', detalle: '23 departamentos en el sector' },
-    { texto: 'Guardar el anuncio', detalle: 'Para verlo después' },
+    { texto: 'Ver otras opciones', detalle: '23 departamentos en el sector', icon: Building2 },
+    { texto: 'Guardar el anuncio', detalle: 'Para verlo después', icon: Bookmark },
   ],
   cerrarGoto: 'n3',
   cerrarLabel: 'Volvió al chat después de la visita',
@@ -132,6 +134,7 @@ const CLOSES: ScreenView = {
 const CONTRACT: ScreenView = {
   kind: 'web',
   app: 'Portal Inmobiliario',
+  appAccent: APP_ACCENTS.operator,
   url: 'portalinmobiliario.ec',
   secure: true,
   brand: 'Contrato de arrendamiento',
@@ -150,12 +153,14 @@ const CONTRACT: ScreenView = {
     {
       texto: 'Firmar y hacer el depósito',
       detalle: 'Con recibo y copia del contrato',
+      icon: FileText,
       goto: 'e_firma',
       label: 'Firmó el contrato y pagó la garantía',
     },
     {
       texto: 'Pedir un día más para pensarlo',
       detalle: 'Sin firmar todavía',
+      icon: Clock3,
       goto: 'e_piensa',
       label: 'Pidió un día más antes de firmar',
     },
@@ -205,7 +210,6 @@ const APPS: PhoneApp[] = [
     viewNode: 'n6',
     label: 'Abrió la app del banco',
   },
-  { Icono: Images, texto: 'Galería', color: '#c2410c', relleno: 'galeria' },
 ]
 
 export const STORY: Story<ScreenNode> = {

@@ -26,7 +26,7 @@ Se descartó construir filas y estilos en cada escenario, porque duplicaría mar
 - Preservar comportamiento de escenarios no pedidos.
 - TDD frontend desactivado según `odd/tasks/simulated-apps-ui.md`; runner identificado: Vitest (`pnpm test` desde `frontend/`). No añadir pruebas por la instrucción de desarrollo de esta sesión; ejecutar verificaciones funcionales ordinarias permitidas.
 - RDD no disponible: `gentle-ai review mode status` terminó con código 127 (`gentle-ai` no está instalado). Entrega: `disabled/unmanaged`, sin evaluación ni revisión nativa.
-- Estrategia de entrega: `ask-on-risk` (predeterminada). Previsión: alrededor de 450–600 líneas authored sumando adiciones y eliminaciones; antes del commit que cruce el presupuesto aproximado de 400 líneas se preguntará una vez por `stacked-to-main` o `feature-branch-chain`.
+- Estrategia de entrega: `ask-on-risk` (predeterminada). Pronóstico inicial: 450–600 líneas authored. Revisado tras T2: T1 + T2 suman 214 líneas; T3 se estima en 100–140, para un total aproximado de 314–354, por debajo del presupuesto de entrega de unas 400 líneas. No hace falta preguntar por estrategia de cadena.
 - Rama de función: `feat/ui-escenarios-consistency`.
 
 ## Criterios de aceptación
@@ -49,10 +49,12 @@ Se descartó construir filas y estilos en cada escenario, porque duplicaría mar
   - Conteo authored de la unidad: 96 líneas (76 adiciones, 20 eliminaciones); no se excedió el presupuesto de entrega.
   - Commit: `044e69a` (`feat(ui): mejorar opciones de apps simuladas`).
 
-- [ ] **T2 — Configuración consistente por escenario.** Configurar avatares/llamadas y los iconos solicitados en las ocho escenas de Suplantación; ajustar iconos, acentos, botones y quitar Galería del dock en las ocho escenas de Estafa indicadas.
+- [x] **T2 — Configuración consistente por escenario.** Configurar avatares/llamadas y los iconos solicitados en las ocho escenas de Suplantación; ajustar iconos, acentos, botones y quitar Galería del dock en las ocho escenas de Estafa indicadas.
   - Ruta: delegada directa.
   - Evidencia del disparador: son más de cuatro archivos de escenario y el mapeo fue delegado antes de decidir; cambios coordinados en varios módulos.
-  - Checks: revisar cada configuración contra la solicitud y `pnpm typecheck`, `pnpm lint` del frontend.
+  - Checks: revisé las seis agendas solicitadas en Suplantación y la agenda de Vuelto de Más; sus iniciales salen del `texto`. Comprobé los menús de Red social, Tienda y Banco contra el catálogo compartido, y las opciones de Mercado/Portal contra sus iconos por fila. Confirmé los ocho docks sin Galería y los acentos de courier, Mercado, Portal Inmobiliario, Ruvel Capital y TaskPro. `git diff --check` pasó; `pnpm typecheck` pasó; `pnpm lint` pasó con advertencias existentes. No ejecuté pruebas automatizadas por instrucción de la sesión.
+  - Cambios: siete listas de contactos usan `contact:true`; se ajustaron los acentos de las apps indicadas, se acortó Mercado Abierto a Mercado y se retiró Galería de los ocho docks solicitados. Las opciones de Mercado y Portal Inmobiliario declaran iconos semánticos por fila porque el catálogo compartido no tenía una correspondencia directa; los demás menús usan el catálogo existente.
+  - Conteo authored de la unidad: 118 líneas (67 adiciones, 51 eliminaciones). Acumulado T1 + T2: 214 líneas; presupuesto no excedido.
   - Commit: pendiente.
 
 - [ ] **T3 — Jerarquía de información en Estafa.** Reorganizar la ficha de mercado de `PagoLavadora.tsx` y los datos de condiciones de `TareasPagadas.tsx` con agrupaciones y encabezados claros, manteniendo todos los datos y el contenido en español.
@@ -65,5 +67,6 @@ Se descartó construir filas y estilos en cada escenario, porque duplicaría mar
 
 - Exploración: completada mediante CodeGraph y revisión de los commits `45386d8` y `4433bf1`; se confirmó el patrón compartido de acentos y opciones.
 - T1 completada y verificada en `044e69a`. La primera compilación falló por una clave duplicada agregada en el catálogo; se retiró la duplicación y `pnpm typecheck` final pasó.
+- T2 completada y verificada; commit pendiente. T1 + T2 suman 214 líneas authored y el forecast actualizado de la rama es de unas 314–354 líneas.
 - Mirror Engram pendiente: `engram save` no pudo abrir `/home/luissagnay/.engram/.instance-id.lock` porque el filesystem está en solo lectura; la llamada tampoco pudo verificar actualizaciones por DNS bloqueado. El documento local conserva el progreso.
-- Siguiente paso: implementar T2 y T3; confirmar estrategia de cadena antes del commit que exceda el presupuesto de entrega; actualizar progreso, mirror y commits al cerrar cada tarea.
+- Siguiente paso: cerrar el commit de T2 y completar T3; actualizar progreso, mirror y commits al cerrar cada tarea.

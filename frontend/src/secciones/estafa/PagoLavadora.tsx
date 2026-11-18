@@ -1,4 +1,4 @@
-import { Images, MessageCircle, ShoppingBag, Wallet } from 'lucide-react'
+import { MessageCircle, ShoppingBag, Wallet } from 'lucide-react'
 import ScenarioStory, { type PhoneApp, type ScreenNode } from '../../components/StoryEscenario'
 import type { Context } from '../../components/ui/ContextoEscenario'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
@@ -152,7 +152,7 @@ const DELIVERY: ScreenView = {
 
 const AD: ScreenView = {
   kind: 'web',
-  app: 'Mercado Abierto',
+  app: 'Mercado',
   url: 'mercadoabierto.ec',
   secure: true,
   brand: 'Tu anuncio',
@@ -192,12 +192,11 @@ const APPS: PhoneApp[] = [
   },
   {
     Icono: ShoppingBag,
-    texto: 'Mercado Abierto',
+    texto: 'Mercado',
     color: '#7048e8',
     viewNode: 'n5',
     label: 'Abrió su anuncio para ver el perfil de la compradora',
   },
-  { Icono: Images, texto: 'Galería', color: '#c2410c', relleno: 'galeria' },
 ]
 
 export const STORY: Story<ScreenNode> = {

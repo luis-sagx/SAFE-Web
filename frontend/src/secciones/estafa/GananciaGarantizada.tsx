@@ -1,4 +1,4 @@
-import { Images, MessageCircle, TrendingUp, Wallet } from 'lucide-react'
+import { MessageCircle, TrendingUp, Wallet } from 'lucide-react'
 import ScenarioStory, { type PhoneApp, type ScreenNode } from '../../components/StoryEscenario'
 import type { Context } from '../../components/ui/ContextoEscenario'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
@@ -14,6 +14,7 @@ import { ACCOUNT_FAKE, IDENTITY_FAKE } from '../../lib/identidadFicticia'
 const ADVISOR = 'Andrés Villacís'
 const NUMBER_ADVISOR = '+593 99 302 7715'
 const ACCOUNT_PLATFORM = '5520-1188-70 · Comercializadora Ruvel S.A.'
+const RUVEL_ACCENT = '#0ca678'
 
 const PICKUP_ARRIVED = {
   text: '¿Vio? Sus $50 de rendimiento ya están en su cuenta, tal como le dije 🎉 así de simple es. Con $200 usted habría retirado $260 este mes.',
@@ -146,6 +147,7 @@ const GETS_UPSET: ScreenView = {
 const PANEL: ScreenView = {
   kind: 'web',
   app: 'Ruvel Capital',
+  appAccent: RUVEL_ACCENT,
   url: 'ruvelcapital.io',
   secure: true,
   brand: 'Tu panel',
@@ -186,6 +188,7 @@ const PANEL: ScreenView = {
 const PICKUP: ScreenView = {
   kind: 'web',
   app: 'Ruvel Capital',
+  appAccent: RUVEL_ACCENT,
   url: 'ruvelcapital.io',
   secure: true,
   brand: 'Retiro de fondos',
@@ -269,7 +272,7 @@ const APPS: PhoneApp[] = [
   {
     Icono: TrendingUp,
     texto: 'Ruvel Capital',
-    color: '#0ca678',
+    color: RUVEL_ACCENT,
     viewNode: 'n6',
     label: 'Abrió el panel de la plataforma de inversión',
   },
@@ -280,7 +283,6 @@ const APPS: PhoneApp[] = [
     viewNode: 'n5',
     label: 'Abrió la app del banco para transferir',
   },
-  { Icono: Images, texto: 'Galería', color: '#c2410c', relleno: 'galeria' },
 ]
 
 export const STORY: Story<ScreenNode> = {
