@@ -1,5 +1,6 @@
 import {
   ArrowLeftRight,
+  Ban,
   Bell,
   Bot,
   Car,
@@ -7,7 +8,9 @@ import {
   ChevronRight,
   CreditCard,
   FileText,
+  Flag,
   Gauge,
+  Gift,
   HandCoins,
   Headset,
   HeartPulse,
@@ -18,25 +21,31 @@ import {
   MapPin,
   MessageSquareOff,
   MessageSquareText,
+  MessageCircle,
+  Megaphone,
   MonitorSmartphone,
   NotebookPen,
   Package,
   PackageSearch,
   Paperclip,
+  Phone,
   PencilLine,
   ReceiptText,
   Search,
   SendHorizontal,
   ShieldAlert,
   ShieldCheck,
+  ShoppingBag,
   Smartphone,
   TriangleAlert,
   Truck,
   Undo2,
   UserRound,
+  Users,
   Voicemail,
   WalletCards,
   Wifi,
+  Eye,
   X,
   type LucideIcon,
 } from 'lucide-react'
@@ -122,6 +131,8 @@ export type ScreenView =
         detalle?: string
         goto?: string
         label?: string
+        icon?: LucideIcon
+        contact?: boolean
       }[]
       // Resultados de búsqueda; mandan sobre `datos` y el formulario.
       resultados?: {
@@ -297,6 +308,19 @@ const MENU_ICONS: Record<string, LucideIcon | undefined> = {
   'Cotizar un envío': Package,
   'Buzón de voz': Voicemail,
   'Editar tu información': PencilLine,
+  'Ver movimientos': ReceiptText,
+  'Buscar tu propio nombre': Search,
+  'Tu perfil': UserRound,
+  Grupos: Users,
+  'Reportar este perfil': Flag,
+  'Enviarle un mensaje': MessageCircle,
+  Bloquear: Ban,
+  'Publicar un aviso para tus contactos': Megaphone,
+  'Quién puede ver tus fotos': Eye,
+  'Tus publicaciones': ImageIcon,
+  '4 tarjetas de $100': Gift,
+  '1 tarjeta de $25': Gift,
+  'Mis compras': ShoppingBag,
   'Bloquear mensajes de números cortos': MessageSquareOff,
   'Ver el detalle del envío': PackageSearch,
   'Devolver al remitente': Undo2,
@@ -307,6 +331,13 @@ const MENU_ICONS: Record<string, LucideIcon | undefined> = {
   'Asistencia Vial EC': Car,
   'Asistente de notas': NotebookPen,
   'Salud Asistida': HeartPulse,
+}
+
+function menuIcon(text: string): LucideIcon | undefined {
+  if (MENU_ICONS[text]) return MENU_ICONS[text]
+  if (text.startsWith('Buscar "')) return Search
+  if (text.includes(' · desde ')) return UserRound
+  return undefined
 }
 
 // Sin botonGoto se pinta igual pero no responde (botón decorativo).
@@ -487,29 +518,54 @@ function DeviceScreen({
         {view.opciones ? (
           <ul className={styles.opciones}>
             {view.opciones.map((option, _i, all) => {
-              const Icon = all.every((o) => MENU_ICONS[o.texto]) ? MENU_ICONS[option.texto] : undefined
+              const hasIcons = all.every(
+                (item) => item.icon ?? menuIcon(item.texto),
+              )
+              const Icon =
+                option.icon ?? (hasIcons ? menuIcon(option.texto) : undefined)
               return (
-              <li key={option.texto}>
-                <button
-                  type="button"
-                  className={styles.opcion}
-                  data-hotspot-goto={option.goto}
-                  data-hotspot-label={option.label}
-                >
-                  {Icon && (
-                    <span className={styles.opcionIcono} aria-hidden>
-                      <Icon className={styles.opcionGlifo} strokeWidth={2} />
-                    </span>
-                  )}
-                  <span className={styles.opcionTextos}>
-                    <span className={styles.opcionTexto}>{option.texto}</span>
-                    {option.detalle && (
-                      <span className={styles.opcionDetalle}>{option.detalle}</span>
+                <li key={option.texto}>
+                  <button
+                    type="button"
+                    className={styles.opcion}
+                    data-hotspot-goto={option.goto}
+                    data-hotspot-label={option.label}
+                  >
+                    {option.contact ? (
+                      <span
+                        aria-hidden
+                        className="grid size-10 shrink-0 place-items-center rounded-full bg-blue-100 text-sm font-semibold text-blue-800 dark:bg-blue-950 dark:text-blue-200"
+                      >
+                        {option.texto.trim().charAt(0).toLocaleUpperCase()}
+                      </span>
+                    ) : (
+                      Icon && (
+                        <span className={styles.opcionIcono} aria-hidden>
+                          <Icon className={styles.opcionGlifo} strokeWidth={2} />
+                        </span>
+                      )
                     )}
-                  </span>
-                  <ChevronRight aria-hidden className={styles.opcionFlecha} strokeWidth={2} />
-                </button>
-              </li>
+                    <span className={styles.opcionTextos}>
+                      <span className={styles.opcionTexto}>{option.texto}</span>
+                      {option.detalle && (
+                        <span className={styles.opcionDetalle}>{option.detalle}</span>
+                      )}
+                    </span>
+                    {option.contact ? (
+                      <Phone
+                        aria-hidden
+                        className="size-5 shrink-0 text-emerald-600"
+                        strokeWidth={2}
+                      />
+                    ) : (
+                      <ChevronRight
+                        aria-hidden
+                        className={styles.opcionFlecha}
+                        strokeWidth={2}
+                      />
+                    )}
+                  </button>
+                </li>
               )
             })}
           </ul>
