@@ -6,9 +6,18 @@ describe('AppRelleno', () => {
   it('muestra una cuenta y movimientos en la app bancaria', () => {
     render(<AppRelleno tipo="banco" />)
 
-    expect(screen.getByText('Cuenta de ahorros')).toBeDefined()
+    expect(screen.getByText('Banco del Litoral')).toBeDefined()
+    expect(screen.getByText(/Cuenta de ahorros/)).toBeDefined()
     expect(screen.getByText('$312,45')).toBeDefined()
     expect(screen.getByText('Transferencia recibida')).toBeDefined()
+  })
+
+  it('el navegador abre en Nueva pestaña con sus sitios frecuentes', () => {
+    render(<AppRelleno tipo="navegador" />)
+
+    expect(screen.getByText('Nueva pestaña')).toBeDefined()
+    expect(screen.getByText('Sitios frecuentes')).toBeDefined()
+    expect(screen.getByText('inclusion.gob.ec')).toBeDefined()
   })
 
   it('presenta recuerdos variados en la galería', () => {

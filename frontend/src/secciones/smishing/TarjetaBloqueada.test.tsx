@@ -44,6 +44,18 @@ describe('TarjetaBloqueada', () => {
     expect(screen.getByText('¿Qué haces?')).toBeDefined()
   })
 
+  // El icono Teléfono del dock abre el marcador desde el primer momento, sin
+  // tener que tocar antes el número del mensaje.
+  it('el icono Teléfono abre el marcador con teclado antes de haber llamado', () => {
+    const phone = start(<BlockedCard />)
+
+    fireEvent.click(within(phone).getByRole('button', { name: /Teléfono/ }))
+
+    expect(within(phone).getByLabelText('Marcador')).toBeDefined()
+    expect(within(phone).getByRole('button', { name: /^5/ })).toBeDefined()
+    expect(within(phone).getByRole('button', { name: 'Llamar a este número' })).toBeDefined()
+  })
+
   // Salir del marcador es lo correcto y no es suficiente: la corrida sigue
   // abierta, porque el estado de la tarjeta sigue sin comprobarse.
   it('no llamar devuelve al hilo con el escenario todavía por resolver, y mirar las tarjetas cierra', () => {

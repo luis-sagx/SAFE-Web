@@ -1,16 +1,19 @@
 import {
-  ArrowDownLeft,
-  ArrowUpRight,
+  ArrowLeftRight,
   Building2,
   Coffee,
   Flower2,
   Image as ImageIcon,
+  Landmark,
   Mountain,
-  Search,
+  ReceiptText,
   UserRound,
+  WalletCards,
 } from 'lucide-react'
+import type { CSSProperties } from 'react'
 import styles from './DeviceScreen.module.css'
 import { APP_ACCENTS } from './appAccents'
+import InicioNavegador, { type SitioFrecuente } from './InicioNavegador'
 
 // Las tres apps de relleno que sobrevivieron a la poda del dock (issue #187):
 // cada una tiene su propio layout, con la pinta de la app real que dice ser,
@@ -30,7 +33,13 @@ const MOVIMIENTOS = [
   { id: 'servicios', texto: 'Pago de servicios', fecha: 'Lun', monto: '-$24.10', entra: false },
 ]
 
-const SITIOS_FRECUENTES = ['Correo', 'Noticias', 'Clima', 'Mapas']
+// Mismos sitios que los escenarios donde el navegador sí decide, para que no
+// cambie de una app a otra. Ninguno responde: es relleno.
+const SITIOS_FRECUENTES: SitioFrecuente[] = [
+  { texto: 'elcomercio.com', detalle: 'Noticias del Ecuador' },
+  { texto: 'bancolitoral.ec', detalle: 'Banca en línea' },
+  { texto: 'inclusion.gob.ec', detalle: 'Ministerio de Inclusión Económica y Social' },
+]
 
 const FOTOS = [
   { nombre: 'Parque', Icono: Mountain },
@@ -50,43 +59,36 @@ interface AppRellenoProps {
 }
 
 function AppBanco({ color }: { color?: string }) {
+  const accent = { '--app-accent': color ?? APP_ACCENTS.bank } as CSSProperties
   return (
-    <div className={styles.appBanco}>
-      <div className={styles.appBancoCuenta}>
-        <span className={styles.appBancoCuentaIcono} aria-hidden>
-          <Building2 className={styles.appBancoCuentaGlifo} strokeWidth={1.8} />
-        </span>
-        <span className={styles.appBancoCuentaTexto}>
-          <span className={styles.appBancoCuentaNombre}>Cuenta de ahorros</span>
-          <span className={styles.appBancoCuentaNumero}>•••• 2841</span>
-        </span>
-        <span className={styles.appBancoCuentaEstado}>Activa</span>
+    <div className={styles.appBanco} style={accent}>
+      <div className={styles.appBancoMarca}>
+        <Landmark aria-hidden className={styles.appBancoMarcaGlifo} strokeWidth={2} />
+        Banco del Litoral
       </div>
-      <div
-        className={styles.appBancoSaldo}
-        style={{ backgroundColor: color ?? APP_ACCENTS.bank }}
-      >
-        <span className={styles.appBancoSaldoEtiqueta}>Saldo disponible</span>
+      <div className={styles.appBancoSaldo}>
+        <span className={styles.appBancoSaldoEtiqueta}>Cuenta de ahorros •••• 2841</span>
         <span className={styles.appBancoSaldoValor}>$312,45</span>
-        <span className={styles.appBancoSaldoDetalle}>Actualizado hoy</span>
+        <span className={styles.appBancoSaldoDetalle}>Saldo disponible</span>
       </div>
-      <div className={styles.appBancoSeccionFila}>
-        <p className={styles.appBancoSeccion}>Movimientos recientes</p>
-        <span className={styles.appBancoVerTodos}>Ver todos</span>
+      <div className={styles.appBancoAcciones} aria-hidden>
+        <span className={styles.appBancoAccion}>
+          <ArrowLeftRight className={styles.appBancoAccionGlifo} strokeWidth={1.75} />
+          Transferir
+        </span>
+        <span className={styles.appBancoAccion}>
+          <ReceiptText className={styles.appBancoAccionGlifo} strokeWidth={1.75} />
+          Pagar
+        </span>
+        <span className={styles.appBancoAccion}>
+          <WalletCards className={styles.appBancoAccionGlifo} strokeWidth={1.75} />
+          Tarjetas
+        </span>
       </div>
+      <p className={styles.appBancoSeccion}>Últimos movimientos</p>
       <ul className={styles.appBancoLista}>
         {MOVIMIENTOS.map((mov) => (
           <li key={mov.id} className={styles.appBancoItem}>
-            <span
-              className={`${styles.appBancoItemIcono} ${mov.entra ? styles.appBancoEntra : ''}`}
-              aria-hidden
-            >
-              {mov.entra ? (
-                <ArrowDownLeft className={styles.appBancoItemGlifo} strokeWidth={2} />
-              ) : (
-                <ArrowUpRight className={styles.appBancoItemGlifo} strokeWidth={2} />
-              )}
-            </span>
             <span className={styles.appBancoItemTexto}>
               <span className={styles.appBancoItemDescripcion}>{mov.texto}</span>
               <span className={styles.appBancoItemFecha}>{mov.fecha}</span>
@@ -102,23 +104,7 @@ function AppBanco({ color }: { color?: string }) {
 }
 
 function AppNavegador() {
-  return (
-    <div className={styles.appNavegador}>
-      <div className={styles.appNavegadorBarra}>
-        <Search aria-hidden className={styles.appNavegadorIcono} strokeWidth={2} />
-        <span className={styles.appNavegadorPlaceholder}>Buscar o escribir una dirección web</span>
-      </div>
-      <p className={styles.appNavegadorSeccion}>Sitios frecuentes</p>
-      <div className={styles.appNavegadorGrid}>
-        {SITIOS_FRECUENTES.map((sitio) => (
-          <div key={sitio} className={styles.appNavegadorSitio}>
-            <span className={styles.appNavegadorSitioIcono} aria-hidden />
-            <span className={styles.appNavegadorSitioTexto}>{sitio}</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  )
+  return <InicioNavegador sitios={SITIOS_FRECUENTES} />
 }
 
 function AppGaleria() {

@@ -63,6 +63,7 @@ const CALL: ScreenView = {
 const COURIER: ScreenView = {
   kind: 'web',
   app: 'EnvíaExpress',
+  appAccent: APP_ACCENTS.courier,
   url: 'envia-express.ec',
   secure: true,
   brand: 'Mis envíos',
@@ -86,6 +87,7 @@ const COURIER: ScreenView = {
 const GUIDE: ScreenView = {
   kind: 'web',
   app: 'EnvíaExpress',
+  appAccent: APP_ACCENTS.courier,
   url: 'envia-express.ec',
   secure: true,
   brand: 'Seguimiento de envíos',

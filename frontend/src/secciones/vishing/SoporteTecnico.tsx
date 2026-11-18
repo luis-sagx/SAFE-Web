@@ -5,6 +5,7 @@ import ScenarioStory, {
 } from "../../components/StoryEscenario";
 import type { Context } from "../../components/ui/ContextoEscenario";
 import type { ScreenView } from "../../components/ui/DeviceScreen";
+import { APP_ACCENTS } from "../../components/ui/appAccents";
 import type { Signal } from "../../components/ui/PanelVeredicto";
 import type { Story } from "../../hooks/useStoryEngine";
 
@@ -176,6 +177,7 @@ const PERMISSION: ScreenView = {
 const OPERATOR: ScreenView = {
   kind: "web",
   app: "Mi AndinaNet",
+  appAccent: APP_ACCENTS.isp,
   url: "andinanet",
   secure: true,
   brand: "Mi cuenta",
@@ -199,6 +201,7 @@ const OPERATOR: ScreenView = {
 const STATUS: ScreenView = {
   kind: "web",
   app: "Mi AndinaNet",
+  appAccent: APP_ACCENTS.isp,
   url: "andinanet",
   secure: true,
   brand: "Estado de tu servicio",
@@ -231,7 +234,7 @@ const APPS: PhoneApp[] = [
   {
     Icono: Wifi,
     texto: "Mi AndinaNet",
-    color: "#0b7285",
+    color: APP_ACCENTS.isp,
     viewNode: "n6",
     label: "Abrió la app de su proveedor de internet",
   },

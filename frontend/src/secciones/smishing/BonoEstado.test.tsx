@@ -93,7 +93,7 @@ describe("BonoEstado", () => {
     const phone = container.querySelector("#pantalla-escenario") as HTMLElement;
 
     fireEvent.click(within(phone).getByRole("button", { name: /Navegador/ }));
-    expect(phone.querySelectorAll('[class*="opciones"] li')).toHaveLength(3);
+    expect(phone.querySelectorAll('[class*="navInicioLista"] li')).toHaveLength(3);
     expect(within(phone).queryByRole("button", { name: /sri\.gob\.ec/ })).toBeNull();
     expect(within(phone).getByRole("button", { name: /inclusion\.gob\.ec/ })).toBeDefined();
 

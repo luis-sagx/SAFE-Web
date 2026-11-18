@@ -90,6 +90,7 @@ const PAGE: ScreenView = {
 const APP_HOME: ScreenView = {
   kind: 'web',
   app: 'EnvíaExpress',
+  appAccent: APP_ACCENTS.courier,
   url: 'envia-express.ec',
   secure: true,
   brand: 'Mis envíos',
@@ -116,6 +117,7 @@ const APP_HOME: ScreenView = {
 const APP_COURIER: ScreenView = {
   kind: 'web',
   app: 'EnvíaExpress',
+  appAccent: APP_ACCENTS.courier,
   url: 'envia-express.ec',
   secure: true,
   brand: 'Seguimiento de envíos',

@@ -113,6 +113,9 @@ export type PhoneApp = BrowserBookmark & {
   color?: string;
   // Pantalla visual alternativa durante una llamada real (no el marcador).
   viewNodeEnLlamada?: string;
+  // Pantalla que abre el icono cuando NO hay llamada en curso (el marcador del
+  // teléfono); con una llamada activa el icono vuelve a ella por `hilo`.
+  viewNodeSinLlamada?: string;
   // Decisión alternativa durante una llamada real. Se conserva separada de
   // viewNodeEnLlamada para los pocos casos donde abrir sí deba avanzar.
   gotoEnLlamada?: string;
@@ -623,16 +626,19 @@ function ScenarioStory({
     ? ({ "--app-accent": appAccent } as CSSProperties)
     : undefined;
 
+  // La cabecera de una app lleva color; la del navegador con dirección, los
+  // mensajes y las llamadas son claras, y la barra de estado las acompaña.
+  const headerIsColored =
+    !engine.isEnding &&
+    (Boolean(appOpen) || (toView.kind === "web" && Boolean(toView.app)));
+
+  // Llamada ya contestada, aunque ahora se esté mirando un mensaje o una app
+  // encima de ella; el marcador no cuenta.
+  const callNode = threads.call ? story[threads.call]?.view : undefined;
+  const callInProgress = callNode?.kind === "call" && !callNode.marcando;
+
   const phoneScreen = (
     <div className={styles.phoneStage} onClick={onHotspot}>
-      <div className={styles.phoneStatusBar} aria-hidden>
-        <span>{phoneTime}</span>
-        <span className={styles.phoneSensors}>
-          <span className={styles.phoneSignal}>▮▮▮</span>
-          <span>5G</span>
-          <span className={styles.phoneBattery}></span>
-        </span>
-      </div>
       <div className={styles.phoneBody}>
         {showNotification && nodeNotification && (
           <PhoneNotification
@@ -644,6 +650,27 @@ function ScenarioStory({
             el botón principal y los realces lo heredan, para que la cabecera
             de un banco y su botón no salgan de dos marcas distintas. */}
         <div className={styles.phoneApp} style={appAccentStyle}>
+          {/* Va dentro de la app y con el color de su cabecera: en un teléfono
+              real la barra de estado y el título de la app son una sola franja. */}
+          <div
+            className={`${styles.phoneStatusBar} ${
+              headerIsColored ? styles.phoneStatusBarApp : styles.phoneStatusBarClaro
+            }`}
+            aria-hidden
+          >
+            <span>{phoneTime}</span>
+            <span className={styles.phoneCamera} />
+            <span className={styles.phoneSensors}>
+              <svg viewBox="0 0 16 12" className={styles.phoneSignal} fill="currentColor">
+                <rect x="0" y="8" width="2.4" height="4" rx="0.8" />
+                <rect x="4.2" y="5.5" width="2.4" height="6.5" rx="0.8" />
+                <rect x="8.4" y="3" width="2.4" height="9" rx="0.8" />
+                <rect x="12.6" y="0" width="2.4" height="12" rx="0.8" />
+              </svg>
+              <span>5G</span>
+              <span className={styles.phoneBattery}></span>
+            </span>
+          </div>
           {appOpen && !engine.isEnding ? (
             <>
               <div className={styles.phoneAppBar}>
@@ -812,6 +839,7 @@ function ScenarioStory({
               texto: text,
               viewNode,
               viewNodeEnLlamada,
+              viewNodeSinLlamada,
               goto,
               gotoEnLlamada,
               label,
@@ -827,7 +855,9 @@ function ScenarioStory({
               const onCall =
                 engine.node.view.kind === "call" && !engine.node.view.marcando;
               const visualDestination =
-                (onCall && viewNodeEnLlamada) || viewNode;
+                (onCall && viewNodeEnLlamada) ||
+                viewNode ||
+                (!callInProgress ? viewNodeSinLlamada : undefined);
               const decisionDestination = (onCall && gotoEnLlamada) || goto;
               const filler = empty || relleno;
               return (
