@@ -18,7 +18,7 @@ describe('TarjetaBloqueada', () => {
     fireEvent.click(within(phone).getByRole('button', { name: /Banco/ }))
     expect(phone.querySelectorAll('[class*="opciones"] li')).toHaveLength(3)
     expect(within(phone).queryByRole('button', { name: /Transferir/ })).toBeNull()
-    expect((phone.querySelector('[class*="phoneAppBar"]') as HTMLElement).style.backgroundColor).toBe('rgb(15, 118, 110)')
+    expect((phone.querySelector('[class*="phoneApp"][style]') as HTMLElement).style.getPropertyValue('--app-accent')).toBe('#0f766e')
   })
 
   it('el campo no se escribe solo: la frase se elige entre las que ofrece el hilo', () => {

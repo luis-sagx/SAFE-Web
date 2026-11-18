@@ -13,12 +13,12 @@ describe('EntregaProgramada', () => {
     fireEvent.click(within(phone).getByRole('button', { name: /EnvíaExpress/ }))
     expect(phone.querySelectorAll('[class*="opciones"] li')).toHaveLength(3)
     expect(within(phone).queryByRole('button', { name: /Mis direcciones/ })).toBeNull()
-    expect((phone.querySelector('[class*="phoneAppBar"]') as HTMLElement).style.backgroundColor).toBe('rgb(194, 65, 12)')
+    expect((phone.querySelector('[class*="phoneApp"][style]') as HTMLElement).style.getPropertyValue('--app-accent')).toBe('#c2410c')
 
     const bank = within(phone).getByRole('button', { name: /Banco/ })
     expect((bank.querySelector('[class*="phoneDockIcono"]') as HTMLElement).style.background).toBe('rgb(15, 118, 110)')
     fireEvent.click(bank)
-    expect((phone.querySelector('[class*="phoneAppBar"]') as HTMLElement).style.backgroundColor).toBe('rgb(15, 118, 110)')
+    expect((phone.querySelector('[class*="phoneApp"][style]') as HTMLElement).style.getPropertyValue('--app-accent')).toBe('#0f766e')
   })
 
   it('muestra la respuesta predeterminada como opción, sin activar el input', () => {

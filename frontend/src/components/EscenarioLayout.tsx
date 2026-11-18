@@ -47,8 +47,10 @@ interface ScenarioLayoutProps {
 // Marco común: si la app real lo mostraría va en `pantalla`, si no va en `decision`.
 // MARCO_TELEFONO: relación 0.60 (no la real ~0.46, que estrangularía formularios/hilos
 // largos). border-control, no border-hairline-strong: mantiene 3:1 aun en apps oscuras.
+// En celular también lleva esquinas, borde y un margen: de borde a borde se leía
+// como una franja negra y no como un teléfono dentro de la página.
 const FRAME_PHONE =
-  "sm:max-h-[50rem] sm:w-[30rem] sm:rounded-[1.75rem] sm:border-2 sm:border-control sm:shadow-[0_30px_70px_rgba(0,0,0,0.22)] lg:h-[50rem] lg:max-h-full lg:flex-none lg:self-center";
+  "rounded-[1.75rem] border-2 border-control shadow-[0_16px_36px_rgba(0,0,0,0.18)] max-sm:my-3 max-sm:w-[calc(100%-1.5rem)] sm:max-h-[50rem] sm:w-[30rem] sm:shadow-[0_30px_70px_rgba(0,0,0,0.22)] lg:h-[50rem] lg:max-h-full lg:flex-none lg:self-center";
 
 // MARCO_ESCRITORIO: ancho con calc(100vw - <columna>) para quedarse con TODO lo que
 // sobra, no un porcentaje fijo. La resta varía por breakpoint porque la columna de
@@ -158,7 +160,13 @@ function ScenarioLayout({
       onClick={() => exitRef.current?.showModal()}
       className={BACK_CLASS}
     >
-      {decided ? "← Salir" : "← Salir sin terminar"}
+      {/* En celular solo "Salir" para que quepa en la fila del logo; el resto
+          sigue para el lector de pantalla. */}
+      ← Salir
+      {/* En un inline-flex el espacio entre textos no se pinta ("Salirsin
+          terminar"): el espacio queda para el lector y el margen lo dibuja. */}
+      {!decided && " "}
+      {!decided && <span className="ml-[0.25em] max-sm:sr-only">sin terminar</span>}
     </button>
   );
 

@@ -33,10 +33,10 @@ function AppHeader({
 
   return (
     <header className="shrink-0 border-b border-hairline bg-canvas">
-      <div className="mx-auto flex min-h-14 max-w-7xl flex-wrap items-center gap-x-4 gap-y-1 px-6 py-2 text-sm">
+      <div className="mx-auto flex min-h-14 max-w-7xl flex-wrap items-center gap-x-3 gap-y-1 px-4 py-2 text-sm sm:gap-x-4 sm:px-6">
         {/* Marca, filete y retorno viajan juntos con poco aire: son un solo bloque
             ("dónde estoy y cómo salgo") que sin el filete de junta parece dos marcas. */}
-        <div className="flex shrink-0 items-center gap-3">
+        <div className="flex min-w-0 shrink-0 items-center gap-2 sm:gap-3">
           {/* La marca es también el camino de vuelta al panel, como en
               cualquier sitio: quien se pierde dentro de un módulo pulsa el
               logo. */}
@@ -44,7 +44,7 @@ function AppHeader({
             to="/"
             className="shrink-0 rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-link"
           >
-            <Brand variante="logo" className="h-10 w-auto" />
+            <Brand variante="logo" className="h-8 w-auto sm:h-10" />
           </Link>
 
           {(label || back) && <span aria-hidden className="h-6 w-px bg-hairline-strong" />}
@@ -58,21 +58,26 @@ function AppHeader({
           {back}
         </div>
 
-        {/* Empuja los datos cortos y la cuenta al extremo derecho. */}
-        <div className="flex min-w-0 flex-1 flex-wrap items-center justify-end gap-x-5 gap-y-1">
-          {children}
-        </div>
+        {/* Empuja los datos cortos y la cuenta al extremo derecho. En celular
+            bajan a su propia línea: en la misma fila no cabían junto al logo,
+            la salida y la cuenta, y "Vishing · 7 de 8" se cortaba o se salía
+            de la pantalla. */}
+        {children && (
+          <div className="order-last flex min-w-0 basis-full flex-wrap items-center gap-x-5 gap-y-1 sm:order-none sm:basis-0 sm:flex-1 sm:justify-end">
+            {children}
+          </div>
+        )}
 
         {/* Sin sesión no hay menú de cuenta, y el tema vivía dentro de ese
             menú: un visitante de la portada se quedaba sin forma de cambiarlo.
             Con sesión sigue en el menú, para no tener dos selectores. */}
         {!isAuthenticated && (
-          <div className="flex shrink-0 items-center">
+          <div className="ml-auto flex shrink-0 items-center">
             <ThemeMenu />
           </div>
         )}
 
-        {isAuthenticated && <div className="flex shrink-0 items-center gap-1">
+        {isAuthenticated && <div className="ml-auto flex shrink-0 items-center gap-1">
           {/* La bienvenida explica los tipos de engaño y qué pasa con los
               datos del participante; al supervisor no le dice nada. */}
           {!isAdmin && <InfoLink />}

@@ -115,3 +115,28 @@ describe('DeviceScreen, marcas de páginas y apps', () => {
     expect(screen.getByText('Banca móvil')).toBeDefined()
   })
 })
+
+const menu = (textos: string[]): ScreenView => ({
+  kind: 'web',
+  url: 'bancolitoral.ec',
+  app: 'Banco del Litoral',
+  secure: true,
+  brand: 'Banca móvil',
+  title: 'Tus cuentas',
+  opciones: textos.map((texto) => ({ texto })),
+  fields: [],
+  button: '',
+})
+
+describe('DeviceScreen, íconos del menú de una app', () => {
+  it('dibuja un ícono por fila cuando todas las entradas tienen uno', () => {
+    const { container } = render(<DeviceScreen view={menu(['Transferir', 'Movimientos'])} />)
+    expect(container.querySelectorAll('[class*="opcionIcono"]')).toHaveLength(2)
+  })
+
+  // Un ícono en una sola fila la haría resaltar y delataría cuál decide.
+  it('no dibuja ninguno si alguna entrada no tiene ícono', () => {
+    const { container } = render(<DeviceScreen view={menu(['Transferir', 'Llamar a Mamá'])} />)
+    expect(container.querySelectorAll('[class*="opcionIcono"]')).toHaveLength(0)
+  })
+})

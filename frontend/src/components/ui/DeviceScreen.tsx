@@ -1,4 +1,36 @@
-import { Bot, ImageIcon, Landmark, Paperclip, Search, SendHorizontal, UserRound, X } from 'lucide-react'
+import {
+  ArrowLeftRight,
+  Bell,
+  Bot,
+  ChevronLeft,
+  ChevronRight,
+  CreditCard,
+  FileText,
+  Gauge,
+  HandCoins,
+  ImageIcon,
+  Landmark,
+  ListChecks,
+  MapPin,
+  MessageSquareText,
+  Package,
+  Paperclip,
+  PencilLine,
+  ReceiptText,
+  Search,
+  SendHorizontal,
+  ShieldAlert,
+  ShieldCheck,
+  Smartphone,
+  TriangleAlert,
+  Truck,
+  UserRound,
+  Voicemail,
+  WalletCards,
+  Wifi,
+  X,
+  type LucideIcon,
+} from 'lucide-react'
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import { ACCOUNT_FAKE, IDENTITY_FAKE } from '../../lib/identidadFicticia'
@@ -226,6 +258,37 @@ const VALUES: Record<string, ((me: { correo: string; usuario: string }) => strin
   cuenta: () => ACCOUNT_FAKE,
 }
 
+// Íconos de los menús de app (banca, operadora, courier). Van por texto y no
+// por escenario porque son las mismas entradas en todos los bancos simulados.
+// Solo se dibujan si TODAS las filas del menú tienen uno: un ícono en una
+// sola fila la haría resaltar y delataría cuál decide.
+const MENU_ICONS: Record<string, LucideIcon | undefined> = {
+  Transferir: ArrowLeftRight,
+  Movimientos: ReceiptText,
+  'Pagar servicios': FileText,
+  'Mi perfil': UserRound,
+  'Consumos retenidos': ShieldAlert,
+  'Bloquear tarjeta': CreditCard,
+  'Mis tarjetas': WalletCards,
+  'Mensajes del banco': MessageSquareText,
+  Notificaciones: Bell,
+  'Seguridad de la cuenta': ShieldCheck,
+  'Reportar un movimiento': TriangleAlert,
+  'Retirar mis fondos': HandCoins,
+  'Mis tareas': ListChecks,
+  'Recargas de saldo': Smartphone,
+  'Paquetes y suscripciones': Package,
+  'Estado de mi servicio': Wifi,
+  'Mi factura': ReceiptText,
+  'Cambiar mi plan': Gauge,
+  'Rastrear una guía': Truck,
+  'Reprogramar la entrega': Package,
+  'Puntos de retiro': MapPin,
+  'Cotizar un envío': Package,
+  'Buzón de voz': Voicemail,
+  'Editar tu información': PencilLine,
+}
+
 // Sin botonGoto se pinta igual pero no responde (botón decorativo).
 function Action({ view }: { view: Extract<ScreenView, { kind: 'web' }> }) {
   if (!view.botonGoto) return <div className={styles.submit}>{view.button}</div>
@@ -398,7 +461,9 @@ function DeviceScreen({
 
         {view.opciones ? (
           <ul className={styles.opciones}>
-            {view.opciones.map((option) => (
+            {view.opciones.map((option, _i, all) => {
+              const Icon = all.every((o) => MENU_ICONS[o.texto]) ? MENU_ICONS[option.texto] : undefined
+              return (
               <li key={option.texto}>
                 <button
                   type="button"
@@ -406,18 +471,22 @@ function DeviceScreen({
                   data-hotspot-goto={option.goto}
                   data-hotspot-label={option.label}
                 >
+                  {Icon && (
+                    <span className={styles.opcionIcono} aria-hidden>
+                      <Icon className={styles.opcionGlifo} strokeWidth={2} />
+                    </span>
+                  )}
                   <span className={styles.opcionTextos}>
                     <span className={styles.opcionTexto}>{option.texto}</span>
                     {option.detalle && (
                       <span className={styles.opcionDetalle}>{option.detalle}</span>
                     )}
                   </span>
-                  <span className={styles.opcionFlecha} aria-hidden>
-                    ›
-                  </span>
+                  <ChevronRight aria-hidden className={styles.opcionFlecha} strokeWidth={2} />
                 </button>
               </li>
-            ))}
+              )
+            })}
           </ul>
         ) : view.resultados ? (
           <div className={styles.resultados}>
@@ -556,11 +625,11 @@ function DeviceScreen({
             data-hotspot-goto={view.volverGoto}
             data-hotspot-label={view.volverLabel}
           >
-            ‹
+            <ChevronLeft aria-hidden className={styles.smsVolverGlifo} strokeWidth={2.25} />
           </button>
         ) : (
           <span className={`${styles.smsVolver} ${styles.smsVolverApagado}`} aria-hidden>
-            ‹
+            <ChevronLeft className={styles.smsVolverGlifo} strokeWidth={2.25} />
           </span>
         )}
 
@@ -584,7 +653,7 @@ function DeviceScreen({
 
         {/* Contrapeso de la flecha, para que el nombre del remitente quede
             centrado en la cabecera y no corrido hacia la derecha. */}
-        <span className={styles.smsVolver} aria-hidden />
+        <span className={`${styles.smsVolver} ${styles.smsVolverApagado}`} aria-hidden />
       </div>
       )}
 

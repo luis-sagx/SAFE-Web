@@ -1,9 +1,16 @@
-import { Lock, TriangleAlert, type LucideIcon } from "lucide-react";
+import {
+  ChevronLeft,
+  EllipsisVertical,
+  Lock,
+  TriangleAlert,
+  type LucideIcon,
+} from "lucide-react";
 import {
   useCallback,
   useEffect,
   useRef,
   useState,
+  type CSSProperties,
   type ReactNode,
 } from "react";
 import ScenarioLayout from "./EscenarioLayout";
@@ -607,6 +614,15 @@ function ScenarioStory({
     })()
   );
 
+  const appAccent = appOpen
+    ? appOpen.color
+    : toView.kind === "web" && toView.app
+      ? toView.appAccent
+      : undefined;
+  const appAccentStyle = appAccent
+    ? ({ "--app-accent": appAccent } as CSSProperties)
+    : undefined;
+
   const phoneScreen = (
     <div className={styles.phoneStage} onClick={onHotspot}>
       <div className={styles.phoneStatusBar} aria-hidden>
@@ -624,15 +640,13 @@ function ScenarioStory({
             onDescartar={() => setDiscarded((ids) => [...ids, engine.current])}
           />
         )}
-        <div className={styles.phoneApp}>
+        {/* El color de la app va en una variable y no solo en la cabecera:
+            el botón principal y los realces lo heredan, para que la cabecera
+            de un banco y su botón no salgan de dos marcas distintas. */}
+        <div className={styles.phoneApp} style={appAccentStyle}>
           {appOpen && !engine.isEnding ? (
             <>
-              <div
-                className={styles.phoneAppBar}
-                style={
-                  appOpen.color ? { backgroundColor: appOpen.color } : undefined
-                }
-              >
+              <div className={styles.phoneAppBar}>
                 <button
                   type="button"
                   className={`${styles.hotspot} ${styles.phoneAppVolver}`}
@@ -643,7 +657,7 @@ function ScenarioStory({
                   }
                   data-app=""
                 >
-                  ‹
+                  <ChevronLeft aria-hidden className={styles.phoneChevron} strokeWidth={2.25} />
                 </button>
                 <span className={styles.phoneAppBarNombre}>
                   {appOpen.nombre}
@@ -682,14 +696,7 @@ function ScenarioStory({
                 (toView.app ? (
                   // Una app no tiene barra de direcciones: no hay dominio que
                   // comprobar porque no se llegó por un enlace.
-                  <div
-                    className={styles.phoneAppBar}
-                    style={
-                      toView.appAccent
-                        ? { backgroundColor: toView.appAccent }
-                        : undefined
-                    }
-                  >
+                  <div className={styles.phoneAppBar}>
                     {/* Salir es a veces la decisión (colgar una llamada). */}
                     {viewedAppNode ? (
                       <button
@@ -698,7 +705,7 @@ function ScenarioStory({
                         aria-label="Salir de la aplicación"
                         data-close-app
                       >
-                        ‹
+                        <ChevronLeft aria-hidden className={styles.phoneChevron} strokeWidth={2.25} />
                       </button>
                     ) : toView.cerrarGoto ? (
                       <button
@@ -708,11 +715,11 @@ function ScenarioStory({
                         data-hotspot-goto={toView.cerrarGoto}
                         data-hotspot-label={toView.cerrarLabel}
                       >
-                        ‹
+                        <ChevronLeft aria-hidden className={styles.phoneChevron} strokeWidth={2.25} />
                       </button>
                     ) : (
                       <span className={styles.phoneBrowserControl} aria-hidden>
-                        ‹
+                        <ChevronLeft aria-hidden className={styles.phoneChevron} strokeWidth={2.25} />
                       </span>
                     )}
                     <span className={styles.phoneAppBarNombre}>
@@ -732,7 +739,7 @@ function ScenarioStory({
                         aria-label="Volver atrás"
                         data-close-app
                       >
-                        ‹
+                        <ChevronLeft aria-hidden className={styles.phoneChevron} strokeWidth={2.25} />
                       </button>
                     ) : toView.cerrarGoto ? (
                       <button
@@ -742,11 +749,11 @@ function ScenarioStory({
                         data-hotspot-goto={toView.cerrarGoto}
                         data-hotspot-label={toView.cerrarLabel}
                       >
-                        ‹
+                        <ChevronLeft aria-hidden className={styles.phoneChevron} strokeWidth={2.25} />
                       </button>
                     ) : (
                       <span className={styles.phoneBrowserControl} aria-hidden>
-                        ‹
+                        <ChevronLeft aria-hidden className={styles.phoneChevron} strokeWidth={2.25} />
                       </span>
                     )}
                     <span className={styles.phoneBrowserUrl}>
@@ -771,7 +778,7 @@ function ScenarioStory({
                       </span>
                     </span>
                     <span className={styles.phoneBrowserControl} aria-hidden>
-                      ⋮
+                      <EllipsisVertical className={styles.phoneChevron} strokeWidth={2.25} />
                     </span>
                   </div>
                 ))}
