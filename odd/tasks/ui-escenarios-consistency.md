@@ -8,7 +8,7 @@ El componente compartido `DeviceScreen` ya centraliza opciones de apps y el acen
 
 ## Enfoque aprobado
 
-Extender los componentes compartidos existentes con variantes configurables por datos: filas de contacto con inicial y llamada, y el catálogo de iconos de opciones. Mantener las clases de presentación en Tailwind y reutilizar los acentos de app existentes. Cada escenario solo declarará contenido, acento y apps del dock. Reorganizar las dos fichas informativas en sus vistas actuales, sin introducir abstracciones o dependencias nuevas.
+Extender los componentes compartidos existentes con variantes configurables por datos: filas de contacto con inicial y llamada, y el catálogo de iconos de opciones. Mantener las clases de presentación en Tailwind y reutilizar los acentos de app existentes. Cada escenario solo declarará contenido, acento y apps del dock. Para las dos fichas informativas, crear un componente común solo para las filas etiqueta/valor que ambas comparten; no añadir dependencias ni abstracciones para otros patrones.
 
 Se descartó construir filas y estilos en cada escenario, porque duplicaría markup y clases; también se evita cambiar globalmente vistas no solicitadas.
 
@@ -55,18 +55,21 @@ Se descartó construir filas y estilos en cada escenario, porque duplicaría mar
   - Checks: revisé las seis agendas solicitadas en Suplantación y la agenda de Vuelto de Más; sus iniciales salen del `texto`. Comprobé los menús de Red social, Tienda y Banco contra el catálogo compartido, y las opciones de Mercado/Portal contra sus iconos por fila. Confirmé los ocho docks sin Galería y los acentos de courier, Mercado, Portal Inmobiliario, Ruvel Capital y TaskPro. `git diff --check` pasó; `pnpm typecheck` pasó; `pnpm lint` pasó con advertencias existentes. No ejecuté pruebas automatizadas por instrucción de la sesión.
   - Cambios: siete listas de contactos usan `contact:true`; se ajustaron los acentos de las apps indicadas, se acortó Mercado Abierto a Mercado y se retiró Galería de los ocho docks solicitados. Las opciones de Mercado y Portal Inmobiliario declaran iconos semánticos por fila porque el catálogo compartido no tenía una correspondencia directa; los demás menús usan el catálogo existente.
   - Conteo authored de la unidad: 118 líneas (67 adiciones, 51 eliminaciones). Acumulado T1 + T2: 214 líneas; presupuesto no excedido.
-  - Commit: pendiente.
+  - Commit: `b50207a` (`feat(escenarios): unificar opciones y acentos visuales`).
 
-- [ ] **T3 — Jerarquía de información en Estafa.** Reorganizar la ficha de mercado de `PagoLavadora.tsx` y los datos de condiciones de `TareasPagadas.tsx` con agrupaciones y encabezados claros, manteniendo todos los datos y el contenido en español.
+- [x] **T3 — Jerarquía compartida para datos informativos.** No se encontró un componente común de filas etiqueta/valor en las vistas de apps (la lista parecida de `PoliticaDatos.tsx` es local a esa página). Crear un componente reutilizable con `<dl>` y filas responsivas en Tailwind; usarlo tanto en la ficha de mercado de `PagoLavadora.tsx` como en las condiciones de `TareasPagadas.tsx`. Dar jerarquía al perfil de Gabriela y destacar el depósito no reembolsable con tokens existentes, sin añadir texto ni quitar datos.
   - Ruta: delegada directa.
-  - Evidencia del disparador: el cambio cruza dos vistas no triviales y requiere diseño coordinado; el recorrido de archivos superó el umbral de mapeo.
-  - Checks: revisar jerarquía y responsive por lectura del markup, `pnpm typecheck`, `pnpm lint` y `pnpm build` del frontend.
+  - Evidencia del disparador: el cambio crea un componente compartido y actualiza dos vistas no triviales; el recorrido superó el umbral de mapeo y CodeGraph no encontró una lista reutilizable que ya aplique.
+  - Checks: revisé que `InfoRows` use `<dl>/<dt>/<dd>`, agrupe cada fila y apile etiqueta/valor en móvil antes de pasar a columnas desde `sm`; las dos vistas habilitan la variante y destacan respectivamente el perfil y el depósito. `pnpm typecheck` (código 0); `pnpm lint` (código 0, con advertencias preexistentes `only-export-components`/`exhaustive-deps`); `pnpm build` (código 0, Vite generó el build); `git diff --check` (código 0). No se añadieron ni ejecutaron pruebas automatizadas, según TDD OFF.
+  - Cambios: `InfoRows.tsx` presenta los datos en una sola ficha de filas etiqueta/valor, con lectura responsiva y énfasis opcional mediante `bg-surface-strong`; `DeviceScreen` lo usa solo cuando `dataLayout: 'info-rows'`. PagoLavadora resalta literalmente “Interesada / Gabriela Ponce · cuenta desde 2019”; TareasPagadas resalta “Depósito de activación / $180,00 · no reembolsable en ningún caso” y deja retiro, cupo y empresa como filas subordinadas. No se modificaron los textos ni las decisiones.
+  - Conteo authored de la unidad: 64 líneas (55 adiciones, 9 eliminaciones). Acumulado T1 + T2 + T3: 278 líneas; presupuesto no excedido.
   - Commit: pendiente.
 
 ## Progreso y siguiente paso
 
 - Exploración: completada mediante CodeGraph y revisión de los commits `45386d8` y `4433bf1`; se confirmó el patrón compartido de acentos y opciones.
 - T1 completada y verificada en `044e69a`. La primera compilación falló por una clave duplicada agregada en el catálogo; se retiró la duplicación y `pnpm typecheck` final pasó.
-- T2 completada y verificada; commit pendiente. T1 + T2 suman 214 líneas authored y el forecast actualizado de la rama es de unas 314–354 líneas.
-- Mirror Engram pendiente: `engram save` no pudo abrir `/home/luissagnay/.engram/.instance-id.lock` porque el filesystem está en solo lectura; la llamada tampoco pudo verificar actualizaciones por DNS bloqueado. El documento local conserva el progreso.
-- Siguiente paso: cerrar el commit de T2 y completar T3; actualizar progreso, mirror y commits al cerrar cada tarea.
+- T2 completada y verificada en `b50207a`. T1 + T2 suman 214 líneas authored y el forecast actualizado de la rama es de unas 314–354 líneas.
+- T3 implementada y verificada; fuente y escenarios suman 64 líneas authored. Acumulado observado: 278 líneas.
+- Mirror Engram pendiente: el reintento de `engram save` se realizará con este documento completo actualizado; la escritura previa no pudo abrir `/home/luissagnay/.engram/.instance-id.lock` porque el filesystem estaba en solo lectura y la llamada tampoco pudo verificar actualizaciones por DNS bloqueado.
+- Siguiente paso: registrar el commit T3 y sincronizar el mirror completo de Engram.

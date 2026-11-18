@@ -188,11 +188,13 @@ const CONDITIONS: ScreenView = {
   brand: 'Nivel Plata',
   title: 'Condiciones de la activación',
   subtitle: 'Léelas antes de depositar.',
+  dataLayout: 'info-rows',
   datos: [
     {
       etiqueta: 'Depósito de activación',
       valor: '$180,00 · no reembolsable en ningún caso',
       senal: 'letra-chica',
+      emphasis: true,
     },
     {
       etiqueta: 'Retiro de ganancias',

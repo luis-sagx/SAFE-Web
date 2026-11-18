@@ -158,11 +158,13 @@ const AD: ScreenView = {
   brand: 'Tu anuncio',
   title: 'Lavadora 12 kg, buen estado',
   subtitle: '$180 · publicado hace 9 días',
+  dataLayout: 'info-rows',
   datos: [
     {
       etiqueta: 'Interesada',
       valor: `${BUYER} · cuenta desde 2019`,
       senal: 'perfil',
+      emphasis: true,
     },
     {
       etiqueta: 'Calificaciones',

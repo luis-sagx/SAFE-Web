@@ -62,6 +62,7 @@ import {
 import InicioNavegador from './InicioNavegador'
 import VoiceNote from './NotaDeVoz'
 import CallScreen from './PantallaLlamada'
+import InfoRows from './InfoRows'
 import { PhotoScene, type SceneProgress, type SceneZone } from '../../secciones/fisico/EscenaFoto'
 import styles from './DeviceScreen.module.css'
 
@@ -123,7 +124,8 @@ export type ScreenView =
         valor?: 'correo' | 'usuario' | 'cedula' | 'cuenta'
       }[]
       // Datos de una página informativa; sustituyen al formulario.
-      datos?: { etiqueta: string; valor: string; senal?: string }[]
+      datos?: { etiqueta: string; valor: string; senal?: string; emphasis?: boolean }[]
+      dataLayout?: 'info-rows'
       // Menú de app o sitios frecuentes; manda sobre todo lo demás. Las
       // entradas sin goto se pulsan igual (mismo realce) para no delatar cuál decide.
       opciones?: {
@@ -581,14 +583,25 @@ function DeviceScreen({
           </div>
         ) : view.datos ? (
           <div className={styles.datos}>
-            {view.datos.map((data) => (
-              <div key={data.etiqueta} className={styles.dato}>
-                <span className={styles.datoEtiqueta}>{data.etiqueta}</span>
-                <span className={styles.datoValor} data-signal={data.senal}>
-                  {data.valor}
-                </span>
-              </div>
-            ))}
+            {view.dataLayout === 'info-rows' ? (
+              <InfoRows
+                items={view.datos.map((data) => ({
+                  label: data.etiqueta,
+                  value: data.valor,
+                  signal: data.senal,
+                  emphasis: data.emphasis,
+                }))}
+              />
+            ) : (
+              view.datos.map((data) => (
+                <div key={data.etiqueta} className={styles.dato}>
+                  <span className={styles.datoEtiqueta}>{data.etiqueta}</span>
+                  <span className={styles.datoValor} data-signal={data.senal}>
+                    {data.valor}
+                  </span>
+                </div>
+              ))
+            )}
             {view.button && <Action view={view} />}
           </div>
         ) : (
