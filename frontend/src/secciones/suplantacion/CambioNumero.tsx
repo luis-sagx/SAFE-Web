@@ -203,8 +203,6 @@ const CONTACTS: ScreenView = {
       label: 'Llamó a su hijo al número de siempre',
     },
     { texto: 'Casa', detalle: '02 244 1180', contact: true },
-    { texto: 'Farmacia La Espiga', detalle: '+593 98 220 3311', contact: true },
-    { texto: 'Taller Vélez', detalle: '+593 99 100 4477', contact: true },
   ],
   fields: [],
   button: '',
