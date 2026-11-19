@@ -536,7 +536,7 @@ function DeviceScreen({
                     {option.contact ? (
                       <span
                         aria-hidden
-                        className="grid size-10 shrink-0 place-items-center rounded-full bg-blue-100 text-sm font-semibold text-blue-800 dark:bg-blue-950 dark:text-blue-200"
+                        className="grid size-10 shrink-0 place-items-center rounded-full bg-blue-100 text-sm font-semibold text-blue-800 dark:bg-blue-950 dark:text-white"
                       >
                         {option.texto.trim().charAt(0).toLocaleUpperCase()}
                       </span>
