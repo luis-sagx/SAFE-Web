@@ -29,4 +29,18 @@ describe('PagoLavadora', () => {
     expect(within(phone).getByRole('button', { name: 'Deme un momento, reviso mi banco.' })).toBeDefined()
     expect(within(phone).queryByText(/Claro, revise con calma/)).toBeNull()
   })
+
+  it('muestra el perfil del anuncio en filas destacadas y regulares', () => {
+    const phone = start(<WashingMachinePayment />)
+
+    fireEvent.click(within(phone).getByRole('button', { name: /Mercado/ }))
+
+    const rows = phone.querySelector('dl')
+    expect(rows).not.toBeNull()
+    expect(within(rows as HTMLElement).getByText('Interesada')).toBeDefined()
+    expect(within(rows as HTMLElement).getByText(/cuenta desde 2019/)).toBeDefined()
+    expect(within(rows as HTMLElement).getByText('Calificaciones')).toBeDefined()
+    expect(within(rows as HTMLElement).getByText('Precio de mercado')).toBeDefined()
+    expect(within(rows as HTMLElement).getByText('Otros interesados')).toBeDefined()
+  })
 })
