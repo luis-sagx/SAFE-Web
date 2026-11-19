@@ -15,7 +15,7 @@ describe('MitadDePrecio', () => {
     )
     expect(within(phone).getByText(/yo estoy en Santo Domingo/i)).toBeDefined()
 
-    fireEvent.click(within(phone).getByRole('button', { name: /Mercado Abierto/ }))
+    fireEvent.click(within(phone).getByRole('button', { name: /Mercado/ }))
     fireEvent.click(within(phone).getByRole('button', { name: /Mensajes/ }))
 
     expect(within(phone).getByText(/yo estoy en Santo Domingo/i)).toBeDefined()
@@ -27,7 +27,7 @@ describe('MitadDePrecio', () => {
     fireEvent.click(
       within(phone).getByRole('button', { name: '¿Podemos vernos y lo reviso antes de pagar?' }),
     )
-    fireEvent.click(within(phone).getByRole('button', { name: /Mercado Abierto/ }))
+    fireEvent.click(within(phone).getByRole('button', { name: /Mercado/ }))
     fireEvent.click(within(phone).getByRole('button', { name: 'Salir de la aplicación' }))
 
     expect(within(phone).getByText(/yo estoy en Santo Domingo/i)).toBeDefined()
@@ -39,7 +39,7 @@ describe('MitadDePrecio', () => {
     fireEvent.click(
       within(phone).getByRole('button', { name: '¿Podemos vernos y lo reviso antes de pagar?' }),
     )
-    fireEvent.click(within(phone).getByRole('button', { name: /Mercado Abierto/ }))
+    fireEvent.click(within(phone).getByRole('button', { name: /Mercado/ }))
     fireEvent.click(
       within(phone).getByRole('button', { name: /Buscar el mismo modelo en la página/ }),
     )
@@ -59,7 +59,7 @@ describe('MitadDePrecio', () => {
     fireEvent.click(
       within(phone).getByRole('button', { name: 'Que se lo lleve el otro. Yo no pago sin ver.' }),
     )
-    fireEvent.click(within(phone).getByRole('button', { name: /Mercado Abierto/ }))
+    fireEvent.click(within(phone).getByRole('button', { name: /Mercado/ }))
 
     expect(within(phone).queryByText('Celular gama alta, nuevo en caja')).toBeNull()
   })
