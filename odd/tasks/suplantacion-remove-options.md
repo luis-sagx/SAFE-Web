@@ -40,5 +40,6 @@ Quitar opciones decorativas redundantes que distraen de las decisiones relevante
 - Estado inicial: dos archivos ya estaban preparados en el índice (`JefeUrgente.tsx`, `NumeroNuevoReal.tsx`); se preservarán.
 - Implementación: se retiró una opción de `ClonaronTuPerfil.tsx` y cuatro de `JefeUrgente.tsx`; se conservaron las opciones con destinos narrativos.
 - Verificación: typecheck, lint y build terminaron con código 0; lint reporta advertencias existentes sobre Fast Refresh/hooks. `git diff --check` pasó. La búsqueda puntual no encontró los textos retirados. No se ejecutaron pruebas automatizadas.
-- Estado: verificado; commit de trabajo pendiente. El índice contiene cambios preparados previamente por el usuario en `JefeUrgente.tsx` y `NumeroNuevoReal.tsx`.
-- Próximo paso: crear un commit aislado con las eliminaciones y este documento, y volver a aplicar los cambios preparados del usuario sobre la nueva base.
+- Commit de trabajo: `85c7a4d fix(suplantacion): retirar opciones redundantes`.
+- Estado: T1 completada; typecheck, lint, build y diff check observados. Los cambios previamente preparados por el usuario siguen preparados en `JefeUrgente.tsx` y `NumeroNuevoReal.tsx`, fuera del commit.
+- Próximo paso: ninguno; no hacer push ni abrir PR.
