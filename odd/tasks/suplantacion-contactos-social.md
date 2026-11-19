@@ -40,5 +40,6 @@ Retirar opciones decorativas señaladas por el usuario en `/suplantacion/cambio-
 - Estado inicial: cambios staged de usuario en `JefeUrgente.tsx` y `NumeroNuevoReal.tsx`; no están dentro del alcance.
 - Implementación T1: retirados Farmacia La Espiga y Taller Vélez de Contactos; retirados Notificaciones, Quién puede ver tus fotos y Tus publicaciones de Red social. El Banco del Litoral no se tocó.
 - Verificación T1: typecheck, lint y build terminaron con código 0; lint reporta advertencias preexistentes de Fast Refresh/hooks. `git diff --check` pasó. No se ejecutaron pruebas automatizadas.
-- Estado: T1 verificada; commit pendiente. T2 sigue pendiente de que el usuario especifique las opciones del banco.
-- Próximo paso: registrar el commit aislado de T1 y esperar respuesta para T2.
+- Commit de T1: `e741a44 fix(suplantacion): simplificar contactos y perfil social`.
+- Estado: T1 completada y registrada. T2 sigue pendiente de que el usuario especifique las opciones del banco.
+- Próximo paso: esperar respuesta para T2; los cambios staged ajenos siguen fuera del commit.
