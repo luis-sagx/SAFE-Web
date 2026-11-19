@@ -192,7 +192,6 @@ const CLONE: ScreenView = {
       goto: 'n7',
       label: 'Le escribió a la cuenta que lo suplantaba',
     },
-    { texto: 'Bloquear', detalle: 'Dejar de ver esta cuenta' },
   ],
   cerrarGoto: 'n4',
   cerrarLabel: 'Volvió a los resultados de búsqueda',
