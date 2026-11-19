@@ -20,10 +20,6 @@ const SMS: Extract<ScreenView, { kind: 'sms' }> = {
   respuestas: [
     { texto: 'BAJA', goto: 'e_responde', label: 'Escogió responder BAJA, como pedía el mensaje' },
   ],
-  // Salir del hilo es dejarlo pasar: no entrega nada, pero tampoco comprueba
-  // si el cobro existe.
-  volverGoto: 'e_ignora',
-  volverLabel: 'Salió del hilo sin hacer nada',
 }
 
 // El veredicto se ve sobre la burbuja propia en el hilo: un final que se dispara sin
@@ -68,6 +64,8 @@ const OPERATOR_START: ScreenView = {
   ],
   fields: [],
   button: '',
+  cerrarGoto: 'n1',
+  cerrarLabel: 'Volvió a Mensajes desde Mi Operadora',
 }
 
 // El acierto tiene que enseñarse, no solo contarse: la pantalla que lo prueba es la que cierra.

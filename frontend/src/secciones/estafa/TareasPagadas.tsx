@@ -1,4 +1,4 @@
-import { Images, ListChecks, MessageCircle, Wallet } from 'lucide-react'
+import { ListChecks, MessageCircle, Wallet } from 'lucide-react'
 import ScenarioStory, { type PhoneApp, type ScreenNode } from '../../components/StoryEscenario'
 import type { Context } from '../../components/ui/ContextoEscenario'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
@@ -14,6 +14,7 @@ import { ACCOUNT_FAKE, IDENTITY_FAKE } from '../../lib/identidadFicticia'
 const COORDINATOR = 'Katty · Coordinadora'
 const NUMBER_COORDINATOR = '+593 98 613 9042'
 const ACCOUNT_PLATFORM = '6640-7723-19 · Diana Carolina Chuquín'
+const TASKPRO_ACCENT = '#f08c00'
 
 const CONGRATULATES = {
   text: '¡Felicidades! 🎉 completó sus 20 tareas del nivel Bronce y ya le transferimos sus $12. Revise su cuenta. Está lista para pasar al nivel Plata, donde cada tarea paga $3 en vez de $0,60.',
@@ -145,6 +146,7 @@ const INSISTS: ScreenView = {
 const PANEL: ScreenView = {
   kind: 'web',
   app: 'TaskPro',
+  appAccent: TASKPRO_ACCENT,
   url: 'taskpro-ec.app',
   secure: true,
   brand: 'Tu panel',
@@ -180,16 +182,19 @@ const PANEL: ScreenView = {
 const CONDITIONS: ScreenView = {
   kind: 'web',
   app: 'TaskPro',
+  appAccent: TASKPRO_ACCENT,
   url: 'taskpro-ec.app',
   secure: true,
   brand: 'Nivel Plata',
   title: 'Condiciones de la activación',
   subtitle: 'Léelas antes de depositar.',
+  dataLayout: 'info-rows',
   datos: [
     {
       etiqueta: 'Depósito de activación',
       valor: '$180,00 · no reembolsable en ningún caso',
       senal: 'letra-chica',
+      emphasis: true,
     },
     {
       etiqueta: 'Retiro de ganancias',
@@ -239,7 +244,7 @@ const APPS: PhoneApp[] = [
   {
     Icono: ListChecks,
     texto: 'TaskPro',
-    color: '#f08c00',
+    color: TASKPRO_ACCENT,
     viewNode: 'n6',
     label: 'Abrió el panel de la plataforma de tareas',
   },
@@ -250,7 +255,6 @@ const APPS: PhoneApp[] = [
     viewNode: 'n5',
     label: 'Abrió la app del banco para transferir',
   },
-  { Icono: Images, texto: 'Galería', color: '#c2410c', relleno: 'galeria' },
 ]
 
 export const STORY: Story<ScreenNode> = {

@@ -2381,7 +2381,8 @@
 
 .phoneBrowserBar {
   flex-shrink: 0;
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(1.625rem, 1fr) minmax(0, 2fr) minmax(1.625rem, 1fr);
   align-items: center;
   gap: 0.375rem;
   padding: 0.5rem;
@@ -2419,9 +2420,9 @@
    no tiene ninguna de las dos cosas. */
 .phoneAppBar {
   flex-shrink: 0;
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(1.75rem, 1fr) minmax(0, 2fr) minmax(1.75rem, 1fr);
   align-items: center;
-  justify-content: space-between;
   gap: 0.5rem;
   padding: 0.625rem 0.75rem;
   background: var(--app-accent, #0f2f4f);
@@ -2430,7 +2431,7 @@
 }
 
 .phoneAppBarNombre {
-  flex: 1;
+  width: 100%;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -2439,6 +2440,10 @@
   font-size: 0.9375rem;
   font-weight: 700;
   letter-spacing: 0.01em;
+}
+
+.phoneAppBarPlaceholder {
+  min-width: 0;
 }
 
 .phoneAppVolver {

@@ -1,6 +1,7 @@
 import { fireEvent, screen, within } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import { start } from '../../test/escenario'
+import { formatTime } from '../../hooks/useRelojDelSistema'
 import SubscriptionCancellation from './BajaSuscripcion'
 
 // Las fábricas se importan dentro y no arriba: vitest eleva los `vi.mock` por
@@ -31,6 +32,11 @@ describe('BajaSuscripcion', () => {
     expect(screen.queryByText('No caíste · lo comprobaste con tu operadora')).toBeNull()
     expect(screen.getByText('¿Qué haces?')).toBeDefined()
 
+    fireEvent.click(within(phone).getByRole('button', { name: 'Salir de la aplicación' }))
+    expect(within(phone).getByRole('region', { name: 'Mensajes de texto' })).toBeDefined()
+
+    fireEvent.click(within(phone).getByRole('button', { name: /Mi Operadora/ }))
+
     fireEvent.click(within(phone).getByRole('button', { name: /Paquetes y suscripciones/ }))
 
     expect(within(phone).getByText('Suscripciones activas')).toBeDefined()
@@ -38,12 +44,12 @@ describe('BajaSuscripcion', () => {
     expect(screen.getByText('No caíste · lo comprobaste con tu operadora')).toBeDefined()
   })
 
-  it('salir del hilo desde el teléfono conserva el resultado parcial', () => {
+  it('el regreso del primer hilo no sale ni cambia el mensaje', () => {
     const phone = start(<SubscriptionCancellation />)
 
-    fireEvent.click(within(phone).getByRole('button', { name: 'Volver a la lista de mensajes' }))
-
-    expect(screen.getByText('No contestaste, pero quedaste con la duda')).toBeDefined()
+    expect(within(phone).queryByRole('button', { name: 'Volver a la lista de mensajes' })).toBeNull()
+    expect(within(phone).getByText(/SUSCRIPCION ACTIVA/)).toBeDefined()
+    expect(screen.queryByText('No contestaste, pero quedaste con la duda')).toBeNull()
   })
 
   it('el campo no se escribe solo: la frase se elige entre las que ofrece el hilo', () => {
@@ -65,16 +71,14 @@ describe('BajaSuscripcion', () => {
     expect(screen.getByText('Caíste en la trampa')).toBeDefined()
   })
 
-  // Un reloj clavado en una hora inventada encima de un mensaje de las 07:52
-  // delata la pantalla, y contradice al "al levantarte" del enunciado.
-  it('el reloj del teléfono va con el hilo, no con una hora fija', () => {
+  it('el reloj del teléfono muestra la hora local actual, independiente del hilo', () => {
     const phone = start(<SubscriptionCancellation />)
     const clock = () => phone.querySelector('[class*="phoneStatusBar"] span')?.textContent
 
-    expect(clock()).toBe('07:52')
+    expect(clock()).toBe(formatTime(new Date()))
 
     fireEvent.click(within(phone).getByRole('button', { name: 'BAJA' }))
-    expect(clock()).toBe('07:53')
+    expect(clock()).toBe(formatTime(new Date()))
   })
 
   it('bloquear mensajes sin consultar las suscripciones termina en parcial', () => {

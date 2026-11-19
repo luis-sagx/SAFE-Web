@@ -29,6 +29,7 @@ import StoryChoices from "./ui/StoryChoices";
 import type { IdentityData } from "./ui/TarjetaIdentidad";
 import VerdictPanel, { type Signal } from "./ui/PanelVeredicto";
 import { useAuth } from "../context/AuthContext";
+import { formatTime, useSystemClock } from "../hooks/useRelojDelSistema";
 import {
   useStoryEngine,
   type Story,
@@ -150,16 +151,6 @@ function mobileUrl(url: string): string {
   return url.replace(/^https?:\/\//, "");
 }
 
-// La hora de la barra de estado sale del último mensaje del hilo (el "ahora"
-// de la escena), no de una constante; descarta sellos relativos ("ayer").
-const TIME_OF_DAY = /^\d{1,2}:\d{2}$/;
-
-function getViewTime(view: ScreenView): string | undefined {
-  if (view.kind !== "sms") return undefined;
-  const latest = view.msgs.at(-1)?.time;
-  return latest && TIME_OF_DAY.test(latest) ? latest : undefined;
-}
-
 function ScenarioStory({
   escenarioId: scenarioId,
   resumen: summary,
@@ -255,19 +246,7 @@ function ScenarioStory({
       ? { ...getNodeView, volverGoto: undefined, volverLabel: undefined }
       : getNodeView;
 
-  // El reloj se queda en la última hora que enseñó un hilo y no retrocede;
-  // sin ningún hilo (una llamada) se queda en la hora neutra.
-  const currentViewTime = getViewTime(toView);
-  const [phoneTime, setPhoneTime] = useState(
-    () =>
-      Object.values(story)
-        .map((node) => getViewTime(node.view))
-        .find(Boolean) ?? "09:41",
-  );
-
-  useEffect(() => {
-    if (currentViewTime) setPhoneTime(currentViewTime);
-  }, [currentViewTime]);
+  const phoneTime = formatTime(useSystemClock());
 
   const domain = emailDomain ?? "safeweb.com";
   // Cada pantalla nueva abre una pestaña; se indexan por dirección para que
@@ -752,6 +731,7 @@ function ScenarioStory({
                     <span className={styles.phoneAppBarNombre}>
                       {toView.app}
                     </span>
+                    <span className={styles.phoneAppBarPlaceholder} aria-hidden />
                   </div>
                 ) : (
                   <div

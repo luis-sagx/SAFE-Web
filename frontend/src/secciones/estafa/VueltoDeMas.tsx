@@ -1,4 +1,4 @@
-import { Images, MessageCircle, Phone, Wallet } from 'lucide-react'
+import { MessageCircle, Phone, Wallet } from 'lucide-react'
 import ScenarioStory, { type PhoneApp, type ScreenNode } from '../../components/StoryEscenario'
 import type { Context } from '../../components/ui/ContextoEscenario'
 import type { ScreenView } from '../../components/ui/DeviceScreen'
@@ -208,12 +208,13 @@ const CONTACTS: ScreenView = {
     {
       texto: IDENTITY_FAKE.banco,
       detalle: `${BANK_PHONE} · el número impreso en tu tarjeta`,
+      contact: true,
       goto: 'e_banco',
       label: 'Llamó al banco por el número de su tarjeta',
     },
-    { texto: 'Casa', detalle: '02 244 1180' },
-    { texto: 'Taller Vélez', detalle: '+593 99 100 4477' },
-    { texto: 'Trabajo', detalle: '02 380 1100' },
+    { texto: 'Casa', detalle: '02 244 1180', contact: true },
+    { texto: 'Taller Vélez', detalle: '+593 99 100 4477', contact: true },
+    { texto: 'Trabajo', detalle: '02 380 1100', contact: true },
   ],
   fields: [],
   button: '',
@@ -236,7 +237,6 @@ const APPS: PhoneApp[] = [
     label: 'Abrió la agenda para llamar por su cuenta',
     hilo: 'call',
   },
-  { Icono: Images, texto: 'Galería', color: '#c2410c', relleno: 'galeria' },
 ]
 
 export const STORY: Story<ScreenNode> = {
