@@ -1,23 +1,26 @@
-import { MessageCircle, Phone, ShoppingBag } from 'lucide-react'
-import ScenarioStory, { type PhoneApp, type ScreenNode } from '../../components/StoryEscenario'
-import type { Context } from '../../components/ui/ContextoEscenario'
-import type { ScreenView } from '../../components/ui/DeviceScreen'
-import type { Signal } from '../../components/ui/PanelVeredicto'
-import { APP_ACCENTS } from '../../components/ui/appAccents'
-import type { Story } from '../../hooks/useStoryEngine'
+import { MessageCircle, Phone, ShoppingBag } from 'lucide-react';
+import ScenarioStory, {
+  type PhoneApp,
+  type ScreenNode,
+} from '../../components/StoryEscenario';
+import type { Context } from '../../components/ui/ContextoEscenario';
+import type { ScreenView } from '../../components/ui/DeviceScreen';
+import type { Signal } from '../../components/ui/PanelVeredicto';
+import { APP_ACCENTS } from '../../components/ui/appAccents';
+import type { Story } from '../../hooks/useStoryEngine';
 
 // La suplantación explota la jerarquía, no la tecnología: a la gerente no se
 // le pregunta dos veces. El acierto es comprobar por el canal de siempre.
 
-const MANAGER = 'Patricia Cedeño'
-const UNKNOWN = '+593 98 776 5510'
-const INTERNAL = '+593 99 501 2244'
+const MANAGER = 'Patricia Cedeño';
+const UNKNOWN = '+593 98 776 5510';
+const INTERNAL = '+593 99 501 2244';
 
 const OPENING = {
   text: `Buenos días. Habla la Ing. ${MANAGER}, de gerencia. Estoy en una reunión con auditoría y no puedo hablar. ¿Me ayuda con un encargo?`,
   time: '09:12',
   senal: 'apertura',
-}
+};
 
 const CHAT: ScreenView = {
   kind: 'sms',
@@ -28,7 +31,11 @@ const CHAT: ScreenView = {
   perfilLabel: 'Abrió el perfil del número que le escribía',
   msgs: [OPENING],
   respuestas: [
-    { texto: 'Claro, ingeniera, dígame.', goto: 'n2', label: 'Se puso a disposición del encargo' },
+    {
+      texto: 'Claro, ingeniera, dígame.',
+      goto: 'n2',
+      label: 'Se puso a disposición del encargo',
+    },
     {
       texto: '¿De qué número me escribe? El suyo lo tengo guardado.',
       goto: 'n2b',
@@ -37,7 +44,7 @@ const CHAT: ScreenView = {
   ],
   volverGoto: 'e_ignora',
   volverLabel: 'Salió del chat sin contestar ni comprobar',
-}
+};
 
 const PROFILE: ScreenView = {
   kind: 'web',
@@ -50,29 +57,38 @@ const PROFILE: ScreenView = {
   datos: [
     {
       etiqueta: 'Foto de perfil',
-      valor: 'La foto corporativa de la gerente, la misma que está en la web de la empresa',
+      valor:
+        'La foto corporativa de la gerente, la misma que está en la web de la empresa',
       senal: 'foto',
     },
-    { etiqueta: 'En esta app desde', valor: 'Hace 3 días', senal: 'antiguedad' },
-    { etiqueta: 'Grupos en común', valor: 'Ninguno · no está en el grupo del área', senal: 'antiguedad' },
+    {
+      etiqueta: 'En esta app desde',
+      valor: 'Hace 3 días',
+      senal: 'antiguedad',
+    },
+    {
+      etiqueta: 'Grupos en común',
+      valor: 'Ninguno · no está en el grupo del área',
+      senal: 'antiguedad',
+    },
   ],
   cerrarGoto: 'n1',
   cerrarLabel: 'Volvió al chat desde el perfil',
   fields: [],
   button: '',
-}
+};
 
 const REQUEST = {
   text: 'Compre 4 tarjetas de regalo de $100 para un cliente que llega al mediodía. Hoy mismo se le reembolsa con el rol.',
   time: '09:14',
   senal: 'tarjetas',
-}
+};
 
 const BOOKING = {
   text: 'Mándeme la foto de los códigos por aquí. Y no lo comente con el área: es una cortesía fuera de presupuesto.',
   time: '09:14',
   senal: 'secreto',
-}
+};
 
 const ASKS: ScreenView = {
   ...CHAT,
@@ -83,20 +99,28 @@ const ASKS: ScreenView = {
     BOOKING,
   ],
   respuestas: [
-    { texto: 'Voy saliendo a comprarlas.', goto: 'n3', label: 'Aceptó ir a comprar las tarjetas' },
+    {
+      texto: 'Voy saliendo a comprarlas.',
+      goto: 'n3',
+      label: 'Aceptó ir a comprar las tarjetas',
+    },
     {
       texto: 'Prefiero confirmarlo con usted por teléfono.',
       goto: 'n3b',
       label: 'Propuso confirmarlo por teléfono',
     },
   ],
-}
+};
 
 const EXCUSE_NUMBER: ScreenView = {
   ...CHAT,
   msgs: [
     OPENING,
-    { text: '¿De qué número me escribe? El suyo lo tengo guardado.', time: '09:13', mine: true },
+    {
+      text: '¿De qué número me escribe? El suyo lo tengo guardado.',
+      time: '09:13',
+      mine: true,
+    },
     {
       text: 'Es mi línea personal, la corporativa se quedó en la oficina. Salgo de la reunión en veinte minutos.',
       time: '09:13',
@@ -106,14 +130,18 @@ const EXCUSE_NUMBER: ScreenView = {
     BOOKING,
   ],
   respuestas: [
-    { texto: 'Voy saliendo a comprarlas.', goto: 'n3', label: 'Aceptó ir a comprar las tarjetas' },
+    {
+      texto: 'Voy saliendo a comprarlas.',
+      goto: 'n3',
+      label: 'Aceptó ir a comprar las tarjetas',
+    },
     {
       texto: 'Prefiero confirmarlo con usted por teléfono.',
       goto: 'n3b',
       label: 'Propuso confirmarlo por teléfono',
     },
   ],
-}
+};
 
 const GO: ScreenView = {
   ...CHAT,
@@ -140,7 +168,7 @@ const GO: ScreenView = {
       label: 'Siguió con el encargo y fue a la tienda',
     },
   ],
-}
+};
 
 const DOES_NOT_CALL: ScreenView = {
   ...CHAT,
@@ -148,7 +176,11 @@ const DOES_NOT_CALL: ScreenView = {
     OPENING,
     REQUEST,
     BOOKING,
-    { text: 'Prefiero confirmarlo con usted por teléfono.', time: '09:16', mine: true },
+    {
+      text: 'Prefiero confirmarlo con usted por teléfono.',
+      time: '09:16',
+      mine: true,
+    },
     {
       text: 'Ya le dije que estoy en reunión. Si no puede con el encargo, se lo pido a otra persona.',
       time: '09:17',
@@ -167,7 +199,7 @@ const DOES_NOT_CALL: ScreenView = {
       label: 'Cedió a la presión y fue a comprar las tarjetas',
     },
   ],
-}
+};
 
 const CONTACTS: ScreenView = {
   kind: 'web',
@@ -179,7 +211,7 @@ const CONTACTS: ScreenView = {
   opciones: [
     {
       texto: `${MANAGER} · Gerencia`,
-      detalle: `${INTERNAL} · el número corporativo que usa a diario`,
+      detalle: `${INTERNAL}`,
       contact: true,
       goto: 'e_verifica',
       label: 'Llamó a su jefa al número corporativo de siempre',
@@ -188,7 +220,7 @@ const CONTACTS: ScreenView = {
   ],
   fields: [],
   button: '',
-}
+};
 
 const CALL_MANAGER: ScreenView = {
   kind: 'call',
@@ -202,7 +234,7 @@ const CALL_MANAGER: ScreenView = {
       senal: 'desmiente',
     },
   ],
-}
+};
 
 const STORE: ScreenView = {
   kind: 'web',
@@ -224,7 +256,7 @@ const STORE: ScreenView = {
   ],
   fields: [],
   button: '',
-}
+};
 
 const CODES: ScreenView = {
   kind: 'web',
@@ -249,7 +281,7 @@ const CODES: ScreenView = {
   cerrarGoto: 'n5',
   cerrarLabel: 'Volvió atrás sin mandar los códigos',
   fields: [],
-}
+};
 
 const APPS: PhoneApp[] = [
   { Icono: MessageCircle, texto: 'Mensajes', color: '#2f9e44', hilo: 'sms' },
@@ -267,7 +299,7 @@ const APPS: PhoneApp[] = [
     viewNode: 'n5',
     label: 'Abrió la tienda para comprar las tarjetas',
   },
-]
+];
 
 export const STORY: Story<ScreenNode> = {
   n1: { kind: 'scene', view: CHAT },
@@ -308,7 +340,7 @@ export const STORY: Story<ScreenNode> = {
       'Saliste del chat sin comprar ni contestar, y no perdiste nada. Pero no avisaste a nadie, y el mismo mensaje sigue su ronda por la empresa.',
     score: 50,
   },
-}
+};
 
 const SIGNALS: Signal[] = [
   {
@@ -360,27 +392,30 @@ const SIGNALS: Signal[] = [
     texto:
       '<b>Una llamada de treinta segundos al número de siempre lo desmontó todo.</b> Ese es el canal que hay que usar.',
   },
-]
+];
 
 const RULE =
-  'Regla de oro: <b>un encargo con número nuevo, prisa y silencio se confirma por el canal de siempre.</b> Las tarjetas de regalo nunca pagan a un proveedor, son la forma de cobrar de una estafa.'
+  'Regla de oro: <b>un encargo con número nuevo, prisa y silencio se confirma por el canal de siempre.</b> Las tarjetas de regalo nunca pagan a un proveedor, son la forma de cobrar de una estafa.';
 
-const SUMMARY = 'Tu jefa escribe desde otro número y pide comprar tarjetas de regalo con urgencia.'
+const SUMMARY =
+  'Tu jefa escribe desde otro número y pide comprar tarjetas de regalo con urgencia.';
 
 export const CONTEXT: Context = {
   antes: (
     <>
-      Trabajas en una empresa mediana. Tu gerente, la <strong>Ing. Patricia Cedeño</strong>, te
-      escribe de vez en cuando por mensajería, siempre desde su{' '}
-      <strong>número corporativo</strong>, que tienes guardado.
+      Trabajas en una empresa mediana. Tu gerente, la{' '}
+      <strong>Ing. Patricia Cedeño</strong>, te escribe de vez en cuando por
+      mensajería, siempre desde su <strong>número corporativo</strong>, que
+      tienes guardado.
     </>
   ),
   ahora: (
     <>
-      <strong>Un martes por la mañana</strong> te llega un mensaje suyo desde un número distinto.
+      <strong>Un martes por la mañana</strong> te llega un mensaje suyo desde un
+      número distinto.
     </>
   ),
-}
+};
 
 function UrgentManager() {
   return (
@@ -396,18 +431,20 @@ function UrgentManager() {
       apps={APPS}
       instruccion={
         <p className="text-lg leading-relaxed text-body">
-          Actúa sobre el teléfono como lo harías con el tuyo: contesta, toca el nombre para ver el
-          perfil de quien escribe y usa <strong>cualquier app de abajo</strong>.
+          Actúa sobre el teléfono como lo harías con el tuyo: contesta, toca el
+          nombre para ver el perfil de quien escribe y usa{' '}
+          <strong>cualquier app de abajo</strong>.
         </p>
       }
       pista={
         <p>
-          Puedes seguir el encargo, preguntar, salir del chat, ir a la tienda a comprar lo que te
-          piden o llamar por tu cuenta al número que ya tienes guardado.
+          Puedes seguir el encargo, preguntar, salir del chat, ir a la tienda a
+          comprar lo que te piden o llamar por tu cuenta al número que ya tienes
+          guardado.
         </p>
       }
     />
-  )
+  );
 }
 
-export default UrgentManager
+export default UrgentManager;
