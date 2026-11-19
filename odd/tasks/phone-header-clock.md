@@ -36,5 +36,6 @@ Mantener centrado el nombre de la app en todas las cabeceras del teléfono, con 
 - Commit relacionado inspeccionado: `4433bf1 Style/telefono escenarios (#341)`, que añadió las cabeceras y la hora por hilo.
 - Implementación: `StoryEscenario` utiliza `useSystemClock` y `formatTime`; se retiró el reloj derivado de los mensajes. Las barras de app y navegador usan laterales de igual ancho; la app web reserva el lado derecho vacío.
 - Verificación: typecheck, lint y build terminaron con código 0. Lint mostró advertencias del proyecto sobre Fast Refresh y dependencias de hooks. No se ejecutaron pruebas automatizadas. `git diff --check` pasó.
-- Estado: verificado; commit de trabajo pendiente.
-- Próximo paso: registrar el commit de trabajo en esta evidencia y cerrar la tarea.
+- Commit de trabajo: `e34372b fix(ui): centrar cabeceras y actualizar hora del teléfono`.
+- Estado: T1 completada; checks observados y commit registrado. No hay tareas pendientes.
+- Próximo paso: ninguno; no hacer push ni abrir PR.
