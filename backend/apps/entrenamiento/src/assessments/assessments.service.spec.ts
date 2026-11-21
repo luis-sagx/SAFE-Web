@@ -12,7 +12,7 @@ const participant: JwtPayload = {
   role: 'PARTICIPANT',
   typ: 'access',
 };
-const correct = [1, 2, 0, 2, 0, 1, 0, 2, 1, 2, 0, 2, 1, 2, 0, 1, 2, 1, 2, 1, 0];
+const correct = [1, 0, 0, 2, 1, 1, 2, 0, 1, 2, 0, 2, 1, 2, 0, 1, 2, 1, 2, 0, 0];
 const dto = {
   phase: 'PRE' as const,
   version: 1,
