@@ -31,7 +31,7 @@ El usuario autorizó con «arregla» aplicar las correcciones localmente. Los co
 ## Tareas
 
 - [ ] **T1 — Parchear la dependencia transitiva vulnerable de Prisma.** Resolver `effect` en versión >=3.22.1, regenerar el lockfile del backend y verificar auditoría e instalación congelada. Ruta: delegada directa por el disparador escritor (manifiesto y lockfile no triviales); preparación delegada con el escritor. TDD habilitado por `test-driven-development`; RED: audit CI/local reportado por el usuario. Commit independiente requerido.
-- [ ] **T2 — Actualizar la fixture obsoleta de evaluación E2E.** Usar respuestas correctas de la clave vigente y conservar las expectativas de 21/21 y mejora -21. Ruta: delegada directa por preparación de escritura. TDD habilitado; RED: `pnpm test:e2e` reportado por el usuario con `16` y `-16`. Commit independiente requerido.
+- [ ] **T2 — Actualizar la fixture obsoleta de evaluación E2E.** Usar respuestas correctas de la clave vigente y conservar las expectativas de 21/21 y mejora -21. Ruta: delegada directa por preparación de escritura. TDD habilitado; RED: `pnpm test:e2e` reportado por el usuario con `16` y `-16`. Commit de trabajo `113abb8` (`test(assessments): alinear fixture con respuestas vigentes`). Pendiente observar GREEN automatizado por fallo de configuración local del cliente Prisma.
 
 ## Evidencia y siguiente paso
 
