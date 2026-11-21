@@ -26,7 +26,7 @@ describe('Contrato HTTP de las evaluaciones', () => {
     version: 1,
     ageRange: '18 - 29 años',
     gender: 'Femenino',
-    answers: [1, 2, 0, 2, 0, 1, 0, 2, 1, 2, 0, 2, 1, 2, 0, 1, 2, 1, 2, 1, 0],
+    answers: [1, 0, 0, 2, 1, 1, 2, 0, 1, 2, 0, 2, 1, 2, 0, 1, 2, 1, 2, 0, 0],
   };
   const server = () => request(app.getHttpServer() as App);
   const token = (role = 'PARTICIPANT', sub = 'owner', seq = 77) =>

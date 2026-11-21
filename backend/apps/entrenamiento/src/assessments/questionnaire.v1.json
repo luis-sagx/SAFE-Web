@@ -11,194 +11,194 @@
   "genders": ["Femenino", "Masculino", "Prefiero no decirlo"],
   "items": [
     {
-      "prompt": "Recibes un correo que dice ser del área de soporte de tu trabajo. Indica que tu cuenta será bloqueada hoy si no escribes tu contraseña en un enlace. ¿Qué harías?",
+      "prompt": "Recibes un correo que parece del equipo de ayuda de tu trabajo. Dice que bloquearán tu cuenta hoy y te pide escribir tu contraseña en un enlace. ¿Qué haces?",
       "options": [
-        "Abrir el enlace y escribir la contraseña.",
-        "Consultar al área de soporte por el medio que usas habitualmente.",
-        "Responder a ese correo para preguntar si es verdadero.",
+        "Abro el enlace y escribo la contraseña que me piden.",
+        "Llamo al teléfono del equipo de ayuda que me dieron en el trabajo.",
+        "Respondo al correo para preguntar si ellos lo enviaron.",
         "No estoy seguro/a."
       ]
     },
     {
-      "prompt": "Una compañera te avisa en persona que compartirá contigo un documento de trabajo. Más tarde, entras por tu cuenta a la plataforma que usan habitualmente y ves allí el documento. ¿Qué harías?",
+      "prompt": "Una compañera del trabajo te avisa que dejó el informe que necesitas en la página donde guardan documentos. Entras a esa página y encuentras el informe. ¿Qué haces?",
       "options": [
-        "Ignorar el documento porque llegó después de un aviso.",
-        "Pedirle que te envíe el documento a tu correo personal.",
-        "Abrirlo desde la plataforma habitual para realizar tu trabajo.",
-        "No estoy seguro/a"
-      ]
-    },
-    {
-      "prompt": "Recibes un correo de un proveedor conocido. Dice que cambió su cuenta bancaria y pide que paguen la próxima factura a la nueva cuenta. ¿Qué harías primero?",
-      "options": [
-        "Confirmar el cambio llamando al número del proveedor que ya tiene registrada la institución.",
-        "Pagar a la nueva cuenta porque el correo tiene el nombre del proveedor.",
-        "Responder al mismo correo para preguntar si el cambio es real.",
+        "Lo abro desde esa página.",
+        "Le pido que me lo envíe a mi correo personal.",
+        "Espero a que me lo envíe por otro medio antes de abrirlo.",
         "No estoy seguro/a."
       ]
     },
     {
-      "prompt": "Llega un mensaje a tu celular: \"Detectamos un problema con su cuenta bancaria. Entre a este enlace para evitar el bloqueo\". ¿Qué harías?",
+      "prompt": "Un proveedor al que tu trabajo suele comprarle escribe que cambió su cuenta bancaria y pide que la próxima factura se pague allí. ¿Qué haces antes de pagar?",
       "options": [
-        "Abrir el enlace para revisar el problema.",
-        "Reenviar el mensaje a un compañero para saber si también lo recibió.",
-        "Revisar tu cuenta desde la aplicación del banco o llamar a su número habitual.",
+        "Llamo al número del proveedor que ya tengo para confirmar el cambio.",
+        "Respondo a ese correo para confirmar el cambio.",
+        "Pago a la cuenta nueva porque reconozco al proveedor.",
         "No estoy seguro/a."
       ]
     },
     {
-      "prompt": "Solicitaste un cambio de horario en el trabajo. Recibes un mensaje que confirma el cambio y, al entrar por tu cuenta al calendario institucional, ves el nuevo horario. ¿Qué harías?",
+      "prompt": "Recibes un mensaje que dice que alguien intentó entrar a tu cuenta bancaria y que podrían bloquearla. Incluye un enlace para confirmar tus datos. ¿Qué haces?",
       "options": [
-        "Tomar en cuenta el nuevo horario confirmado en el calendario.",
-        "Mantener el horario anterior porque el aviso llegó por mensaje.",
-        "Avisar a todos que probablemente es una estafa.",
+        "Abro el enlace y escribo mis datos.",
+        "Respondo al mensaje para preguntar qué pasó.",
+        "Abro la aplicación del banco para revisar mi cuenta.",
         "No estoy seguro/a."
       ]
     },
     {
-      "prompt": "Esperas una entrega de materiales para la oficina. Llega un mensaje que pide tu número de cédula y un pago pequeño en un enlace para poder entregar el paquete. ¿Qué harías primero?",
+      "prompt": "Te escribe por WhatsApp alguien que dice ser tu hermano. Afirma que tiene un número nuevo y necesita que le transfieras dinero por una emergencia. ¿Qué haces?",
       "options": [
-        "Ingresar los datos porque sí esperas una entrega.",
-        "Revisar el estado del envío mediante el contacto o sistema habitual de la empresa de entregas.",
-        "Responder al mensaje para pedir una foto del paquete.",
+        "Le transfiero el dinero porque sabe quién soy.",
+        "Llamo a mi hermano al número que ya tengo para confirmar.",
+        "Le pido una foto de su cédula por ese mismo chat.",
         "No estoy seguro/a."
       ]
     },
     {
-      "prompt": "Alguien llama diciendo que trabaja en el banco. Afirma que detectó un fraude y te pide el código que acaba de llegar a tu celular para detenerlo. ¿Qué harías?",
+      "prompt": "Esperas un paquete. Te llega un mensaje con un enlace que pide tu cédula y un pago pequeño para entregarlo. ¿Qué haces primero?",
       "options": [
-        "No darle el código y comunicarte con el banco mediante un número que ya conoces.",
-        "Darle el código para evitar que saquen dinero.",
-        "Pedirle su nombre y, si lo dice, darle el código.",
+        "Ingreso los datos porque sí espero un paquete.",
+        "Reviso el envío desde la aplicación de la empresa de entregas.",
+        "Respondo al mensaje para pedir una foto del paquete.",
         "No estoy seguro/a."
       ]
     },
     {
-      "prompt": "Tienes un problema con la impresora. Tú llamas a la extensión de soporte que figura en el directorio de tu institución. Te indican que reinicies la impresora desde su panel. ¿Qué harías?",
+      "prompt": "Te llama una persona que dice trabajar en tu banco. Afirma que detectó un fraude en tu cuenta y que recibirás un código en tu celular. Te pide que se lo dictes para ayudarte. ¿Qué haces?",
       "options": [
-        "Cortar la llamada porque cualquier indicación telefónica es peligrosa.",
-        "Dar tu contraseña para que soporte reinicie todo por ti.",
-        "Seguir la indicación de reiniciar la impresora.",
+        "Le dicto el código para que revise el supuesto fraude.",
+        "Le pido su nombre y le dicto el código si responde.",
+        "No le doy el código y llamo al banco al número de mi tarjeta o aplicación.",
         "No estoy seguro/a."
       ]
     },
     {
-      "prompt": "Recibes una llamada con una voz muy parecida a la de tu jefe. Te pide transferir dinero de la institución de inmediato a una cuenta nueva. ¿Qué harías primero?",
+      "prompt": "La pantalla de tu computador del trabajo deja de responder. Llamas al teléfono de ayuda que te dieron en el trabajo y te indican que reinicies el computador. ¿Qué haces?",
       "options": [
-        "Hacer la transferencia porque reconoces la voz.",
-        "Confirmar la solicitud por el procedimiento habitual de la institución.",
-        "Pedir que repita la instrucción en un mensaje de voz.",
+        "Lo reinicio siguiendo esa indicación.",
+        "Les doy mi contraseña para que lo reinicien por mí.",
+        "Descargo un programa si me lo pide alguien que vuelve a llamar.",
         "No estoy seguro/a."
       ]
     },
     {
-      "prompt": "Un compañero escribe desde un número que no conoces. Dice que perdió su teléfono y necesita que le envíes un informe reservado. ¿Qué harías?",
+      "prompt": "Recibes una llamada y la voz parece ser de tu jefe. Te pide transferir dinero a una cuenta nueva. ¿Qué haces?",
       "options": [
-        "Enviarlo porque conoce el nombre del informe.",
-        "Pedirle una foto de su credencial por ese mismo chat.",
-        "Contactarlo por un medio que ya usabas y comprobar si puede recibir ese informe.",
+        "Hago la transferencia porque la voz parece la de mi jefe.",
+        "Llamo a mi jefe al número que ya tengo para confirmar.",
+        "Le pido que me envíe los datos de la cuenta por mensaje.",
         "No estoy seguro/a."
       ]
     },
     {
-      "prompt": "Ves una publicación con el nombre y el logotipo de una entidad pública. Ofrece un beneficio y pide ingresar tus datos personales mediante un enlace. ¿Qué harías?",
+      "prompt": "Un compañero del trabajo te escribe desde un número que no reconoces. Dice que perdió su teléfono y necesita un informe reservado. ¿Qué haces?",
       "options": [
-        "Buscar la información entrando por tu cuenta al sitio oficial de la entidad.",
-        "Abrir el enlace porque tiene el logotipo correcto.",
-        "Enviar tus datos por mensaje privado para confirmar si aplicas.",
+        "Se lo envío porque conoce el nombre del informe.",
+        "Le pido una foto de su credencial por ese chat.",
+        "Confirmo el pedido llamándolo al número de trabajo que ya tengo.",
         "No estoy seguro/a."
       ]
     },
     {
-      "prompt": "Una persona escribe por WhatsApp y se presenta como integrante del área de talento humano. Pide una lista con nombres, correos y números de cédula del personal para una \"actualización urgente\". ¿Qué harías?",
+      "prompt": "Ves una publicación con el nombre y el logotipo de una entidad pública. Ofrece un bono de ayuda del gobierno y pide tus datos en un enlace. ¿Qué haces?",
       "options": [
-        "Enviar la lista para evitar retrasos.",
-        "Enviar solo una parte de la lista como prueba.",
-        "Consultar la solicitud directamente con talento humano por el canal institucional.",
+        "Busco información sobre el bono en la página oficial de la entidad.",
+        "Abro el enlace porque la publicación tiene el logotipo correcto.",
+        "Envío mis datos por mensaje privado para saber si puedo recibirlo.",
         "No estoy seguro/a."
       ]
     },
     {
-      "prompt": "Una tienda que no conoces ofrece computadoras para la oficina a un precio mucho menor que otras tiendas. Exige una transferencia inmediata a una cuenta personal para reservarlas. ¿Qué harías?",
+      "prompt": "Alguien te escribe por WhatsApp. Dice trabajar en Talento Humano y pide nombres, correos y cédulas del personal para una “actualización urgente”. ¿Qué haces?",
       "options": [
-        "Transferir para aprovechar el precio.",
-        "Verificar la tienda y seguir el proceso habitual de compras antes de pagar.",
-        "Pedir una foto de la cédula del vendedor y luego transferir.",
+        "Envío la lista para completar la actualización.",
+        "Envío solo una parte de la lista como ejemplo.",
+        "Pregunto a Talento Humano usando el teléfono o correo de la empresa.",
         "No estoy seguro/a."
       ]
     },
     {
-      "prompt": "Tu oficina vende un equipo usado. El comprador muestra una captura que dice \"transferencia realizada\", pero el dinero todavía no aparece en la cuenta. ¿Qué harías?",
+      "prompt": "En redes sociales encuentras una computadora a buen precio. El vendedor te pide transferir dinero a una cuenta personal para apartarla. ¿Qué haces?",
       "options": [
-        "Entregar el equipo porque la captura muestra el pago.",
-        "Pedir otra captura más clara y entregar el equipo.",
-        "Esperar a comprobar que el dinero esté disponible en la cuenta.",
+        "Transfiero el dinero para que no la vendan.",
+        "Reviso si la tienda es confiable y qué opciones de pago ofrece.",
+        "Pido una foto de la cédula del vendedor y luego transfiero.",
         "No estoy seguro/a."
       ]
     },
     {
-      "prompt": "Solicitaste materiales de oficina a un proveedor aprobado. La factura aparece en el portal al que entras habitualmente y los datos coinciden con la compra autorizada. ¿Qué harías?",
+      "prompt": "Vendes un equipo usado. El comprador te muestra una imagen que dice que hizo la transferencia, pero el dinero aún no aparece en tu cuenta. ¿Qué haces?",
       "options": [
-        "Continuar con el procedimiento normal de recepción y pago.",
-        "Rechazar la factura porque podría ser una estafa.",
-        "Pagarla a cualquier cuenta que llegue después por correo.",
+        "Entrego el equipo porque la imagen muestra el pago.",
+        "Pido otra imagen del pago y entrego el equipo.",
+        "Espero a que el dinero aparezca en mi cuenta antes de entregar el equipo.",
         "No estoy seguro/a."
       ]
     },
     {
-      "prompt": "Encuentras una memoria USB abandonada junto a los computadores de la oficina. ¿Qué harías?",
+      "prompt": "Una factura de un proveedor aprobado aparece en la página que usa tu trabajo para revisar compras. El valor y los productos coinciden con el pedido. ¿Qué haces?",
       "options": [
-        "Conectarla para averiguar a quién pertenece.",
-        "No conectarla y avisar al personal responsable.",
-        "Entregarla a un compañero para que revise los archivos.",
+        "Sigo los pasos normales de recepción y pago.",
+        "Rechazo la factura porque podría ser falsa.",
+        "Pago a otra cuenta si luego me la envían por correo.",
         "No estoy seguro/a."
       ]
     },
     {
-      "prompt": "Una persona a la que no conoces quiere entrar detrás de ti a una oficina donde solo puede ingresar personal autorizado. Dice que olvidó su identificación. ¿Qué harías?",
+      "prompt": "Encuentras una memoria USB abandonada junto a los computadores de la oficina. ¿Qué haces?",
       "options": [
-        "Dejarla entrar para no hacerla esperar.",
-        "Preguntarle su nombre y dejarla entrar si lo dice.",
-        "Indicarle que debe identificarse con recepción o con el responsable del área.",
+        "La conecto para saber a quién pertenece.",
+        "No la conecto y aviso al personal responsable.",
+        "Se la paso a un compañero para que revise su contenido.",
         "No estoy seguro/a."
       ]
     },
     {
-      "prompt": "Recepción te avisó que llegaría una persona a revisar la impresora. Cuando llega, recepción confirma que es la visita programada. El procedimiento indica que debe estar acompañada mientras trabaja. ¿Qué harías?",
+      "prompt": "Una persona que no conoces quiere entrar contigo a una oficina donde solo puede ingresar el personal. Dice que olvidó su identificación. ¿Qué haces?",
       "options": [
-        "Rechazar la visita porque podría ser una estafa.",
-        "Permitir la revisión siguiendo el procedimiento de acompañamiento.",
-        "Dejarla sola y darle tu contraseña para que termine más rápido.",
+        "La dejo entrar para no hacerla esperar.",
+        "Le pregunto su nombre y la dejo pasar si responde.",
+        "Le indico que debe identificarse en recepción.",
         "No estoy seguro/a."
       ]
     },
     {
-      "prompt": "Quieres pedir a un asistente de inteligencia artificial que resuma una hoja de cálculo del trabajo. La hoja contiene nombres, correos y números de cédula de otras personas. ¿Qué harías?",
+      "prompt": "Recepción te avisó que llegaría una persona a revisar la impresora. Cuando llega, recepción confirma que es la visita esperada. El procedimiento indica que debe estar acompañada. ¿Qué haces?",
       "options": [
-        "Copiar toda la hoja porque solo quieres un resumen.",
-        "Copiarla después de pedir al asistente que no guarde los datos.",
-        "Quitar los datos personales antes de usar la herramienta, o no subir la hoja.",
+        "Cancelo la visita porque no conozco a esa persona.",
+        "La acompaño mientras revisa la impresora.",
+        "La dejo trabajar sola y le doy mi contraseña para que termine.",
         "No estoy seguro/a."
       ]
     },
     {
-      "prompt": "Un asistente de inteligencia artificial te da un enlace y asegura que es la página oficial para realizar un trámite de la institución. ¿Qué harías?",
+      "prompt": "Quieres pedir a un asistente de inteligencia artificial que resuma una hoja de cálculo con nombres, correos y cédulas de otras personas. ¿Qué haces?",
       "options": [
-        "Abrir el enlace porque el asistente lo aseguró.",
-        "Buscar el trámite por tu cuenta en la página oficial de la entidad.",
-        "Preguntarle de nuevo al mismo asistente si está seguro.",
+        "Copio la hoja porque solo necesito un resumen.",
+        "Copio la hoja y le pido que no guarde los datos.",
+        "Quito los datos personales antes de usar la herramienta.",
         "No estoy seguro/a."
       ]
     },
     {
-      "prompt": "Tu institución permite usar un asistente de inteligencia artificial para mejorar textos públicos. Quieres corregir la redacción de una invitación que no contiene datos personales ni información reservada. ¿Qué harías?",
+      "prompt": "Le preguntas a un asistente de inteligencia artificial cómo pedir un certificado de tu institución. Te indica una página y dice que allí se hace el trámite. ¿Qué haces antes de ingresar tus datos?",
       "options": [
-        "Usar la herramienta permitida y revisar el texto antes de enviarlo.",
-        "Evitar cualquier uso de la herramienta, aunque esté permitido.",
-        "Añadir datos reservados para que la invitación quede más completa.",
+        "Busco el trámite en la página oficial de la institución.",
+        "Ingreso mis datos en la página que indicó el asistente.",
+        "Le pregunto al mismo asistente si la página es segura.",
+        "No estoy seguro/a."
+      ]
+    },
+    {
+      "prompt": "Tu institución permite usar un asistente de inteligencia artificial para mejorar textos públicos. Quieres corregir una invitación que no contiene datos personales ni información reservada. ¿Qué haces?",
+      "options": [
+        "Uso la herramienta permitida y reviso el texto antes de enviarlo.",
+        "Evito usarla incluso para ese tipo de texto.",
+        "Agrego información reservada para que la invitación quede más completa.",
         "No estoy seguro/a."
       ]
     }
   ],
-  "answerKey": [1, 2, 0, 2, 0, 1, 0, 2, 1, 2, 0, 2, 1, 2, 0, 1, 2, 1, 2, 1, 0]
+  "answerKey": [1, 0, 0, 2, 1, 1, 2, 0, 1, 2, 0, 2, 1, 2, 0, 1, 2, 1, 2, 0, 0]
 }
