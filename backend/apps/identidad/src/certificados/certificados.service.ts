@@ -349,6 +349,16 @@ export class CertificatesService {
     });
   }
 
+  async restore(id: string): Promise<void> {
+    const { count } = await this.prisma.certificate.updateMany({
+      where: { id },
+      data: { revocadoAt: null },
+    });
+    if (count === 0) {
+      throw new NotFoundException('No existe ese certificado.');
+    }
+  }
+
   private toPublic(certificate: {
     codigo: string;
     emitidoAt: Date;

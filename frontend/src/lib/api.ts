@@ -369,6 +369,10 @@ export function revokeCertificate(id: string): Promise<null> {
   return request<null>(`/admin/certificados/${id}/revocar`, { method: 'PATCH' })
 }
 
+export function restoreCertificate(id: string): Promise<null> {
+  return request<null>(`/admin/certificados/${id}/restaurar`, { method: 'PATCH' })
+}
+
 export function fetchResults(): Promise<RunResult[]> {
   return request<RunResult[]>('/runs/resultados')
 }

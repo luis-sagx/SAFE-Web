@@ -21,6 +21,7 @@ import {
   register,
   resendConfirmation,
   resetPassword,
+  restoreCertificate,
   setToken,
   verifyCertificate,
 } from './api'
@@ -62,6 +63,18 @@ describe('api', () => {
 
     const [, init] = fetchMock.mock.calls[0] as [string, RequestInit]
     expect((init.headers as Record<string, string>).Authorization).toBe('Bearer t0ken')
+  })
+
+  it('restaura el certificado indicado con la sesión y sin cuerpo', async () => {
+    setToken('sesion-supervisor')
+    const fetchMock = mockFetch({ status: 204 })
+
+    expect(await restoreCertificate('certificado-1')).toBeNull()
+    expect(fetchMock).toHaveBeenCalledWith('/api/admin/certificados/certificado-1/restaurar', expect.objectContaining({
+      method: 'PATCH',
+      body: undefined,
+      headers: { Authorization: 'Bearer sesion-supervisor' },
+    }))
   })
 
   it.each([

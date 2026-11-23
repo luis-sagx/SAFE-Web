@@ -790,3 +790,36 @@ describe('CertificadosService.revocar', () => {
     expect(data.revocadoAt).toBeInstanceOf(Date);
   });
 });
+
+describe('CertificadosService.restaurar', () => {
+  it('solo limpia la revocación sin volver a enviar el certificado', async () => {
+    const updateMany = jest.fn().mockResolvedValue({ count: 1 });
+    const { mail, sendCertificate } = fakeMail();
+    const svc = service(
+      { certificate: { updateMany } },
+      jwtReturning(validAttestation()),
+      mail,
+    );
+
+    await svc.restore('c1');
+
+    expect(updateMany).toHaveBeenCalledWith({
+      where: { id: 'c1' },
+      data: { revocadoAt: null },
+    });
+    expect(sendCertificate).not.toHaveBeenCalled();
+  });
+
+  it('responde 404 si no existe el certificado', async () => {
+    const svc = service(
+      {
+        certificate: { updateMany: () => Promise.resolve({ count: 0 }) },
+      },
+      jwtReturning(validAttestation()),
+    );
+
+    await expect(svc.restore('inexistente')).rejects.toBeInstanceOf(
+      NotFoundException,
+    );
+  });
+});

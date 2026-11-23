@@ -367,7 +367,8 @@ a `identidad`, `/api/runs/*` a `entrenamiento`.
 | `GET` | `/api/certificados/pdf` | identidad | JWT + rol `PARTICIPANT` | Descarga el PDF del certificado propio vigente, incluso al repetir un módulo. |
 | `POST` | `/api/certificados/pdf` | identidad | JWT + rol `PARTICIPANT` | Descarga compatible con el flujo anterior. Recibe `{ atestacion }` en el cuerpo para mantener el JWT fuera de los logs de URL. |
 | `GET` | `/api/certificados/verificar/:codigo` | identidad | — | Pública, 20/min por IP. → `{ valido, emitidoAt?, horas?, modulos? }`. Nunca el nombre (§7). |
-| `PATCH` | `/api/admin/certificados/:id/revocar` | identidad | JWT + rol `SUPERVISOR` | Marca `revocadoAt`. Sin revocación automática por bajar de umbral (§11). |
+| `PATCH` | `/api/admin/certificados/:id/revocar` | identidad | JWT + rol `ADMIN` (supervisor) | Marca `revocadoAt`. Sin revocación automática por bajar de umbral (§11). |
+| `PATCH` | `/api/admin/certificados/:id/restaurar` | identidad | JWT + rol `ADMIN` (supervisor) | Limpia `revocadoAt` y devuelve 204 incluso si ya estaba vigente. Devuelve 404 si no existe. Conserva la emisión y la constancia de envío. |
 
 ### 5.1 Contrato del token
 
@@ -1037,7 +1038,7 @@ Antes de escribir código en este repositorio:
 | Analítica dentro de la app | Fuera de alcance | El análisis se hace sobre los resultados que el supervisor consulta en `/api/runs/resultados`. |
 | Multi-idioma | Fuera de alcance | El estudio es en Ecuador, en español. |
 | Certificado | Atestación firmada por el cliente, sin servicio propio | Un tercer microservicio (`certificados` :3003) que llamara a `entrenamiento` violaría §2. La atestación es la misma regla que ya rige el JWT: lo que cruza entre servicios, viaja por el cliente. |
-| Revocación del certificado | Solo manual, por un supervisor | Repetir un módulo conserva el PDF vigente con su fecha, nota y código. La revocación bloquea la descarga, la actualización y el envío. |
+| Vigencia del certificado | Revocación y restauración manuales a cargo del supervisor | Repetir un módulo conserva el PDF vigente con su fecha, nota y código. La revocación bloquea la descarga, la actualización y el envío. Restaurar habilita la descarga y la verificación de la misma emisión. |
 | Entrega del certificado | Descarga en la app y envío por correo | La primera emisión y las ampliaciones requieren atestación. `identidad` regenera el PDF de un certificado vigente usando la sesión para identificar al titular. |
 
 ---

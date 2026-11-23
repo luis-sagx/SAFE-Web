@@ -15,4 +15,10 @@ export class AdminCertificatesController {
   async revoke(@Param('id') id: string) {
     await this.certificates.revoke(id);
   }
+
+  @Patch(':id/restaurar')
+  @HttpCode(204)
+  async restore(@Param('id') id: string) {
+    await this.certificates.restore(id);
+  }
 }
