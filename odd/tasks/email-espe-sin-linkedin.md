@@ -27,7 +27,7 @@ El backend acepta muchos proveedores y dominios `.ec`; el formulario solo revisa
 - [x] **T1 — Restringir el correo de todas las altas a `espe.edu.ec`.** El validador compartido acepta solo el dominio exacto y el formulario muestra el error junto al campo y bloquea el envío. Ruta: delegada directa; el disparador escritor aplica porque la validación coherente toca al menos dos archivos no triviales. Commit de trabajo: `d78395e` (`fix(auth): exigir correo institucional ESPE`).
 - [x] **T2 — Retirar la acción de LinkedIn de la insignia.** Quitados el enlace y el helper; se retiró la prueba obsoleta del enlace y se conservaron las pruebas restantes de la descarga. Ruta: delegada directa; el disparador escritor aplica por cambios coordinados en varios archivos. Commit de trabajo: `6f7e7a8` (`refactor(certificates): quitar acción de LinkedIn`).
 - [x] **T3 — Dejar solo la descarga del certificado en la pantalla final.** Quitados `Ver insignia`, la conexión con el modal y las expectativas obsoletas en las pruebas existentes; se conserva `Descargar certificado`. Ruta: delegada directa porque el disparador escritor aplica al modificar el componente y dos archivos de pruebas. Commit de trabajo: `b5fd08e` (`fix(certificates): dejar solo descarga en cierre`).
-- [x] **T4 — Alinear los fixtures de prueba con el dominio institucional.** Actualizados el correo base y las expectativas del spec DTO, los fixtures E2E, y las aserciones de privacidad y administración que dependían del dominio anterior; se conservaron direcciones de casos inexistentes. Ruta: delegada directa por el disparador escritor; el mapeo encontró cinco archivos de prueba relacionados. Commit de trabajo: pendiente de registrar.
+- [x] **T4 — Alinear los fixtures de prueba con el dominio institucional.** Actualizados el correo base y las expectativas del spec DTO, los fixtures E2E, y las aserciones de privacidad y administración que dependían del dominio anterior; se conservaron direcciones de casos inexistentes. Ruta: delegada directa por el disparador escritor; el mapeo encontró cinco archivos de prueba relacionados. Commit de trabajo: `63173a6` (`test(auth): alinear fixtures con dominio ESPE`).
 
 ## Criterios de aceptación
 
@@ -49,4 +49,4 @@ El backend acepta muchos proveedores y dominios `.ec`; el formulario solo revisa
 
 ## Siguiente paso
 
-Registrar el commit de T4. El espejo Engram queda pendiente hasta que el almacén esté disponible.
+Trabajo local completo; sincronizar el espejo Engram cuando el almacén esté disponible.
