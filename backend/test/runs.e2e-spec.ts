@@ -198,7 +198,7 @@ describe('Corridas (e2e)', () => {
       // tiene: no hay forma de que salgan.
       const text = res.text;
       expect(text).not.toContain('María');
-      expect(text).not.toContain('@ejemplo.ec');
+      expect(text).not.toContain('@espe.edu.ec');
       expect(text).not.toContain('0991234567');
     });
   });

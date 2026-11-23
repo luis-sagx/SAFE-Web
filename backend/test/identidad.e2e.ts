@@ -131,10 +131,8 @@ export function registrationData(suffix: string) {
   return {
     nombre: 'María',
     apellido: 'Pérez',
-    // .ec y no .com: EsDominioPermitido (dominios-correo.ts) rechaza
-    // dominios inventados fuera del ccTLD ecuatoriano o la allowlist de
-    // proveedores libres.
-    email: `maria.${suffix}@ejemplo.ec`,
+    // Las altas de prueba usan el mismo dominio institucional que exige el DTO.
+    email: `maria.${suffix}@espe.edu.ec`,
     cedula: ecuadorianIdOfTest(),
     password: PASSWORD_TEST,
   };

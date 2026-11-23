@@ -18,7 +18,7 @@ El backend acepta muchos proveedores y dominios `.ec`; el formulario solo revisa
 ## Configuración de desarrollo
 
 - TDD: desactivado según el registro frontend del proyecto en `odd/tasks/certificados-admin-revocation.md`; runner identificado: Vitest (`pnpm test` en `frontend/`) y Jest (`pnpm test` en `backend/`).
-- Esta sesión no añadirá ni ejecutará pruebas automatizadas. Verificaciones funcionales disponibles: `pnpm typecheck`, `pnpm lint`, `pnpm build` desde `frontend/`; `pnpm lint:ci` y `pnpm build` desde `backend/`; `git diff --check`.
+- T1–T3 no añadieron ni ejecutaron pruebas automatizadas. T4 actualiza pruebas existentes por el fallo de pipeline reportado; ejecutar los runners focalizados backend `pnpm test -- apps/identidad/src/auth/dto/register.dto.spec.ts` y `pnpm test:e2e -- --runTestsByPath test/auth.e2e-spec.ts` si el entorno local permite usar Postgres.
 - RDD: `disabled/unmanaged` (modo opt-in apagado por defecto; no iniciar revisiones).
 - Estrategia de entrega: `ask-on-risk`; previsión aproximada menor a 400 líneas modificadas.
 
@@ -27,6 +27,7 @@ El backend acepta muchos proveedores y dominios `.ec`; el formulario solo revisa
 - [x] **T1 — Restringir el correo de todas las altas a `espe.edu.ec`.** El validador compartido acepta solo el dominio exacto y el formulario muestra el error junto al campo y bloquea el envío. Ruta: delegada directa; el disparador escritor aplica porque la validación coherente toca al menos dos archivos no triviales. Commit de trabajo: `d78395e` (`fix(auth): exigir correo institucional ESPE`).
 - [x] **T2 — Retirar la acción de LinkedIn de la insignia.** Quitados el enlace y el helper; se retiró la prueba obsoleta del enlace y se conservaron las pruebas restantes de la descarga. Ruta: delegada directa; el disparador escritor aplica por cambios coordinados en varios archivos. Commit de trabajo: `6f7e7a8` (`refactor(certificates): quitar acción de LinkedIn`).
 - [x] **T3 — Dejar solo la descarga del certificado en la pantalla final.** Quitados `Ver insignia`, la conexión con el modal y las expectativas obsoletas en las pruebas existentes; se conserva `Descargar certificado`. Ruta: delegada directa porque el disparador escritor aplica al modificar el componente y dos archivos de pruebas. Commit de trabajo: `b5fd08e` (`fix(certificates): dejar solo descarga en cierre`).
+- [x] **T4 — Alinear los fixtures de prueba con el dominio institucional.** Actualizados el correo base y las expectativas del spec DTO, los fixtures E2E, y las aserciones de privacidad y administración que dependían del dominio anterior; se conservaron direcciones de casos inexistentes. Ruta: delegada directa por el disparador escritor; el mapeo encontró cinco archivos de prueba relacionados. Commit de trabajo: pendiente de registrar.
 
 ## Criterios de aceptación
 
@@ -41,9 +42,11 @@ El backend acepta muchos proveedores y dominios `.ec`; el formulario solo revisa
 - T1: `pnpm typecheck` y `pnpm lint` (frontend) pasaron; lint dejó advertencias preexistentes en archivos ajenos. `git diff --check` pasó. `pnpm lint:ci` (backend) quedó sin verificar: pnpm intentó instalar dependencias ausentes y el acceso al registro produjo errores de red; se interrumpió la instalación. No se añadieron ni ejecutaron pruebas automatizadas según la instrucción de desarrollo.
 - T2: `pnpm typecheck`, `pnpm lint` y `pnpm build` (frontend) pasaron; lint conserva advertencias preexistentes en archivos ajenos. `git diff --check` pasó. `rg` ya no encuentra referencias funcionales a LinkedIn en `frontend/src`; queda únicamente el comentario histórico `issue #279-linkedin`. No se añadieron ni ejecutaron pruebas automatizadas según la instrucción de desarrollo.
 - T3: `pnpm typecheck`, `pnpm lint` y `pnpm build` (frontend) pasaron; lint conserva advertencias preexistentes en archivos ajenos. `git diff --check` pasó y `rg` ya no encuentra `Ver insignia` en `frontend/src`. Se retiraron las expectativas obsoletas sin añadir ni ejecutar pruebas automatizadas.
+- T4 causa y cambios: el correo base de `register.dto.spec.ts` era `ana@gmail.com`, sumando error `email` a casos de otras propiedades. `registrationData()` usaba `@ejemplo.ec`, lo que invalidaba altas E2E. Actualizados también el correo del supervisor en admin y el dominio que la prueba de privacidad de runs excluye. Se conservaron las direcciones `.ec` de casos inexistentes.
+- T4 verificación: `./node_modules/.bin/jest --runInBand apps/identidad/src/auth/dto/register.dto.spec.ts` pasó (25/25). `./node_modules/.bin/jest --coverage` pasó (37 suites, 301 pruebas). La suite `auth.e2e-spec.ts` no alcanzó sus casos: su `beforeAll` falla en `cleanDatabase` porque el PrismaClient local requiere un driver adapter. El detalle de CI del fallo E2E no venía en el fragmento, así que esa causa no se confirma. El primer `pnpm test` disparó una instalación automática y se interrumpió; no se usó para correr pruebas. `git diff --check` pasó.
 - Backend `pnpm build` pendiente por las dependencias ausentes tras el fallo de instalación del lint. `pnpm --offline build` no inició porque esta versión de pnpm rechaza `--offline` como opción para `run`.
 - Espejo Engram pendiente: el almacén local está fuera del área escribible y la solicitud de acceso ampliado fue cancelada; preservar este documento local.
 
 ## Siguiente paso
 
-Trabajo local completo; sincronizar el espejo Engram cuando el almacén esté disponible.
+Registrar el commit de T4. El espejo Engram queda pendiente hasta que el almacén esté disponible.
