@@ -25,7 +25,7 @@ El backend acepta muchos proveedores y dominios `.ec`; el formulario solo revisa
 ## Tareas
 
 - [x] **T1 — Restringir el correo de todas las altas a `espe.edu.ec`.** El validador compartido acepta solo el dominio exacto y el formulario muestra el error junto al campo y bloquea el envío. Ruta: delegada directa; el disparador escritor aplica porque la validación coherente toca al menos dos archivos no triviales. Commit de trabajo: `d78395e` (`fix(auth): exigir correo institucional ESPE`).
-- [x] **T2 — Retirar la acción de LinkedIn de la insignia.** Quitados el enlace y el helper; se retiró la prueba obsoleta del enlace y se conservaron las pruebas restantes de la descarga. Ruta: delegada directa; el disparador escritor aplica por cambios coordinados en varios archivos. Commit de trabajo: pendiente de registrar.
+- [x] **T2 — Retirar la acción de LinkedIn de la insignia.** Quitados el enlace y el helper; se retiró la prueba obsoleta del enlace y se conservaron las pruebas restantes de la descarga. Ruta: delegada directa; el disparador escritor aplica por cambios coordinados en varios archivos. Commit de trabajo: `6f7e7a8` (`refactor(certificates): quitar acción de LinkedIn`).
 
 ## Criterios de aceptación
 
@@ -43,4 +43,4 @@ El backend acepta muchos proveedores y dominios `.ec`; el formulario solo revisa
 
 ## Siguiente paso
 
-Registrar el commit de T2. El espejo Engram queda pendiente hasta que el almacén esté disponible.
+Trabajo local completo; sincronizar el espejo Engram cuando el almacén esté disponible.
