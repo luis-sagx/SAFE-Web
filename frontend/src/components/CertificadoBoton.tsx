@@ -54,8 +54,7 @@ function CertificateButton() {
         {status === 'generando' ? 'Generando…' : 'Descargar certificado'}
       </button>
 
-      {/* Insignia aparte del PDF formal (issue #230): imagen circular
-          pensada para compartir en LinkedIn u otra red, no un documento. */}
+      {/* Insignia circular aparte del PDF formal (issue #230). */}
       <button
         type="button"
         onClick={() => setShowBadge(true)}

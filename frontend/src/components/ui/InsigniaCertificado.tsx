@@ -23,8 +23,7 @@ const LIGHT_GOLD = '#d9bd7a'
 const CREAM = '#faf7ef'
 const INK = '#1a1a1a'
 
-// Medallón circular tipo Cisco/Credly, no una tarjeta ni el PDF formal: se
-// descarga como imagen para compartir en LinkedIn u otra red (issue #230).
+// Medallón circular tipo Cisco/Credly, no una tarjeta ni el PDF formal (issue #230).
 // El aro dorado + la cinta abajo son lo que la distingue de un simple ícono.
 function CertificateBadge({ nombre, modulos, horas, className = '', ref }: Readonly<CertificateBadgeProps>) {
   const displayName = nombre?.trim() || 'Participante SAFE-Web'

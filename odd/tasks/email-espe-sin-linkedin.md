@@ -25,7 +25,7 @@ El backend acepta muchos proveedores y dominios `.ec`; el formulario solo revisa
 ## Tareas
 
 - [x] **T1 — Restringir el correo de todas las altas a `espe.edu.ec`.** El validador compartido acepta solo el dominio exacto y el formulario muestra el error junto al campo y bloquea el envío. Ruta: delegada directa; el disparador escritor aplica porque la validación coherente toca al menos dos archivos no triviales. Commit de trabajo: `d78395e` (`fix(auth): exigir correo institucional ESPE`).
-- [ ] **T2 — Retirar la acción de LinkedIn de la insignia.** Quitar el enlace y el helper y actualizar las pruebas existentes para reflejar que solo queda la descarga. Ruta: delegada directa; el disparador escritor aplica por cambios coordinados en varios archivos.
+- [x] **T2 — Retirar la acción de LinkedIn de la insignia.** Quitados el enlace y el helper; se retiró la prueba obsoleta del enlace y se conservaron las pruebas restantes de la descarga. Ruta: delegada directa; el disparador escritor aplica por cambios coordinados en varios archivos. Commit de trabajo: pendiente de registrar.
 
 ## Criterios de aceptación
 
@@ -38,8 +38,9 @@ El backend acepta muchos proveedores y dominios `.ec`; el formulario solo revisa
 - Exploración: `IsAllowedDomain` es el validador compartido por `RegisterDto` y `CreateTrainerDto`; el formulario vive en `frontend/src/pages/Registro.tsx`. La acción visible está en `frontend/src/components/ModalInsignia.tsx`, con helper en `frontend/src/lib/linkedin.ts`.
 - Exploración delegada: confirmó las referencias de prueba y distinguió menciones no funcionales que quedan fuera del alcance.
 - T1: `pnpm typecheck` y `pnpm lint` (frontend) pasaron; lint dejó advertencias preexistentes en archivos ajenos. `git diff --check` pasó. `pnpm lint:ci` (backend) quedó sin verificar: pnpm intentó instalar dependencias ausentes y el acceso al registro produjo errores de red; se interrumpió la instalación. No se añadieron ni ejecutaron pruebas automatizadas según la instrucción de desarrollo.
+- T2: `pnpm typecheck`, `pnpm lint` y `pnpm build` (frontend) pasaron; lint conserva advertencias preexistentes en archivos ajenos. `git diff --check` pasó. `rg` ya no encuentra referencias funcionales a LinkedIn en `frontend/src`; queda únicamente el comentario histórico `issue #279-linkedin`. No se añadieron ni ejecutaron pruebas automatizadas según la instrucción de desarrollo.
 - Espejo Engram pendiente: el almacén local está fuera del área escribible y la solicitud de acceso ampliado fue cancelada; preservar este documento local.
 
 ## Siguiente paso
 
-Implementar T2, observar las verificaciones disponibles y actualizar esta lista. Sincronizar el espejo de Engram cuando el almacén esté disponible.
+Registrar el commit de T2. El espejo Engram queda pendiente hasta que el almacén esté disponible.
