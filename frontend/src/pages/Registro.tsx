@@ -58,14 +58,18 @@ function Registration() {
       ? `${lastName.length}/${NAME_MAX}`
       : undefined;
 
-  // Forma, no dominio: qué dominios se aceptan lo decide `EsDominioPermitido`
-  // en el backend (spec 2026-08-22) y esa lista solo tiene sentido mantenida
-  // en un lugar. Repetirla aquí la duplicaría con el riesgo de que las dos
-  // copias diverjan; esto solo atrapa el "se me olvidó la arroba" antes de
-  // pagar el viaje al servidor.
+  // El backend es la autoridad; repetir el dominio aquí permite avisar antes
+  // del envío y evita que la persona descubra el requisito por una respuesta del servidor.
   const EMAIL_FORMAT = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  const invalidEmail =
-    emailTouched && email.length > 0 && !EMAIL_FORMAT.test(email);
+  const emailFormatIsValid = EMAIL_FORMAT.test(email);
+  const emailHasAllowedDomain = email.trim().toLowerCase().endsWith("@espe.edu.ec");
+  const emailError = emailTouched && email.length > 0
+    ? !emailFormatIsValid
+      ? "El correo no tiene un formato válido."
+      : !emailHasAllowedDomain
+        ? "Usa tu correo institucional @espe.edu.ec."
+        : undefined
+    : undefined;
 
   // Misma política que `register.dto.ts`: 8 caracteres, una mayúscula, un
   // número y un carácter especial. Repetida aquí a propósito,a diferencia
@@ -154,9 +158,15 @@ function Registration() {
       return;
     }
 
-    if (!EMAIL_FORMAT.test(email)) {
+    if (!emailFormatIsValid) {
       setEmailTouched(true);
-      setError("El correo no tiene un formato válido.");
+      document.getElementById("email")?.focus();
+      return;
+    }
+
+    if (!emailHasAllowedDomain) {
+      setEmailTouched(true);
+      document.getElementById("email")?.focus();
       return;
     }
 
@@ -264,11 +274,9 @@ function Registration() {
           onChange={setEmail}
           onBlur={() => setEmailTouched(true)}
           autoComplete="email"
-          placeholder="tu@correo.com"
+          placeholder="nombre@espe.edu.ec"
           maxLength={120}
-          error={
-            invalidEmail ? "El correo no tiene un formato válido." : undefined
-          }
+          error={emailError}
         />
         <div>
           <Field
