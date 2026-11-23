@@ -21,7 +21,7 @@ function fillValidForm() {
   fireEvent.change(screen.getByLabelText('Nombre'), { target: { value: 'Ana' } })
   fireEvent.change(screen.getByLabelText('Apellido'), { target: { value: 'Pérez' } })
   fireEvent.change(screen.getByLabelText('Cédula'), { target: { value: '1710034065' } })
-  fireEvent.change(screen.getByLabelText('Correo'), { target: { value: 'ana@correo.com' } })
+  fireEvent.change(screen.getByLabelText('Correo'), { target: { value: 'ana@espe.edu.ec' } })
   fireEvent.change(screen.getByLabelText('Contraseña'), {
     target: { value: 'ClaveSegura123!' },
   })
@@ -34,7 +34,7 @@ describe('Registro', () => {
   })
 
   it('tras registrarse, navega a /revisa-tu-correo con el correo en el state', async () => {
-    const register = vi.fn().mockResolvedValue({ email: 'ana@correo.com' })
+    const register = vi.fn().mockResolvedValue({ email: 'ana@espe.edu.ec' })
     useAuthMock.mockReturnValue({
       isAuthenticated: false,
       loading: false,
@@ -52,7 +52,7 @@ describe('Registro', () => {
 
     await waitFor(() =>
       expect(navigateMock).toHaveBeenCalledWith('/revisa-tu-correo', {
-        state: { email: 'ana@correo.com' },
+        state: { email: 'ana@espe.edu.ec' },
       }),
     )
   })
