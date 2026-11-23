@@ -416,6 +416,15 @@ export interface Certificate {
   calificacion: number
 }
 
+export interface CertificateStatus {
+  estado: 'sin-emitir' | 'vigente' | 'revocado'
+  modulos: string[]
+}
+
+export function fetchCertificateStatus(): Promise<CertificateStatus> {
+  return request<CertificateStatus>('/certificados/me')
+}
+
 export interface CertificateVerification {
   valido: boolean
   emitidoAt?: string
@@ -434,8 +443,10 @@ export function issueCertificate(attestation: string): Promise<Certificate> {
   return request<Certificate>('/certificados', { method: 'POST', body: { atestacion: attestation } })
 }
 
-export function downloadCertificatePdf(attestation: string): Promise<Blob> {
-  return requestBlob('/certificados/pdf', { body: { atestacion: attestation } })
+export function downloadCertificatePdf(attestation?: string): Promise<Blob> {
+  return requestBlob('/certificados/pdf', attestation === undefined
+    ? { method: 'GET' }
+    : { body: { atestacion: attestation } })
 }
 
 /** Pública, sin sesión: no pasa por `auth`. */

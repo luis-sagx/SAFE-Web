@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  Header,
   Param,
   Post,
   Res,
@@ -31,6 +32,23 @@ export class CertificatesController {
     return this.certificates.issue(participant, dto.atestacion);
   }
 
+  @UseGuards(JwtAuthGuard, ParticipantGuard)
+  @Get('me')
+  @Header('Cache-Control', 'no-store')
+  getStatus(@CurrentParticipant() participant: JwtPayload) {
+    return this.certificates.getStatus(participant.sub);
+  }
+
+  @UseGuards(JwtAuthGuard, ParticipantGuard)
+  @Get('pdf')
+  async downloadPdf(
+    @CurrentParticipant() participant: JwtPayload,
+    @Res() res: Response,
+  ) {
+    res.set({ 'Cache-Control': 'no-store' });
+    this.sendPdf(res, await this.certificates.downloadPdf(participant.sub));
+  }
+
   /// `POST` y no `GET`: la atestación es un JWT, y en la query string acabaría
   /// en los logs de nginx y en el historial del navegador.
   @UseGuards(JwtAuthGuard, ParticipantGuard)
@@ -44,6 +62,10 @@ export class CertificatesController {
       participant,
       dto.atestacion,
     );
+    this.sendPdf(res, buffer);
+  }
+
+  private sendPdf(res: Response, buffer: Buffer) {
     res
       .status(200)
       .set({

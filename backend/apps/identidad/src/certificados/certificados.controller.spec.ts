@@ -25,7 +25,7 @@ function fakeResponse() {
       return res;
     },
     set: (headers: Record<string, string>) => {
-      calls.headers = headers;
+      calls.headers = { ...calls.headers, ...headers };
       return res;
     },
     send: (body: unknown) => {
@@ -80,6 +80,22 @@ describe('CertificadosController', () => {
     expect(calls.headers?.['Content-Disposition']).toContain(
       'certificado-safe-web.pdf',
     );
+    expect(calls.body).toBe(buffer);
+  });
+
+  it('la redescarga entrega el PDF del participante sin permitir caché', async () => {
+    const buffer = Buffer.from('%PDF-simulado');
+    const downloadPdf = jest.fn().mockResolvedValue(buffer);
+    const service = { downloadPdf } as unknown as CertificatesService;
+    const { res, calls } = fakeResponse();
+
+    await new CertificatesController(service).downloadPdf(PARTICIPANT, res);
+
+    expect(downloadPdf).toHaveBeenCalledWith(PARTICIPANT.sub);
+    expect(calls.headers).toMatchObject({
+      'Cache-Control': 'no-store',
+      'Content-Type': 'application/pdf',
+    });
     expect(calls.body).toBe(buffer);
   });
 

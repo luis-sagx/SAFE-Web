@@ -2,18 +2,34 @@ import { useState } from 'react'
 import { ApiError, downloadCertificatePdf, issueCertificate, fetchAttestation } from '../lib/api'
 
 type Status = 'idle' | 'generando' | 'error'
+type DownloadMode = 'issue' | 'download' | 'expand'
 
-// Aparece solo cuando se aprobaron todos los módulos que declara el servidor (THRESHOLDS),
-// nunca un número fijo. Tres peticiones seguidas (atestación, canje, PDF) porque progreso
-// y nombre viven en servicios distintos (§5.2); la atestación firmada es lo único que cruza.
-function CertificateButton() {
+interface CertificateButtonProps {
+  mode?: DownloadMode
+  onIssued?: (modules: string[]) => void
+}
+
+async function prepareDownload(mode: DownloadMode, onIssued?: CertificateButtonProps['onIssued']) {
+  if (mode === 'download') return undefined
+  try {
+    const { atestacion } = await fetchAttestation()
+    const certificate = await issueCertificate(atestacion)
+    onIssued?.(certificate.modulos)
+    return atestacion
+  } catch (error) {
+    // Si la ampliación falla, identidad todavía puede entregar el certificado vigente.
+    if (mode !== 'expand') throw error
+    return undefined
+  }
+}
+
+function CertificateButton({ mode = 'issue', onIssued }: Readonly<CertificateButtonProps>) {
   const [status, setStatus] = useState<Status>('idle')
 
   async function download() {
     setStatus('generando')
     try {
-      const { atestacion: attestation } = await fetchAttestation()
-      await issueCertificate(attestation)
+      const attestation = await prepareDownload(mode, onIssued)
       const pdf = await downloadCertificatePdf(attestation)
 
       // Descarga real del navegador: la URL del blob solo vive en esta
@@ -28,9 +44,6 @@ function CertificateButton() {
       setStatus('idle')
     } catch (error) {
       setStatus('error')
-      // 409: el progreso cambió justo entre cargar el dashboard y pulsar el
-      // botón (p. ej. otra pestaña bajó una nota). El mensaje del servidor ya
-      // lo explica; no hace falta uno propio.
       if (!(error instanceof ApiError)) {
         // eslint-disable-next-line no-console -- ayuda a depurar en producción
         console.error(error)

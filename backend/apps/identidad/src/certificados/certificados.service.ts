@@ -17,14 +17,12 @@ import { generateCertificatePdf, type CertificateData } from './pdf';
 /// cambiar de duración si esta constante cambia después.
 const CERTIFICATE_HOURS = 4;
 
-/// P2002 es el código de Prisma para violación de índice único. Solo puede
-/// chocar aquí por una colisión de `codigo`, astronómicamente rara con este
-/// alfabeto, pero se reintenta en vez de fallar la petición del participante.
-function isUniqueConstraintViolation(error: unknown): boolean {
+function hasPrismaCode(error: unknown, code: string): boolean {
   return (
     typeof error === 'object' &&
     error !== null &&
-    (error as { code?: string }).code === 'P2002'
+    'code' in error &&
+    error.code === code
   );
 }
 
@@ -34,6 +32,11 @@ export interface PublicCertificate {
   modulos: string[];
   horas: number;
   calificacion: number;
+}
+
+export interface CertificateStatus {
+  estado: 'sin-emitir' | 'vigente' | 'revocado';
+  modulos: string[];
 }
 
 /// Un código revocado responde exactamente igual que uno inexistente
@@ -79,6 +82,20 @@ export class CertificatesService {
     return this.config.get('CERTIFICADO_ORIGEN', 'https://safeweb.espe.edu.ec');
   }
 
+  private findByParticipant(participantId: string) {
+    return this.prisma.certificate.findUnique({
+      where: { participantId },
+      include: { modules: { orderBy: { position: 'asc' } } },
+    });
+  }
+
+  async getStatus(participantId: string): Promise<CertificateStatus> {
+    const certificate = await this.findByParticipant(participantId);
+    if (!certificate) return { estado: 'sin-emitir', modulos: [] };
+    if (certificate.revocadoAt) return { estado: 'revocado', modulos: [] };
+    return { estado: 'vigente', modulos: moduleNames(certificate) };
+  }
+
   /// Verifica el pase que firmó `entrenamiento` y exige que sea del mismo
   /// participante que lo presenta. Sin esto, la atestación de otra persona
   /// Copiada de un log o reenviada, serviría para emitirse un certificado con
@@ -118,25 +135,25 @@ export class CertificatesService {
   ): Promise<PublicCertificate> {
     const payload = await this.redeem(attestation, participant);
 
-    const existing = await this.prisma.certificate.findUnique({
-      where: { participantId: participant.sub },
-      include: { modules: { orderBy: { position: 'asc' } } },
-    });
-
-    if (
-      existing &&
-      payload.modulos.length <= moduleNames(existing).length &&
-      payload.calificacion === existing.calificacion
-    ) {
-      // Sin cambios en el recorrido: igual se intenta el envío, por si la
-      // primera vez el correo no estaba verificado todavía.
-      void this.trySendingByEmail(existing);
-      return this.toPublic(existing);
-    }
+    const existing = await this.findByParticipant(participant.sub);
 
     if (existing) {
-      const updated = await this.prisma.certificate.update({
-        where: { id: existing.id },
+      if (existing.revocadoAt) {
+        throw new ForbiddenException('Tu certificado fue revocado.');
+      }
+
+      const covered = new Set(payload.modulos);
+      if (
+        covered.size <= existing.modules.length ||
+        !existing.modules.every(({ module }) => covered.has(module))
+      ) {
+        // Si el correo original falló, se puede volver a intentar su envío.
+        void this.trySendingByEmail(existing);
+        return this.toPublic(existing);
+      }
+
+      const pendingUpdate = this.prisma.certificate.update({
+        where: { id: existing.id, revocadoAt: null },
         data: {
           modules: {
             deleteMany: {},
@@ -152,6 +169,13 @@ export class CertificatesService {
           certificadoEnviadoAt: null,
         },
         include: { modules: { orderBy: { position: 'asc' } } },
+      });
+      const updated = await pendingUpdate.catch((error: unknown) => {
+        // Una revocación entre la lectura y la actualización invalida el canje.
+        if (hasPrismaCode(error, 'P2025')) {
+          throw new ForbiddenException('Tu certificado no está vigente.');
+        }
+        throw error;
       });
       void this.trySendingByEmail(updated);
       return this.toPublic(updated);
@@ -177,7 +201,8 @@ export class CertificatesService {
         void this.trySendingByEmail(createdCertificate);
         return this.toPublic(createdCertificate);
       } catch (error) {
-        if (!isUniqueConstraintViolation(error) || attempt === 4) throw error;
+        // P2002 permite reintentar si el código generado ya está en uso.
+        if (!hasPrismaCode(error, 'P2002') || attempt === 4) throw error;
       }
     }
 
@@ -193,6 +218,7 @@ export class CertificatesService {
     id: string;
     participantId: string;
     certificadoEnviadoAt: Date | null;
+    revocadoAt: Date | null;
     modules: CertificateModuleRow[];
     horas: number;
     calificacion: number;
@@ -204,7 +230,7 @@ export class CertificatesService {
     // pueda capturar. El certificado ya se guardó; que el correo falle no
     // debe afectar nada más.
     try {
-      if (certificate.certificadoEnviadoAt) return;
+      if (certificate.revocadoAt || certificate.certificadoEnviadoAt) return;
 
       const person = await this.prisma.account.findUnique({
         where: { id: certificate.participantId },
@@ -255,18 +281,18 @@ export class CertificatesService {
     attestation: string,
   ): Promise<Buffer> {
     await this.redeem(attestation, participant);
+    return this.downloadPdf(participant.sub);
+  }
 
-    const certificate = await this.prisma.certificate.findUnique({
-      where: { participantId: participant.sub },
-      include: { modules: { orderBy: { position: 'asc' } } },
-    });
+  async downloadPdf(participantId: string): Promise<Buffer> {
+    const certificate = await this.findByParticipant(participantId);
 
     if (!certificate || certificate.revocadoAt) {
       throw new NotFoundException('No tienes un certificado vigente.');
     }
 
     const person = await this.prisma.account.findUnique({
-      where: { id: participant.sub },
+      where: { id: participantId },
       select: { profile: { select: { nombre: true, apellido: true } } },
     });
 
