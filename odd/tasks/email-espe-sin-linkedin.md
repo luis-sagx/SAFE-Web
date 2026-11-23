@@ -39,6 +39,7 @@ El backend acepta muchos proveedores y dominios `.ec`; el formulario solo revisa
 - Exploración delegada: confirmó las referencias de prueba y distinguió menciones no funcionales que quedan fuera del alcance.
 - T1: `pnpm typecheck` y `pnpm lint` (frontend) pasaron; lint dejó advertencias preexistentes en archivos ajenos. `git diff --check` pasó. `pnpm lint:ci` (backend) quedó sin verificar: pnpm intentó instalar dependencias ausentes y el acceso al registro produjo errores de red; se interrumpió la instalación. No se añadieron ni ejecutaron pruebas automatizadas según la instrucción de desarrollo.
 - T2: `pnpm typecheck`, `pnpm lint` y `pnpm build` (frontend) pasaron; lint conserva advertencias preexistentes en archivos ajenos. `git diff --check` pasó. `rg` ya no encuentra referencias funcionales a LinkedIn en `frontend/src`; queda únicamente el comentario histórico `issue #279-linkedin`. No se añadieron ni ejecutaron pruebas automatizadas según la instrucción de desarrollo.
+- Backend `pnpm build` pendiente por las dependencias ausentes tras el fallo de instalación del lint. `pnpm --offline build` no inició porque esta versión de pnpm rechaza `--offline` como opción para `run`.
 - Espejo Engram pendiente: el almacén local está fuera del área escribible y la solicitud de acceso ampliado fue cancelada; preservar este documento local.
 
 ## Siguiente paso
