@@ -21,8 +21,6 @@ vi.mock('../lib/api', async () => {
   }
 })
 
-vi.mock('../context/AuthContext', async () => (await import('../test/escenario')).mockAuth())
-
 describe('CertificadoBoton', () => {
   beforeEach(() => {
     fetchAttestationMock.mockReset()
@@ -90,25 +88,4 @@ describe('CertificadoBoton', () => {
     expect(consoleError).toHaveBeenCalled()
   })
 
-  it('ofrece ver la insignia además de descargar el certificado', async () => {
-    render(<CertificateButton />)
-
-    expect(screen.getByRole('button', { name: 'Ver insignia' })).toBeDefined()
-  })
-
-  it('abre el diálogo de la insignia al pulsar "Ver insignia"', async () => {
-    issueCertificateMock.mockResolvedValue({
-      codigo: 'SW-AAAA-BBBB',
-      emitidoAt: '2026-09-18T00:00:00.000Z',
-      modulos: ['phishing'],
-      horas: 4,
-      calificacion: 90,
-    })
-    fetchAttestationMock.mockResolvedValue({ atestacion: 'un.jwt.firmado' })
-
-    render(<CertificateButton />)
-    fireEvent.click(screen.getByRole('button', { name: 'Ver insignia' }))
-
-    expect(await screen.findByRole('dialog', { name: 'Insignia de SAFE-Web' })).toBeDefined()
-  })
 })

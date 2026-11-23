@@ -2,17 +2,17 @@
 
 ## Objetivo
 
-Restringir las altas de cuentas al dominio exacto `espe.edu.ec` y retirar la acción de LinkedIn de la insignia de certificado.
+Restringir las altas de cuentas al dominio exacto `espe.edu.ec` y dejar solo la descarga del certificado en el cierre del estudio.
 
 ## Problema y motivo
 
-El backend acepta muchos proveedores y dominios `.ec`; el formulario solo revisa el formato y deja descubrir el dominio permitido al enviar. La insignia también ofrece agregar el certificado a LinkedIn, una opción que se quiere quitar.
+El backend acepta muchos proveedores y dominios `.ec`; el formulario solo revisa el formato y deja descubrir el dominio permitido al enviar. El cierre del estudio ofrecía además abrir y descargar una insignia, una acción que ya no se requiere.
 
 ## Alcance y restricciones
 
 - Rechazar cualquier dominio distinto de `espe.edu.ec` en los DTO que comparten el validador (`RegisterDto` y `CreateTrainerDto`), y reflejar la regla en el formulario de registro.
-- Retirar el botón visible, el helper de URL y sus referencias de prueba/comentarios que describen esa función.
-- Mantener otros canales de descarga/compartición de la insignia y referencias ajenas a la función (plantilla externa de NestJS e historial de incidencias).
+- Retirar la opción de agregar el certificado a LinkedIn y el botón `Ver insignia` del cierre del estudio.
+- Mantener solo `Descargar certificado` en la pantalla final. Conservar la vista de desarrollo de la insignia y referencias ajenas a las acciones retiradas.
 - No cambiar contratos existentes ni dependencias.
 
 ## Configuración de desarrollo
@@ -26,12 +26,13 @@ El backend acepta muchos proveedores y dominios `.ec`; el formulario solo revisa
 
 - [x] **T1 — Restringir el correo de todas las altas a `espe.edu.ec`.** El validador compartido acepta solo el dominio exacto y el formulario muestra el error junto al campo y bloquea el envío. Ruta: delegada directa; el disparador escritor aplica porque la validación coherente toca al menos dos archivos no triviales. Commit de trabajo: `d78395e` (`fix(auth): exigir correo institucional ESPE`).
 - [x] **T2 — Retirar la acción de LinkedIn de la insignia.** Quitados el enlace y el helper; se retiró la prueba obsoleta del enlace y se conservaron las pruebas restantes de la descarga. Ruta: delegada directa; el disparador escritor aplica por cambios coordinados en varios archivos. Commit de trabajo: `6f7e7a8` (`refactor(certificates): quitar acción de LinkedIn`).
+- [x] **T3 — Dejar solo la descarga del certificado en la pantalla final.** Quitados `Ver insignia`, la conexión con el modal y las expectativas obsoletas en las pruebas existentes; se conserva `Descargar certificado`. Ruta: delegada directa porque el disparador escritor aplica al modificar el componente y dos archivos de pruebas. Commit de trabajo: pendiente de registrar.
 
 ## Criterios de aceptación
 
 - Una dirección terminada en `@espe.edu.ec` se acepta; Gmail, otros dominios `.ec`, subdominios y dominios parecidos se rechazan tanto en registro como en creación de Tester.
 - El formulario de registro indica que se requiere `@espe.edu.ec` y no envía una dirección de otro dominio.
-- La insignia conserva su descarga y no muestra una acción de LinkedIn; no quedan imports ni referencias activas al helper eliminado.
+- La pantalla final muestra `Descargar certificado` y no muestra `Ver insignia`.
 
 ## Progreso y evidencia
 
@@ -39,9 +40,10 @@ El backend acepta muchos proveedores y dominios `.ec`; el formulario solo revisa
 - Exploración delegada: confirmó las referencias de prueba y distinguió menciones no funcionales que quedan fuera del alcance.
 - T1: `pnpm typecheck` y `pnpm lint` (frontend) pasaron; lint dejó advertencias preexistentes en archivos ajenos. `git diff --check` pasó. `pnpm lint:ci` (backend) quedó sin verificar: pnpm intentó instalar dependencias ausentes y el acceso al registro produjo errores de red; se interrumpió la instalación. No se añadieron ni ejecutaron pruebas automatizadas según la instrucción de desarrollo.
 - T2: `pnpm typecheck`, `pnpm lint` y `pnpm build` (frontend) pasaron; lint conserva advertencias preexistentes en archivos ajenos. `git diff --check` pasó. `rg` ya no encuentra referencias funcionales a LinkedIn en `frontend/src`; queda únicamente el comentario histórico `issue #279-linkedin`. No se añadieron ni ejecutaron pruebas automatizadas según la instrucción de desarrollo.
+- T3: `pnpm typecheck`, `pnpm lint` y `pnpm build` (frontend) pasaron; lint conserva advertencias preexistentes en archivos ajenos. `git diff --check` pasó y `rg` ya no encuentra `Ver insignia` en `frontend/src`. Se retiraron las expectativas obsoletas sin añadir ni ejecutar pruebas automatizadas.
 - Backend `pnpm build` pendiente por las dependencias ausentes tras el fallo de instalación del lint. `pnpm --offline build` no inició porque esta versión de pnpm rechaza `--offline` como opción para `run`.
 - Espejo Engram pendiente: el almacén local está fuera del área escribible y la solicitud de acceso ampliado fue cancelada; preservar este documento local.
 
 ## Siguiente paso
 
-Trabajo local completo; sincronizar el espejo Engram cuando el almacén esté disponible.
+Registrar el hash del commit de T3 y sincronizar el espejo Engram cuando el almacén esté disponible.

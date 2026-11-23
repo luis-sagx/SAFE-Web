@@ -1,7 +1,5 @@
 import { useState } from 'react'
 import { ApiError, downloadCertificatePdf, issueCertificate, fetchAttestation } from '../lib/api'
-import { useAuth } from '../context/AuthContext'
-import BadgeModal from './ModalInsignia'
 
 type Status = 'idle' | 'generando' | 'error'
 
@@ -10,9 +8,6 @@ type Status = 'idle' | 'generando' | 'error'
 // y nombre viven en servicios distintos (§5.2); la atestación firmada es lo único que cruza.
 function CertificateButton() {
   const [status, setStatus] = useState<Status>('idle')
-  const [showBadge, setShowBadge] = useState(false)
-  const { participant } = useAuth()
-  const fullName = [participant?.nombre, participant?.apellido].filter(Boolean).join(' ') || null
 
   async function download() {
     setStatus('generando')
@@ -44,7 +39,7 @@ function CertificateButton() {
   }
 
   return (
-    <div className="mt-4 flex flex-wrap items-center gap-3">
+    <div className="mt-4">
       <button
         type="button"
         onClick={() => void download()}
@@ -54,22 +49,12 @@ function CertificateButton() {
         {status === 'generando' ? 'Generando…' : 'Descargar certificado'}
       </button>
 
-      {/* Insignia circular aparte del PDF formal (issue #230). */}
-      <button
-        type="button"
-        onClick={() => setShowBadge(true)}
-        className="h-11 rounded-md border border-hairline-strong px-4 text-sm font-medium text-body transition hover:bg-surface-strong"
-      >
-        Ver insignia
-      </button>
-
       {status === 'error' && (
         <p className="w-full text-sm text-danger">
           No se pudo generar el certificado. Vuelve a intentarlo en un momento.
         </p>
       )}
 
-      {showBadge && <BadgeModal nombre={fullName} onClose={() => setShowBadge(false)} />}
     </div>
   )
 }
