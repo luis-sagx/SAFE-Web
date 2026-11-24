@@ -13,16 +13,23 @@ const ARCHIVOS: Record<ResultKind, string> = {
 
 const ARCHIVO_SENAL = '/sonidos/senal.wav'
 const ARCHIVO_MODULO_COMPLETO = '/sonidos/modulo-completo.wav'
+let phoneAudio: HTMLAudioElement | undefined
 
 // Sin `Audio` (navegador viejo, jsdom en tests) o si algo del audio falla
 // —incluido el navegador bloqueando el autoplay—, no hace nada: cada uno de
 // estos sonidos es un extra sobre una pantalla que ya dice lo mismo por su
 // cuenta (veredicto, señal resaltada, certificado habilitado).
-function reproducir(url: string): void {
+function reproducir(url: string, phoneVolume?: number): void {
   if (typeof Audio === 'undefined') return
 
   try {
     const audio = new Audio(url)
+    if (phoneVolume !== undefined) {
+      audio.volume = phoneVolume
+      // Los dos efectos del teléfono comparten un solo canal.
+      phoneAudio?.pause()
+      phoneAudio = audio
+    }
     audio.play()?.catch(() => {
       // Autoplay bloqueado u otro fallo de reproducción: se ignora.
     })
@@ -44,4 +51,12 @@ export function reproducirSenal(): void {
 /** Toca cuando se aprueban todos los módulos y se habilita el certificado. */
 export function reproducirModuloCompleto(): void {
   reproducir(ARCHIVO_MODULO_COMPLETO)
+}
+
+export function playFillerTap(): void {
+  reproducir('/sonidos/tap-relleno-v1.wav', 0.22)
+}
+
+export function playPhoneNotification(): void {
+  reproducir('/sonidos/notificacion-v1.wav', 0.2)
 }

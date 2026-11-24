@@ -13,6 +13,9 @@ const TEXT = `SUSCRIPCION ACTIVA: Tonos y Horoscopo Premium. Se renovo por $2,99
 
 const SMS: Extract<ScreenView, { kind: 'sms' }> = {
   kind: 'sms',
+  blockGoto: 'e_block_sender',
+  volverGoto: 'e_ignora',
+  volverLabel: 'Salió del hilo sin responder al mensaje',
   sender: '5050',
   sub: 'Número corto · SMS',
   senalRemitente: 'remitente',
@@ -56,10 +59,9 @@ const OPERATOR_START: ScreenView = {
       label: 'Revisó sus paquetes y suscripciones en la app de la operadora',
     },
     {
-      texto: 'Bloquear mensajes de números cortos',
-      detalle: 'No volverás a recibir SMS de servicios',
-      goto: 'e_bloquea',
-      label: 'Bloqueó los números cortos sin comprobar antes si el cobro existía',
+      texto: 'Recargas de saldo',
+      detalle: 'Consulta tus recargas recientes',
+      informational: true,
     },
   ],
   fields: [],
@@ -101,6 +103,13 @@ const APPS: PhoneApp[] = [
 ]
 
 const STORY: Story<ScreenNode> = {
+  e_block_sender: {
+    kind: 'good',
+    view: SMS,
+    verdict: 'Bloqueaste el número del cobro falso',
+    outcome:
+      'Evitaste que el número volviera a contactarte y no respondiste al SMS. Si quieres comprobar un cobro, revisa tus suscripciones en la app de tu operadora.',
+  },
   n1: {
     kind: 'scene',
     view: SMS,
@@ -124,13 +133,6 @@ const STORY: Story<ScreenNode> = {
     verdict: 'No contestaste, pero quedaste con la duda',
     outcome:
       'Saliste sin responder, que es lo que evita el daño. Pero te quedaste con la duda de si ese cobro existía.',
-  },
-  e_bloquea: {
-    kind: 'partial',
-    view: OPERATOR_START,
-    verdict: 'Te tapaste el oído, pero no comprobaste nada',
-    outcome:
-      '<b>No contestar</b> fue lo que impidió el daño. Pero sigues sin saber si el cargo de $2,99 existía: el bloqueo silencia el mensaje, no el cobro.',
   },
   e_verifica: {
     kind: 'good',

@@ -58,7 +58,8 @@ describe('AlertaConsumo', () => {
 
     fireEvent.click(within(phone).getByRole('button', { name: /Galería/ }))
 
-    expect(within(phone).getByText('248 elementos')).toBeDefined()
+    expect(within(phone).getByText('Recuerdos')).toBeDefined()
+    expect(within(phone).getByText('Galería', { selector: '[class*="phoneAppBarNombre"]' }).nextElementSibling).toBeNull()
     // Mirar no decide: la corrida sigue en curso y no entró en la traza.
     expect(screen.getByText('¿Qué haces?')).toBeDefined()
     expect(within(phone).queryByText(/SUPERMERCADO LA UNIÓN/)).toBeNull()
@@ -67,19 +68,17 @@ describe('AlertaConsumo', () => {
     expect(within(phone).getByText(/SUPERMERCADO LA UNIÓN/)).toBeDefined()
   })
 
-  it('releer el hilo desde la app del banco no termina la corrida', () => {
+  it('abrir Mensajes desde la app del banco conserva la flecha y el menú', () => {
     const phone = start(<ConsumptionAlert />)
 
     fireEvent.click(within(phone).getByRole('button', { name: /Banco del Litoral/ }))
     fireEvent.click(within(phone).getByRole('button', { name: /Mensajes/ }))
 
     expect(within(phone).getByText(/SUPERMERCADO LA UNIÓN/)).toBeDefined()
-    // La flecha de la cabecera vale "salgo del hilo y sigo con mi día". Vista
-    // desde dentro de la app no puede significar eso, así que no responde.
-    expect(
-      within(phone).queryByRole('button', { name: 'Volver a la lista de mensajes' }),
-    ).toBeNull()
     expect(screen.getByText('¿Qué haces?')).toBeDefined()
+    expect(within(phone).getByRole('button', { name: 'Opciones del mensaje' })).toBeDefined()
+    fireEvent.click(within(phone).getByRole('button', { name: 'Volver a la lista de mensajes' }))
+    expect(screen.getByText('Prudente, pero incompleto')).toBeDefined()
   })
 
   it('verificar es usar la app, no abrirla', () => {

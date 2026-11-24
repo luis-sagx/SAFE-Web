@@ -10,6 +10,8 @@ describe('AppRelleno', () => {
     expect(screen.getByText(/Cuenta de ahorros/)).toBeDefined()
     expect(screen.getByText('$312,45')).toBeDefined()
     expect(screen.getByText('Transferencia recibida')).toBeDefined()
+    expect(screen.getAllByRole('listitem')).toHaveLength(2)
+    expect(screen.queryAllByText(/^(Transferir|Pagar|Tarjetas)$/)).toHaveLength(0)
   })
 
   it('el navegador abre en Nueva pestaña con sus sitios frecuentes', () => {
@@ -27,5 +29,6 @@ describe('AppRelleno', () => {
     expect(screen.getByText('Parque')).toBeDefined()
     expect(screen.getByText('Café')).toBeDefined()
     expect(screen.getByText('Familia')).toBeDefined()
+    expect(screen.queryAllByText(/^(248 elementos|Seleccionar|Recientes|Álbumes|Flores|Ciudad|Montañas)$/)).toHaveLength(0)
   })
 })

@@ -22,6 +22,7 @@ import {
   MessageSquareOff,
   MessageSquareText,
   MessageCircle,
+  MoreVertical,
   Megaphone,
   MonitorSmartphone,
   NotebookPen,
@@ -135,6 +136,7 @@ export type ScreenView =
         label?: string
         icon?: LucideIcon
         contact?: boolean
+        informational?: boolean
       }[]
       // Resultados de búsqueda; mandan sobre `datos` y el formulario.
       resultados?: {
@@ -196,6 +198,7 @@ export type ScreenView =
       perfilLabel?: string
       volverGoto?: string
       volverLabel?: string
+      blockGoto?: string
       // Lleva a una pantalla del mismo hilo con el borrador ya puesto.
       composerGoto?: string
       composerLabel?: string
@@ -404,9 +407,14 @@ function DeviceScreen({
   // Intentos que la IA contestó con una repregunta, en orden: se quedan en el hilo.
   const [retries, setRetries] = useState<{ text: string; repregunta: string }[]>([])
   const [attached, setAttached] = useState<string[]>([])
+  const [smsMenuOpen, setSmsMenuOpen] = useState(false)
+  const smsMenuButtonRef = useRef<HTMLButtonElement>(null)
   const [dragOver, setDragOver] = useState(false)
   const freeTextRef = useRef<HTMLTextAreaElement>(null)
   const sendButtonRef = useRef<HTMLButtonElement>(null)
+  useEffect(() => {
+    setSmsMenuOpen(false)
+  }, [toView, finished])
   // Crece con lo que se escribe o se pega,hasta el tope que marca el CSS,
   // donde recién entra el scroll, para no obligar a desplazarse dentro de un
   // campo chico cuando se pega un mensaje largo del bloc de notas.
@@ -525,13 +533,19 @@ function DeviceScreen({
               )
               const Icon =
                 option.icon ?? (hasIcons ? menuIcon(option.texto) : undefined)
+              const Option = option.informational ? 'div' : 'button'
               return (
                 <li key={option.texto}>
-                  <button
-                    type="button"
+                  <Option
                     className={styles.opcion}
-                    data-hotspot-goto={option.goto}
-                    data-hotspot-label={option.label}
+                    data-filler-option={option.informational || !option.goto ? '' : undefined}
+                    {...(option.informational
+                      ? { 'data-control': true }
+                      : {
+                          type: 'button',
+                          'data-hotspot-goto': option.goto,
+                          'data-hotspot-label': option.label,
+                        })}
                   >
                     {option.contact ? (
                       <span
@@ -559,14 +573,14 @@ function DeviceScreen({
                         className="size-5 shrink-0 text-emerald-600"
                         strokeWidth={2}
                       />
-                    ) : (
+                    ) : !option.informational && (
                       <ChevronRight
                         aria-hidden
                         className={styles.opcionFlecha}
                         strokeWidth={2}
                       />
                     )}
-                  </button>
+                  </Option>
                 </li>
               )
             })}
@@ -711,7 +725,7 @@ function DeviceScreen({
       {/* Un chat web no lleva cabecera: el nombre ya está en la pestaña. */}
       {!view.sitio && (
       <div className={styles.smsbar}>
-        {view.volverGoto ? (
+        {view.volverGoto && !finished ? (
           <button
             type="button"
             className={`${styles.hotspot} ${styles.smsVolver}`}
@@ -747,7 +761,42 @@ function DeviceScreen({
 
         {/* Contrapeso de la flecha, para que el nombre del remitente quede
             centrado en la cabecera y no corrido hacia la derecha. */}
-        <span className={`${styles.smsVolver} ${styles.smsVolverApagado}`} aria-hidden />
+        {view.blockGoto && !finished ? (
+          <div
+            className={styles.smsMenu}
+            onKeyDown={(event) => {
+              if (event.key !== 'Escape' || !smsMenuOpen) return
+              event.stopPropagation()
+              setSmsMenuOpen(false)
+              smsMenuButtonRef.current?.focus()
+            }}
+          >
+            <button
+              ref={smsMenuButtonRef}
+              type="button"
+              className={styles.smsVolver}
+              aria-label="Opciones del mensaje"
+              aria-expanded={smsMenuOpen}
+              onClick={() => setSmsMenuOpen((open) => !open)}
+              data-control
+            >
+              <MoreVertical aria-hidden className={styles.smsVolverGlifo} />
+            </button>
+            {smsMenuOpen && (
+              <button
+                type="button"
+                className={styles.smsMenuOption}
+                data-hotspot-goto={view.blockGoto}
+                data-hotspot-label="Bloqueó el número del remitente"
+                onClick={() => setSmsMenuOpen(false)}
+              >
+                Bloquear número
+              </button>
+            )}
+          </div>
+        ) : (
+          <span className={`${styles.smsVolver} ${styles.smsVolverApagado}`} aria-hidden />
+        )}
       </div>
       )}
 

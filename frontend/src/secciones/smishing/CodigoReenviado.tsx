@@ -13,6 +13,7 @@ const CODE = '731 640'
 
 const THREAD_FAKE: ScreenView = {
   kind: 'sms',
+  blockGoto: 'e_block_sender',
   sender: '+593 99 412 8867',
   sub: 'Número no guardado · SMS',
   senalRemitente: 'remitente',
@@ -187,6 +188,13 @@ const APPS: PhoneApp[] = [
 ]
 
 const STORY: Story<ScreenNode> = {
+  e_block_sender: {
+    kind: 'good',
+    view: THREAD_FAKE,
+    verdict: 'Bloqueaste al impostor',
+    outcome:
+      'Cortaste el contacto sin reenviar el código. Si quieres comprobar qué pasó con tu cuenta, revisa la actividad desde la app oficial de tu banco.',
+  },
   n1: {
     kind: 'scene',
     view: THREAD_FAKE,

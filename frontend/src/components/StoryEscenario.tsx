@@ -29,12 +29,14 @@ import StoryChoices from "./ui/StoryChoices";
 import type { IdentityData } from "./ui/TarjetaIdentidad";
 import VerdictPanel, { type Signal } from "./ui/PanelVeredicto";
 import { useAuth } from "../context/AuthContext";
+import { useSound } from "../context/SoundContext";
 import { formatTime, useSystemClock } from "../hooks/useRelojDelSistema";
 import {
   useStoryEngine,
   type Story,
   type StoryNode,
 } from "../hooks/useStoryEngine";
+import { playFillerTap, playPhoneNotification } from "../lib/sonidos";
 import styles from "./ui/DeviceScreen.module.css";
 
 export interface ScreenNode extends StoryNode {
@@ -179,6 +181,10 @@ function ScenarioStory({
   guiaEnPantalla: screenGuide,
 }: ScenarioStoryProps) {
   const engine = useStoryEngine(story, initialNode, scenarioId);
+  const { activado: soundEnabled } = useSound();
+  const [started, setStarted] = useState(false);
+  const soundedNotifications = useRef(new Set<string>());
+  const lastFillerTap = useRef(-Infinity);
   const showSideChoices =
     choicePlacement === "sidebar" && Boolean(engine.node.choices);
   const showHelpChoices =
@@ -207,8 +213,7 @@ function ScenarioStory({
   // Abrir una app desde el dock también es mirar. Se mantiene separado de las
   // pestañas para que volver cierre la app sin alterar el motor de historia.
   const [viewedAppNode, setViewedAppNode] = useState<string | undefined>();
-  // Hilo abierto desde el dock. Puede coincidir con engine.current y aun así
-  // debe ocultar la acción de "salir del hilo", porque aquí solo se está releyendo.
+  // Abrir el hilo desde el dock conserva el nodo narrativo actual.
   const [viewedThread, setViewedThread] = useState<string | undefined>();
   // Se enciende con el primer clic en el vacío y ya no se apaga.
   const [clickedEmptySpace, setClickedEmptySpace] = useState(false);
@@ -239,11 +244,18 @@ function ScenarioStory({
     viewedTab ??
     engine.current;
   const getNodeView = story[visibleNode]?.view ?? engine.node.view;
-  // Releer el hilo desde otra pantalla no puede terminar la corrida: la flecha
-  // de la cabecera solo cierra el hilo.
+  // En smishing, la cabecera del hilo permite decidir también desde el dock.
   const toView =
-    getNodeView.kind === "sms" && !reviewScreen && viewedThread
-      ? { ...getNodeView, volverGoto: undefined, volverLabel: undefined }
+    getNodeView.kind === "sms" &&
+    !reviewScreen &&
+    viewedThread &&
+    !scenarioId.startsWith("smishing/")
+      ? {
+          ...getNodeView,
+          volverGoto: undefined,
+          volverLabel: undefined,
+          blockGoto: undefined,
+        }
       : getNodeView;
 
   const phoneTime = formatTime(useSystemClock());
@@ -284,6 +296,12 @@ function ScenarioStory({
   // Pertenece a engine.current, no a la pantalla que se mira; no se pinta
   // sobre el veredicto ni durante el repaso.
   const nodeNotification = story[engine.current]?.notificacion;
+  // Un chat de IA con sitio se muestra en el marco de escritorio.
+  const chatInBrowser = toView.kind === "sms" && Boolean(toView.sitio);
+  const phoneSimulation = screenActions && !chatInBrowser;
+  // La app visible puede cubrir una llamada, pero su voz sigue teniendo prioridad.
+  const callNode = threads.call ? story[threads.call]?.view : undefined;
+  const callInProgress = callNode?.kind === "call" && !callNode.marcando;
   const showNotification = Boolean(
     nodeNotification &&
     !engine.isEnding &&
@@ -291,6 +309,33 @@ function ScenarioStory({
     !viewedAppNode &&
     !discarded.includes(engine.current),
   );
+
+  useEffect(() => {
+    if (
+      !started ||
+      !phoneSimulation ||
+      !showNotification ||
+      nodeNotification?.app !== "Mensajes"
+    ) return;
+
+    const { remitente, texto, hora } = nodeNotification;
+    const key = JSON.stringify([remitente, texto, hora]);
+    if (soundedNotifications.current.has(key)) return;
+
+    // Si llegó en silencio, tampoco debe sonar al volver a ver el aviso.
+    soundedNotifications.current.add(key);
+    if (soundEnabled && !callInProgress && toView.kind !== "call") {
+      playPhoneNotification();
+    }
+  }, [
+    callInProgress,
+    nodeNotification,
+    phoneSimulation,
+    showNotification,
+    soundEnabled,
+    started,
+    toView.kind,
+  ]);
 
   useEffect(() => {
     const previous = previousNarrativeNode.current;
@@ -307,6 +352,9 @@ function ScenarioStory({
   }, [engine.current, story]);
 
   const restart = useCallback(() => {
+    soundedNotifications.current.clear();
+    lastFillerTap.current = -Infinity;
+    setStarted(true);
     setDiscarded([]);
     setViewedAppNode(undefined);
     setViewedThread(undefined);
@@ -520,6 +568,18 @@ function ScenarioStory({
       "[data-hotspot-goto]",
     );
     if (!target) {
+      if (
+        phoneSimulation &&
+        soundEnabled &&
+        !reviewScreen &&
+        (event.target as HTMLElement).closest("[data-filler-option]")
+      ) {
+        const now = Date.now();
+        if (now - lastFillerTap.current >= 300) {
+          lastFillerTap.current = now;
+          playFillerTap();
+        }
+      }
       // Los controles del propio aparato (nota de voz, silenciar llamada) sí
       // responden sin decidir nada.
       const control = (event.target as HTMLElement).closest("[data-control]");
@@ -549,9 +609,6 @@ function ScenarioStory({
       handleHotspotClick(event, engine.choose);
     }
   };
-
-  // Un chat de IA con `sitio` (ver DeviceScreen) manda el marco de escritorio.
-  const chatInBrowser = toView.kind === "sms" && Boolean(toView.sitio);
 
   const decision = engine.isEnding ? (
     <VerdictPanel
@@ -611,11 +668,6 @@ function ScenarioStory({
     !engine.isEnding &&
     (Boolean(appOpen) || (toView.kind === "web" && Boolean(toView.app)));
 
-  // Llamada ya contestada, aunque ahora se esté mirando un mensaje o una app
-  // encima de ella; el marcador no cuenta.
-  const callNode = threads.call ? story[threads.call]?.view : undefined;
-  const callInProgress = callNode?.kind === "call" && !callNode.marcando;
-
   const phoneScreen = (
     <div className={styles.phoneStage} onClick={onHotspot}>
       <div className={styles.phoneBody}>
@@ -668,9 +720,17 @@ function ScenarioStory({
                 <span className={styles.phoneAppBarNombre}>
                   {appOpen.nombre}
                 </span>
-                <span className={styles.phoneAppVolver} aria-hidden />
+                {(!("relleno" in appOpen) ||
+                  (appOpen.relleno !== "banco" && appOpen.relleno !== "galeria")) && (
+                  <span className={styles.phoneAppVolver} aria-hidden />
+                )}
               </div>
-              <div className={styles.phoneViewport}>
+              <div
+                className={styles.phoneViewport}
+                data-filler-option={
+                  "relleno" in appOpen && appOpen.relleno === "navegador" ? undefined : ""
+                }
+              >
                 {"relleno" in appOpen ? (
                   <AppRelleno tipo={appOpen.relleno} color={appOpen.color} />
                 ) : (
@@ -900,7 +960,7 @@ function ScenarioStory({
       nota={note}
       dominioCorreo={emailDomain}
       pantalla={
-        screenActions && !chatInBrowser ? (
+        phoneSimulation ? (
           phoneScreen
         ) : !chatInBrowser &&
           (toView.kind === "sms" || toView.kind === "escena") ? (

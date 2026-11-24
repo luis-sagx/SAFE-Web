@@ -92,6 +92,41 @@ describe('DeviceScreen, separadores de fecha', () => {
   })
 })
 
+describe('DeviceScreen, opciones del SMS', () => {
+  it('cierra con Escape, restaura el foco y reinicia el menú al cambiar de hilo', () => {
+    const view: ScreenView = {
+      kind: 'sms',
+      sender: 'Remitente',
+      sub: 'SMS',
+      msgs: [],
+      blockGoto: 'fin',
+      volverGoto: 'salida',
+    }
+    const { rerender } = render(<DeviceScreen view={view} />)
+    const menu = screen.getByRole('button', { name: 'Opciones del mensaje' })
+    expect(menu.closest('[data-hotspot-goto]')).toBeNull()
+    expect(menu.hasAttribute('data-control')).toBe(true)
+    expect(screen.queryByRole('button', { name: 'Bloquear número' })).toBeNull()
+    fireEvent.click(menu)
+    expect(menu.getAttribute('aria-expanded')).toBe('true')
+    const block = screen.getByRole('button', { name: 'Bloquear número' })
+    expect(block.getAttribute('data-hotspot-goto')).toBe('fin')
+    block.focus()
+    fireEvent.keyDown(block, { key: 'Escape' })
+    expect(document.activeElement).toBe(menu)
+    expect(menu.getAttribute('aria-expanded')).toBe('false')
+
+    fireEvent.click(menu)
+    rerender(<DeviceScreen view={{ ...view, sender: 'Otro remitente' }} />)
+    expect(screen.queryByRole('button', { name: 'Bloquear número' })).toBeNull()
+    rerender(<DeviceScreen view={view} terminada />)
+    expect(screen.queryByRole('button', { name: 'Opciones del mensaje' })).toBeNull()
+    expect(screen.queryByRole('button', { name: /volver/i })).toBeNull()
+    rerender(<DeviceScreen view={{ ...view, blockGoto: undefined }} />)
+    expect(screen.queryByRole('button', { name: 'Opciones del mensaje' })).toBeNull()
+  })
+})
+
 describe('DeviceScreen, marcas de páginas y apps', () => {
   const page = (app?: string): ScreenView => ({
     kind: 'web',

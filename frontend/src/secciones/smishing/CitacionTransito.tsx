@@ -17,6 +17,7 @@ const FIRST_SMS = {
 
 const SMS: ScreenView = {
   kind: 'sms',
+  blockGoto: 'e_block_sender',
   sender: 'TRANSITO-EC',
   sub: 'Remitente sin verificar · SMS',
   senalRemitente: 'remitente',
@@ -36,6 +37,7 @@ const SMS: ScreenView = {
 
 const REPLIED_SMS: ScreenView = {
   ...SMS,
+  blockGoto: undefined,
   respuestas: undefined,
   // Del hilo respondido se vuelve al hilo original, no directo a "ignoré
   // todo": aquí ya hubo una respuesta, así que salir es volver a mirar el
@@ -136,6 +138,13 @@ const APPS: PhoneApp[] = [
 ]
 
 const STORY: Story<ScreenNode> = {
+  e_block_sender: {
+    kind: 'good',
+    view: SMS,
+    verdict: 'Bloqueaste el remitente de la citación falsa',
+    outcome:
+      'El mensaje buscaba que pagaras en un sitio falso. Bloqueaste el contacto sin abrir el enlace. Puedes consultar tus multas en el canal oficial de tránsito.',
+  },
   n1: { kind: 'scene', view: SMS },
   n1b: { kind: 'scene', view: REPLIED_SMS },
   n2: { kind: 'scene', view: PAGE },

@@ -85,6 +85,7 @@ export default function InicioNavegador({
               className={styles.navSitio}
               data-hotspot-goto={sitio.goto}
               data-hotspot-label={sitio.label}
+              data-filler-option={sitio.goto ? undefined : ''}
             >
               <SitioIcono texto={sitio.texto} />
               <span className={styles.navSitioTextos}>
