@@ -81,7 +81,10 @@ function AppNavegador() {
 function AppGaleria() {
   return (
     <div className={styles.appGaleria}>
-      <h2 className={styles.appGaleriaTitulo}>Recuerdos</h2>
+      <div className={styles.appGaleriaEncabezado}>
+        <h2 className={styles.appGaleriaTitulo}>Recuerdos</h2>
+        <span className={styles.appGaleriaCantidad}>3 recuerdos</span>
+      </div>
       <div className={styles.appGaleriaGrid}>
         {FOTOS.map(({ nombre, Icono }, index) => (
           <span
