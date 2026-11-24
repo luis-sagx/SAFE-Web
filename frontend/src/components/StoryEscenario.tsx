@@ -716,7 +716,12 @@ function ScenarioStory({
                 </span>
                 <span className={styles.phoneAppVolver} aria-hidden />
               </div>
-              <div className={styles.phoneViewport}>
+              <div
+                className={styles.phoneViewport}
+                data-filler-option={
+                  "relleno" in appOpen && appOpen.relleno === "navegador" ? undefined : ""
+                }
+              >
                 {"relleno" in appOpen ? (
                   <AppRelleno tipo={appOpen.relleno} color={appOpen.color} />
                 ) : (

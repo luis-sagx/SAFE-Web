@@ -534,18 +534,17 @@ function DeviceScreen({
               const Icon =
                 option.icon ?? (hasIcons ? menuIcon(option.texto) : undefined)
               const Option = option.informational ? 'div' : 'button'
-              const filler = Boolean(view.app && view.app !== 'Navegador' && !option.goto)
               return (
                 <li key={option.texto}>
                   <Option
                     className={styles.opcion}
+                    data-filler-option={option.informational || !option.goto ? '' : undefined}
                     {...(option.informational
                       ? { 'data-control': true }
                       : {
                           type: 'button',
                           'data-hotspot-goto': option.goto,
                           'data-hotspot-label': option.label,
-                          'data-filler-option': filler ? '' : undefined,
                         })}
                   >
                     {option.contact ? (

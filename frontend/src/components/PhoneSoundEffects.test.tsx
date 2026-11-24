@@ -52,11 +52,49 @@ describe('Sonidos del teléfono simulado', () => {
     expect(played.filter((url) => url === TAP)).toHaveLength(1)
   })
 
-  it('deja en silencio una fila informativa', () => {
+  it('confirma el toque en Recargas de saldo sin avanzar el escenario', () => {
     const phone = within(start(<SubscriptionCancellation />))
     fireEvent.click(phone.getByRole('button', { name: /Mi Operadora/ }))
     fireEvent.click(phone.getByText('Recargas de saldo'))
+    expect(played).toEqual([TAP])
+    expect(phone.getByText('Recargas de saldo')).toBeDefined()
+  })
+
+  it.each(['elcomercio.com', 'bancolitoral.ec'])('confirma el toque en %s y conserva el acceso al sitio oficial', (site) => {
+    const phone = within(start(<GovernmentBenefit />))
+    fireEvent.click(phone.getByRole('button', { name: /Navegador/ }))
+    fireEvent.click(phone.getByText('Nueva pestaña'))
     expect(played).toEqual([])
+
+    fireEvent.click(phone.getByText(site))
+    expect(played).toEqual([TAP])
+    fireEvent.click(phone.getByText('inclusion.gob.ec'))
+    expect(played.filter((url) => url === TAP)).toHaveLength(1)
+    expect(screen.getByText('No caíste · buscaste la fuente oficial')).toBeDefined()
+  })
+
+  it('confirma el toque en un sitio de un navegador de relleno', () => {
+    const phone = within(start(<ForwardedCode />))
+    fireEvent.click(phone.getByRole('button', { name: /Navegador/ }))
+    fireEvent.click(phone.getByText('Buscar o escribir dirección'))
+    expect(played).toEqual([NOTIFICATION])
+
+    fireEvent.click(phone.getByText('bancolitoral.ec'))
+    expect(played).toEqual([NOTIFICATION, TAP])
+    expect(phone.getByText('Nueva pestaña')).toBeDefined()
+  })
+
+  it('confirma los toques en el cuerpo del banco de relleno y deja en silencio la cabecera', () => {
+    const phone = within(start(<GovernmentBenefit />))
+    fireEvent.click(phone.getByRole('button', { name: /Banco/ }))
+    fireEvent.click(phone.getAllByText('Banco')[0])
+    expect(played).toEqual([])
+
+    fireEvent.click(phone.getByText('Saldo disponible'))
+    expect(played).toEqual([TAP])
+    fireEvent.click(phone.getByRole('button', { name: 'Volver al hilo de mensajes' }))
+    expect(played).toEqual([TAP])
+    expect(phone.getByText('MIES-BONO')).toBeDefined()
   })
 
   it('toca la notificación al empezar y no la repite al volver de otra app', () => {
@@ -99,6 +137,16 @@ describe('Sonidos del teléfono simulado', () => {
     const phone = within(start(<SoundProvider><HeldPackage /></SoundProvider>))
     fireEvent.click(phone.getByRole('button', { name: /EnvíaExpress/ }))
     fireEvent.click(phone.getByText('Puntos de retiro'))
+    expect(played).toEqual([])
+  })
+
+  it('respeta el silencio en los sitios frecuentes y el banco de relleno', () => {
+    localStorage.setItem('sonido', 'desactivado')
+    const phone = within(start(<SoundProvider><GovernmentBenefit /></SoundProvider>))
+    fireEvent.click(phone.getByRole('button', { name: /Navegador/ }))
+    fireEvent.click(phone.getByText('elcomercio.com'))
+    fireEvent.click(phone.getByRole('button', { name: /Banco/ }))
+    fireEvent.click(phone.getByText('Saldo disponible'))
     expect(played).toEqual([])
   })
 
