@@ -213,8 +213,7 @@ function ScenarioStory({
   // Abrir una app desde el dock también es mirar. Se mantiene separado de las
   // pestañas para que volver cierre la app sin alterar el motor de historia.
   const [viewedAppNode, setViewedAppNode] = useState<string | undefined>();
-  // Hilo abierto desde el dock. Puede coincidir con engine.current y aun así
-  // debe ocultar la acción de "salir del hilo", porque aquí solo se está releyendo.
+  // Abrir el hilo desde el dock conserva el nodo narrativo actual.
   const [viewedThread, setViewedThread] = useState<string | undefined>();
   // Se enciende con el primer clic en el vacío y ya no se apaga.
   const [clickedEmptySpace, setClickedEmptySpace] = useState(false);
@@ -245,11 +244,18 @@ function ScenarioStory({
     viewedTab ??
     engine.current;
   const getNodeView = story[visibleNode]?.view ?? engine.node.view;
-  // Releer el hilo desde otra pantalla no puede terminar la corrida: la flecha
-  // de la cabecera solo cierra el hilo.
+  // En smishing, la cabecera del hilo permite decidir también desde el dock.
   const toView =
-    getNodeView.kind === "sms" && !reviewScreen && viewedThread
-      ? { ...getNodeView, volverGoto: undefined, volverLabel: undefined, blockGoto: undefined }
+    getNodeView.kind === "sms" &&
+    !reviewScreen &&
+    viewedThread &&
+    !scenarioId.startsWith("smishing/")
+      ? {
+          ...getNodeView,
+          volverGoto: undefined,
+          volverLabel: undefined,
+          blockGoto: undefined,
+        }
       : getNodeView;
 
   const phoneTime = formatTime(useSystemClock());

@@ -88,6 +88,39 @@ describe("BonoEstado", () => {
     expect(screen.getByText("No caíste, pero te quedaste con la duda")).toBeDefined();
   });
 
+  it.each(["Navegador", "Banco"])(
+    "volver a Mensajes desde %s conserva los controles del hilo",
+    (appName) => {
+      const container = start();
+      const phone = within(container.querySelector("#pantalla-escenario") as HTMLElement);
+
+      fireEvent.click(phone.getByRole("button", { name: appName }));
+      fireEvent.click(phone.getByRole("button", { name: "Mensajes" }));
+
+      expect(phone.getByText("MIES-BONO")).toBeDefined();
+      expect(screen.getByText("¿Qué haces?")).toBeDefined();
+      expect(phone.getByRole("button", { name: "Volver a la lista de mensajes" })).toBeDefined();
+      fireEvent.click(phone.getByRole("button", { name: "Opciones del mensaje" }));
+      fireEvent.click(phone.getByRole("button", { name: "Bloquear número" }));
+      expect(screen.getByText("Bloqueaste el remitente del bono falso")).toBeDefined();
+    },
+  );
+
+  it("volver al aviso del banco desde el dock conserva su flecha hacia la página", () => {
+    const container = start();
+    const phone = within(container.querySelector("#pantalla-escenario") as HTMLElement);
+
+    fireEvent.click(phone.getByText("bit.ly/bono-ec-2026"));
+    fireEvent.click(phone.getByRole("button", { name: "Abrir la notificación" }));
+    fireEvent.click(phone.getByRole("button", { name: "Banco" }));
+    fireEvent.click(phone.getByRole("button", { name: "Mensajes" }));
+
+    expect(phone.getByText(/NUNCA lo comparta con nadie/)).toBeDefined();
+    expect(phone.queryByRole("button", { name: "Opciones del mensaje" })).toBeNull();
+    fireEvent.click(phone.getByRole("button", { name: "Volver a la lista de mensajes" }));
+    expect(phone.getByText("Acreditación del bono de $180")).toBeDefined();
+  });
+
   it("deja tres sitios frecuentes y conserva la ruta oficial de verificación", () => {
     const container = start();
     const phone = container.querySelector("#pantalla-escenario") as HTMLElement;

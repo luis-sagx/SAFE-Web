@@ -22,8 +22,11 @@ it.each([
   ['Entrega programada', ScheduledDelivery, 'Bloqueaste el aviso de tu entrega'],
   ['Paquete retenido', HeldPackage, 'Bloqueaste el remitente del cobro falso'],
   ['Tarjeta bloqueada', BlockedCard, 'Bloqueaste el remitente que suplantó al banco'],
-] as const)('%s abre el menú y aplica el desenlace de bloqueo', (_name, Scenario, verdict) => {
+] as const)('%s conserva los controles y el bloqueo al abrir Mensajes desde el dock', (_name, Scenario, verdict) => {
   const phone = within(start(<Scenario />))
+  fireEvent.click(phone.getByRole('button', { name: 'Mensajes' }))
+  expect(phone.getByRole('button', { name: 'Volver a la lista de mensajes' })).toBeDefined()
+  expect(screen.queryByText(verdict)).toBeNull()
   fireEvent.click(phone.getByRole('button', { name: 'Opciones del mensaje' }))
   expect(screen.queryByText(verdict)).toBeNull()
   expect(screen.queryByText(/Aquí no hay nada que hacer/)).toBeNull()
