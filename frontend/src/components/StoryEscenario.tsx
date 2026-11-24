@@ -29,12 +29,14 @@ import StoryChoices from "./ui/StoryChoices";
 import type { IdentityData } from "./ui/TarjetaIdentidad";
 import VerdictPanel, { type Signal } from "./ui/PanelVeredicto";
 import { useAuth } from "../context/AuthContext";
+import { useSound } from "../context/SoundContext";
 import { formatTime, useSystemClock } from "../hooks/useRelojDelSistema";
 import {
   useStoryEngine,
   type Story,
   type StoryNode,
 } from "../hooks/useStoryEngine";
+import { playFillerTap, playPhoneNotification } from "../lib/sonidos";
 import styles from "./ui/DeviceScreen.module.css";
 
 export interface ScreenNode extends StoryNode {
@@ -179,6 +181,10 @@ function ScenarioStory({
   guiaEnPantalla: screenGuide,
 }: ScenarioStoryProps) {
   const engine = useStoryEngine(story, initialNode, scenarioId);
+  const { activado: soundEnabled } = useSound();
+  const [started, setStarted] = useState(false);
+  const soundedNotifications = useRef(new Set<string>());
+  const lastFillerTap = useRef(-Infinity);
   const showSideChoices =
     choicePlacement === "sidebar" && Boolean(engine.node.choices);
   const showHelpChoices =
@@ -284,6 +290,12 @@ function ScenarioStory({
   // Pertenece a engine.current, no a la pantalla que se mira; no se pinta
   // sobre el veredicto ni durante el repaso.
   const nodeNotification = story[engine.current]?.notificacion;
+  // Un chat de IA con sitio se muestra en el marco de escritorio.
+  const chatInBrowser = toView.kind === "sms" && Boolean(toView.sitio);
+  const phoneSimulation = screenActions && !chatInBrowser;
+  // La app visible puede cubrir una llamada, pero su voz sigue teniendo prioridad.
+  const callNode = threads.call ? story[threads.call]?.view : undefined;
+  const callInProgress = callNode?.kind === "call" && !callNode.marcando;
   const showNotification = Boolean(
     nodeNotification &&
     !engine.isEnding &&
@@ -291,6 +303,33 @@ function ScenarioStory({
     !viewedAppNode &&
     !discarded.includes(engine.current),
   );
+
+  useEffect(() => {
+    if (
+      !started ||
+      !phoneSimulation ||
+      !showNotification ||
+      nodeNotification?.app !== "Mensajes"
+    ) return;
+
+    const { remitente, texto, hora } = nodeNotification;
+    const key = JSON.stringify([remitente, texto, hora]);
+    if (soundedNotifications.current.has(key)) return;
+
+    // Si llegó en silencio, tampoco debe sonar al volver a ver el aviso.
+    soundedNotifications.current.add(key);
+    if (soundEnabled && !callInProgress && toView.kind !== "call") {
+      playPhoneNotification();
+    }
+  }, [
+    callInProgress,
+    nodeNotification,
+    phoneSimulation,
+    showNotification,
+    soundEnabled,
+    started,
+    toView.kind,
+  ]);
 
   useEffect(() => {
     const previous = previousNarrativeNode.current;
@@ -307,6 +346,9 @@ function ScenarioStory({
   }, [engine.current, story]);
 
   const restart = useCallback(() => {
+    soundedNotifications.current.clear();
+    lastFillerTap.current = -Infinity;
+    setStarted(true);
     setDiscarded([]);
     setViewedAppNode(undefined);
     setViewedThread(undefined);
@@ -520,6 +562,18 @@ function ScenarioStory({
       "[data-hotspot-goto]",
     );
     if (!target) {
+      if (
+        phoneSimulation &&
+        soundEnabled &&
+        !reviewScreen &&
+        (event.target as HTMLElement).closest("[data-filler-option]")
+      ) {
+        const now = Date.now();
+        if (now - lastFillerTap.current >= 300) {
+          lastFillerTap.current = now;
+          playFillerTap();
+        }
+      }
       // Los controles del propio aparato (nota de voz, silenciar llamada) sí
       // responden sin decidir nada.
       const control = (event.target as HTMLElement).closest("[data-control]");
@@ -549,9 +603,6 @@ function ScenarioStory({
       handleHotspotClick(event, engine.choose);
     }
   };
-
-  // Un chat de IA con `sitio` (ver DeviceScreen) manda el marco de escritorio.
-  const chatInBrowser = toView.kind === "sms" && Boolean(toView.sitio);
 
   const decision = engine.isEnding ? (
     <VerdictPanel
@@ -610,11 +661,6 @@ function ScenarioStory({
   const headerIsColored =
     !engine.isEnding &&
     (Boolean(appOpen) || (toView.kind === "web" && Boolean(toView.app)));
-
-  // Llamada ya contestada, aunque ahora se esté mirando un mensaje o una app
-  // encima de ella; el marcador no cuenta.
-  const callNode = threads.call ? story[threads.call]?.view : undefined;
-  const callInProgress = callNode?.kind === "call" && !callNode.marcando;
 
   const phoneScreen = (
     <div className={styles.phoneStage} onClick={onHotspot}>
@@ -900,7 +946,7 @@ function ScenarioStory({
       nota={note}
       dominioCorreo={emailDomain}
       pantalla={
-        screenActions && !chatInBrowser ? (
+        phoneSimulation ? (
           phoneScreen
         ) : !chatInBrowser &&
           (toView.kind === "sms" || toView.kind === "escena") ? (
