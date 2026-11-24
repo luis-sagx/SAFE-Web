@@ -87,7 +87,9 @@ describe('Sonidos del teléfono simulado', () => {
   it('confirma los toques en el cuerpo del banco de relleno y deja en silencio la cabecera', () => {
     const phone = within(start(<GovernmentBenefit />))
     fireEvent.click(phone.getByRole('button', { name: /Banco/ }))
-    fireEvent.click(phone.getByText('Banco', { selector: '[class*="phoneAppBarNombre"]' }))
+    const title = phone.getByText('Banco', { selector: '[class*="phoneAppBarNombre"]' })
+    expect(title.nextElementSibling).toBeNull()
+    fireEvent.click(title)
     expect(played).toEqual([])
 
     fireEvent.click(phone.getByText('Saldo disponible'))

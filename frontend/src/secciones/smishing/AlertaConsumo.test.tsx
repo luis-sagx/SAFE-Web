@@ -58,7 +58,8 @@ describe('AlertaConsumo', () => {
 
     fireEvent.click(within(phone).getByRole('button', { name: /Galería/ }))
 
-    expect(within(phone).getByText('248 elementos')).toBeDefined()
+    expect(within(phone).getByText('Recuerdos')).toBeDefined()
+    expect(within(phone).getByText('Galería', { selector: '[class*="phoneAppBarNombre"]' }).nextElementSibling).toBeNull()
     // Mirar no decide: la corrida sigue en curso y no entró en la traza.
     expect(screen.getByText('¿Qué haces?')).toBeDefined()
     expect(within(phone).queryByText(/SUPERMERCADO LA UNIÓN/)).toBeNull()

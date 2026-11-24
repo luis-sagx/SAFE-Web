@@ -720,7 +720,10 @@ function ScenarioStory({
                 <span className={styles.phoneAppBarNombre}>
                   {appOpen.nombre}
                 </span>
-                <span className={styles.phoneAppVolver} aria-hidden />
+                {(!("relleno" in appOpen) ||
+                  (appOpen.relleno !== "banco" && appOpen.relleno !== "galeria")) && (
+                  <span className={styles.phoneAppVolver} aria-hidden />
+                )}
               </div>
               <div
                 className={styles.phoneViewport}

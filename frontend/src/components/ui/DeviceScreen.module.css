@@ -2587,30 +2587,6 @@ button.opcion:focus-visible {
   font-size: 0.8125rem;
   color: #64748b;
 }
-.appBancoAcciones {
-  flex-shrink: 0;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 0.5rem;
-  padding: 0 1rem 1.125rem;
-}
-.appBancoAccion {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.375rem;
-  padding: 0.625rem 0.25rem;
-  border: 1px solid #e5e9ef;
-  border-radius: 0.75rem;
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: #334155;
-}
-.appBancoAccionGlifo {
-  width: 1.25rem;
-  height: 1.25rem;
-  color: var(--app-accent, #0f766e);
-}
 .appBancoSeccion {
   flex-shrink: 0;
   margin: 0;
@@ -2807,47 +2783,11 @@ button.opcion:focus-visible {
   gap: 0.875rem;
   background: #f2f4f7;
 }
-.appGaleriaEncabezado {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
-}
 .appGaleriaTitulo {
-  margin: 0 0 0.125rem;
+  margin: 0;
   color: #1e293b;
   font-size: 1.125rem;
   font-weight: 750;
-}
-.appGaleriaTexto {
-  margin: 0;
-  font-size: 0.8125rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: #64748b;
-}
-.appGaleriaAccion {
-  flex-shrink: 0;
-  color: #2563a6;
-  font-size: 0.75rem;
-  font-weight: 700;
-}
-.appGaleriaFiltro {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  color: #526273;
-  font-size: 0.75rem;
-}
-.appGaleriaFiltro > span {
-  padding: 0.375rem 0.625rem;
-  border-radius: 999px;
-  background: #e2e8f0;
-}
-.appGaleriaFiltro .appGaleriaFiltroActivo {
-  background: #dbeafe;
-  color: #1e40af;
 }
 .appGaleriaGrid {
   display: grid;
@@ -2891,15 +2831,6 @@ button.opcion:focus-visible {
 }
 .appGaleriaFoto3 {
   background: #6b8fbd;
-}
-.appGaleriaFoto4 {
-  background: #b66d86;
-}
-.appGaleriaFoto5 {
-  background: #728e9d;
-}
-.appGaleriaFoto6 {
-  background: #64869f;
 }
 .appGaleriaFoto .appGaleriaGlifo {
   position: relative;

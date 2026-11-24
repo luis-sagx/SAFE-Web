@@ -1,15 +1,4 @@
-import {
-  ArrowLeftRight,
-  Building2,
-  Coffee,
-  Flower2,
-  Image as ImageIcon,
-  Landmark,
-  Mountain,
-  ReceiptText,
-  UserRound,
-  WalletCards,
-} from 'lucide-react'
+import { Coffee, Landmark, Mountain, UserRound } from 'lucide-react'
 import type { CSSProperties } from 'react'
 import styles from './DeviceScreen.module.css'
 import { APP_ACCENTS } from './appAccents'
@@ -30,7 +19,6 @@ export function esRellenoTipo(valor: string): valor is RellenoTipo {
 const MOVIMIENTOS = [
   { id: 'compra', texto: 'Compra · Supermercado', fecha: 'Ayer', monto: '-$18.32', entra: false },
   { id: 'transferencia', texto: 'Transferencia recibida', fecha: 'Ayer', monto: '+$50.00', entra: true },
-  { id: 'servicios', texto: 'Pago de servicios', fecha: 'Lun', monto: '-$24.10', entra: false },
 ]
 
 // Mismos sitios que los escenarios donde el navegador sí decide, para que no
@@ -45,9 +33,6 @@ const FOTOS = [
   { nombre: 'Parque', Icono: Mountain },
   { nombre: 'Café', Icono: Coffee },
   { nombre: 'Familia', Icono: UserRound },
-  { nombre: 'Flores', Icono: Flower2 },
-  { nombre: 'Ciudad', Icono: Building2 },
-  { nombre: 'Montañas', Icono: ImageIcon },
 ] as const
 
 interface AppRellenoProps {
@@ -70,20 +55,6 @@ function AppBanco({ color }: { color?: string }) {
         <span className={styles.appBancoSaldoEtiqueta}>Cuenta de ahorros •••• 2841</span>
         <span className={styles.appBancoSaldoValor}>$312,45</span>
         <span className={styles.appBancoSaldoDetalle}>Saldo disponible</span>
-      </div>
-      <div className={styles.appBancoAcciones} aria-hidden>
-        <span className={styles.appBancoAccion}>
-          <ArrowLeftRight className={styles.appBancoAccionGlifo} strokeWidth={1.75} />
-          Transferir
-        </span>
-        <span className={styles.appBancoAccion}>
-          <ReceiptText className={styles.appBancoAccionGlifo} strokeWidth={1.75} />
-          Pagar
-        </span>
-        <span className={styles.appBancoAccion}>
-          <WalletCards className={styles.appBancoAccionGlifo} strokeWidth={1.75} />
-          Tarjetas
-        </span>
       </div>
       <p className={styles.appBancoSeccion}>Últimos movimientos</p>
       <ul className={styles.appBancoLista}>
@@ -110,17 +81,7 @@ function AppNavegador() {
 function AppGaleria() {
   return (
     <div className={styles.appGaleria}>
-      <div className={styles.appGaleriaEncabezado}>
-        <div>
-          <p className={styles.appGaleriaTitulo}>Recuerdos</p>
-          <p className={styles.appGaleriaTexto}>248 elementos</p>
-        </div>
-        <span className={styles.appGaleriaAccion}>Seleccionar</span>
-      </div>
-      <div className={styles.appGaleriaFiltro} aria-hidden>
-        <span className={styles.appGaleriaFiltroActivo}>Recientes</span>
-        <span>Álbumes</span>
-      </div>
+      <h2 className={styles.appGaleriaTitulo}>Recuerdos</h2>
       <div className={styles.appGaleriaGrid}>
         {FOTOS.map(({ nombre, Icono }, index) => (
           <span
