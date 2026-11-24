@@ -1059,8 +1059,8 @@
 /* El realce va en todas las filas, respondan o no: marcar solo la que lleva a
    algún sitio convertiría el menú en una lista de opciones señalizada, que es
    justo lo que la pantalla interactiva reemplaza. */
-.opcion:hover,
-.opcion:focus-visible {
+button.opcion:hover,
+button.opcion:focus-visible {
   outline: 2px solid color-mix(in srgb, var(--app-accent, #006837) 45%, transparent);
   outline-offset: -2px;
   filter: brightness(0.97);
@@ -1734,6 +1734,31 @@
    centrar el nombre del remitente, igual que el <span> del otro lado). */
 .smsVolverApagado {
   visibility: hidden;
+}
+
+.smsMenu {
+  position: relative;
+  display: grid;
+  place-items: center;
+}
+
+.smsMenuOption {
+  position: absolute;
+  z-index: 5;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  width: max-content;
+  border: 1px solid var(--color-border-control);
+  border-radius: 0.75rem;
+  background: var(--color-surface);
+  padding: 0.65rem 0.9rem;
+  color: var(--color-ink);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 16%);
+}
+
+.smsMenuOption:hover,
+.smsMenuOption:focus-visible {
+  background: var(--color-surface-strong);
 }
 
 .smsName {

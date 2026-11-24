@@ -243,7 +243,7 @@ function ScenarioStory({
   // de la cabecera solo cierra el hilo.
   const toView =
     getNodeView.kind === "sms" && !reviewScreen && viewedThread
-      ? { ...getNodeView, volverGoto: undefined, volverLabel: undefined }
+      ? { ...getNodeView, volverGoto: undefined, volverLabel: undefined, blockGoto: undefined }
       : getNodeView;
 
   const phoneTime = formatTime(useSystemClock());
