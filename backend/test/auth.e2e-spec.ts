@@ -72,14 +72,14 @@ describe('Autenticación (e2e)', () => {
       // Ya no hay sesión inmediata: el contrato nuevo (issue #295) exige
       // confirmar el correo antes de poder iniciar sesión.
       expect(responseBody<{ email: string }>(res)).toEqual({
-        email: 'maria.alta@ejemplo.ec',
+        email: 'maria.alta@espe.edu.ec',
       });
 
       // El intento de notificar es la prueba de que la cuenta se creó de
       // verdad: el correo real está cifrado en la base (ver el siguiente
       // bloque de tests), así que no se busca ahí.
       expect(sendEmailConfirmation()).toHaveBeenCalledWith(
-        'maria.alta@ejemplo.ec',
+        'maria.alta@espe.edu.ec',
         expect.any(String),
         expect.stringContaining('/confirmar-correo?token='),
       );
@@ -156,7 +156,7 @@ describe('Autenticación (e2e)', () => {
         .post('/api/auth/register')
         .send({
           ...data,
-          email: '  Maria.NORMALIZA@Ejemplo.ec ',
+          email: '  Maria.NORMALIZA@ESPE.EDU.EC ',
           cedula: `${data.cedula.slice(0, 9)}-${data.cedula.slice(9)}`,
         })
         .expect(201);
@@ -165,7 +165,7 @@ describe('Autenticación (e2e)', () => {
       // que lleva el correo en claro solo hasta llegar a la bandeja de la
       // persona (nunca a la base).
       expect(sendEmailConfirmation()).toHaveBeenCalledWith(
-        'maria.normaliza@ejemplo.ec',
+        'maria.normaliza@espe.edu.ec',
         expect.any(String),
         expect.any(String),
       );
@@ -187,7 +187,7 @@ describe('Autenticación (e2e)', () => {
         .post('/api/auth/register')
         .send({
           ...registrationData('duplicado-2'),
-          email: 'MARIA.DUPLICADO@ejemplo.ec',
+          email: 'MARIA.DUPLICADO@espe.edu.ec',
         })
         .expect(409);
     });
@@ -363,7 +363,7 @@ describe('Autenticación (e2e)', () => {
         .expect(200);
 
       const profile = responseBody<ProfileBody>(res);
-      expect(profile.email).toBe('maria.perfil@ejemplo.ec');
+      expect(profile.email).toBe('maria.perfil@espe.edu.ec');
       expect(profile.passwordHash).toBeUndefined();
     });
 
@@ -455,7 +455,7 @@ describe('Autenticación (e2e)', () => {
       const res = await server()
         .post('/api/auth/login')
         .send({
-          email: 'maria.refresh-cookie@ejemplo.ec',
+          email: 'maria.refresh-cookie@espe.edu.ec',
           password: PASSWORD_TEST,
         })
         .expect(200);
@@ -708,11 +708,11 @@ describe('Autenticación (e2e)', () => {
 
       await server()
         .post('/api/auth/forgot-password')
-        .send({ email: 'maria.olvido@ejemplo.ec' })
+        .send({ email: 'maria.olvido@espe.edu.ec' })
         .expect(204);
 
       expect(sendPasswordReset()).toHaveBeenCalledWith(
-        'maria.olvido@ejemplo.ec',
+        'maria.olvido@espe.edu.ec',
         expect.any(String),
         expect.stringContaining('/restablecer-password?token='),
       );

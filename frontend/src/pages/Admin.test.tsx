@@ -15,6 +15,7 @@ const api = vi.hoisted(() => ({
   fetchTrainers: vi.fn(),
   resetParticipantPassword: vi.fn(),
   resetTrainerPassword: vi.fn(),
+  restoreCertificate: vi.fn(),
 }))
 const csv = vi.hoisted(() => ({ downloadCsv: vi.fn() }))
 
@@ -31,6 +32,12 @@ const ANA: AdminParticipant = {
   apellido: 'Paz',
   email: 'ana@example.com',
   activo: true,
+}
+
+const CERTIFICATE = {
+  id: 'certificado-1',
+  emitidoAt: '2026-09-01T00:00:00Z',
+  revocadoAt: '2026-09-02T00:00:00Z',
 }
 
 function run(seudonimo: string, scenarioId: string, overrides: Partial<RunResult> = {}): RunResult {
@@ -107,6 +114,38 @@ describe('Admin · participantes', () => {
     await confirm('Sí, eliminar')
     expect(api.deleteParticipant).toHaveBeenCalledWith('a1')
     expect(screen.queryByText('Ana Paz')).toBeNull()
+  })
+
+  it('restaurar pide confirmación y devuelve la vigencia a la fila revocada', async () => {
+    api.fetchParticipants.mockResolvedValue([ANA, { ...ANA, id: 'a2', certificado: CERTIFICATE }])
+    api.restoreCertificate.mockResolvedValue(null)
+    await renderAdmin()
+
+    const restore = screen.getByRole('button', { name: 'Restaurar' })
+    fireEvent.click(restore)
+    expect(api.restoreCertificate).not.toHaveBeenCalled()
+    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'No, cancelar' }))
+    expect(api.restoreCertificate).not.toHaveBeenCalled()
+
+    fireEvent.click(restore)
+    await confirm('Sí, restaurar')
+    expect(api.restoreCertificate).toHaveBeenCalledWith('certificado-1')
+    expect(screen.queryByRole('dialog')).toBeNull()
+    expect(screen.getByText('Vigente')).toBeDefined()
+    expect(screen.getByRole('button', { name: 'Revocar' })).toBeDefined()
+    expect(screen.queryByRole('button', { name: 'Restaurar' })).toBeNull()
+  })
+
+  it('un fallo al restaurar conserva el certificado revocado y muestra el error', async () => {
+    api.fetchParticipants.mockResolvedValue([{ ...ANA, certificado: CERTIFICATE }])
+    api.restoreCertificate.mockRejectedValue(new Error('No existe ese certificado.'))
+    await renderAdmin()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Restaurar' }))
+    await confirm('Sí, restaurar')
+
+    expect(within(screen.getByRole('dialog')).getByRole('alert').textContent).toBe('No existe ese certificado.')
+    expect(screen.getByText('Revocado')).toBeDefined()
   })
 })
 

@@ -347,7 +347,7 @@ jobs:
         run: |
           curl -fsS -X POST http://localhost:8080/api/auth/register \
             -H 'Content-Type: application/json' \
-            -d '{"nombre":"Prueba","apellido":"CI","email":"ci@ejemplo.ec","cedula":"1710034065","password":"Clave-Larga-123!"}' \
+            -d '{"nombre":"Prueba","apellido":"CI","email":"ci@espe.edu.ec","cedula":"1710034065","password":"Clave-Larga-123!"}' \
             > /dev/null
 
           # El registro ya no entrega sesión (issue #295): la cuenta queda sin
@@ -361,7 +361,7 @@ jobs:
 
           token=$(curl -fsS -X POST http://localhost:8080/api/auth/login \
             -H 'Content-Type: application/json' \
-            -d '{"email":"ci@ejemplo.ec","password":"Clave-Larga-123!"}' \
+            -d '{"email":"ci@espe.edu.ec","password":"Clave-Larga-123!"}' \
             | python3 -c 'import json,sys; print(json.load(sys.stdin)["accessToken"])')
 
           # La evaluación inicial es obligatoria antes de registrar corridas.

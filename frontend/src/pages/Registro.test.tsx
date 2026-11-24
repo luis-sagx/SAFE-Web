@@ -21,7 +21,7 @@ function fillValidForm() {
   fireEvent.change(screen.getByLabelText('Nombre'), { target: { value: 'Ana' } })
   fireEvent.change(screen.getByLabelText('Apellido'), { target: { value: 'Pérez' } })
   fireEvent.change(screen.getByLabelText('Cédula'), { target: { value: '1710034065' } })
-  fireEvent.change(screen.getByLabelText('Correo'), { target: { value: 'ana@correo.com' } })
+  fireEvent.change(screen.getByLabelText('Correo'), { target: { value: 'ana@espe.edu.ec' } })
   fireEvent.change(screen.getByLabelText('Contraseña'), {
     target: { value: 'ClaveSegura123!' },
   })
@@ -34,7 +34,7 @@ describe('Registro', () => {
   })
 
   it('tras registrarse, navega a /revisa-tu-correo con el correo en el state', async () => {
-    const register = vi.fn().mockResolvedValue({ email: 'ana@correo.com' })
+    const register = vi.fn().mockResolvedValue({ email: 'ana@espe.edu.ec' })
     useAuthMock.mockReturnValue({
       isAuthenticated: false,
       loading: false,
@@ -48,13 +48,63 @@ describe('Registro', () => {
     )
 
     fillValidForm()
+    fireEvent.blur(screen.getByLabelText('Correo'))
+    expect(screen.queryByText('Usa tu correo institucional @espe.edu.ec.')).toBeNull()
     fireEvent.click(screen.getByRole('button', { name: /crear cuenta/i }))
 
     await waitFor(() =>
       expect(navigateMock).toHaveBeenCalledWith('/revisa-tu-correo', {
-        state: { email: 'ana@correo.com' },
+        state: { email: 'ana@espe.edu.ec' },
       }),
     )
+  })
+
+  it('rechaza un correo que no pertenece al dominio institucional', () => {
+    const register = vi.fn()
+    useAuthMock.mockReturnValue({
+      isAuthenticated: false,
+      loading: false,
+      register,
+    })
+
+    render(
+      <BrowserRouter>
+        <Registration />
+      </BrowserRouter>,
+    )
+
+    fillValidForm()
+    fireEvent.change(screen.getByLabelText('Correo'), {
+      target: { value: 'ana@gmail.com' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: /crear cuenta/i }))
+
+    expect(screen.getByText('Usa tu correo institucional @espe.edu.ec.')).toBeDefined()
+    expect(register).not.toHaveBeenCalled()
+  })
+
+  it('rechaza un correo con formato inválido', () => {
+    const register = vi.fn()
+    useAuthMock.mockReturnValue({
+      isAuthenticated: false,
+      loading: false,
+      register,
+    })
+
+    render(
+      <BrowserRouter>
+        <Registration />
+      </BrowserRouter>,
+    )
+
+    fillValidForm()
+    fireEvent.change(screen.getByLabelText('Correo'), {
+      target: { value: 'ana@' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: /crear cuenta/i }))
+
+    expect(screen.getByText('El correo no tiene un formato válido.')).toBeDefined()
+    expect(register).not.toHaveBeenCalled()
   })
 
   it('si register falla, muestra el error y no navega', async () => {

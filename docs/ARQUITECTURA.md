@@ -362,10 +362,13 @@ a `identidad`, `/api/runs/*` a `entrenamiento`.
 | `POST` | `/api/sus` | entrenamiento | JWT + rol `PARTICIPANT` | Valida diez respuestas 1–5, calcula el puntaje SUS estándar y registra una entrega única por versión. |
 | `GET` | `/api/sus/results` | entrenamiento | JWT + rol `SUPERVISOR` | Respuestas y puntaje SUS por seudónimo para consulta y exportación administrativa. |
 | `GET` | `/api/runs/atestacion` | entrenamiento | JWT | Certificado (§11): `200` con `{ atestacion }` si todos los módulos de `UMBRALES` están aprobados, `409` con `{ faltan }` si no. |
-| `POST` | `/api/certificados` | identidad | JWT | Body `{ atestacion }`. Canjea la atestación y emite (o actualiza) el certificado. → `{ codigo, emitidoAt, modulos, horas }`. |
-| `POST` | `/api/certificados/pdf` | identidad | JWT | Body `{ atestacion }`. → `application/pdf`. `POST` y no `GET`: la atestación es un JWT y en la query string acabaría en los logs de nginx. |
+| `POST` | `/api/certificados` | identidad | JWT + rol `PARTICIPANT` | Body `{ atestacion }`. Emite el certificado o lo actualiza si el recorrido incluye todos los módulos certificados y alguno más. → `{ codigo, emitidoAt, modulos, horas, calificacion }`. |
+| `GET` | `/api/certificados/me` | identidad | JWT + rol `PARTICIPANT` | Estado propio (`sin-emitir`, `vigente` o `revocado`) y módulos del certificado vigente. |
+| `GET` | `/api/certificados/pdf` | identidad | JWT + rol `PARTICIPANT` | Descarga el PDF del certificado propio vigente, incluso al repetir un módulo. |
+| `POST` | `/api/certificados/pdf` | identidad | JWT + rol `PARTICIPANT` | Descarga compatible con el flujo anterior. Recibe `{ atestacion }` en el cuerpo para mantener el JWT fuera de los logs de URL. |
 | `GET` | `/api/certificados/verificar/:codigo` | identidad | — | Pública, 20/min por IP. → `{ valido, emitidoAt?, horas?, modulos? }`. Nunca el nombre (§7). |
-| `PATCH` | `/api/admin/certificados/:id/revocar` | identidad | JWT + rol `SUPERVISOR` | Marca `revocadoAt`. Sin revocación automática por bajar de umbral (§11). |
+| `PATCH` | `/api/admin/certificados/:id/revocar` | identidad | JWT + rol `ADMIN` (supervisor) | Marca `revocadoAt`. Sin revocación automática por bajar de umbral (§11). |
+| `PATCH` | `/api/admin/certificados/:id/restaurar` | identidad | JWT + rol `ADMIN` (supervisor) | Limpia `revocadoAt` y devuelve 204 incluso si ya estaba vigente. Devuelve 404 si no existe. Conserva la emisión y la constancia de envío. |
 
 ### 5.1 Contrato del token
 
@@ -401,8 +404,8 @@ sea `'atestacion'`.
 // Atestación — 5 min, constante en el código. La firma `entrenamiento`
 // (GET /api/runs/atestacion) y la verifica `identidad` (POST /api/certificados*):
 // es el único dato que cruza entre los dos servicios sin que se llamen entre
-// sí. Reutilizable dentro de sus 5 minutos, no de un solo uso — el flujo la
-// gasta dos veces seguidas (emitir el certificado, descargar el PDF).
+// sí. Reutilizable dentro de sus 5 minutos para emitir o ampliar el certificado
+// y para el POST de descarga del flujo anterior.
 // `identidad` exige además que `sub` coincida con el del access token de
 // quien la presenta.
 { "sub": "<uuid>", "seq": 42, "modulos": ["phishing", "…"], "typ": "atestacion" }
@@ -1035,8 +1038,8 @@ Antes de escribir código en este repositorio:
 | Analítica dentro de la app | Fuera de alcance | El análisis se hace sobre los resultados que el supervisor consulta en `/api/runs/resultados`. |
 | Multi-idioma | Fuera de alcance | El estudio es en Ecuador, en español. |
 | Certificado | Atestación firmada por el cliente, sin servicio propio | Un tercer microservicio (`certificados` :3003) que llamara a `entrenamiento` violaría §2. La atestación es la misma regla que ya rige el JWT: lo que cruza entre servicios, viaja por el cliente. |
-| Revocación del certificado | Solo manual, por un supervisor | `identidad` no tiene forma de enterarse de que alguien bajó de umbral sin llamar a `entrenamiento` (spec 2026-09-03 §5.3). La atestación fresca en cada descarga es la revocación efectiva. |
-| Entrega del certificado | Descarga en la app, sin correo | Sin un segundo productor de correo no se justifica el servicio `notificaciones` que preveía el spec anterior (§11 de `2026-08-03…`). |
+| Vigencia del certificado | Revocación y restauración manuales a cargo del supervisor | Repetir un módulo conserva el PDF vigente con su fecha, nota y código. La revocación bloquea la descarga, la actualización y el envío. Restaurar habilita la descarga y la verificación de la misma emisión. |
+| Entrega del certificado | Descarga en la app y envío por correo | La primera emisión y las ampliaciones requieren atestación. `identidad` regenera el PDF de un certificado vigente usando la sesión para identificar al titular. |
 
 ---
 

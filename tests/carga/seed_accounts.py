@@ -10,8 +10,8 @@ para confirmar los correos), nunca en producción:
 - Registra por el API, no por SQL: nombre, apellido y correo se guardan
   cifrados y la cédula como HMAC, y solo `identidad` tiene las claves.
 - El registro envía un correo de confirmación. En el entorno de prueba
-  RESEND_API_KEY debe ser una clave de mentira: si no, son 100 correos a
-  @ejemplo.ec que rebotan y dañan la reputación del remitente.
+  RESEND_API_KEY debe ser una clave de mentira: si no, pueden salir 100
+  correos a direcciones de prueba y dañar la reputación del remitente.
 - Confirma solo las cuentas creadas durante esta corrida (por `createdAt`), sin
   tocar las demás.
 - Es idempotente: una cuenta que ya existe se salta.
@@ -67,7 +67,7 @@ def register(base_url: str, index: int) -> int:
     body = json.dumps({
         'nombre': 'Carga',
         'apellido': 'Prueba',
-        'email': f'carga{index:04d}@ejemplo.ec',
+        'email': f'carga{index:04d}@espe.edu.ec',
         'cedula': cedula(index),
         'password': PASSWORD,
     }).encode()

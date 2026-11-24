@@ -1,7 +1,8 @@
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { getSectionScenarios } from '../data/catalogo'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { getSectionScenarios, SECTIONS } from '../data/catalogo'
+import { setToken } from '../lib/api'
 import Dashboard from './Dashboard'
 
 const { fetchProgressMock, assessmentStatusMock, susStatusMock } = vi.hoisted(() => ({
@@ -25,6 +26,16 @@ function renderDashboard() {
   )
 }
 
+function mockPdfDownload() {
+  const createObjectURL = vi.fn(() => 'blob:certificado')
+  vi.stubGlobal('URL', class extends URL {
+    static createObjectURL = createObjectURL
+    static revokeObjectURL = vi.fn()
+  })
+  vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {})
+  return createObjectURL
+}
+
 function progressFor(module: string, aprobado: boolean) {
   return {
     modulo: module,
@@ -40,7 +51,12 @@ describe('Dashboard', () => {
     fetchProgressMock.mockReset()
     assessmentStatusMock.mockReset().mockResolvedValue({ pretestRequired: false, baselineMissing: false, pretestCompleted: true, posttestAvailable: false, posttestCompleted: false })
     susStatusMock.mockReset().mockResolvedValue({ version: 1, available: true, completed: false })
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async () =>
+      Response.json({ estado: 'sin-emitir', modulos: [] }),
+    )
   })
+
+  afterEach(() => vi.unstubAllGlobals())
 
   it('espera a que se complete la evaluación final antes de ofrecer SUS', async () => {
     fetchProgressMock.mockImplementation((module: string) => Promise.resolve(progressFor(module, false)))
@@ -120,12 +136,100 @@ describe('Dashboard', () => {
     expect(screen.queryByRole('link', { name: 'Responder encuesta de usabilidad' })).toBeNull()
   })
 
-  it('con módulos, posttest y SUS completados, ofrece descargar el certificado', async () => {
+  it.each([
+    { estado: 'sin-emitir', modulos: [] },
+    { estado: 'vigente', modulos: ['phishing'] },
+  ])('emite o amplía el certificado ($estado) al aprobar todo el recorrido', async (status) => {
     fetchProgressMock.mockImplementation((module: string) => Promise.resolve(progressFor(module, true)))
     assessmentStatusMock.mockResolvedValue({ pretestRequired: false, baselineMissing: false, pretestCompleted: true, posttestAvailable: true, posttestCompleted: true })
     susStatusMock.mockResolvedValue({ version: 1, available: true, completed: true })
 
+    const fetchMock = vi.mocked(fetch)
+    fetchMock
+      .mockResolvedValueOnce(Response.json(status))
+      .mockResolvedValueOnce(Response.json({ atestacion: 'un.jwt.firmado' }))
+      .mockResolvedValueOnce(Response.json({ modulos: SECTIONS.map(({ id }) => id) }))
+      .mockImplementation(async () => new Response('%PDF-'))
+    const createUrl = mockPdfDownload()
     renderDashboard()
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Descargar certificado' }))
+    await screen.findByRole('button', { name: 'Descargar certificado' })
+    expect(fetchMock.mock.calls.map(([path, options]) => [path, options?.method])).toEqual([
+      ['/api/certificados/me', 'GET'],
+      ['/api/runs/atestacion', 'GET'],
+      ['/api/certificados', 'POST'],
+      ['/api/certificados/pdf', 'POST'],
+    ])
+    fireEvent.click(screen.getByRole('button', { name: 'Descargar certificado' }))
+    await waitFor(() => expect(createUrl).toHaveBeenCalledTimes(2))
+    expect(fetchMock).toHaveBeenCalledTimes(5)
+    expect(fetchMock).toHaveBeenLastCalledWith('/api/certificados/pdf', expect.objectContaining({ method: 'GET' }))
+  })
+
+  it('durante una repetición descarga el certificado vigente sin emitirlo de nuevo', async () => {
+    fetchProgressMock.mockImplementation((module: string) => Promise.resolve(progressFor(module, module !== 'phishing')))
+    const fetchMock = vi.mocked(fetch)
+    fetchMock
+      .mockResolvedValueOnce(Response.json({ estado: 'vigente', modulos: SECTIONS.map(({ id }) => id) }))
+      .mockResolvedValueOnce(new Response('%PDF-'))
+    const createUrl = mockPdfDownload()
+    setToken('token')
+
+    renderDashboard()
+    fireEvent.click(await screen.findByRole('button', { name: 'Descargar certificado' }))
+
+    await waitFor(() => expect(createUrl).toHaveBeenCalled())
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+    expect(fetchMock).toHaveBeenLastCalledWith('/api/certificados/pdf', expect.objectContaining({
+      method: 'GET',
+      body: undefined,
+      headers: { Authorization: 'Bearer token' },
+    }))
+  })
+
+  it('mantiene la descarga si el progreso cambia justo antes de ampliar el certificado', async () => {
+    fetchProgressMock.mockImplementation((module: string) => Promise.resolve(progressFor(module, true)))
+    assessmentStatusMock.mockResolvedValue({ posttestCompleted: true })
+    susStatusMock.mockResolvedValue({ completed: true })
+    const fetchMock = vi.mocked(fetch)
+    fetchMock
+      .mockResolvedValueOnce(Response.json({ estado: 'vigente', modulos: ['phishing'] }))
+      .mockResolvedValueOnce(Response.json({}, { status: 409 }))
+      .mockResolvedValueOnce(new Response('%PDF-'))
+    const createUrl = mockPdfDownload()
+
+    renderDashboard()
+    fireEvent.click(await screen.findByRole('button', { name: 'Descargar certificado' }))
+
+    await waitFor(() => expect(createUrl).toHaveBeenCalledOnce())
+    expect(fetchMock.mock.calls.map(([path, options]) => [path, options?.method])).toEqual([
+      ['/api/certificados/me', 'GET'],
+      ['/api/runs/atestacion', 'GET'],
+      ['/api/certificados/pdf', 'GET'],
+    ])
+  })
+
+  it('no ofrece descargar un certificado revocado aunque se haya aprobado todo', async () => {
+    fetchProgressMock.mockImplementation((module: string) => Promise.resolve(progressFor(module, true)))
+    assessmentStatusMock.mockResolvedValue({ posttestCompleted: true })
+    susStatusMock.mockResolvedValue({ completed: true })
+    vi.mocked(fetch).mockResolvedValueOnce(Response.json({ estado: 'revocado', modulos: [] }))
+
+    renderDashboard()
+
+    await screen.findByText('Gracias por completar el estudio')
+    expect(screen.queryByRole('button', { name: 'Descargar certificado' })).toBeNull()
+  })
+
+  it('permite volver a consultar el certificado tras un error de red', async () => {
+    fetchProgressMock.mockResolvedValue(progressFor('phishing', false))
+    vi.mocked(fetch)
+      .mockRejectedValueOnce(new Error('falla de red'))
+      .mockResolvedValueOnce(Response.json({ estado: 'vigente', modulos: ['phishing'] }))
+
+    renderDashboard()
+    fireEvent.click(await screen.findByRole('button', { name: 'Reintentar consulta del certificado' }))
 
     expect(await screen.findByRole('button', { name: 'Descargar certificado' })).toBeDefined()
   })

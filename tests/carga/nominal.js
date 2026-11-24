@@ -35,7 +35,7 @@ export function setup() {
   const response = http.post(
     `${baseUrl}/api/auth/login`,
     JSON.stringify({
-      email: 'ci@ejemplo.ec',
+      email: 'ci@espe.edu.ec',
       password: 'Clave-Larga-123!',
     }),
     { headers: { 'Content-Type': 'application/json' }, responseType: 'text' },

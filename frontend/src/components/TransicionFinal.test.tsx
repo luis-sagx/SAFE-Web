@@ -39,7 +39,7 @@ describe('FinalTransition', () => {
     localStorage.clear()
   })
 
-  it('celebra haber terminado los 7 módulos y ofrece el certificado y la insignia', () => {
+  it('celebra haber terminado los 7 módulos y ofrece el certificado', () => {
     render(
       <MemoryRouter>
         <FinalTransition totalModulos={7} onClose={vi.fn()} />
@@ -49,7 +49,6 @@ describe('FinalTransition', () => {
     expect(screen.getByText('Completaste todo el entrenamiento')).toBeDefined()
     expect(screen.getByText('7')).toBeDefined()
     expect(screen.getByRole('button', { name: 'Descargar certificado' })).toBeDefined()
-    expect(screen.getByRole('button', { name: 'Ver insignia' })).toBeDefined()
     expect(screen.getByRole('link', { name: 'Ir al panel →' }).getAttribute('href')).toBe('/dashboard')
   })
 

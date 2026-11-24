@@ -29,6 +29,7 @@ import {
   revokeCertificate,
   resetParticipantPassword,
   resetTrainerPassword,
+  restoreCertificate,
   type AdminParticipant,
   type RunResult,
 } from "../lib/api";
@@ -160,25 +161,29 @@ function Participants() {
       },
     });
 
-  const revoke = (p: AdminParticipant) => {
-    if (!p.certificado || p.certificado.revocadoAt) return;
+  const toggleCertificateStatus = (p: AdminParticipant) => {
+    if (!p.certificado) return;
     const certificateId = p.certificado.id;
+    const restoring = Boolean(p.certificado.revocadoAt);
     setConfirmation({
-      titulo: "¿Revocar este certificado?",
-      mensaje: `El certificado de ${fullName(p)} dejará de ser válido y no podrá descargarse.`,
-      etiqueta: "Sí, revocar",
-      Icono: ShieldX,
-      peligro: true,
+      titulo: restoring ? "¿Restaurar este certificado?" : "¿Revocar este certificado?",
+      mensaje: restoring
+        ? `El certificado de ${fullName(p)} volverá a ser válido y podrá descargarse con su fecha original.`
+        : `El certificado de ${fullName(p)} dejará de ser válido y no podrá descargarse.`,
+      etiqueta: restoring ? "Sí, restaurar" : "Sí, revocar",
+      Icono: restoring ? ShieldCheck : ShieldX,
+      peligro: !restoring,
       accion: async () => {
-        await revokeCertificate(certificateId);
+        const changeStatus = restoring ? restoreCertificate : revokeCertificate;
+        await changeStatus(certificateId);
         setList((prev) =>
           prev.map((participant) =>
-            participant.id === p.id && participant.certificado
+            participant.certificado?.id === certificateId
               ? {
                   ...participant,
                   certificado: {
                     ...participant.certificado,
-                    revocadoAt: new Date().toISOString(),
+                    revocadoAt: restoring ? null : new Date().toISOString(),
                   },
                 }
               : participant,
@@ -247,10 +252,19 @@ function Participants() {
                     {!p.certificado ? (
                       <span className="text-muted">Sin certificado</span>
                     ) : p.certificado.revocadoAt ? (
-                      <span className="inline-flex items-center gap-1.5 text-muted">
-                        <ShieldX aria-hidden className="size-4" />
-                        Revocado
-                      </span>
+                      <div className="flex items-center gap-3">
+                        <span className="inline-flex items-center gap-1.5 text-muted">
+                          <ShieldX aria-hidden className="size-4" />
+                          Revocado
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => toggleCertificateStatus(p)}
+                          className="rounded-md border border-hairline-strong bg-surface px-2.5 py-1 text-xs font-medium text-ink transition hover:bg-surface-strong"
+                        >
+                          Restaurar
+                        </button>
+                      </div>
                     ) : (
                       <div className="flex items-center gap-3">
                         <div>
@@ -264,7 +278,7 @@ function Participants() {
                         </div>
                         <button
                           type="button"
-                          onClick={() => revoke(p)}
+                          onClick={() => toggleCertificateStatus(p)}
                           className="rounded-md border border-danger/30 bg-surface px-2.5 py-1 text-xs font-medium text-danger transition hover:bg-danger/10"
                         >
                           Revocar

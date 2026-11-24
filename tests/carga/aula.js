@@ -7,7 +7,7 @@ import { check, sleep } from 'k6'
 // 20–60 s), registra la corrida y a veces revisa su recorrido. Cada VU usa su
 // propia cuenta, así los límites por participante se comportan como en el aula.
 //
-// Cuentas: tests/carga/seed_accounts.py crea carga0000@ejemplo.ec… en el
+// Cuentas: tests/carga/seed_accounts.py crea carga0000@espe.edu.ec… en el
 // entorno de prueba. Nunca contra producción.
 //
 //   k6 run -e BASE_URL=https://pruebas.example -e PROFILE=spike tests/carga/aula.js
@@ -95,7 +95,7 @@ let token = null
 
 function email() {
   const index = (exec.vu.idInTest - 1) % accounts
-  return `carga${String(index).padStart(4, '0')}@ejemplo.ec`
+  return `carga${String(index).padStart(4, '0')}@espe.edu.ec`
 }
 
 function login() {

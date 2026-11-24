@@ -84,9 +84,70 @@ describe('Gestión de cuentas por el supervisor (e2e)', () => {
       const list = responseBody<Array<Record<string, unknown>>>(res);
       expect(list.every((p) => p.activo === true)).toBe(true);
       // El supervisor no aparece: la lista es solo de participantes.
-      expect(list.some((p) => p.email === 'maria.supervisor@ejemplo.ec')).toBe(
+      expect(list.some((p) => p.email === 'maria.supervisor@espe.edu.ec')).toBe(
         false,
       );
+    });
+  });
+
+  describe('PATCH /api/admin/certificados/:id/restaurar', () => {
+    it('solo el supervisor restaura la vigencia del mismo certificado', async () => {
+      const { id, token } = await newParticipant('restaurar-certificado');
+      const certificate = await prisma.certificate.create({
+        data: {
+          participantId: id,
+          codigo: 'SW-ABCD-EFGH',
+          emitidoAt: new Date('2026-09-01T00:00:00.000Z'),
+          certificadoEnviadoAt: new Date('2026-09-01T00:05:00.000Z'),
+          revocadoAt: new Date('2026-09-02T00:00:00.000Z'),
+          calificacion: 6,
+          modules: { create: { module: 'phishing', position: 0 } },
+        },
+        include: { modules: true },
+      });
+      const restore = `/api/admin/certificados/${certificate.id}/restaurar`;
+      const verify = `/api/certificados/verificar/${certificate.codigo}`;
+      const authorization = `Bearer ${token}`;
+
+      expect(responseBody(await server().get(verify).expect(200))).toEqual({
+        valido: false,
+      });
+      await server().patch(restore).expect(401);
+      await server()
+        .patch(restore)
+        .set('Authorization', authorization)
+        .expect(403);
+      await server()
+        .get('/api/certificados/pdf')
+        .set('Authorization', authorization)
+        .expect(404);
+
+      for (let attempt = 0; attempt < 2; attempt++) {
+        await server()
+          .patch(restore)
+          .set('Authorization', `Bearer ${supervisorToken}`)
+          .expect(204);
+      }
+
+      await expect(
+        prisma.certificate.findUnique({
+          where: { id: certificate.id },
+          include: { modules: true },
+        }),
+      ).resolves.toEqual({ ...certificate, revocadoAt: null });
+      expect(
+        responseBody(await server().get(verify).expect(200)),
+      ).toMatchObject({
+        valido: true,
+        emitidoAt: '2026-09-01T00:00:00.000Z',
+        calificacion: 6,
+        modulos: ['phishing'],
+      });
+      await server()
+        .get('/api/certificados/pdf')
+        .set('Authorization', authorization)
+        .expect('Content-Type', /application\/pdf/)
+        .expect(200);
     });
   });
 

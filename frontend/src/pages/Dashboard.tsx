@@ -8,12 +8,13 @@ import CertificateButton from "../components/CertificadoBoton";
 import { TRAMA_FONDO } from "../components/TramaFondo";
 import { Link } from "react-router";
 import { getSectionScenarios, SECTIONS } from "../data/catalogo";
-import { fetchAssessmentStatus, fetchProgress, fetchSusStatus, type AssessmentStatus, type Progress, type SusStatus } from "../lib/api";
+import { fetchAssessmentStatus, fetchCertificateStatus, fetchProgress, fetchSusStatus, type AssessmentStatus, type CertificateStatus, type Progress, type SusStatus } from "../lib/api";
 
 // Solo secciones con escenarios tienen gating; las demás muestran "Pronto" sin pedir progreso.
 const SECTIONS_ACTIVE = SECTIONS.filter(
   (s) => getSectionScenarios(s.id).length > 0,
 );
+const ACTIVE_MODULES = new Set(SECTIONS_ACTIVE.map(({ id }) => id));
 
 // Secciones sin escenarios y módulos sin progreso quedan fuera del denominador: contarlos daría un avance que
 // nadie puede mover hoy (sin escenarios) o nunca completar (sin umbral en el servidor).
@@ -48,10 +49,22 @@ const folio = (index: number) => `MOD-${String(index + 1).padStart(2, "0")}`;
 
 function Dashboard() {
   const { participant } = useAuth();
+  const certificateOwner = participant?.role === 'PARTICIPANT' ? participant.id : undefined;
   const [assessmentStatus, setAssessmentStatus] = useState<AssessmentStatus | null>(null);
   const [assessmentError, setAssessmentError] = useState(false);
   const [assessmentRetry, setAssessmentRetry] = useState(0);
   const [susStatus, setSusStatus] = useState<SusStatus | null>(null);
+  const [certificateResult, setCertificateResult] = useState<{ owner: string; status: CertificateStatus | 'error' }>();
+  const [certificateRetry, setCertificateRetry] = useState(0);
+  useEffect(() => {
+    if (!certificateOwner) return;
+    let cancelled = false;
+    fetchCertificateStatus().then(
+      (status) => { if (!cancelled) setCertificateResult({ owner: certificateOwner, status }); },
+      () => { if (!cancelled) setCertificateResult({ owner: certificateOwner, status: 'error' }); },
+    );
+    return () => { cancelled = true; };
+  }, [certificateOwner, certificateRetry]);
   useEffect(() => {
     if (participant?.role !== 'PARTICIPANT') return;
     let cancelled = false;
@@ -98,6 +111,21 @@ function Dashboard() {
   const global = calculateOverallProgress(progressByModule);
   const complete =
     global.modulos > 0 && global.modulosAprobados === global.modulos;
+  const studyCompleted = assessmentStatus?.posttestCompleted && susStatus?.completed;
+  const canIssue = studyCompleted && complete && global.modulos === ACTIVE_MODULES.size;
+  const certificate = certificateResult?.owner === certificateOwner ? certificateResult?.status : undefined;
+  const activeCertificate = certificate !== 'error' && certificate?.estado === 'vigente' ? certificate : undefined;
+  const canExpand = canIssue && activeCertificate
+    && activeCertificate.modulos.length < ACTIVE_MODULES.size
+    && activeCertificate.modulos.every((module) => ACTIVE_MODULES.has(module));
+  const canFirstIssue = canIssue && certificate !== 'error' && certificate?.estado === 'sin-emitir';
+  const normalDownloadMode = activeCertificate ? 'download' : 'issue';
+  const downloadAction = certificateOwner && (activeCertificate || canFirstIssue) && (
+    <CertificateButton
+      mode={canExpand ? 'expand' : normalDownloadMode}
+      onIssued={(modulos) => setCertificateResult({ owner: certificateOwner, status: { estado: 'vigente', modulos } })}
+    />
+  );
   // Primer módulo sin aprobar, solo entre los que ya respondieron: evita marcar "empieza aquí" antes de tiempo.
   const entry = SECTIONS_ACTIVE.find(
     (s) => progressByModule[s.id] && !progressByModule[s.id]?.aprobado,
@@ -129,14 +157,14 @@ function Dashboard() {
         {assessmentStatus?.posttestCompleted && <p role="status" className="mt-6 text-body">Tu evaluación final ya está guardada.</p>}
         {assessmentError && <div className="mt-6"><p role="alert" className="text-danger">No pudimos comprobar si tu evaluación final está disponible.</p><button className="min-h-11 text-link underline" onClick={() => { setAssessmentError(false); setAssessmentRetry((value) => value + 1); }}>Reintentar evaluación</button></div>}
 
-        {assessmentStatus?.posttestCompleted && susStatus?.available && (
+        {(studyCompleted || (assessmentStatus?.posttestCompleted && susStatus?.available)) && (
           <section className="mb-8 rounded-lg border border-primary/30 bg-surface p-6 sm:p-8" aria-labelledby="sus-survey-title">
             <p className="text-sm font-semibold uppercase tracking-wide text-primary">Último paso del estudio</p>
-            {susStatus.completed ? (
+            {studyCompleted ? (
               <>
                 <h2 id="sus-survey-title" className="mt-2 text-2xl font-semibold tracking-tight text-ink sm:text-3xl">Gracias por completar el estudio</h2>
                 <p role="status" className="mt-3 max-w-prose text-base leading-relaxed text-body">Tu evaluación final y la encuesta de usabilidad ya están guardadas.</p>
-                {complete && <CertificateButton />}
+                {downloadAction}
               </>
             ) : (
               <>
@@ -149,6 +177,21 @@ function Dashboard() {
               </>
             )}
           </section>
+        )}
+        {!studyCompleted && activeCertificate && (
+          <section className="mb-8 rounded-lg border border-primary/30 bg-surface p-6 sm:p-8" aria-labelledby="certificate-title">
+            <h2 id="certificate-title" className="text-2xl font-semibold tracking-tight text-ink sm:text-3xl">Tu certificado</h2>
+            {downloadAction}
+          </section>
+        )}
+        {certificate === 'error' && (
+          <div className="mt-3">
+            <p role="alert" className="text-danger">No pudimos consultar tu certificado.</p>
+            <button type="button" className="min-h-11 text-link underline" onClick={() => {
+              setCertificateResult(undefined);
+              setCertificateRetry((value) => value + 1);
+            }}>Reintentar consulta del certificado</button>
+          </div>
         )}
 
         {/* Una tira de siete boletos perforada, no siete tarjetas sueltas: los módulos se recorren

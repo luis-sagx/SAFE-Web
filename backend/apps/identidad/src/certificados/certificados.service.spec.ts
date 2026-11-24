@@ -380,7 +380,20 @@ describe('CertificadosService.emitir · el canje de la atestación', () => {
 
   // Idempotencia (§5.4 del diseño): pedirlo dos veces con el mismo recorrido
   // no debe crear una segunda fila ni cambiar el código.
-  it('devuelve el mismo certificado si ya existe y el recorrido no creció', async () => {
+  it.each([
+    { caso: 'mismos módulos', modulos: validAttestation().modulos },
+    {
+      caso: 'más módulos con uno anterior ausente',
+      modulos: [
+        'phishing',
+        'smishing',
+        'vishing',
+        'estafa',
+        'fisico',
+        'asistentes-ia',
+      ],
+    },
+  ])('conserva la emisión ($caso)', async ({ modulos }) => {
     const existing = {
       id: 'c1',
       participantId: PARTICIPANT.sub,
@@ -392,7 +405,7 @@ describe('CertificadosService.emitir · el canje de la atestación', () => {
     };
     let createWasCalled = false;
     let updateWasCalled = false;
-    const jwt = jwtReturning(validAttestation());
+    const jwt = jwtReturning(validAttestation({ modulos, calificacion: 29 }));
     const svc = service(
       {
         certificate: {
@@ -401,9 +414,13 @@ describe('CertificadosService.emitir · el canje de la atestación', () => {
             createWasCalled = true;
             return Promise.resolve(existing);
           },
-          update: () => {
+          update: ({ data }: { data: object }) => {
             updateWasCalled = true;
-            return Promise.resolve(existing);
+            return Promise.resolve({
+              ...existing,
+              ...data,
+              modules: existing.modules,
+            });
           },
         },
       },
@@ -412,9 +429,46 @@ describe('CertificadosService.emitir · el canje de la atestación', () => {
 
     const result = await svc.issue(PARTICIPANT, 'token');
 
-    expect(result.codigo).toBe('SW-AAAA-BBBB');
+    expect(result).toEqual({
+      codigo: 'SW-AAAA-BBBB',
+      modulos: ['phishing', 'smishing', 'vishing', 'suplantacion', 'estafa'],
+      horas: 4,
+      calificacion: 30,
+      emitidoAt: '2026-09-01T00:00:00.000Z',
+    });
     expect(createWasCalled).toBe(false);
     expect(updateWasCalled).toBe(false);
+  });
+
+  it('rechaza el canje de un certificado revocado sin actualizarlo ni enviarlo', async () => {
+    const revoked = {
+      id: 'c1',
+      participantId: PARTICIPANT.sub,
+      codigo: 'SW-AAAA-BBBB',
+      modules: moduleRows(['phishing']),
+      horas: 4,
+      calificacion: 6,
+      emitidoAt: new Date('2026-09-01T00:00:00.000Z'),
+      revocadoAt: new Date('2026-09-02T00:00:00.000Z'),
+    };
+    const update = jest.fn().mockResolvedValue(revoked);
+    const findAccount = jest.fn();
+    const svc = service(
+      {
+        certificate: {
+          findUnique: () => Promise.resolve(revoked),
+          update,
+        },
+        participant: { findUnique: findAccount },
+      },
+      jwtReturning(validAttestation()),
+    );
+
+    await expect(svc.issue(PARTICIPANT, 'token')).rejects.toBeInstanceOf(
+      ForbiddenException,
+    );
+    expect(update).not.toHaveBeenCalled();
+    expect(findAccount).not.toHaveBeenCalled();
   });
 
   // §5.4.1 del diseño: cuando THRESHOLDS crece y la atestación cubre más
@@ -439,7 +493,8 @@ describe('CertificadosService.emitir · el canje de la atestación', () => {
       {
         certificate: {
           findUnique: () => Promise.resolve(existing),
-          update: ({ data }: { data: unknown }) => {
+          update: ({ where, data }: { where: unknown; data: unknown }) => {
+            expect(where).toMatchObject({ id: 'c1', revocadoAt: null });
             updatedData = data;
             return Promise.resolve({
               ...existing,
@@ -649,6 +704,39 @@ describe('CertificatesService.generatePdf', () => {
     expect(buffer.subarray(0, 5).toString('latin1')).toBe('%PDF-');
   });
 
+  it('descarga el PDF propio con la sesión y sin comprobar una atestación', async () => {
+    const verifyAsync = jest.fn();
+    const findUnique = jest.fn().mockResolvedValue(EXISTING_CERTIFICATE);
+    const svc = service(
+      {
+        certificate: { findUnique },
+        participant: { findUnique: () => Promise.resolve(PERSON) },
+      },
+      { verifyAsync } as unknown as JwtService,
+    );
+
+    const buffer = await svc.downloadPdf(PARTICIPANT.sub);
+
+    expect(buffer.subarray(0, 5).toString('latin1')).toBe('%PDF-');
+    expect(findUnique).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { participantId: PARTICIPANT.sub } }),
+    );
+    expect(verifyAsync).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ['sin-emitir', null, []],
+    ['vigente', EXISTING_CERTIFICATE, ['phishing']],
+    ['revocado', { ...EXISTING_CERTIFICATE, revocadoAt: new Date() }, []],
+  ])('devuelve el estado propio %s', async (estado, certificate, modulos) => {
+    const svc = serviceWithPerson(certificate, PERSON);
+
+    await expect(svc.getStatus(PARTICIPANT.sub)).resolves.toEqual({
+      estado,
+      modulos,
+    });
+  });
+
   it('sin certificado emitido, 404', async () => {
     const svc = serviceWithPerson(null, PERSON);
 
@@ -700,5 +788,38 @@ describe('CertificadosService.revocar', () => {
     expect(updateArguments).toMatchObject({ where: { id: 'c1' } });
     const data = (updateArguments as { data: { revocadoAt: Date } }).data;
     expect(data.revocadoAt).toBeInstanceOf(Date);
+  });
+});
+
+describe('CertificadosService.restaurar', () => {
+  it('solo limpia la revocación sin volver a enviar el certificado', async () => {
+    const updateMany = jest.fn().mockResolvedValue({ count: 1 });
+    const { mail, sendCertificate } = fakeMail();
+    const svc = service(
+      { certificate: { updateMany } },
+      jwtReturning(validAttestation()),
+      mail,
+    );
+
+    await svc.restore('c1');
+
+    expect(updateMany).toHaveBeenCalledWith({
+      where: { id: 'c1' },
+      data: { revocadoAt: null },
+    });
+    expect(sendCertificate).not.toHaveBeenCalled();
+  });
+
+  it('responde 404 si no existe el certificado', async () => {
+    const svc = service(
+      {
+        certificate: { updateMany: () => Promise.resolve({ count: 0 }) },
+      },
+      jwtReturning(validAttestation()),
+    );
+
+    await expect(svc.restore('inexistente')).rejects.toBeInstanceOf(
+      NotFoundException,
+    );
   });
 });

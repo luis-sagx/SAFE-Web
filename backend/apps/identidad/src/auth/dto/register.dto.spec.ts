@@ -6,7 +6,7 @@ function validate(overrides: Record<string, unknown>) {
   const base = {
     nombre: 'Ana',
     apellido: 'Pérez',
-    email: 'ana@gmail.com',
+    email: 'ana@espe.edu.ec',
     cedula: '1710034065',
     password: 'Contraseña-larga1!',
   };
@@ -14,28 +14,20 @@ function validate(overrides: Record<string, unknown>) {
   return validateSync(dto).map((e) => e.property);
 }
 
-describe('RegisterDto.email: dominios permitidos', () => {
-  it('acepta un proveedor libre conocido', () => {
-    expect(validate({ email: 'ana@gmail.com' })).toEqual([]);
-    expect(validate({ email: 'ana@outlook.com' })).toEqual([]);
-    expect(validate({ email: 'ana@yahoo.com' })).toEqual([]);
-    expect(validate({ email: 'ana@icloud.com' })).toEqual([]);
-    expect(validate({ email: 'ana@zoho.com' })).toEqual([]);
-  });
-
-  it('acepta cualquier dominio .ec', () => {
+describe('RegisterDto.email: dominio institucional', () => {
+  it('acepta el dominio institucional exacto', () => {
     expect(validate({ email: 'ana@espe.edu.ec' })).toEqual([]);
-    expect(validate({ email: 'ana@epn.edu.ec' })).toEqual([]);
-    expect(validate({ email: 'ana@miempresa.com.ec' })).toEqual([]);
-    expect(validate({ email: 'ana@algo.ec' })).toEqual([]);
   });
 
-  it('acepta un subdominio bajo .ec', () => {
-    expect(validate({ email: 'ana@mail.usfq.edu.ec' })).toEqual([]);
+  it('rechaza proveedores y otros dominios ecuatorianos', () => {
+    expect(validate({ email: 'ana@gmail.com' })).toContain('email');
+    expect(validate({ email: 'ana@epn.edu.ec' })).toContain('email');
+    expect(validate({ email: 'ana@mail.usfq.edu.ec' })).toContain('email');
+    expect(validate({ email: 'ana@miempresa.com.ec' })).toContain('email');
   });
 
   it('normaliza antes de validar', () => {
-    expect(validate({ email: '  Ana@GMAIL.com ' })).toEqual([]);
+    expect(validate({ email: '  Ana@ESPE.EDU.EC ' })).toEqual([]);
   });
 
   it('rechaza un proveedor desechable', () => {
