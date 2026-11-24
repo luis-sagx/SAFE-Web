@@ -28,6 +28,15 @@ describe('CodigoReenviado', () => {
     expect(within(phone).getByText(/Su código de verificación es 731 640/)).toBeDefined()
     expect(within(phone).getByText('BANCO LITORAL')).toBeDefined()
     expect(screen.getByText('¿Qué haces?')).toBeDefined()
+
+    fireEvent.click(within(phone).getByRole('button', { name: /BANCO LITORAL/ }))
+    expect(within(phone).getByText(/NUNCA lo comparta con nadie/)).toBeDefined()
+    expect(within(phone).queryByRole('button', { name: 'Opciones del mensaje' })).toBeNull()
+
+    fireEvent.click(within(phone).getByRole('button', { name: 'Volver a la lista de mensajes' }))
+    expect(within(phone).getByText('Conversaciones')).toBeDefined()
+    fireEvent.click(within(phone).getByRole('button', { name: 'Salir de la aplicación' }))
+    expect(screen.getByText('No lo reenviaste, pero te quedaste con la duda')).toBeDefined()
   })
 
   it('reenviar el código sale de un solo gesto y se ve mandado en el hilo', () => {

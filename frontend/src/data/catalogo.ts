@@ -243,7 +243,7 @@ const BASE: BaseScenario[] = [
     titulo: "Cobro de una suscripción",
     descripcion:
       "Un SMS cobra un servicio que nunca pediste y ofrece cancelarlo respondiendo.",
-    version: 5,
+    version: 6,
     naturaleza: "fraude",
     dificultad: 1,
     espeja: "smishing/alerta-consumo",
@@ -255,7 +255,7 @@ const BASE: BaseScenario[] = [
     titulo: "Bono preseleccionado",
     descripcion:
       "Un SMS anuncia una ayuda económica y pide registrar la cuenta antes de un plazo.",
-    version: 4,
+    version: 5,
     naturaleza: "fraude",
     dificultad: 2,
     espeja: "smishing/alerta-consumo",
@@ -269,7 +269,7 @@ const BASE: BaseScenario[] = [
     titulo: "Entrega programada",
     descripcion:
       "El courier avisa la entrega de tu paquete para mañana, sin pedirte nada.",
-    version: 3,
+    version: 4,
     naturaleza: "legitimo",
     dificultad: 2,
     espeja: "smishing/paquete-retenido",
@@ -284,7 +284,7 @@ const BASE: BaseScenario[] = [
     titulo: "Tarjeta bloqueada",
     descripcion:
       "Un SMS avisa de un bloqueo y da un número al que llamar para reactivar.",
-    version: 3,
+    version: 4,
     naturaleza: "fraude",
     dificultad: 3,
     espeja: "smishing/alerta-consumo",
@@ -296,7 +296,7 @@ const BASE: BaseScenario[] = [
     titulo: "Citación de tránsito",
     descripcion:
       "Un SMS amenaza con duplicar una multa si no pagas desde el enlace enviado.",
-    version: 4,
+    version: 5,
     naturaleza: "fraude",
     dificultad: 3,
     espeja: "smishing/alerta-consumo",
@@ -308,7 +308,7 @@ const BASE: BaseScenario[] = [
     titulo: "Alerta de consumo",
     descripcion:
       "Una notificación de tu banco informa un consumo hecho con tu tarjeta.",
-    version: 3,
+    version: 4,
     naturaleza: "legitimo",
     dificultad: 3,
     espeja: "smishing/citacion-transito",
@@ -320,7 +320,7 @@ const BASE: BaseScenario[] = [
     titulo: "Paquete retenido",
     descripcion:
       "Un mensaje pide un pago pequeño para liberar un envío que sí estás esperando.",
-    version: 3,
+    version: 4,
     naturaleza: "fraude",
     dificultad: 4,
     espeja: "smishing/alerta-consumo",
@@ -337,7 +337,7 @@ const BASE: BaseScenario[] = [
     titulo: "Mensaje sobre tu código de verificación",
     descripcion:
       "Alguien dice ser del banco y pide el código de verificación que acaba de llegarte.",
-    version: 3,
+    version: 4,
     naturaleza: "fraude",
     dificultad: 5,
     espeja: "smishing/alerta-consumo",

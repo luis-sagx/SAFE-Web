@@ -21,6 +21,7 @@ const TEXT_BENEFIT = `MIES INFORMA: usted fue PRESELECCIONADO para el bono de $1
 
 const SMS: ScreenView = {
   kind: 'sms',
+  blockGoto: 'e_block_sender',
   sender: 'MIES-BONO',
   sub: 'Remitente sin verificar · SMS',
   senalRemitente: 'remitente',
@@ -129,6 +130,13 @@ const APPS: PhoneApp[] = [
 ]
 
 const STORY: Story<ScreenNode> = {
+  e_block_sender: {
+    kind: 'good',
+    view: SMS,
+    verdict: 'Bloqueaste el remitente del bono falso',
+    outcome:
+      'El mensaje buscaba tus datos bancarios. Al bloquear el remitente sin abrir el enlace, cortaste el contacto. Consulta cualquier bono por el canal oficial del MIES.',
+  },
   n1: {
     kind: 'scene',
     view: SMS,

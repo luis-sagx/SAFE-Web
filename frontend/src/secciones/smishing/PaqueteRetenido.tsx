@@ -17,6 +17,9 @@ const FIRST_SMS = {
 
 const SMS: ScreenView = {
   kind: 'sms',
+  blockGoto: 'e_block_sender',
+  volverGoto: 'e_ignora',
+  volverLabel: 'Salió del hilo sin verificar el envío',
   sender: '+593 98 774 2210',
   sub: 'Número no guardado · SMS',
   senalRemitente: 'remitente',
@@ -40,6 +43,7 @@ const SMS: ScreenView = {
 
 const REPLIED_SMS: ScreenView = {
   ...SMS,
+  blockGoto: undefined,
   respuestas: undefined,
   // Sin esto el botón "‹" se veía activo pero no hacía nada (issue #251): del
   // hilo ya respondido se puede volver a mirar el mensaje original.
@@ -150,6 +154,20 @@ const APPS: PhoneApp[] = [
 ]
 
 const STORY: Story<ScreenNode> = {
+  e_block_sender: {
+    kind: 'good',
+    view: SMS,
+    verdict: 'Bloqueaste el remitente del cobro falso',
+    outcome:
+      'Cortaste el contacto sin pagar ni entregar datos. Puedes comprobar dónde está tu paquete con el número de guía en la app oficial del courier.',
+  },
+  e_ignora: {
+    kind: 'partial',
+    view: SMS,
+    verdict: 'Saliste sin verificar el envío',
+    outcome:
+      'Evitaste el enlace y el cobro del mensaje. Te faltó consultar la guía en la app oficial del courier para saber dónde estaba tu paquete.',
+  },
   n1: { kind: 'scene', view: SMS },
   n1b: { kind: 'scene', view: REPLIED_SMS },
   n2: { kind: 'scene', view: PAGE },

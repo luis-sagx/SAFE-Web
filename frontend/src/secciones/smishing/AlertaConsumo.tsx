@@ -27,6 +27,7 @@ const DRAFT = 'No reconozco ese consumo, mi tarjeta es la 4539 0011 8842 4417'
 
 const SMS: ScreenView = {
   kind: 'sms',
+  blockGoto: 'e_block_sender',
   sender: 'BancoLitoral',
   sub: 'Remitente verificado · mismo hilo de siempre',
   msgs: [...HISTORY, NEW],
@@ -119,6 +120,13 @@ const APPS: PhoneApp[] = [
 ]
 
 const STORY: Story<ScreenNode> = {
+  e_block_sender: {
+    kind: 'bad',
+    view: SMS,
+    verdict: 'Bloqueaste una alerta de tu banco',
+    outcome:
+      'Era el canal habitual del banco. Al bloquearlo, podrías perder avisos sobre otros consumos. Revisa el movimiento desde la app del banco.',
+  },
   n1: { kind: 'scene', view: SMS },
   n2: { kind: 'scene', view: APP_HOME },
   e_bloquea: {

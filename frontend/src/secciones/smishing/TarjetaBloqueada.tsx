@@ -19,6 +19,7 @@ const TEXT = `BANCO DEL LITORAL: su tarjeta terminada en ${IDENTITY_FAKE.tarjeta
 
 const SMS: ScreenView = {
   kind: 'sms',
+  blockGoto: 'e_block_sender',
   sender: 'BANCO-LIT',
   sub: 'Remitente sin verificar · SMS',
   senalRemitente: 'remitente',
@@ -234,6 +235,13 @@ const APPS: PhoneApp[] = [
 ]
 
 export const STORY: Story<ScreenNode> = {
+  e_block_sender: {
+    kind: 'good',
+    view: SMS,
+    verdict: 'Bloqueaste el remitente que suplantó al banco',
+    outcome:
+      'Cortaste el contacto sin llamar al número del mensaje. Si necesitas comprobar el estado de tu tarjeta, usa la app del banco o el número impreso en ella.',
+  },
   n1: { kind: 'scene', view: SMS },
   n2: { kind: 'scene', view: MARKER },
   n3: { kind: 'scene', view: CALL },

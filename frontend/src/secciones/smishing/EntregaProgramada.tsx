@@ -14,6 +14,7 @@ const RESPONSE = '¿A qué hora exactamente? No voy a estar en la mañana.'
 
 const SMS: ScreenView = {
   kind: 'sms',
+  blockGoto: 'e_block_sender',
   sender: 'ENVIAEXPRESS',
   sub: 'Remitente habitual · SMS',
   senalRemitente: 'remitente',
@@ -111,6 +112,13 @@ const APPS: PhoneApp[] = [
 ]
 
 const STORY: Story<ScreenNode> = {
+  e_block_sender: {
+    kind: 'bad',
+    view: SMS,
+    verdict: 'Bloqueaste el aviso de tu entrega',
+    outcome:
+      'El aviso era del courier que llevaba tu paquete. Al bloquearlo, podrías perder cambios de horario o nuevos intentos de entrega. Revisa la guía en la app del courier.',
+  },
   n1: { kind: 'scene', view: SMS },
   n3: { kind: 'scene', view: APP_HOME },
   e_app: {
