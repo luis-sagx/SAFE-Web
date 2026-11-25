@@ -7,6 +7,9 @@ import {
   useState,
   type ReactNode,
 } from 'react'
+import { toast } from 'sonner'
+import InactivityDialog from '../components/InactivityDialog'
+import { isInactivityExpired, useInactivityLogout } from '../hooks/useInactivityLogout'
 import * as api from '../lib/api'
 import type { Credentials, Participant } from '../lib/api'
 
@@ -72,14 +75,40 @@ function initialsOf(participant: Participant | null): string {
   return letters || 'TU'
 }
 
+const INACTIVITY_TOAST_ID = 'session-inactive'
+
+// Sin duración: quien se ausentó tiene que encontrarlo al volver.
+function notifyInactivity(): void {
+  toast.info('Tu sesión se cerró por inactividad.', {
+    id: INACTIVITY_TOAST_ID,
+    description: 'Pasaron 15 minutos sin actividad. Vuelve a entrar para continuar.',
+    duration: Infinity,
+  })
+}
+
+// La cookie httpOnly del refresh token no la puede borrar JS: hay que pedirlo al
+// servidor, sin esperar la respuesta para cerrar sesión de inmediato.
+function discardCredentials(): void {
+  void api.logout().catch(() => {})
+  api.setToken(null)
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [participant, setParticipant] = useState<Participant | null>(null)
-  const [loading, setLoading] = useState(Boolean(api.getToken()))
+  // Se cerró la pestaña y se volvió pasado el límite: no hay sesión que rehidratar.
+  const [expiredOnLoad] = useState(() => Boolean(api.getToken()) && isInactivityExpired())
+  const [loading, setLoading] = useState(Boolean(api.getToken()) && !expiredOnLoad)
   const [onboardingDismissed, setOnboardingDismissed] = useState(false)
 
   // Tras recargar hay token pero no participante en memoria: se rehidrata contra el API.
   useEffect(() => {
     if (!api.getToken()) {
+      return
+    }
+
+    if (expiredOnLoad) {
+      discardCredentials()
+      notifyInactivity()
       return
     }
 
@@ -100,9 +129,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [expiredOnLoad])
 
   const startSession = useCallback((session: api.Session) => {
+    toast.dismiss(INACTIVITY_TOAST_ID)
     api.setToken(session.accessToken)
     setParticipant(session.participant)
     setOnboardingDismissed(false)
@@ -126,14 +156,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return api.register(credentials)
   }, [])
 
-  // La cookie httpOnly del refresh token no la puede borrar JS: hay que pedirlo al
-  // servidor, sin esperar la respuesta para cerrar sesión de inmediato.
   const logout = useCallback(() => {
-    void api.logout().catch(() => {})
-    api.setToken(null)
+    discardCredentials()
     setParticipant(null)
     setOnboardingDismissed(false)
   }, [])
+
+  const logoutByInactivity = useCallback(() => {
+    logout()
+    notifyInactivity()
+  }, [logout])
+
+  const { secondsLeft, stayConnected } = useInactivityLogout(
+    Boolean(participant),
+    logoutByInactivity,
+  )
 
   // Se marca "visto" para esta sesión sin importar el valor elegido: desmarcada
   // solo reactiva la bienvenida en el próximo ingreso, no en esta sesión.
@@ -164,7 +201,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [participant, loading, login, confirmEmail, register, logout, markOnboardingAsSeen, onboardingDismissed],
   )
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+      {secondsLeft !== null && (
+        <InactivityDialog secondsLeft={secondsLeft} onStay={stayConnected} />
+      )}
+    </AuthContext.Provider>
+  )
 }
 
 export function useAuth(): AuthValue {
